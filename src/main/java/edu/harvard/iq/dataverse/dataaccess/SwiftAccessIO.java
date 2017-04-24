@@ -457,8 +457,11 @@ public class SwiftAccessIO extends DataFileIO {
 
             //swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
             String swiftFolderPathSeparator = "_";
-            swiftFolderPath = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator) +
+            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+            swiftFolderPath = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
+                authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
                 swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
+
             swiftFileName = storageIdentifier;
             //swiftFileName = this.getDataFile().getDisplayName();
             //Storage Identifier is now updated after the object is uploaded on Swift.
@@ -492,8 +495,15 @@ public class SwiftAccessIO extends DataFileIO {
 
         if (!this.swiftContainer.exists()) {
             if (writeAccess) {
-                //this.swiftContainer.create();
-                this.swiftContainer.makePublic();
+                // dataContainer.create();
+                 try {
+                     //creates a public data container
+                     this.swiftContainer.makePublic();
+                 }
+                 catch (Exception e){
+                     e.printStackTrace();
+                     logger.info("Creating dataContainer failed: caught exception "+e.getClass());
+                 }
             } else {
                 // This is a fatal condition - it has to exist, if we were to 
                 // read an existing object!
@@ -507,13 +517,8 @@ public class SwiftAccessIO extends DataFileIO {
         // If this is the main, primary datafile object (i.e., not an auxiliary 
         // object for a primary file), we also set the file download url here: 
         if (auxItemTag == null) {
-            DataAccess.swiftFileUri = DataAccess.getSwiftFileURI(fileObject);
-            setRemoteUrl(DataAccess.getSwiftFileURI(fileObject));
-            logger.fine(DataAccess.swiftFileUri + " success");
-            //shows contents of container for public containers
-            DataAccess.swiftContainerUri = DataAccess.getSwiftContainerURI(fileObject);
-            logger.fine(DataAccess.swiftContainerUri + " success");
-
+            setRemoteUrl(getSwiftFileURI(fileObject));
+            logger.info(getRemoteUrl() + " success");
         }
         
         if (!writeAccess && !fileObject.exists()) {
@@ -521,18 +526,6 @@ public class SwiftAccessIO extends DataFileIO {
         }
 
         List<String> auxFiles = null; 
-        /*
-        try {
-            auxFiles = listAuxObjects();
-        } catch (IOException ioex) {
-            logger.info("caught exception trying to list aux objects:"+ioex.getMessage());
-        }
-        
-        if (auxFiles != null) {
-        for (String auxObject : auxFiles) {
-            logger.info("AUX object found for "+swiftFileName+": "+auxObject);
-        }
-        }*/
         
         return fileObject;
     }
@@ -653,6 +646,15 @@ public class SwiftAccessIO extends DataFileIO {
         return false;
     }
     
-    
+    private String getSwiftFileURI(StoredObject fileObject) throws IOException {
+        String fileUri;
+        try {
+            fileUri = fileObject.getPublicURL();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new IOException("SwiftAccessIO: failed to get file storage location");
+        }
+        return fileUri;
+    }
 
 }

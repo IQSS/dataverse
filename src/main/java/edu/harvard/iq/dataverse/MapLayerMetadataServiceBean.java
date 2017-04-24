@@ -162,9 +162,6 @@ public class MapLayerMetadataServiceBean {
             return false;
         }
 
-        // TODO: This code uses direct filesystem access!! 
-        // it must be changed to use DataFileIO!! -- L.A. 4.6.2
-        
         // Retrieve the data file
         //
         DataFile df = mapLayerMetadata.getDataFile();
@@ -177,8 +174,22 @@ public class MapLayerMetadataServiceBean {
                 return false;
             }
             
-            dataFileIO.deleteAllAuxObjects();
+            List<String> cachedObjectsTags = dataFileIO.listAuxObjects();
+            
+            if (cachedObjectsTags != null) {
+                String iconBaseTag = "img";
+                String iconThumbTagPrefix = "thumb";
+                for (String cachedFileTag : cachedObjectsTags) {
+                    if (iconBaseTag.equals(cachedFileTag) || cachedFileTag.startsWith(iconThumbTagPrefix)) {
+                        dataFileIO.deleteAuxObject(cachedFileTag);
+                    }
+                }
+            }
             /*
+             * Below is the old-style code that was assuming that all the files are 
+             * stored on a local filesystem. The DataFileIO code, above, should 
+             * be used instead for all the operations on the physical files associated
+             * with DataFiles. 
             // Get the parent directory
             //
             Path fileDirname = dataAccess.getFileSystemPath().getParent();

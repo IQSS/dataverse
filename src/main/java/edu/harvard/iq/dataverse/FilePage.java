@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -617,20 +618,26 @@ public class FilePage implements java.io.Serializable {
     }
 
     public String getPublicDownloadUrl() {
-        if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id"))) {
-            String fileDownloadUrl = null;
             try {
-                SwiftAccessIO swiftIO = (SwiftAccessIO) getFile().getDataFileIO();
-                swiftIO.open();
-                fileDownloadUrl = swiftIO.getRemoteUrl();
-                logger.info("Swift url: " + fileDownloadUrl);
-            } catch (Exception e) {
-                e.printStackTrace();
+            DataFileIO dataFileIO = getFile().getDataFileIO();
+            if (dataFileIO instanceof SwiftAccessIO) {
+                String fileDownloadUrl = null;
+                try {
+                    SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+                    swiftIO.open();
+                    fileDownloadUrl = swiftIO.getRemoteUrl();
+                    logger.info("Swift url: " + fileDownloadUrl);
+                    return fileDownloadUrl;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            return fileDownloadUrl;
-        } else {
-            return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
+        } catch (Exception e){
+            e.printStackTrace();
         }
+        
+        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
     }
 
 }

@@ -149,6 +149,36 @@ Enabling a second authentication provider will result in the Log In page showing
 - ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. 
 - The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work. This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to builtin. Then the user initiates a conversion from builtin to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
+Swift Installation
+------------------
+
+By default, a Dataverse installation stores data files in local storage. You can opt for a experimental setup with a Swift Object Storage backend instead. Each dataset that you create is saved as a container. Each datafile is saved as a file within the container.
+
+In order to configure a Swift installation, there are two steps you need to complete before running the installer:
+
+First, create a file named "swift.properties" in to the ``/glassfish4/glassfish/domains/domain1/config`` directory, configured as follows:
+
+.. code-block:: none
+
+    swift.default.endpoint=endpoint1
+    swift.auth_url.endpoint1=your-auth-url
+    swift.tenant.endpoint1=your-tenant-name
+    swift.username.endpoint1=your-username
+    swift.password.endpoint1=your-password
+    swift.auth_type.endpoint1=your-authentication-type
+    swift.swift_endpoint.endpoint1=your-swift-endpoint
+
+The authentication type can either be ``keystone`` or it will assumed to be basic. Additionally, authentication URL should be your keystone authentication URL which includes the tokens (e.g. ``https://dataverse.org:35357/v2.0/tokens``).
+
+Second, update the JVM option ``dataverse.files.storage-driver-id`` by running the delete command:
+
+``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
+
+Then run the create command:
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
+
+
 JVM Options
 -----------
 
@@ -603,3 +633,18 @@ or
 Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
 
 The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
+
+:ShibPassiveLoginEnabled
+++++++++++++++++++++++++
+
+Set ``ShibPassiveLoginEnabled`` to true to enable passive login for Shibboleth. When this feature is enabled, an additional Javascript file (isPassive.js) will be loaded for every page. It will generate a passive login request to your Shibboleth SP when an anonymous user navigates to the site. A cookie named "_check_is_passive_dv" will be created to keep track of whether or not a passive login request has already been made for the user.
+
+This implementation follows the example on the Shibboleth wiki documentation page for the isPassive feature: https://wiki.shibboleth.net/confluence/display/SHIB2/isPassive
+
+It is recommended that you configure additional error handling for your Service Provider if you enable passive login. A good way of doing this is described in the Shibboleth wiki documentation:
+
+- *In your Service Provider 2.x shibboleth2.xml file, add redirectErrors="#THIS PAGE#" to the Errors element.*
+
+You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or any other page on your site that is accessible to anonymous users and will have the isPassive.js file loaded.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
