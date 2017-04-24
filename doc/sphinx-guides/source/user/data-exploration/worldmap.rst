@@ -13,20 +13,20 @@ Note: WorldMap hosts their own `user guide <http://worldmap.harvard.edu/static/d
 What is Geoconnect?
 ===================
 
-GeoConnect is a platform that integrates Dataverse and WorldMap together, allowing researchers to visualize their geospatial data. GeoConnect can be used to create maps of shapefiles or of tabular files containing geospatial information.
+Geoconnect is a platform that integrates Dataverse and WorldMap together, allowing researchers to visualize their geospatial data. Geoconnect can be used to create maps of shapefiles or of tabular files containing geospatial information.
 
-Mapping shapefiles with GeoConnect
+Mapping shapefiles with Geoconnect
 ==================================
 
-GeoConnect is capable of mapping shapefiles which are uploaded to Dataverse in .zip format. Specifically, Dataverse recognizes a zipped shapefile by:
+Geoconnect is capable of mapping shapefiles which are uploaded to Dataverse in .zip format. Specifically, Dataverse recognizes a zipped shapefile by:
 
 1.Examining the contents of the .zip file
 
 2.Checking for the existence of four similarly named files with the following extensions: .dbf, .prj, .shp, .shx
 
-Once you have uploaded your .zip shapefile, a Map Data button will appear next to the file in the dataset. In order to use this button, you'll need to publish your dataset. Once your dataset has been published, you can click on the Map Data button to be brought to GeoConnect, the portal between Dataverse and WorldMap that will allow you to create your map. 
+Once you have uploaded your .zip shapefile, a Map Data button will appear next to the file in the dataset. In order to use this button, you'll need to publish your dataset. Once your dataset has been published, you can click on the Map Data button to be brought to Geoconnect, the portal between Dataverse and WorldMap that will allow you to create your map. 
 
-To get started with visualizing your shapefile, click on the blue "Visualize on WorldMap" button in GeoConnect. It may take up to 45 seconds for the data to be sent to WorldMap and then back to GeoConnect.
+To get started with visualizing your shapefile, click on the blue "Visualize on WorldMap" button in Geoconnect. It may take up to 45 seconds for the data to be sent to WorldMap and then back to Geoconnect.
 
 Once this process has finished, you will be taken to a new page where you can style your map through Attribute, Classification Method, Number of Intervals, and Colors. Clicking "View on WorldMap" will open WorldMap in a new tab, allowing you to see how your map will be displayed there.
 
@@ -34,10 +34,10 @@ After styling your map, you can either save it by clicking "Return to Dataverse"
 
 To replace your shapefile's map with a new one, simply click the Map Data button again. 
 
-Mapping tabular files with GeoConnect
+Mapping tabular files with Geoconnect
 =====================================
 
-GeoConnect can map tabular files that contain geospatial information such as latitude/longitude coordinates, census tracts, zip codes, Boston election wards, etc.
+Geoconnect can map tabular files that contain geospatial information such as latitude/longitude coordinates, census tracts, zip codes, Boston election wards, etc.
 
 
 Preparing a tabular file to be mapped
@@ -45,7 +45,7 @@ Preparing a tabular file to be mapped
 
 **1. Ingest**
 
-Geospatial tabular files need a bit of preparation in Dataverse before they can be mapped in GeoConnect. When you upload your file, Dataverse will take about ten seconds to ingest it. During the ingest process it will identify the file as tabular data. 
+Geospatial tabular files need a bit of preparation in Dataverse before they can be mapped in Geoconnect. When you upload your file, Dataverse will take about ten seconds to ingest it. During the ingest process it will identify the file as tabular data. 
 
 |image1|
 
