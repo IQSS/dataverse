@@ -290,7 +290,7 @@ public class Datasets extends AbstractApiBean {
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
                 if ( p.getKey().getName().equals(blockName) ) {
-                    return ok( json(p.getKey(), p.getValue()) );
+                    return ok(json(p.getKey(), p.getValue(), Collections.emptyList()));
                 }
             }
             return notFound("metadata block named " + blockName + " not found");

@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 /**
  * A means of iterating over {@link DatasetField}s, or a collection of them.
@@ -21,7 +22,9 @@ import java.util.TreeSet;
  * @author michael
  */
 public class DatasetFieldWalker {
-    
+
+    private static final Logger logger = Logger.getLogger(DatasetFieldWalker.class.getCanonicalName());
+
     public interface Listener {
         void startField( DatasetField f );
         void endField( DatasetField f );
@@ -38,20 +41,20 @@ public class DatasetFieldWalker {
      */
     public static void walk( DatasetField dsf, Listener l ) {
         DatasetFieldWalker joe = new DatasetFieldWalker(l);
-        joe.walk(dsf);
+        joe.walk(dsf, Collections.emptyList());
     }
 
     /**
      * Convenience method to walk over a list of fields. Traversal
      * is done in display order.
      * @param fields the fields to go over. Does not have to be sorted.
+     * @param exclude the fields to skip
      * @param l the listener to execute on each field values and structure.
      */
-
-    public static void walk( List<DatasetField> fields, Listener l ) {
+    public static void walk(List<DatasetField> fields, List<DatasetField> exclude, Listener l) {
         DatasetFieldWalker joe = new DatasetFieldWalker(l);
         for ( DatasetField dsf : sort( fields, DatasetField.DisplayOrder) ) {
-            joe.walk(dsf);
+            joe.walk(dsf, exclude);
         }
     }
     
@@ -66,10 +69,15 @@ public class DatasetFieldWalker {
         this( null );
     }
     
-    public void walk( DatasetField fld ) {
+    public void walk(DatasetField fld, List<DatasetField> exclude) {
         l.startField(fld);
         DatasetFieldType datasetFieldType = fld.getDatasetFieldType();
-        
+
+        List<String> excludeStrings = new ArrayList<>();
+        for (DatasetField datasetField : exclude) {
+            excludeStrings.add(datasetField.getDatasetFieldType().getName());
+        }
+
         if ( datasetFieldType.isControlledVocabulary() ) {
             for ( ControlledVocabularyValue cvv 
                     : sort(fld.getControlledVocabularyValues(), ControlledVocabularyValue.DisplayOrder) ) {
@@ -78,14 +86,17 @@ public class DatasetFieldWalker {
             
         } else if ( datasetFieldType.isPrimitive() ) {
             for ( DatasetFieldValue pv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
-                l.primitiveValue( pv );
+                // FIXME: Add exclusions elsewhere as needed.
+                if (!excludeStrings.contains(datasetFieldType.getName())) {
+                    l.primitiveValue(pv);
+                }
             }
             
         } else if ( datasetFieldType.isCompound() ) {
            for ( DatasetFieldCompoundValue dsfcv : sort( fld.getDatasetFieldCompoundValues(), DatasetFieldCompoundValue.DisplayOrder) ) {
                l.startCompoundValue(dsfcv);
                for ( DatasetField dsf : sort(dsfcv.getChildDatasetFields(), DatasetField.DisplayOrder ) ) {
-                   walk( dsf );
+                   walk(dsf, exclude);
                }
                l.endCompoundValue(dsfcv);
            }

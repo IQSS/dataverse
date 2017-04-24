@@ -186,7 +186,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        JsonObject jsonObject = JsonPrinter.json(block, fields).build();
+        JsonObject jsonObject = JsonPrinter.json(block, fields, Collections.emptyList()).build();
         assertNotNull(jsonObject);
 
         System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
@@ -198,7 +198,7 @@ public class JsonPrinterTest {
     }
 
     @Test
-    public void testDatasetContactOutOfBoxWithPrivacy() {
+    public void testDatasetContactWithPrivacy() {
         MetadataBlock block = new MetadataBlock();
         List<DatasetField> fields = new ArrayList<>();
         DatasetField datasetContactField = new DatasetField();
@@ -206,8 +206,9 @@ public class JsonPrinterTest {
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
         DatasetFieldCompoundValue val = new DatasetFieldCompoundValue();
         val.setParentDatasetField(datasetContactField);
+        DatasetField datasetContactEmailDatasetField = constructPrimitive("datasetContactEmail", "foo@bar.com");
         val.setChildDatasetFields(Arrays.asList(
-                constructPrimitive("datasetContactEmail", "foo@bar.com"),
+                datasetContactEmailDatasetField,
                 constructPrimitive("datasetContactName", "Foo Bar"),
                 constructPrimitive("datasetContactAffiliation", "Bar University")
         ));
@@ -215,14 +216,14 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        JsonObject jsonObject = JsonPrinter.json(block, fields).build();
+        JsonObject jsonObject = JsonPrinter.json(block, fields, Arrays.asList(datasetContactEmailDatasetField)).build();
         assertNotNull(jsonObject);
 
         System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
 
         assertEquals("Foo Bar", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactName").getString("value"));
         assertEquals("Bar University", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactAffiliation").getString("value"));
-        boolean issue3443Complete = false;
+        boolean issue3443Complete = true;
         if (issue3443Complete) {
             assertEquals(null, jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactEmail"));
         } else {

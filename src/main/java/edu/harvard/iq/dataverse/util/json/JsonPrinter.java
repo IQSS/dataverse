@@ -55,6 +55,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
@@ -67,6 +68,8 @@ import javax.json.JsonObject;
  * @author michael
  */
 public class JsonPrinter {
+
+    private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
 
     public static final BriefJsonPrinter brief = new BriefJsonPrinter();
 
@@ -406,7 +409,7 @@ public class JsonPrinter {
 
         for (Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet()) {
             MetadataBlock block = blockAndFields.getKey();
-            blocksBld.add(block.getName(), json(block, blockAndFields.getValue()));
+            blocksBld.add(block.getName(), json(block, blockAndFields.getValue(), Collections.emptyList()));
         }
         return blocksBld;
     }
@@ -419,13 +422,13 @@ public class JsonPrinter {
      * @param fields
      * @return JSON Object builder with the block and fields information.
      */
-    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields) {
+    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields, List<DatasetField> exclude) {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getDisplayName());
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
-        DatasetFieldWalker.walk(fields, new DatasetFieldsToJson(fieldsArray));
+        DatasetFieldWalker.walk(fields, exclude, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
         return blockBld;
