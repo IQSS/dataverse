@@ -74,7 +74,7 @@ Additional Tools
 
 Please see also the :doc:`/developers/tools` page, which lists additional tools that very useful but not essential.
 
-Setting up your dev environment
+Setting Up Your Dev Environment
 -------------------------------
 
 SSH keys
@@ -135,7 +135,7 @@ Once Solr is up and running you should be able to see a "Solr Admin" dashboard a
 
 Once some dataverses, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/schema/fields
 
-Run installer
+Run Installer
 ~~~~~~~~~~~~~
 
 Once you install Glassfish and PostgreSQL, you need to configure the environment for the Dataverse app - configure the database connection, set some options, etc. We have a new installer script that should do it all for you. Again, assuming that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects:
@@ -149,6 +149,18 @@ The script will prompt you for some configuration values. It is recommended that
 The script is a variation of the old installer from DVN 3.x that calls another script that runs ``asadmin`` commands. A serious advantage of this approach is that you should now be able to safely run the installer on an already configured system.
 
 All the future changes to the configuration that are Glassfish-specific and can be done through ``asadmin`` should now go into ``scripts/install/glassfish-setup.sh``.
+
+Rebuilding Your Dev Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you have an old copy of the database and old Solr data and want to start fresh, here are the recommended steps: 
+
+- drop your old database
+- clear out your existing Solr index: ``scripts/search/clear``
+- run the installer script above - it will create the db, deploy the app, populate the db with reference data and run all the scripts that create the domain metadata fields. You no longer need to perform these steps separately.
+- confirm you are using the latest Dataverse-specific Solr schema.xml per the "Installing and Running Solr" section of this guide
+- confirm http://localhost:8080 is up
+- If you want to set some dataset-specific facets, go to the root dataverse (or any dataverse; the selections can be inherited) and click "General Information" and make choices under "Select Facets". There is a ticket to automate this: https://github.com/IQSS/dataverse/issues/619
 
 Shibboleth and OAuth
 --------------------
@@ -171,14 +183,178 @@ For a list of possible values, please "find usages" on the settings key above an
 
 Now when you go to http://localhost:8080/oauth2/firstLogin.xhtml you should be prompted to create a Shibboleth account.
 
-Rebuilding your dev environment
--------------------------------
+Geoconnect
+----------
 
-If you have an old copy of the database and old Solr data and want to start fresh, here are the recommended steps: 
+Installation
+~~~~~~~~~~~~
 
-- drop your old database
-- clear out your existing Solr index: ``scripts/search/clear``
-- run the installer script above - it will create the db, deploy the app, populate the db with reference data and run all the scripts that create the domain metadata fields. You no longer need to perform these steps separately.
-- confirm you are using the latest Dataverse-specific Solr schema.xml per the "Installing and Running Solr" section of this guide
-- confirm http://localhost:8080 is up
-- If you want to set some dataset-specific facets, go to the root dataverse (or any dataverse; the selections can be inherited) and click "General Information" and make choices under "Select Facets". There is a ticket to automate this: https://github.com/IQSS/dataverse/issues/619
+Geoconnect works as a middle layer, allowing geospatial data files in Dataverse to be visualized with Harvard WorldMap. To setup a Geoconnect development environment, you can follow the steps outlined in the `set up file <https://github.com/IQSS/geoconnect/blob/master/local_setup.md>`_. You will need Python and a few other prerequisites, but it is a quick set up.
+
+Shapefile
+~~~~~~~~~
+
+A shapefile is a set of files, often uploaded/transferred in ``.zip`` format. This set may contain up to fifteen files. A minimum of three specific files (``.shp``, ``.shx``, ``.dbf``) are needed to be a valid shapefile and a fourth file (``.prj``) is required for WorldMap -- or any type of meaningful visualization.
+
+For ingest and connecting to WorldMap four files are the minimum required:
+
+- ``.shp`` - shape format; the feature geometry itself
+- ``.shx`` - shape index format; a positional index of the feature geometry to allow seeking forwards and backwards quickly
+- ``.dbf`` - attribute format; columnar attributes for each shape, in dBase IV format
+- ``.prj`` - projection format; the coordinate system and projection information, a plain text file describing the projection using well-known text format
+
+Ingest
+^^^^^^
+
+When uploaded to Dataverse the ``.zip`` is unpacked (same as all ``.zip`` files). Shapefile sets are recognized by the same base name and specific extensions. These individual files constitute a shapefile set. The first four are the minimum required (``.shp``, ``.shx``, ``.dbf``, ``.prj``)
+
+- bicycles.shp    (required extension)
+- bicycles.shx    (required extension)
+- bicycles.prj	(required extension)
+- bicycles.dbf	(required extension)
+- bicycles.sbx	(NOT required extension)
+- bicycles.sbn	(NOT required extension)
+
+Upon recognition of the four required files, Dataverse will group them as well as any other relevant files into a shapefile set. Files with these extensions will be included in the shapefile set:
+
+- Required: ``.shp``, ``.shx``, ``.dbf``, ``.prj``
+- Optional: ``.sbn``, ``.sbx``, ``.fbn``, ``.fbx``, ``.ain``, ``.aih``, ``.ixs``, ``.mxs``, ``.atx``, ``.cpg``, ``shp.xml``
+
+Then Dataverse creates a new ``.zip`` with mimetype as a shapefile. The shapefile set will persist as this new ``.zip``. Connected to this new set, a shapefile metadata block will be created containing file info: name, size, date.
+
+Example
+^^^^^^^
+
+1a. Original ``.zip`` contents:
+
+A file named ``bikes_and_subways.zip`` is uploaded to the Dataverse. This ``.zip`` contains the following files.
+
+- ``bicycles.shp``  (shapefile set #1)
+- ``bicycles.shx``  (shapefile set #1)
+- ``bicycles.prj``  (shapefile set #1)
+- ``bicycles.dbf``  (shapefile set #1)
+- ``bicycles.sbx``  (shapefile set #1)
+- ``bicycles.sbn``  (shapefile set #1)
+- ``bicycles.txt``
+- ``the_bikes.md``
+- ``readme.txt``
+- ``subway_line.shp``  (shapefile set #2)
+- ``subway_line.shx``  (shapefile set #2)
+- ``subway_line.prj``  (shapefile set #2)
+- ``subway_line.dbf``  (shapefile set #2)
+
+1b. Dataverse unzips and re-zips files:
+
+Upon ingest, Dataverse unpacks the file ``bikes_and_subways.zip``. Upon recognizing the shapefile sets, it groups those files together into new ``.zip`` files:
+
+- files making up the "bicycles" shapefile become a new ``.zip``
+- files making up the "subway_line" shapefile become a new ``.zip``
+- remaining files will stay as the are
+
+To ensure that a shapefile set remains intact--individual files such as ``bicycles.sbn`` are kept in the set -- even though they are not used for mapping.
+
+1c. Dataverse final file listing:
+
+- ``bicycles.zip`` (contains shapefile set #1: ``bicycles.shp``, ``bicycles.shx``, ``bicycles.prj``, ``bicycles.dbf``, ``bicycles.sbx``, ``bicycles.sbn``)
+- ``bicycles.txt``  (separate, not part of a shapefile set)
+- ``the_bikes.md``  (separate, not part of a shapefile set)
+- ``readme.txt``  (separate, not part of a shapefile set)
+- ``subway_line.zip``  (contains shapefile set #2: ``subway_line.shp``, ``subway_line.shx``, ``subway_line.prj``, ``subway_line.dbf``)
+
+For two "final" shapefile sets, ``bicycles.zip`` and ``subway_line.zip``, a new mimetype is used:
+
+- Mimetype: ``application/zipped-shapefile``
+- Mimetype Label: "Shapefile as ZIP Archive"
+
+WorldMap JoinTargets + API Endpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+WorldMap supplies target layers -- or JoinTargets that a tabular file may be mapped against. A JSON description of these CGA curated JoinTargets may be retrieved via API at ``http://worldmap.harvard.edu/datatables/api/jointargets/``. Please note, login required, may be any WorldMap account credentials via HTTP Basic Auth.
+
+Example of JoinTarget information returned via the API:
+
+.. code-block:: json
+
+    {
+	  "data":[
+	    {
+	      "layer":"geonode:census_tracts_2010_boston_6f6",
+	      "name":"Census Tracts, Boston (GEOID10: State+County+Tract)",
+	      "geocode_type_slug":"us-census-tract",
+	      "geocode_type":"US Census Tract",
+	      "attribute":{
+	        "attribute":"CT_ID_10",
+	        "type":"xsd:string"
+	      },
+	      "abstract":"As of the 2010 census, Boston, MA contains 7,288 city blocks [truncated for example]",
+	      "title":"Census Tracts 2010, Boston (BARI)",
+	      "expected_format":{
+	        "expected_zero_padded_length":-1,
+	        "is_zero_padded":false,
+	        "description":"Concatenation of state, county and tract for 2010 Census Tracts.  Reference: https://www.census.gov/geo/maps-data/data/tract_rel_layout.html\r\n\r\nNote:  Across the US, this can be a zero-padded \"string\" but the original Boston layer has this column as \"numeric\" ",
+	        "name":"2010 Census Boston GEOID10 (State+County+Tract)"
+	      },
+	      "year":2010,
+	      "id":28
+	    },
+	    {
+	      "layer":"geonode:addresses_2014_boston_1wr",
+	      "name":"Addresses, Boston",
+	      "geocode_type_slug":"boston-administrative-geography",
+	      "geocode_type":"Boston, Administrative Geography",
+	      "attribute":{
+	        "attribute":"LocationID",
+	        "type":"xsd:int"
+	      },
+	      "abstract":"Unique addresses present in the parcels data set, which itself is derived from [truncated for example]",
+	      "title":"Addresses 2015, Boston (BARI)",
+	      "expected_format":{
+	        "expected_zero_padded_length":-1,
+	        "is_zero_padded":false,
+	        "description":"Boston, Administrative Geography, Boston Address Location ID.  Example: 1, 2, 3...nearly 120000",
+	        "name":"Boston Address Location ID (integer)"
+	      },
+	      "year":2015,
+	      "id":18
+	    },
+	    {
+	      "layer":"geonode:bra_neighborhood_statistical_areas_2012__ug9",
+	      "name":"BRA Neighborhood Statistical Areas, Boston",
+	      "geocode_type_slug":"boston-administrative-geography",
+	      "geocode_type":"Boston, Administrative Geography",
+	      "attribute":{
+	        "attribute":"BOSNA_R_ID",
+	        "type":"xsd:double"
+	      },
+	      "abstract":"BRA Neighborhood Statistical Areas 2015, Boston. Provided by [truncated for example]",
+	      "title":"BRA Neighborhood Statistical Areas 2015, Boston (BARI)",
+	      "expected_format":{
+	        "expected_zero_padded_length":-1,
+	        "is_zero_padded":false,
+	        "description":"Boston, Administrative Geography, Boston BRA Neighborhood Statistical Area ID (integer).  Examples: 1, 2, 3, ... 68, 69",
+	        "name":"Boston BRA Neighborhood Statistical Area ID (integer)"
+	      },
+	      "year":2015,
+	      "id":17
+	    }
+	  ],
+	  "success":true
+    }
+
+How Geoconnect Uses Join Target
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When a user attempts to map a tabular file, the application looks in the Geoconnect database for ``JoinTargetInformation``. If this information is more than 10 minutes* old, the application will retrieve fresh information and save it to the db.
+(* Change the timing via the variable ``JOIN_TARGET_UPDATE_TIME``.)
+
+This JoinTarget info is used to populate HTML forms used to match a tabular file column to a JoinTarget column. Once a JoinTarget is chosen, the JoinTarget ID is an essential piece of information used to make an API call to the WorldMap and attempt to map the file.
+
+Calling API Endpoint
+^^^^^^^^^^^^^^^^^^^^
+
+The ``get_join_targets()`` function in ``dataverse_layer_services.py`` uses the WorldMap API, retrieve a list of available tabular file JointTargets. (See the `dataverse_layer_services code in GitHub <https://github.com/IQSS/geoconnect/blob/master/gc_apps/worldmap_connect/dataverse_layer_services.py#L275>`_.)
+
+Saving JoinTargetInformation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``get_latest_jointarget_information()`` in ``utils.py`` retrieves recent JoinTarget Information from the database. (See the `utils code in GitHub <https://github.com/IQSS/geoconnect/blob/master/gc_apps/worldmap_connect/utils.py#L16>`_.)
