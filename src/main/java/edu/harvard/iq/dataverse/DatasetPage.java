@@ -85,6 +85,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
@@ -266,9 +267,10 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void launchCompute() throws IOException{
-        String url="http://128.31.25.208:3000/dvinput/container";
-        
+        String url = "http://128.31.25.208:3000/dvinput/container";
         CloseableHttpClient client = HttpClients.createDefault();
+        String cookies;
+        
         HttpPost post = new HttpPost(url);
         
         JSONObject json = new JSONObject();
@@ -284,7 +286,13 @@ public class DatasetPage implements java.io.Serializable {
             throw new RuntimeException("Failed : HTTP error code : "
                     + response.getStatusLine().getStatusCode());
         } else {
+            cookies = response.getFirstHeader("Set-Cookie") == null ? "" :
+                     response.getFirstHeader("Set-Cookie").getValue();
+            
             ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+            System.out.println(cookies);
+            String[] parts=cookies.split(";")[0].split("=");
+            externalContext.addResponseCookie(parts[0], parts[1], null);
             externalContext.redirect("http://128.31.25.208:3000/");
         }
         
