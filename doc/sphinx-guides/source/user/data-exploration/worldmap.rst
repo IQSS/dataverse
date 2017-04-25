@@ -59,7 +59,7 @@ Next, you'll need to let Dataverse know that your tabular file contains geospati
 
 **3. Publish & Map Data**
 
-At this point, a "Map data" button will appear next to your file. You will then need to publish this new version of your dataset before you can use this button.
+At this point, a "Map data" button will appear next to your file. Publish this new version of your dataset to activate this button.
 
 |image3|
 
@@ -103,7 +103,7 @@ The following screenshots illustrate the mapping process:
 
 **6. View Results**
 
-At this point you will be presented with a basic map that you will then be able to style to your specifications. The example pictured below includes an error message - some of the rows weren't able to be matched properly. In this case, you could still go forward with your map, but without the information from the unmatched rows.
+At this point you will be presented with a basic map that can be styled to your specifications. The example pictured below includes an error message - some of the rows weren't able to be matched properly. In this case, you could still go forward with your map, but without the information from the unmatched rows.
 
 |image9|
 
@@ -111,12 +111,14 @@ Finalizing your map
 -------------------
 
 Now that you have created your map:
-- It exists on the WorldMap platform and may be viewed there -- with all of WorldMap's capabilities
-- Dataverse will contain a preview of the map and links to the larger version on WorldMap
+
+- It exists on the WorldMap platform and may be viewed there -- with all of WorldMap's capabilities.
+
+- Dataverse will contain a preview of the map and links to the larger version on WorldMap.
 
 The map editor (pictured above) provides a set of options you can use to style your map. The "Return to the Dataverse" button saves your map and brings you back to Dataverse. "View on WorldMap" takes you to the map's page on WorldMap, which offers additional views and options. 
 
-If you'd like to make further changes to your map in the future, you can return to the editor by clicking the "Map Data" button on your file.
+If you'd like to make future changes to your map, you can return to the editor by clicking the "Map Data" button on your file.
 
 Removing your map
 -----------------
