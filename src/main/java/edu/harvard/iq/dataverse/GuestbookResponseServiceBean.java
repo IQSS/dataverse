@@ -71,7 +71,7 @@ public class GuestbookResponseServiceBean {
                 + " where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
-                + " and m.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
+                + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + "  and m.datafile_id = r.datafile_id "
                 + "  and r.dataset_id = o.id "
                 + "  and r.guestbook_id = g.id "
@@ -89,7 +89,7 @@ public class GuestbookResponseServiceBean {
                 + " where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
-                + " and m.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
+                + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + "  and m.datafile_id = r.datafile_id "
                 + "  and r.dataset_id = o.id "
                 + "  and r.guestbook_id = g.id "
@@ -158,7 +158,7 @@ public class GuestbookResponseServiceBean {
                 + " where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
-                + " and m.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
+                + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + "  and m.datafile_id = r.datafile_id "
                 + "  and r.dataset_id = o.id "
                 + " and  o.owner_id = "
@@ -409,13 +409,15 @@ public class GuestbookResponseServiceBean {
         } else {
             workingVersion = dataset.getLatestVersion();
         }
-
+       
        
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         
         if(workingVersion != null && workingVersion.isDraft()){           
             guestbookResponse.setWriteResponse(false);
         } 
+        
+       // guestbookResponse.setDatasetVersion(workingVersion);
         
         if (fileMetadata != null){
            guestbookResponse.setDataFile(fileMetadata.getDataFile());
@@ -440,6 +442,7 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDownloadtype("Download");
 
         guestbookResponse.setDataset(dataset);
+        
         
         return guestbookResponse;
     }
