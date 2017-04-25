@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -14,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -26,15 +26,14 @@ import java.util.logging.Logger;
  * @author michael
  */
 @RequiredPermissions(Permission.PublishDataset)
-public class FinalizeDatasetPublicationCommand extends AbstractCommand<Dataset> {
+public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
-
-    private final Dataset theDataset;
-    private final String doiProvider;
-
+    
+    String doiProvider;
+    
     public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest) {
-        super(aRequest, aDataset);
+        super(aDataset, aRequest);
         theDataset = aDataset;
         doiProvider = aDoiProvider;
     }
@@ -56,7 +55,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractCommand<Dataset> 
         ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
 
         // TODO SBG: remove lock
-        // TODO SBG: if exists, start the post-release workflow
+        
+        ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset)
+                .ifPresent(wf -> ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset)));
         
         return ctxt.em().merge(theDataset);
     }
@@ -76,7 +77,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractCommand<Dataset> 
             // Just like with indexing, a failure to export is not a fatal
             // condition. We'll just log the error as a warning and keep
             // going:
-            logger.log(Level.WARNING, "Exception while exporting:{0}", ex.getMessage());
+            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
         }
     }
 

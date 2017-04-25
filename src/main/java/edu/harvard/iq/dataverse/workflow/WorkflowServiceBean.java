@@ -1,7 +1,11 @@
 package edu.harvard.iq.dataverse.workflow;
 
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
@@ -40,6 +44,9 @@ public class WorkflowServiceBean {
     @EJB
     RoleAssigneeServiceBean roleAssignees;
 
+    @EJB
+    EjbDataverseEngine engine;
+    
     final Map<String, WorkflowStepSPI> providers = new HashMap<>();
 
     public WorkflowServiceBean() {
@@ -70,10 +77,34 @@ public class WorkflowServiceBean {
      * java.lang.String)
      */
     public void resume(PendingWorkflowInvocation pending, String body) {
-        em.remove(pending);
+        em.remove(em.merge(pending));
         doResume(pending, body);
     }
+    
+    @Asynchronous
+    private void forward(Workflow wf, WorkflowContext ctxt, int idx) {
+        WorkflowStepData wsd = wf.getSteps().get(idx);
+        WorkflowStep step = createStep(wsd);
+        WorkflowStepResult res = step.run(ctxt);
+        logger.info("WSB#forward " + wf.getId() + ":" + idx + " -> " + res); // TODO SBG: remove
+        
+        if (res == WorkflowStepResult.OK) {
+            if (idx == wf.getSteps().size() - 1) {
+                workflowCompleted(wf, ctxt);
+            } else {
+                forward(wf, ctxt, ++idx);
+            }
 
+        } else if (res instanceof Failure) {
+            logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure) res).getReason()});
+            rollback(wf, ctxt, (Failure) res, idx - 1);
+
+        } else if (res instanceof Pending) {
+            pauseAndAwait(wf, ctxt, (Pending) res, idx);
+        }
+
+    }
+    
     @Asynchronous
     private void doResume(PendingWorkflowInvocation pending, String body) {
         Workflow wf = pending.getWorkflow();
@@ -88,29 +119,6 @@ public class WorkflowServiceBean {
             pauseAndAwait(wf, ctxt, (Pending) res, pending.getPendingStepIdx());
         }
         forward(wf, ctxt, pending.getPendingStepIdx() + 1);
-    }
-
-    @Asynchronous
-    private void forward(Workflow wf, WorkflowContext ctxt, int idx) {
-        WorkflowStepData wsd = wf.getSteps().get(idx);
-        WorkflowStep step = createStep(wsd);
-        WorkflowStepResult res = step.run(ctxt);
-        if (res != WorkflowStepResult.OK) {
-            if (res == WorkflowStepResult.OK) {
-                if (idx == wf.getSteps().size() - 1) {
-                    workflowCompleted(wf, ctxt);
-                } else {
-                    forward(wf, ctxt, ++idx);
-                }
-
-            } else if (res instanceof Failure) {
-                logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure) res).getReason()});
-                rollback(wf, ctxt, (Failure) res, idx - 1);
-
-            } else if (res instanceof Pending) {
-                pauseAndAwait(wf, ctxt, (Pending) res, idx);
-            }
-        }
     }
 
     @Asynchronous
@@ -131,7 +139,15 @@ public class WorkflowServiceBean {
 
     @Asynchronous
     private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
-        // TODO SBGrid: if this is a "pre-release" workflow, execute the finalize publication command.
+        logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
+        if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+            try {
+                engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getDoiProvider(), ctxt.getRequest()) );
+            } catch (CommandException ex) {
+                logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
+                rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
+            }
+        }
     }
 
     public List<Workflow> listWorkflows() {

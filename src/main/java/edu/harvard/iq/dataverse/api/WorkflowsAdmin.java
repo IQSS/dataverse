@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.Arrays;
 import java.util.Optional;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -29,7 +28,6 @@ import javax.ws.rs.core.Response;
  * @author michael
  */
 @Path("admin/workflows")
-@Stateless
 public class WorkflowsAdmin extends AbstractApiBean {
     
     @EJB
@@ -63,7 +61,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
             Optional<Workflow> wf = workflows.getWorkflow(idtf);
             if ( wf.isPresent() ) {
                 workflows.setDefaultWorkflowId(tt, idtf);
-                return ok("Default workflow id set to " + idtf);
+                return ok("Default workflow id for trigger " + tt.name() + " set to " + idtf);
             } else {
                 return notFound("Can't find workflow with id " + idtf);
             }
@@ -104,7 +102,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
     public Response deleteDefault(@PathParam("triggerType") String triggerType) {
         try {
             workflows.setDefaultWorkflowId(TriggerType.valueOf(triggerType), null);
-            return ok("default workflow unset");
+            return ok("default workflow for trigger " + triggerType + " unset.");
         } catch ( IllegalArgumentException iae ) {
             return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()) );
         }

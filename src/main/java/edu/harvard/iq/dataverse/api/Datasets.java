@@ -57,6 +57,9 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -385,6 +388,26 @@ public class Datasets extends AbstractApiBean {
         return publishDataset(id, type);
     }
 
+    // TODO SBG: Delete me
+    @EJB
+    WorkflowServiceBean workflows;
+    
+    @PUT
+    @Path("{id}/actions/wf/{wfid}")
+    public Response DELETEME(@PathParam("id") String id, @PathParam("wfid") String wfid) {
+        try {
+            Workflow wf = workflows.getWorkflow(Long.parseLong(wfid)).get();
+            Dataset ds = findDatasetOrDie(id);
+            WorkflowContext ctxt = new WorkflowContext(createDataverseRequest(findUserOrDie()), ds, 0, 0, WorkflowContext.TriggerType.PostPublishDataset, "DataCite");
+            workflows.start(wf, ctxt);
+            return ok("Started workflow " + wf.getName() + " on dataset " + ds.getId() );
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    // TODO SBG: /Delete me
+    
     @POST
     @Path("{id}/actions/:publish")
     public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {

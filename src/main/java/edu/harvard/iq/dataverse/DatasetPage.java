@@ -1525,7 +1525,7 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
                 }
-                dataset = commandEngine.submit(cmd).getDataset(); // TODO SBGrid: this might need to change to "release workflow in progress.
+                dataset = commandEngine.submit(cmd).getDataset(); // TODO SBG: this might need to change to "release workflow in progress.
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 if (notifyPublish) {
                     List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);

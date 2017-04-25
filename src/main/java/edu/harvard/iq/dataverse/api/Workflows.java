@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -29,7 +28,7 @@ public class Workflows extends AbstractApiBean {
     public Response resumeWorkflow( @PathParam("invocationId") String invocationId, String body ) {
         PendingWorkflowInvocation pending = workflows.getPendingWorkflow(invocationId);
         
-        // TODO see that the request came from an OK ip address
+        // TODO SBG: see that the request came from an OK ip address
         Logger.getLogger(Workflows.class.getName()).log(Level.INFO, "Resume request from: {0}", httpRequest.getRemoteAddr());
         
         if ( pending == null ) {

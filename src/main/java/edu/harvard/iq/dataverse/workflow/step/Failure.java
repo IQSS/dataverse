@@ -14,6 +14,11 @@ public class Failure implements WorkflowStepResult {
         this(reason, reason);
     }
     
+    /**
+     * Constructs a new failure message.
+     * @param reason Technical reason (for logs etc.).
+     * @param message Human readable reason.
+     */
     public Failure(String reason, String message) {
         this.reason = reason;
         this.message = message;
@@ -34,4 +39,11 @@ public class Failure implements WorkflowStepResult {
     public String getMessage() {
         return message;
     }
+
+    @Override
+    public String toString() {
+        return "WorkflowStepResult.Failure{" + "reason=" + reason + ", message=" + message + '}';
+    }
+    
+    
 }

@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -16,7 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
-import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -29,15 +28,14 @@ import java.util.ResourceBundle;
  * @author michbarsinai
  */
 @RequiredPermissions(Permission.PublishDataset)
-public class PublishDatasetCommand extends AbstractCommand<PublishDatasetResult> {
-    
-    
-    private static final String DEFAULT_DOI_PROVIDER_KEY = "";
-    boolean minorRelease = false;
-    Dataset theDataset;
+public class PublishDatasetCommand extends AbstractPublishDatasetCommand<PublishDatasetResult> {
 
+    private static final String DEFAULT_DOI_PROVIDER_KEY = "";
+
+    boolean minorRelease;
+    
     public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor) {
-        super(aRequest, datasetIn);
+        super(datasetIn, aRequest);
         minorRelease = minor;
         theDataset = datasetIn;
     }
@@ -64,7 +62,7 @@ public class PublishDatasetCommand extends AbstractCommand<PublishDatasetResult>
             theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
             theDataset.getEditVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
             
-        } else /* major, non-first, release */ {
+        } else /* major, non-first release */ {
             theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
             theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
         }
@@ -91,22 +89,14 @@ public class PublishDatasetCommand extends AbstractCommand<PublishDatasetResult>
         ddu.setLastUpdateDate((Timestamp) updateTime);
         ctxt.em().merge(ddu);
         
-        Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(WorkflowContext.TriggerType.PrePublishDataset);
+        Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         if ( prePubWf.isPresent() ) {
-            ctxt.workflows().start(prePubWf.get(), buildContext(doiProvider) );
+            ctxt.workflows().start(prePubWf.get(), buildContext(doiProvider, TriggerType.PrePublishDataset) );
             return new PublishDatasetResult(theDataset, false);
         } else {
-            theDataset = ctxt.engine().submit( new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()));
+            theDataset = ctxt.engine().submit( new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()) );
             return new PublishDatasetResult(ctxt.em().merge(theDataset), true);
         }
-    }
-    
-    private WorkflowContext buildContext( String doiProvider ) {
-        return new WorkflowContext(getRequest(), theDataset, 
-                theDataset.getEditVersion().getVersionNumber(), 
-                theDataset.getEditVersion().getMinorVersionNumber(),
-                WorkflowContext.TriggerType.PrePublishDataset, 
-                doiProvider);
     }
     
     private void updateFiles(Timestamp updateTime, CommandContext ctxt) {

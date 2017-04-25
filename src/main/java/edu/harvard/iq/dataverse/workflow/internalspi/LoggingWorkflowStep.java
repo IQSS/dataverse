@@ -28,6 +28,7 @@ public class LoggingWorkflowStep implements WorkflowStep {
         logger.info("Logging step:");
         logger.log(Level.INFO, "Invocation id {0}", context.getInvocationId());
         logger.log(Level.INFO, "Dataset id:{0}", context.getDataset().getId());
+        logger.log(Level.INFO, "Trigger Type {0}", context.getType());
         logger.log(Level.INFO, "Next version:{0}.{1} isMinor:{2}",
                     new Object[]{context.getNextVersionNumber(), context.getNextMinorVersionNumber(), context.isMinorRelease()});
         params.entrySet().forEach(kv->logger.log(Level.INFO, "{0} -> {1}", new Object[]{kv.getKey(), kv.getValue()}) );

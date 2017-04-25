@@ -15,5 +15,11 @@ public class Pending implements WorkflowStepResult {
     public Map<String, String> getData() {
         return data;
     }
+
+    @Override
+    public String toString() {
+        return "WorkflowStepResult.Pending{" + "data=" + data + '}';
+    }
+    
     
 }

@@ -69,7 +69,7 @@ public abstract class AbstractApiBean {
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     public static final String STATUS_ERROR = "ERROR";
     public static final String STATUS_OK = "OK";
-    public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN-accPROGRESS";
+    public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
 
     /**
      * Utility class to convey a proper error response using Java's exceptions.
