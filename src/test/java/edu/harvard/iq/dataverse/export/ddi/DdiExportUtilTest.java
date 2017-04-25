@@ -76,19 +76,18 @@ public class DdiExportUtilTest {
         }
     }
 
-    static class MockSettingsSvc extends SettingsServiceBean {
+    private static class MockSettingsSvc extends SettingsServiceBean {
 
         @Override
-        public String getValueForKey(SettingsServiceBean.Key key) {
+        public boolean isTrueForKey(SettingsServiceBean.Key key, boolean defaultValue) {
             switch (key) {
-                // FIXME: move this to a new Override for isTrueForKey
                 case ExcludeDatasetContactEmailFromExport:
-                    return "true";
+                    return true;
                 default:
-                    break;
+                    return false;
             }
-            return null;
         }
+
     }
 
 }

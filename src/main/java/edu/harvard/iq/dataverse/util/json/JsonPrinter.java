@@ -421,8 +421,7 @@ public class JsonPrinter {
 
         List<DatasetField> exclude = new ArrayList<>();
         if (settingsService != null) {
-            // FIXME: really we should use isTrueForKey instead. Also look out for a NullPointerException here.
-            if ("true".equals(settingsService.getValueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport))) {
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport, false)) {
                 exclude.add(getdatasetContactEmailDatasetField());
             }
         }
@@ -456,8 +455,7 @@ public class JsonPrinter {
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
         if (settingsService != null) {
-            // FIXME: really we should use isTrueForKey instead. Also look out for a NullPointerException here.
-            if (!"true".equals(settingsService.getValueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport))) {
+            if (!settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport, false)) {
                 exclude = Collections.emptyList();
             }
         }

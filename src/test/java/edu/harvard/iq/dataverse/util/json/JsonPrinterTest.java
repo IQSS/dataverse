@@ -235,7 +235,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        JsonPrinter jsonPrinter = new JsonPrinter(new JsonParserTest.MockSettingsSvc());
+        JsonPrinter jsonPrinter = new JsonPrinter(new MockSettingsSvc());
 
         JsonObject jsonObject = JsonPrinter.json(block, fields, Arrays.asList(datasetContactEmailDatasetField)).build();
         assertNotNull(jsonObject);
@@ -260,6 +260,20 @@ public class JsonPrinterTest {
         retVal.setDatasetFieldType(datasetFieldTypeSvc.findByName(datasetFieldTypeName));
         retVal.setDatasetFieldValues(Collections.singletonList(new DatasetFieldValue(retVal, value)));
         return retVal;
+    }
+
+    private static class MockSettingsSvc extends SettingsServiceBean {
+
+        @Override
+        public boolean isTrueForKey(SettingsServiceBean.Key key, boolean defaultValue) {
+            switch (key) {
+                case ExcludeDatasetContactEmailFromExport:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
     }
 
 }

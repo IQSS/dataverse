@@ -593,9 +593,17 @@ public class DdiExportUtil {
                                     datasetContactAffiliation =  next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.datasetContactEmail.equals(next.getTypeName())) {
-                                    if (settingsService == null) {
-                                        datasetContactEmail = next.getSinglePrimitive();
-                                    } else if (!"true".equals(settingsService.getValueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport))) {
+                                    /**
+                                     * FIXME: after fixing the null pointer in
+                                     * testExportDataset in DDIExporterTest we
+                                     * could try removing this logic as well as
+                                     * the datasetDtoAsJson2ddi method above.
+                                     * Right now, that method is the only way to
+                                     * test with JUnit.
+                                     */
+                                    if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport, false)) {
+                                        // no-op
+                                    } else {
                                         datasetContactEmail = next.getSinglePrimitive();
                                     }
                                 }
