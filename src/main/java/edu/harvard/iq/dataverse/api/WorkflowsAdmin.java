@@ -121,11 +121,11 @@ public class WorkflowsAdmin extends AbstractApiBean {
         }
     }
     
-    @Path("/{identifier}")
+    @Path("/{id}")
     @DELETE
-    public Response deleteWorkflow(@PathParam("identifier") String identifier ) {
+    public Response deleteWorkflow(@PathParam("id") String id ) {
         try {
-            long idtf = Long.parseLong(identifier);
+            long idtf = Long.parseLong(id);
             return workflows.deleteWorkflow(idtf) ? notFound("workflow with id " + idtf + " not found") 
                                  : ok("Workflow " + idtf + " deleted"); 
         } catch (NumberFormatException nfe) {

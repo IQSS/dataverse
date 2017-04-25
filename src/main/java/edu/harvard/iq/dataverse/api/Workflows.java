@@ -37,6 +37,6 @@ public class Workflows extends AbstractApiBean {
         
         workflows.resume( pending, body );
         
-        return Response.accepted("/api/datasets/" + pending.getDataset().getIdentifier() ).build();
+        return Response.accepted("/api/datasets/" + pending.getDataset().getId() ).build();
     }
 }

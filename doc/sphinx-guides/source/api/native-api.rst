@@ -168,11 +168,16 @@ Updates the current draft version of dataset ``$id``. If the dataset does not ha
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0)::
+Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
 
 .. note:: POST should be used to publish a dataset. GET is supported for backward compatibility but is deprecated and may be removed: https://github.com/IQSS/dataverse/issues/2431
+
+.. note:: When there are no default workflows, a successful publication process will result in ``200 OK`` response. When there are workflows, it is impossible for Dataverse to know
+          how long they are going to take and whether they will succeed or not (recall that some stages might require human intervention). Thus, 
+          a ``202 ACCEPTED`` is returned immediately. To know whether the publication process succeeded or not, the client code has to check the status of the dataset periodically,
+          or perform some push request in the post-publish workflow.
 
 Deletes the draft version of dataset ``$id``. Only the draft version can be deleted::
 
