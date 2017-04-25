@@ -124,31 +124,21 @@ Removing your map
 You can delete your map at any time. If you are on Dataverse, click "Map Data" and click the "Delete Map" button on the upper right. This completely removes the map and underlying data from the WorldMap platform.
 
 
-
-
-
-
-
-
-
-
-
-
-.. |image1| image:: .\img\geoconnect-tabular-1.png
+.. |image1| image:: ./img/geoconnect-tabular-1.png
    :class: img-responsive
-.. |image2| image:: .\img\geoconnect-tabular-2.png
+.. |image2| image:: ./img/geoconnect-tabular-2.png
    :class: img-responsive
-.. |image3| image:: .\img\geoconnect-tabular-3.png
+.. |image3| image:: ./img/geoconnect-tabular-3.png
    :class: img-responsive
-.. |image4| image:: .\img\geoconnect-tabular-4.png
+.. |image4| image:: ./img/geoconnect-tabular-4.png
    :class: img-responsive
-.. |image5| image:: .\img\geoconnect-tabular-5.png
+.. |image5| image:: ./img/geoconnect-tabular-5.png
    :class: img-responsive
-.. |image6| image:: .\img\geoconnect-tabular-6.png
+.. |image6| image:: ./img/geoconnect-tabular-6.png
    :class: img-responsive
-.. |image7| image:: .\img\geoconnect-tabular-7.png
+.. |image7| image:: ./img/geoconnect-tabular-7.png
    :class: img-responsive
-.. |image8| image:: .\img\geoconnect-tabular-8.png
+.. |image8| image:: ./img/geoconnect-tabular-8.png
    :class: img-responsive
-.. |image9| image:: .\img\geoconnect-tabular-9.png
+.. |image9| image:: ./img/geoconnect-tabular-9.png
    :class: img-responsive
