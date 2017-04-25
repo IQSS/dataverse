@@ -231,6 +231,8 @@ public class DatasetPage implements java.io.Serializable {
     private String dataverseSiteUrl = ""; 
     
     private boolean removeUnusedTags;
+    
+    private boolean computeLaunchStatus = false;
 
     public boolean isRemoveUnusedTags() {
         return removeUnusedTags;
@@ -266,8 +268,13 @@ public class DatasetPage implements java.io.Serializable {
         cart.removeItem(title);
     }
     
+    public boolean getComputeStatus(){
+        return computeLaunchStatus;
+    }
+    
     public void launchCompute() throws IOException{
-        String url = "http://128.31.25.208:3000/dvinput/container";
+        
+        String url = BundleUtil.getStringFromBundle("dataset.compute.link")+BundleUtil.getStringFromBundle("dataset.compute.linkapi");
         CloseableHttpClient client = HttpClients.createDefault();
         String cookies;
         
@@ -283,9 +290,11 @@ public class DatasetPage implements java.io.Serializable {
         
         HttpResponse response = client.execute(post);
         if (response.getStatusLine().getStatusCode() != 200) {
+            computeLaunchStatus=true;
             throw new RuntimeException("Failed : HTTP error code : "
                     + response.getStatusLine().getStatusCode());
         } else {
+            computeLaunchStatus=false;
             cookies = response.getFirstHeader("Set-Cookie") == null ? "" :
                      response.getFirstHeader("Set-Cookie").getValue();
             
@@ -293,7 +302,7 @@ public class DatasetPage implements java.io.Serializable {
             System.out.println(cookies);
             String[] parts=cookies.split(";")[0].split("=");
             externalContext.addResponseCookie(parts[0], parts[1], null);
-            externalContext.redirect("http://128.31.25.208:3000/");
+            externalContext.redirect(BundleUtil.getStringFromBundle("dataset.compute.link"));
         }
         
         

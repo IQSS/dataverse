@@ -1175,14 +1175,20 @@
                                 <!--<f:facet name = "header">Delete</f:facet>-->
                                 <p:commandLink type="button" class="btn btn-default"
                                                  value = "Delete" 
-                                                 action = "#{DatasetPage.removeCartItem(o)}" update=":datasetForm"/>     
+                                                 action = "#{DatasetPage.removeCartItem(o)}" update="@form"/>     
                               
                             </h:column>
                         </h:dataTable>
                         <div class="button-block">
                             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle['dataset.compute.computeBtn']}"
-                                           action="#{DatasetPage.launchCompute}"
-                                           rendered="#{DatasetPage.getItems().size() > 0}" />
+                                           actionListener="#{DatasetPage.launchCompute}"
+                                           rendered="#{DatasetPage.getItems().size() > 0}" oncomplete="PF('computefail').show();bind_bsui_components();"
+                                               update="computefail">
+                            
+                            </p:commandLink>
+                            <p:dialog header="Compute" id="computefail" widgetVar="computefail" rendered="#{DatasetPage.getComputeStatus()}">
+                                <h:outputText value="#{bundle['dataset.compute.error']}" />
+                            </p:dialog>
                             <button type="button" class="btn btn-default" onclick="PF('cartDatasetForm').hide();PF('blockDatasetForm').hide();">
                                 #{bundle.cancel}
                             </button>
