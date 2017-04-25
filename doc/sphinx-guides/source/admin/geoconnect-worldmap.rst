@@ -17,12 +17,6 @@ SQL commands to point a Dataverse installation at different Geoconnect servers:
 
     update worldmapauth_tokentype set mapitlink = 'https://geoconnect.datascience.iq.harvard.edu/shapefile/map-it', hostname='geoconnect.datascience.iq.harvard.edu' where name = 'GEOCONNECT';
 
-**Heroku Production** *geoconnect.datascience.iq.harvard.edu*
-
-.. code-block:: sql
-
-    update worldmapauth_tokentype set mapitlink = 'https://geoconnect-prod.herokuapp.com/shapefile/map-it', hostname='geoconnect-dev.herokuapp.com' where name = 'GEOCONNECT';
-
 **Heroku Test** *geoconnect-dev.herokuapp.com*
 
 .. code-block:: sql
@@ -30,7 +24,7 @@ SQL commands to point a Dataverse installation at different Geoconnect servers:
     update worldmapauth_tokentype set mapitlink = 'https://geoconnect-dev.herokuapp.com/shapefile/map-it', hostname='geoconnect-dev.herokuapp.com' where name = 'GEOCONNECT';
 
 
-**Current Setting**
+**View Current Settings**
 
 .. code-block:: sql
 

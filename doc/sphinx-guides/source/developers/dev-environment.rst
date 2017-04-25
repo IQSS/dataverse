@@ -186,13 +186,13 @@ Now when you go to http://localhost:8080/oauth2/firstLogin.xhtml you should be p
 Geoconnect
 ----------
 
-Installation
-~~~~~~~~~~~~
+Set Up
+~~~~~~
 
-Geoconnect works as a middle layer, allowing geospatial data files in Dataverse to be visualized with Harvard WorldMap. To set up a Geoconnect development environment, you can follow the steps outlined in the `set up file <https://github.com/IQSS/geoconnect/blob/master/local_setup.md>`_ guide. You will need Python and a few other prerequisites, but it is a quick setup.
+Geoconnect works as a middle layer, allowing geospatial data files in Dataverse to be visualized with Harvard WorldMap. To set up a Geoconnect development environment, you can follow the steps outlined in the `local_setup.md <https://github.com/IQSS/geoconnect/blob/master/local_setup.md>`_ guide. You will need Python and a few other prerequisites.
 
-Shapefile
-~~~~~~~~~
+How Dataverse Ingests Shapefiles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A shapefile is a set of files, often uploaded/transferred in ``.zip`` format. This set may contain up to fifteen files. A minimum of three specific files (``.shp``, ``.shx``, ``.dbf``) are needed to be a valid shapefile and a fourth file (``.prj``) is required for WorldMap -- or any type of meaningful visualization.
 
@@ -222,7 +222,7 @@ Upon recognition of the four required files, Dataverse will group them as well a
 - Required: ``.shp``, ``.shx``, ``.dbf``, ``.prj``
 - Optional: ``.sbn``, ``.sbx``, ``.fbn``, ``.fbx``, ``.ain``, ``.aih``, ``.ixs``, ``.mxs``, ``.atx``, ``.cpg``, ``shp.xml``
 
-Then Dataverse creates a new ``.zip`` with mimetype as a shapefile. The shapefile set will persist as this new ``.zip``. Connected to this new set, a shapefile metadata block will be created containing file info: name, size, date.
+Then Dataverse creates a new ``.zip`` with mimetype as a shapefile. The shapefile set will persist as this new ``.zip``.
 
 Example
 ^^^^^^^
@@ -271,7 +271,7 @@ For two "final" shapefile sets, ``bicycles.zip`` and ``subway_line.zip``, a new 
 WorldMap JoinTargets + API Endpoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-WorldMap supplies target layers -- or JoinTargets -- that a tabular file may be mapped against. A JSON description of these CGA curated JoinTargets may be retrieved via API at ``http://worldmap.harvard.edu/datatables/api/jointargets/``. Please note: login is required, may be any WorldMap account credentials via HTTP Basic Auth.
+WorldMap supplies target layers -- or JoinTargets -- that a tabular file may be mapped against. A JSON description of these CGA curated JoinTargets may be retrieved via API at ``http://worldmap.harvard.edu/datatables/api/jointargets/``. Please note: login is required. You may use any WorldMap account credentials via HTTP Basic Auth.
 
 Example of JoinTarget information returned via the API:
 
@@ -343,21 +343,21 @@ Example of JoinTarget information returned via the API:
 	  "success":true
     }
 
-How Geoconnect Uses Join Target
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How Geoconnect Uses Join Target Information
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When a user attempts to map a tabular file, the application looks in the Geoconnect database for ``JoinTargetInformation``. If this information is more than 10 minutes* old, the application will retrieve fresh information and save it to the db.
 
-(* Change the timing via the variable ``JOIN_TARGET_UPDATE_TIME``.)
+(* Change the timing via the Django settings variable ``JOIN_TARGET_UPDATE_TIME``.)
 
 This JoinTarget info is used to populate HTML forms used to match a tabular file column to a JoinTarget column. Once a JoinTarget is chosen, the JoinTarget ID is an essential piece of information used to make an API call to the WorldMap and attempt to map the file.
 
-Calling API Endpoint
-^^^^^^^^^^^^^^^^^^^^
+Retrieving Join Target Information from WorldMap API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``get_join_targets()`` function in ``dataverse_layer_services.py`` uses the WorldMap API, retrieves a list of available tabular file JointTargets. (See the `dataverse_layer_services code in GitHub <https://github.com/IQSS/geoconnect/blob/master/gc_apps/worldmap_connect/dataverse_layer_services.py#L275>`_.)
 
-Saving JoinTargetInformation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Saving Join Target Information to Geoconnect Database
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``get_latest_jointarget_information()`` in ``utils.py`` retrieves recent JoinTarget Information from the database. (See the `utils code in GitHub <https://github.com/IQSS/geoconnect/blob/master/gc_apps/worldmap_connect/utils.py#L16>`_.)
