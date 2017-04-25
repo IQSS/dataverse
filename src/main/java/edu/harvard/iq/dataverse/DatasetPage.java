@@ -232,7 +232,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private boolean removeUnusedTags;
     
-    private boolean computeLaunchStatus = false;
+    private boolean computeLaunchStatus = true;
 
     public boolean isRemoveUnusedTags() {
         return removeUnusedTags;
@@ -291,7 +291,9 @@ public class DatasetPage implements java.io.Serializable {
         HttpResponse response = client.execute(post);
         if (response.getStatusLine().getStatusCode() != 200) {
             computeLaunchStatus=true;
-            throw new RuntimeException("Failed : HTTP error code : "
+//            throw new RuntimeException("Failed : HTTP error code : "
+//                    + response.getStatusLine().getStatusCode());
+            System.out.println("HTTP error code : "
                     + response.getStatusLine().getStatusCode());
         } else {
             computeLaunchStatus=false;
