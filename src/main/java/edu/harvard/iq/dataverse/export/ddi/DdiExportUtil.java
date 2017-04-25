@@ -23,6 +23,7 @@ import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_UNF;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_UNF;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -55,10 +56,13 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
 
-    static boolean excludeDatasetContactEmail;
+    static SettingsServiceBean settingsService;
 
-    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson, boolean excludeDatasetContactEmail) {
-        DdiExportUtil.excludeDatasetContactEmail = excludeDatasetContactEmail;
+    public DdiExportUtil(SettingsServiceBean settingsService) {
+        this.settingsService = settingsService;
+    }
+
+    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson, DatasetDTO.class);
@@ -589,7 +593,9 @@ public class DdiExportUtil {
                                     datasetContactAffiliation =  next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.datasetContactEmail.equals(next.getTypeName())) {
-                                    if (!DdiExportUtil.excludeDatasetContactEmail) {
+                                    if (settingsService == null) {
+                                        datasetContactEmail = next.getSinglePrimitive();
+                                    } else if (!"true".equals(settingsService.getValueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport))) {
                                         datasetContactEmail = next.getSinglePrimitive();
                                     }
                                 }

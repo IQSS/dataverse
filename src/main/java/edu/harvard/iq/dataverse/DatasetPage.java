@@ -339,10 +339,6 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
-    public boolean isMetadataExportEnabled() {
-        return metadataExportEnabled;
-    }
-
     public String getDataverseSiteUrl() {
         return this.dataverseSiteUrl;
     }
@@ -1003,7 +999,6 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private boolean readOnly = true; 
-    private boolean metadataExportEnabled;
     private String originalSourceUrl = null;
 
     public String getOriginalSourceUrl() {
@@ -1027,11 +1022,6 @@ public class DatasetPage implements java.io.Serializable {
                
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
-        /**
-         * For now having DDI export enabled is a proxy for having any metadata
-         * export enabled (JSON, Dublin Core, etc.).
-         */
-        metadataExportEnabled = systemConfig.isDdiExportEnabled();
 
         guestbookResponse = new GuestbookResponse();
         
@@ -2586,28 +2576,16 @@ public class DatasetPage implements java.io.Serializable {
         return dataURL;
     }
 
-    public String getMetadataAsJsonUrl() {
-        if (dataset != null) {
-            Long datasetId = dataset.getId();
-            if (datasetId != null) {
-                String myHostURL = getDataverseSiteUrl();
-                String metadataAsJsonUrl = myHostURL + "/api/datasets/" + datasetId;
-                return metadataAsJsonUrl;
-            }
-        }
-        return null;
-    }
-    
     public List< String[]> getExporters(){
         List<String[]> retList = new ArrayList();
         String myHostURL = getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
+        for (String [] provider : ExportService.getInstance(settingsService).getExportersLabels() ){
             String formatName = provider[1];
             String formatDisplayName = provider[0];
             
             Exporter exporter = null; 
             try {
-                exporter = ExportService.getInstance().getExporter(formatName);
+                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
             } catch (ExportException ex) {
                 exporter = null;
             }

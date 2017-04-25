@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.export.ddi;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.File;
 import java.nio.file.Files;
@@ -19,8 +20,7 @@ public class DdiExportUtilTest {
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
         logger.info(datasetAsDdi);
-        boolean excludeDatasetContactEmail = false;
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, excludeDatasetContactEmail);
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.info(result);
         assertEquals(datasetAsDdi, result);
     }
@@ -36,13 +36,12 @@ public class DdiExportUtilTest {
         String datasetAsDdiPrivate = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFilePrivate.getAbsolutePath()))));
         logger.info(datasetAsDdiPrivate);
 
-        boolean doNotExclude = false;
-        String resultPublic = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, doNotExclude);
+        String resultPublic = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.info(resultPublic);
         assertEquals(datasetAsDdiOpen, resultPublic);
 
-        boolean excludeEmail = true;
-        String resultPrivate = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, excludeEmail);
+        DdiExportUtil ddiExportUtil = new DdiExportUtil(new MockSettingsSvc());
+        String resultPrivate = ddiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.info(resultPrivate);
         assertEquals(datasetAsDdiPrivate, resultPrivate);
 
@@ -61,8 +60,7 @@ public class DdiExportUtilTest {
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
         logger.info(datasetAsDdi);
-        boolean excludeDatasetContactEmail = false;
-        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson, excludeDatasetContactEmail);
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.info(result);
         boolean filesMinimallySupported = false;
         // TODO: 
@@ -75,6 +73,21 @@ public class DdiExportUtilTest {
         // it will use the real hostname). -- L.A. 4.5
         if (filesMinimallySupported) {
             assertEquals(datasetAsDdi, result);
+        }
+    }
+
+    static class MockSettingsSvc extends SettingsServiceBean {
+
+        @Override
+        public String getValueForKey(SettingsServiceBean.Key key) {
+            switch (key) {
+                // FIXME: move this to a new Override for isTrueForKey
+                case ExcludeDatasetContactEmailFromExport:
+                    return "true";
+                default:
+                    break;
+            }
+            return null;
         }
     }
 
