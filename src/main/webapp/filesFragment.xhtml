@@ -22,12 +22,32 @@
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
         <f:facet name="header">
+            <div class="row form-inline" style="margin-bottom:12px;">
+                <!-- Cloud Storage Access -->
+                <div class="form-group col-xs-12 text-left" style="border-bottom:1px solid #ddd;margin:0;padding:0 0 12px 0;">
+                    <div class="col-xs-12">
+                        <p style="font-weight:normal;" class="help-block text-muted"><span class="glyphicon glyphicon-info-sign"/> Cloud Storage Access is the container name for this dataset needed to access files in cloud storage. To learn more, go to our User Guide.</p>
+                    </div>
+                    <label class="col-sm-3 control-label">
+                        <span data-toggle="tooltip" data-placement="auto top" class="tooltiplabel text-info" data-original-title="#{bundle['file.cloudStorageAccess.tip']}">
+                            #{bundle['file.cloudStorageAccess']}
+                        </span>
+                    </label>
+                    <div class="col-sm-3 input-group">
+                        <p:inputText class="form-control" value="#{DatasetPage.getSwiftContainerName()}" id="copy-input" style="font-weight:normal;" type="text"/>
+
+                        <span class="input-group-btn">
+                            <a href="#" class="btn btn-default">
+                                <span class="glyphicon glyphicon-copy"></span> #{bundle['file.copy']}
+                            </a>
+                        </span>
+                    </div>
+                </div>
+            </div>
             <div jsf:id="filesHeaderBlock" class="row">
-                
                 <div class="col-xs-6">
                     <!-- dataset file search -->
                     <div class="input-group">
-                        
                         <p:inputText id="searchFiles" styleClass="form-control" value="#{DatasetPage.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
                                      onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                         <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
@@ -41,52 +61,22 @@
                             </p:commandLink>
                         </span>
                     </div>
-                </div>
-                
-                <div class="col-xs-6 form-inline">
-                    
-                    <div class="form-group col-xs-12 text-right" style="margin:0;padding:0;">
-                        
-                        <label class="control-label">
-                            <span data-toggle="tooltip" data-placement="auto top" class="tooltiplabel text-info" data-original-title="#{bundle['file.cloudStorageAccess.tip']}">
-                                #{bundle['file.cloudStorageAccess']}
-                            </span>
-                        </label>
-                        
-                        <!-- Cloud Storage Access -->
-                        <div class="input-group">
-                            <p:inputText class="form-control" value="#{DatasetPage.getSwiftContainerName()}" placeholder="Cloud Storage Access" id="copy-input" style="font-weight:normal;" type="text"/>
-                            
-                            <span class="input-group-btn">
-                                <a href="#" class="btn btn-default">
-                                    <span class="glyphicon glyphicon-copy"></span> Copy
-                                </a>
-                            </span>
-                        </div>
-                        
-                    </div>
-                    
-                </div>
-                
+                </div>                
             </div>
             <div class="row" style="margin-bottom:6px;">
-                
                 <div id="filesHeaderCount" class="col-xs-2 text-left">
                     <!-- Files Count -->
                     <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                     </h:outputFormat>
                 </div>
-                
                 <div class="col-xs-10">
                     <!-- Button Panels -->
                     <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
-                    
                     <div jsf:id="zipDownloadPanel" class="button-block tab-header pull-right text-right"
                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
                                          and (DatasetPage.canUpdateDataset()
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-
                         <!-- TO-DO CHECK DISABLE STATE -->
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                       type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'ui-state-disabled' : ''}"
@@ -95,15 +85,11 @@
                                                                                     and !widgetWrapper.widgetView}">
                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
-
                         <!-- COMPUTE BUTTON -->
                         <button type="button" class="btn btn-default">
                             <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
                         </button>
-
                     </div>
-                    
-                    
                     <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
                         <div class="btn-group">
@@ -266,7 +252,7 @@
             
             <f:facet name="header" class="col-file-action text-right">
                 <!-- EDIT -->
-                <div class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
+                <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                              and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView}">
                     <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
                             disabled="#{DatasetPage.locked ? 'disabled' : ''}">
@@ -346,15 +332,15 @@
                 #{bundle['file.ingestInProgress']}
             </div>
 
-            <div class="button-block">
-                        <ui:include src="file-download-button-fragment.xhtml">
-                            <ui:param name="fileMetadata" value="#{fileMetadata}"/>
-                            <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                            <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                            <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
-                            <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
-                            <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
-                        </ui:include>
+            <div class="button-blockXX btn-group">
+                <ui:include src="file-download-button-fragment.xhtml">
+                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+                    <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                    <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
+                    <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
+                    <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
+                    <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                </ui:include>
             </div>
             <!-- END: button-block -->
         </p:column>

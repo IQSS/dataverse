@@ -43,7 +43,7 @@
                             
                             <div class="button-block pull-right">
                                 <!-- Explore/Map Data/Download/Request Button Block -->
-                                <div class="button-container pull-right" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
+                                <div class="button-container btn-group pull-right" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                               (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
                                     <ui:include src="file-download-button-fragment.xhtml">
                                         <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
@@ -52,6 +52,7 @@
                                         <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                                         <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                                        <ui:param name="isFilePg" value="true"/>
                                     </ui:include>
                                 </div>
                                 <!-- END: Explore/Map Data/Download/Request Button Block -->

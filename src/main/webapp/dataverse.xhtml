@@ -349,11 +349,46 @@
                     <ui:fragment rendered="#{empty DataversePage.editMode}">
                         <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <!-- Edit/Publish Button Group -->
-                            <ui:fragment rendered="#{dataverseSession.user.authenticated and 
+                            <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated and 
                                                      (permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)
                                                      or permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse))}">
+                                    <!-- Publish Button -->
+                                    <ui:fragment rendered="#{permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse)}">
+                                        <button type="button" class="btn btn-default btn-access" onclick="PF('confirmation').show()"
+                                                jsf:rendered="#{!DataversePage.dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">
+                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
+                                        </button>
+                                        <button type="button" class="btn btn-default btn-access" onclick="PF('mayNotRelease').show()"
+                                                jsf:rendered="#{!DataversePage.dataverse.released and (!empty DataversePage.dataverse.owner and !DataversePage.dataverse.owner.released)}">
+                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
+                                        </button>
+                                    </ui:fragment>
+                                    <!-- END: Publish Button -->
+                                    <div class="btn-group" jsf:rendered="#{dataverseSession.user.superuser and (SearchIncludeFragment.mode == 'search' or DataversePage.dataverse.owner != null)}">
+                                        <a href="#" type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                            <span class="glyphicon glyphicon-link"/> #{bundle['link']} <span class="caret"></span>
+                                        </a>
+                                        <ul class="dropdown-menu pull-right text-left" role="menu">
+                                            <li class="#{DataversePage.dataverse.owner != null ? '' : 'disabled'}">
+                                                <p:commandLink action="#{DataversePage.setupLinkingPopup('link')}"                                                          
+                                                               oncomplete="PF('linkDataverseForm').show()"
+                                                               update=":linkDataverseForm"
+                                                               disabled="#{DataversePage.dataverse.owner == null}">
+                                                    #{bundle['dataverse.link']}
+                                                </p:commandLink>
+                                            </li>
+                                            <li class="#{SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
+                                                <p:commandLink action="#{DataversePage.setupLinkingPopup('savedSearch')}"
+                                                               oncomplete="PF('linkDataverseForm').show()"
+                                                               update=":linkDataverseForm"
+                                                               disabled="#{SearchIncludeFragment.mode != 'search'}">
+                                                    #{bundle['dataverse.savedsearch.link']}
+                                                </p:commandLink>
+                                            </li>
+                                        </ul>
+                                    </div>
                                     <!-- Edit Button -->
-                                    <div class="btn-group pull-right" jsf:rendered="#{permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)}">
+                                    <div class="btn-group" jsf:rendered="#{permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)}">
                                         <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataverse.edit']} <span class="caret"></span>
                                         </button>
@@ -427,19 +462,7 @@
                                         </ul>
                                     </div>
                                     <!-- END: Edit Button -->
-                                    <!-- Publish Button -->
-                                    <ui:fragment rendered="#{permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse)}">
-                                        <button type="button" class="btn btn-default btn-access pull-right" onclick="PF('confirmation').show()"
-                                                jsf:rendered="#{!DataversePage.dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">
-                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
-                                        </button>
-                                        <button type="button" class="btn btn-default btn-access pull-right" onclick="PF('mayNotRelease').show()"
-                                                jsf:rendered="#{!DataversePage.dataverse.released and (!empty DataversePage.dataverse.owner and !DataversePage.dataverse.owner.released)}">
-                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
-                                        </button>
-                                    </ui:fragment>
-                                    <!-- END: Publish Button -->
-                            </ui:fragment>
+                            </div>
 
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link/Share Button Group -->
@@ -453,30 +476,6 @@
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
                                         <span class="glyphicon glyphicon-envelope"/> Contact
                                 </p:commandLink>
-                                <div class="btn-group" jsf:rendered="#{dataverseSession.user.superuser and (SearchIncludeFragment.mode == 'search' or DataversePage.dataverse.owner != null)}">
-                                    <a href="#" class="text-button dropdown-toggle bootstrap-button-tooltip" data-toggle="dropdown" aria-expanded="false"
-                                            title="#{bundle['dataverse.link.btn.tip']}">
-                                        <span class="glyphicon glyphicon-link"/> Link <span class="caret"></span>
-                                    </a>
-                                    <ul class="dropdown-menu pull-right text-left" role="menu">
-                                        <li class="#{DataversePage.dataverse.owner != null ? '' : 'disabled'}">
-                                            <p:commandLink action="#{DataversePage.setupLinkingPopup('link')}"                                                          
-                                                           oncomplete="PF('linkDataverseForm').show()"
-                                                           update=":linkDataverseForm"
-                                                           disabled="#{DataversePage.dataverse.owner == null}">
-                                                #{bundle['dataverse.link']}
-                                            </p:commandLink>
-                                        </li>
-                                        <li class="#{SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
-                                            <p:commandLink action="#{DataversePage.setupLinkingPopup('savedSearch')}"
-                                                           oncomplete="PF('linkDataverseForm').show()"
-                                                           update=":linkDataverseForm"
-                                                           disabled="#{SearchIncludeFragment.mode != 'search'}">
-                                                #{bundle['dataverse.savedsearch.link']}
-                                            </p:commandLink>
-                                        </li>
-                                    </ul>
-                                </div>
                                 <p:commandLink type="button" styleClass="text-button bootstrap-button-tooltip"
                                    title="#{bundle['dataverse.share.dataverseShare']}"
                                    oncomplete="PF('shareDialog').show();sharrre();">
