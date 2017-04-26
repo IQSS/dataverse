@@ -491,14 +491,23 @@ public class DatasetPage implements java.io.Serializable {
         // the service itself no longer checks download permissions.  
         // plus, cache the results!
         
-        if (!this.fileDownloadHelper.canDownloadFile(fileMetadata)) {
-            return false;
-        }
-     
         Long dataFileId = fileMetadata.getDataFile().getId();
+        
         if (datafileThumbnailsMap.containsKey(dataFileId)) {
             return !"".equals(datafileThumbnailsMap.get(dataFileId));
         }
+        
+        if (!FileUtil.isThumbnailSupported(fileMetadata.getDataFile())) {
+            datafileThumbnailsMap.put(dataFileId, "");
+            return false;
+        }
+        
+        if (!this.fileDownloadHelper.canDownloadFile(fileMetadata)) {
+            datafileThumbnailsMap.put(dataFileId, "");
+            return false;
+        }
+     
+        
         
         String thumbnailAsBase64 = ImageThumbConverter.getImageThumbnailAsBase64(fileMetadata.getDataFile(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         
