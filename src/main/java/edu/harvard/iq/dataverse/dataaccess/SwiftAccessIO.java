@@ -335,7 +335,6 @@ public class SwiftAccessIO extends DataFileIO {
         while ((items = this.swiftContainer.list(namePrefix, lastItemName, LIST_PAGE_LIMIT))!= null && items.size() > 0) {
             for (StoredObject item : items) {
                 lastItemName = item.getName().substring(namePrefix.length());
-                //logger.info("Found AUX object "+lastItemName);
                 ret.add(lastItemName);
             }
         }
@@ -473,7 +472,9 @@ public class SwiftAccessIO extends DataFileIO {
 
         // should we only authenticate when account == null? 
         
-        account = authenticateWithSwift(swiftEndPoint);
+        if (this.account == null) {
+            account = authenticateWithSwift(swiftEndPoint);
+        }
 
         /*
         The containers created is swiftEndPoint concatenated with the swiftContainerName
@@ -488,8 +489,10 @@ public class SwiftAccessIO extends DataFileIO {
          */
 
         if (storageIdentifier.startsWith("swift://")) {
+            // An existing swift object; the container must already exist as well.
             this.swiftContainer = account.getContainer(swiftContainerName);
         } else {
+            // This is a new object being created.
             this.swiftContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
         }
 
@@ -518,7 +521,9 @@ public class SwiftAccessIO extends DataFileIO {
         // object for a primary file), we also set the file download url here: 
         if (auxItemTag == null) {
             setRemoteUrl(getSwiftFileURI(fileObject));
-            logger.fine(getRemoteUrl() + " success");
+            logger.fine(getRemoteUrl() + " success; write mode: "+writeAccess);
+        } else {
+            logger.fine("sucessfully opened AUX object "+auxItemTag+" , write mode: "+writeAccess);
         }
         
         if (!writeAccess && !fileObject.exists()) {
@@ -651,8 +656,8 @@ public class SwiftAccessIO extends DataFileIO {
         try {
             fileUri = fileObject.getPublicURL();
         } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new IOException("SwiftAccessIO: failed to get file storage location");
+            //ex.printStackTrace();
+            throw new IOException("SwiftAccessIO: failed to get public URL of the stored object");
         }
         return fileUri;
     }

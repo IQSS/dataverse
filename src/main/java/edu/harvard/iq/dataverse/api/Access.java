@@ -586,7 +586,7 @@ public class Access extends AbstractApiBean {
                         || df.isImage()
                         || "application/zipped-shapefile".equalsIgnoreCase(df.getContentType())) {
 
-                    thumbnailDataAccess = ImageThumbConverter.getImageThumbnail(dataAccess, 48);
+                    thumbnailDataAccess = ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
                 }
             }
         } catch (IOException ioEx) {
@@ -629,7 +629,7 @@ public class Access extends AbstractApiBean {
                     DataFileIO dataAccess = logoDataFile.getDataFileIO();
                     if (dataAccess != null) { // && dataAccess.isLocalFile()) {
                         dataAccess.open();
-                        thumbnailDataAccess = ImageThumbConverter.getImageThumbnail(dataAccess, 48);
+                        thumbnailDataAccess = ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
                     }
                 } catch (IOException ioEx) {
                     thumbnailDataAccess = null; 

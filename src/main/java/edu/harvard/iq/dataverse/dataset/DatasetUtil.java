@@ -61,7 +61,7 @@ public class DatasetUtil {
             if (dataFile != null && ImageThumbConverter.isThumbnailAvailable(dataFile)
                     && !dataFile.isRestricted()) {                
                 String imageSourceBase64 = null;
-                imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
                 if (imageSourceBase64 != null) {
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
@@ -103,7 +103,7 @@ public class DatasetUtil {
                         logger.fine(title + " does not have a thumbnail available that could be selected automatically.");
                         return null;
                     } else {
-                        String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                        String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                         DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
                         logger.fine(title + " will get thumbnail through automatic selection from DataFile id " + thumbnailFile.getId());
                         return defaultDatasetThumbnail;
@@ -113,7 +113,7 @@ public class DatasetUtil {
                 logger.fine(title + " has a thumbnail the user selected but the file must have later been restricted. Returning null.");
                 return null;
             } else {
-                String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                 DatasetThumbnail userSpecifiedDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
                 logger.fine(title + " will get thumbnail the user specified from DataFile id " + thumbnailFile.getId());
                 return userSpecifiedDatasetThumbnail;

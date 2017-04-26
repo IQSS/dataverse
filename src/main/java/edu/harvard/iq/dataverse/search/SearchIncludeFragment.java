@@ -1274,7 +1274,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 return null;
             }
 
-            String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(
+            String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(
                     assignedThumbnailFile,
                     ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
@@ -1332,7 +1332,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         || permissionsWrapper.hasDownloadFilePermission(result.getEntity()))
                     && dataFileService.isThumbnailAvailable((DataFile) result.getEntity())) {
                 
-                cardImageUrl = ImageThumbConverter.getImageThumbAsBase64(
+                cardImageUrl = ImageThumbConverter.getImageThumbnailAsBase64(
                         (DataFile) result.getEntity(),
                         ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             }

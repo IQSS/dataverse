@@ -129,9 +129,11 @@ public class ImageThumbConverter {
     // isThumbnailAvailable(); if the thumbnail is not yet cached, that 
     // method will attempt to generate and cache it. And once it's cached, 
     // it is the same "auxiliary file", or an extra file with the .thumb[size]
-    // extension - which is the same for all supported types. 
-    
-    public static InputStreamIO getImageThumbnail(DataFileIO dataFileIO, int size) {
+    // extension - which is the same for all supported types.
+    // Note that this method is mainly used by the data access API methods. 
+    // Whenever a page needs a thumbnail, we prefer to rely on the Base64
+    // string version.
+    public static InputStreamIO getImageThumbnailAsInputStream(DataFileIO dataFileIO, int size) {
         logger.fine("entering getImageThumb, size " + size);
 
         if (!isThumbnailAvailable(dataFileIO, size)) {
@@ -433,18 +435,19 @@ public class ImageThumbConverter {
      * "data:image/png;base64," but it is not suitable for returning a
      * downloadable image via an API call.
      */
-    public static String getImageThumbAsBase64(DataFile file, int size) {
+    public static String getImageThumbnailAsBase64(DataFile file, int size) {
 
-        logger.fine("entering getImageThumbAsBase64, size " + size+", for "+file.getStorageIdentifier());
+        logger.fine("entering getImageThumbnailAsBase64, size " + size+", for "+file.getStorageIdentifier());
+         try {
+            DataFileIO dataFileIO = file.getDataFileIO();
         
-        if (!isThumbnailAvailable(file, size)) {
-            logger.fine("no thumbnail available for "+file.getStorageIdentifier());
-            return null; 
-        }
+            if (!isThumbnailAvailable(dataFileIO, size)) {
+                logger.info("no thumbnail available for "+file.getStorageIdentifier());
+                return null; 
+            }
 
-        try {
-            DataFileIO dataFileIO = file.getDataFileIO(); 
-            dataFileIO.open(); 
+        
+            //dataFileIO.open(); 
             Channel cachedThumbnailChannel = dataFileIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
             if (cachedThumbnailChannel == null) {
                 logger.warning("Null channel for aux object "+ THUMBNAIL_SUFFIX + size);

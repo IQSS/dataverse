@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -494,17 +495,21 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
      
-        if (datafileThumbnailsMap.containsKey(fileMetadata.getDataFile().getId())) {
-            return !"".equals(datafileThumbnailsMap.get(fileMetadata.getDataFile().getId()));
+        Long dataFileId = fileMetadata.getDataFile().getId();
+        if (datafileThumbnailsMap.containsKey(dataFileId)) {
+            return !"".equals(datafileThumbnailsMap.get(dataFileId));
         }
         
+        String thumbnailAsBase64 = ImageThumbConverter.getImageThumbnailAsBase64(fileMetadata.getDataFile(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         
-        if (datafileService.isThumbnailAvailable(fileMetadata.getDataFile())) {
-            datafileThumbnailsMap.put(fileMetadata.getDataFile().getId(), fileMetadata.getDataFile().getThumbnailString());
+        
+        //if (datafileService.isThumbnailAvailable(fileMetadata.getDataFile())) {
+        if (!StringUtil.isEmpty(thumbnailAsBase64)) {
+            datafileThumbnailsMap.put(dataFileId, thumbnailAsBase64);
             return true;
         } 
         
-        datafileThumbnailsMap.put(fileMetadata.getDataFile().getId(), "");
+        datafileThumbnailsMap.put(dataFileId, "");
         return false;
         
     }

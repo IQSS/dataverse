@@ -77,15 +77,15 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     if (di.getConversionParam().equals("imageThumb") && !dataFile.isHarvested()) { 
                         if ("".equals(di.getConversionParamValue())) {
-                            dataFileIO = ImageThumbConverter.getImageThumbnail(dataFileIO, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE); 
+                            dataFileIO = ImageThumbConverter.getImageThumbnailAsInputStream(dataFileIO, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE); 
                         } else {
                             try {
                                 int size = new Integer(di.getConversionParamValue()).intValue();
                                 if (size > 0) {                                    
-                                    dataFileIO = ImageThumbConverter.getImageThumbnail(dataFileIO, size);
+                                    dataFileIO = ImageThumbConverter.getImageThumbnailAsInputStream(dataFileIO, size);
                                 }
                             } catch (java.lang.NumberFormatException ex) {
-                                dataFileIO = ImageThumbConverter.getImageThumbnail(dataFileIO, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
+                                dataFileIO = ImageThumbConverter.getImageThumbnailAsInputStream(dataFileIO, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
                             }
                             
                             // and, since we now have tabular data files that can 

@@ -1401,7 +1401,7 @@ public class FileUtil implements java.io.Serializable  {
     
     public static DatasetThumbnail getThumbnail(DataFile file) {
 
-        String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(file, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
+        String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(file, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, file);
         return defaultDatasetThumbnail;
 

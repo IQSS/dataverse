@@ -996,6 +996,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // we'll just trust that:
         
         if (file.isPreviewImageAvailable()) {
+            logger.info("returning true");
             return true;
         }
         
@@ -1017,13 +1018,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         TODO: adding a boolean flag isImageAlreadyGenerated to the DataFile 
          db table should help with this. -- L.A. 4.2.1 DONE: 4.2.2
         
-        // Also, thumbnails are only shown to users who have permission to see 
-        // the full-size image file. So before we do anything else, let's
-        // do some authentication and authorization:        
-        if (!permissionService.userOn(user, file).has(Permission.DownloadFile)) { 
-            logger.fine("No permission to download the file.");
-            return false; 
-        }*/
+        */
         
         
         

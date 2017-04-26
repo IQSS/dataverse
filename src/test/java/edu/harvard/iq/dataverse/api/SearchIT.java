@@ -57,6 +57,9 @@ import static com.jayway.restassured.path.xml.XmlPath.from;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
+import static java.lang.Thread.sleep;
+import static java.lang.Thread.sleep;
+import static java.lang.Thread.sleep;
 
 /**
  * @todo Many of these tests are in need of attention for a few reasons:

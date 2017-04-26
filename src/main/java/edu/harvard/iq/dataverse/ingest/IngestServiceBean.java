@@ -329,7 +329,7 @@ public class IngestServiceBean {
                     // dataset directory. We should also remember to delete any such files in the
                     // temp directory:
                     
-                    List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
+                    List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()), storageId);
                     if (generatedTempFiles != null) {
                         for (Path generated : generatedTempFiles) {
                             if (savedSuccess) { // && localFile) {
@@ -340,7 +340,7 @@ public class IngestServiceBean {
                                     if (i > 1) {
                                         String extensionTag = generated.toString().substring(i);
                                         dataAccess.savePathAsAux(generated, extensionTag);
-                                        logger.fine("Saved generated thumbnail as aux object.");
+                                        logger.fine("Saved generated thumbnail as aux object. \"preview available\" status: "+dataFile.isPreviewImageAvailable());
                                     } else {
                                         logger.warning("Generated thumbnail file name does not match the expected pattern: "+generated.toString());
                                     }
@@ -368,7 +368,7 @@ public class IngestServiceBean {
                     }
                     
                     // Any necessary post-processing: 
-                    performPostProcessingTasks(dataFile);
+                    //performPostProcessingTasks(dataFile);
                 }
             }
         }
