@@ -9,6 +9,7 @@ import com.sun.mail.smtp.SMTPSendFailedException;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -62,6 +63,8 @@ public class MailServiceBean implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     GroupServiceBean groupService;
+    @EJB
+    ConfirmEmailServiceBean confirmEmailService;
     
     private static final Logger logger = Logger.getLogger(MailServiceBean.class.getCanonicalName());
     
@@ -99,6 +102,8 @@ public class MailServiceBean implements java.io.Serializable {
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
         boolean sent = false;
+        String body = messageText + ResourceBundle.getBundle("Bundle").getString("notification.email.closing");
+        logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
              Message msg = new MimeMessage(session);
 
@@ -109,7 +114,7 @@ public class MailServiceBean implements java.io.Serializable {
                 msg.setRecipients(Message.RecipientType.TO,
                         InternetAddress.parse(to, false));
                 msg.setSubject(subject);
-                msg.setText(messageText + ResourceBundle.getBundle("Bundle").getString("notification.email.closing"));
+                msg.setText(body);
                 try {
                     Transport.send(msg);
                     sent = true;
@@ -221,6 +226,12 @@ public class MailServiceBean implements java.io.Serializable {
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.returned.dataset.subject");
             case CREATEACC:
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.create.account.subject");
+            case CHECKSUMFAIL:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.checksumfail.subject");
+            case FILESYSTEMIMPORT:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.import.filesystem.subject");
+            case CHECKSUMIMPORT:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.import.checksum.subject");
         }
         return "";
     }
@@ -361,7 +372,7 @@ public class MailServiceBean implements java.io.Serializable {
                         parentDataverseDisplayName,
                         parentDataverseUrl,
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getVersion()));
+                        systemConfig.getGuidesVersion()));
                 logger.fine(dataverseCreatedMessage);
                 return messageText += dataverseCreatedMessage;
             case REQUESTFILEACCESS:
@@ -390,7 +401,7 @@ public class MailServiceBean implements java.io.Serializable {
                         version.getDataset().getOwner().getDisplayName(),
                         getDataverseLink(version.getDataset().getOwner()),
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getVersion()
+                        systemConfig.getGuidesVersion()
                 ));
                 logger.fine(datasetCreatedMessage);
                 return messageText += datasetCreatedMessage;
@@ -424,9 +435,40 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEACC:
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getVersion()
+                        systemConfig.getGuidesVersion()
                 ));
+                String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
+                accountCreatedMessage += optionalConfirmEmailAddon;
+                logger.fine("accountCreatedMessage: " + accountCreatedMessage);
                 return messageText += accountCreatedMessage;
+
+            case CHECKSUMFAIL:
+                version =  (DatasetVersion) targetObject;
+                String checksumFailMsg = BundleUtil.getStringFromBundle("notification.checksumfail", Arrays.asList(
+                        version.getDataset().getGlobalId()
+                ));
+                logger.info("checksumFailMsg: " + checksumFailMsg);
+                return messageText += checksumFailMsg;
+
+            case FILESYSTEMIMPORT:
+                version =  (DatasetVersion) targetObject;
+                String fileImportMsg = BundleUtil.getStringFromBundle("notification.import.filesystem", Arrays.asList(
+                        systemConfig.getDataverseSiteUrl(),
+                        version.getDataset().getGlobalId(),
+                        version.getDataset().getDisplayName()
+                ));
+                logger.info("fileImportMsg: " + fileImportMsg);
+                return messageText += fileImportMsg;
+
+            case CHECKSUMIMPORT:
+                version =  (DatasetVersion) targetObject;
+                String checksumImportMsg = BundleUtil.getStringFromBundle("notification.import.checksum", Arrays.asList(
+                        version.getDataset().getGlobalId(),
+                        version.getDataset().getDisplayName()
+                ));
+                logger.info("checksumImportMsg: " + checksumImportMsg);
+                return messageText += checksumImportMsg;
+
         }
         
         return "";
@@ -457,6 +499,12 @@ public class MailServiceBean implements java.io.Serializable {
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:
                 return userNotification.getUser();
+            case CHECKSUMFAIL:
+                return datasetService.find(userNotification.getObjectId());
+            case FILESYSTEMIMPORT:
+                return versionService.find(userNotification.getObjectId());
+            case CHECKSUMIMPORT:
+                return versionService.find(userNotification.getObjectId());
         }
         return null;
     }

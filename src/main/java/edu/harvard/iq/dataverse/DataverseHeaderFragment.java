@@ -55,6 +55,12 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+    
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    
+    @EJB
+    DataFileServiceBean datafileService;
 
     @Inject
     DataverseSession dataverseSession;
@@ -89,6 +95,54 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             }
     }
     
+    public void initBreadcrumbsForFileMetadata(FileMetadata fmd) {
+
+        initBreadcrumbsForFileMetadata(fmd, null, null);
+    }
+    
+    public void initBreadcrumbsForFileMetadata(DataFile datafile,  String subPage) {
+       
+        initBreadcrumbsForFileMetadata(null, datafile,  subPage);
+    }
+    
+
+    public void initBreadcrumbsForFileMetadata(FileMetadata fmd, DataFile datafile,  String subPage) {
+        if (fmd == null ){
+            Dataset dataset = datafile.getOwner();
+            Long getDatasetVersionID = dataset.getLatestVersion().getId();
+            fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, datafile.getId());
+        }
+        
+        
+        if (fmd == null) {
+            return;
+        }
+
+        breadcrumbs.clear();
+        
+        String optionalUrlExtension = "&version=" + fmd.getDatasetVersion().getSemanticVersion();
+        //First Add regular breadcrumb for the data file
+        DvObject dvObject = fmd.getDataFile();
+        breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName(), optionalUrlExtension));
+
+        //Get the Dataset Owning the Datafile and add version to the breadcrumb       
+        dvObject = dvObject.getOwner();
+
+        breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName(), optionalUrlExtension));
+
+        // now get Dataverse Owner of the dataset and proceed as usual
+        dvObject = dvObject.getOwner();
+        while (dvObject != null) {
+            breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName()));
+            dvObject = dvObject.getOwner();
+        }
+        
+        if (subPage != null) {
+            breadcrumbs.add(new Breadcrumb(subPage));
+        }
+
+    }
+    
     public Long getUnreadNotificationCount(Long userId){
         
         if (userId == null){
@@ -110,7 +164,6 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     public void initBreadcrumbs(DvObject dvObject, String subPage) {
         breadcrumbs.clear();
-
         while (dvObject != null) {
             breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName()));
             dvObject = dvObject.getOwner();
@@ -222,8 +275,15 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public static class Breadcrumb {
 
         private final String breadcrumbText;
-        private  DvObject dvObject = null;
-        private  String url = null;
+        private DvObject dvObject = null;
+        private String url = null;
+        private String optionalUrlExtension = null;
+
+        public Breadcrumb( DvObject dvObject, String breadcrumbText, String optionalUrlExtension ) {
+            this.breadcrumbText = breadcrumbText;
+            this.dvObject = dvObject;
+            this.optionalUrlExtension = optionalUrlExtension;
+        }
 
         public Breadcrumb( DvObject dvObject, String breadcrumbText) {
             this.breadcrumbText = breadcrumbText;
@@ -250,6 +310,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         public String getUrl() {
             return url;
         }
-
+        
+        public String getOptionalUrlExtension() {
+            return optionalUrlExtension;
+        }
     }
 }

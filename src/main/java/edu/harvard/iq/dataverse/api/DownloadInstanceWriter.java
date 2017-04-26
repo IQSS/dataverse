@@ -22,8 +22,13 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -80,11 +85,25 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             } catch (java.lang.NumberFormatException ex) {
                                 accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject);
                             }
+                            
+                            // Modify the filename, to reflect that it's a PNG file now. 
+                            // (we are now generating thumbnails for tabular files - 
+                            // and the original .tab extension may be confusing some browsers!)
+                            String fileName = accessObject.getFileName();
+                            fileName = fileName.replaceAll("\\.[^\\.]*$", ".png");
+                            accessObject.setFileName(fileName);
+                            // (also, now that have tabular data files that can 
+                            // have thumbnail previews... obviously, we don't want to 
+                            // add the variable header to the image stream!
+                            accessObject.setNoVarHeader(Boolean.TRUE);
+                            accessObject.setVarHeader(null);
                         }
-                    }
-                    
-                    
-                    if (sf.isTabularData()) {
+                    } else if (sf.isTabularData()) {
+                        // We can now generate thumbnails for some tabular data files (specifically, 
+                        // tab files tagged as "geospatial"). We are going to assume that you can 
+                        // do only ONE thing at a time - request the thumbnail for the file, or 
+                        // request any tabular-specific services. 
+                        
                         if (di.getConversionParam().equals("noVarHeader")) {
                             accessObject.setNoVarHeader(Boolean.TRUE);
                             accessObject.setVarHeader(null);
@@ -101,7 +120,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     requestedMimeType = "application/octet-stream";
                                 } 
                                 accessObject = 
-                                        DataFileConverter.performFormatConversion(
+                                        DataConverter.performFormatConversion(
                                         sf, 
                                         (FileAccessIO)accessObject, 
                                         di.getConversionParamValue(), requestedMimeType);
@@ -214,7 +233,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     // before writing out any bytes from the input stream, flush
                     // any extra content, such as the variable header for the 
-                    // subsettable files: (??)4
+                    // subsettable files: 
                     
                     if (accessObject.getVarHeader() != null) {
                         if (accessObject.getVarHeader().getBytes().length > 0) {
@@ -245,6 +264,26 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         outstream.write(chunkClosing.getBytes());
                     }
                     
+                    
+                    logger.fine("di conversion param: "+di.getConversionParam()+", value: "+di.getConversionParamValue());
+                    
+                    // Downloads of thumbnail images (scaled down, low-res versions of graphic image files) and 
+                    // "preprocessed metadata" records for tabular data files are NOT considered "real" downloads, 
+                    // so these should not produce guestbook entries: 
+                    
+                    if (di.getGbr() != null && !(isThumbnailDownload(di) || isPreprocessedMetadataDownload(di))) {
+                        try {
+                            logger.fine("writing guestbook response.");
+                            Command cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
+                            di.getCommand().submit(cmd);
+                        } catch (CommandException e) {
+                            //if an error occurs here then download won't happen no need for response recs...
+                        }
+                    } else {
+                        logger.fine("not writing guestbook response");
+                    } 
+                        
+                    
                     instream.close();
                     outstream.close(); 
                     return;
@@ -254,6 +293,24 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         
         throw new WebApplicationException(Response.Status.NOT_FOUND);
 
+    }
+    
+    private boolean isThumbnailDownload(DownloadInstance downloadInstance) {
+        if (downloadInstance == null) return false; 
+        
+        if (downloadInstance.getConversionParam() == null) return false; 
+        
+        return downloadInstance.getConversionParam().equals("imageThumb");
+    }
+    
+    private boolean isPreprocessedMetadataDownload(DownloadInstance downloadInstance) {
+        if (downloadInstance == null) return false; 
+        
+        if (downloadInstance.getConversionParam() == null) return false; 
+        
+        if (downloadInstance.getConversionParamValue() == null) return false; 
+        
+        return downloadInstance.getConversionParam().equals("format") && downloadInstance.getConversionParamValue().equals("prep");
     }
     
     private long getContentSize(DataFileIO accessObject) {

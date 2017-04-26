@@ -1,9 +1,24 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.xerces.impl.dv.util.Base64;
 import org.jsoup.Jsoup;
 
 /**
@@ -12,6 +27,13 @@ import org.jsoup.Jsoup;
  */
 public class StringUtil {
        
+    private static final Logger logger = Logger.getLogger(StringUtil.class.getCanonicalName());
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+    
+    public static final boolean nonEmpty( String str ) {
+        return ! isEmpty(str);
+    }
+    
     public static final boolean isEmpty(String str) {
         return str==null || str.trim().equals("");        
     }
@@ -29,13 +51,35 @@ public class StringUtil {
         }
       }  
       return true;
-}
+    }
+    
+    public static Optional<String> toOption(String s) {
+        if ( s == null ) {
+            return Optional.empty();
+        }
+        s = s.trim();
+        return s.isEmpty() ? Optional.empty() : Optional.of(s);
+    }
+    
+    /**
+     * @todo Unless there is a compelling reason not to, we should switch to the
+     * validation routines in EMailValidator.
+     */
+    @Deprecated
+    public static boolean isValidEmail( String s ) {
+        logger.fine("Validating <<<" + s + ">>>.");
+        if (s == null) {
+            return false;
+        }
+        return EMAIL_PATTERN.matcher(s).matches();
+    }
+    
     public static final boolean isAlphaNumericChar(char c) {
         // TODO: consider using Character.isLetterOrDigit(c)
         return ( (c >= 'a') && (c <= 'z') ||
                  (c >= 'A') && (c <= 'Z') ||
                  (c >= '0') && (c <= '9') );
-}
+    }
 
     public static String truncateString(String originalString, int maxLength) {
         maxLength = Math.max( 0, maxLength);
@@ -76,5 +120,58 @@ public class StringUtil {
         }
         return cleanTextArray;
     }
+    
+    /**
+     * Generates an AES-encrypted version of the string. Resultant string is URL safe.
+     * @param value The value to encrypt.
+     * @param password The password.
+     * @return encrypted string, URL-safe.
+     */
+    public static String encrypt(String value, String password ) {
+        byte[] baseBytes = value.getBytes();
+        try {
+            Cipher aes = Cipher.getInstance("AES");
+            final SecretKeySpec secretKeySpec = generateKeyFromString(password);
+            aes.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+            byte[] encrypted = aes.doFinal(baseBytes);
+            String base64ed = Base64.encode(encrypted);
+            return base64ed.replaceAll("\\+", ".")
+                    .replaceAll("=", "-")
+                    .replaceAll("/", "_");
+            
+        } catch (  InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
+                  | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException ex) {
+            Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    public static String decrypt(String value, String password ) {
+        String base64 = value.replaceAll("\\.", "+")
+                    .replaceAll("-", "=")
+                    .replaceAll("_", "/");
+        
+        byte[] baseBytes = Base64.decode(base64);
+        try {
+            Cipher aes = Cipher.getInstance("AES");
+            aes.init( Cipher.DECRYPT_MODE, generateKeyFromString(password));
+            byte[] decrypted = aes.doFinal(baseBytes);
+            return new String(decrypted);
+            
+        } catch ( InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
+                  | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException ex) {
+            Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    private static SecretKeySpec generateKeyFromString(final String secKey) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        byte[] key = (secKey).getBytes("UTF-8");
+        MessageDigest sha = MessageDigest.getInstance("SHA-1");
+        key = sha.digest(key);
+        key = Arrays.copyOf(key, 16); // use only first 128 bits
 
+        SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
+        return secretKeySpec;
+    }
 }

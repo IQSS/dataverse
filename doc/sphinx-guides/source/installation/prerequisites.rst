@@ -73,7 +73,7 @@ Glassfish Init Script
 
 The Dataverse installation script will start Glassfish if necessary, but while you're configuring Glassfish, you might find the following init script helpful to have Glassfish start on boot.
 
-Adjust `this Glassfish init script <../_static/installation/files/etc/init.d/glassfish>`_ for your needs or write your own.
+Adjust this :download:`Glassfish init script <../_static/installation/files/etc/init.d/glassfish>` for your needs or write your own.
 
 It is not necessary to have Glassfish running before you execute the Dataverse installation script because it will start Glassfish for you.
 
@@ -98,7 +98,7 @@ The standard init script that ships RHEL 6 and similar should work fine. Enable 
 
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
-=====================================================================================
+=======================================================================================
 
 - The application and the installer script will be connecting to PostgreSQL over TCP/IP, using password authentication. In this section we explain how to configure PostgreSQL to accept these connections.
 
@@ -137,8 +137,6 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
       	kill -1 PROCESS_ID
 
-
-
 Solr 
 ----
 
@@ -161,12 +159,13 @@ The reason for backing up the ``schema.xml`` file is that Dataverse requires a c
 
 With the Dataverse-specific schema in place, you can now start Solr::
 
+	# cd /usr/local/solr-4.6.0/example
 	# java -jar start.jar
 
 Solr Init Script
 ================
 
-The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but starting Solr with an init script is recommended. You can attempt to adjust `this Solr init script <../_static/installation/files/etc/init.d/solr>`_ for your needs or write your own.
+The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but starting Solr with an init script is recommended. You can attempt to adjust this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.
 
 Solr should be running before the installation script is executed.
 
@@ -190,4 +189,31 @@ Installing jq
         # chmod +x jq
         # jq --version
 
+ImageMagick
+-----------
+
+Dataverse uses `ImageMagick <https://www.imagemagick.org>`_ to generate thumbnail previews of PDF files. This is an optional component, meaning that if you don't have ImageMagick installed, there will be no thumbnails for PDF files, in the search results and on the dataset pages; but everything else will be working. (Thumbnail previews for non-PDF image files are generated using standard Java libraries and do not require any special installation steps). 
+
+Installing and configuring ImageMagick
+======================================
+
+On a Red Hat and similar Linux distributions, you can install ImageMagick with something like::
+
+	# yum install ImageMagick 
+
+(most RedHat systems will have it pre-installed). 
+When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required. 
+
+On MacOS you can compile ImageMagick from sources, or use one of the popular installation frameworks, such as brew. 
+
+If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Glassfish configuration using the JVM option, below. For example::
+
+   <jvm-options>-Ddataverse.path.imagemagick.convert=/opt/local/bin/convert</jvm-options>
+
+(see the :doc:`config` section for more information on the JVM options)
+
+
+
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
+
+

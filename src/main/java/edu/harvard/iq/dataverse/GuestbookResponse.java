@@ -7,7 +7,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,9 +60,51 @@ public class GuestbookResponse implements Serializable {
     private String position;
     private String downloadtype;
     private String sessionId;
-    
+        
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date responseTime;
+    
+    /*
+    Transient Values carry non-written information 
+    that will assist in the download process
+    - selected file ids is a comma delimited list that contains the file ids for multiple download
+    - fileFormat tells the download api which format a subsettable file should be downloaded as
+    - writeResponse is set to false when dataset version is draft.
+    */
+    
+    @Transient
+    private String selectedFileIds;
+    
+    @Transient 
+    private String fileFormat;
+    
+    @Transient 
+    private boolean writeResponse = true;
+
+    public boolean isWriteResponse() {
+        return writeResponse;
+    }
+
+    public void setWriteResponse(boolean writeResponse) {
+        this.writeResponse = writeResponse;
+    }
+
+    public String getSelectedFileIds() {
+        return selectedFileIds;
+    }
+
+    public void setSelectedFileIds(String selectedFileIds) {
+        this.selectedFileIds = selectedFileIds;
+    }
+    
+    
+    public String getFileFormat() {
+        return fileFormat;
+    }
+
+    public void setFileFormat(String downloadFormat) {
+        this.fileFormat = downloadFormat;
+    }
 
     public GuestbookResponse(){
         

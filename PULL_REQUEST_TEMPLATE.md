@@ -1,20 +1,21 @@
-fixes DDN-
+## New Contributors
 
-#### When applied it will
-* 
-* 
-* [ ] 
-* [ ] 
+Welcome! New contributors should at least glance at [CONTRIBUTING.md](/CONTRIBUTING.md), especially the section on pull requests where we encourage you to reach out to other developers before you start coding. Also, please note that we measure code coverage and prefer you write unit tests. Pull requests can still be reviewed without tests or completion of the checklist outlined below. Thanks!
 
-#### Where should the reviewer @DANS-KNAW/DataversNL start?
+## Related Issues
 
-* Verify that the IQSS style pull request template isn't merged back into the dans-master branch
-*
-*
+- connects to [#issue number]: [issue title]
 
-#### How should this be manually tested?
+## Pull Request Checklist
 
-#### related pull requests on github
-repo                       | PR                | Note
--------------------------- | ----------------- | ----
-easy-                      | [PR#](PRlink)     | 
+- [ ] Unit [tests][] completed
+- [ ] Integration [tests][]: None
+- [ ] Deployment requirements, [SQL updates][], [Solr updates][], etc.: None
+- [ ] [Documentation][docs] completed
+- [ ] Merged latest from "develop" [branch][] and resolved conflicts
+
+[tests]: http://guides.dataverse.org/en/latest/developers/testing.html
+[SQL updates]: https://github.com/IQSS/dataverse/tree/develop/scripts/database/upgrades
+[Solr updates]: https://github.com/IQSS/dataverse/blob/develop/conf/solr/4.6.0/schema.xml
+[docs]: http://guides.dataverse.org/en/latest/developers/documentation.html
+[branch]: http://guides.dataverse.org/en/latest/developers/branching-strategy.html

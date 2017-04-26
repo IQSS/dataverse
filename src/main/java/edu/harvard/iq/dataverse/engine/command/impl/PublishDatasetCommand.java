@@ -42,6 +42,7 @@ import javax.json.JsonObjectBuilder;
 @RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
     private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
+    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
 
     boolean minorRelease = false;
     Dataset theDataset;
@@ -67,9 +68,18 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         if (!theDataset.getOwner().isReleased()) {
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
         }
-        
+
+        if (theDataset.isLocked()) {
+            throw new IllegalCommandException("This dataset is locked due to files being ingested. Please try publishing later.", this);
+        }
+
         if (theDataset.getLatestVersion().isReleased()) {
             throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is already released. Only draft versions can be released.", this);
+        }
+
+        // prevent publishing of 0.1 version
+        if (minorRelease && theDataset.getVersions().size() == 1 && theDataset.getLatestVersion().isDraft()) {
+            throw new IllegalCommandException("Cannot publish as minor version. Re-try as major release.", this);
         }
 
         if (minorRelease && !theDataset.getLatestVersion().isMinorUpdate()) {
@@ -89,14 +99,21 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                         idServiceBean.createIdentifier(theDataset);
                         theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     } else {
-                        theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
-                        if (!idServiceBean.alreadyExists(theDataset)) {
-                            idServiceBean.createIdentifier(theDataset);
-                            theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                        } else {
-                            throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset.", this);
+                        int attempts = 0;
+                       
+                        while (idServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(protocol, authority, theDataset.getDoiSeparator()));
+                            attempts++;
                         }
-                    }
+                        
+                        if (idServiceBean.alreadyExists(theDataset)) {
+                            throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset;gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
+                        }
+                        idServiceBean.createIdentifier(theDataset);
+                        theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                        
+                        }
+                   
                 } catch (Throwable e) {
                     throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
                 }
@@ -197,7 +214,9 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             Dataverse dv = savedDataset.getOwner();
             while (dv != null) {
                 if (dv.getDataverseSubjects().addAll(subject.getControlledVocabularyValues())) {
-                    ctxt.index().indexDataverse(dv); // need to reindex to capture the new subjects
+                    Dataverse dvWithSubjectJustAdded = ctxt.em().merge(dv);
+                    ctxt.em().flush();
+                    ctxt.index().indexDataverse(dvWithSubjectJustAdded); // need to reindex to capture the new subjects
                 }
                 dv = dv.getOwner();
             }

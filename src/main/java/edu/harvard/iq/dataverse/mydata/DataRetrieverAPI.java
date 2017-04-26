@@ -1,7 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @todo Shouldn't this be in the "edu.harvard.iq.dataverse.api" package? Is the only one that isn't.
  */
 package edu.harvard.iq.dataverse.mydata;
 
@@ -16,9 +14,10 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
-import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
+//import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
@@ -52,7 +51,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(DataRetrieverAPI.class.getCanonicalName());
 
-    public static final String retrieveDataFullAPIPath = "/api/mydata/retrieve";
+    public static final String retrieveDataFullAPIPath = "/api/v1/mydata/retrieve";
     private static final String retrieveDataPartialAPIPath = "retrieve";
 
     @Inject
@@ -68,8 +67,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     AuthenticationServiceBean authenticationService;
-    @EJB
-    MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
+    //@EJB
+    //MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @EJB
     GroupServiceBean groupService;
     
@@ -165,9 +164,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return authenticationService.getAuthenticatedUser(userIdentifier);
     }
     
-    public Map<String, Long> getTotalCountsFromSolrAsJavaMap(AuthenticatedUser searchUser, MyDataFinder myDataFinder ){
+    public Map<String, Long> getTotalCountsFromSolrAsJavaMap(DataverseRequest dataverseRequest, MyDataFinder myDataFinder ){
         //msgt("getTotalCountsFromSolrAsJavaMap: " + searchUser.getIdentifier());
-        SolrQueryResponse solrQueryResponseForCounts = getTotalCountsFromSolr(searchUser, myDataFinder);
+        SolrQueryResponse solrQueryResponseForCounts = getTotalCountsFromSolr(dataverseRequest, myDataFinder);
         if (solrQueryResponseForCounts == null){
             logger.severe("DataRetrieverAPI.getTotalCountsFromSolrAsJSON: solrQueryResponseForCounts should not be null");
             return null;
@@ -175,9 +174,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return solrQueryResponseForCounts.getDvObjectCounts();
     }
     
-    public JsonObjectBuilder getTotalCountsFromSolrAsJSON(AuthenticatedUser searchUser, MyDataFinder myDataFinder ){
+    public JsonObjectBuilder getTotalCountsFromSolrAsJSON(DataverseRequest dataverseRequest, MyDataFinder myDataFinder ){
     
-        SolrQueryResponse solrQueryResponseForCounts = getTotalCountsFromSolr(searchUser, myDataFinder);
+        SolrQueryResponse solrQueryResponseForCounts = getTotalCountsFromSolr(dataverseRequest, myDataFinder);
         if (solrQueryResponseForCounts == null){
             logger.severe("DataRetrieverAPI.getTotalCountsFromSolrAsJSON: solrQueryResponseForCounts should not be null");
             return null;
@@ -186,20 +185,20 @@ public class DataRetrieverAPI extends AbstractApiBean {
     }
     
     
-    private SolrQueryResponse getTotalCountsFromSolr(AuthenticatedUser searchUser, MyDataFinder myDataFinder){
+    private SolrQueryResponse getTotalCountsFromSolr(DataverseRequest dataverseRequest, MyDataFinder myDataFinder){
         //msgt("getTotalCountsFromSolr: " + searchUser.getIdentifier());
 
         if (myDataFinder == null){
             throw new NullPointerException("myDataFinder cannot be null");
         }
-        if (searchUser == null){
-            throw new NullPointerException("searchUser cannot be null");
+        if (dataverseRequest == null){
+            throw new NullPointerException("dataverseRequest cannot be null");
         }
         
         // -------------------------------------------------------
         // Create new filter params that only check by the User 
         // -------------------------------------------------------
-        MyDataFilterParams filterParams = new MyDataFilterParams(searchUser, myDataFinder.getRolePermissionHelper());
+        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, myDataFinder.getRolePermissionHelper());
         if (filterParams.hasError()){
             logger.severe("getTotalCountsFromSolr. filterParams error: " + filterParams.getErrorMessage());           
             return null;
@@ -232,7 +231,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         SolrQueryResponse solrQueryResponseForCounts;
         try {
             solrQueryResponseForCounts = searchService.search(
-                    searchUser, //
+                    dataverseRequest,
                     null, // subtree, default it to Dataverse for now
                     "*",  //    Get everything--always
                     filterQueries,//filterQueries,
@@ -267,7 +266,11 @@ public class DataRetrieverAPI extends AbstractApiBean {
         
     }
     
-    
+
+    /**
+     * @todo This should support the "X-Dataverse-key" header like the other
+     * APIs.
+     */
     @Path(retrieveDataPartialAPIPath)
     @GET
     @Produces({"application/json"})
@@ -288,7 +291,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // For, superusers, the searchUser may differ from the authUser
         //
         AuthenticatedUser searchUser = null;  
-        
 
         if (DEBUG_MODE==true){      // DEBUG: use userIdentifier
             authUser = getUserFromIdentifier(userIdentifier);
@@ -351,7 +353,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors 
         // ---------------------------------
-        MyDataFilterParams filterParams = new MyDataFilterParams(authUser, dtypes, pub_states, roleIds, searchTerm);
+        DataverseRequest dataverseRequest = createDataverseRequest(authUser);
+
+        
+        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm);
         if (filterParams.hasError()){
             return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
         }
@@ -397,7 +402,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         try {
                 solrQueryResponse = searchService.search(
-                        searchUser, // 
+                        dataverseRequest,
                         null, // subtree, default it to Dataverse for now
                         filterParams.getSearchTerm(),  //"*", //
                         filterQueries,//filterQueries,
@@ -441,7 +446,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 paginationStart);
         
         RoleTagRetriever roleTagRetriever = new RoleTagRetriever(this.rolePermissionHelper, this.roleAssigneeSvc, this.dvObjectServiceBean);
-        roleTagRetriever.loadRoles(searchUser, solrQueryResponse);
+        roleTagRetriever.loadRoles(dataverseRequest, solrQueryResponse);
 
                 
         jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true)
