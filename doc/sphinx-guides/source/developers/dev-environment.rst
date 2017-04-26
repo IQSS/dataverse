@@ -77,8 +77,8 @@ Please see also the :doc:`/developers/tools` page, which lists additional tools 
 Setting Up Your Dev Environment
 -------------------------------
 
-SSH keys
-~~~~~~~~
+Set Up SSH Keys
+~~~~~~~~~~~~~~~
 
 You can use git with passwords over HTTPS, but it's much nicer to set up SSH keys. https://github.com/settings/ssh is the place to manage the ssh keys GitHub knows about for you. That page also links to a nice howto: https://help.github.com/articles/generating-ssh-keys
 
@@ -162,10 +162,14 @@ If you have an old copy of the database and old Solr data and want to start fres
 - confirm http://localhost:8080 is up
 - If you want to set some dataset-specific facets, go to the root dataverse (or any dataverse; the selections can be inherited) and click "General Information" and make choices under "Select Facets". There is a ticket to automate this: https://github.com/IQSS/dataverse/issues/619
 
+You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy and related scripts interesting because they demonstrate how we have at least partially automated the process of tearing down a Dataverse installation and having it rise again, hence the name "phoenix." See also "Fresh Reinstall" in the :doc:`/installation/installation-main` section of the Installation Guide.
+
 Shibboleth and OAuth
 --------------------
 
-If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth and OAuth users. Rather than setting up Shibboleth on your laptop, developers are advised to simply add a value to their database to enable Shibboleth "dev mode" like this:
+If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth and OAuth users. For some background on user accounts in Dataverse, see "Auth Modes: Local vs. Remote vs. Both" in the :doc:`/installation/config` section of the Installation Guide.
+
+Rather than setting up Shibboleth on your laptop, developers are advised to simply add a value to their database to enable Shibboleth "dev mode" like this:
 
 ``curl http://localhost:8080/api/admin/settings/:DebugShibAccountType -X PUT -d RANDOM``
 
@@ -185,6 +189,8 @@ Now when you go to http://localhost:8080/oauth2/firstLogin.xhtml you should be p
 
 Geoconnect
 ----------
+
+As mentioned under "Architecture and Components" in the :doc:`/installation/prep` section of the Installation Guide, Geoconnect is an optional component of Dataverse, so this section is only necessary to follow it you are working on an issue related to this feature.
 
 Set Up
 ~~~~~~
@@ -271,7 +277,7 @@ For two "final" shapefile sets, ``bicycles.zip`` and ``subway_line.zip``, a new 
 WorldMap JoinTargets + API Endpoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-WorldMap supplies target layers -- or JoinTargets -- that a tabular file may be mapped against. A JSON description of these CGA curated JoinTargets may be retrieved via API at ``http://worldmap.harvard.edu/datatables/api/jointargets/``. Please note: login is required. You may use any WorldMap account credentials via HTTP Basic Auth.
+WorldMap supplies target layers -- or JoinTargets -- that a tabular file may be mapped against. A JSON description of these `CGA <http://gis.harvard.edu>`_-curated JoinTargets may be retrieved via API at ``http://worldmap.harvard.edu/datatables/api/jointargets/``. Please note: login is required. You may use any WorldMap account credentials via HTTP Basic Auth.
 
 Example of JoinTarget information returned via the API:
 

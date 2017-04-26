@@ -3,26 +3,28 @@
 WorldMap: Geospatial Data Exploration
 +++++++++++++++++++++++++++++++++++++
 
+.. contents:: :local:
+
 Dataverse and WorldMap
 ======================
 
-`WorldMap <http://worldmap.harvard.edu/>`_ is developed by the Center for Geographic Analysis (CGA) at Harvard and is an open source software that helps researchers visualize and explore their data in maps. The WorldMap and Dataverse collaboration allows researchers to upload shapefiles or tabular files to Dataverse for long term storage and receive a persistent identifier (through DOI), then easily move into WorldMap to interact with the data and save to WorldMap as well.
+`WorldMap <http://worldmap.harvard.edu/>`_ is developed by the Center for Geographic Analysis (CGA) at Harvard and is open source software that helps researchers visualize and explore their data in maps. The WorldMap and Dataverse collaboration allows researchers to upload shapefiles or tabular files to Dataverse for long term storage and receive a persistent identifier (through DOI), then easily navigate into WorldMap to interact with the data and save to WorldMap as well.
 
 Note: WorldMap hosts their own `user guide <http://worldmap.harvard.edu/static/docs/WorldMap_Help_en.pdf>`_ that covers some of the same material as this page.
 
 What is Geoconnect?
 ===================
 
-Geoconnect is a platform that integrates Dataverse and WorldMap together, allowing researchers to visualize their geospatial data. Geoconnect can be used to create maps of shapefiles or of tabular files containing geospatial information.
+Geoconnect is a platform that integrates Dataverse and WorldMap, allowing researchers to visualize their geospatial data. Geoconnect can be used to create maps of shapefiles or of tabular files containing geospatial information. Geoconnect is an optional component of Dataverse, so if you are interested in this feature but don't see it in the installation of Dataverse you are using, you should contact the support team for that installation and ask them to enable the Geoconnect feature.
 
 Mapping shapefiles with Geoconnect
 ==================================
 
 Geoconnect is capable of mapping shapefiles which are uploaded to Dataverse in .zip format. Specifically, Dataverse recognizes a zipped shapefile by:
 
-1.Examining the contents of the .zip file
+1. Examining the contents of the .zip file
 
-2.Checking for the existence of four similarly named files with the following extensions: .dbf, .prj, .shp, .shx
+2. Checking for the existence of four similarly named files with the following extensions: .dbf, .prj, .shp, .shx
 
 Once you have uploaded your .zip shapefile, a Map Data button will appear next to the file in the dataset. In order to use this button, you'll need to publish your dataset. Once your dataset has been published, you can click on the Map Data button to be brought to Geoconnect, the portal between Dataverse and WorldMap that will allow you to create your map. 
 
@@ -108,7 +110,7 @@ At this point you will be presented with a basic map that can be styled to your 
 |image9|
 
 Finalizing your map
--------------------
+===================
 
 Now that you have created your map:
 
@@ -121,7 +123,7 @@ The map editor (pictured above) provides a set of options you can use to style y
 If you'd like to make future changes to your map, you can return to the editor by clicking the "Map Data" button on your file.
 
 Removing your map
------------------
+=================
 
 You can delete your map at any time. If you are on Dataverse, click "Map Data" and click the "Delete Map" button on the upper right. This completely removes the map and underlying data from the WorldMap platform.
 
