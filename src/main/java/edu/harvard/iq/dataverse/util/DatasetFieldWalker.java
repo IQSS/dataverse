@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,7 +42,8 @@ public class DatasetFieldWalker {
      */
     public static void walk( DatasetField dsf, Listener l ) {
         DatasetFieldWalker joe = new DatasetFieldWalker(l);
-        joe.walk(dsf, Collections.emptyList());
+        SettingsServiceBean nullServiceBean = null;
+        joe.walk(dsf, nullServiceBean);
     }
 
     /**
@@ -51,10 +53,10 @@ public class DatasetFieldWalker {
      * @param exclude the fields to skip
      * @param l the listener to execute on each field values and structure.
      */
-    public static void walk(List<DatasetField> fields, List<DatasetField> exclude, Listener l) {
+    public static void walk(List<DatasetField> fields, SettingsServiceBean settingsService, Listener l) {
         DatasetFieldWalker joe = new DatasetFieldWalker(l);
         for ( DatasetField dsf : sort( fields, DatasetField.DisplayOrder) ) {
-            joe.walk(dsf, exclude);
+            joe.walk(dsf, settingsService);
         }
     }
     
@@ -69,14 +71,9 @@ public class DatasetFieldWalker {
         this( null );
     }
     
-    public void walk(DatasetField fld, List<DatasetField> exclude) {
+    public void walk(DatasetField fld, SettingsServiceBean settingsService) {
         l.startField(fld);
         DatasetFieldType datasetFieldType = fld.getDatasetFieldType();
-
-        List<String> excludeStrings = new ArrayList<>();
-        for (DatasetField datasetField : exclude) {
-            excludeStrings.add(datasetField.getDatasetFieldType().getName());
-        }
 
         if ( datasetFieldType.isControlledVocabulary() ) {
             for ( ControlledVocabularyValue cvv 
@@ -86,17 +83,17 @@ public class DatasetFieldWalker {
             
         } else if ( datasetFieldType.isPrimitive() ) {
             for ( DatasetFieldValue pv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
-                // FIXME: Add exclusions elsewhere as needed.
-                if (!excludeStrings.contains(datasetFieldType.getName())) {
-                    l.primitiveValue(pv);
+                if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport, false) && DatasetFieldType.FieldType.EMAIL.equals(pv.getDatasetField().getDatasetFieldType().getFieldType())) {
+                    continue;
                 }
+                l.primitiveValue(pv);
             }
             
         } else if ( datasetFieldType.isCompound() ) {
            for ( DatasetFieldCompoundValue dsfcv : sort( fld.getDatasetFieldCompoundValues(), DatasetFieldCompoundValue.DisplayOrder) ) {
                l.startCompoundValue(dsfcv);
                for ( DatasetField dsf : sort(dsfcv.getChildDatasetFields(), DatasetField.DisplayOrder ) ) {
-                   walk(dsf, exclude);
+                   walk(dsf, settingsService);
                }
                l.endCompoundValue(dsfcv);
            }

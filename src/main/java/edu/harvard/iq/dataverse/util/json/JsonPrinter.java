@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -419,25 +418,11 @@ public class JsonPrinter {
     public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields) {
         JsonObjectBuilder blocksBld = jsonObjectBuilder();
 
-        List<DatasetField> exclude = new ArrayList<>();
-        if (settingsService != null) {
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport, false)) {
-                exclude.add(getdatasetContactEmailDatasetField());
-            }
-        }
-
         for (Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet()) {
             MetadataBlock block = blockAndFields.getKey();
-            blocksBld.add(block.getName(), json(block, blockAndFields.getValue(), exclude));
+            blocksBld.add(block.getName(), json(block, blockAndFields.getValue()));
         }
         return blocksBld;
-    }
-
-    static DatasetField getdatasetContactEmailDatasetField() {
-        DatasetField retVal = new DatasetField();
-        retVal.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.datasetContactEmail, DatasetFieldType.FieldType.TEXT, false));
-        retVal.setDatasetFieldValues(java.util.Collections.singletonList(new DatasetFieldValue(retVal, null)));
-        return retVal;
     }
 
     /**
@@ -448,19 +433,13 @@ public class JsonPrinter {
      * @param fields
      * @return JSON Object builder with the block and fields information.
      */
-    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields, List<DatasetField> exclude) {
+    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields) {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getDisplayName());
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
-        if (settingsService != null) {
-            if (!settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport, false)) {
-                exclude = Collections.emptyList();
-            }
-        }
-
-        DatasetFieldWalker.walk(fields, exclude, new DatasetFieldsToJson(fieldsArray));
+        DatasetFieldWalker.walk(fields, settingsService, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
         return blockBld;

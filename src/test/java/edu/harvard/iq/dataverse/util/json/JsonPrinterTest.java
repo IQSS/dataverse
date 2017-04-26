@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
@@ -64,7 +65,7 @@ public class JsonPrinterTest {
 
         DatasetFieldType datasetContactType = datasetFieldTypeSvc.add(new DatasetFieldType("datasetContact", FieldType.TEXT, true));
         Set<DatasetFieldType> datasetContactTypes = new HashSet<>();
-        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactEmail", FieldType.TEXT, false)));
+        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType(DatasetFieldConstant.datasetContactEmail, FieldType.EMAIL, false)));
         datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactName", FieldType.TEXT, false)));
         datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactAffiliation", FieldType.TEXT, false)));
         for (DatasetFieldType t : datasetContactTypes) {
@@ -195,7 +196,7 @@ public class JsonPrinterTest {
         SettingsServiceBean nullServiceBean = null;
         JsonPrinter jsonPrinter = new JsonPrinter(nullServiceBean);
 
-        JsonObject jsonObject = jsonPrinter.json(block, fields, Collections.emptyList()).build();
+        JsonObject jsonObject = jsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
 
         System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
@@ -225,9 +226,8 @@ public class JsonPrinterTest {
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
         DatasetFieldCompoundValue val = new DatasetFieldCompoundValue();
         val.setParentDatasetField(datasetContactField);
-        DatasetField datasetContactEmailDatasetField = constructPrimitive("datasetContactEmail", "foo@bar.com");
         val.setChildDatasetFields(Arrays.asList(
-                datasetContactEmailDatasetField,
+                constructPrimitive("datasetContactEmail", "foo@bar.com"),
                 constructPrimitive("datasetContactName", "Foo Bar"),
                 constructPrimitive("datasetContactAffiliation", "Bar University")
         ));
@@ -237,7 +237,7 @@ public class JsonPrinterTest {
 
         JsonPrinter jsonPrinter = new JsonPrinter(new MockSettingsSvc());
 
-        JsonObject jsonObject = JsonPrinter.json(block, fields, Arrays.asList(datasetContactEmailDatasetField)).build();
+        JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
 
         System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));

@@ -684,6 +684,14 @@ public class UtilIT {
                 .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
+    static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
+//        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+//                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+                .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+    }
+
     static Response search(String query, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
