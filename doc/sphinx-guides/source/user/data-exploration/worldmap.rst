@@ -17,6 +17,8 @@ What is Geoconnect?
 
 Geoconnect is a platform that integrates Dataverse and WorldMap, allowing researchers to visualize their geospatial data. Geoconnect can be used to create maps of shapefiles or of tabular files containing geospatial information. Geoconnect is an optional component of Dataverse, so if you are interested in this feature but don't see it in the installation of Dataverse you are using, you should contact the support team for that installation and ask them to enable the Geoconnect feature.
 
+If a data file's owner has created a map of that data using Geoconnect, you can view the map by clicking the "Explore" button. If the data is in the form of a shapefile, the button take you right to the map. If It's a tabular file, the Explore button will be a dropdown, and you'll need to select "Worldmap".
+
 Mapping shapefiles with Geoconnect
 ==================================
 
