@@ -58,7 +58,8 @@ public class DatasetUtil {
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();  
             
-            if (dataFile != null && ImageThumbConverter.isThumbnailAvailable(dataFile)
+            if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
+                    && ImageThumbConverter.isThumbnailAvailable(dataFile)
                     && !dataFile.isRestricted()) {                
                 String imageSourceBase64 = null;
                 imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
@@ -148,7 +149,7 @@ public class DatasetUtil {
         }
         for (FileMetadata fmd : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
-            if (ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
+            if (FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
                 return testFile;
             }
         }
