@@ -193,12 +193,13 @@
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link/Share Button Group -->
                             <div class="btn-group pull-right" id="datasetButtonBar" role="group">
-                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{!DatasetPage.workingVersion.deaccessioned}"
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{( DatasetPage.sessionUserAuthenticated
+                                             and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and 
+                                             !(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 0)}"
                                                title="#{bundle['dataset.compute.computeBatchBtn']}"
                                                value="#{bundle['dataset.compute.computeBatchBtn']}"
                                                oncomplete="PF('cartDatasetForm').show();bind_bsui_components();"
                                                update="cartDatasetForm">
-                                    <span class="badge">14</span>
                                 </p:commandLink>
                                 <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
@@ -1186,7 +1187,7 @@
                                                update="computefail">
                             
                             </p:commandLink>
-                            <p:dialog header="Compute" id="computefail" widgetVar="computefail" rendered="#{DatasetPage.getComputeStatus()}">
+                            <p:dialog header="Compute" id="computefail" widgetVar="computefail" >
                                 <h:outputText value="#{bundle['dataset.compute.error']}" />
                             </p:dialog>
                             <button type="button" class="btn btn-default" onclick="PF('cartDatasetForm').hide();PF('blockDatasetForm').hide();">

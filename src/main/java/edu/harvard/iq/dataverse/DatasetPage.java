@@ -231,8 +231,6 @@ public class DatasetPage implements java.io.Serializable {
     private String dataverseSiteUrl = ""; 
     
     private boolean removeUnusedTags;
-    
-    private boolean computeLaunchStatus = true;
 
     public boolean isRemoveUnusedTags() {
         return removeUnusedTags;
@@ -268,15 +266,12 @@ public class DatasetPage implements java.io.Serializable {
         cart.removeItem(title);
     }
     
-    public boolean getComputeStatus(){
-        return computeLaunchStatus;
-    }
-    
-    public void launchCompute() throws IOException{
+    public String launchCompute() throws IOException{
         
         String url = BundleUtil.getStringFromBundle("dataset.compute.link")+BundleUtil.getStringFromBundle("dataset.compute.linkapi");
         CloseableHttpClient client = HttpClients.createDefault();
         String cookies;
+        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         
         HttpPost post = new HttpPost(url);
         
@@ -288,25 +283,26 @@ public class DatasetPage implements java.io.Serializable {
         input.setContentType("application/json");
         post.setEntity(input);
         
+        
         HttpResponse response = client.execute(post);
         if (response.getStatusLine().getStatusCode() != 200) {
-            computeLaunchStatus=true;
 //            throw new RuntimeException("Failed : HTTP error code : "
 //                    + response.getStatusLine().getStatusCode());
             System.out.println("HTTP error code : "
                     + response.getStatusLine().getStatusCode());
+            return "500.xhtml?faces-redirect=true";
+            
         } else {
-            computeLaunchStatus=false;
             cookies = response.getFirstHeader("Set-Cookie") == null ? "" :
                      response.getFirstHeader("Set-Cookie").getValue();
             
-            ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+//            ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
             System.out.println(cookies);
             String[] parts=cookies.split(";")[0].split("=");
             externalContext.addResponseCookie(parts[0], parts[1], null);
             externalContext.redirect(BundleUtil.getStringFromBundle("dataset.compute.link"));
         }
-        
+        return "";
         
     }
     private String fileLabelSearchTerm;
