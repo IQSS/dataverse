@@ -180,7 +180,9 @@ public class MapLayerMetadataServiceBean {
                 String iconBaseTag = "img";
                 String iconThumbTagPrefix = "thumb";
                 for (String cachedFileTag : cachedObjectsTags) {
+                    logger.info("found AUX tag: "+cachedFileTag);
                     if (iconBaseTag.equals(cachedFileTag) || cachedFileTag.startsWith(iconThumbTagPrefix)) {
+                        logger.info("deleting cached AUX object "+cachedFileTag);
                         dataFileIO.deleteAuxObject(cachedFileTag);
                     }
                 }

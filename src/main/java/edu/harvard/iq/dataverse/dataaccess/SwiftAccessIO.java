@@ -334,8 +334,8 @@ public class SwiftAccessIO extends DataFileIO {
         
         while ((items = this.swiftContainer.list(namePrefix, lastItemName, LIST_PAGE_LIMIT))!= null && items.size() > 0) {
             for (StoredObject item : items) {
-                lastItemName = item.getName();
-                logger.info("Found AUX object "+lastItemName);
+                lastItemName = item.getName().substring(namePrefix.length());
+                //logger.info("Found AUX object "+lastItemName);
                 ret.add(lastItemName);
             }
         }
@@ -502,7 +502,7 @@ public class SwiftAccessIO extends DataFileIO {
                  }
                  catch (Exception e){
                      //e.printStackTrace();
-                     logger.info("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
+                     logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
                  }
             } else {
                 // This is a fatal condition - it has to exist, if we were to 
@@ -518,7 +518,7 @@ public class SwiftAccessIO extends DataFileIO {
         // object for a primary file), we also set the file download url here: 
         if (auxItemTag == null) {
             setRemoteUrl(getSwiftFileURI(fileObject));
-            logger.info(getRemoteUrl() + " success");
+            logger.fine(getRemoteUrl() + " success");
         }
         
         if (!writeAccess && !fileObject.exists()) {

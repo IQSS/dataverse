@@ -313,6 +313,10 @@ public class FileAccessIO extends DataFileIO {
     
     @Override
     public List<String>listAuxObjects() throws IOException {
+        if (this.getDataFile() == null) {
+            throw new IOException("This FileAccessIO object hasn't been properly initialized.");
+        }
+        
         List<Path> cachedFiles = listCachedFiles();
         
         if (cachedFiles == null) {
@@ -320,8 +324,9 @@ public class FileAccessIO extends DataFileIO {
         }
         
         List<String> cachedFileNames = new ArrayList<>();
+        String baseName = this.getDataFile().getStorageIdentifier() + ".";
         for (Path auxPath : cachedFiles) {
-            cachedFileNames.add(auxPath.getFileName().toString());
+            cachedFileNames.add(auxPath.getFileName().toString().substring(baseName.length()));
         }
         
         return cachedFileNames;

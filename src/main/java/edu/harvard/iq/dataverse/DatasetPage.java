@@ -480,6 +480,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
 
+    private Map<Long, String> datafileThumbnailsMap = new HashMap<>();
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
         
@@ -487,12 +488,29 @@ public class DatasetPage implements java.io.Serializable {
         // - check download permission here (should be cached - so it's free!)
         // - only then ask the file service if the thumbnail is available/exists.
         // the service itself no longer checks download permissions.  
+        // plus, cache the results!
         
         if (!this.fileDownloadHelper.canDownloadFile(fileMetadata)) {
             return false;
         }
      
-        return datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
+        if (datafileThumbnailsMap.containsKey(fileMetadata.getDataFile().getId())) {
+            return !"".equals(datafileThumbnailsMap.get(fileMetadata.getDataFile().getId()));
+        }
+        
+        
+        if (datafileService.isThumbnailAvailable(fileMetadata.getDataFile())) {
+            datafileThumbnailsMap.put(fileMetadata.getDataFile().getId(), fileMetadata.getDataFile().getThumbnailString());
+            return true;
+        } 
+        
+        datafileThumbnailsMap.put(fileMetadata.getDataFile().getId(), "");
+        return false;
+        
+    }
+    
+    public String getDataFileThumbnailAsBase64(FileMetadata fileMetadata) {
+        return datafileThumbnailsMap.get(fileMetadata.getDataFile().getId());
     }
     
     // Another convenience method - to cache Update Permission on the dataset: 
