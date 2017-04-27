@@ -79,6 +79,7 @@ import javax.faces.context.ExternalContext;
 import javax.faces.event.AjaxBehaviorEvent;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 //import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -270,7 +271,7 @@ public class DatasetPage implements java.io.Serializable {
         
         String url = BundleUtil.getStringFromBundle("dataset.compute.link")+BundleUtil.getStringFromBundle("dataset.compute.linkapi");
         CloseableHttpClient client = HttpClients.createDefault();
-        String cookies;
+        Header[] cookies;
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         
         HttpPost post = new HttpPost(url);
@@ -294,12 +295,17 @@ public class DatasetPage implements java.io.Serializable {
             return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
             
         } else {
-            cookies = response.getFirstHeader("Set-Cookie") == null ? "" :
-                     response.getFirstHeader("Set-Cookie").getValue();
+            cookies = response.getHeaders("Set-Cookie") == null ? null:
+                     response.getHeaders("Set-Cookie");
             
-            System.out.println(cookies);
-            String[] parts=cookies.split(";")[0].split("=");
-            externalContext.addResponseCookie(parts[0], parts[1], null);
+            for (Header cookie:cookies){
+                String cookieContent=cookie.getValue();
+                System.out.println(cookieContent);
+                String[] parts = cookieContent.split(";")[0].split("=");
+                externalContext.addResponseCookie(parts[0], parts[1], null);
+            }
+            
+            
             externalContext.redirect(BundleUtil.getStringFromBundle("dataset.compute.link"));
         }
         return null;
