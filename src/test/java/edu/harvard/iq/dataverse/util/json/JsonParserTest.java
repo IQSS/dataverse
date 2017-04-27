@@ -631,7 +631,7 @@ public class JsonParserTest {
                 case DoiSeparator:
                     return "/";
                     // FIXME: move this to a new Override for isTrueForKey
-                case ExcludeDatasetContactEmailFromExport:
+                case ExcludeEmailFromExport:
                     return "true";
                 default:
                     break;

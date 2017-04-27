@@ -267,7 +267,7 @@ public class JsonPrinterTest {
         @Override
         public boolean isTrueForKey(SettingsServiceBean.Key key, boolean defaultValue) {
             switch (key) {
-                case ExcludeDatasetContactEmailFromExport:
+                case ExcludeEmailFromExport:
                     return true;
                 default:
                     return false;

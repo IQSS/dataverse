@@ -601,7 +601,7 @@ public class DdiExportUtil {
                                      * Right now, that method is the only way to
                                      * test with JUnit.
                                      */
-                                    if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeDatasetContactEmailFromExport, false)) {
+                                    if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false)) {
                                         // no-op
                                     } else {
                                         datasetContactEmail = next.getSinglePrimitive();

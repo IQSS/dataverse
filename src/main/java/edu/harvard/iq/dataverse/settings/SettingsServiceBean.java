@@ -239,10 +239,9 @@ public class SettingsServiceBean {
         */
         ShibPassiveLoginEnabled,
         /**
-         * Whether Export should exclude the email address of the Dataset
-         * Contacts
+         * Whether Export should exclude FieldType.EMAIL
          */
-        ExcludeDatasetContactEmailFromExport;
+        ExcludeEmailFromExport;
         
         @Override
         public String toString() {

@@ -409,12 +409,12 @@ Specify a URL where users can read your API Terms of Use.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
-:ExcludeDatasetContactEmailFromExport
-+++++++++++++++++++++++++++++++++++++
+:ExcludeEmailFromExport
++++++++++++++++++++++++
 
-Set ``:ExcludeDatasetContactEmailFromExport`` to prevent email addresses for dataset contacts from being exposed in XML or JSON representations of dataset metadata. For a list exported formats such as DDI, see the :doc:`/admin/metadataexport` section of the Admin Guide.
+Set ``:ExcludeEmailFromExport`` to prevent email addresses for dataset contacts from being exposed in XML or JSON representations of dataset metadata. For a list exported formats such as DDI, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ExcludeDatasetContactEmailFromExport``
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ExcludeEmailFromExport``
 
 :GuidesBaseUrl
 ++++++++++++++
