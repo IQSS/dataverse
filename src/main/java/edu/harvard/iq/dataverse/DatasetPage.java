@@ -290,19 +290,19 @@ public class DatasetPage implements java.io.Serializable {
 //                    + response.getStatusLine().getStatusCode());
             System.out.println("HTTP error code : "
                     + response.getStatusLine().getStatusCode());
-            return "500.xhtml?faces-redirect=true";
+             JsfHelper.addErrorMessage(JH.localize("dataset.compute.failure"));
+            return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
             
         } else {
             cookies = response.getFirstHeader("Set-Cookie") == null ? "" :
                      response.getFirstHeader("Set-Cookie").getValue();
             
-//            ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
             System.out.println(cookies);
             String[] parts=cookies.split(";")[0].split("=");
             externalContext.addResponseCookie(parts[0], parts[1], null);
             externalContext.redirect(BundleUtil.getStringFromBundle("dataset.compute.link"));
         }
-        return "";
+        return null;
         
     }
     private String fileLabelSearchTerm;
