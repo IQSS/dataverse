@@ -29,8 +29,12 @@ import org.junit.Assert;
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
+import com.jayway.restassured.path.xml.XmlPath;
+import java.util.ArrayList;
+import java.util.HashMap;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertTrue;
 
 public class DatasetsIT {
 
@@ -139,7 +143,7 @@ public class DatasetsIT {
         List<JsonObject> datasetContactsFromNativeGet = with(getDatasetJsonAfterPublishing.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("data.latestVersion.metadataBlocks.citation.fields.findAll { fields -> fields.typeName == datasetContact }");
         Map firstDatasetContactFromNativeGet = datasetContactsFromNativeGet.get(0);
-        Assert.assertTrue(firstDatasetContactFromNativeGet.toString().contains("finch@mailinator.com"));
+        assertTrue(firstDatasetContactFromNativeGet.toString().contains("finch@mailinator.com"));
 
         RestAssured.registerParser("text/plain", Parser.JSON);
         Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
@@ -149,19 +153,179 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode());
         RestAssured.unregisterParser("text/plain");
 
-        List<JsonObject> datasetContactsFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
-                .getJsonObject("datasetVersion.metadataBlocks.citation.fields.findAll { fields -> fields.typeName == datasetContact }");
-        Map firstDatasetContactFromExport = datasetContactsFromExport.get(0);
-        Assert.assertTrue(firstDatasetContactFromExport.toString().contains("finch@mailinator.com"));
+        // FIXME: It would be awesome if we could just get a JSON object back instead. :(
+        Map<String, Object> datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
+                .getJsonObject("datasetVersion.metadataBlocks.citation.fields.find { fields -> fields.typeName == datasetContact }");
+        System.out.println("datasetContactFromExport: " + datasetContactFromExport);
 
-        // TODO: Write test for DDI.
-        // FIXME: Why aren't we seeing "finch@mailinator.com" in this output?
+        assertEquals("datasetContact", datasetContactFromExport.get("typeName"));
+        List valuesArray = (ArrayList) datasetContactFromExport.get("value");
+        // FIXME: it's brittle to rely on the first value but what else can we do, given our API?
+        Map<String, Object> firstValue = (Map<String, Object>) valuesArray.get(0);
+//        System.out.println("firstValue: " + firstValue);
+        Map firstValueMap = (HashMap) firstValue.get("datasetContactEmail");
+//        System.out.println("firstValueMap: " + firstValueMap);
+        assertEquals("finch@mailinator.com", firstValueMap.get("value"));
+        assertTrue(datasetContactFromExport.toString().contains("finch@mailinator.com"));
+        assertTrue(firstValue.toString().contains("finch@mailinator.com"));
+
+        Response citationBlock = UtilIT.getMetadataBlockFromDatasetVersion(datasetPersistentId, null, null, apiToken);
+        citationBlock.prettyPrint();
+        citationBlock.then().assertThat()
+                .body("data.fields[2].value[0].datasetContactEmail.value", equalTo("finch@mailinator.com"))
+                .statusCode(OK.getStatusCode());
+
+        Response exportFail = UtilIT.exportDataset(datasetPersistentId, "noSuchExporter", apiToken);
+        exportFail.prettyPrint();
+        exportFail.then().assertThat()
+                .body("message", equalTo("Export Failed"))
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
+        exportDatasetAsDublinCore.prettyPrint();
+        exportDatasetAsDublinCore.then().assertThat()
+                // FIXME: Get this working. See https://github.com/rest-assured/rest-assured/wiki/Usage#example-3---complex-parsing-and-validation
+                //                .body("oai_dc:dc.find { it == 'dc:title' }.item", hasItems("Darwin's Finches"))
+                .statusCode(OK.getStatusCode());
+
         Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
         exportDatasetAsDdi.prettyPrint();
+        exportDatasetAsDdi.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
-        // TODO: Write test for     @GET
-//	@Path("{id}/versions/{versionNumber}/metadata/{block}")
-//    public Response getVersionMetadataBlock( @PathParam("id") String datasetId,
+        /**
+         * The Native API allows you to create a dataset contact with an email
+         * but no name. The email should appear in the DDI export. SWORD may
+         * have the same behavior. Untested. This smells like a bug.
+         */
+        boolean nameRequiredForContactToAppear = true;
+        if (nameRequiredForContactToAppear) {
+            assertEquals("", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact"));
+        } else {
+            assertEquals("finch@mailinator.com", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+        }
+        assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
+        Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+    }
+
+    /**
+     * This test requires the root dataverse to be published to pass.
+     */
+    @Test
+    public void testExport() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+        Response attemptToPublishZeroDotOne = UtilIT.publishDatasetViaNativeApiDeprecated(datasetPersistentId, "minor", apiToken);
+        attemptToPublishZeroDotOne.prettyPrint();
+        attemptToPublishZeroDotOne.then().assertThat()
+                .body("message", equalTo("Cannot publish as minor version. Re-try as major release."))
+                .statusCode(403);
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        Response getDatasetJsonAfterPublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterPublishing.prettyPrint();
+        getDatasetJsonAfterPublishing.then().assertThat()
+                .body("data.latestVersion.versionNumber", equalTo(1))
+                .body("data.latestVersion.versionMinorNumber", equalTo(0))
+                // FIXME: make this less brittle by removing "2" and "0". See also test below.
+                .body("data.latestVersion.metadataBlocks.citation.fields[2].value[0].datasetContactEmail.value", equalTo("sammi@sample.com"))
+                .statusCode(OK.getStatusCode());
+
+        List<JsonObject> datasetContactsFromNativeGet = with(getDatasetJsonAfterPublishing.body().asString()).param("datasetContact", "datasetContact")
+                .getJsonObject("data.latestVersion.metadataBlocks.citation.fields.findAll { fields -> fields.typeName == datasetContact }");
+        Map firstDatasetContactFromNativeGet = datasetContactsFromNativeGet.get(0);
+        assertTrue(firstDatasetContactFromNativeGet.toString().contains("finch@mailinator.com"));
+
+        RestAssured.registerParser("text/plain", Parser.JSON);
+        Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
+        exportDatasetAsJson.prettyPrint();
+        exportDatasetAsJson.then().assertThat()
+                .body("datasetVersion.metadataBlocks.citation.fields[2].value[0].datasetContactEmail.value", equalTo("sammi@sample.com"))
+                .statusCode(OK.getStatusCode());
+        RestAssured.unregisterParser("text/plain");
+
+        // FIXME: It would be awesome if we could just get a JSON object back instead. :(
+        Map<String, Object> datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
+                .getJsonObject("datasetVersion.metadataBlocks.citation.fields.find { fields -> fields.typeName == datasetContact }");
+        System.out.println("datasetContactFromExport: " + datasetContactFromExport);
+
+        assertEquals("datasetContact", datasetContactFromExport.get("typeName"));
+        List valuesArray = (ArrayList) datasetContactFromExport.get("value");
+        // FIXME: it's brittle to rely on the first value but what else can we do, given our API?
+        Map<String, Object> firstValue = (Map<String, Object>) valuesArray.get(0);
+//        System.out.println("firstValue: " + firstValue);
+        Map firstValueMap = (HashMap) firstValue.get("datasetContactEmail");
+//        System.out.println("firstValueMap: " + firstValueMap);
+        assertEquals("finch@mailinator.com", firstValueMap.get("value"));
+        assertTrue(datasetContactFromExport.toString().contains("sammi@sample.com"));
+        assertTrue(firstValue.toString().contains("sammi@sample.com"));
+
+        Response citationBlock = UtilIT.getMetadataBlockFromDatasetVersion(datasetPersistentId, null, null, apiToken);
+        citationBlock.prettyPrint();
+        citationBlock.then().assertThat()
+                .body("data.fields[2].value[0].datasetContactEmail.value", equalTo("sammi@sample.com"))
+                .statusCode(OK.getStatusCode());
+
+        Response exportFail = UtilIT.exportDataset(datasetPersistentId, "noSuchExporter", apiToken);
+        exportFail.prettyPrint();
+        exportFail.then().assertThat()
+                .body("message", equalTo("Export Failed"))
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
+        exportDatasetAsDublinCore.prettyPrint();
+        exportDatasetAsDublinCore.then().assertThat()
+                // FIXME: Get this working. See https://github.com/rest-assured/rest-assured/wiki/Usage#example-3---complex-parsing-and-validation
+                //                .body("oai_dc:dc.find { it == 'dc:title' }.item", hasItems("Darwin's Finches"))
+                .statusCode(OK.getStatusCode());
+
+        Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
+        exportDatasetAsDdi.prettyPrint();
+        exportDatasetAsDdi.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals("sammi@sample.com", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+        assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
@@ -194,7 +358,8 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
@@ -227,12 +392,22 @@ public class DatasetsIT {
                 .body("data.latestVersion.versionMinorNumber", equalTo(0))
                 .statusCode(OK.getStatusCode());
 
+        Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
+        exportDatasetAsDdi.prettyPrint();
+        exportDatasetAsDdi.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals("Dataverse, Admin", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact"));
+        // no "sammi@sample.com" to be found https://github.com/IQSS/dataverse/issues/3443
+        assertEquals("[]", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+        assertEquals("Sample Datasets, inc.", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@affiliation"));
+        assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
         List<JsonObject> datasetContactsFromNativeGet = with(getDatasetJsonAfterPublishing.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("data.latestVersion.metadataBlocks.citation.fields.findAll { fields -> fields.typeName == datasetContact }");
-        // no "finch@mailinator.com" to be found https://github.com/IQSS/dataverse/issues/3443
-        assertEquals(0, datasetContactsFromNativeGet.size());
+        // TODO: Assert that email can't be found.
+        assertEquals(1, datasetContactsFromNativeGet.size());
 
-        RestAssured.registerParser("text/plain", Parser.JSON);
         // TODO: Write test for DDI too.
         Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
         exportDatasetAsJson.prettyPrint();
@@ -242,16 +417,19 @@ public class DatasetsIT {
 
         List<JsonObject> datasetContactsFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("datasetVersion.metadataBlocks.citation.fields.findAll { fields -> fields.typeName == datasetContact }");
-        // no "finch@mailinator.com" to be found https://github.com/IQSS/dataverse/issues/3443
-        assertEquals(0, datasetContactsFromExport.size());
+        // TODO: Assert that email can't be found.
+        assertEquals(1, datasetContactsFromExport.size());
 
-        // TODO: Write test for DDI.
-        Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
-        exportDatasetAsDdi.prettyPrint();
+        Response citationBlock = UtilIT.getMetadataBlockFromDatasetVersion(datasetPersistentId, null, null, apiToken);
+        citationBlock.prettyPrint();
+        citationBlock.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
-        // TODO: Write test for     @GET
-//	@Path("{id}/versions/{versionNumber}/metadata/{block}")
-//    public Response getVersionMetadataBlock( @PathParam("id") String datasetId,
+        List<JsonObject> datasetContactsFromCitationBlock = with(citationBlock.body().asString()).param("datasetContact", "datasetContact")
+                .getJsonObject("data.fields.findAll { fields -> fields.typeName == datasetContact }");
+        // TODO: Assert that email can't be found.
+        assertEquals(1, datasetContactsFromCitationBlock.size());
+
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
@@ -296,7 +474,7 @@ public class DatasetsIT {
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         System.out.println("identifier: " + identifier);
-        Assert.assertTrue(StringUtils.isNumeric(identifier));
+        assertTrue(StringUtils.isNumeric(identifier));
 
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();

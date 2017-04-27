@@ -608,6 +608,7 @@ public class DdiExportUtil {
                                     }
                                 }
                             }
+                            // TODO: Since datasetContactEmail is a required field but datasetContactName is not consider not checking if datasetContactName is empty so we can write out datasetContactEmail.
                             if (!datasetContactName.isEmpty()){
                                 xmlw.writeStartElement("contact"); 
                                 if(!datasetContactAffiliation.isEmpty()){
