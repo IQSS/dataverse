@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.workflow.step;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import java.io.Serializable;
 import java.util.Map;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -34,6 +35,7 @@ public class WorkflowStepData implements Serializable {
     private String stepType;
     
     @ElementCollection( fetch=FetchType.EAGER )
+    @Column(length = 2048)
     private Map<String,String> stepParameters;
 
     public Workflow getParent() {

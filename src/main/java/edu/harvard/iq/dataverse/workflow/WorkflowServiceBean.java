@@ -86,7 +86,6 @@ public class WorkflowServiceBean {
         WorkflowStepData wsd = wf.getSteps().get(idx);
         WorkflowStep step = createStep(wsd);
         WorkflowStepResult res = step.run(ctxt);
-        logger.info("WSB#forward " + wf.getId() + ":" + idx + " -> " + res); // TODO SBG: remove
         
         if (res == WorkflowStepResult.OK) {
             if (idx == wf.getSteps().size() - 1) {
@@ -102,7 +101,6 @@ public class WorkflowServiceBean {
         } else if (res instanceof Pending) {
             pauseAndAwait(wf, ctxt, (Pending) res, idx);
         }
-
     }
     
     @Asynchronous
@@ -117,8 +115,9 @@ public class WorkflowServiceBean {
             rollback(wf, ctxt, (Failure) res, pending.getPendingStepIdx() - 1);
         } else if (res instanceof Pending) {
             pauseAndAwait(wf, ctxt, (Pending) res, pending.getPendingStepIdx());
+        } else {
+            forward(wf, ctxt, pending.getPendingStepIdx() + 1);
         }
-        forward(wf, ctxt, pending.getPendingStepIdx() + 1);
     }
 
     @Asynchronous

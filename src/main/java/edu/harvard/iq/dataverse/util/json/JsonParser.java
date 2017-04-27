@@ -731,10 +731,17 @@ public class JsonParser {
         if ( json.containsKey("parameters") ) {
             JsonObject params = json.getJsonObject("parameters");
             Map<String,String> paramMap = new HashMap<>();
-            params.keySet().forEach(k -> paramMap.put(k,params.get(k).toString()));
+            params.keySet().forEach(k -> paramMap.put(k,jsonValueToString(params.get(k))));
             wsd.setStepParameters(paramMap);
         }
         return wsd;
+    }
+    
+    private String jsonValueToString(JsonValue jv) {
+        switch ( jv.getValueType() ) {
+            case STRING: return ((JsonString)jv).getString();
+            default: return jv.toString();
+        }
     }
     
     public List<ControlledVocabularyValue> parseControlledVocabularyValue(DatasetFieldType cvvType, JsonObject json) throws JsonParseException {

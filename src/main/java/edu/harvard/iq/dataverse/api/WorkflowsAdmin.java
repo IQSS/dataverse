@@ -126,8 +126,8 @@ public class WorkflowsAdmin extends AbstractApiBean {
     public Response deleteWorkflow(@PathParam("id") String id ) {
         try {
             long idtf = Long.parseLong(id);
-            return workflows.deleteWorkflow(idtf) ? notFound("workflow with id " + idtf + " not found") 
-                                 : ok("Workflow " + idtf + " deleted"); 
+            return workflows.deleteWorkflow(idtf) ? ok("Workflow " + idtf + " deleted") 
+                                 : notFound("workflow with id " + idtf + " not found"); 
         } catch (NumberFormatException nfe) {
             return badRequest("workflow identifier has to be numeric.");
             

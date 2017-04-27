@@ -12,6 +12,11 @@ public class Pending implements WorkflowStepResult {
     
     private final Map<String,String> data = new HashMap<>();
 
+    public Pending(Map<String,String> someData) {
+        data.putAll(someData);
+    }
+    public Pending() {}
+    
     public Map<String, String> getData() {
         return data;
     }

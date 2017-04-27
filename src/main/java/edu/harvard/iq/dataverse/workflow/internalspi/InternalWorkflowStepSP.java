@@ -17,8 +17,10 @@ public class InternalWorkflowStepSP implements WorkflowStepSPI {
                 return new LoggingWorkflowStep(stepParameters);
             case "pause":
                 return new PauseStep(stepParameters);
+            case "http/sr":
+                return new HttpSendReceiveClientStep(stepParameters);
             default:
-                return null;
+                throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }
     }
     
