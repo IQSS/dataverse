@@ -273,7 +273,7 @@ public class DatasetsIT {
         List<JsonObject> datasetContactsFromNativeGet = with(getDatasetJsonAfterPublishing.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("data.latestVersion.metadataBlocks.citation.fields.findAll { fields -> fields.typeName == datasetContact }");
         Map firstDatasetContactFromNativeGet = datasetContactsFromNativeGet.get(0);
-        assertTrue(firstDatasetContactFromNativeGet.toString().contains("finch@mailinator.com"));
+        assertTrue(firstDatasetContactFromNativeGet.toString().contains("sammi@sample.com"));
 
         RestAssured.registerParser("text/plain", Parser.JSON);
         Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
@@ -295,7 +295,7 @@ public class DatasetsIT {
 //        System.out.println("firstValue: " + firstValue);
         Map firstValueMap = (HashMap) firstValue.get("datasetContactEmail");
 //        System.out.println("firstValueMap: " + firstValueMap);
-        assertEquals("finch@mailinator.com", firstValueMap.get("value"));
+        assertEquals("sammi@sample.com", firstValueMap.get("value"));
         assertTrue(datasetContactFromExport.toString().contains("sammi@sample.com"));
         assertTrue(firstValue.toString().contains("sammi@sample.com"));
 
