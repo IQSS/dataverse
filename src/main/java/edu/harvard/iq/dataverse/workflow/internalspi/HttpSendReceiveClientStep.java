@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import static edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult.OK;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -147,10 +146,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
                 curValue = curValue.replace(varRef, val);
             }
         }
-        logger.info("template:");
-        logger.info(template);
-        logger.info("-----");
-        logger.info(curValue);
+        
         return curValue;
     }
     
