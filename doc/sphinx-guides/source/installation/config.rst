@@ -149,6 +149,40 @@ Enabling a second authentication provider will result in the Log In page showing
 - ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. 
 - The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work. This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to builtin. Then the user initiates a conversion from builtin to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
+Going Live
+----------
+
+Before going live with your installation of Dataverse, you must take the steps above under "Securing Your Installation" and you should at least review the various configuration options listed below.
+
+Out of the box, Dataverse attempts to block search engines from crawling your installation of Dataverse so that test datasets do not appear in search results until you'd ready.
+
+Letting Search Engines Crawl Your Installation
+++++++++++++++++++++++++++++++++++++++++++++++
+
+For a public production Dataverse installation, it is probably desired that search agents be able to index published pages (aka - pages that are visible to an unauthenticated user).
+Polite crawlers usually respect the `Robots Exclusion Standard <https://en.wikipedia.org/wiki/Robots_exclusion_standard>`_; we have provided an example of a production robots.txt :download:`here </_static/util/robots.txt>`).
+
+You have a couple of options for putting an updated robots.txt file into production. If you are fronting Glassfish with Apache as recommended above, you can place robots.txt in the root of the directory specified in your ``VirtualHost`` and to your Apache config a ``ProxyPassMatch`` line like the one below to prevent Glassfish from serving the version of robots.txt that embedded in the Dataverse war file:
+
+.. code-block:: text
+
+    # don't let Glassfish serve its version of robots.txt
+    ProxyPassMatch ^/robots.txt$ !
+
+For more of an explanation of ``ProxyPassMatch`` see the :doc:`shibboleth` section.
+
+If you are not fronting Glassfish with Apache you'll need to prevent Glassfish from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of Dataverse. Furthermore, since the version of Dataverse is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse 4.6.1 the path to robots.txt may be ``/usr/local/glassfish4/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt``
+
+Putting Your Dataverse Installation on the Map at dataverse.org
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Congratulations! You've gone live! It's time to announce your new data respository to the world! You are also welcome to contact support@dataverse.org to have the Dataverse team add your installation to the map at http://dataverse.org . Thank you for installing Datavese!
+
+Administration of Your Dataverse Installation
++++++++++++++++++++++++++++++++++++++++++++++
+
+Now that you're live you'll want to review the :doc:`/admin/index`. Please note that there is also a :doc:`administration` section of this Installation Guide that will be moved to the newer Admin Guide in the future.
+
 JVM Options
 -----------
 
@@ -618,12 +652,3 @@ It is recommended that you configure additional error handling for your Service 
 You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or any other page on your site that is accessible to anonymous users and will have the isPassive.js file loaded.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
-
-
-
-Supporting Crawling
--------------------
-
-For a public production Dataverse installation, it is probably desired that search agents be able to index published pages (aka - pages that are visible to an unauthenticated user).
-Polite crawlers usually respect the `Robots Exclusion Standard <https://en.wikipedia.org/wiki/Robots_exclusion_standard>`_; we have provided an example of a production robots.txt :download:`here </_static/util/createsequence.sql>`).
-
