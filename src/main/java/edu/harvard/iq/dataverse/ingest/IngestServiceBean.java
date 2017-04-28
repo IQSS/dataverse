@@ -407,7 +407,7 @@ public class IngestServiceBean {
     // TODO: consider creating a version of this method that would take 
     // datasetversion as the argument. 
     // -- L.A. 4.6
-    @Asynchronous
+    // @Asynchronous - just an experiment...
     public void startIngestJobs(Dataset dataset, AuthenticatedUser user) {
         int count = 0;
         List<DataFile> scheduledFiles = new ArrayList<>();
