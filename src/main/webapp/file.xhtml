@@ -41,24 +41,57 @@
                             </div>
                             <!-- END: Metrics -->
                             
-                            <div class="button-block pull-right">
-                                <!-- Explore/Map Data/Download/Request Button Block -->
-                                <div class="button-container btn-group pull-right" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
+                            <div class="button-block pull-right" >
+                                
+                                <!-- TO-DO fix float issue with Edit/Map style="background:gold;" -->
+
+                                <!-- Email/Share Button Group -->
+                                <div class="btn-group" id="datasetButtonBar" role="group">
+                                    <p:commandLink class="text-button bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
+                                                   update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{FilePage.fileMetadata.datasetVersion.dataset}"/>
+                                        <span class="glyphicon glyphicon-envelope"/> Contact
+                                    </p:commandLink>
+                                    <p:commandLink styleClass="text-button bootstrap-button-tooltip" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"
+                                                   title="#{bundle['dataset.share.datasetShare']}"
+                                                   oncomplete="PF('shareDialog').show();sharrre();">
+                                        <span class="glyphicon glyphicon-share"/> Share
+                                    </p:commandLink>
+                                </div>
+                                <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true"  rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
+
+                                        <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
+
+                                    <div class="button-block">
+                                        <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
+                                            #{bundle.close}
+                                        </button>
+                                    </div>
+                                </p:dialog>
+                                <!-- END: Email/Share Button Group -->
+                                
+                                
+                                <!-- TO-DO BTN-GROUP RENDER LOGIC -->
+                                
+                                <div class="button-container btn-group">
+                                
+                                <!-- Map Data/Set Up Button Block -->
+                                <div class="" jsf:rendered="#{(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))  
+                                                                                            or (!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                               (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
-                                    <ui:include src="file-download-button-fragment.xhtml">
+                                    <ui:include src="file-setup-button.xhtml">
                                         <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
                                         <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
-                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
-                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
-                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
-                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                                        <ui:param name="isFilePg" value="true"/>
                                     </ui:include>
                                 </div>
-                                <!-- END: Explore/Map Data/Download/Request Button Block -->
+                                <!-- END: Map Data/Set Up Button Block -->
                                 
                                 <!-- Edit Button Group -->
-                                <div class="btn-group pull-right" jsf:rendered="#{dataverseSession.user.authenticated
+                                <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                          and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
                                     <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()">
@@ -115,35 +148,26 @@
                                     </ul>
                                 </div>
                                 <!-- END: Edit Button Group -->
-
-                                <!-- Email/Share Button Group -->
-                                <div class="btn-group pull-right" id="datasetButtonBar" role="group">
-                                    <p:commandLink class="text-button bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
-                                                   update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{FilePage.fileMetadata.datasetVersion.dataset}"/>
-                                        <span class="glyphicon glyphicon-envelope"/> Contact
-                                    </p:commandLink>
-                                    <p:commandLink styleClass="text-button bootstrap-button-tooltip" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"
-                                                   title="#{bundle['dataset.share.datasetShare']}"
-                                                   oncomplete="PF('shareDialog').show();sharrre();">
-                                        <span class="glyphicon glyphicon-share"/> Share
-                                    </p:commandLink>
+                                
+                                
                                 </div>
-                                <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true"  rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
-
-                                        <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
-
-                                    <div class="button-block">
-                                        <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
-                                            #{bundle.close}
-                                        </button>
-                                    </div>
-                                </p:dialog>
-                                <!-- END: Email/Share Button Group -->
+                                <!-- END: TO-DO BTN-GROUP RENDER LOGIC -->
+                                
+                                <!-- Explore/Download/Request Button Block -->
+                                <div class="button-container btn-group" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
+                                                                                            (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
+                                    <ui:include src="file-download-button-fragment.xhtml">
+                                        <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
+                                        <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
+                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                                        <ui:param name="isFilePg" value="true"/>
+                                    </ui:include>
+                                </div>
+                                <!-- END: Explore/Download/Request Button Block -->
+                                
                             </div>
                         </div>
                     </div>

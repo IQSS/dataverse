@@ -114,20 +114,6 @@
         </p:commandLink>
     </ui:fragment>
 
-    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
-        <!-- WorldMap Map Data button group -->
-        <!-- 4.2.1: VERIFIED: none of these checks add any queries, if there are no map layers. -->
-        <!-- WorldMap Map Data -->
-        <h:outputLink pt:role="button" rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}"
-                      type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-            <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.map']}
-        </h:outputLink>
-        <!-- Unpublished Map Data -->
-        <button type="button" jsf:rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}" class="btn btn-default" onclick="PF('mapData_popup').show()">
-            <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.map']}
-        </button>
-    </ui:fragment>
-
     <button type="button" jsf:rendered="#{isFilePg}" class="btn btn-default">
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </button>

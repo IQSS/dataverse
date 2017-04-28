@@ -33,7 +33,7 @@
                             #{bundle['file.cloudStorageAccess']}
                         </span>
                     </label>
-                    <div class="col-sm-3 input-group">
+                    <div class="col-md-4 col-sm-5 col-xs-6 input-group">
                         <p:inputText class="form-control" value="#{DatasetPage.getSwiftContainerName()}" id="copy-input" style="font-weight:normal;" type="text"/>
 
                         <span class="input-group-btn">
@@ -323,16 +323,22 @@
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
-                
             </f:facet>
-            
-            
+                        
             <!-- Ingest in progress... -->
             <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
                 #{bundle['file.ingestInProgress']}
             </div>
+            
+            <div class="btn-group" jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
+                
+                <ui:include src="file-setup-button.xhtml">
+                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+                    <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                </ui:include>
+            </div>
 
-            <div class="button-blockXX btn-group">
+            <div class="btn-group">
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
