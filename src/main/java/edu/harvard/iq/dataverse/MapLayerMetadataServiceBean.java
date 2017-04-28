@@ -173,7 +173,7 @@ public class MapLayerMetadataServiceBean {
                 logger.warning("Null DataFileIO in deleteOlderMapThumbnails()");
                 return false;
             }
-            
+            dataFileIO.open();
             List<String> cachedObjectsTags = dataFileIO.listAuxObjects();
             
             if (cachedObjectsTags != null) {
@@ -281,7 +281,6 @@ public class MapLayerMetadataServiceBean {
         DataFileIO dataAccess = null;
         try {
             dataAccess = mapLayerMetadata.getDataFile().getDataFileIO();
-            dataAccess.open();
         } catch (IOException ioEx) {
             dataAccess = null;
         }
