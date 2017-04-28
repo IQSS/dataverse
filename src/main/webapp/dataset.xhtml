@@ -217,12 +217,12 @@
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
-                                    <span class="glyphicon glyphicon-envelope"/> Contact
+                                    <span class="glyphicon glyphicon-envelope"/> #{bundle['contact.contact']}
                                 </p:commandLink>
                                 <p:commandLink styleClass="text-button bootstrap-button-tooltip" rendered="#{!DatasetPage.workingVersion.deaccessioned}"
                                                title="#{bundle['dataset.share.datasetShare']}"
                                                oncomplete="PF('shareDialog').show();sharrre();">
-                                    <span class="glyphicon glyphicon-share"/> Share
+                                    <span class="glyphicon glyphicon-share"/> #{bundle['share']}
                                 </p:commandLink>
                             </div>
                             <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">

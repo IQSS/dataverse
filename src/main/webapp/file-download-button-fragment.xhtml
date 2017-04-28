@@ -114,9 +114,11 @@
         </p:commandLink>
     </ui:fragment>
 
-    <button type="button" jsf:rendered="#{isFilePg}" class="btn btn-default">
+    <ui:remove>
+    <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" rendered="#{isFilePg and DatasetPage.isSwiftStorage()}">
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
-    </button>
+    </h:outputLink>
+    </ui:remove>
         
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) }"
                    type="button" styleClass="btn btn-default"
