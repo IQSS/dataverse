@@ -86,9 +86,9 @@
                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
                         <!-- COMPUTE BUTTON -->
-                        <button type="button" class="btn btn-default">
-                            <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
-                        </button>
+                        <h:outputLink value="" type="button" class="btn btn-default" rendered="#{DatasetPage.isSwiftStorage()}"><span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
+                        </h:outputLink>
+
                     </div>
                     <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">

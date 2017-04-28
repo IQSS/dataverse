@@ -312,13 +312,13 @@ public class SwiftAccessIO extends DataFileIO {
 
         if (!dataContainer.exists()) {
             if (writeAccess) {
-                dataContainer.create();
                 try {
                     dataContainer.makePublic();
+                    
                 }
                 catch (Exception ex) {
                     ex.printStackTrace();
-                    throw new IOException("Failed to make container public");
+                    throw new IOException("Failed to make container");
                 }
 
             } else {
@@ -329,7 +329,6 @@ public class SwiftAccessIO extends DataFileIO {
         }
 
         StoredObject fileObject = dataContainer.getObject(swiftFileName);
-        dataContainer.makePublic(); //set public
         //file download url for public files
         DataAccess.swiftFileUri = DataAccess.getSwiftFileURI(fileObject);
         setRemoteUrl(DataAccess.getSwiftFileURI(fileObject));
@@ -441,5 +440,6 @@ public class SwiftAccessIO extends DataFileIO {
         // By default, we open the file in read mode:
         return false;
     }
+
 
 }

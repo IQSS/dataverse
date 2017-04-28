@@ -366,6 +366,27 @@ public class DatasetPage implements java.io.Serializable {
         return swiftContainerName;
     }
 
+    //assumes that *ALL* files in ONE specified container are stored in swift backend 
+    //could be changed 
+    //SF 
+    public Boolean isSwiftStorage(){
+        Boolean swiftBool = false;
+        //dataset = datasetService.findByGlobalId(persistentId);
+        Long datasetVersion = workingVersion.getId();
+        if (datasetVersion != null) {
+                int unlimited = 0;
+                int maxResults = unlimited;
+            List<FileMetadata> metadatas = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);        
+            logger.info("metadatas " + metadatas);
+            if (metadatas != null && metadatas.size() > 0) {
+                if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
+                    && metadatas.get(0).getDataFile().getStorageIdentifier().startsWith("swift://")) {
+                    swiftBool = true;
+                }
+            }
+        }
+        return swiftBool;
+    }
     
     public DataFile getSelectedDownloadFile() {
         return selectedDownloadFile;
