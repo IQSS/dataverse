@@ -6,15 +6,23 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -42,9 +50,16 @@ public class MapLayerMetadataServiceBean {
     
     @EJB
     PermissionServiceBean permissionService;
+    
+    @EJB
+    SystemConfig systemConfig;
+    
+    @EJB
+    WorldMapTokenServiceBean tokenServiceBean;
    
     private static final Logger logger = Logger.getLogger(MapLayerMetadataServiceBean.class.getCanonicalName());
 
+    private static final String GEOCONNECT_MAP_DELETE_API = "/tabular/delete-map-no-ui/";
     
     public MapLayerMetadata find(Object pk) {
         if (pk==null){
@@ -308,6 +323,52 @@ public class MapLayerMetadataServiceBean {
         logger.info("Done");
         return true;
     }   
+    
+    /* 
+     * This method calls GeoConnect and requests that a map layer for this 
+     * DataFile is deleted, from WorldMap and GeoConnect itself.
+     * The use case here is when a user restricts a tabular file for which 
+     * a geospatial map has already been made. 
+     * This process is initiated on the Dataverse side, without any GeoConnect
+     * UI in the picture. (The way a user normally deletes a layer map is by 
+     * clicking 'Delete' on the GeoConnect map page). 
+     * Otherwise this call follows the scheme used when accessing the 
+     * /shapefile/map-it on GeoConnect - we send along a WorldMap token and a 
+     * callback url for GC to download the file metadata.
+     * Depending on how it goes we receive a yes or no response from the server.
+    */
+    public void deleteMapLayerFromWorldMap(DataFile dataFile, AuthenticatedUser user) throws IOException {
+        // Worldmap token: 
+        WorldMapToken token = tokenServiceBean.getNewToken(dataFile, user);
+        
+        // Callback url for geoConnect: 
+        String callback_url =  URLEncoder.encode(systemConfig.getDataverseSiteUrl() + "/" + WorldMapRelatedData.GET_WORLDMAP_DATAFILE_API_PATH);
+        
+        String geoConnectAddress = token.getApplication().getMapitLink();
+        /* 
+         * this is a bit of a hack - there should be a cleaner way to get the base 
+         * geoconnect URL from the token!
+        */
+        geoConnectAddress = geoConnectAddress.replace("/shapefile/map-it", "");
+        
+        
+        String geoConnectCommand = geoConnectAddress + GEOCONNECT_MAP_DELETE_API + token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  callback_url;
+        
+        logger.info("Attempting to call GeoConnect to request that the WorldMap layer for DataFile "+dataFile.getId()+": "+geoConnectAddress);
+        URL geoConnectUrl = new URL(geoConnectCommand);
+        
+        HttpURLConnection geoConnectConnection = (HttpURLConnection)geoConnectUrl.openConnection();
+        
+        geoConnectConnection.setRequestMethod("GET");
+        geoConnectConnection.connect();
+        
+        int code = geoConnectConnection.getResponseCode();
+        
+        if (code != 200) {
+            throw new IOException ("Failed to delete Map Layer via GeoConnect. /tabular/delete-map HTTP code response: "+code+"");
+        }
+        
+    }
 
     public List<MapLayerMetadata> findAll() {
         TypedQuery<MapLayerMetadata> typedQuery = em.createNamedQuery("MapLayerMetadata.findAll", MapLayerMetadata.class);

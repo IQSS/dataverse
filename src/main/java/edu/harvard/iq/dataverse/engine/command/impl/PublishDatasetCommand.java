@@ -221,6 +221,18 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));               
                 //Add method call for deleting map layer from World Maps...
                 
+                // (We need an AuthenticatedUser in order to produce a WorldMap token!)
+                String id = getUser().getIdentifier();
+                id = id.startsWith("@") ? id.substring(1) : id;
+                AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
+                try {
+                    ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(dataFile, authenticatedUser);
+                } catch (IOException ioex) {
+                    // This is probably too hardcore - giving up completely, if the attempt to delete
+                    // the worldmap layer has failed (?) - needs to be reviewed. -- L.A.
+                    throw new CommandException("Failed to delete Map Layer associated with restricted file "+dataFile.getFileMetadata().getLabel()+"; dataset cannot be published.", this);
+                }
+                
             }
         }
 
