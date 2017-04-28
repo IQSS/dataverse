@@ -45,17 +45,17 @@
                 
                 <div class="col-xs-6 form-inline">
                     
-                    <div jsf:id="restrictCloudStorageAccess" class="form-group col-xs-12 text-right" style="margin:0;padding:0;" jsf:rendered="#{DatasetPage.isSwiftStorage()}">
+                    <div class="form-group col-xs-12 text-right" style="margin:0;padding:0;">
                         
                         <label class="control-label">
                             <span data-toggle="tooltip" data-placement="auto top" class="tooltiplabel text-info" data-original-title="#{bundle['file.cloudStorageAccess.tip']}">
                                 #{bundle['file.cloudStorageAccess']}
                             </span>
                         </label>
-
+                        
                         <!-- Cloud Storage Access -->
                         <div class="input-group">
-                            <p:inputText class="form-control" value="#{DatasetPage.getSwiftContainerName()}"  placeholder="Cloud Storage Access" id="copy-input" style="font-weight:normal;" type="text"/>
+                            <p:inputText class="form-control" value="#{DatasetPage.getSwiftContainerName()}" placeholder="Cloud Storage Access" id="copy-input" style="font-weight:normal;" type="text"/>
                             
                             <span class="input-group-btn">
                                 <a href="#" class="btn btn-default">
@@ -97,7 +97,9 @@
                         </h:outputLink>
 
                         <!-- COMPUTE BUTTON -->
-                        <h:outputLink value="" type="button" class="btn btn-default" rendered="#{DatasetPage.isSwiftStorage()}"><span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
+
+                        <h:outputLink value="https://giji.massopencloud.org/application/dataverse/jobs?containerName=#{DatasetPage.getSwiftContainerName()}" type="button" class="btn btn-default">
+                            <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
                         </h:outputLink>
 
                     </div>
