@@ -281,6 +281,7 @@ public class MapLayerMetadataServiceBean {
         DataFileIO dataAccess = null;
         try {
             dataAccess = mapLayerMetadata.getDataFile().getDataFileIO();
+            dataAccess.open();
         } catch (IOException ioEx) {
             dataAccess = null;
         }
