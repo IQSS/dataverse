@@ -354,7 +354,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getSwiftContainerName(){
         String swiftContainerName = null;
-        String swiftFolderPathSeparator = "_";
+        String swiftFolderPathSeparator = "-";
         if (persistentId != null) {
             dataset = datasetService.findByGlobalId(persistentId); 
             String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);

@@ -274,7 +274,7 @@ public class SwiftAccessIO extends DataFileIO {
             swiftEndPoint = p.getProperty("swift.default.endpoint");
 
             //swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
-            String swiftFolderPathSeparator = "_";
+            String swiftFolderPathSeparator = "-";
             String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
             swiftFolderPath = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
                 authorityNoSlashes.replace(".", swiftFolderPathSeparator) +

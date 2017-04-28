@@ -552,7 +552,7 @@ public class FilePage implements java.io.Serializable {
 
     public String getSwiftContainerName(){
         String swiftContainerName = null;
-        String swiftFolderPathSeparator = "_";
+        String swiftFolderPathSeparator = "-";
         
         String authorityNoSlashes = file.getOwner().getAuthority().replace(file.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
         swiftContainerName = file.getOwner().getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
