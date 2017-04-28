@@ -83,6 +83,7 @@ public class IngestMessageBean implements MessageListener {
 
                 logger.info("Start ingest job;");
                 try {
+                    Thread.sleep(5000);
                     if (ingestService.ingestAsTabular(datafile_id)) {
                         //Thread.sleep(10000);
                         logger.info("Finished ingest job;");

@@ -1174,6 +1174,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 try {
                     //DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
                     fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
+                    logger.info("Successfully saved DataFile "+fileMetadata.getLabel()+" in the database.");
                 } catch (EJBException ex) {
                     saveError.append(ex).append(" ");
                     saveError.append(ex.getMessage()).append(" ");
@@ -1270,6 +1271,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         //    return returnToDraftVersionById();
         //}
         
+        logger.info("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
     }
     
