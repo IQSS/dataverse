@@ -86,7 +86,7 @@
                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
                         <!-- COMPUTE BUTTON -->
-                        <h:outputLink value="" type="button" class="btn btn-default" rendered="#{DatasetPage.isSwiftStorage()}"><span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
+                        <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" rendered="#{DatasetPage.isSwiftStorage()}"><span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
                         </h:outputLink>
 
                     </div>

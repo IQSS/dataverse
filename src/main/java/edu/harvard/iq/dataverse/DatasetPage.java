@@ -387,6 +387,10 @@ public class DatasetPage implements java.io.Serializable {
         }
         return swiftBool;
     }
+
+    public String getComputeUrl() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+    }
     
     public DataFile getSelectedDownloadFile() {
         return selectedDownloadFile;
