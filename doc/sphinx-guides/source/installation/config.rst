@@ -609,4 +609,4 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 
 Set the base URL for the "Compute" button for a dataset.
 
-``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse/jobs?containerName=' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
+``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse?containerName=' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``

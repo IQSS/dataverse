@@ -224,6 +224,7 @@ public class FilePage implements java.io.Serializable {
         return retList;  
     }
   
+    
     public String restrictFile(boolean restricted) {
         String fileNames = null;
         String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
@@ -541,7 +542,30 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
-    
+    public Boolean isSwiftStorage () {
+        Boolean swiftBool = false;
+        if (file.getStorageIdentifier().startsWith("swift://")){
+            swiftBool = true;
+        }
+        return swiftBool;
+    }
+
+    public String getSwiftContainerName(){
+        String swiftContainerName = null;
+        String swiftFolderPathSeparator = "_";
+        
+        String authorityNoSlashes = file.getOwner().getAuthority().replace(file.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+        swiftContainerName = file.getOwner().getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
+            + swiftFolderPathSeparator + file.getOwner().getIdentifier();
+        logger.info("Swift container name: " + swiftContainerName);
+
+        return swiftContainerName;
+    }
+
+    public String getComputeUrl() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+    }
+
     private List<DataFile> allRelatedFiles() {
         List<DataFile> dataFiles = new ArrayList();
         DataFile dataFileToTest = fileMetadata.getDataFile();

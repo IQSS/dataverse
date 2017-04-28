@@ -114,11 +114,11 @@
         </p:commandLink>
     </ui:fragment>
 
-    <ui:remove>
-    <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" rendered="#{isFilePg and DatasetPage.isSwiftStorage()}">
+    
+    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default" rendered="#{isFilePg and FilePage.isSwiftStorage()}">
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
-    </ui:remove>
+    
         
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) }"
                    type="button" styleClass="btn btn-default"

@@ -314,16 +314,16 @@
                                     </div>
                                     <div id="panelCollapseFMD" class="collapse in">
                                         <div class="panel-body">
-                                            <!--<div class="form-group" jsf:rendered="# {FilePage.publiclyDownloadable}">
+                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable}">
                                                 <label class="col-sm-3 control-label">                                                   
-                                                   # {bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
+                                                   #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
                                                 </label>
                                                 <div class="col-sm-9">
-                                                    <a href="# {FilePage.publicDownloadUrl}">
-                                                        <h:outputText value="# {FilePage.publicDownloadUrl}"/>
+                                                    <a href="#{FilePage.publicDownloadUrl}">
+                                                        <h:outputText value="#{FilePage.publicDownloadUrl}"/>
                                                     </a>
                                                 </div>
-                                            </div>-->
+                                            </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
                                                 <label class="col-sm-3 control-label">                                                   
                                                    #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
