@@ -161,7 +161,8 @@ my %POSTGRES_DRIVERS = (
     "9_2", "postgresql-9.1-902.jdbc4.jar",
     "9_3", "postgresql-9.1-902.jdbc4.jar",
     "9_4", "postgresql-9.1-902.jdbc4.jar",
-    "9_5", "postgresql-9.1-902.jdbc4.jar"
+    "9_5", "postgresql-9.1-902.jdbc4.jar",
+    "9_6", "postgresql-9.1-902.jdbc4.jar"
 );
 
 # A few preliminary checks:
@@ -1020,18 +1021,26 @@ unless ($success) {
 
 # Additional config files:
 
-my $JHOVE_CONFIG = "../../conf/jhove/jhove.conf";
-my $JHOVE_CONF_SCHEMA = "../../conf/jhove/jhoveConfig.xsd";
+my $JHOVE_CONFIG = "jhove.conf";
+my $JHOVE_CONF_SCHEMA = "jhoveConfig.xsd";
 
-# (if the installer is being run as part of a distribution zipped bundle, and not
+
+my $JHOVE_CONFIG_DIST = $JHOVE_CONFIG; 
+my $JHOVE_CONF_SCHEMA_DIST = $JHOVE_CONF_SCHEMA; 
+
+# (if the installer is being run NOT as part of a distribution zipped bundle, but
 # from inside the source tree - adjust the locations of the jhove config files:
 
 unless ( -f $JHOVE_CONFIG ) {
-    $JHOVE_CONFIG = "jhove.conf";
-    $JHOVE_CONF_SCHEMA ="jhoveConfig.xsd";
+    $JHOVE_CONFIG_DIST = "../../conf/jhove/jhove.conf";
+    $JHOVE_CONF_SCHEMA_DIST = "../../conf/jhove/jhoveConfig.xsd";
 }
 
-unless ( -f $JHOVE_CONFIG && -f $JHOVE_CONF_SCHEMA ) {
+# but if we can't find the files in either location, it must mean
+# that they are not running the script in the correct directory - so 
+# nothing else left for us to do but give up:
+
+unless ( -f $JHOVE_CONFIG_DIST && -f $JHOVE_CONF_SCHEMA_DIST ) {
     print "\nERROR! JHOVE configuration files not found in the config dir!\n";
     print "(are you running the installer in the right directory?\n";
     print "Aborting...\n";
@@ -1040,18 +1049,18 @@ unless ( -f $JHOVE_CONFIG && -f $JHOVE_CONF_SCHEMA ) {
 
 print "\nCopying additional configuration files... ";
 
-system( "/bin/cp -f " . $JHOVE_CONF_SCHEMA . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
+system( "/bin/cp -f " . $JHOVE_CONF_SCHEMA_DIST . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
 
 # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
 # - so it may need to be readjusted here: 
 
 if ( $glassfish_dir ne "/usr/local/glassfish4" )
 {
-    system( "sed 's:/usr/local/glassfish4:$glassfish_dir:g' < " . $JHOVE_CONFIG . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
+    system( "sed 's:/usr/local/glassfish4:$glassfish_dir:g' < " . $JHOVE_CONFIG_DIST . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
 }
 else 
 {
-    system( "/bin/cp -f " . $JHOVE_CONFIG . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
+    system( "/bin/cp -f " . $JHOVE_CONFIG_DIST . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
 }
 
 print "done!\n";

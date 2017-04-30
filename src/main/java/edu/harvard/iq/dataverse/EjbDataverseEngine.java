@@ -21,7 +21,6 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -143,6 +142,9 @@ public class EjbDataverseEngine {
 
     @EJB
     DatasetVersionServiceBean datasetVersionService;
+
+    @EJB
+    MapLayerMetadataServiceBean mapLayerMetadata;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -420,6 +422,12 @@ public class EjbDataverseEngine {
                 public WorkflowServiceBean workflows() {
                     return workflowService;
                 }
+
+                @Override
+                public MapLayerMetadataServiceBean mapLayerMetadata() {
+                    return mapLayerMetadata;
+                }
+
             };
         }
 

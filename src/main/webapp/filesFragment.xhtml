@@ -193,14 +193,15 @@
                 </div>
             </div>
         </f:facet>
-        <p:column selectionMode="multiple" class="text-center" style="width:40px !important;"/>
+        <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"/>
         <p:column class="col-file-thumb" style="width:64px !important;">
             <div class="thumbnail-block text-center">
                 <!-- Thumbnail Preview -->
                 <!-- 4.2.1 optimization: replaced dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession.user) with DatasetPage.isThumbnailAvailable(fileMetadata); see comments in the bean -->
                 <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and DatasetPage.isThumbnailAvailable(fileMetadata)}"
                       data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
-                    <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
+                    
+                    <h:graphicImage value="#{fileMetadata.dataFile.thumbnailString}" />  
                 </span>
 
                 <!-- Default Icon -->
@@ -219,32 +220,7 @@
                     <span class="icon-unlock text-success"/>
                 </div>
             </div>
-            <!-- WorldMap Preview -->
-            <ui:remove>
-            <ui:fragment rendered="#{DatasetPage.worldMapPermissionHelper.canUserSeeExploreWorldMapButton(fileMetadata)}">
-                <div class="modal fade" id="map-modal-#{fileMetadata.id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
-                                <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">Preview Map:</span> #{fileMetadata.label}</h4>
-                            </div>
-                            <div class="modal-body">
-                                <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
-                            </div>
-                            <div class="modal-footer clearfix">
-                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="WorldMap" class="pull-left" style="margin-top:5px;" /></a>
-                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-default" target="_blank"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
-                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <a data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal" class="small bg-info text-center" style="margin-top:5px;display:block;">
-                    <span class="glyphicon glyphicon-map-marker"/> Preview
-                </a>
-            </ui:fragment>
-                </ui:remove>
+            
         </p:column>
         <p:column class="col-file-metadata">
             <ui:fragment rendered="#{fileMetadata.datasetVersion.released or ((fileMetadata.datasetVersion.deaccessioned or fileMetadata.datasetVersion.draft) 

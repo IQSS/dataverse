@@ -56,6 +56,10 @@ import javax.ws.rs.core.Response;
  * 
  *  https://github.com/IQSS/shared-dataverse-information
  * 
+ * @todo Audit these methods to ensure they don't pose a security risk. Consider
+ * changing the installer so that like "admin" this "worldmap" endpoint is
+ * blocked out of the box. See
+ * http://guides.dataverse.org/en/4.6.1/installation/config.html#blocking-api-endpoints
  */
 @Path("worldmap")
 public class WorldMapRelatedData extends AbstractApiBean {
@@ -450,7 +454,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Dataverse URLs to this server 
         //------------------------------------
         String serverName =  this.getServerNamePort(request);
-        jsonData.add("return_to_dataverse_url", dset_version.getReturnToDatasetURL(serverName, dset));
+        jsonData.add("return_to_dataverse_url", dset_version.getReturnToFilePageURL(serverName, dset, dfile));
         jsonData.add("datafile_download_url", dfile.getMapItFileDownloadURL(serverName));
 
         //------------------------------------
@@ -501,6 +505,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         jsonData.add("datafile_filesize", fsize); 
         jsonData.add("datafile_content_type", dfile.getContentType());
         jsonData.add("datafile_create_datetime", dfile.getCreateDate().toString());
+        
+        // restriction status of the DataFile
+        jsonData.add("datafile_is_restricted", dfile.isRestricted());
         
         return ok(jsonData);
  
@@ -720,13 +727,20 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (mapLayerMetadata==null){
             return error(Response.Status.EXPECTATION_FAILED, "No map layer metadata found.");
         }
-        
+       
+       
        // (6) Delete the mapLayerMetadata
        //   (note: permissions checked here for a second time by the mapLayerMetadataService call)
        //
        if (!(this.mapLayerMetadataService.deleteMapLayerMetadataObject(mapLayerMetadata, wmToken.getDataverseUser()))){
             return error(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");               
        };
+
+       // (7) For the DataFile, set "previewImageAvailable" to False
+       //
+       dfile.setPreviewImageAvailable(false);
+       dataFileService.save(dfile);
+     
        
        return ok("Map layer metadata deleted.");
         

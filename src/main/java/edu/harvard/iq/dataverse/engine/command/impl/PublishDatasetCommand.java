@@ -30,6 +30,8 @@ import java.util.ResourceBundle;
 @RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractPublishDatasetCommand<PublishDatasetResult> {
 
+    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
+
     private static final String DEFAULT_DOI_PROVIDER_KEY = "";
 
     boolean minorRelease;
@@ -47,7 +49,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
 
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, DEFAULT_DOI_PROVIDER_KEY);
         registerExternalIdentifier(theDataset, ctxt, doiProvider);
-        
+
         if (theDataset.getPublicationDate() == null) {
             // First Release
             // Send notifications to users with download file permission
@@ -161,43 +163,65 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
     }
     
+    /**
+     * Whether it's EZID or DataCiteif, if the registration is 
+     * refused because the identifier already exists, we'll generate another one
+     * and try to register again... but only up to some
+     * reasonably high number of times - so that we don't 
+     * go into an infinite loop here, if EZID is giving us 
+     * these duplicate messages in error. 
+     * 
+     * (and we do want the limit to be a "reasonably high" number! 
+     * true, if our identifiers are randomly generated strings, 
+     * then it is highly unlikely that we'll ever run into a 
+     * duplicate race condition repeatedly; but if they are sequential
+     * numeric values, than it is entirely possible that a large
+     * enough number of values will be legitimately registered 
+     * by another entity sharing the same authority...)
+     * @param theDataset
+     * @param ctxt
+     * @param doiProvider
+     * @throws CommandException 
+     */
     private void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt, String doiProvider) throws CommandException {
         String protocol = theDataset.getProtocol();
         String authority = theDataset.getAuthority();
+        int attempts = 0;
         if (theDataset.getGlobalIdCreateTime() == null) {
             if (protocol.equals("doi")) {
                 switch( doiProvider ) {
                     case "EZID":
                         String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                        while (!doiRetString.contains(theDataset.getIdentifier())
+                            && doiRetString.contains("identifier already exists")
+                            && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+
+                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+                            doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                            
+                            attempts++;
+                        }
+                        
                         if (doiRetString.contains(theDataset.getIdentifier())) {
                             theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                         } else if (doiRetString.contains("identifier already exists")) {
-                            theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
-                            doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                            if (!doiRetString.contains(theDataset.getIdentifier())) {
-                                throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
-                            } else {
-                                theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                            }
+                            throw new IllegalCommandException("EZID refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
                         } else {
-                            throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance.", this);
-                        }
+                            throw new IllegalCommandException("Failed to create identifier (" + theDataset.getIdentifier() + ") with EZID: " + doiRetString, this);
+                        }     
                         break;
                         
                     case "DataCite":
                         try {
-                            if (!ctxt.doiDataCite().alreadyExists(theDataset)) {
-                                ctxt.doiDataCite().createIdentifier(theDataset);
-                                theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                            } else {
-                                theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
-                                if (!ctxt.doiDataCite().alreadyExists(theDataset)) {
-                                    ctxt.doiDataCite().createIdentifier(theDataset);
-                                    theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                                } else {
-                                    throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset. Please contact Dataverse Support for assistance.", this);
-                                }
+                            while (ctxt.doiDataCite().alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                                theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(protocol, authority, theDataset.getDoiSeparator()));
                             }
+
+                            if (ctxt.doiDataCite().alreadyExists(theDataset)) {
+                                throw new IllegalCommandException("DataCite refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
+                            }
+                            ctxt.doiDataCite().createIdentifier(theDataset);
+                            theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                         } catch (Exception e) {
                             throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
                         }

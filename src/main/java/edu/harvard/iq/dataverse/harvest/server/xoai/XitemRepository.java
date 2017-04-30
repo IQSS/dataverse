@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import edu.harvard.iq.dataverse.harvest.server.xoai.Xitem;
 import com.lyncode.xoai.dataprovider.exceptions.IdDoesNotExistException;
 import com.lyncode.xoai.dataprovider.exceptions.OAIException;
 import com.lyncode.xoai.dataprovider.filter.ScopedFilter;
@@ -18,15 +17,10 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
-import static java.lang.Math.min;
 import java.util.ArrayList;
-import static java.util.Arrays.asList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
-import static java.lang.Math.min;
-import static java.lang.Math.min;
-import static java.lang.Math.min;
 
 /**
  *

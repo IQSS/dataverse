@@ -18,4 +18,5 @@ Contents:
    harvestserver
    metadataexport
    timers
+   geoconnect-worldmap
    troubleshooting

@@ -192,5 +192,10 @@ public class TestCommandContext implements CommandContext {
     public WorkflowServiceBean workflows() {
         return null;
     }
+    
+    @Override
+    public MapLayerMetadataServiceBean mapLayerMetadata() {
+        return null;
+    }
 
 }

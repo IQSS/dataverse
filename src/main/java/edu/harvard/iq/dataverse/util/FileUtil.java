@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
@@ -303,7 +304,10 @@ public class FileUtil implements java.io.Serializable  {
         // step 3: check the mime type of this file with Jhove
         if (fileType == null){
             JhoveFileType jw = new JhoveFileType();
-            fileType = jw.getFileMimeType(f);
+            String mimeType = jw.getFileMimeType(f);
+            if (mimeType != null) {
+                fileType = mimeType;
+            }
         }
         
         // step 4: 
@@ -315,7 +319,7 @@ public class FileUtil implements java.io.Serializable  {
             logger.fine("fileExtension="+fileExtension);
 
             if (fileType == null || fileType.startsWith("text/plain") || "application/octet-stream".equals(fileType)) {
-                if (fileType.startsWith("text/plain") && STATISTICAL_FILE_EXTENSION.containsKey(fileExtension)) {
+                if (fileType != null && fileType.startsWith("text/plain") && STATISTICAL_FILE_EXTENSION.containsKey(fileExtension)) {
                     fileType = STATISTICAL_FILE_EXTENSION.get(fileExtension);
                 } else {
                     fileType = determineFileTypeByExtension(fileName);
@@ -1347,6 +1351,14 @@ public class FileUtil implements java.io.Serializable  {
         String pathToResizedFile = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFile.getAbsolutePath());
         File resizedFile = new File(pathToResizedFile);
         return ImageThumbConverter.getImageAsBase64FromFile(resizedFile);
+    }
+    
+    public static DatasetThumbnail getThumbnail(DataFile file) {
+
+        String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(file, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
+        DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, file);
+        return defaultDatasetThumbnail;
+
     }
 
 }
