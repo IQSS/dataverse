@@ -34,13 +34,27 @@
                         </span>
                     </label>
                     <div class="col-md-4 col-sm-5 col-xs-6 input-group">
-                        <h:outputText class="form-control" value="#{DatasetPage.swiftContainerName}" id="copy-input" style="font-weight:normal;" />
+                        <div id="copy-input" class="form-control" style="font-weight:normal;">#{DatasetPage.swiftContainerName}</div>
 
                         <span class="input-group-btn">
-                            <a href="#" class="btn btn-default">
+                            <a href="#" class="btn btn-default btn-copy" data-clipboard-action="copy" data-clipboard-target="#copy-input">
                                 <span class="glyphicon glyphicon-copy"></span> #{bundle['file.copy']}
                             </a>
                         </span>
+                        
+                        <script>
+                            $(document).ready(function () {
+                                var clipboard = new Clipboard('a.btn-copy');
+
+                                clipboard.on('success', function(e) {
+                                    console.log(e);
+                                });
+
+                                clipboard.on('error', function(e) {
+                                    console.log(e);
+                                });
+                            });
+                        </script>
                     </div>
                 </div>
             </div>
