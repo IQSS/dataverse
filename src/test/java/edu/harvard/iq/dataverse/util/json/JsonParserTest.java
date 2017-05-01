@@ -630,9 +630,6 @@ public class JsonParserTest {
                     return "doi";
                 case DoiSeparator:
                     return "/";
-                    // FIXME: move this to a new Override for isTrueForKey
-                case ExcludeEmailFromExport:
-                    return "true";
                 default:
                     break;
             }

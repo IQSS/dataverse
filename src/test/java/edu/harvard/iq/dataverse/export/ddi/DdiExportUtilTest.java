@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.export.ddi;
 
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.File;
 import java.nio.file.Files;
@@ -23,28 +22,6 @@ public class DdiExportUtilTest {
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.info(result);
         assertEquals(datasetAsDdi, result);
-    }
-
-    @Test
-    public void testJson2DdiwPrivacy() throws Exception {
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        File ddiFileOpen = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
-        //Private excludes email address from dataset contact
-        File ddiFilePrivate = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch-private.xml");
-        String datasetAsDdiOpen = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFileOpen.getAbsolutePath()))));
-        String datasetAsDdiPrivate = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFilePrivate.getAbsolutePath()))));
-        logger.info(datasetAsDdiPrivate);
-
-        String resultPublic = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
-        logger.info(resultPublic);
-        assertEquals(datasetAsDdiOpen, resultPublic);
-
-        DdiExportUtil ddiExportUtil = new DdiExportUtil(new MockSettingsSvc());
-        String resultPrivate = ddiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
-        logger.info(resultPrivate);
-        assertEquals(datasetAsDdiPrivate, resultPrivate);
-
     }
 
     @Test
@@ -74,20 +51,6 @@ public class DdiExportUtilTest {
         if (filesMinimallySupported) {
             assertEquals(datasetAsDdi, result);
         }
-    }
-
-    private static class MockSettingsSvc extends SettingsServiceBean {
-
-        @Override
-        public boolean isTrueForKey(SettingsServiceBean.Key key, boolean defaultValue) {
-            switch (key) {
-                case ExcludeEmailFromExport:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
     }
 
 }
