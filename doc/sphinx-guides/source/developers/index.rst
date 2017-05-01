@@ -20,4 +20,5 @@ Contents:
    making-releases
    tools
    unf/index
+   geospatial
    selinux
