@@ -1079,6 +1079,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Save the NEW files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false; 
+        
+        datasetUpdateRequired = true;
          
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.info("issuing the dataset update command");
