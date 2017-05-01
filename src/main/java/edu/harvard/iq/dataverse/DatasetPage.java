@@ -384,6 +384,10 @@ public class DatasetPage implements java.io.Serializable {
 
         return swiftContainerName;
     }
+    
+    public void setSwiftContainerName(String name){
+        
+    }
 
     //assumes that *ALL* files in ONE specified container are stored in swift backend 
     //could be changed 
