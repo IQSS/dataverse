@@ -637,7 +637,7 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 :ShibPassiveLoginEnabled
 ++++++++++++++++++++++++
 
-Set ``ShibPassiveLoginEnabled`` to true to enable passive login for Shibboleth. When this feature is enabled, an additional Javascript file (isPassive.js) will be loaded for every page. It will generate a passive login request to your Shibboleth SP when an anonymous user navigates to the site. A cookie named "_check_is_passive_dv" will be created to keep track of whether or not a passive login request has already been made for the user.
+Set ``:ShibPassiveLoginEnabled`` to true to enable passive login for Shibboleth. When this feature is enabled, an additional Javascript file (isPassive.js) will be loaded for every page. It will generate a passive login request to your Shibboleth SP when an anonymous user navigates to the site. A cookie named "_check_is_passive_dv" will be created to keep track of whether or not a passive login request has already been made for the user.
 
 This implementation follows the example on the Shibboleth wiki documentation page for the isPassive feature: https://wiki.shibboleth.net/confluence/display/SHIB2/isPassive
 
@@ -648,3 +648,10 @@ It is recommended that you configure additional error handling for your Service 
 You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or any other page on your site that is accessible to anonymous users and will have the isPassive.js file loaded.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
+
+:ComputeBaseUrl
++++++++++++++++
+
+Set the base URL for the "Compute" button for a dataset.
+
+``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse?containerName=' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
