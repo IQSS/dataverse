@@ -12,11 +12,13 @@ import com.lyncode.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
 import com.lyncode.xoai.dataprovider.handlers.results.ListItemsResults;
 import com.lyncode.xoai.dataprovider.model.Item;
 import com.lyncode.xoai.dataprovider.model.ItemIdentifier;
+import com.lyncode.xoai.dataprovider.model.Set;
 import com.lyncode.xoai.dataprovider.repository.ItemRepository;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -113,6 +115,14 @@ public class XitemRepository implements ItemRepository {
                 OAIRecord record = oaiRecords.get(i);
                 xoaiItems.add(new Xitem(record));
             }
+            
+            // Run a second pass, looking for records in this set that occur
+            // in *other* sets. Then we'll add these multiple sets to the 
+            // formatted output in the header:
+            if (!StringUtil.isEmpty(setSpec)) {
+                addExtraSets(xoaiItems, setSpec, from, until);
+            }
+            
             boolean hasMore = offset + length < oaiRecords.size();
             ListItemIdentifiersResult result = new ListItemIdentifiersResult(hasMore, xoaiItems);
             logger.fine("returning result with " + xoaiItems.size() + " items.");
@@ -180,6 +190,11 @@ public class XitemRepository implements ItemRepository {
                     xoaiItems.add(xItem);
                 }
             }
+            
+            if (!StringUtil.isEmpty(setSpec)) {
+                addExtraSets(xoaiItems, setSpec, from, until);
+            }
+            
             boolean hasMore = offset + length < oaiRecords.size();
             ListItemsResults result = new ListItemsResults(hasMore, xoaiItems);
             logger.fine("returning result with " + xoaiItems.size() + " items.");
@@ -187,5 +202,37 @@ public class XitemRepository implements ItemRepository {
         }
 
         return new ListItemsResults(false, xoaiItems);
+    }
+    
+    private void addExtraSets(Object xoaiItemsList, String setSpec, Date from, Date until) {
+        
+        List<Xitem> xoaiItems = (List<Xitem>)xoaiItemsList;
+        
+        List<OAIRecord> oaiRecords = recordService.findOaiRecordsNotInThisSet(setSpec, from, until);
+        
+        if (oaiRecords == null && oaiRecords.isEmpty()) {
+            return;
+        }
+                
+        // Make a second pass through the list of xoaiItems already found for this set, 
+        // and add any other sets in which this item occurs:
+        
+        int j = 0;
+        for (int i = 0; i < xoaiItems.size(); i++) {
+            // fast-forward the second list, until we find a record with this identifier, 
+            // or until we are past this record (both lists are sorted alphabetically by
+            // the identifier:
+            Xitem xitem = xoaiItems.get(i);
+            
+            while (j < oaiRecords.size() && xitem.getIdentifier().compareTo(oaiRecords.get(j).getGlobalId()) > 0) {
+                j++;
+            }
+            
+            while (j < oaiRecords.size() && xitem.getIdentifier().equals(oaiRecords.get(j).getGlobalId())) {
+                xoaiItems.get(i).getSets().add(new Set(oaiRecords.get(j).getSetName()));
+                j++;
+            }
+        }
+                
     }
 }
