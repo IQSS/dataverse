@@ -319,9 +319,7 @@
                                                    #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
                                                 </label>
                                                 <div class="col-sm-9">
-                                                    <a href="#{FilePage.publicDownloadUrl}">
-                                                        <h:outputText value="#{FilePage.publicDownloadUrl}"/>
-                                                    </a>
+                                                    <h:outputText value="#{FilePage.publicDownloadUrl}"/>
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
