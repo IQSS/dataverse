@@ -216,23 +216,22 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
             }
             if (dataFile.isRestricted() && ctxt.mapLayerMetadata().findMetadataByDatafile(dataFile) != null){
-                //SEK 4/20/2017                
-                //Command to delete from Dataverse side
-                ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));               
-                //Add method call for deleting map layer from World Maps...
-                
                 // (We need an AuthenticatedUser in order to produce a WorldMap token!)
                 String id = getUser().getIdentifier();
                 id = id.startsWith("@") ? id.substring(1) : id;
                 AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
                 try {
                     ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(dataFile, authenticatedUser);
+                    // If that was successful, delete the layer on the Dataverse side as well:
+                    //SEK 4/20/2017                
+                    //Command to delete from Dataverse side
+                    ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));                               
                 } catch (IOException ioex) {
-                    // This is probably too hardcore - giving up completely, if the attempt to delete
-                    // the worldmap layer has failed (?) - needs to be reviewed. -- L.A.
-                    throw new CommandException("Failed to delete Map Layer associated with restricted file "+dataFile.getFileMetadata().getLabel()+"; dataset cannot be published.", this);
+                    // We are not going to treat it as a fatal condition and bail out, 
+                    // but we will send a notification to the user, warning them about
+                    // the layer still being out there, un-deleted:
+                    ctxt.notifications().sendNotification(authenticatedUser, new Timestamp(new Date().getTime()), UserNotification.Type.MAPLAYERDELETEFAILED, dataFile.getFileMetadata().getId());
                 }
-                
             }
         }
 

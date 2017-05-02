@@ -298,6 +298,9 @@ public class DataFileServiceBean implements java.io.Serializable {
                 + ";").getSingleResult();
     }
 
+    public FileMetadata findFileMetadata(Long fileMetadataId) {
+        return (FileMetadata) em.find(FileMetadata.class, fileMetadataId);
+    }
     
     public FileMetadata findFileMetadataByDatasetVersionIdAndDataFileId(Long datasetVersionId, Long dataFileId) {
 
