@@ -1079,9 +1079,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Save the NEW files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false; 
-         
+        
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
-            logger.info("issuing the dataset update command");
+            logger.fine("issuing the dataset update command");
             // We are creating a new draft version; 
             // (OR, a full update of the dataset has been explicitly requested, 
             // because of the nature of the updates the user has made).
@@ -1174,7 +1174,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 try {
                     //DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
                     fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
-                    logger.info("Successfully saved DataFile "+fileMetadata.getLabel()+" in the database.");
+                    logger.fine("Successfully saved DataFile "+fileMetadata.getLabel()+" in the database.");
                 } catch (EJBException ex) {
                     saveError.append(ex).append(" ");
                     saveError.append(ex.getMessage()).append(" ");
@@ -1271,7 +1271,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         //    return returnToDraftVersionById();
         //}
         
-        logger.info("Redirecting to the dataset page, from the edit/upload page.");
+        logger.fine("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
     }
     

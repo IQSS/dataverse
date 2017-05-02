@@ -18,5 +18,6 @@ Contents:
    administration
    upgrading
    r-rapache-tworavens
+   geoconnect
    shibboleth
    oauth2

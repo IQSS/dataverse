@@ -317,7 +317,7 @@ public class IngestServiceBean {
                         // 
                         dataFile.setFilesize(dataAccess.getSize());
                         savedSuccess = true;
-                        logger.info("Success: permanently saved file "+dataFile.getFileMetadata().getLabel());
+                        logger.fine("Success: permanently saved file "+dataFile.getFileMetadata().getLabel());
                         
                     } catch (IOException ioex) {
                         logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
@@ -335,7 +335,7 @@ public class IngestServiceBean {
                     if (generatedTempFiles != null) {
                         for (Path generated : generatedTempFiles) {
                             if (savedSuccess) { // && localFile) {
-                                logger.info("(Will also try to permanently save generated thumbnail file "+generated.toString()+")");
+                                logger.fine("(Will also try to permanently save generated thumbnail file "+generated.toString()+")");
                                 try {
                                     //Files.copy(generated, Paths.get(dataset.getFileSystemDirectory().toString(), generated.getFileName().toString()));
                                     int i = generated.toString().lastIndexOf("thumb");
@@ -372,7 +372,7 @@ public class IngestServiceBean {
                     // Any necessary post-processing: 
                     //performPostProcessingTasks(dataFile);
                 }
-                logger.info("Done! Finished saving new files in permanent storage.");
+                logger.fine("Done! Finished saving new files in permanent storage.");
             }
         }
     }
@@ -434,7 +434,7 @@ public class IngestServiceBean {
 
                     scheduledFiles.add(dataFile);
                 
-                    logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataset.getGlobalId());
+                    logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataset.getGlobalId());
                     count++;
                 } else {
                     dataFile.setIngestDone();
