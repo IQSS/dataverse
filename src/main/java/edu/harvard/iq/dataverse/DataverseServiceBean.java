@@ -234,7 +234,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             String logoThumbNailPath = null;
 
             if (dataverseLogoFile.exists()) {
-                logoThumbNailPath = ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
+                logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
                 if (logoThumbNailPath != null) {
                     return ImageThumbConverter.getImageAsBase64FromFile(new File(logoThumbNailPath));
 
@@ -252,7 +252,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             String logoThumbNailPath = null;
 
             if (dataverseLogoFile.exists()) {
-                logoThumbNailPath = ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
+                logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
                 if (logoThumbNailPath != null) {
                     return ImageThumbConverter.getImageAsBase64FromFile(new File(logoThumbNailPath));
 
@@ -276,7 +276,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                 String logoThumbNailPath = null;
 
                 if (dataverseLogoFile.exists()) {
-                    logoThumbNailPath = ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
+                    logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
                     if (logoThumbNailPath != null) {
                         return true;
                     }

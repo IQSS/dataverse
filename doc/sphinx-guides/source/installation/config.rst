@@ -151,6 +151,37 @@ Enabling a second authentication provider will result in the Log In page showing
 - ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. 
 - The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work. This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to builtin. Then the user initiates a conversion from builtin to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
+File Storage: Local Filesystem vs. Swift
+----------------------------------------
+
+By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see "Running the Dataverse Installer" under the :doc:`installation-main` section) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+
+Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset users create gets a corresponding "container" on the Swift side and each data file is saved as a file within that container.
+
+In order to configure a Swift installation, there are two steps you need to complete:
+
+First, create a file named ``swift.properties`` as follows in the ``config`` directory for your installation of Glassfish (by default, this would be ``/usr/local/glassfish4/glassfish/domains/domain1/config/swift.properties``):
+
+.. code-block:: none
+
+    swift.default.endpoint=endpoint1
+    swift.auth_type.endpoint1=your-authentication-type
+    swift.auth_url.endpoint1=your-auth-url
+    swift.tenant.endpoint1=your-tenant-name
+    swift.username.endpoint1=your-username
+    swift.password.endpoint1=your-password
+    swift.swift_endpoint.endpoint1=your-swift-endpoint
+
+``auth_type`` can either be ``keystone`` or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. ``https://openstack.example.edu:35357/v2.0/tokens``). ``swift_endpoint`` is a URL that look something like ``http://rdgw.swift.example.org/swift/v1``.
+
+Second, update the JVM option ``dataverse.files.storage-driver-id`` by running the delete command:
+
+``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
+
+Then run the create command:
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
+
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
 

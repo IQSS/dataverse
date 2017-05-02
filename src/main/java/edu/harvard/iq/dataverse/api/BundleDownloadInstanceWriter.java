@@ -56,7 +56,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
             if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
                 DataAccessRequest daReq = new DataAccessRequest();
                 DataFile sf = di.getDownloadInfo().getDataFile();
-                DataFileIO accessObject = DataAccess.createDataAccessObject(sf, daReq);
+                DataFileIO accessObject = DataAccess.getDataFileIO(sf, daReq);
 
                 if (accessObject != null) {
                     accessObject.open();

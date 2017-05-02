@@ -49,7 +49,7 @@ public class DatasetUtil {
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
                     thumbnails.add(datasetThumbnail);
                 } catch (IOException ex) {
-                    logger.info("Unable to rescale image: " + ex);
+                    logger.warning("Unable to rescale image: " + ex);
                 }
             } else {
                 logger.fine("There is no thumbnail created from a dataset logo");
@@ -58,10 +58,11 @@ public class DatasetUtil {
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();  
             
-            if (dataFile != null && ImageThumbConverter.isThumbnailAvailable(dataFile)
+            if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
+                    && ImageThumbConverter.isThumbnailAvailable(dataFile)
                     && !dataFile.isRestricted()) {                
                 String imageSourceBase64 = null;
-                imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
                 if (imageSourceBase64 != null) {
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
@@ -87,7 +88,7 @@ public class DatasetUtil {
                 logger.fine(title + " will get thumbnail from dataset logo.");
                 return datasetThumbnail;
             } catch (IOException ex) {
-                logger.fine("Unable to rescale image: " + ex);
+                logger.fine("Unable to read thumbnail image from file: " + ex);
                 return null;
             }
         } else {
@@ -103,7 +104,7 @@ public class DatasetUtil {
                         logger.fine(title + " does not have a thumbnail available that could be selected automatically.");
                         return null;
                     } else {
-                        String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                        String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                         DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
                         logger.fine(title + " will get thumbnail through automatic selection from DataFile id " + thumbnailFile.getId());
                         return defaultDatasetThumbnail;
@@ -113,7 +114,7 @@ public class DatasetUtil {
                 logger.fine(title + " has a thumbnail the user selected but the file must have later been restricted. Returning null.");
                 return null;
             } else {
-                String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                 DatasetThumbnail userSpecifiedDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
                 logger.fine(title + " will get thumbnail the user specified from DataFile id " + thumbnailFile.getId());
                 return userSpecifiedDatasetThumbnail;
@@ -148,8 +149,7 @@ public class DatasetUtil {
         }
         for (FileMetadata fmd : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
-            String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-            if (imageSourceBase64 != null && !testFile.isRestricted()) {
+            if (FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
                 return testFile;
             }
         }
