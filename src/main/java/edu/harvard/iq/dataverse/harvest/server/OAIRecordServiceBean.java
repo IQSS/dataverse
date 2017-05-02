@@ -288,7 +288,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     }
     
     public List<OAIRecord> findOaiRecordsByGlobalId(String globalId) {
-        String query="SELECT h from OAIRecord as h where h.globalId = :globalId";
+        String query="SELECT object(h) from OAIRecord h where h.globalId = :globalId";
         List<OAIRecord> oaiRecords = null;
         try {
             oaiRecords = em.createQuery(query).setParameter("globalId",globalId).getResultList();
@@ -319,6 +319,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             } else {
                 queryString += " and h.setName = :setName";
             } 
+        } else {
+            queryString += " and h.setName is null";
         }
         queryString += from != null ? " and h.lastUpdateTime >= :from" : "";
         queryString += until != null ? " and h.lastUpdateTime<=:until" : "";

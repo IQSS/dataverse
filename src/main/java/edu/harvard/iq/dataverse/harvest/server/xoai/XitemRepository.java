@@ -49,12 +49,26 @@ public class XitemRepository implements ItemRepository {
 
     @Override
     public Item getItem(String identifier) throws IdDoesNotExistException, OAIException {
-        logger.fine("getItem; calling findOAIRecordBySetNameandGlobalId, identifier " + identifier);
-        OAIRecord oaiRecord = recordService.findOAIRecordBySetNameandGlobalId(null, identifier);
-        if (oaiRecord != null) {
-            Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
-            if (dataset != null) {
-                return new Xitem(oaiRecord).withDataset(dataset);
+        logger.fine("getItem; calling findOaiRecordsByGlobalId, identifier " + identifier);
+        List<OAIRecord> oaiRecords = recordService.findOaiRecordsByGlobalId(identifier);
+        if (oaiRecords != null && !oaiRecords.isEmpty()) {
+            Xitem xoaiItem = null; 
+            for (OAIRecord record : oaiRecords) {
+                if (xoaiItem == null) {
+                    Dataset dataset = datasetService.findByGlobalId(record.getGlobalId());
+                    if (dataset != null) {
+                        xoaiItem = new Xitem(record).withDataset(dataset);
+                    }
+                } else {
+                    // Adding extra set specs to the XOAI Item, if this record
+                    // is part of multiple sets:
+                    if (!StringUtil.isEmpty(record.getSetName())) {
+                        xoaiItem.getSets().add(new Set(record.getSetName()));
+                    }
+                }
+            }
+            if (xoaiItem != null) {
+                return xoaiItem;
             }
         }
 
