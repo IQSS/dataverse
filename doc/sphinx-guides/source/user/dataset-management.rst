@@ -118,6 +118,13 @@ There are several advanced options available for certain file types.
 - Image files: .jpg, .png, and .tif files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
 - SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
 
+.. _cloud-storage:
+
+Cloud Storage Access
+--------------------
+
+Cloud Storage Access is the container name for this dataset needed to access files in cloud storage.
+
 Edit Files
 ==========
 

@@ -113,12 +113,11 @@
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
         </p:commandLink>
     </ui:fragment>
-
     
-    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default" rendered="#{isFilePg and FilePage.isSwiftStorage()}">
+    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{isFilePg and FilePage.isSwiftStorage()}">
+        <!-- Compute Button *File pg only* -->
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
-    
         
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) }"
                    type="button" styleClass="btn btn-default"
@@ -267,14 +266,4 @@
         <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
     </p:commandLink>
-    <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true">
-        <p class="help-block">
-            <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
-        </p>
-        <div class="button-block">
-            <button type="button" class="btn btn-default" onclick="PF('mapData_popup').hide();PF('blockDatasetForm').hide();">
-                                #{bundle.close}
-            </button>
-        </div>
-    </p:dialog>
 </ui:composition>

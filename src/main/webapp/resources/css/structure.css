@@ -698,6 +698,8 @@ div[id$="filesTable"] div.file-tags-block span.label:last-of-type {margin-right:
 
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0 10px;}
 div[id$="filesHeaderBlock"] {margin-bottom:10px;}
+div[id$="cloudStorageBlock"] {margin-bottom:12px;}
+div[id$="cloudStorageBlock"] div.form-group.col-xs-12 {border-bottom:1px solid #ddd;margin:0;padding:0 0 12px 0;}
 
 div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-state-default {border:0; box-shadow:none; border-radius:0; background-image:none; border-top: 1px solid #e6e6e6; border-bottom: 1px solid #e6e6e6;}
 div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-state-default:first-of-type {border-left:1px solid #e6e6e6; border-top-left-radius:4px;}
@@ -779,6 +781,8 @@ button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14p
 div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-confirm-dialog-severity {margin-top:3px;}
 .ui-widget-content a.btn-default {color:#333;}
+.input-group-btn > .btn, .input-group-btn > .btn-group {border-top-left-radius: 0;border-bottom-left-radius: 0;margin-left: -1px;font-size:14px;}
+.ui-widget-header .form-group {font-weight:normal;}
 /* .ui-messages-info-detail, .ui-messages-warn-detail, .ui-messages-error-detail, .ui-messages-fatal-detail, .ui-message-info-detail, .ui-message-warn-detail, .ui-message-error-detail, .ui-message-fatal-detail {
     margin-left: 0px;
 } */

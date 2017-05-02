@@ -22,11 +22,16 @@
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
         <f:facet name="header">
-            <div class="row form-inline" style="margin-bottom:12px;">
+            <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.isSwiftStorage()}">
                 <!-- Cloud Storage Access -->
-                <div class="form-group col-xs-12 text-left" style="border-bottom:1px solid #ddd;margin:0;padding:0 0 12px 0;">
+                <div class="form-group col-xs-12 text-left">
                     <div class="col-xs-12">
-                        <p style="font-weight:normal;" class="help-block text-muted"><span class="glyphicon glyphicon-info-sign"/> Cloud Storage Access is the container name for this dataset needed to access files in cloud storage. To learn more, go to our User Guide.</p>
+                        <p class="help-block text-muted"><span class="glyphicon glyphicon-info-sign"/> 
+                            <h:outputFormat value="#{bundle['file.cloudStorageAccess.help']}" escape="false">
+                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                <f:param value="#{systemConfig.guidesVersion}"/>
+                            </h:outputFormat>
+                        </p>
                     </div>
                     <label class="col-sm-3 control-label">
                         <span data-toggle="tooltip" data-placement="auto top" class="tooltiplabel text-info" data-original-title="#{bundle['file.cloudStorageAccess.tip']}">
@@ -34,22 +39,20 @@
                         </span>
                     </label>
                     <div class="col-md-4 col-sm-5 col-xs-6 input-group">
-                        <div id="copy-input" class="form-control" style="font-weight:normal;">#{DatasetPage.swiftContainerName}</div>
-
+                        <div id="copy-input" class="form-control">#{DatasetPage.swiftContainerName}</div>
                         <span class="input-group-btn">
                             <a href="#" class="btn btn-default btn-copy" data-clipboard-action="copy" data-clipboard-target="#copy-input">
                                 <span class="glyphicon glyphicon-copy"></span> #{bundle['file.copy']}
                             </a>
                         </span>
-                        
                         <script>
                             $(document).ready(function () {
+                                // clipboard.js > cloud storage copy btn
                                 var clipboard = new Clipboard('a.btn-copy');
 
                                 clipboard.on('success', function(e) {
                                     console.log(e);
                                 });
-
                                 clipboard.on('error', function(e) {
                                     console.log(e);
                                 });
@@ -69,8 +72,7 @@
                         <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
                         
                         <span class="input-group-btn">
-                            <!-- TO-DO FIX THIS FONT SIZE -->
-                            <p:commandLink style="font-size:14px;" styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
                                 <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
                             </p:commandLink>
                         </span>
@@ -91,7 +93,6 @@
                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
                                          and (DatasetPage.canUpdateDataset()
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                        <!-- TO-DO CHECK DISABLE STATE -->
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                       type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'ui-state-disabled' : ''}"
                                       disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated 
@@ -99,10 +100,10 @@
                                                                                     and !widgetWrapper.widgetView}">
                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
-                        <!-- COMPUTE BUTTON -->
-                        <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" rendered="#{DatasetPage.isSwiftStorage()}"><span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
+                        <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.isSwiftStorage()}">
+                            <!-- COMPUTE BUTTON -->
+                            <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
                         </h:outputLink>
-
                     </div>
                     <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
@@ -127,7 +128,6 @@
                             <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
                         </p:commandLink>
                     </div>
-                    
                     
                     <!--SORT BUTTON-->
                     <div class="button-block btn-group pull-right" jsf:rendered="#{DatasetPage.sortButtonEnabled and DatasetPage.fileMetadatas.size() gt 1}">
@@ -170,7 +170,6 @@
                 </div>
             </div>
         </f:facet>
-        
         
         <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"/>
         <p:column class="col-file-thumb" style="width:64px !important;">
@@ -340,18 +339,17 @@
                 </p:commandLink>
             </f:facet>
                         
-            <!-- Ingest in progress... -->
             <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
+                <!-- Ingest in progress... -->
                 #{bundle['file.ingestInProgress']}
             </div>
             
-            <div class="btn-group" jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
-                
+            <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
                 <ui:include src="file-setup-button.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                 </ui:include>
-            </div>
+            </ui:fragment>
 
             <div class="btn-group">
                 <ui:include src="file-download-button-fragment.xhtml">
