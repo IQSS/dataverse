@@ -76,7 +76,6 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
             try {
                 dataFileIO = doomed.getDataFileIO();
-                dataFileIO.open();
             } catch (IOException ioex) {
                 throw new CommandExecutionException("Failed to initialize physical access driver.", ioex, this);
             }
@@ -92,6 +91,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 // auxiliary files, we'll just leave an error message in the 
                 // log file and proceed deleting the database object.
                 try {
+                    dataFileIO.open();
                     dataFileIO.deleteAllAuxObjects();
                 } catch (IOException ioex) {
                     Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting Auxiliary file(s) while deleting DataFile {0}", doomed.getStorageIdentifier());
@@ -105,12 +105,9 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 try {
                     physicalFileExists = dataFileIO.exists();
                 } catch (IOException ioex) {
-                    // The IO exception here IS a fatal condition - it likely means
-                    // that we could not even reach the physical storage system
-                    // where the file is supposed to live; so we are likely 
-                    // not going to be able to delete it there either. 
-
-                    throw new CommandExecutionException("Failed to initialize physical access driver.", ioex, this);
+                    // We'll assume that an exception here means that the file does not
+                    // exist; so we can skip trying to delete it. 
+                    physicalFileExists = false;
                 }
 
                 if (physicalFileExists) {
