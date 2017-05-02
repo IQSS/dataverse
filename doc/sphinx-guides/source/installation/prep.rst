@@ -65,7 +65,7 @@ There are a number of optional components you may choose to install or configure
 - Apache: a web server that can "reverse proxy" Glassfish applications and rewrite HTTP traffic.
 - Shibboleth: an authentication system described in :doc:`shibboleth`. Its use with Dataverse requires Apache.
 - OAuth2: an authentication system described in :doc:`oauth2`.
-- Geoconnect: :doc:`/user/data-exploration/worldmap` describes the feature and the code can be downloaded from https://github.com/IQSS/geoconnect
+- Geoconnect: a system that allows users to create maps from geospatial files, described in :doc:`geoconnect`.
 
 System Requirements
 -------------------
