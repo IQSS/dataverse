@@ -20,6 +20,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -53,6 +55,8 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         if (deleteDOIIdentifier) {
             String nonNullDefaultIfKeyNotFound = "";
             String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+            ArrayList<String> currentProtocol = new ArrayList<>();
+            currentProtocol.add(protocol);
             IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
 
             logger.fine("protocol=" + protocol);
@@ -60,9 +64,9 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
                 idServiceBean.deleteIdentifier(ds);
             } catch (Exception e) {
                 if (e.toString().contains("Internal Server Error")) {
-                    throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
+                     throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
                 }
-                throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.delete.error.datacite"), this);
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.delete.error", currentProtocol),this); 
             }
         }
         DatasetVersion managed = ctxt.em().merge(theVersion);

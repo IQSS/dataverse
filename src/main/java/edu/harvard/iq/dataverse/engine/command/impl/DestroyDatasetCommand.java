@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -85,7 +86,13 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             // TODO make ignorant of configured bean
             ctxt.doiDataCite().deleteRecordFromCache(doomed);
         }
-
+        
+        IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
+        try{
+            idServiceBean.deleteIdentifier(doomed);
+        }  catch (Exception e) {
+             logger.log(Level.WARNING, "Identifier deletion was not successfull:",e.getMessage());
+        } 
         Dataverse toReIndex = managedDoomed.getOwner();
 
         // dataset
