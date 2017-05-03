@@ -478,6 +478,13 @@ Specify a URL where users can read your API Terms of Use.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
+:ExcludeEmailFromExport
++++++++++++++++++++++++
+
+Set ``:ExcludeEmailFromExport`` to prevent email addresses for dataset contacts from being exposed in XML or JSON representations of dataset metadata. For a list exported formats such as DDI, see the :doc:`/admin/metadataexport` section of the Admin Guide.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ExcludeEmailFromExport``
+
 :GuidesBaseUrl
 ++++++++++++++
 
@@ -676,7 +683,7 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 :ShibPassiveLoginEnabled
 ++++++++++++++++++++++++
 
-Set ``ShibPassiveLoginEnabled`` to true to enable passive login for Shibboleth. When this feature is enabled, an additional Javascript file (isPassive.js) will be loaded for every page. It will generate a passive login request to your Shibboleth SP when an anonymous user navigates to the site. A cookie named "_check_is_passive_dv" will be created to keep track of whether or not a passive login request has already been made for the user.
+Set ``:ShibPassiveLoginEnabled`` to true to enable passive login for Shibboleth. When this feature is enabled, an additional Javascript file (isPassive.js) will be loaded for every page. It will generate a passive login request to your Shibboleth SP when an anonymous user navigates to the site. A cookie named "_check_is_passive_dv" will be created to keep track of whether or not a passive login request has already been made for the user.
 
 This implementation follows the example on the Shibboleth wiki documentation page for the isPassive feature: https://wiki.shibboleth.net/confluence/display/SHIB2/isPassive
 

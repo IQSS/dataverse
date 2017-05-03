@@ -4,15 +4,14 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,9 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
-import javax.ejb.EJB;
-import javax.ejb.TransactionAttribute;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -37,12 +33,22 @@ public class ExportService {
     
     private static ExportService service;
     private ServiceLoader<Exporter> loader;
+    static SettingsServiceBean settingsService;
 
     private ExportService() {
         loader = ServiceLoader.load(Exporter.class);        
     }
 
+    /**
+     * TODO: Audit all calls to this getInstance method that doesn't take a
+     * SettingsServiceBean as an argument to make sure nothing broke.
+     */
     public static synchronized ExportService getInstance() {
+        return getInstance(null);
+    }
+
+    public static synchronized ExportService getInstance(SettingsServiceBean settingsService) {
+        ExportService.settingsService = settingsService;
         if (service == null) {
             service = new ExportService();
         } else{
@@ -127,7 +133,8 @@ public class ExportService {
             if (releasedVersion == null) {
                 throw new ExportException("No released version for dataset "+dataset.getGlobalId());
             }
-            final JsonObjectBuilder datasetAsJsonBuilder = jsonAsDatasetDto(releasedVersion);
+            JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
+            final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(releasedVersion);
             JsonObject datasetAsJson = datasetAsJsonBuilder.build();
             
             Iterator<Exporter> exporters = loader.iterator();
@@ -175,7 +182,8 @@ public class ExportService {
                     if (releasedVersion == null) {
                         throw new IllegalStateException("No Released Version");
                     }
-                    final JsonObjectBuilder datasetAsJsonBuilder = jsonAsDatasetDto(releasedVersion);
+                    JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
+                    final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(releasedVersion);
                     cacheExport(releasedVersion, formatName, datasetAsJsonBuilder.build(), e);
                 }
             }

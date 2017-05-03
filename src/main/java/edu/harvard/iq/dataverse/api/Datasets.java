@@ -167,7 +167,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
             }
             
-            ExportService instance = ExportService.getInstance();
+            ExportService instance = ExportService.getInstance(settingsSvc);
             
             String xml = instance.getExportAsString(dataset, exporter);
             // I'm wondering if this going to become a performance problem 
@@ -290,7 +290,7 @@ public class Datasets extends AbstractApiBean {
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
                 if ( p.getKey().getName().equals(blockName) ) {
-                    return ok( json(p.getKey(), p.getValue()) );
+                    return ok(json(p.getKey(), p.getValue()));
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
@@ -441,55 +441,6 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    /**
-     * @todo Implement this for real as part of
-     * https://github.com/IQSS/dataverse/issues/2579
-     */
-    @GET
-    @Path("ddi")
-    @Produces({"application/xml", "application/json"})
-    @Deprecated
-    public Response getDdi(@QueryParam("id") long id, @QueryParam("persistentId") String persistentId, @QueryParam("dto") boolean dto) {
-        boolean ddiExportEnabled = systemConfig.isDdiExportEnabled();
-        if (!ddiExportEnabled) {
-            return error(Response.Status.FORBIDDEN, "Disabled");
-        }
-        try {
-            User u = findUserOrDie();
-            if (!u.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Not a superuser");
-            }
-
-            logger.fine("looking up " + persistentId);
-            Dataset dataset = datasetService.findByGlobalId(persistentId);
-            if (dataset == null) {
-                return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
-            }
-
-            String xml = "<codeBook>XML_BEING_COOKED</codeBook>";
-            if (dto) {
-                /**
-                 * @todo We can only assume that this should not be hard-coded
-                 * to getLatestVersion
-                 */
-                final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
-                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.toString());
-            } else {
-                OutputStream outputStream = new ByteArrayOutputStream();
-                ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);
-                xml = outputStream.toString();
-            }
-            logger.fine("xml to return: " + xml);
-
-            return Response.ok()
-                    .entity(xml)
-                    .type(MediaType.APPLICATION_XML).
-                    build();
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-    }
-    
     /**
      * @todo Make this real. Currently only used for API testing. Copied from
      * the equivalent API endpoint for dataverses and simplified with values
