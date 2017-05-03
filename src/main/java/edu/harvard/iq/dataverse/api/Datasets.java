@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -101,6 +102,9 @@ public class Datasets extends AbstractApiBean {
     DatasetServiceBean datasetService;
 
     @EJB
+// HEAD
+    DataverseServiceBean dataverseService;
+//develop
     DOIEZIdServiceBean doiEZIdServiceBean;
 
     @EJB
