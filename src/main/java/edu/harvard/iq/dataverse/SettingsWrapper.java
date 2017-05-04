@@ -118,6 +118,58 @@ public class SettingsWrapper implements java.io.Serializable {
 	    return false;
     }
 
+    /**
+     * if this key is present in the downloadMethods or uploadMethods list, allow native
+     * (http) uploads / downloads (if either list has been set).
+     */
+    public static String nativeProtocol = "native/http";
+    
+    /**
+     * default string for uploadMethods; may belong elsewhere.
+     */
+    private static String uploadMethodsList = "uploadMethods";
+    /**
+     * default string for downloadMethods; may belong elsewhere.
+     */
+    private static String downloadMethodsList = "downloadMethods";
+
+    /**
+     * wrapper to see if the native file upload options should be shown.
+     * @return true if `nativeProtocol` is in the `uploadMethods` list, or if `uploadMethods`
+     * has not been set; false otherwise.
+     */
+    public boolean allowNativeUploads()
+    {
+	    return nativeTransferCheck( uploadMethodsList );
+    }
+
+    /**
+     * wrapper to see if the native file download options should be shown.
+     * @return true if `nativeProtocol` is in the `downloadMethods` list, or if `downloadMethods`
+     * has not been set; false otherwise.
+     */
+    public boolean allowNativeDownloads()
+    {
+	    return nativeTransferCheck( downloadMethodsList );
+    }
+
+    /**
+     * centralize logic for check if setting absent, or value present in setting list
+     */
+    private boolean nativeTransferCheck( String transferDirection )
+    {
+	    if ( null == settingsMap )
+	    {
+		    initSettingsMap();
+	    }
+	    Set keys = settingsMap.keySet();
+	    if ( ! keys.contains( (Object) transferDirection ) )
+	    {
+		    return true;
+	    }
+	    return valueInSettingList( transferDirection, nativeProtocol );
+    }
+
     private String guidesBaseUrl = null; 
     
     public String getGuidesBaseUrl() {
