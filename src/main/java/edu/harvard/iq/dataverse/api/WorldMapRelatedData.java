@@ -253,6 +253,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH;
         String redirect_url_str = token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
         //String redirect_url_str = TokenApplicationType.LOCAL_DEV_MAPIT_LINK + "/" +  token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
+        logger.info("REDIRECTING TO GEOCONNECT: "+redirect_url_str);
         URI redirect_uri;
         
         try {

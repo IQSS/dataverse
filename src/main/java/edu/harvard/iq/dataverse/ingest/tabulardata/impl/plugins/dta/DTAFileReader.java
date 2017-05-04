@@ -513,8 +513,6 @@ public class DTAFileReader extends TabularDataFileReader{
 
     public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
         dbgLog.info("***** DTAFileReader: read() start *****");
-
-        // shit ton of diagnostics needed here!!  -- L.A.
         
         if (dataFile != null) {
             throw new IOException ("this plugin does not support external raw data files");
@@ -1040,7 +1038,7 @@ public class DTAFileReader extends TabularDataFileReader{
         
         int length_label_name = constantTable.get("NAME");
         int length_label_name_list = length_label_name * nvar;
-        dbgLog.info("length_label_name=" + length_label_name_list);
+        dbgLog.fine("length_label_name=" + length_label_name_list);
 
         byte[] labelNameList = new byte[length_label_name_list];
         String[] labelNames = new String[nvar];
@@ -1060,7 +1058,7 @@ public class DTAFileReader extends TabularDataFileReader{
             dbgLog.fine(i + "-th label=[" + labelNames[i] + "]");
             offset_start = offset_end;
         }
-        dbgLog.info("labelNames=\n" + StringUtils.join(labelNames, ",\n") + "\n");
+        dbgLog.fine("labelNames=\n" + StringUtils.join(labelNames, ",\n") + "\n");
 
         for (int i = 0; i < nvar; i++) {
             if ((labelNames[i] != null) && (!labelNames[i].equals(""))) {

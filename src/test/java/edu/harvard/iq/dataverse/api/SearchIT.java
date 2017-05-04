@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.common.base.Stopwatch;
 import com.jayway.restassured.RestAssured;
+import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.internal.path.xml.NodeChildrenImpl;
 import com.jayway.restassured.path.json.JsonPath;
@@ -51,11 +52,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
-import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
+import org.junit.After;
 
 /**
  * @todo Many of these tests are in need of attention for a few reasons:
@@ -1457,10 +1459,10 @@ public class SearchIT {
 
         File trees = new File("scripts/search/data/binary/trees.png");
         String treesAsBase64 = null;
-        try {
-            treesAsBase64 = FileUtil.rescaleImage(trees);
-        } catch (IOException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        treesAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(trees, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+
+        if (treesAsBase64 == null) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file trees.png");
         }
 
         Response search2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
@@ -1526,10 +1528,10 @@ public class SearchIT {
 
         File dataverseProjectLogo = new File(pathToFile);
         String dataverseProjectLogoAsBase64 = null;
-        try {
-            dataverseProjectLogoAsBase64 = FileUtil.rescaleImage(dataverseProjectLogo);
-        } catch (IOException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        dataverseProjectLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(dataverseProjectLogo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+
+        if (dataverseProjectLogoAsBase64 == null) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file dataverseproject.png");
         }
 
         Response switchToSecondDataFileThumbnail = UtilIT.useThumbnailFromDataFile(datasetPersistentId, dataFileId2, apiToken);
@@ -1587,11 +1589,10 @@ public class SearchIT {
 
         String datasetLogo = "src/main/webapp/resources/images/cc0.png";
         File datasetLogoFile = new File(datasetLogo);
-        String datasetLogoAsBase64 = null;
-        try {
-            datasetLogoAsBase64 = FileUtil.rescaleImage(datasetLogoFile);
-        } catch (IOException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        String datasetLogoAsBase64 = datasetLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(datasetLogoFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+
+        if (datasetLogoAsBase64 == null) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file dataverseproject.png");
         }
 
         Response overrideThumbnail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
@@ -1711,6 +1712,16 @@ public class SearchIT {
          * created based on the logo get deleted too? Should it?
          */
 
+    }
+
+    @After
+    public void tearDownDataverse() {
+        File treesThumb = new File("scripts/search/data/binary/trees.png.thumb48");
+        treesThumb.delete();
+        File cc0Thumb = new File("src/main/webapp/resources/images/cc0.png.thumb48");
+        cc0Thumb.delete();
+        File dataverseprojectThumb = new File("src/main/webapp/resources/images/dataverseproject.png.thumb48");
+        dataverseprojectThumb.delete();
     }
 
 }
