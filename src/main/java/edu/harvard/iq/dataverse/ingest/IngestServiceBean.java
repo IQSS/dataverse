@@ -99,6 +99,7 @@ import javax.inject.Named;
 import javax.jms.Queue;
 import javax.jms.QueueConnectionFactory;
 import javax.annotation.Resource;
+import javax.ejb.EJBException;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSender;
@@ -719,143 +720,162 @@ public class IngestServiceBean {
             
         }
 
-        try {
-            if (tabDataIngest != null) {
-                File tabFile = tabDataIngest.getTabDelimitedFile();
+        String originalContentType = dataFile.getContentType();
+        String originalFileName = dataFile.getFileMetadata().getLabel();
+        long originalFileSize = dataFile.getFilesize();
+        boolean postIngestTasksSuccessful = false;
+        boolean databaseSaveSuccessful = false;
 
-                if (tabDataIngest.getDataTable() != null
-                        && tabFile != null
-                        && tabFile.exists()) {
-                    logger.info("Tabular data successfully ingested; DataTable with "
-                            + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
-                    logger.info("Tab-delimited file produced: " + tabFile.getAbsolutePath());
-                    
-                    dataFile.setFilesize(tabFile.length());
+        if (tabDataIngest != null) {
+            File tabFile = tabDataIngest.getTabDelimitedFile();
 
-                    // and change the mime type to "tabular" on the final datafile, 
-                    // and replace (or add) the extension ".tab" to the filename: 
-                    dataFile.setContentType(FileUtil.MIME_TYPE_TAB);
-                    IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
+            if (tabDataIngest.getDataTable() != null
+                    && tabFile != null
+                    && tabFile.exists()) {
+                logger.info("Tabular data successfully ingested; DataTable with "
+                        + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
+                logger.info("Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
-                    if (FileUtil.MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
-                        tabDataIngest.getDataTable().setOriginalFileFormat(FileUtil.MIME_TYPE_CSV);
-                    } else {
-                        tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
-                    }
+                dataFile.setFilesize(tabFile.length());
 
-                    dataFile.setDataTable(tabDataIngest.getDataTable());
-                    tabDataIngest.getDataTable().setDataFile(dataFile);
+                // and change the mime type to "tabular" on the final datafile, 
+                // and replace (or add) the extension ".tab" to the filename: 
+                dataFile.setContentType(FileUtil.MIME_TYPE_TAB);
+                IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
 
+                if (FileUtil.MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
+                    tabDataIngest.getDataTable().setOriginalFileFormat(FileUtil.MIME_TYPE_CSV);
+                } else {
+                    tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
+                }
+
+                dataFile.setDataTable(tabDataIngest.getDataTable());
+                tabDataIngest.getDataTable().setDataFile(dataFile);
+
+                try {
                     produceSummaryStatistics(dataFile);
+                    postIngestTasksSuccessful = true;
+                } catch (IOException postIngestEx) {
 
-                    dataFile.setIngestDone();
-                    // delete the ingest request, if exists:
-                    if (dataFile.getIngestRequest() != null) {
-                        dataFile.getIngestRequest().setDataFile(null);
-                        dataFile.setIngestRequest(null);
-                    }
+                    dataFile.SetIngestProblem();
+                    FileUtil.createIngestFailureReport(dataFile, "Ingest failed to produce Summary Statistics and/or UNF signatures; " + postIngestEx.getMessage());
+
+                    restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
                     dataFile = fileService.save(dataFile);
+
+                    logger.info("Ingest failure: post-ingest tasks.");
+                }
+
+                if (!postIngestTasksSuccessful) {
+                    return false;
+                }
+
+                dataFile.setIngestDone();
+                // delete the ingest request, if exists:
+                if (dataFile.getIngestRequest() != null) {
+                    dataFile.getIngestRequest().setDataFile(null);
+                    dataFile.setIngestRequest(null);
+                }
+
+                try {
+                    /* 
+                         In order to test a database save failure, uncomment this:
+                        
+                        if (true) {
+                            throw new EJBException("Deliberate database save failure");
+                        }
+                     */
+                    dataFile = fileService.save(dataFile);
+                    databaseSaveSuccessful = true;
+
                     logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
 
                     if (additionalData != null) {
                         // remove the extra tempfile, if there was one:
                         additionalData.delete();
                     }
+                } catch (Exception unknownEx) {
+                    // this means that an error occurred while saving the datafile
+                    // in the database. 
+                    logger.info("Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
 
+                    dataFile = null;
+                    dataFile = fileService.find(datafile_id);
+
+                    if (dataFile != null) {
+                        dataFile.SetIngestProblem();
+                        FileUtil.createIngestFailureReport(dataFile, "Ingest produced tabular data, but failed to save it in the database; " + unknownEx.getMessage() + " No further information is available.");
+
+                        restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
+
+                        dataFile = fileService.save(dataFile);
+                        logger.info("Unknown excepton saving ingested file.");
+                    }
+                }
+
+                if (!databaseSaveSuccessful) {
+                    return false;
+                }
+
+                // Finally, let's swap the original and the tabular files: 
+                try {
+                    /* Start of save as backup */
+
+                    DataFileIO dataAccess = dataFile.getAccessObject();
+                    dataAccess.open();
+
+                    // and we want to save the original of the ingested file: 
                     try {
-                        /* Start of save as backup */
-
-                        DataFileIO dataAccess = dataFile.getAccessObject();
-                        dataAccess.open();
-
-                        // and we want to save the original of the ingested file: 
-                        try {
-                            dataAccess.backupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                        } catch (IOException iox) {
-                            logger.info("Failed to save the ingested original! " + iox.getMessage());
-                        }
-
-                        // Replace contents of the file with the tab-delimited data produced:
-                        dataAccess.copyPath(Paths.get(tabFile.getAbsolutePath()));
-                        // Reset the file size: 
-                        dataFile.setFilesize(dataAccess.getSize());
-
-                        // delete the temp tab-file:
-                        tabFile.delete();
-                        /*end of save as backup */
-
-                    } catch (Exception e) {
-                        // this probably means that an error occurred while saving the file to the file system
-                        logger.info("Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
-
-                        dataFile = null;
-                        dataFile = fileService.find(datafile_id);
-
-                        if (dataFile != null) {
-                            dataFile.SetIngestProblem();
-                            FileUtil.createIngestFailureReport(dataFile, "Ingest produced tabular data, but failed to save it in the database; " + e.getMessage() + " No further information is available.");
-
-                            // blank the datatable that may have already been attached to the
-                            // datafile (it may have something "unsave-able" in it!)
-                            dataFile.setDataTables(null);
-                            if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
-                                tabDataIngest.getDataTable().setDataFile(null);
-                            }
-
-                            dataFile = fileService.save(dataFile);
-                            logger.info("Unknown excepton saving ingested file.");
-                        } else {
-                            // ??
-                        }
-
+                        dataAccess.backupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                    } catch (IOException iox) {
+                        logger.info("Failed to save the ingested original! " + iox.getMessage());
                     }
 
-                    ingestSuccessful = true;
-                }
-            } else {
-                logger.info("Ingest failed to produce data obect.");
-            }
-        } catch (IOException postIngestEx) {
-            // TODO: 
-            // try to separate the post-processing (summary stats, unfs) failures
-            // from file save errors;
-            // -- L.A. Aug. 2014
-            dataFile.SetIngestProblem();
-            FileUtil.createIngestFailureReport(dataFile, "Ingest failed to produce Summary Statistics and/or UNF signatures; "+postIngestEx.getMessage());
-            
-            dataFile = fileService.save(dataFile);
-            
-            logger.info("Ingest failure: post-ingest tasks.");
-        } catch (Exception unknownEx) {
-            // this probably means that an error occurred while saving the datafile
-            // in the database. 
-            logger.info("Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
+                    // Replace contents of the file with the tab-delimited data produced:
+                    dataAccess.copyPath(Paths.get(tabFile.getAbsolutePath()));
+                    // Reset the file size: 
+                    dataFile.setFilesize(dataAccess.getSize());
 
-            dataFile = null; 
-            dataFile = fileService.find(datafile_id);
-            
-            if (dataFile != null) {
-                dataFile.SetIngestProblem();
-                FileUtil.createIngestFailureReport(dataFile, "Ingest produced tabular data, but failed to save it in the database; " + unknownEx.getMessage() + " No further information is available.");
+                    // delete the temp tab-file:
+                    tabFile.delete();
+                    /*end of save as backup */
 
-                // blank the datatable that may have already been attached to the
-                // datafile (it may have something "unsave-able" in it!)
-                dataFile.setDataTables(null);
-                if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
-                    tabDataIngest.getDataTable().setDataFile(null);
+                } catch (Exception e) {
+                    // this probably means that an error occurred while saving the file to the file system
+                    logger.info("Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
+
+                    dataFile = null;
+                    dataFile = fileService.find(datafile_id);
+
+                    if (dataFile != null) {
+                        dataFile.SetIngestProblem();
+                        FileUtil.createIngestFailureReport(dataFile, "Ingest produced tabular data, but failed to save it in the database; " + e.getMessage() + " No further information is available.");
+
+                        restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
+
+                        dataFile = fileService.save(dataFile);
+                        logger.info("Unknown excepton saving ingested file.");
+                    }
                 }
 
-                dataFile = fileService.save(dataFile);
-                logger.info("Unknown excepton saving ingested file.");
-            } else {
-                // ??
+                ingestSuccessful = true;
             }
+        } else {
+            logger.info("Ingest failed to produce data obect.");
         }
 
-        
         return ingestSuccessful;
     }
 
+    private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
+        dataFile.setDataTables(null);
+        if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
+            tabDataIngest.getDataTable().setDataFile(null);
+        }
+        dataFile.getFileMetadata().setLabel(originalFileName);
+        dataFile.setContentType(originalContentType);
+        dataFile.setFilesize(originalSize);
+    }
     
     // TODO: Further move the code that doesn't really need to be in an EJB bean
     // (i.e., the code that doesn't need to persist anything in the database) into
