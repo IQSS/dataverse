@@ -726,7 +726,35 @@ public class IngestServiceBean {
                 if (tabDataIngest.getDataTable() != null
                         && tabFile != null
                         && tabFile.exists()) {
+                    dataFile.setFilesize(tabFile.length());
 
+
+                    // and change the mime type to "tabular" on the final datafile, 
+                    // and replace (or add) the extension ".tab" to the filename: 
+                    dataFile.setContentType(FileUtil.MIME_TYPE_TAB);
+                    IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
+
+                    dataFile.setDataTable(tabDataIngest.getDataTable());
+                    tabDataIngest.getDataTable().setDataFile(dataFile);
+
+                    produceSummaryStatistics(dataFile);
+
+                    dataFile.setIngestDone();
+                    // delete the ingest request, if exists:
+                    if (dataFile.getIngestRequest() != null) {
+                        dataFile.getIngestRequest().setDataFile(null);
+                        dataFile.setIngestRequest(null);
+                    }
+                    dataFile = fileService.save(dataFile);
+                    logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
+
+                    if (additionalData != null) {
+                        // remove the extra tempfile, if there was one:
+                        additionalData.delete();
+                    }
+                    
+                    try {
+                                            /* Start of save as backup */
                     logger.info("Tabular data successfully ingested; DataTable with "
                             + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
 
@@ -753,33 +781,37 @@ public class IngestServiceBean {
                     // Reset the file size: 
                     dataFile.setFilesize(dataAccess.getSize());
 
+
                     // delete the temp tab-file:
                     tabFile.delete();
-                    
+                    /*end of save as backup */
+                        
+                    } catch (Exception e ){
+                        // this probably means that an error occurred while saving the file to the file system
+                        logger.info("Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
 
-                    // and change the mime type to "tabular" on the final datafile, 
-                    // and replace (or add) the extension ".tab" to the filename: 
-                    dataFile.setContentType(FileUtil.MIME_TYPE_TAB);
-                    IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
+                        dataFile = null;
+                        dataFile = fileService.find(datafile_id);
 
-                    dataFile.setDataTable(tabDataIngest.getDataTable());
-                    tabDataIngest.getDataTable().setDataFile(dataFile);
+                        if (dataFile != null) {
+                            dataFile.SetIngestProblem();
+                            FileUtil.createIngestFailureReport(dataFile, "Ingest produced tabular data, but failed to save it in the database; " + e.getMessage() + " No further information is available.");
 
-                    produceSummaryStatistics(dataFile);
+                            // blank the datatable that may have already been attached to the
+                            // datafile (it may have something "unsave-able" in it!)
+                            dataFile.setDataTables(null);
+                            if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
+                                tabDataIngest.getDataTable().setDataFile(null);
+                            }
 
-                    dataFile.setIngestDone();
-                    // delete the ingest request, if exists:
-                    if (dataFile.getIngestRequest() != null) {
-                        dataFile.getIngestRequest().setDataFile(null);
-                        dataFile.setIngestRequest(null);
+                            dataFile = fileService.save(dataFile);
+                            logger.info("Unknown excepton saving ingested file.");
+                        } else {
+                            // ??
+                        }
+
                     }
-                    dataFile = fileService.save(dataFile);
-                    logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
 
-                    if (additionalData != null) {
-                        // remove the extra tempfile, if there was one:
-                        additionalData.delete();
-                    }
                     ingestSuccessful = true;
                 }
             } else {
