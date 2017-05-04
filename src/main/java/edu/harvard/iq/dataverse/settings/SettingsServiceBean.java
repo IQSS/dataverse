@@ -33,6 +33,7 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        CloudEnvironmentName,
         ComputeBaseUrl,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,

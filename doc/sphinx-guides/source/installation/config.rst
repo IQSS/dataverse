@@ -694,3 +694,10 @@ You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or
 Set the base URL for the "Compute" button for a dataset.
 
 ``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse?containerName=' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
+
+:CloudEnvironmentName
+ ++++++++++++++++
+
+Set the base URL for the "Compute" button for a dataset.
+
+``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``

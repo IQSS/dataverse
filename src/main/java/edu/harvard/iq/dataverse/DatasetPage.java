@@ -370,6 +370,8 @@ public class DatasetPage implements java.io.Serializable {
     public void setDataverseSiteUrl(String dataverseSiteUrl) {
         this.dataverseSiteUrl = dataverseSiteUrl;
     }
+    //TODO: 
+    //Consolidate this & FilePage in static function in the SwiftAccessIO
 
     public String getSwiftContainerName(){
         String swiftContainerName = null;
@@ -413,6 +415,10 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getComputeUrl() {
         return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+    }
+    
+    public String getCloudEnvironmentName() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.CloudEnvironmentName);
     }
     
     public DataFile getSelectedDownloadFile() {
