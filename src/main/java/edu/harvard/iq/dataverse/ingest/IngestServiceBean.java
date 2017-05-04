@@ -726,13 +726,22 @@ public class IngestServiceBean {
                 if (tabDataIngest.getDataTable() != null
                         && tabFile != null
                         && tabFile.exists()) {
+                    logger.info("Tabular data successfully ingested; DataTable with "
+                            + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
+                    logger.info("Tab-delimited file produced: " + tabFile.getAbsolutePath());
+                    
                     dataFile.setFilesize(tabFile.length());
-
 
                     // and change the mime type to "tabular" on the final datafile, 
                     // and replace (or add) the extension ".tab" to the filename: 
                     dataFile.setContentType(FileUtil.MIME_TYPE_TAB);
                     IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
+
+                    if (FileUtil.MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
+                        tabDataIngest.getDataTable().setOriginalFileFormat(FileUtil.MIME_TYPE_CSV);
+                    } else {
+                        tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
+                    }
 
                     dataFile.setDataTable(tabDataIngest.getDataTable());
                     tabDataIngest.getDataTable().setDataFile(dataFile);
@@ -752,41 +761,30 @@ public class IngestServiceBean {
                         // remove the extra tempfile, if there was one:
                         additionalData.delete();
                     }
-                    
+
                     try {
-                                            /* Start of save as backup */
-                    logger.info("Tabular data successfully ingested; DataTable with "
-                            + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
+                        /* Start of save as backup */
 
-                    logger.info("Tab-delimited file produced: " + tabFile.getAbsolutePath());
+                        DataFileIO dataAccess = dataFile.getAccessObject();
+                        dataAccess.open();
 
-                    if (FileUtil.MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
-                        tabDataIngest.getDataTable().setOriginalFileFormat(FileUtil.MIME_TYPE_CSV);
-                    } else {
-                        tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
-                    }
+                        // and we want to save the original of the ingested file: 
+                        try {
+                            dataAccess.backupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        } catch (IOException iox) {
+                            logger.info("Failed to save the ingested original! " + iox.getMessage());
+                        }
 
-                    DataFileIO dataAccess = dataFile.getAccessObject();
-                    dataAccess.open();
-                    
-                    // and we want to save the original of the ingested file: 
-                    try {
-                        dataAccess.backupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                    } catch (IOException iox) {
-                        logger.info("Failed to save the ingested original! " + iox.getMessage());
-                    }
-                    
-                    // Replace contents of the file with the tab-delimited data produced:
-                    dataAccess.copyPath(Paths.get(tabFile.getAbsolutePath()));
-                    // Reset the file size: 
-                    dataFile.setFilesize(dataAccess.getSize());
+                        // Replace contents of the file with the tab-delimited data produced:
+                        dataAccess.copyPath(Paths.get(tabFile.getAbsolutePath()));
+                        // Reset the file size: 
+                        dataFile.setFilesize(dataAccess.getSize());
 
+                        // delete the temp tab-file:
+                        tabFile.delete();
+                        /*end of save as backup */
 
-                    // delete the temp tab-file:
-                    tabFile.delete();
-                    /*end of save as backup */
-                        
-                    } catch (Exception e ){
+                    } catch (Exception e) {
                         // this probably means that an error occurred while saving the file to the file system
                         logger.info("Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
 
