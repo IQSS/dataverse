@@ -37,6 +37,11 @@ public class SettingsWrapper implements java.io.Serializable {
     private static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
             new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
 
+    /**
+     *
+     * @return setting value as string, or null if no setting is specified (JSF test `empty` 
+     * works for null values`)
+     */
     public String get(String settingKey) {
         if (settingsMap == null) {
             initSettingsMap();
@@ -60,6 +65,57 @@ public class SettingsWrapper implements java.io.Serializable {
         for (Setting setting : settingService.listAll()) {
             settingsMap.put(setting.getName(), setting.getContent());
         }
+    }
+
+    /**
+     * default separator "," for settings list
+     */
+    public static String defaultListSeparator = ",";
+
+    /**
+     * check if a given value is present in a setting list using the default separator.
+     * @param settingKey setting list to search
+     * @param queryValue value to search for
+     * @return true if a given value is present in a setting list, false if the value or key is 
+     * absent
+     */
+    public boolean valueInSettingList(String settingKey, String queryValue )
+    {
+	    return valueInSettingList( settingKey, queryValue, defaultListSeparator);
+    }
+   
+    /**
+     * check if a given value is present in a setting list.
+     * @param settingKey setting list to search
+     * @param queryValue value to search for
+     * @param sep list separator
+     * @return true if a given value is present in a setting list, false if the value or key is 
+     * absent
+     */
+    public boolean valueInSettingList(String settingKey, String queryValue, String sep)
+    {
+	    if ( null == settingsMap )
+	    {
+		    initSettingsMap();
+	    }
+	    String xs = settingsMap.get( settingKey );
+	    if ( null == xs )
+	    {
+		    return false;
+	    }
+	    String[] ys = xs.split( sep );
+	    if ( 0 == ys.length )
+	    {
+		    return false;
+	    }
+	    for( String y : ys )
+	    {
+		    if ( queryValue == y )
+		    {
+			    return true;
+		    }
+	    }
+	    return false;
     }
 
     private String guidesBaseUrl = null; 
