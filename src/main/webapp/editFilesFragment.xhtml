@@ -19,7 +19,9 @@
             </li>
         </ul>
         <div class="ui-tabs-panels">
-            <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
+		<div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
+			<!--PM start edit -->
+			<c:if test="#{ settingsWrapper.allowNativeUploads() }">
                 <!-- Upload -->
                 <ui:fragment id="fileUploadFragment" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
                     <script>
@@ -99,7 +101,9 @@
                     <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
                     <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" style="display:none"/> 
                     <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:filesTable" style="display:none"/>
-                </ui:fragment>
+		    </ui:fragment>
+		    </c:if>
+			<!--PM end edit -->
 
                 <!-- Files Table -->
                 <p:dataTable id="filesTable" 
@@ -270,9 +274,13 @@
     <p:dialog styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" id="fileTypeDifferentPopup" modal="true">
         <p class="text-info"><span class="glyphicon glyphicon-info-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
         <div class="button-block">
+			<!--PM start edit -->
+			<c:if test="#{ settingsWrapper.allowNativeUploads() }">
             <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" 
                              action="#{EditDatafilesPage.deleteFiles()}"
-                             update=":#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')},uploadMessage"/>
+			     update=":#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')},uploadMessage"/>
+			     </c:if>
+			<!--PM end edit -->
             <p:commandButton value="#{bundle.continue}" onclick="PF('fileTypeDifferentPopup').hide()" type="button" />
         </div>
     </p:dialog>
@@ -283,9 +291,13 @@
             <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
+			<!--PM start edit -->
+			<c:if test="#{ settingsWrapper.allowNativeUploads() }">
             <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);"
                              update=":#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}" />
             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
+			     </c:if>
+			<!--PM end edit -->
         </div>
     </p:dialog>
     <p:dialog id="editFileAccessPopup" header="File Restrictions" widgetVar="editFileAccessPopup" modal="true">
@@ -482,6 +494,8 @@
             </div>
             <!-- ODUM-style extra variable labels for SPSS-POR files (this option is only available during ingest) -->
             <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup) and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssPorFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
+			<!--PM start edit -->
+			<c:if test="#{ settingsWrapper.allowNativeUploads() }">
                 <label for="labelsFileUpload" class="col-sm-4 control-label">
                     #{bundle['file.spss-porExtraLabels']}
                 </label>
@@ -490,6 +504,8 @@
                     <p:growl id="messageForLabelsFileUpload" showDetail="true" />
                     <p:fileUpload id="labelsFileUpload" label="#{bundle['file.spss-porExtraLabels.selectToAddBtn']}" update="messageForLabelsFileUpload" mode="advanced" auto="true" fileUploadListener="#{EditDatafilesPage.handleLabelsFileUpload}"/>
                 </div>
+			</c:if>
+			<!--PM end edit -->
             </div>
         </div>
         <div class="button-block">
@@ -641,6 +657,8 @@
             }
         }
         function openDropboxChooser() {
+			<!--PM start edit -->
+			<c:if test="#{ settingsWrapper.allowNativeUploads() }">
             options = {
                 // Required. Called when a user selects an item in the Chooser.
                 success: function (files) {
@@ -656,7 +674,9 @@
                 linkType: "direct",
                 multiselect: "#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}",
             };
-            Dropbox.choose(options);
+	    Dropbox.choose(options);
+	    </c:if>
+			<!--PM end edit -->
         }
     </script>
 </ui:composition>
