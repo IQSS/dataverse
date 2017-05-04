@@ -596,7 +596,9 @@
                                 </tr>
                             </ui:repeat>
                         </table>
-                        <div class="button-block">
+			<div class="button-block">
+				<!-- PM start edit -->
+				<c:if test="#{ settingsWrapper.allowNativeDownloads() }">
                             <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>
                             <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
                                 <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload(false)}" />
@@ -606,7 +608,9 @@
                                                  action="#{DatasetPage.modifyGuestbookMultipleResponse()}" update="@form" />
                             </ui:fragment>
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button" />
-                        </div>
+				</c:if>
+				<!-- PM end edit -->
+		    </div>
                     </p:dialog>
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
@@ -1073,6 +1077,8 @@
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
 
+			<!-- PM start edit -->
+			<c:if test="#{ settingsWrapper.allowNativeDownloads() }">
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
 
@@ -1086,7 +1092,9 @@
                             <ui:param name="twoRavensHelper" value="#{DatasetPage.twoRavensHelper}"/>
                         </ui:include>
 
-                    </p:dialog>
+			</p:dialog>
+			</c:if>
+			<!-- PM end edit -->
 
                     <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
                               rendered="#{empty DatasetPage.editMode}" modal="true">
