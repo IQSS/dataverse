@@ -352,9 +352,10 @@ public class MapLayerMetadataServiceBean {
         geoConnectAddress = geoConnectAddress.replace("/shapefile/map-it", "");
         
         
-        String geoConnectCommand = geoConnectAddress + GEOCONNECT_MAP_DELETE_API + token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  callback_url;
+        //String geoConnectCommand = geoConnectAddress + GEOCONNECT_MAP_DELETE_API + token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  callback_url;
+        String geoConnectCommand = geoConnectAddress + GEOCONNECT_MAP_DELETE_API + token.getToken() + "/?cb=" +  callback_url;
         
-        logger.info("Attempting to call GeoConnect to request that the WorldMap layer for DataFile "+dataFile.getId()+": "+geoConnectAddress);
+        logger.info("Attempting to call GeoConnect to request that the WorldMap layer for DataFile "+dataFile.getId()+": "+geoConnectCommand);
         URL geoConnectUrl = new URL(geoConnectCommand);
         
         HttpURLConnection geoConnectConnection = (HttpURLConnection)geoConnectUrl.openConnection();
@@ -363,10 +364,11 @@ public class MapLayerMetadataServiceBean {
         geoConnectConnection.connect();
         
         int code = geoConnectConnection.getResponseCode();
-        
+        logger.info("response code: " + code);
         if (code != 200) {
             throw new IOException ("Failed to delete Map Layer via GeoConnect. /tabular/delete-map HTTP code response: "+code+"");
         }
+        logger.info("response :" + geoConnectConnection.getContent());
         
     }
 
