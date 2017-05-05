@@ -14,6 +14,7 @@ my $mailserver;
 my $yes;
 my $force;
 my $nogfpasswd;
+my $admin_email;
 my ($rez) = GetOptions(
     #"length=i" => \$length,    # numeric
     #"file=s"   => \$data,      # string
@@ -25,6 +26,7 @@ my ($rez) = GetOptions(
     "y|yes"        => \$yes,
     "f|force"      => \$force,
     "nogfpasswd"   => \$nogfpasswd,
+    "admin_email=s" => \$admin_email,
 );
 
 my @CONFIG_VARIABLES;
@@ -66,13 +68,6 @@ else
 	);
 }
 
-# TODO:
-# supply pre-set, default values in a text file;
-# this way we can provide different sets of default
-# values, for the installers intended for different
-# groups of users - local developers vs. "real"
-# dataverse users.
-
 my %CONFIG_DEFAULTS = (
     'HOST_DNS_ADDRESS',    'localhost',
     'GLASSFISH_DIRECTORY', '/usr/local/glassfish4',
@@ -96,7 +91,6 @@ my %CONFIG_DEFAULTS = (
     'RSERVE_PASSWORD', 'rserve'
 
 );
-
 my %CONFIG_PROMPTS = (
     'HOST_DNS_ADDRESS',    'Fully Qualified Domain Name of your host',
     'GLASSFISH_DIRECTORY', 'Glassfish Directory',
@@ -182,6 +176,32 @@ if ($hostname) {
 else {
     $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} = $hostname_from_cmdline;
 }
+
+# read default configuration values from tab separated file "default.config" if it exists
+#  moved after the $hostname_from_cmdline section to avoid excessively complicating the logic
+#  of command line argument, automatic selection, or config file.
+sub trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
+my $config_default_file = "default.config";
+if ( -e $config_default_file )
+{
+	print("loading default configuration values from $config_default_file\n");
+	open( my $inp_cfg, $config_default_file );
+	while( my $ln = <$inp_cfg> )
+	{
+		my @xs = split('\t', $ln );
+		if ( 2 == @xs )
+		{
+			my $k = $xs[0];
+			my $v = trim($xs[1]);
+			$CONFIG_DEFAULTS{$k}=$v;
+		}
+	}
+}
+else
+{
+	print("using hard-coded default configuration values ($config_default_file not found)\n");
+}
+
 
 if ($mailserver) {
     $CONFIG_DEFAULTS{'MAIL_SERVER'} = $mailserver;
@@ -1162,6 +1182,17 @@ unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "
     exit 1;
 }
 
+# if there's an admin_email set from arguments, replace the value in `dv-root.json` (called by `setup-all.sh`)
+if ($admin_email)
+{
+	print "setting contact email for root dataverse to: $admin_email\n";
+	set_root_contact_email( $admin_email );
+}
+else
+{
+	print "using default contact email for root dataverse\n";
+}
+
 for my $script ( "setup-all.sh" ) {
     # (there's only 1 setup script to run now - it runs all the other required scripts)
     print "Executing post-deployment setup script " . $script . "... ";
@@ -1412,3 +1443,27 @@ sub validate_smtp_server {
 
     return $mail_server_status; 
 }
+
+# support function for set_root_contact_email
+sub search_replace_file
+{
+        my ($infile, $pattern, $replacement, $outfile) = @_;
+        open (my $inp, $infile);
+        local $/ = undef;
+        my $txt = <$inp>;
+        close $inp;
+        $txt =~s/$pattern/$replacement/g;
+        open (my $opf, '>:encoding(UTF-8)', $outfile);
+        print $opf $txt;
+        close $opf;
+        return;
+}
+# set the email address for the default `dataverseAdmin` account
+sub set_root_contact_email
+{
+        my ($contact_email) = @_;
+        my $config_json = "data/user-admin.json";
+        search_replace_file($config_json,"\"email\":\"dataverse\@mailinator.com\"","\"email\":\"$contact_email\"",$config_json);
+        return;
+}
+
