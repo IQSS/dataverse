@@ -110,7 +110,7 @@ public class SettingsWrapper implements java.io.Serializable {
 	    }
 	    for( String y : ys )
 	    {
-		    if ( queryValue == y )
+		    if ( queryValue.equals(y) )
 		    {
 			    return true;
 		    }
