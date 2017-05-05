@@ -328,7 +328,7 @@ The Dataverse Project logo (below) is displayed in the footer, and was the basis
 
   <div class="panel panel-default">
     <div class="panel-body text-center">
-      <img alt="Dataverse Project" src="../_images/dataverse-project.png">
+      <img alt="Dataverse Project" src="https://dataverse.harvard.edu/resources/images/dataverseproject_logo.jpg" class="img-responsive">
     </div>
   </div>
 
@@ -338,6 +338,12 @@ The brand logo (below) was created as a custom icon to represent the concept of 
 
   <div class="panel panel-default">
     <div class="panel-body text-center">
-      <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175">
+      <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175" class="img-responsive">
     </div>
   </div>
+
+.. |image1| image:: ./img/dataverse-project.png
+     :class: img-responsive
+
+.. |image2| image:: ./img/dataverse-icon.jpg
+     :class: img-responsive
