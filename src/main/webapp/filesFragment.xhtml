@@ -27,7 +27,7 @@
                 <div class="form-group col-xs-12 text-left">
                     <div class="col-xs-12">
                         <p class="help-block text-muted"><span class="glyphicon glyphicon-info-sign"/> 
-                            <h:outputFormat value="#{bundle['file.cloudStorageAccess.help']}" escape="false">
+                            <h:outputFormat value=" #{bundle['file.cloudStorageAccess.help']}" escape="false">
                                 <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                 <f:param value="#{systemConfig.guidesVersion}"/>
                                 <f:param value="#{DatasetPage.cloudEnvironmentName}"/>
@@ -42,14 +42,14 @@
                     <div class="col-md-4 col-sm-5 col-xs-6 input-group">
                         <div id="copy-input" class="form-control">#{DatasetPage.swiftContainerName}</div>
                         <span class="input-group-btn">
-                            <a href="#" class="btn btn-default btn-copy" data-clipboard-action="copy" data-clipboard-target="#copy-input">
-                                <span class="glyphicon glyphicon-copy"></span> #{bundle['file.copy']}
-                            </a>
+                            <button class="btn btn-default btn-copy" type="button" id="copy-button" data-clipboard-action="copy" data-clipboard-target="#copy-input">
+                              <span class="glyphicon glyphicon-copy"></span> #{bundle['file.copy']}
+                            </button>
                         </span>
                         <script>
                             $(document).ready(function () {
                                 // clipboard.js > cloud storage copy btn
-                                var clipboard = new Clipboard('a.btn-copy');
+                                var clipboard = new Clipboard('button.btn-copy');
 
                                 clipboard.on('success', function(e) {
                                     console.log(e);
