@@ -513,19 +513,19 @@ public class IngestServiceBean {
         }
     }
     
-    public void produceSummaryStatistics(DataFile dataFile) throws IOException {
+    public void produceSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
         /*
         logger.info("Skipping summary statistics and UNF.");
          */
-        produceDiscreteNumericSummaryStatistics(dataFile); 
-        produceContinuousSummaryStatistics(dataFile);
-        produceCharacterSummaryStatistics(dataFile);
+        produceDiscreteNumericSummaryStatistics(dataFile, generatedTabularFile); 
+        produceContinuousSummaryStatistics(dataFile, generatedTabularFile);
+        produceCharacterSummaryStatistics(dataFile, generatedTabularFile);
         
         recalculateDataFileUNF(dataFile);
         recalculateDatasetVersionUNF(dataFile.getFileMetadata().getDatasetVersion());
     }
     
-    public void produceContinuousSummaryStatistics(DataFile dataFile) throws IOException {
+    public void produceContinuousSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
 
         /* 
         // quick, but memory-inefficient way:
@@ -547,7 +547,7 @@ public class IngestServiceBean {
                 DataFileIO dataFileIO = dataFile.getDataFileIO();
                 dataFileIO.open();
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
-                    Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(dataFileIO.getInputStream(), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                    Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                     logger.fine("Calculating summary statistics on a Float vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
@@ -555,7 +555,7 @@ public class IngestServiceBean {
                     calculateUNF(dataFile, i, variableVector);
                     variableVector = null; 
                 } else {
-                    Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(dataFileIO.getInputStream(), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                    Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                     logger.fine("Calculating summary statistics on a Double vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
@@ -568,7 +568,7 @@ public class IngestServiceBean {
         }
     }
     
-    public void produceDiscreteNumericSummaryStatistics(DataFile dataFile) throws IOException {
+    public void produceDiscreteNumericSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
         
         //TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
         
@@ -578,7 +578,7 @@ public class IngestServiceBean {
                 logger.fine("subsetting discrete-numeric vector");
                 DataFileIO dataFileIO = dataFile.getDataFileIO();
                 dataFileIO.open();
-                Long[] variableVector = TabularSubsetGenerator.subsetLongVector(dataFileIO.getInputStream(), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 // We are discussing calculating the same summary stats for 
                 // all numerics (the same kind of sumstats that we've been calculating
                 // for numeric continuous type)  -- L.A. Jul. 2014
@@ -592,7 +592,7 @@ public class IngestServiceBean {
         }
     }
     
-    public void produceCharacterSummaryStatistics(DataFile dataFile) throws IOException {
+    public void produceCharacterSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
 
         /* 
             At this point it's still not clear what kinds of summary stats we
@@ -613,7 +613,7 @@ public class IngestServiceBean {
                 DataFileIO dataFileIO = dataFile.getDataFileIO();
                 dataFileIO.open();
                 logger.fine("subsetting character vector");
-                String[] variableVector = TabularSubsetGenerator.subsetStringVector(dataFileIO.getInputStream(), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
                 // calculate the UNF while we are at it:
                 logger.fine("Calculating UNF on a String vector");
@@ -782,7 +782,7 @@ public class IngestServiceBean {
                 tabDataIngest.getDataTable().setDataFile(dataFile);
 
                 try {
-                    produceSummaryStatistics(dataFile);
+                    produceSummaryStatistics(dataFile, tabFile);
                     postIngestTasksSuccessful = true;
                 } catch (IOException postIngestEx) {
 
@@ -792,7 +792,7 @@ public class IngestServiceBean {
                     restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
                     dataFile = fileService.save(dataFile);
 
-                    logger.info("Ingest failure: post-ingest tasks.");
+                    logger.warning("Ingest failure: post-ingest tasks.");
                 }
 
                 if (!postIngestTasksSuccessful) {
@@ -826,7 +826,7 @@ public class IngestServiceBean {
                 } catch (Exception unknownEx) {
                     // this means that an error occurred while saving the datafile
                     // in the database. 
-                    logger.info("Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
+                    logger.warning("Ingest failure: Failed to save tabular metadata (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
 
                     dataFile = null;
                     dataFile = fileService.find(datafile_id);
@@ -838,7 +838,6 @@ public class IngestServiceBean {
                         restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
 
                         dataFile = fileService.save(dataFile);
-                        logger.info("Unknown excepton saving ingested file.");
                     }
                 }
 
@@ -872,26 +871,25 @@ public class IngestServiceBean {
 
                 } catch (Exception e) {
                     // this probably means that an error occurred while saving the file to the file system
-                    logger.info("Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
+                    logger.warning("Failed to save the tabular file produced by the ingest (resetting the ingested DataFile back to its original state)");
 
                     dataFile = null;
                     dataFile = fileService.find(datafile_id);
 
                     if (dataFile != null) {
                         dataFile.SetIngestProblem();
-                        FileUtil.createIngestFailureReport(dataFile, "Ingest produced tabular data, but failed to save it in the database; " + e.getMessage() + " No further information is available.");
+                        FileUtil.createIngestFailureReport(dataFile, "Failed to save the tabular file produced by the ingest.");
 
                         restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
 
                         dataFile = fileService.save(dataFile);
-                        logger.info("Unknown excepton saving ingested file.");
                     }
                 }
 
                 ingestSuccessful = true;
             }
         } else {
-            logger.info("Ingest failed to produce data obect.");
+            logger.warning("Ingest failed to produce data obect.");
         }
 
         return ingestSuccessful;
