@@ -10,6 +10,8 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    
+    <c:if test="#{ settingsWrapper.allowNativeDownloads() }">
 
     <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem and canUpdateDataset}">
         <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
@@ -284,5 +286,6 @@
                                 #{bundle.close}
             </button>
         </div>
-    </p:dialog>
+	</p:dialog>
+	</c:if>
 </ui:composition>
