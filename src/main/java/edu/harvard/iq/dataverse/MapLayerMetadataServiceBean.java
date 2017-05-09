@@ -26,6 +26,7 @@ import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -334,15 +335,32 @@ public class MapLayerMetadataServiceBean {
      * clicking 'Delete' on the GeoConnect map page). 
      * Otherwise this call follows the scheme used when accessing the 
      * /shapefile/map-it on GeoConnect - we send along a WorldMap token and a 
-     * callback url for GC to download the file metadata.
+     * callback url for GC to download the file metadata.metadata
      * Depending on how it goes we receive a yes or no response from the server.
     */
     public void deleteMapLayerFromWorldMap(DataFile dataFile, AuthenticatedUser user) throws IOException {
+
+        
+        if (dataFile == null){
+            logger.severe("dataFile cannot be null");
+            return;
+        }
+        
+        if (user == null){
+            logger.severe("user cannot be null");
+            return;            
+        }
+        
         // Worldmap token: 
         WorldMapToken token = tokenServiceBean.getNewToken(dataFile, user);
-        
+        if (token == null){
+            logger.severe("token should NOT be null");
+            return;
+        }
+       
+        logger.info("-- new token id: " + token.getId());
         // Callback url for geoConnect: 
-        String callback_url =  URLEncoder.encode(systemConfig.getDataverseSiteUrl() + "/" + WorldMapRelatedData.GET_WORLDMAP_DATAFILE_API_PATH);
+        String callback_url = URLEncoder.encode(systemConfig.getDataverseSiteUrl() + WorldMapRelatedData.GET_WORLDMAP_DATAFILE_API_PATH);
         
         String geoConnectAddress = token.getApplication().getMapitLink();
         /* 
@@ -351,11 +369,14 @@ public class MapLayerMetadataServiceBean {
         */
         geoConnectAddress = geoConnectAddress.replace("/shapefile/map-it", "");
         
+        logger.log(Level.INFO, "callback_url: {0}", callback_url);
         
         //String geoConnectCommand = geoConnectAddress + GEOCONNECT_MAP_DELETE_API + token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  callback_url;
         String geoConnectCommand = geoConnectAddress + GEOCONNECT_MAP_DELETE_API + token.getToken() + "/?cb=" +  callback_url;
+        logger.info("-- new token id 2: " + token.getId());
+
         
-        logger.info("Attempting to call GeoConnect to request that the WorldMap layer for DataFile "+dataFile.getId()+": "+geoConnectCommand);
+        logger.info("Attempting to call GeoConnect to request that the WorldMap layer for DataFile "+dataFile.getId()+":\n"+geoConnectCommand);
         URL geoConnectUrl = new URL(geoConnectCommand);
         
         HttpURLConnection geoConnectConnection = (HttpURLConnection)geoConnectUrl.openConnection();

@@ -221,10 +221,12 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 id = id.startsWith("@") ? id.substring(1) : id;
                 AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
                 try {
+                    logger.fine("(1 of 2) PublishDatasetCommand: delete MapLayer From *WorldMap*");
                     ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(dataFile, authenticatedUser);
                     // If that was successful, delete the layer on the Dataverse side as well:
                     //SEK 4/20/2017                
                     //Command to delete from Dataverse side
+                    logger.fine("(2 of 2) PublishDatasetCommand: Delete MapLayerMetadata From *Dataverse*");
                     ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));                               
                 } catch (IOException ioex) {
                     // We are not going to treat it as a fatal condition and bail out, 
