@@ -73,11 +73,10 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(managed.getDataset(), doNormalSolrDocCleanUp);
-        
-        // if there is still another released version of this dataset,
-        // we want to re-export it :
 
-        ExportService instance = ExportService.getInstance();
+        
+        ExportService instance = ExportService.getInstance(ctxt.settings());
+        
 
         if (managed.getDataset().getReleasedVersion() != null) {
             try {

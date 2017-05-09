@@ -481,11 +481,6 @@ public class SystemConfig {
         return appPrivacyPolicyUrl;
     }
 
-    public boolean isDdiExportEnabled() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.DdiExportEnabled, safeDefaultIfKeyNotFound);
-    }
-
     public boolean myDataDoesNotUsePermissionDocs() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.MyDataDoesNotUseSolrPermissionDocs, safeDefaultIfKeyNotFound);
