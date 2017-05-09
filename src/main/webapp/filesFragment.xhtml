@@ -78,7 +78,8 @@
                                 </li>
                                 <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
                                     <p:commandLink oncomplete="toggle_dropdown();" 
-                                                   onclick="testFilesSelectedForRestriction()">
+                                                   update=":datasetForm"
+                                                   action="#{DatasetPage.testSelectedFilesForRestrict()}">
                                         <h:outputText value="#{bundle['file.restrict']}"/>
                                     </p:commandLink>
                                 </li>

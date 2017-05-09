@@ -1299,11 +1299,10 @@ public class DatasetPage implements java.io.Serializable {
     
     public void testSelectedFilesForMapData(){
         setSelectedFilesHasMapLayer(false); 
-
         for (FileMetadata fmd : selectedFiles){
             if(worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
                 setSelectedFilesHasMapLayer(true);
-                break; //only need one for warning message
+                return; //only need one for warning message
             }
         }
     }
@@ -1959,7 +1958,27 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
     
-    
+    public String testSelectedFilesForRestrict(){
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        if (selectedFiles.isEmpty()) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");           
+            return "";
+        } else {           
+            boolean validSelection = false;
+            for (FileMetadata fmd : selectedFiles) {
+                if (!fmd.isRestricted() ){
+                    validSelection = true;
+                }
+            }
+            if (!validSelection) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");
+                return "";
+            }                       
+            testSelectedFilesForMapData();
+            requestContext.execute("PF('accessPopup').show()");
+            return "";
+        }        
+    }
     
         
     public String restrictSelectedFiles(boolean restricted){

@@ -971,11 +971,6 @@
 
                     <p:remoteCommand  name="refreshTagsCommand" action="#{DatasetPage.refreshTagsPopUp()}" update=":datasetForm:fileTagsPopup"
                                       oncomplete="PF('fileTagsPopup').show();"/>
-                    <p:remoteCommand  name="testSelectedFilesForMapData"
-                            process="@this"
-                            update=":datasetForm:accessPopup"
-                            oncomplete="PF('accessPopup').show();"
-                            actionListener="#{DatasetPage.testSelectedFilesForMapData()}" />
 
                     <!-- We no longer need this remoteCommand; see my comments in the javascript method testFilesSelectedForEditMetadata() -->
                     <!-- for more info. - L.A. 4.2.1 -->
@@ -1392,7 +1387,7 @@
                                     } else {
                                         testSelectedFilesForMapData();
                                     }
-
+                                
                                 }
 
                                 function testFilesSelectedForTags() {
