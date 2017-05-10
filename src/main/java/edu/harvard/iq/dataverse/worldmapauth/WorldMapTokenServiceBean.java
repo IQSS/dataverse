@@ -15,6 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -50,6 +52,7 @@ public class WorldMapTokenServiceBean {
      * @param dvUserID
      * @return WorldMapToken
      */
+    @TransactionAttribute(REQUIRES_NEW) 
     public WorldMapToken getNewToken(DataFile dataFile, AuthenticatedUser dvUser){
         if ((dataFile==null)||(dvUser==null)){
             logger.severe("dataFile or dvUser is null");
@@ -158,45 +161,6 @@ public class WorldMapTokenServiceBean {
         }    
     }
 
-    
-    /**
-     * This is a bit of a hack to retrieve a valid token from
-     * within a Command (which holds back on transactions)
-     * 
-     * It's used in this workflow:
-     *  - pre-publish command: create tokens for any newly restricted DataFiles with maps 
-     *  - publish: within the delete WorldMap layer command, used this method
-     *      for retrieving valid tokens that:
-     *      - have been saved to the database
-     *      - can be used within a callback url
-     * 
-     * @param datafile
-     * @param dvUser
-     * @return 
-     */
-    public WorldMapToken retrieveValidToken(DataFile datafile, AuthenticatedUser dvUser){
-        if ((datafile==null)||(dvUser==null)){
-            logger.severe("dataFile or dvUser is null");
-            return null;
-        } 
-        
-        WorldMapToken wmToken;
-        try{
-            wmToken = em.createQuery("select m from WorldMapToken m WHERE m.dataFile.id =:datafile_id and m.dataverseUser.id=:dataverseuser_id", WorldMapToken.class)
-					.setParameter("datafile_id", datafile.getId())
-					.setParameter("dataverseuser_id", dvUser.getId())
-					.getSingleResult();
-        } catch ( NoResultException nre ) {
-            return null;
-        }            
-        
-        if (wmToken.hasTokenExpired()){
-            em.remove(em.merge(wmToken));   // Delete expired token from the database.
-            logger.warning("WorldMapToken has expired.  Permission denied.");
-            return null;
-        }
-        return wmToken;
-    } // end retrieveAndRefreshValidToken
     
     
     /**

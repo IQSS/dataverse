@@ -1055,12 +1055,12 @@ public class DatasetPage implements java.io.Serializable {
                     logger.warning("No such dataset: "+persistentId);
                     return permissionsWrapper.notFound();
                 }
-                logger.fine("retrived dataset, id="+dataset.getId());
+                logger.fine("retrieved dataset, id="+dataset.getId());
                 
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.info("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
