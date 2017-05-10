@@ -1288,11 +1288,11 @@
                             <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();
                                     PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate and !DatasetPage.mapLayerToBeDeletedOnPublish}" action="#{DatasetPage.releaseMajor}" />
                             <!-- buttons for when there's IS map layer to be deleted-->
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" 
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();PF('confirmWorldMapDelete').show();" 
                                              rendered="#{DatasetPage.dataset.latestVersion.minorUpdate and DatasetPage.mapLayerToBeDeletedOnPublish}" 
-                                             action="#{DatasetPage.releaseDraft}" />
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();
-                                    PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate and DatasetPage.mapLayerToBeDeletedOnPublish}" action="#{DatasetPage.releaseMajor}" />
+                                             />
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();PF('confirmWorldMapDelete').show();
+                                    PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate and DatasetPage.mapLayerToBeDeletedOnPublish}"  />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
