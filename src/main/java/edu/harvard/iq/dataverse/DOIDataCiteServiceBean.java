@@ -203,8 +203,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
         HashMap<String, String> metadata = super.getUpdateMetadataFromDataset(datasetIn);
-        metadata.put("datacite.publicationyear", generateYear());
-
+        metadata.put("datacite.publicationyear", generateYear(datasetIn));
         return metadata;
     }
 

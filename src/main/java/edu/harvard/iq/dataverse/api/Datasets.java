@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -102,10 +101,8 @@ public class Datasets extends AbstractApiBean {
     DatasetServiceBean datasetService;
 
     @EJB
-// HEAD
     DataverseServiceBean dataverseService;
-//develop
-    DOIEZIdServiceBean doiEZIdServiceBean;
+
 
     @EJB
     DDIExportServiceBean ddiExportService;

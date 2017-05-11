@@ -4,6 +4,7 @@ import static edu.harvard.iq.dataverse.IdServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.text.SimpleDateFormat;
 
 import javax.ejb.EJB;
 import java.util.*;
@@ -32,21 +33,8 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
         HashMap<String, String> metadata = new HashMap<>();
 
-        String authorString = datasetIn.getLatestVersion().getAuthorsStr();
-
-        if (authorString.isEmpty()) {
-            authorString = ":unav";
-        }
-
-        String producerString = dataverseService.findRootDataverse().getName() + " Dataverse";
-
-        if (producerString.isEmpty()) {
-            producerString = ":unav";
-        }
-        metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
-        metadata.put("datacite.publisher", producerString);
-        metadata.put("datacite.publicationyear", generateYear());
+        metadata = addBasicMetadata(datasetIn, metadata);
+        metadata.put("datacite.publicationyear", generateYear(datasetIn));
         metadata.put("_target", getTargetUrl(datasetIn));
         return metadata;
     }
@@ -54,7 +42,11 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
     protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
         HashMap<String, String> metadata = new HashMap<>();
-
+        metadata = addBasicMetadata(datasetIn, metadata);
+        return metadata;
+    }
+    
+    protected HashMap<String, String> addBasicMetadata(Dataset datasetIn, HashMap<String, String> metadata){
         String authorString = datasetIn.getLatestVersion().getAuthorsStr();
 
         if (authorString.isEmpty()) {
@@ -69,7 +61,8 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         metadata.put("datacite.creator", authorString);
         metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
         metadata.put("datacite.publisher", producerString);
-
+        
+        
         return metadata;
     }
 
@@ -92,46 +85,12 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         return dataset.getGlobalId();
     }
     
-    @Override
-    public String generateYear()
-    {
-        StringBuilder guid = new StringBuilder();
+    protected String generateYear (Dataset datasetIn){
+        if (datasetIn.isReleased()) {
+            return datasetIn.getPublicationDateFormattedYYYYMMDD().substring(0, 3);
+        }
 
-        // Create a calendar to get the date formatted properly
-        String[] ids = TimeZone.getAvailableIDs(-8 * 60 * 60 * 1000);
-        SimpleTimeZone pdt = new SimpleTimeZone(-8 * 60 * 60 * 1000, ids[0]);
-        pdt.setStartRule(Calendar.APRIL, 1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
-        pdt.setEndRule(Calendar.OCTOBER, -1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
-        Calendar calendar = new GregorianCalendar(pdt);
-        Date trialTime = new Date();
-        calendar.setTime(trialTime);
-        guid.append(calendar.get(Calendar.YEAR));
-
-        return guid.toString();
+        return new SimpleDateFormat("yyyy").format(datasetIn.getCreateDate()); 
     }
 
-    @Override
-    public String generateTimeString()
-    {
-        StringBuilder guid = new StringBuilder();
-
-        // Create a calendar to get the date formatted properly
-        String[] ids = TimeZone.getAvailableIDs(-8 * 60 * 60 * 1000);
-        SimpleTimeZone pdt = new SimpleTimeZone(-8 * 60 * 60 * 1000, ids[0]);
-        pdt.setStartRule(Calendar.APRIL, 1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
-        pdt.setEndRule(Calendar.OCTOBER, -1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
-        Calendar calendar = new GregorianCalendar(pdt);
-        Date trialTime = new Date();
-        calendar.setTime(trialTime);
-        guid.append(calendar.get(Calendar.YEAR));
-        guid.append(calendar.get(Calendar.DAY_OF_YEAR));
-        guid.append(calendar.get(Calendar.HOUR_OF_DAY));
-        guid.append(calendar.get(Calendar.MINUTE));
-        guid.append(calendar.get(Calendar.SECOND));
-        guid.append(calendar.get(Calendar.MILLISECOND));
-        double random = Math.random();
-        guid.append(random);
-
-        return guid.toString();
-    }
 }

@@ -50,7 +50,8 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         Dataset ds = theVersion.getDataset();        
 
         theVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
-
+        /* We do not want to delete the identifier if the dataset is completely deaccessioned
+        
         logger.fine("deleteDOIIdentifier=" + deleteDOIIdentifier);
         if (deleteDOIIdentifier) {
             String nonNullDefaultIfKeyNotFound = "";
@@ -68,7 +69,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
                 }
                 throw new CommandException(BundleUtil.getStringFromBundle("dataset.delete.error", currentProtocol),this); 
             }
-        }
+        }*/
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
         boolean doNormalSolrDocCleanUp = true;

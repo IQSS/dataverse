@@ -79,6 +79,7 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
         logger.log(Level.FINE,"createIdentifier");
         String identifier = getIdentifierFromDataset(dataset);
         HashMap<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
+        metadata.put("datacite.resourcetype", "Dataset");
         metadata.put("_status", "reserved");
         try {
             String retString = ezidService.createIdentifier(identifier, metadata);

@@ -71,7 +71,5 @@ public interface IdServiceBean {
         return getBean(protocol, ctxt);
     }
 
-    String generateYear();
 
-    String generateTimeString();
 }
