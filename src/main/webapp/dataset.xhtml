@@ -26,8 +26,7 @@
 	    <meta name="DC.type" content="Dataset"/>
 	    <meta name="DC.title" content="#{DatasetPage.title}"/>
 	    <meta name="DC.date" content="#{DatasetPage.publicationDate}"/>
-	    
-	    <meta name="DC.publisher" content="FIXME - publisher undetermined" />
+	    <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
 	    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
 	    <meta name="DC.creator" content="#{author}"/>
 	    </ui:repeat>

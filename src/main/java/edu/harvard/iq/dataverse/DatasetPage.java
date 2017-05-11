@@ -3596,6 +3596,14 @@ public class DatasetPage implements java.io.Serializable {
 	    }
 	    return rs;
     }
+    /**
+     * publisher (aka - name of root dataverse)
+     */
+    public String getPublisher()
+    {
+	    assert( null != workingVersion );
+	    return workingVersion.getRootDataverseNameforCitation();
+    }
     
     /*
     public String getThumbnail() {
