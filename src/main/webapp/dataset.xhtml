@@ -19,7 +19,11 @@
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
-            <ui:param name="showMessagePanel" value="#{true}"/>
+	    <ui:param name="showMessagePanel" value="#{true}"/>
+	    <ui:define name="dc_meta_header">
+	    <ui:remove><!-- PM - more to come, once I find out where they are --></ui:remove>
+	    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
+	    </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
