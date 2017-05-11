@@ -23,6 +23,12 @@
 	    <ui:define name="dc_meta_header">
 	    <ui:remove><!-- PM - more to come, once I find out where they are --></ui:remove>
 	    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
+	    <meta name="DC.type" content="Dataset"/>
+	    <meta name="DC.title" content="#{DatasetPage.title}"/>
+	    <meta name="DC.date" content="#{DatasetPage.publicationDate}"/>
+	    
+	    <meta name="DC.publisher" content="FIXME - publisher undetermined" />
+	    <meta name="DC.creator" content="FIXME - creators undetermined"/>
 	    </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />

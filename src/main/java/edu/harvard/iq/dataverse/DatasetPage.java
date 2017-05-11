@@ -3556,6 +3556,28 @@ public class DatasetPage implements java.io.Serializable {
     public void setTwoRavensHelper(TwoRavensHelper twoRavensHelper) {
         this.twoRavensHelper = twoRavensHelper;
     }
+
+    /**
+     * dataset title
+     */
+    public String getTitle()
+    {  //workingVersion
+	    assert( null != workingVersion );
+	    return workingVersion.getTitle();
+    }
+
+    /**
+     * dataset publication date (dd MMM yyyy).
+     *
+     */
+    public String getPublicationDate()
+    {
+	    assert( null != workingVersion );
+	    Date rel_date = workingVersion.getReleaseTime();
+	    SimpleDateFormat fmt = new SimpleDateFormat("dd MMM yyyy");
+	    String r = fmt.format( rel_date.getTime() );
+	    return r;
+    }
     
     /*
     public String getThumbnail() {
