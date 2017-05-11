@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.DatasetAuthor;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -3577,6 +3578,23 @@ public class DatasetPage implements java.io.Serializable {
 	    SimpleDateFormat fmt = new SimpleDateFormat("dd MMM yyyy");
 	    String r = fmt.format( rel_date.getTime() );
 	    return r;
+    }
+    /**
+     * dataset authors
+     */
+    public String[] getDatasetAuthors()
+    {
+	    assert( null != workingVersion );
+	    List<DatasetAuthor> authors = workingVersion.getDatasetAuthors();
+	    int n_authors = authors.size();
+	    String[] rs = new String[ n_authors ];
+	    int pos = 0;
+	    for( DatasetAuthor author : authors )
+	    {
+		    rs[pos] = author.getName().getValue();
+		    ++pos;
+	    }
+	    return rs;
     }
     
     /*

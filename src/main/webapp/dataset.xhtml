@@ -28,7 +28,9 @@
 	    <meta name="DC.date" content="#{DatasetPage.publicationDate}"/>
 	    
 	    <meta name="DC.publisher" content="FIXME - publisher undetermined" />
-	    <meta name="DC.creator" content="FIXME - creators undetermined"/>
+	    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
+	    <meta name="DC.creator" content="#{author}"/>
+	    </ui:repeat>
 	    </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
