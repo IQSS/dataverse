@@ -224,7 +224,7 @@ public class XitemRepository implements ItemRepository {
         
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsNotInThisSet(setSpec, from, until);
         
-        if (oaiRecords == null && oaiRecords.isEmpty()) {
+        if (oaiRecords == null || oaiRecords.isEmpty()) {
             return;
         }
                 
