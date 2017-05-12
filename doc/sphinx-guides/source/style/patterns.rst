@@ -7,16 +7,9 @@ Patterns are what emerge when using the foundation elements together with basic 
 Navbar
 ======
 
-The navbar is a component from `Bootstrap <http://getbootstrap.com/components/#navbar>`__, which spans the top of the application and contains the logo/branding, aligned to the left, plus search form and links, aligned to the right.
+The `Navbar component <http://getbootstrap.com/components/#navbar>`__ from Bootstrap, which spans the top of the application and contains the logo/branding, aligned to the left, plus search form and links, aligned to the right.
 
 When logged in, the account name is a dropdown menu, linking the user to account-specific content, as well as the log out link.
-
-*TO-DO...* Removed extra navbar links to make it look a little cleaner. Might add some back. Should UI example be a screenshot?
-
-* Logo/Branding
-* Search
-* Links
-* Account
 
 .. raw:: html
 
@@ -77,8 +70,6 @@ Breadcrumbs
 
 The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to dataverse.
 
-* Links
-
 *TO-DO...* should we change how we do breadcrumbs in order to follow this http://getbootstrap.com/components/#breadcrumbs
 
 .. raw:: html
@@ -106,15 +97,7 @@ The breadcrumbs are displayed under the header, and provide a trail of links for
 Tables
 ======
 
-Tables component from `Bootstrap <http://getbootstrap.com/css/#tables>`__.
-
-Most tables are DataTable components from `PrimeFaces <https://www.primefaces.org/showcase/ui/data/datatable/basic.xhtml>`__.
-
-* DataTable
-* Search Results
-* Dataset Files
-
-*TO-DO...* fix the PrimeFaces CSS in example below...
+Most tables are the `DataTable components <https://www.primefaces.org/showcase/ui/data/datatable/basic.xhtml>`__ from PrimeFaces and are styled using the `Tables component <http://getbootstrap.com/css/#tables>`__ from Bootstrap.
 
 .. raw:: html
 
@@ -125,7 +108,7 @@ Most tables are DataTable components from `PrimeFaces <https://www.primefaces.or
 	      		<table role="grid">
 	      			<thead>
 	      				<tr role="row">
-	      					<th class="ui-state-default ui-selection-column col-select-width text-center" role="columnheader"><span class="ui-column-title"></span><div class="ui-chkbox ui-chkbox-all ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div></th><th class="ui-state-default col-sm-1 text-center" role="columnheader"><span class="ui-column-title">Dataset</span></th><th class="ui-state-default" role="columnheader"><span class="ui-column-title">Summary</span></th><th class="ui-state-default col-sm-3" role="columnheader"><span class="ui-column-title">Contributors</span></th><th class="ui-state-default col-sm-2" role="columnheader"><span class="ui-column-title">Published</span></th>
+	      					<th style="width:60px;" class="ui-state-default ui-selection-column col-select-width text-center" role="columnheader"><span class="ui-column-title"></span><div class="ui-chkbox ui-chkbox-all ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div></th><th class="ui-state-default col-sm-2 text-center" role="columnheader"><span class="ui-column-title">Dataset</span></th><th class="ui-state-default" role="columnheader"><span class="ui-column-title">Summary</span></th><th class="ui-state-default col-sm-3" role="columnheader"><span class="ui-column-title">Published</span></th>
 	  					</tr>
 					</thead>
 					<tbody class="ui-datatable-data ui-widget-content">
@@ -133,49 +116,44 @@ Most tables are DataTable components from `PrimeFaces <https://www.primefaces.or
 							<td role="gridcell" class="ui-selection-column col-select-width text-center">
 								<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
 							</td>
-							<td role="gridcell" class="col-sm-1 text-center">
+							<td role="gridcell" class="text-center">
 		                    	<a href="#" class="ui-commandlink ui-widget" onclick="return false;">3.0</a>
 			                </td>
 			                <td role="gridcell">
 			                	<span class="highlightBold">Files (Changed File Metadata: 1); </span><a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
 			                </td>
-			                <td role="gridcell" class="col-sm-3">Dataverse Admin</td>
-			                <td role="gridcell" class="col-sm-2"><span>March 8, 2017</span>
-		                    </td>
+			                <td role="gridcell"><span>March 8, 2017</span></td>
 		                </tr>
 		                <tr data-ri="1" class="ui-widget-content ui-datatable-odd ui-datatable-selectable" role="row" aria-selected="false">
 		                    <td role="gridcell" class="ui-selection-column col-select-width text-center">
 		                    	<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
 		                    </td>
-		                    <td role="gridcell" class="col-sm-1 text-center">
+		                    <td role="gridcell" class="text-center">
 		                    	<a href="#" class="ui-commandlink ui-widget" onclick="return false;">2.0</a>
 		                    </td>
 		                    <td role="gridcell">
 		                    	<span class="highlightBold">Additional Citation Metadata: </span> (1 Added); <a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
 		                	</td>
-		                	<td role="gridcell" class="col-sm-3">Dataverse Admin</td><td role="gridcell" class="col-sm-2"><span>January 25, 2017</span>
-		                    </td>
+		                	<td role="gridcell"><span>January 25, 2017</span></td>
 		                </tr>
 		                <tr data-ri="2" class="ui-widget-content ui-datatable-even ui-datatable-selectable" role="row" aria-selected="false">
 		                	<td role="gridcell" class="ui-selection-column col-select-width text-center">
 		                		<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
 			                </td>
-			                <td role="gridcell" class="col-sm-1 text-center">
+			                <td role="gridcell" class="text-center">
 			                    <a href="#" class="ui-commandlink ui-widget" onclick="return false;">1.1</a></td><td role="gridcell"><span class="highlightBold">Additional Citation Metadata: </span> (1 Added); <a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
 			                </td>
-			                <td role="gridcell" class="col-sm-3">Dataverse Admin</td>
-			                <td role="gridcell" class="col-sm-2"><span>October 25, 2016</span></td>
+			                <td role="gridcell"><span>October 25, 2016</span></td>
 		                </tr>
 		                <tr data-ri="3" class="ui-widget-content ui-datatable-odd ui-datatable-selectable" role="row" aria-selected="false">
 		                	<td role="gridcell" class="ui-selection-column col-select-width text-center">
 		                		<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
 			                </td>
-			                <td role="gridcell" class="col-sm-1 text-center">
+			                <td role="gridcell" class="text-center">
 			                    <a href="#" class="ui-commandlink ui-widget" onclick="return false;">1.0</a></td><td role="gridcell">
 			                    This is the first published version.
 			                </td>
-			                <td role="gridcell" class="col-sm-3">Dataverse Admin</td>
-			                <td role="gridcell" class="col-sm-2"><span>September 19, 2016</span></td>
+			                <td role="gridcell"><span>September 19, 2016</span></td>
 		                </tr>
 		            </tbody>
 		        </table>
@@ -197,17 +175,7 @@ Most tables are DataTable components from `PrimeFaces <https://www.primefaces.or
 Forms
 =====
 
-Forms component from `Bootstrap <http://getbootstrap.com/css/#forms>`__.
-
-InputText component from `PrimeFaces <https://www.primefaces.org/showcase/ui/input/inputText.xhtml>`__.
-
-Forms fulfill various different functions across the site, but we try to style them consistently. We use the `.form-horizontal` layout, which uses `.form-group` to create a grid of rows for the labels and inputs.
-
-* Horizontal
-* Labels
-* Tooltips
-* Inputs
-* Validation
+Forms fulfill various different functions across the site, but we try to style them consistently. We use the `.form-horizontal` layout, which uses `.form-group` to create a grid of rows for the labels and inputs. The constent style of forms is maintained using the `Forms component <http://getbootstrap.com/css/#forms>`__ from Bootstrap. Form elements like the `InputText component <https://www.primefaces.org/showcase/ui/input/inputText.xhtml>`__ from PrimeFaces are kept looking clean and consistent across each page.
 
 *TO-DO...* Fix tooltips. Add real XHTML not the generated HTML. Should more sections talk about the PrimeFaces components?
 
@@ -224,7 +192,7 @@ Forms fulfill various different functions across the site, but we try to style t
                     </span>
                 </label>
                 <div class="col-sm-4">
-                	<input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-disabled form-control" role="textbox" aria-disabled="true" aria-readonly="false">
+                	<input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-default form-control" role="textbox" aria-disabled="false" aria-readonly="false">
                 </div>
             </div>
             <div class="form-group">
@@ -257,26 +225,6 @@ Forms fulfill various different functions across the site, but we try to style t
                 	<input name="email" type="text" value="" tabindex="6" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
                 </div>
             </div>
-            <div class="form-group">
-                <label for="affiliation" class="col-sm-3 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="The organization with which you are affiliated.">
-                        Affiliation
-                    </span>
-                </label>
-                <div class="col-sm-4">
-                	<input name="affiliation" type="text" value="" tabindex="7" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="position" class="col-sm-3 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Your role or title at the organization you are affiliated with; such as staff, faculty, student, etc.">
-                        Position
-                    </span>
-                </label>
-                <div class="col-sm-4">
-                	<input name="position" type="text" value="" tabindex="8" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
-                </div>
-            </div>
         </div>
 
     </div>
@@ -301,115 +249,80 @@ Forms fulfill various different functions across the site, but we try to style t
 Buttons
 =======
 
-Buttons component from `Bootstrap <http://getbootstrap.com/css/#buttons>`__.
-
-Button Groups component from `Bootstrap <http://getbootstrap.com/components/#btn-groups>`__.
-
-Buttons Dropdowns component from `Bootstrap <http://getbootstrap.com/components/#btn-dropdowns>`__.
-
-CommandButton component from `PrimeFaces <https://www.primefaces.org/showcase/ui/button/commandButton.xhtml>`__.
-
-CommandLink component from `PrimeFaces <https://www.primefaces.org/showcase/ui/button/commandLink.xhtml>`__.
-
-Link component from `JSF <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/link.html>`__.
-
-OutputLink component from `JSF <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/outputLink.html>`__.
-
+There are various types of buttons for various actions, so we have various components to use, including the `CommandButton component <https://www.primefaces.org/showcase/ui/button/commandButton.xhtml>`__ and `CommandLink component <https://www.primefaces.org/showcase/ui/button/commandLink.xhtml>`__ from PrimeFaces, as well as the basic JSF `Link component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/link.html>`__ and `OutputLink component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/outputLink.html>`__. Those are styled with using `Buttons component <http://getbootstrap.com/css/#buttons>`__, `Button Groups component <http://getbootstrap.com/components/#btn-groups>`__ and `Buttons Dropdowns component <http://getbootstrap.com/components/#btn-dropdowns>`__ from Bootstrap.
 
 Action Buttons
 --------------
 
 For action buttons on a page, we include an icon and text label. Action buttons are generally aligned to the right side of the page.
 
-* Edit
-* Find
-* Add Data
-* Publish
-* Download
-* Explore
-* ...etc.
-
-*TO-DO...* Add the Primefaces CSS?
-
 .. raw:: html
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-	  	<!-- Edit Button -->
+	  	
 	  	<div class="btn-group pull-right">
             <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
                 <span class="glyphicon glyphicon-pencil"></span> Edit <span class="caret"></span>
             </button>
             <ul class="dropdown-menu pull-right text-left" role="menu">
                 <li>
-                	<a href="/editdatafiles.xhtml?datasetId=8&amp;mode=UPLOAD">Files (Upload)</a>
+                	<a href="#" onclick="return false;">Files (Upload)</a>
                 </li>
                 <li>
-                	<a id="datasetForm:editMetadata" href="#" class="ui-commandlink ui-widget" onclick="PrimeFaces.ab({s:&quot;datasetForm:editMetadata&quot;,u:&quot;datasetForm datasetForm messagePanel&quot;,onco:function(xhr,status,args){javascript:post_edit_metadata();}});return false;">Metadata</a>
+                	<a id="datasetForm:editMetadata" href="#" class="ui-commandlink ui-widget" onclick="return false;">Metadata</a>
                 </li>
                 <li>
-                	<a id="datasetForm:editTerms" href="#" class="ui-commandlink ui-widget" onclick="PrimeFaces.ab({s:&quot;datasetForm:editTerms&quot;,u:&quot;datasetForm datasetForm messagePanel&quot;,onco:function(xhr,status,args){javascript:post_edit_terms();}});return false;">Terms</a>
+                	<a id="datasetForm:editTerms" href="#" class="ui-commandlink ui-widget" onclick="return false;">Terms</a>
                 </li>
                 <li class="dropdown-submenu pull-left">
                     <a tabindex="-1" href="#">Permissions</a>
                     <ul class="dropdown-menu">
                         <li>
-                        	<a id="datasetForm:managePermissions" name="datasetForm:managePermissions" href="/permissions-manage.xhtml?id=8" class="ui-commandlink ui-widget">Dataset</a>
+                        	<a id="datasetForm:managePermissions" href="#" onclick="return false;" class="ui-commandlink ui-widget">Dataset</a>
                         </li>
                         <li>
-                        	<a id="datasetForm:manageFilePermissions" name="datasetForm:manageFilePermissions" href="/permissions-manage-files.xhtml?id=8" class="ui-commandlink ui-widget">File</a>
+                        	<a id="datasetForm:manageFilePermissions" href="#" onclick="return false;" class="ui-commandlink ui-widget">File</a>
                         </li>
                     </ul>
                 </li>
                 <li>
-                	<a id="datasetForm:privateUrl" href="#" class="ui-commandlink ui-widget" onclick="PrimeFaces.ab({s:&quot;datasetForm:privateUrl&quot;,u:&quot;datasetForm:privateUrlPanel&quot;,onco:function(xhr,status,args){PF('privateUrlConfirmation').show();}});return false;">Private URL</a>
+                	<a id="datasetForm:privateUrl" href="#" class="ui-commandlink ui-widget" onclick="return false;">Private URL</a>
                 </li>
                 <li>
-                	<a href="/dataset-widgets.xhtml?datasetId=8">Thumbnails + Widgets</a>
+                	<a href="#" onclick="return false;">Thumbnails + Widgets</a>
                 </li>
                 <li class="divider"></li>
                 <li>
-                	<a id="datasetForm:deaccessionDatasetLink" href="#" class="ui-commandlink ui-widget" onclick="PF('deaccessionBlock').show();PrimeFaces.ab({s:&quot;datasetForm:deaccessionDatasetLink&quot;,u:&quot;datasetForm:deaccessionBlock&quot;,onco:function(xhr,status,args){PF('deaccessionBlock').show();bind_bsui_components();;}});return false;">Deaccession Dataset</a>
+                	<a id="datasetForm:deaccessionDatasetLink" href="#" class="ui-commandlink ui-widget" onclick="return false;">Deaccession Dataset</a>
                 </li>
             </ul>
         </div>
+
 	  </div>
 	</div>
 
 .. code-block:: html
 
-    <!-- Edit Button -->
     <div class="btn-group" jsf:rendered="#{true}">
         <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span class="glyphicon glyphicon-pencil"/> Edit <span class="caret"></span>
         </button>
         <ul class="dropdown-menu pull-right text-left" role="menu">
             <li>
-                <h:outputLink value="#">
-                    <h:outputText value="Files (Upload)"/>
-                </h:outputLink>
+                <h:outputLink> ... </h:outputLink>
             </li>
-            ...
-            <ui:fragment rendered="#{true}">
-                <li class="dropdown-submenu pull-left">
-                    <a tabindex="-1" href="#">Permissions</a>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                <h:outputText value="Dataset" />
-                                <f:param name="id" value="#{bean}" />
-                            </h:link>
-                        </li>
-                        <li>
-                            <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
-                                <h:outputText value="File" />
-                                <f:param name="id" value="#{bean}" />
-                            </h:link>
-                        </li>
-                    </ul>
-                </li>
-                ...
-            </ui:fragment>
+            <li class="dropdown-submenu pull-left">
+                <a tabindex="-1" href="#">Option</a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <h:link> ... </h:link>
+                    </li>
+                    <li>
+                        <h:link> ... </h:link>
+                    </li>
+                </ul>
+            </li>
             ...
         </ul>
     </div>
@@ -419,21 +332,15 @@ Form Buttons
 
 Form buttons typically appear at the bottom of a form, aligned to the left. They do not have icons, just text labels.
 
-* Save
-* Continue
-* Cancel
-
-*TO-DO...* Need more examples?
-
 .. raw:: html
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
 	  	<div class="button-block">
-	  		<button id="datasetForm:save" name="datasetForm:save" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
+	  		<button id="datasetForm:save" name="datasetForm:save" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only btn btn-default" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
 	  			<span class="ui-button-text ui-c">Save Changes</span>
 	  		</button>
-	  		<button id="datasetForm:cancel" name="datasetForm:cancel" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
+	  		<button id="datasetForm:cancel" name="datasetForm:cancel" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only btn btn-default" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
 	  			<span class="ui-button-text ui-c">Cancel</span>
 	  		</button>
   		</div>
@@ -455,11 +362,7 @@ Icon-Only Buttons
 
 There are a few places where we use icon-only buttons with no text label. For these buttons, we do utilize tooltips that display on hover, containing a text label.
 
-* Search
-* Add
-* Contact
-* Link
-* Share
+We use the style class `no-text` with the `glyphicon` class to fix spacing issues from margins and padding applied to buttons with text labels.
 
 *TO-DO...* fix the tooltip + Bootstrap JS in example below...
 
@@ -492,23 +395,19 @@ There are a few places where we use icon-only buttons with no text label. For th
 Pagination
 ==========
 
-Pagination component from `Bootstrap <http://getbootstrap.com/components/#pagination>`__.
-
-* Search Results
-* Manage pg (...no ``class="pagination"`` ...??)
-
-*TO-DO...* Write a description. Build some examples.
+We use the `Pagination component <http://getbootstrap.com/components/#pagination>`__ from Bootstrap for paging through search results.
 
 .. raw:: html
 
   <div class="panel panel-default code-example">
-    <div class="panel-body">
-
-      <div class="results-sort-pagination results-bottom text-center">
+    <div class="panel-body text-center">
+      
         <ul class="pagination">
-            <li class="disabled"><a href="#" onclick="return false;">«</a>
+            <li class="disabled">
+                <a href="#" onclick="return false;">«</a>
             </li>
-            <li class="disabled"><a href="#" onclick="return false;">&lt; Previous</a>
+            <li class="disabled">
+                <a href="#" onclick="return false;">&lt; Previous</a>
             </li>
                 <li class="active"><a href="#" onclick="return false;">1
                 	<span class="sr-only">(Current)</span></a>
@@ -521,12 +420,13 @@ Pagination component from `Bootstrap <http://getbootstrap.com/components/#pagina
                 </li>
                 <li><a href="#" onclick="return false;">5</a>
                 </li>
-            <li><a href="#" onclick="return false;">Next &gt;</a>
+            <li>
+                <a href="#" onclick="return false;">Next &gt;</a>
             </li>
-            <li><a href="#" onclick="return false;">»</a>
+            <li>
+                <a href="#" onclick="return false;">»</a>
             </li>
         </ul>
-      </div>
 
     </div>
   </div>
@@ -537,75 +437,26 @@ Pagination component from `Bootstrap <http://getbootstrap.com/components/#pagina
     <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
         <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
             <h:outputText value="&#171;"/>
-            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-            </c:forEach>
-            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-            <f:param name="page" value="1"/>
+            ...
         </h:outputLink>
     </li>
     <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
         <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
             <h:outputText value="&lt; #{bundle.previous}"/>
-            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-            </c:forEach>
-            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-            <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
+            ...
         </h:outputLink>
     </li>
-    <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}"
-               end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}"
-               varStatus="pageStatus">
-        <li class="#{SearchIncludeFragment.page == pageStatus.index ? 'active' : ''}">
-            <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                <h:outputText value="#{pageStatus.index}">
-                    <f:convertNumber pattern="###,###" />
-                </h:outputText>
-                <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
-                    <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
-                </span>
-                <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-                </c:forEach>
-                <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                <f:param name="page" value="#{pageStatus.index}"/>
-            </h:outputLink>
-        </li>
-    </c:forEach>
+    ...
     <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
         <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
             <h:outputText value="#{bundle.next} &gt;"/>
-            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-            </c:forEach>
-            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-            <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
+            ...
         </h:outputLink>
     </li>
     <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
         <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
             <h:outputText value="&#187;"/>
-            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-            </c:forEach>
-            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-            <f:param name="page" value="#{SearchIncludeFragment.totalPages}"/>
-            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+            ...
         </h:outputLink>
     </li>
   </ul>
@@ -614,13 +465,7 @@ Pagination component from `Bootstrap <http://getbootstrap.com/components/#pagina
 Labels
 ======
 
-Labels component from `Bootstrap <http://getbootstrap.com/components/#labels>`__.
-
-* Publication status (DRAFT, In Review, Unpublished, Deaccessioned)
-* Dataset version (Version 2.0, ``4.6.2``)
-* Tabular Data Tags (Survey, Time Series, Panel, Event, Genomics, Network, Geospatial)
-
-*TO-DO...* Write a description. Build some examples.
+The `Labels component <http://getbootstrap.com/components/#labels>`__ from Bootstrap is used for publication status (DRAFT, In Review, Unpublished, Deaccessioned), and Dataset version, as well as Tabular Data Tags (Survey, Time Series, Panel, Event, Genomics, Network, Geospatial).
 
 .. raw:: html
 
@@ -650,12 +495,7 @@ Labels component from `Bootstrap <http://getbootstrap.com/components/#labels>`__
 Alerts
 ======
 
-Alerts component from `Bootstrap <http://getbootstrap.com/components/#alerts>`__.
-
-* Help/information, success, warning, error message block
-* Inline validation error
-
-*TO-DO...* Write a description. Build some examples.
+For our help/information, success, warning, error message block we use a custom built UI component based on the `Alerts component <http://getbootstrap.com/components/#alerts>`__ from Bootstrap.
 
 .. raw:: html
 
@@ -687,18 +527,9 @@ Alerts component from `Bootstrap <http://getbootstrap.com/components/#alerts>`__
 Images
 ======
 
-GraphicImage  component from `PrimeFaces <https://www.primefaces.org/showcase/ui/multimedia/graphicImage.xhtml>`__.
+We use the `GraphicImage  component <https://www.primefaces.org/showcase/ui/multimedia/graphicImage.xhtml>`__ from PrimeFaces, or the basic JSF `GraphicImage component <http://docs.oracle.com/javaee/6/javaserverfaces/2.1/docs/vdldocs/facelets/h/graphicImage.html>`__.
 
-GraphicImage component from `JSF <http://docs.oracle.com/javaee/6/javaserverfaces/2.1/docs/vdldocs/facelets/h/graphicImage.html>`__.
-
-Images CSS from `Bootstrap <http://getbootstrap.com/css/#images>`__.
-
-* Responsive ``class="img-responsive"``
-* Dataverse Logo
-* Dataset Thumbnail
-* File Thumbnail + Preview
-
-*TO-DO...* Write a description. Build some examples. Screenshots?
+To display them in a responsive way, they are styled with ``class="img-responsive"`` an `Images CSS class <http://getbootstrap.com/css/#images>`__ from Bootstrap.
 
 .. raw:: html
 
@@ -718,31 +549,46 @@ Images CSS from `Bootstrap <http://getbootstrap.com/css/#images>`__.
 Panels
 ======
 
-Panels component from `Bootstrap <http://getbootstrap.com/components/#panels>`__.
-
-Collapse javascript from `Bootstrap <http://getbootstrap.com/javascript/#collapse>`__.
-
-These components are basically containers with rounded borders. Good for descriptions or blocks of metadata or forms or whatever you need to have a border and some padding around.
-
-* Advanced Search collapse
-* Citation
-* Citation Summary Metadata
-* Metadata blocks
-* Metrics
-* "Why?" Manage Pg Default Text
-
-*TO-DO...* Write a description. Build some examples.
+The most common of our containers, the `Panels component <http://getbootstrap.com/components/#panels>`__ from Bootstrap is used to add a border and padding around sections of content like metadata blocks. Displayed with a header and or footer, it can also be used with the  `Collapse plugin <http://getbootstrap.com/javascript/#collapse>`__ from Bootstrap.
 
 .. raw:: html
 
   <div class="panel panel-default code-example">
     <div class="panel-body">
 
-      <div class="panel panel-default">
-		  <div class="panel-body">
-		    Basic panel example
-		  </div>
-	  </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            Basic panel example
+          </div>
+        </div>
+
+        <div class="panel-group">
+            <div class="panel panel-default">
+                <div data-toggle="collapse" data-target="#panelCollapse0" class="panel-heading text-info">
+                    Panel Heading &nbsp;<span class="glyphicon glyphicon-chevron-up"></span>
+                </div>
+                <div id="panelCollapse0" class="collapse in">
+                    <div class="panel-body metadata-panel-body">
+                        <div class="form-group col-sm-12">
+                            <label for="metadata_dsDescription" class="col-sm-3 control-label">
+                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
+                                    Label
+                                </span>
+                            </label>
+                            <div class="col-sm-9">Value</div>
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <label for="metadata_subject" class="col-sm-3 control-label">
+                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
+                                    Label
+                                </span>
+                            </label>
+                            <div class="col-sm-9">Value</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
   </div>
@@ -750,53 +596,34 @@ These components are basically containers with rounded borders. Good for descrip
 .. code-block:: html
 
   <div class="panel panel-default">
-    <div data-toggle="collapse" data-target="#panelCollapseDataversesFieldList" class="panel-heading">
-        <h:outputText value="#{bundle['advanced.search.header.dataverses']}"/> &#160;<span class="glyphicon glyphicon-chevron-up"/>
+        <div class="panel-body">
+            Basic panel example
+        </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div data-toggle="collapse" data-target="#panelCollapse0" class="panel-heading">
+        Panel Heading &#160;<span class="glyphicon glyphicon-chevron-up"/>
     </div>
-    <div id="panelCollapseDataversesFieldList" class="panel-body form-horizontal collapse in">
+    <div id="panelCollapse0" class="panel-body form-horizontal collapse in">
         <div class="form-group">
             <label class="col-sm-4 control-label">
-                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.name.tip']}">
-                    #{bundle.name}
+                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
+                    Label
                 </span>
             </label>
             <div class="col-sm-6">
-                <p:inputText id="dvFieldName" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldName}"/>
+                Value
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-4 control-label">
-                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.affiliation.tip']}">
-                    #{bundle.affiliation}
+                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
+                    Label
                 </span>
             </label>
             <div class="col-sm-6">
-                <p:inputText id="dvFieldAffiliation" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldAffiliation}"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-4 control-label">
-                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.description.tip']}">
-                    #{bundle.description}
-                </span>
-            </label>
-            <div class="col-sm-6">
-                <p:inputText id="dvFieldDescription" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldDescription}"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-4 control-label">
-                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.subject.tip']}">
-                    #{bundle.subject}
-                </span>
-            </label>
-            <div class="col-sm-6">
-                <div class="ui-inputfield form-control select-scroll-block">
-                    <p:selectManyCheckbox value="#{AdvancedSearchPage.dvFieldSubject}" layout="pageDirection">
-                        <f:selectItems value="#{AdvancedSearchPage.dvFieldSubjectValues}" var="cvv"
-                                       itemLabel="#{cvv.strValue}" itemValue="#{cvv.strValue}"/>
-                    </p:selectManyCheckbox>
-                </div>
+                Value
             </div>
         </div>
     </div>
@@ -806,17 +633,9 @@ These components are basically containers with rounded borders. Good for descrip
 Tabs
 ====
 
-Tab component from `Bootstrap <http://getbootstrap.com/javascript/#tabs>`__.
+Tabs are used to provide content panes on a page that allow the user to view different sections of content without navigating to a different page.
 
-TabView component from `PrimeFaces <https://www.primefaces.org/showcase/ui/panel/tabView.xhtml>`__.
-
-These are a mix of the Bootstrap CSS and PrimeFaces. More PrimeFaces though... That is why the example below doesn't look like tabs...
-
-* Dataset
-* Files
-* Account
-
-*TO-DO...* Write a description. This needs PrimeFaces CSS to look like tabs.
+We use the `TabView component <https://www.primefaces.org/showcase/ui/panel/tabView.xhtml>`__ from PrimeFaces, which is styled using the `Tab component <http://getbootstrap.com/javascript/#tabs>`__ from Bootstrap.
 
 .. raw:: html
 
@@ -824,7 +643,7 @@ These are a mix of the Bootstrap CSS and PrimeFaces. More PrimeFaces though... T
     <div class="panel-body">
       <div class="color-swatches">
 
-      	<div id="datasetForm:tabView" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" data-widget="content">
+      	<div id="datasetForm:tabView" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" data-widget="content" style="border-bottom:0;">
         
 	      	<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all" role="tablist">
 		      	<li class="ui-state-default ui-tabs-selected ui-state-active ui-corner-top" role="tab" aria-expanded="true" aria-selected="true" tabindex="0">
@@ -864,29 +683,18 @@ These are a mix of the Bootstrap CSS and PrimeFaces. More PrimeFaces though... T
 Modals
 ======
 
-Modal component from `Bootstrap <http://getbootstrap.com/javascript/#modals>`__.
+Modals are dialog prompts, or popup overlays without the new browser window. We use them for confirmation on a delete to make sure the user is aware of the consiquences of their actions. Or, we use them to bring simple actions to a page without requiring the user to go to a new page only to have them come back to the page they were originally on.
 
-Dialog component from `PrimeFaces <https://www.primefaces.org/showcase/ui/overlay/dialog/basic.xhtml>`__.
+Buttons usually provide the UI prompt. A user clicks it, which opens a `Dialog component <https://www.primefaces.org/showcase/ui/overlay/dialog/basic.xhtml>`__  or `Confirm Dialog component <https://www.primefaces.org/showcase/ui/overlay/confirmDialog.xhtml>`__  from PrimeFaces that opens and displays the necessary information and actions to take.
 
-Confirm Dialog component from `PrimeFaces <https://www.primefaces.org/showcase/ui/overlay/confirmDialog.xhtml>`__.
-
-This is the Bootstrap component for a popup window that prompts a user for information, with overlay an a backdrop, then header, content and buttons.
-
-There is are large ``.bs-example-modal-lg`` and small ``.bs-example-modal-sm`` options for the width.
-
-Note: we don't use the ``.fade`` class.
-
-* Small vs Large
-* Confirmation vs Manage/Edit/Add
-
-*TO-DO...* Write a description. Build some examples.
+It is styled using the `Modal component <http://getbootstrap.com/javascript/#modals>`__ from Bootstrap for a popup window that prompts a user for information, with overlay an a backdrop, then header, content and buttons. We can use style classes from Bootstrap for large ``.bs-example-modal-lg`` and small ``.bs-example-modal-sm`` width options.
 
 .. raw:: html
 
   <div class="panel panel-default code-example">
     <div class="panel-body">
 
-      <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-lg">Large modal</button>
+      <button type="button" class="btn btn-default" data-toggle="modal" data-target=".bs-example-modal-lg">Open Modal</button>
 
       <div class="modal bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
 		<div class="modal-dialog modal-lg" role="document">
