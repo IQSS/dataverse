@@ -253,6 +253,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH;
         String redirect_url_str = token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
         //String redirect_url_str = TokenApplicationType.LOCAL_DEV_MAPIT_LINK + "/" +  token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
+        logger.info("REDIRECTING TO GEOCONNECT: "+redirect_url_str);
         URI redirect_uri;
         
         try {
@@ -505,6 +506,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         jsonData.add("datafile_filesize", fsize); 
         jsonData.add("datafile_content_type", dfile.getContentType());
         jsonData.add("datafile_create_datetime", dfile.getCreateDate().toString());
+        
+        // restriction status of the DataFile
+        jsonData.add("datafile_is_restricted", dfile.isRestricted());
         
         return ok(jsonData);
  

@@ -536,14 +536,6 @@
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
                                     <ui:param name="globalId" value="#{DatasetPage.dataset.globalId}"/>
                                 </ui:include>
-                                <!-- commented out as handled by export button above
-                                to enable in development: curl -X PUT -d true http://localhost:8080/api/admin/settings/:DdiExportEnabled
-                                <div jsf:rendered="#{DatasetPage.metadataExportEnabled}">                                  
-                                    <h:outputLink value="#{DatasetPage.metadataAsJsonUrl}" rendered="#{DatasetPage.metadataAsJsonUrl != null}">
-                                        <h:outputText value="Export metadata as JSON"/>
-                                    </h:outputLink>
-                                </div>
-                                -->
                             </p:tab>
 
                             <!-- 4.2.1: see comment above -->

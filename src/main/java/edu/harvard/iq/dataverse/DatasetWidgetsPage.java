@@ -117,7 +117,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     public void setDataFileAsThumbnail() {
         logger.fine("setDataFileAsThumbnail clicked");
         updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, datasetFileThumbnailToSwitchTo.getId(), null);
-        String base64image = ImageThumbConverter.getImageThumbAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+        String base64image = ImageThumbConverter.getImageThumbnailAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
         datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
     }
 
@@ -135,22 +135,24 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, uploadedFile.getInputstream());
         } catch (IOException ex) {
             String error = "Unexpected error while uploading file.";
-            logger.info("Problem uploading dataset thumbnail to dataset id " + dataset.getId() + ". " + error + " . Exception: " + ex);
+            logger.warning("Problem uploading dataset thumbnail to dataset id " + dataset.getId() + ". " + error + " . Exception: " + ex);
             updateDatasetThumbnailCommand = null;
             return;
         }
+        File file = null;
         try {
-            File file = null;
-            try {
-                file = FileUtil.inputStreamToFile(uploadedFile.getInputstream());
-            } catch (IOException ex) {
-                Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            String base64image = FileUtil.rescaleImage(file);
-            datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
+            file = FileUtil.inputStreamToFile(uploadedFile.getInputstream());
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
+            return;
         }
+        String base64image = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(file, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+        if (base64image != null) {
+            datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
+        } else {
+            Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, "Failed to produce a thumbnail from the uploaded dataset logo.");
+        }
+
     }
 
     public String save() {

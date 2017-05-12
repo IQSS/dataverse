@@ -538,15 +538,6 @@ public class DataFile extends DvObject implements Comparable {
         this.restricted = restricted;
     }
 
-
-
-
-
-
-
-
-
-     
     public ChecksumType getChecksumType() {
         return checksumType;
     }
@@ -567,51 +558,15 @@ public class DataFile extends DvObject implements Comparable {
         return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
     }
 
-    public DataFileIO getAccessObject() throws IOException {
-        DataFileIO dataAccess =  DataAccess.createDataAccessObject(this);
+    public DataFileIO getDataFileIO() throws IOException {
+        DataFileIO dataFileIO =  DataAccess.getDataFileIO(this);
         
-        if (dataAccess == null) {
-            throw new IOException("Failed to create access object for datafile.");
+        if (dataFileIO == null) {
+            throw new IOException("Failed to create DataFileIO for datafile.");
         }
         
-        return dataAccess; 
+        return dataFileIO; 
     }
-    
-    
-    // The 2 methods below - TODO: 
-    // remove everything filesystem-specific; 
-    // move the functionality into storage drivers. 
-    // -- L.A. 4.0.2
-    
-    public Path getSavedOriginalFile() {
-       
-        if (!this.isTabularData() || this.fileSystemName == null) {
-            return null; 
-        }
-        
-        Path studyDirectoryPath = this.getOwner().getFileSystemDirectory();
-        if (studyDirectoryPath == null) {
-            return null;
-        }
-        String studyDirectory = studyDirectoryPath.toString();
- 
-        Path savedOriginal = Paths.get(studyDirectory, "_" + this.fileSystemName);
-        if (Files.exists(savedOriginal)) {
-            return savedOriginal;
-        }
-        return null; 
-    }
-    
-    /*
-    public String getFilename() {
-        String studyDirectory = this.getOwner().getFileSystemDirectory().toString();
- 
-        if (studyDirectory == null || this.fileSystemName == null || this.fileSystemName.equals("")) {
-            return null;
-        }
-        String fileSystemPath = studyDirectory + "/" + this.fileSystemName;
-        return fileSystemPath.replaceAll("/", "%2F");
-    }*/
     
     /*
         Does the contentType indicate a shapefile?

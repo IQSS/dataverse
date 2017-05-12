@@ -73,7 +73,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         // if there is still another released version of this dataset, 
         // we want to re-export it : 
         
-        ExportService instance = ExportService.getInstance();
+        ExportService instance = ExportService.getInstance(ctxt.settings());
         
         if (managed.getDataset().getReleasedVersion() != null) {
             try {
