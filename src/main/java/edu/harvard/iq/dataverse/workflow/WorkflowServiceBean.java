@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Asynchronous;
@@ -52,7 +53,13 @@ public class WorkflowServiceBean {
     public WorkflowServiceBean() {
         providers.put(":internal", new InternalWorkflowStepSP());
 
-        // TODO scan SPIs, load.
+        logger.log(Level.INFO, "Searching for Workflow Step Providers...");
+        ServiceLoader<WorkflowStepSPI> loader = ServiceLoader.load(WorkflowStepSPI.class);
+        for ( WorkflowStepSPI wss : loader ) {
+            logger.log(Level.INFO, "Found WorkflowStepProvider: {0}", wss.getClass().getCanonicalName());
+            providers.put( wss.getClass().getCanonicalName(), wss );
+        }
+        logger.log(Level.INFO, "Searching for Workflow Step Providers done.");
     }
 
     /**
