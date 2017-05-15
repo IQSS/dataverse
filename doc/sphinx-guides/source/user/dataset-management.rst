@@ -120,10 +120,15 @@ There are several advanced options available for certain file types.
 
 .. _cloud-storage:
 
-Cloud Storage Access
---------------------
+Cloud Storage & Computing
+-------------------------
 
-Cloud Storage Access is the container name for this dataset needed to access files in cloud storage.
+Some Dataverse installations are specifically set up to facilitate cloud-based computing. While vanilla Dataverse uses a traditional file system for storing data, Cloud Dataverse uses a Swift object storage database. This allows users to perform computations on data using an integrated cloud computing environment. You'll know you're using Cloud Dataverse if you see a "Compute" button on dataset and file pages. Clicking that Compute button will take you directly to the cloud computing environment that is integrated with Cloud Dataverse, allowing you to perform computations on the file or dataset you were just viewing.
+
+Cloud Storage Access
+~~~~~~~~~~~~~~~~~~~~
+
+If you need to access a dataset in a more flexible way than Dataverse's Compute button provides, then you can use the Cloud Storage Access box on the dataset page to copy the dataset's container name. This unique identifer can then be pasted into whatever script or field you may be running, to allow direct access to the dataset.
 
 Edit Files
 ==========
