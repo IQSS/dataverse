@@ -123,7 +123,11 @@ There are several advanced options available for certain file types.
 Cloud Storage & Computing
 -------------------------
 
-Some Dataverse installations are specifically set up to facilitate cloud-based computing. While vanilla Dataverse uses a traditional file system for storing data, Cloud Dataverse uses a Swift object storage database. This allows users to perform computations on data using an integrated cloud computing environment. You'll know you're using Cloud Dataverse if you see a "Compute" button on dataset and file pages. Clicking that Compute button will take you directly to the cloud computing environment that is integrated with Cloud Dataverse, allowing you to perform computations on the file or dataset you were just viewing.
+Some Dataverse installations are specifically set up to facilitate cloud-based computing. While vanilla Dataverse uses a traditional file system for storing data, Cloud Dataverse uses a Swift object storage database. This allows users to perform computations on data using an integrated cloud computing environment. This feature is considered experimental at this time, and some of the kinks are still being worked out. 
+
+You'll know you're using Cloud Dataverse if you see a "Compute" button on dataset and file pages. Clicking that Compute button will take you directly to the cloud computing environment that is integrated with Cloud Dataverse, allowing you to perform computations on the file or dataset you were just viewing.
+
+**Note:** At present, any file restrictions that users apply in Cloud Dataverse will not be honored in Swift. This means: if you set a file on Cloud Dataverse as "restricted", a user without proper permissions **could bypass that restriction** by accessing the file through Swift. For now, do not rely on file restrictions to limit access to data in Cloud Dataverse.
 
 Cloud Storage Access
 ~~~~~~~~~~~~~~~~~~~~

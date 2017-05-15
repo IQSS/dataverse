@@ -158,7 +158,7 @@ By default, a Dataverse installation stores data files (files uploaded by end us
 
 Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
 
-Note: At present, any file restrictions that users apply in Dataverse will not be honored in Swift. This means that a user without proper permissions could bypass intended restrictions by accessing the restricted file through Swift. 
+**Note:** At present, any file restrictions that users apply in Dataverse will not be honored in Swift. This means that a user without proper permissions **could bypass intended restrictions** by accessing the restricted file through Swift. 
 
 In order to configure a Swift installation, there are two steps you need to complete:
 
