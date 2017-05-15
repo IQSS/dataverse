@@ -120,19 +120,22 @@ There are several advanced options available for certain file types.
 
 .. _cloud-storage:
 
-Cloud Storage & Computing
+Cloud Storage + Computing
 -------------------------
 
-Some Dataverse installations are specifically set up to facilitate cloud-based computing. While vanilla Dataverse uses a traditional file system for storing data, Cloud Dataverse uses a Swift object storage database. This allows users to perform computations on data using an integrated cloud computing environment. This feature is considered experimental at this time, and some of the kinks are still being worked out. 
+Dataverse installations can be configured to facilitate cloud-based storage and/or computing. (This feature is considered experimental at this time, and some of the kinks are still being worked out.) While the default configuration for Dataverse uses a traditional, local file system for storing data, a cloud enabled Dataverse installations can use a Swift object storage database. This allows users to perform computations on data using an integrated cloud computing environment.
 
-You'll know you're using Cloud Dataverse if you see a "Compute" button on dataset and file pages. Clicking that Compute button will take you directly to the cloud computing environment that is integrated with Cloud Dataverse, allowing you to perform computations on the file or dataset you were just viewing.
-
-**Note:** At present, any file restrictions that users apply in Cloud Dataverse will not be honored in Swift. This means: if you set a file on Cloud Dataverse as "restricted", a user without proper permissions **could bypass that restriction** by accessing the file through Swift. For now, do not rely on file restrictions to limit access to data in Cloud Dataverse.
+**Note:** At present, any file restrictions that users apply in Dataverse will not be supported in Swift. This means: if you set a file on Dataverse as "restricted", a user without proper permissions **could bypass that restriction** by accessing the file through Swift. For now, do not rely on file restrictions to limit access to data in a cloud enabled Dataverse.
 
 Cloud Storage Access
 ~~~~~~~~~~~~~~~~~~~~
 
-If you need to access a dataset in a more flexible way than Dataverse's Compute button provides, then you can use the Cloud Storage Access box on the dataset page to copy the dataset's container name. This unique identifer can then be pasted into whatever script or field you may be running, to allow direct access to the dataset.
+For each dataset, the Cloud Storage Access provides an unique identifer which can then be utilized to allow direct access to the dataset. Click the "Copy" button to copy the identifer to your clipboard.
+
+Cloud Computing
+~~~~~~~~~~~~~~~
+
+The "Compute" button on dataset and file pages will take you directly to the cloud computing environment that is configured with Dataverse, allowing you to perform computations on the file or dataset.
 
 Edit Files
 ==========

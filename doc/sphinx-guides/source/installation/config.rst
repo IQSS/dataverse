@@ -154,7 +154,7 @@ Enabling a second authentication provider will result in the Log In page showing
 File Storage: Local Filesystem vs. Swift
 ----------------------------------------
 
-By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see "Running the Dataverse Installer" under the :doc:`installation-main` section) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
 
 Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
 
@@ -698,7 +698,7 @@ Set the base URL for the "Compute" button for a dataset.
 ``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse?containerName=' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
 
 :CloudEnvironmentName
- ++++++++++++++++
++++++++++++++++++++++
 
 Set the base URL for the "Compute" button for a dataset.
 
