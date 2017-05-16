@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -24,6 +25,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -222,23 +224,14 @@ public class DataverseHeaderFragment implements java.io.Serializable {
      return null;
      }
      */
-    public String logout() {
+    public void logout() throws IOException {
+        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+        
         dataverseSession.setUser(null);
-
-        String redirectPage = navigationWrapper.getPageFromContext();
-        try {
-            redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
-            redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
-        }
-
-        if (StringUtils.isEmpty(redirectPage)) {
-            redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
-        }
-
-        logger.log(Level.INFO, "Sending user to = " + redirectPage);
-        return redirectPage + (redirectPage.indexOf("?") == -1 ? "?" : "&") + "faces-redirect=true";
+                
+        String safeDefaultIfKeyNotFound = "https://idp.dev-aws.qdr.org/idp/profile/Logout";
+        String shibLogoutUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ShibLogoutUrl, safeDefaultIfKeyNotFound);
+        externalContext.redirect(shibLogoutUrl);
     }
 
     private Boolean signupAllowed = null;

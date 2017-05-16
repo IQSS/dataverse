@@ -235,7 +235,12 @@ public class SettingsServiceBean {
         /*
         Whether Harvesting (OAI) service is enabled
         */
-        OAIServerEnabled;
+        OAIServerEnabled,
+        
+        /**
+         * URL for Shibboleth Single Logout
+         */
+        ShibLogoutUrl;
         
         @Override
         public String toString() {
