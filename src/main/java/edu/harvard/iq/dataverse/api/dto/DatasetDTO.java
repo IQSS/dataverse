@@ -105,9 +105,9 @@ public class DatasetDTO implements java.io.Serializable {
     public String toURLString() {
         String url = null;
         if (protocol.equals(DOI_PROTOCOL)){
-            url = "http://dx.doi.org/" + authority + "/" + identifier);
+            url = "http://dx.doi.org/" + authority + "/" + identifier;
         } else if (protocol.equals(HDL_PROTOCOL)){
-            url = "http://hdl.handle.net/" + authority + "/" + identifier);
+            url = "http://hdl.handle.net/" + authority + "/" + identifier;
         }
         return url;
     }
