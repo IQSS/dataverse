@@ -95,14 +95,11 @@ public class DublinCoreExportUtil {
     
     private static void createDC(XMLStreamWriter xmlw, DatasetDTO datasetDto, String dcFlavor) throws XMLStreamException {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
-        String persistentAgency = datasetDto.getProtocol();
-        String persistentAuthority = datasetDto.getAuthority();
-        String persistentId = datasetDto.getIdentifier();
   
         writeFullElement(xmlw, dcFlavor+":"+"title", dto2Primitive(version, DatasetFieldConstant.title));                       
         
         xmlw.writeStartElement(dcFlavor+":"+"identifier");
-        xmlw.writeCharacters(persistentAgency + ":" + persistentAuthority + "/" + persistentId);
+        xmlw.writeCharacters(datasetDto.toURLString());
         xmlw.writeEndElement(); // decterms:identifier       
 
         writeAuthorsElement(xmlw, version, dcFlavor);
@@ -144,14 +141,11 @@ public class DublinCoreExportUtil {
     
     private static void createOAIDC(XMLStreamWriter xmlw, DatasetDTO datasetDto, String dcFlavor) throws XMLStreamException {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
-        String persistentAgency = datasetDto.getProtocol();
-        String persistentAuthority = datasetDto.getAuthority();
-        String persistentId = datasetDto.getIdentifier();
   
         writeFullElement(xmlw, dcFlavor+":"+"title", dto2Primitive(version, DatasetFieldConstant.title));                       
         
         xmlw.writeStartElement(dcFlavor+":"+"identifier");
-        xmlw.writeCharacters(persistentAgency + ":" + persistentAuthority + "/" + persistentId);
+        xmlw.writeCharacters(datasetDto.toURLString());
         xmlw.writeEndElement(); // decterms:identifier       
 
         writeAuthorsElement(xmlw, version, dcFlavor); //creator
