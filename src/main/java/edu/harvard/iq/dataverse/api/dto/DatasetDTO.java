@@ -18,6 +18,8 @@ public class DatasetDTO implements java.io.Serializable {
         private String publicationDate;
         private DatasetVersionDTO datasetVersion;
         private List<DataFileDTO> dataFiles;
+	public static final String DOI_PROTOCOL = "doi";
+	public static final String HDL_PROTOCOL = "hdl";
 
     public String getId() {
         return id;
@@ -98,6 +100,16 @@ public class DatasetDTO implements java.io.Serializable {
 
     public void setPublicationDate(String publicationDate) {
         this.publicationDate = publicationDate;
+    }
+
+    public String toURLString() {
+        String url = null;
+        if (protocol.equals(DOI_PROTOCOL)){
+            url = "http://dx.doi.org/" + authority + "/" + identifier);
+        } else if (protocol.equals(HDL_PROTOCOL)){
+            url = "http://hdl.handle.net/" + authority + "/" + identifier);
+        }
+        return url;
     }
 
     @Override
