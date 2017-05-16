@@ -102,16 +102,6 @@ public class DatasetDTO implements java.io.Serializable {
         this.publicationDate = publicationDate;
     }
 
-    public String toURLString() {
-        String url = null;
-        if (protocol.equals(DOI_PROTOCOL)){
-            url = "http://dx.doi.org/" + authority + "/" + identifier;
-        } else if (protocol.equals(HDL_PROTOCOL)){
-            url = "http://hdl.handle.net/" + authority + "/" + identifier;
-        }
-        return url;
-    }
-
     @Override
     public String toString() {
         return "DatasetDTO{" + "id=" + id + ", identifier=" + identifier + ", protocol=" + protocol + ", authority=" + authority + ", globalIdCreateTime=" + globalIdCreateTime + ", datasetVersion=" + datasetVersion + ", dataFiles=" + dataFiles + '}';
