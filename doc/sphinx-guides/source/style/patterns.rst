@@ -19,12 +19,6 @@ When logged in, the account name is a dropdown menu, linking the user to account
   		<nav id="navbarFixed" class="navbar navbar-default"><!-- navbar-fixed-top -->
             <div class="container" style="width:auto !important;">
                 <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
                     <a href="#" onclick="return false;">
                         <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> Dataverse</span>
                     </a>
@@ -60,7 +54,18 @@ When logged in, the account name is a dropdown menu, linking the user to account
 
     <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top">
     	<div class="container">
-    		...
+    		<div class="navbar-header">
+                <a href="#" onclick="return false;">
+                    <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> Dataverse</span>
+                </a>
+            </div>
+            <div class="collapse navbar-collapse" id="topNavBar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        ...
+                    </li>
+                </ul>
+            </div>
     	</div>
     </nav>
 
@@ -68,16 +73,26 @@ When logged in, the account name is a dropdown menu, linking the user to account
 Breadcrumbs
 ===========
 
-The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to dataverse.
-
-*TO-DO...* should we change how we do breadcrumbs in order to follow this http://getbootstrap.com/components/#breadcrumbs
+The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to dataverse. It utilizes a JSF `repeat component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/ui/repeat.html>`_ to iterate through the breadcrumbs.
 
 .. raw:: html
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
 	  	
-	  		BREADCRUMBS HERE
+  		<div id="breadcrumbNavBlock" class="container">
+            <div class="breadcrumbBlock">
+                <a id="breadcrumbLnk0" href="#" onclick="return false;">Name of a Dataverse</a>
+            </div>
+            <span class="breadcrumbCarrot"> &gt; </span>
+            <div class="breadcrumbBlock">
+                <a id="breadcrumbLnk1" href="#" onclick="return false;">Name of Another Dataverse</a>
+            </div>
+            <span class="breadcrumbCarrot"> &gt; </span>
+            <div class="breadcrumbBlock">
+                <span class="breadcrumbActive">Title of Dataset</span>
+            </div>
+        </div>
   		
 	  </div>
 	</div>
@@ -176,8 +191,6 @@ Forms
 =====
 
 Forms fulfill various functions across the site, but we try to style them consistently. We use the `.form-horizontal` layout, which uses `.form-group` to create a grid of rows for the labels and inputs. The consistent style of forms is maintained using the `Forms component <http://getbootstrap.com/css/#forms>`__ from Bootstrap. Form elements like the `InputText component <https://www.primefaces.org/showcase/ui/input/inputText.xhtml>`__ from PrimeFaces are kept looking clean and consistent across each page.
-
-*TO-DO...* Fix tooltips. Add real XHTML not the generated HTML. Should more sections talk about the PrimeFaces components?
 
 .. raw:: html
 
@@ -363,8 +376,6 @@ Icon-Only Buttons
 There are a few places where we use icon-only buttons with no text label. For these buttons, we do utilize tooltips that display on hover, containing a text label.
 
 We use the style class `no-text` with the `glyphicon` class to fix spacing issues from margins and padding applied to buttons with text labels.
-
-*TO-DO...* fix the tooltip + Bootstrap JS in example below...
 
 .. raw:: html
 
@@ -647,16 +658,16 @@ We use the `TabView component <https://www.primefaces.org/showcase/ui/panel/tabV
         
 	      	<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all" role="tablist">
 		      	<li class="ui-state-default ui-tabs-selected ui-state-active ui-corner-top" role="tab" aria-expanded="true" aria-selected="true" tabindex="0">
-		      		<a href="#" onclick="return false;" tabindex="-1">Files</a>
+		      		<a href="#" onclick="return false;" tabindex="-1">Content Tab 1</a>
 	      		</li>
 		      	<li class="ui-state-default ui-corner-top" role="tab" aria-expanded="false" aria-selected="false" tabindex="-1">
-		      		<a href="#" onclick="return false;" tabindex="-1">Metadata</a>
+		      		<a href="#" onclick="return false;" tabindex="-1">Content Tab 2</a>
 	      		</li>
 		      	<li class="ui-state-default ui-corner-top" role="tab" aria-expanded="false" aria-selected="false" tabindex="-1">
-		      		<a href="#" onclick="return false;" tabindex="-1">Terms</a>
+		      		<a href="#" onclick="return false;" tabindex="-1">Content Tab 3</a>
 	      		</li>
 		      	<li class="ui-state-default ui-corner-top" role="tab" aria-expanded="false" aria-selected="false" tabindex="-1">
-		      		<a href="#" onclick="return false;" tabindex="-1">Versions</a>
+		      		<a href="#" onclick="return false;" tabindex="-1">Content Tab 4</a>
 	      		</li>
 	      	</ul>
 
