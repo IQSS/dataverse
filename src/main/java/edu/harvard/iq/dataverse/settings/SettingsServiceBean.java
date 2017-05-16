@@ -33,6 +33,10 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /**
+         * For example, https://datacapture.example.org
+         */
+        DataCaptureModuleUrl,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,

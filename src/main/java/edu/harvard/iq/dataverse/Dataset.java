@@ -724,4 +724,46 @@ public class Dataset extends DvObjectContainer {
         return DatasetUtil.getThumbnail(this);
     }
 
+    /**
+     * The Data Capture Module provides an rsync script for uploading data.
+     * Dataverse presents the script to the user for download instead of the
+     * usual "Upload Files" option. Yes, we are effectively telling the user,
+     * "To upload, you must first download." :)
+     *
+     * FIXME: Is this the right place to store the rsync script? Should we only
+     * store a URL instead? Make it non-Transient.
+     */
+//    @Column(columnDefinition = "TEXT", nullable = true)
+    @Transient
+    private String rsyncScript;
+
+    public String getRsyncScript() {
+        return rsyncScript;
+    }
+
+    public void setRsyncScript(String rsyncScript) {
+        this.rsyncScript = rsyncScript;
+    }
+
+    public enum FileUploadMechanism {
+        /**
+         * @todo Eventually, rather than hard-coding "RSYNC" et al here, each
+         * should be a row in a table.
+         */
+        /**
+         * Files are uploaded through the GUI or SWORD.
+         *
+         * @todo Instead of "STANDARD" should we split out "GUI" and "SWORD" as
+         * separate mechanisms? What if we add a non-SWORD API endpoint for
+         * uploads ( https://github.com/IQSS/dataverse/issues/1612 )some day?
+         */
+        STANDARD,
+        /**
+         * Files are uploaded via rsync only and upload via any other mechanism
+         * is not allowed. This option requires setup of the Data Capture
+         * Module.
+         */
+        RSYNC
+    };
+
 }
