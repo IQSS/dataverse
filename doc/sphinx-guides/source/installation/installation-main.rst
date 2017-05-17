@@ -6,6 +6,8 @@ Now that the :doc:`prerequisites` are in place, we are ready to execute the Data
 
 .. contents:: :local:
 
+.. _dataverse-installer:
+
 Running the Dataverse Installer
 -------------------------------
 

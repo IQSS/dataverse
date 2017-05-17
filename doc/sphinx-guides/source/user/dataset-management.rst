@@ -118,6 +118,25 @@ There are several advanced options available for certain file types.
 - Image files: .jpg, .png, and .tif files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
 - SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
 
+.. _cloud-storage:
+
+Cloud Storage + Computing
+-------------------------
+
+Dataverse installations can be configured to facilitate cloud-based storage and/or computing (this feature is considered experimental at this time, and some of the kinks are still being worked out). While the default configuration for Dataverse uses a local file system for storing data, a cloud-enabled Dataverse installation can use a Swift object storage database for its data. This allows users to perform computations on data using an integrated cloud computing environment.
+
+**Note:** At present, any file restrictions that users apply in Dataverse will not be supported in Swift. This means: if you set a file on Dataverse as "restricted", a user without proper permissions **could bypass that restriction** by accessing the file through Swift. For now, do not rely on file restrictions to limit access to data in a cloud-enabled Dataverse.
+
+Cloud Computing
+~~~~~~~~~~~~~~~
+
+The "Compute" button on dataset and file pages will take you directly to the cloud computing environment that is integrated with Dataverse, allowing you to perform computations on that file or dataset.
+
+Cloud Storage Access
+~~~~~~~~~~~~~~~~~~~~
+
+If you need to access a dataset in a more flexible way than the Compute button provides, then you can use the Cloud Storage Access box on the dataset page to copy the dataset's container name. This unique identifer can then be used to allow direct access to the dataset.
+
 Edit Files
 ==========
 
