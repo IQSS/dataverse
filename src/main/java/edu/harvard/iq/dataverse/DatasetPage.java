@@ -381,7 +381,7 @@ public class DatasetPage implements java.io.Serializable {
             String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
             swiftContainerName = dataset.getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
                 + swiftFolderPathSeparator + dataset.getIdentifier();
-            logger.info("Swift container name: " + swiftContainerName);
+            logger.fine("Swift container name: " + swiftContainerName);
         }
 
         return swiftContainerName;
@@ -402,7 +402,7 @@ public class DatasetPage implements java.io.Serializable {
                 int unlimited = 0;
                 int maxResults = unlimited;
             List<FileMetadata> metadatas = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);        
-            logger.info("metadatas " + metadatas);
+                logger.fine("metadatas " + metadatas);
             if (metadatas != null && metadatas.size() > 0) {
                 if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
                     && metadatas.get(0).getDataFile().getStorageIdentifier().startsWith("swift://")) {
