@@ -102,6 +102,8 @@ div.code-example .color-swatch {
 #breadcrumbNavBlock .breadcrumbActive {font-weight:bold;}
 #breadcrumbNavBlock .breadcrumbCarrot {float: left; margin: 0 .4em; color: #B3B3B3; display: block;}
 
+div.form-group .glyphicon.glyphicon-asterisk {font-size: .5em; vertical-align: text-top;}
+
 /* alternative formattings:  font-weight: bold; font-size: 110%; etc. */
 
 /* #sidebar.bs-sidenav.affix {

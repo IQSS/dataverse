@@ -53,20 +53,20 @@ When logged in, the account name is a dropdown menu, linking the user to account
 .. code-block:: html
 
     <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top">
-    	<div class="container">
-    		<div class="navbar-header">
-                <a href="#" onclick="return false;">
-                    <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> Dataverse</span>
-                </a>
-            </div>
-            <div class="collapse navbar-collapse" id="topNavBar">
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        ...
-                    </li>
-                </ul>
-            </div>
-    	</div>
+      <div class="container">
+        <div class="navbar-header">
+          <a href="#" onclick="return false;">
+            <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> Dataverse</span>
+          </a>
+        </div>
+        <div class="collapse navbar-collapse" id="topNavBar">
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              ...
+            </li>
+          </ul>
+        </div>
+      </div>
     </nav>
 
 
@@ -100,12 +100,12 @@ The breadcrumbs are displayed under the header, and provide a trail of links for
 .. code-block:: html
 
     <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{true}">
-        <ui:repeat value="#{page.breadcrumbs}" var="breadcrumb" varStatus="status">
-            <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{true}"/>
-            <div class="breadcrumbBlock">
-                ...
-            </div>
-        </ui:repeat>
+      <ui:repeat value="#{page.breadcrumbs}" var="breadcrumb" varStatus="status">
+        <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{true}"/>
+        <div class="breadcrumbBlock">
+          ...
+        </div>
+      </ui:repeat>
     </div>
 
 
@@ -179,18 +179,17 @@ Most tables use the `DataTable components <https://www.primefaces.org/showcase/u
 
 .. code-block:: html
 
-   <p:dataTable id="itemTable" styleClass="headerless-table margin-top"
-                value="#{page.item}" var="item" widgetVar="itemTable">
-       <p:column>
-       	...
-       </p:column>
+   <p:dataTable id="itemTable" styleClass="headerless-table margin-top" value="#{page.item}" var="item" widgetVar="itemTable">
+     <p:column>
+       ...
+     </p:column>
    </p:dataTable>
 
 
 Forms
 =====
 
-Forms fulfill various functions across the site, but we try to style them consistently. We use the `.form-horizontal` layout, which uses `.form-group` to create a grid of rows for the labels and inputs. The consistent style of forms is maintained using the `Forms component <http://getbootstrap.com/css/#forms>`__ from Bootstrap. Form elements like the `InputText component <https://www.primefaces.org/showcase/ui/input/inputText.xhtml>`__ from PrimeFaces are kept looking clean and consistent across each page.
+Forms fulfill various functions across the site, but we try to style them consistently. We use the ``.form-horizontal`` layout, which uses ``.form-group`` to create a grid of rows for the labels and inputs. The consistent style of forms is maintained using the `Forms component <http://getbootstrap.com/css/#forms>`__ from Bootstrap. Form elements like the `InputText component <https://www.primefaces.org/showcase/ui/input/inputText.xhtml>`__ from PrimeFaces are kept looking clean and consistent across each page.
 
 .. raw:: html
 
@@ -246,15 +245,15 @@ Forms fulfill various functions across the site, but we try to style them consis
 .. code-block:: html
 
   <div class="form-horizontal">
-	<div class="form-group">
-        <label for="userNameEmail" class="col-sm-3 control-label">
-            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Between 2-60 characters, and can use &quot;a-z&quot;, &quot;0-9&quot;, &quot;_&quot; for your username.">
-                Username <span class="glyphicon glyphicon-asterisk text-danger"></span>
-            </span>
-        </label>
-        <div class="col-sm-4">
-        	<input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-disabled form-control" role="textbox" aria-disabled="true" aria-readonly="false">
-        </div>
+    <div class="form-group">
+      <label for="userNameEmail" class="col-sm-3 control-label">
+        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Between 2-60 characters, and can use &quot;a-z&quot;, &quot;0-9&quot;, &quot;_&quot; for your username.">
+          Username <span class="glyphicon glyphicon-asterisk text-danger"></span>
+        </span>
+      </label>
+      <div class="col-sm-4">
+        <input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-disabled form-control" role="textbox" aria-disabled="true" aria-readonly="false">
+      </div>
     </div>
   </div>
 
@@ -318,26 +317,26 @@ For action buttons on a page, we include an icon and text label. Action buttons 
 .. code-block:: html
 
     <div class="btn-group" jsf:rendered="#{true}">
-        <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-            <span class="glyphicon glyphicon-pencil"/> Edit <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu pull-right text-left" role="menu">
+      <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+        <span class="glyphicon glyphicon-pencil"/> Edit <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu pull-right text-left" role="menu">
+        <li>
+          <h:outputLink> ... </h:outputLink>
+        </li>
+        <li class="dropdown-submenu pull-left">
+          <a tabindex="-1" href="#">Option</a>
+          <ul class="dropdown-menu">
             <li>
-                <h:outputLink> ... </h:outputLink>
+              <h:link> ... </h:link>
             </li>
-            <li class="dropdown-submenu pull-left">
-                <a tabindex="-1" href="#">Option</a>
-                <ul class="dropdown-menu">
-                    <li>
-                        <h:link> ... </h:link>
-                    </li>
-                    <li>
-                        <h:link> ... </h:link>
-                    </li>
-                </ul>
+            <li>
+              <h:link> ... </h:link>
             </li>
-            ...
-        </ul>
+          </ul>
+        </li>
+        ...
+      </ul>
     </div>
 
 Form Buttons
@@ -362,12 +361,11 @@ Form buttons typically appear at the bottom of a form, aligned to the left. They
 
 .. code-block:: html
 
-    <div class="button-block" jsf:rendered="#{true}">
-        <p:commandButton tabindex="1000" id="save" value="Save Changes" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();" />
-        <p:commandButton tabindex="1000" id="cancel" value="Cancel" action="#{bean}" process="@this" update="@form" rendered="#{true}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
-            <f:setPropertyActionListener target="#{bean}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
-        </p:commandButton>
-        <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" rendered="#{true}" />
+    <div class="button-block">
+      <p:commandButton id="save" styleClass="btn btn-default" value="#{bundle.saveChanges}" action="#{page.save}" update="@form,:messagePanel" />
+      <p:commandButton id="cancel" styleClass="btn btn-default" value="#{bundle.cancel}" action="#{page.cancel}" process="@this" update="@form">
+        <p:resetInput target="@form" />
+      </p:commandButton>
     </div>
 
 Icon-Only Buttons
@@ -375,32 +373,29 @@ Icon-Only Buttons
 
 There are a few places where we use icon-only buttons with no text label. For these buttons, we do utilize tooltips that display on hover, containing a text label.
 
-We use the style class `no-text` with the `glyphicon` class to fix spacing issues from margins and padding applied to buttons with text labels.
+We use the style class ``.no-text`` with the ``.glyphicon`` class to fix spacing issues from margins and padding applied to buttons with text labels.
 
 .. raw:: html
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-	  	<div class="btn-group" id="datasetButtonBar" role="group">
-	  		<a href="#" class="ui-commandlink ui-widget btn btn-default bootstrap-button-tooltip" aria-label="Email Dataset Contact" onclick="return false;" title="" data-original-title="Email Dataset Contact">
-                <span class="glyphicon glyphicon-envelope no-text"></span>
-            </a>
-            <a href="#" class="ui-commandlink ui-widget btn btn-default bootstrap-button-tooltip" aria-label="Share Dataset" onclick="return false;" title="" data-original-title="Share Dataset">
-                <span class="glyphicon glyphicon-share no-text"></span>
-            </a>
-        </div>
+	    <a href="#" class="ui-commandlink ui-widget btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" aria-label="Add" onclick="return false;" tabindex="1" title="" data-original-title="Add">
+            <span class="glyphicon glyphicon-plus no-text"></span>
+        </a>
+        <a href="#" class="ui-commandlink ui-widget btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" aria-label="Delete" onclick="return false;" tabindex="1" title="" data-original-title="Delete">
+            <span class="glyphicon glyphicon-minus no-text"></span>
+        </a>
 	  </div>
 	</div>
 
 .. code-block:: html
 
-    <div class="button-block" jsf:rendered="#{true}">
-        <p:commandButton tabindex="1000" id="save" value="Save Changes" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();" />
-        <p:commandButton tabindex="1000" id="cancel" value="Cancel" action="#{bean}" process="@this" update="@form" rendered="#{true}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
-            <f:setPropertyActionListener target="#{bean}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
-        </p:commandButton>
-        <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" rendered="#{true}" />
-    </div>
+    <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip" title="#{bundle.add}" actionListener="#{Page.add(valCount.index + 1)}">
+      <h:outputText styleClass="glyphicon glyphicon-plus no-text"/>
+    </p:commandLink>
+    <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip" title="#{bundle.delete}" actionListener="#{Page.remove(valCount.index)}">
+      <h:outputText styleClass="glyphicon glyphicon-minus no-text"/>
+    </p:commandLink>
 
 
 Pagination
@@ -445,30 +440,30 @@ We use the `Pagination component <http://getbootstrap.com/components/#pagination
 .. code-block:: html
 
   <ul class="pagination">
-    <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
-        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-            <h:outputText value="&#171;"/>
-            ...
-        </h:outputLink>
+    <li class="#{include.page == '1' ? 'disabled' : ''}">
+      <h:outputLink value="#{page.page}">
+        <h:outputText value="&#171;"/>
+        ...
+      </h:outputLink>
     </li>
-    <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
-        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-            <h:outputText value="&lt; #{bundle.previous}"/>
-            ...
-        </h:outputLink>
+    <li class="#{include.page == '1' ? 'disabled' : ''}">
+      <h:outputLink value="#{page.page}">
+        <h:outputText value="&lt; #{bundle.previous}"/>
+        ...
+      </h:outputLink>
     </li>
     ...
-    <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
-        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-            <h:outputText value="#{bundle.next} &gt;"/>
-            ...
-        </h:outputLink>
+    <li class="#{include.page == include.totalPages ? 'disabled' : ''}">
+      <h:outputLink value="#{page.page}">
+        <h:outputText value="#{bundle.next} &gt;"/>
+        ...
+      </h:outputLink>
     </li>
-    <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
-        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-            <h:outputText value="&#187;"/>
-            ...
-        </h:outputLink>
+    <li class="#{include.page == include.totalPages ? 'disabled' : ''}">
+      <h:outputLink value="#{page.page}">
+        <h:outputText value="&#187;"/>
+        ...
+      </h:outputLink>
     </li>
   </ul>
 
@@ -540,21 +535,19 @@ Images
 
 For images, we use the `GraphicImage  component <https://www.primefaces.org/showcase/ui/multimedia/graphicImage.xhtml>`__ from PrimeFaces, or the basic JSF `GraphicImage component <http://docs.oracle.com/javaee/6/javaserverfaces/2.1/docs/vdldocs/facelets/h/graphicImage.html>`__.
 
-To display images in a responsive way, they are styled with ``class="img-responsive"``, an `Images CSS class <http://getbootstrap.com/css/#images>`__ from Bootstrap.
+To display images in a responsive way, they are styled with ``.img-responsive``, an `Images CSS class <http://getbootstrap.com/css/#images>`__ from Bootstrap.
 
 .. raw:: html
 
   <div class="panel panel-default code-example">
     <div class="panel-body">
-
-      <img alt="image-responsive" class="img-responsive" src="../_images/dataverse-page.png">
-
+      <img alt="image-responsive" class="img-responsive" src="../_images/dataverse-project.png">
     </div>
   </div>
 
 .. code-block:: html
 
-  <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{true}"/>
+  <p:graphicImage styleClass="img-responsive" value="#{Page.imageId}?imageThumb=400" />
 
 
 Panels
@@ -568,9 +561,9 @@ The most common of our containers, the `Panels component <http://getbootstrap.co
     <div class="panel-body">
 
         <div class="panel panel-default">
-          <div class="panel-body">
-            Basic panel example
-          </div>
+            <div class="panel-body">
+                Basic panel example
+            </div>
         </div>
 
         <div class="panel-group">
@@ -607,36 +600,36 @@ The most common of our containers, the `Panels component <http://getbootstrap.co
 .. code-block:: html
 
   <div class="panel panel-default">
-        <div class="panel-body">
-            Basic panel example
-        </div>
+    <div class="panel-body">
+      Basic panel example
+    </div>
   </div>
 
   <div class="panel panel-default">
     <div data-toggle="collapse" data-target="#panelCollapse0" class="panel-heading">
-        Panel Heading &#160;<span class="glyphicon glyphicon-chevron-up"/>
+      Panel Heading &#160;<span class="glyphicon glyphicon-chevron-up"/>
     </div>
     <div id="panelCollapse0" class="panel-body form-horizontal collapse in">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">
-                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
-                    Label
-                </span>
-            </label>
-            <div class="col-sm-6">
-                Value
-            </div>
+      <div class="form-group">
+        <label class="col-sm-4 control-label">
+          <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
+            Label
+          </span>
+        </label>
+        <div class="col-sm-6">
+          Value
         </div>
-        <div class="form-group">
-            <label class="col-sm-4 control-label">
-                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
-                    Label
-                </span>
-            </label>
-            <div class="col-sm-6">
-                Value
-            </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-4 control-label">
+          <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
+            Label
+          </span>
+        </label>
+        <div class="col-sm-6">
+          Value
         </div>
+      </div>
     </div>
   </div>
 
@@ -679,13 +672,10 @@ We use the `TabView component <https://www.primefaces.org/showcase/ui/panel/tabV
 
 .. code-block:: html
 
-  <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
-           rendered="#{true}">
-    <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
-    <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{true}">
-        <ui:include src="filesFragment.xhtml">
-            <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
-        </ui:include>
+  <p:tabView id="tabView" widgetVar="content" activeIndex="#{Page.selectedTabIndex}">
+    <p:ajax event="tabChange" listener="#{Page.tabChanged}" update="@this" />
+    <p:tab id="dataTab" title="#{bundle.files}">
+        ...
     </p:tab>
     ...
   </p:tabView>
@@ -729,11 +719,14 @@ The modal is styled using the `Modal component <http://getbootstrap.com/javascri
   <!-- Large modal -->
   <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-lg">Large modal</button>
 
-  <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
-	<div class="modal-dialog modal-lg" role="document">
-	  <div class="modal-content">
-	    ...
-	  </div>
-	</div>
+  <div class="modal bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        ...
+      </div>
+    </div>
   </div>
 
+
+.. |image1| image:: ./img/dataverse-project.png
+   :class: img-responsive
