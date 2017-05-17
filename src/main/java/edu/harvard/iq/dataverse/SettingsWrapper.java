@@ -37,6 +37,11 @@ public class SettingsWrapper implements java.io.Serializable {
     private static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
             new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
 
+    /**
+     *
+     * @return setting value as string, or null if no setting is specified (JSF test `empty` 
+     * works for null values`)
+     */
     public String get(String settingKey) {
         if (settingsMap == null) {
             initSettingsMap();
@@ -60,6 +65,109 @@ public class SettingsWrapper implements java.io.Serializable {
         for (Setting setting : settingService.listAll()) {
             settingsMap.put(setting.getName(), setting.getContent());
         }
+    }
+
+    /**
+     * default separator "," for settings list
+     */
+    public static String defaultListSeparator = ",";
+
+    /**
+     * check if a given value is present in a setting list using the default separator.
+     * @param settingKey setting list to search
+     * @param queryValue value to search for
+     * @return true if a given value is present in a setting list, false if the value or key is 
+     * absent
+     */
+    public boolean valueInSettingList(String settingKey, String queryValue )
+    {
+	    return valueInSettingList( settingKey, queryValue, defaultListSeparator);
+    }
+   
+    /**
+     * check if a given value is present in a setting list.
+     * @param settingKey setting list to search
+     * @param queryValue value to search for
+     * @param sep list separator
+     * @return true if a given value is present in a setting list, false if the value or key is 
+     * absent
+     */
+    public boolean valueInSettingList(String settingKey, String queryValue, String sep)
+    {
+	    if ( null == settingsMap )
+	    {
+		    initSettingsMap();
+	    }
+	    String xs = settingsMap.get( settingKey );
+	    if ( null == xs )
+	    {
+		    return false;
+	    }
+	    String[] ys = xs.split( sep );
+	    if ( 0 == ys.length )
+	    {
+		    return false;
+	    }
+	    for( String y : ys )
+	    {
+		    if ( queryValue.equals(y) )
+		    {
+			    return true;
+		    }
+	    }
+	    return false;
+    }
+
+    /**
+     * if this key is present in the downloadMethods or uploadMethods list, allow native
+     * (http) uploads / downloads (if either list has been set).
+     */
+    public static String nativeProtocol = "native/http";
+    
+    /**
+     * default string for uploadMethods; may belong elsewhere.
+     */
+    private static String uploadMethodsList = "uploadMethods";
+    /**
+     * default string for downloadMethods; may belong elsewhere.
+     */
+    private static String downloadMethodsList = "downloadMethods";
+
+    /**
+     * wrapper to see if the native file upload options should be shown.
+     * @return true if `nativeProtocol` is in the `uploadMethods` list, or if `uploadMethods`
+     * has not been set; false otherwise.
+     */
+    public boolean allowNativeUploads()
+    {
+	    return nativeTransferCheck( uploadMethodsList );
+    }
+
+    /**
+     * wrapper to see if the native file download options should be shown.
+     * @return true if `nativeProtocol` is in the `downloadMethods` list, or if `downloadMethods`
+     * has not been set; false otherwise.
+     */
+    public boolean allowNativeDownloads()
+    {
+	    return nativeTransferCheck( downloadMethodsList );
+    }
+
+    /**
+     * centralize logic for check if setting absent, or value present in setting list
+     */
+    private boolean nativeTransferCheck( String transferDirection )
+    {
+	    if ( null == settingsMap )
+	    {
+		    initSettingsMap();
+	    }
+	    Set keys = settingsMap.keySet();
+	    if ( ! keys.contains( (Object) transferDirection ) )
+	    {
+		    return true;
+	    }
+	    return valueInSettingList( transferDirection, nativeProtocol );
     }
 
     private String guidesBaseUrl = null; 
