@@ -3569,11 +3569,16 @@ public class DatasetPage implements java.io.Serializable {
 
     /**
      * dataset publication date (dd MMM yyyy).
+     * unpublished datasets will return an empty string.
      *
      */
     public String getPublicationDate()
     {
 	    assert( null != workingVersion );
+	    if ( DatasetVersion.VersionState.DRAFT == workingVersion.getVersionState() )
+	    {
+		    return "";
+	    }
 	    Date rel_date = workingVersion.getReleaseTime();
 	    SimpleDateFormat fmt = new SimpleDateFormat("dd MMM yyyy");
 	    String r = fmt.format( rel_date.getTime() );
