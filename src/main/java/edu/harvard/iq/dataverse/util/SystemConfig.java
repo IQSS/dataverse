@@ -639,5 +639,10 @@ public class SystemConfig {
         }
         return saneDefault;
     }
+    
+    public boolean isShibPassiveLoginEnabled() {
+        boolean defaultResponse = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
+    }
 
 }

@@ -238,6 +238,10 @@ public class SettingsServiceBean {
         OAIServerEnabled,
         
         /**
+        * Whether Shibboleth passive authentication mode is enabled
+        */
+        ShibPassiveLoginEnabled,
+        /**
          * URL for Shibboleth Single Logout
          */
         ShibLogoutUrl;
