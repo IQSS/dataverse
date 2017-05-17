@@ -465,6 +465,9 @@ public class DataverseUserPage implements java.io.Serializable {
                 case RETURNEDDS:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
+                    
+                case MAPLAYERDELETEFAILED:
+                    userNotification.setTheObject(fileService.findFileMetadata(userNotification.getObjectId()));
 
                 case CREATEACC:
                     userNotification.setTheObject(userNotification.getUser());
