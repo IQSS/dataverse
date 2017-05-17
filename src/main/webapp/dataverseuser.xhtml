@@ -186,7 +186,7 @@
                                                     <h:outputFormat value="#{bundle['notification.maplayer.deletefailed']}" escape="false">
                                                         <o:param value="#{item.theObject.getLabel()}"/>
                                                         <o:param>
-                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDatasetVersion().getDataset().getGlobalId()}" title="#{item.theObject.getDatasetVersion().getDataset().getDisplayName()}">#{item.theObject.getDatasetVersion().getDataset().getDisplayName()}</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
