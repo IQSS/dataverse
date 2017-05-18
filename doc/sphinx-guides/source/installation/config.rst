@@ -313,12 +313,18 @@ For limiting the size (in bytes) of thumbnail images generated from files.
 doi.baseurlstring
 +++++++++++++++++
 
-As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are the only valid values. See also these related database settings below:
+As of this writing, "https://ezid.cdlib.org" (EZID) and "https://mds.datacite.org" (DataCite) are the main valid values. 
 
-- :DoiProvider
-- :Protocol
-- :Authority
-- :DoiSeparator
+While the above two options are recommended, it is also possible on an experimental basis to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL. 
+
+For example: The Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse. ANDS supplied the doi-baseurlstring ("https://researchdata.ands.org.au/api/doi/datacite"), doi-username and doi-password, and Authority parameter values for ADA. As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite and EZID must be tested with Dataverse to establish whether or not it will function properly.
+
+See also these related database settings below:
+
+- :ref:`:DoiProvider`
+- :ref:`:Protocol`  
+- :ref:`:Authority`
+- :ref:`:DoiSeparator`
 
 .. _doi.username:
 
