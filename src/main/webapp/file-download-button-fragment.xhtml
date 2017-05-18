@@ -18,28 +18,30 @@
         </span>
     </ui:fragment>
     
-    <!-- WorldMap Preview -->
-    <div class="modal fade" id="map-modal-#{fileMetadata.id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header text-left">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="#{bundle['close']}"><span aria-hidden="true">&#215;</span></button>
-                    <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">#{bundle['file.previewMap']}</span> #{fileMetadata.label}</h4>
-                </div>
-                <div class="modal-body">
-                    <iframe id="id_iframe_map" height="300" width="100%" src="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
-                </div>
-                <div class="modal-footer clearfix">
-                    <a href="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="#{bundle['file.mapData.worldMap']}" class="pull-left" style="margin-top:5px;" /></a>
-                    <a href="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-default" target="_blank"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">#{bundle['close']}</button>
+    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
+        <button type="button" style="border-right:0;" class="btn btn-default" data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal">
+            <span class="glyphicon glyphicon-map-marker"/> #{bundle['preview']}
+        </button>
+        <div class="modal fade" id="map-modal-#{fileMetadata.id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <!-- WorldMap Preview -->
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header text-left">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="#{bundle['close']}"><span aria-hidden="true">&#215;</span></button>
+                        <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">#{bundle['file.previewMap']}</span> #{fileMetadata.label}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <iframe id="id_iframe_map" height="300" width="100%" src="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <a href="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="#{bundle['file.mapData.worldMap']}" class="pull-left" style="margin-top:5px;" /></a>
+                        <a href="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-default" target="_blank"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">#{bundle['close']}</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <button type="button" jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}" class="btn btn-default" data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal">
-        <span class="glyphicon glyphicon-map-marker"/> #{bundle['preview']}
-    </button>
+    </ui:fragment>
 
     <div class="btn-group" jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">           
         <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
@@ -111,23 +113,12 @@
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
         </p:commandLink>
     </ui:fragment>
-
-    <div class="btn-group" role="group" jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
-        <!-- WorldMap Map Data button group -->
-        <!-- 4.2.1: VERIFIED: none of these checks add any queries, if there are no map layers. -->
-        <!-- WorldMap Map Data -->
-        <h:outputLink pt:role="button" rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}"
-                      type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-            <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.mapData']}
-        </h:outputLink>
-        <!-- Unpublished Map Data -->
-        <ui:fragment rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
-            <button type="button" class="btn btn-default" onclick="PF('mapData_popup').show()">
-                <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.mapData']}
-            </button>
-        </ui:fragment>
-    </div>
-
+    
+    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{isFilePg and FilePage.isSwiftStorage()}">
+        <!-- Compute Button *File pg only* -->
+        <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
+    </h:outputLink>
+        
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) }"
                    type="button" styleClass="btn btn-default"
                    actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'Download')}">
@@ -275,14 +266,4 @@
         <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
     </p:commandLink>
-    <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true">
-        <p class="help-block">
-            <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
-        </p>
-        <div class="button-block">
-            <button type="button" class="btn btn-default" onclick="PF('mapData_popup').hide();PF('blockDatasetForm').hide();">
-                                #{bundle.close}
-            </button>
-        </div>
-    </p:dialog>
 </ui:composition>

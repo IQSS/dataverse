@@ -72,6 +72,8 @@ body .ui-widget {font-size: inherit;}
 .icon-inline-action {margin-left:.3em;}
 .icon-inline-action:first-of-type {margin-left:1em;}
 
+.btn-group .text-button {display:inline-block;padding:6px;}
+
 .text-icon-inline {font-size:1.3em;line-height:1.1em;margin-right:4px;}
 
 #messagePanel div.messagePanel {margin-top:1em;}
@@ -343,6 +345,7 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 .button-block {margin-top:1em;}
 .form-group > .button-block, 
 .panel-body > .button-block, 
+th.col-file-action.text-right {text-align: right;}
 td.col-file-action > .button-block, .col-manage-action > .button-block,
 div.ui-datatable-header > .button-block, .button-block.tab-header, #topDatasetBlock > #actionButtonBlock > .button-block {margin-top:0;}
 form.btn-form {display:inline-block;}
@@ -350,6 +353,8 @@ form.btn-form {display:inline-block;}
 
 .button-block span.ingest-warning {margin-right:.5em;}
 
+.btn.btn-default.btn-access {background-color: #fff;background-image:none;}
+.btn.btn-default.btn-access:focus, .btn.btn-default.btn-access:hover,.btn.btn-default.btn-access:active {background-color: #e6e6e6;background-image:none;}
 .col-manage-action .button-block button, .col-manage-action .button-block a.btn, .col-manage-action .button-block input.btn, 
 .col-manage-action .button-block div.btn-group, .col-manage-action .button-block span.btn.ui-state-disabled, 
 .button-block div.btn-group div.btn-group, 
@@ -693,6 +698,8 @@ div[id$="filesTable"] div.file-tags-block span.label:last-of-type {margin-right:
 
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0 10px;}
 div[id$="filesHeaderBlock"] {margin-bottom:10px;}
+div[id$="cloudStorageBlock"] {margin-bottom:12px;}
+div[id$="cloudStorageBlock"] div.form-group.col-xs-12 {border-bottom:1px solid #ddd;margin:0;padding:0 0 12px 0;}
 
 div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-state-default {border:0; box-shadow:none; border-radius:0; background-image:none; border-top: 1px solid #e6e6e6; border-bottom: 1px solid #e6e6e6;}
 div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-state-default:first-of-type {border-left:1px solid #e6e6e6; border-top-left-radius:4px;}
@@ -730,6 +737,8 @@ div.dvnDifferanceTable .diffDetailBlock {display:block;}
 
 /* MANAGE TABLE + DROPDOWN BUTTON */
 div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-datatable td.col-manage-action {overflow:visible;}
+div[id$="filesTable"].ui-datatable.ui-datatable-scrollable thead th, div[id$="filesTable"] div.ui-datatable-scrollable-header {overflow:visible !important;}
+thead.ui-datatable-scrollable-theadclone {display:none}
 
 /* FILE */
 #fileImageTitle {margin-bottom: 12px;}
@@ -772,6 +781,8 @@ button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14p
 div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-confirm-dialog-severity {margin-top:3px;}
 .ui-widget-content a.btn-default {color:#333;}
+.input-group-btn > .btn, .input-group-btn > .btn-group {border-top-left-radius: 0;border-bottom-left-radius: 0;margin-left: -1px;font-size:14px;}
+.ui-widget-header .form-group {font-weight:normal;}
 /* .ui-messages-info-detail, .ui-messages-warn-detail, .ui-messages-error-detail, .ui-messages-fatal-detail, .ui-message-info-detail, .ui-message-warn-detail, .ui-message-error-detail, .ui-message-fatal-detail {
     margin-left: 0px;
 } */
