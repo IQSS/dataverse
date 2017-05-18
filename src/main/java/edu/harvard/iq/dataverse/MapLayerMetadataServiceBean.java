@@ -120,9 +120,15 @@ public class MapLayerMetadataServiceBean {
         }
         
         if (permissionService.userOn(user, mapLayerMetadata.getDataFile().getOwner()).has(Permission.EditDataset)) { 
+
+            // Remove thumbnails associated with the map metadata
+            //
+            this.deleteOlderMapThumbnails(mapLayerMetadata);
+            
+            // Remove the actual map metadata
+            //
             em.remove(em.merge(mapLayerMetadata));
 
-            this.deleteOlderMapThumbnails(mapLayerMetadata);
             return true;
         }
         return false;
