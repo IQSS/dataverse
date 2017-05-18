@@ -343,3 +343,6 @@ The brand logo (below) was created as a custom icon to represent the concept of 
       <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175">
     </div>
   </div>
+
+.. |image1| image:: ./img/dataverse-icon.jpg
+   :class: img-responsive
