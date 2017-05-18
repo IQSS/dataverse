@@ -1031,17 +1031,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (file == null) {
             return false; 
         } 
-        
+
         // If this file already has the "thumbnail generated" flag set,
         // we'll just trust that:
-        
         if (file.isPreviewImageAvailable()) {
             return true;
         }
         
         // If thumbnails are not even supported for this class of files, 
         // there's notthing to talk about: 
-        
+       
         if (!thumbnailSupported(file)) {
             return false;
         }
@@ -1064,9 +1063,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             logger.fine("No permission to download the file.");
             return false; 
         }*/
-        
-        
-        
+                
        if (ImageThumbConverter.isThumbnailAvailable(file)) {
            file = this.find(file.getId());
            file.setPreviewImageAvailable(true);
@@ -1074,6 +1071,7 @@ public class DataFileServiceBean implements java.io.Serializable {
            // (should this be done here? - TODO:)
            return true;
        }
+
        return false;
     }
 

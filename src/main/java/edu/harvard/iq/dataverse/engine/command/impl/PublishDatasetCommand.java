@@ -223,17 +223,25 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 try {
                     logger.fine("(1 of 2) PublishDatasetCommand: delete MapLayer From *WorldMap*");
                     ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(dataFile, authenticatedUser);
+                    
                     // If that was successful, delete the layer on the Dataverse side as well:
                     //SEK 4/20/2017                
                     //Command to delete from Dataverse side
                     logger.fine("(2 of 2) PublishDatasetCommand: Delete MapLayerMetadata From *Dataverse*");
-                    ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));                               
+                    boolean deleteMapSuccess = ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));  
+                    if (deleteMapSuccess){
+                        // RP - Bit of hack, update the datafile here b/c reference to datafile is not being passed
+                        // all the way up/down the chain.   
+                        dataFile.setPreviewImageAvailable(false);
+                    }
+                   
                 } catch (IOException ioex) {
                     // We are not going to treat it as a fatal condition and bail out, 
                     // but we will send a notification to the user, warning them about
                     // the layer still being out there, un-deleted:
                     ctxt.notifications().sendNotification(authenticatedUser, new Timestamp(new Date().getTime()), UserNotification.Type.MAPLAYERDELETEFAILED, dataFile.getFileMetadata().getId());
                 }
+               
             }
         }
 

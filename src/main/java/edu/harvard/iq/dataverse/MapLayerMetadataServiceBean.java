@@ -25,6 +25,7 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +49,9 @@ public class MapLayerMetadataServiceBean {
    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    @EJB
+    DataFileServiceBean dataFileService;
     
     @EJB
     PermissionServiceBean permissionService;
@@ -122,8 +126,9 @@ public class MapLayerMetadataServiceBean {
         if (permissionService.userOn(user, mapLayerMetadata.getDataFile().getOwner()).has(Permission.EditDataset)) { 
 
             // Remove thumbnails associated with the map metadata
+            // (this also sets theto set the "preview image" flag to false)
             //
-            this.deleteOlderMapThumbnails(mapLayerMetadata);
+            boolean success = this.deleteOlderMapThumbnails(mapLayerMetadata.getDataFile());
             
             // Remove the actual map metadata
             //
@@ -172,18 +177,19 @@ public class MapLayerMetadataServiceBean {
      * @return
      * @throws IOException 
      */
-    private boolean deleteOlderMapThumbnails(MapLayerMetadata mapLayerMetadata) {
-        if (mapLayerMetadata==null){
-            logger.warning("mapLayerMetadata is null");
+    private boolean deleteOlderMapThumbnails(DataFile dataFile) {
+        if (dataFile==null){
+            logger.warning("dataFile is null");
             return false;
         }
 
-        // Retrieve the data file
-        //
-        DataFile df = mapLayerMetadata.getDataFile();
+        // Set the preview image available flag to false
+        dataFile.setPreviewImageAvailable(false);
+        dataFile = dataFileService.save(dataFile);
+
         
         try {
-            DataFileIO dataAccess = df.getAccessObject();
+            DataFileIO dataAccess = dataFile.getAccessObject();
 
             if (dataAccess == null || !dataAccess.isLocalFile()) {
                 return false;
@@ -200,7 +206,7 @@ public class MapLayerMetadataServiceBean {
             //
             File fileDirectory = new File(fileDirname.normalize().toString());
             if (!(fileDirectory.isDirectory())){
-                logger.warning("DataFile directory is not actuall a directory.  Directory path: " + fileDirectory.toString());
+                logger.warning("DataFile directory is not actually a directory.  Directory path: " + fileDirectory.toString());
                 return false;            
             }
         
@@ -257,7 +263,7 @@ public class MapLayerMetadataServiceBean {
             return false;
         }
         
-        this.deleteOlderMapThumbnails(mapLayerMetadata);
+        this.deleteOlderMapThumbnails(mapLayerMetadata.getDataFile());
         if (true){
             // debug check
             // return false;
@@ -326,6 +332,13 @@ public class MapLayerMetadataServiceBean {
         logger.info("Closing streams...");
         is.close();
         os.close();
+        
+        // Set the preview image flag to true
+        DataFile dfile = mapLayerMetadata.getDataFile();
+        if (dfile != null){
+            dfile.setPreviewImageAvailable(true);
+            dataFileService.save(dfile);
+        }
         
         logger.info("Done");
         return true;

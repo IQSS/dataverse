@@ -737,11 +737,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
             return error(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");               
        };
 
-       // (7) For the DataFile, set "previewImageAvailable" to False
-       //
-       dfile.setPreviewImageAvailable(false);
-       dataFileService.save(dfile);
-     
        
        return ok("Map layer metadata deleted.");
         
