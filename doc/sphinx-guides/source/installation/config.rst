@@ -315,9 +315,9 @@ doi.baseurlstring
 
 As of this writing, "https://ezid.cdlib.org" (EZID) and "https://mds.datacite.org" (DataCite) are the main valid values. 
 
-While the above two options are recommended, it is also possible on an experimental basis to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL. 
+While the above two options are recommended because they have been tested by the Dataverse team, it is also possible to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the DataCite Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL.
 
-For example: The Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse. ANDS supplied the doi-baseurlstring ("https://researchdata.ands.org.au/api/doi/datacite"), doi-username and doi-password, and Authority parameter values for ADA. As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite and EZID must be tested with Dataverse to establish whether or not it will function properly.
+For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite and EZID must be tested with Dataverse to establish whether or not it will function properly.
 
 See also these related database settings below:
 
@@ -412,6 +412,12 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 As of this writing "EZID" and "DataCite" are the only valid options.
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
+
+This setting relates to the settings ``:Protocol``, ``:Authority``, ``:DoiSeparator``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
+
+- :ref:`doi.baseurlstring`
+- :ref:`doi.username`
+- :ref:`doi.password`
 
 .. _:Protocol:
 
