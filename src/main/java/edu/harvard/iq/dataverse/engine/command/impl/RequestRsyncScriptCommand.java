@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -99,40 +98,31 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
          */
         /**
          * @todo Don't expect to get the script from ur.py (upload request). Go
-         * fetch it from sr.py (script request) after a minute or so. (Cron runs
-         * every minute.) Wait 90 seconds to be safe.
+         * fetch it from sr.py (script request) after a while.
          */
-        long millisecondsToSleep = 500;
+        long millisecondsToSleep = 0;
         try {
             Thread.sleep(millisecondsToSleep);
         } catch (InterruptedException ex) {
             throw new RuntimeException(errorPreamble + "Unable to wait " + millisecondsToSleep + " milliseconds: " + ex.getLocalizedMessage());
         }
-//        HttpResponse<JsonNode> jsonNodeResponse = null;
 
+        String script;
+        JsonObject jsonWithScript;
         try {
-            stringResponse = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(au, dataset);
+            jsonWithScript = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset);
         } catch (Exception ex) {
-            throw new RuntimeException(errorPreamble + "Problem retrieving rsync script: " + ex.getLocalizedMessage());
+            throw new RuntimeException(errorPreamble + "Problem retrieving rsync script: " + ex);
         }
-        statusCode = stringResponse.getStatus();
-        if (statusCode != 200) {
-            throw new RuntimeException(errorPreamble + "Rather than 200 the status code was " + statusCode + ". The body was \'" + stringResponse.getBody() + "\'.");
-        }
-        /**
-         * @todo What happens when no datasetId is in the JSON?
-         */
-//        long datasetId = jsonNodeResponse.getBody().getObject().getLong("datasetId");
-//        long datasetId = jsonNodeResponse.getBody().getObject().getLong("datasetIdentifier");
-//        String script = jsonNodeResponse.getBody().getObject().getString("script");
-        String script = stringResponse.getBody();
+        script = jsonWithScript.getString("script");
         if (script == null || script.isEmpty()) {
             throw new RuntimeException(errorPreamble + "The script was null or empty.");
         }
         logger.fine("script for dataset " + dataset.getId() + ": " + script);
         Dataset updatedDataset = ctxt.dataCaptureModule().persistRsyncScript(dataset, script);
         NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
-                //                .add("datasetId", datasetId)
+                .add("datasetId", dataset.getId())
+                .add("userId", au.getId())
                 .add("script", script);
         return nullSafeJsonBuilder;
     }
