@@ -229,11 +229,11 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                     //Command to delete from Dataverse side
                     logger.fine("(2 of 2) PublishDatasetCommand: Delete MapLayerMetadata From *Dataverse*");
                     boolean deleteMapSuccess = ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));  
-                    if (deleteMapSuccess){
-                        // RP - Bit of hack, update the datafile here b/c reference to datafile is not being passed
-                        // all the way up/down the chain.   
-                        dataFile.setPreviewImageAvailable(false);
-                    }
+                    
+                    // RP - Bit of hack, update the datafile here b/c the reference to the datafile 
+                    // is not being passed all the way up/down the chain.   
+                    //
+                    dataFile.setPreviewImageAvailable(false);
                    
                 } catch (IOException ioex) {
                     // We are not going to treat it as a fatal condition and bail out, 
