@@ -14,18 +14,11 @@ import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -189,11 +182,31 @@ public class MapLayerMetadataServiceBean {
 
         
         try {
-            DataFileIO dataAccess = dataFile.getAccessObject();
+            DataFileIO dataFileIO = dataFile.getDataFileIO();
 
-            if (dataAccess == null || !dataAccess.isLocalFile()) {
+            if (dataFileIO == null) {
+                logger.warning("Null DataFileIO in deleteOlderMapThumbnails()");
                 return false;
             }
+            dataFileIO.open();
+            List<String> cachedObjectsTags = dataFileIO.listAuxObjects();
+            
+            if (cachedObjectsTags != null) {
+                String iconBaseTag = "img";
+                String iconThumbTagPrefix = "thumb";
+                for (String cachedFileTag : cachedObjectsTags) {
+                    logger.info("found AUX tag: "+cachedFileTag);
+                    if (iconBaseTag.equals(cachedFileTag) || cachedFileTag.startsWith(iconThumbTagPrefix)) {
+                        logger.info("deleting cached AUX object "+cachedFileTag);
+                        dataFileIO.deleteAuxObject(cachedFileTag);
+                    }
+                }
+            }
+            /*
+             * Below is the old-style code that was assuming that all the files are 
+             * stored on a local filesystem. The DataFileIO code, above, should 
+             * be used instead for all the operations on the physical files associated
+             * with DataFiles. 
             // Get the parent directory
             //
             Path fileDirname = dataAccess.getFileSystemPath().getParent();
@@ -218,17 +231,19 @@ public class MapLayerMetadataServiceBean {
                     14a5e4abf7d-e7eebfb6474d.img
                     14a5e4abf7d-e7eebfb6474d.img.thumb64
                     14a5e4abf7d-e7eebfb6474d.img.thumb400
-            */
+            *//*
             String iconBaseFilename = dataAccess.getFileSystemPath().toString() +  ".img";
+            String iconThumbFilename = dataAccess.getFileSystemPath().toString() +  ".thumb";
         
             for (File singleFile : fileDirectory.listFiles()) {
-                if (singleFile.toString().startsWith(iconBaseFilename)) {
+                if (singleFile.toString().startsWith(iconBaseFilename) || singleFile.toString().startsWith(iconThumbFilename)) {
                     //logger.info("file found: " + singleFile.toString());
                     singleFile.delete();
                     //results.add(file.getName());
                 }
-            }
+            }*/
         } catch (IOException ioEx) {
+            logger.warning("IOException in deleteOlderMapThumbnails(): "+ioEx.getMessage());
             return false; 
         }
                 
@@ -264,10 +279,7 @@ public class MapLayerMetadataServiceBean {
         }
         
         this.deleteOlderMapThumbnails(mapLayerMetadata.getDataFile());
-        if (true){
-            // debug check
-            // return false;
-        }
+
         if ((mapLayerMetadata.getMapImageLink()==null)||mapLayerMetadata.getMapImageLink().isEmpty()){
             logger.warning("mapLayerMetadata does not have a 'map_image_link' attribute");
             return false;
@@ -279,18 +291,16 @@ public class MapLayerMetadataServiceBean {
         
         DataFileIO dataAccess = null;
         try {
-            dataAccess = mapLayerMetadata.getDataFile().getAccessObject();
+            dataAccess = mapLayerMetadata.getDataFile().getDataFileIO();
         } catch (IOException ioEx) {
             dataAccess = null;
         }
 
-        if (dataAccess == null || !dataAccess.isLocalFile()) {
+        if (dataAccess == null) {
+            logger.warning("Failed to open Access IO on DataFile "+mapLayerMetadata.getDataFile().getId());
             return false;
         }
-        String destinationFile = dataAccess.getFileSystemPath().toString() +  ".img";
-        logger.info("destinationFile: getFileSystemLocation()" + dataAccess.getFileSystemPath().toString());
-        logger.info("destinationFile: " + destinationFile);
-        
+
         URL url = new URL(imageUrl);
         logger.info("retrieve url : " + imageUrl);
 
@@ -305,39 +315,13 @@ public class MapLayerMetadataServiceBean {
                 try { is.close(); } catch (IOException ignore) {}
             }
             return false;
-            
         }
         
-        OutputStream os = null;
-        
-        try{
-            logger.info("try to start OutputStream");
-            os = new FileOutputStream(destinationFile);
-        } catch (Exception ex){
-            logger.warning("Error when retrieving map icon image. Exception: " + ex.getMessage());
-            if (os!=null){
-                try { os.close(); } catch (IOException ignore) {}
-            }
+        try {
+            dataAccess.saveInputStreamAsAux(is, "img");
+        } catch (IOException ioex) {
+            logger.warning("Failed to save WorldMap-generated image; "+ioex.getMessage());
             return false;
-        }
-        
-        byte[] b = new byte[2048];
-        int length;
-
-        logger.info("Writing file...");
-        while ((length = is.read(b)) != -1) {
-            os.write(b, 0, length);
-        }
-
-        logger.info("Closing streams...");
-        is.close();
-        os.close();
-        
-        // Set the preview image flag to true
-        DataFile dfile = mapLayerMetadata.getDataFile();
-        if (dfile != null){
-            dfile.setPreviewImageAvailable(true);
-            dataFileService.save(dfile);
         }
         
         logger.info("Done");

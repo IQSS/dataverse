@@ -254,7 +254,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         */
         
         try {
-            ExportService instance = ExportService.getInstance();
+            ExportService instance = ExportService.getInstance(ctxt.settings());
             instance.exportAllFormats(theDataset);
 
         } catch (ExportException ex) {

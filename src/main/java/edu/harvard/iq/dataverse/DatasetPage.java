@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -222,13 +224,31 @@ public class DatasetPage implements java.io.Serializable {
     
     private boolean removeUnusedTags;
     
+    private String thumbnailString = null; 
 
+    // This is the Dataset-level thumbnail; 
+    // it's either the thumbnail of the designated datafile, 
+    // or scaled down uploaded "logo" file, or randomly selected
+    // image datafile from this dataset. 
     public String getThumbnailString() {
+        // This method gets called 30 (!) times, just to load the page!
+        // - so let's cache that string the first time it's called. 
+    
+        if (thumbnailString != null) {
+            if ("".equals(thumbnailString)) {
+                return null;
+            } 
+            return thumbnailString;
+        }
+
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail == null) {
-            return null;
-        }
-        return datasetThumbnail.getBase64image();
+            thumbnailString = "";
+            return null; 
+        } 
+           
+        thumbnailString = datasetThumbnail.getBase64image();
+        return thumbnailString;
     }
 
     public void setThumbnailString(String thumbnailString) {
@@ -339,16 +359,62 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
-    public boolean isMetadataExportEnabled() {
-        return metadataExportEnabled;
-    }
-
     public String getDataverseSiteUrl() {
         return this.dataverseSiteUrl;
     }
     
     public void setDataverseSiteUrl(String dataverseSiteUrl) {
         this.dataverseSiteUrl = dataverseSiteUrl;
+    }
+    //TODO: 
+    //Consolidate this & FilePage in static function in the SwiftAccessIO
+
+    public String getSwiftContainerName(){
+        String swiftContainerName = null;
+        String swiftFolderPathSeparator = "-";
+        if (persistentId != null) {
+            dataset = datasetService.findByGlobalId(persistentId); 
+            String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
+            swiftContainerName = dataset.getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
+                + swiftFolderPathSeparator + dataset.getIdentifier();
+            logger.fine("Swift container name: " + swiftContainerName);
+        }
+
+        return swiftContainerName;
+    }
+    
+    public void setSwiftContainerName(String name){
+        
+    }
+
+    //assumes that *ALL* files in ONE specified container are stored in swift backend 
+    //could be changed 
+    //SF 
+    public Boolean isSwiftStorage(){
+        Boolean swiftBool = false;
+        //dataset = datasetService.findByGlobalId(persistentId);
+        Long datasetVersion = workingVersion.getId();
+        if (datasetVersion != null) {
+                int unlimited = 0;
+                int maxResults = unlimited;
+            List<FileMetadata> metadatas = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);        
+                logger.fine("metadatas " + metadatas);
+            if (metadatas != null && metadatas.size() > 0) {
+                if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
+                    && metadatas.get(0).getDataFile().getStorageIdentifier().startsWith("swift://")) {
+                    swiftBool = true;
+                }
+            }
+        }
+        return swiftBool;
+    }
+
+    public String getComputeUrl() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+    }
+    
+    public String getCloudEnvironmentName() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.CloudEnvironmentName);
     }
     
     public DataFile getSelectedDownloadFile() {
@@ -462,18 +528,50 @@ public class DatasetPage implements java.io.Serializable {
     }
     
 
+    private Map<Long, String> datafileThumbnailsMap = new HashMap<>();
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
+        
         // new and optimized logic: 
         // - check download permission here (should be cached - so it's free!)
         // - only then ask the file service if the thumbnail is available/exists.
         // the service itself no longer checks download permissions.  
+        // plus, cache the results!
+        
+        Long dataFileId = fileMetadata.getDataFile().getId();
+        
+        if (datafileThumbnailsMap.containsKey(dataFileId)) {
+            return !"".equals(datafileThumbnailsMap.get(dataFileId));
+        }
+        
+        if (!FileUtil.isThumbnailSupported(fileMetadata.getDataFile())) {
+            datafileThumbnailsMap.put(dataFileId, "");
+            return false;
+        }
         
         if (!this.fileDownloadHelper.canDownloadFile(fileMetadata)) {
+            datafileThumbnailsMap.put(dataFileId, "");
             return false;
         }
      
-        return datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
+        
+        
+        String thumbnailAsBase64 = ImageThumbConverter.getImageThumbnailAsBase64(fileMetadata.getDataFile(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
+        
+        
+        //if (datafileService.isThumbnailAvailable(fileMetadata.getDataFile())) {
+        if (!StringUtil.isEmpty(thumbnailAsBase64)) {
+            datafileThumbnailsMap.put(dataFileId, thumbnailAsBase64);
+            return true;
+        } 
+        
+        datafileThumbnailsMap.put(dataFileId, "");
+        return false;
+        
+    }
+    
+    public String getDataFileThumbnailAsBase64(FileMetadata fileMetadata) {
+        return datafileThumbnailsMap.get(fileMetadata.getDataFile().getId());
     }
     
     // Another convenience method - to cache Update Permission on the dataset: 
@@ -1003,7 +1101,6 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private boolean readOnly = true; 
-    private boolean metadataExportEnabled;
     private String originalSourceUrl = null;
 
     public String getOriginalSourceUrl() {
@@ -1027,11 +1124,6 @@ public class DatasetPage implements java.io.Serializable {
                
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
-        /**
-         * For now having DDI export enabled is a proxy for having any metadata
-         * export enabled (JSON, Dublin Core, etc.).
-         */
-        metadataExportEnabled = systemConfig.isDdiExportEnabled();
 
         guestbookResponse = new GuestbookResponse();
         
@@ -2229,6 +2321,7 @@ public class DatasetPage implements java.io.Serializable {
                     userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
                 }
             }
+            logger.fine("Successfully executed SaveDatasetCommand.");
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex).append(" ");
@@ -2273,6 +2366,8 @@ public class DatasetPage implements java.io.Serializable {
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
+        logger.fine("Redirecting to the Dataset page.");
+        
         return returnToDraftVersion();
     }
     
@@ -2638,28 +2733,16 @@ public class DatasetPage implements java.io.Serializable {
         return dataURL;
     }
 
-    public String getMetadataAsJsonUrl() {
-        if (dataset != null) {
-            Long datasetId = dataset.getId();
-            if (datasetId != null) {
-                String myHostURL = getDataverseSiteUrl();
-                String metadataAsJsonUrl = myHostURL + "/api/datasets/" + datasetId;
-                return metadataAsJsonUrl;
-            }
-        }
-        return null;
-    }
-    
     public List< String[]> getExporters(){
         List<String[]> retList = new ArrayList();
         String myHostURL = getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
+        for (String [] provider : ExportService.getInstance(settingsService).getExportersLabels() ){
             String formatName = provider[1];
             String formatDisplayName = provider[0];
             
             Exporter exporter = null; 
             try {
-                exporter = ExportService.getInstance().getExporter(formatName);
+                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
             } catch (ExportException ex) {
                 exporter = null;
             }
@@ -3576,7 +3659,8 @@ public class DatasetPage implements java.io.Serializable {
     public void setTwoRavensHelper(TwoRavensHelper twoRavensHelper) {
         this.twoRavensHelper = twoRavensHelper;
     }
-
+    
+    /*
     public String getThumbnail() {
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail != null) {
@@ -3584,6 +3668,6 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return null;
         }
-    }
+    }*/
 
 }

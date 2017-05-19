@@ -251,7 +251,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Redirect to geoconnect url
         String callback_url = systemConfig.getDataverseSiteUrl() + GET_WORLDMAP_DATAFILE_API_PATH;
         String redirect_url_str = token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
-        logger.info("WorldMapRelatedData -- new token id: " + token.getId());
 
         URI redirect_uri;
         

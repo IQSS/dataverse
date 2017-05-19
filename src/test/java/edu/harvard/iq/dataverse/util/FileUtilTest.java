@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 
 public class FileUtilTest {
@@ -175,6 +177,8 @@ public class FileUtilTest {
         assertEquals(".xlsx", FileUtil.generateOriginalExtension("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
     }
 
+    /* 
+     * The method below has been removed from FileUtil
     @Test
     public void testRescaleImage() throws IOException {
         assertEquals(null, FileUtil.rescaleImage(null));
@@ -182,7 +186,7 @@ public class FileUtilTest {
         String imageAsBase64actual = FileUtil.rescaleImage(file);
         String imageAsBase64expected = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAABxUlEQVR42tVWu42DQBR0By6BBpBcAqIARAmuwCInIXFEgOnAJbgEl+DAEYlJQPgiRHJ3nITeaWzNagEjnUEnm5WeePt/M/N2l8XiXmSmdg9+roUgeh2e54lhGC20QRBI0zRS17WYpvlWKqjAy7JUHa7ryul0urXv93vV7jiOZFkmq9Xq/QDAX6/Xqg4Ax+NR1QEKYzabjZzP555CHGtZljLWSQb34zy9DQTqfU8BQMosl0sVbJdhljRNb/WqqsT3/RYA2BAAnaQuAPQjbScpgC8ZINMICIvDxwZ6EFEUyeVyaQGgD/BQ43A4tAJEG/pQdMDcm3uMBtA53S2fGxMggiqKYnBhqAl7JpiR52oYANIKLMLX0+ARAJwdMEwlMIYqoA6fSu52O7U+farDcfxOSiG971EK5XneSyEETLUIhKnClGJwOE86eSRJP/D/dojxHmy32x4AMMpAqBwBEAQB8ObB3joA3majrlEwNnSNEhTUwC2kL8QU4pvBoLEGUwLzQBJB8oLAnMkp1H3IuBjamKcMFOzbtv1+DxkL2Ov+SgAECn4nkiSROI4lDMOXmgLwU3/92ervz5sqH9erXIv8paYAzNl+AXxcLdKhqOWiAAAAAElFTkSuQmCC";
         assertEquals(imageAsBase64expected, imageAsBase64actual);
-    }
+    }*/
 
     @Test
     public void testDetermineFileType() {
@@ -193,5 +197,24 @@ public class FileUtilTest {
             Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+    
+    // isThumbnailSuppported() has been moved from DataFileService to FileUtil:
+    /**
+     * Expect that {@code null}, a DataFile without content type and a DataFile
+     * with bogus content type are not files that thumbnails can be created for.
+     * @throws Exception when the test is in error.
+     */
+    @Test
+    public void testIsThumbnailSupported() throws Exception {
+        // null file:
+        assertFalse(FileUtil.isThumbnailSupported(null));
+        // file with no content type:
+        DataFile filewNoContentType = new DataFile("");
+        filewNoContentType.setStorageIdentifier("");
+        assertFalse(FileUtil.isThumbnailSupported(filewNoContentType));
+        DataFile filewBogusContentType = new DataFile("");
+        filewBogusContentType.setStorageIdentifier("");
+        assertFalse(FileUtil.isThumbnailSupported(filewBogusContentType));    
     }
 }

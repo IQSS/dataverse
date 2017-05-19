@@ -288,7 +288,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     }
     
     public List<OAIRecord> findOaiRecordsByGlobalId(String globalId) {
-        String query="SELECT h from OAIRecord as h where h.globalId = :globalId";
+        String query="SELECT object(h) from OAIRecord h where h.globalId = :globalId";
         List<OAIRecord> oaiRecords = null;
         try {
             oaiRecords = em.createQuery(query).setParameter("globalId",globalId).getResultList();
@@ -303,11 +303,28 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     }    
     
     public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until) {
+        return findOaiRecordsBySetName(setName, from, until, false);
+    }
+    
+    public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Date from, Date until) {
+        return findOaiRecordsBySetName(setName, from, until, true);
+    }
+    
+    public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until, boolean excludeSet) {
                 
-        String queryString ="SELECT object(h) from OAIRecord as h where h.id is not null";
-        queryString += setName != null ? " and h.setName = :setName" : ""; // where h.setName is null";
+        String queryString ="SELECT object(h) from OAIRecord h where h.id is not null";
+        if (setName != null) {
+            if (excludeSet) {
+                queryString += " and h.setName is not null and h.setName != '' and h.setName != :setName";
+            } else {
+                queryString += " and h.setName = :setName";
+            } 
+        } else {
+            queryString += " and h.setName is null";
+        }
         queryString += from != null ? " and h.lastUpdateTime >= :from" : "";
         queryString += until != null ? " and h.lastUpdateTime<=:until" : "";
+        queryString += " order by h.globalId";
 
         logger.fine("Query: "+queryString);
         

@@ -33,6 +33,8 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        CloudEnvironmentName,
+        ComputeBaseUrl,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
@@ -128,10 +130,6 @@ public class SettingsServiceBean {
         SolrHostColonPort,
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
-        /**
-         * Experimental: Key for if DDI export is enabled or disabled.
-         */
-        DdiExportEnabled,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
         /** Key for the url to send users who want to sign up to. */
@@ -241,7 +239,11 @@ public class SettingsServiceBean {
         /**
         * Whether Shibboleth passive authentication mode is enabled
         */
-       ShibPassiveLoginEnabled;
+        ShibPassiveLoginEnabled,
+        /**
+         * Whether Export should exclude FieldType.EMAIL
+         */
+        ExcludeEmailFromExport;
         
         @Override
         public String toString() {
