@@ -99,6 +99,14 @@ public class FilePage implements java.io.Serializable {
     TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
 
+    public WorldMapPermissionHelper getWorldMapPermissionHelper() {
+        return worldMapPermissionHelper;
+    }
+
+    public void setWorldMapPermissionHelper(WorldMapPermissionHelper worldMapPermissionHelper) {
+        this.worldMapPermissionHelper = worldMapPermissionHelper;
+    }
+
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
     public String init() {

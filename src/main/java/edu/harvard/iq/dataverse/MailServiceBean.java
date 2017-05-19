@@ -216,6 +216,8 @@ public class MailServiceBean implements java.io.Serializable {
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.rejected.file.access.subject");
             case MAPLAYERUPDATED:
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.update.maplayer");
+            case MAPLAYERDELETEFAILED:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.maplayer.deletefailed.subject");
             case CREATEDS:
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.create.dataset.subject");
             case SUBMITTEDDS:
@@ -410,6 +412,13 @@ public class MailServiceBean implements java.io.Serializable {
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.worldMap.added");
                 String[] paramArrayMapLayer = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset())};
                 messageText += MessageFormat.format(pattern, paramArrayMapLayer);
+                return messageText;
+            case MAPLAYERDELETEFAILED:
+                FileMetadata targetFileMetadata = (FileMetadata) targetObject;
+                version =  targetFileMetadata.getDatasetVersion();
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.maplayer.deletefailed.text");
+                String[] paramArrayMapLayerDelete = {targetFileMetadata.getLabel(), getDatasetLink(version.getDataset())};
+                messageText += MessageFormat.format(pattern, paramArrayMapLayerDelete);
                 return messageText;                   
             case SUBMITTEDDS:
                 version =  (DatasetVersion) targetObject;
@@ -491,6 +500,8 @@ public class MailServiceBean implements java.io.Serializable {
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
                 return datasetService.find(userNotification.getObjectId());
+            case MAPLAYERDELETEFAILED:
+                return dataFileService.findFileMetadata(userNotification.getObjectId());
             case MAPLAYERUPDATED:
             case CREATEDS:
             case SUBMITTEDDS:
