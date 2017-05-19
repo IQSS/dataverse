@@ -154,9 +154,11 @@ Enabling a second authentication provider will result in the Log In page showing
 File Storage: Local Filesystem vs. Swift
 ----------------------------------------
 
-By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see "Running the Dataverse Installer" under the :doc:`installation-main` section) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
 
-Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset users create gets a corresponding "container" on the Swift side and each data file is saved as a file within that container.
+Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
+
+**Note:** At present, any file restrictions that users apply in Dataverse will not be honored in Swift. This means that a user without proper permissions **could bypass intended restrictions** by accessing the restricted file through Swift. 
 
 In order to configure a Swift installation, there are two steps you need to complete:
 
@@ -311,12 +313,18 @@ For limiting the size (in bytes) of thumbnail images generated from files.
 doi.baseurlstring
 +++++++++++++++++
 
-As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are the only valid values. See also these related database settings below:
+As of this writing, "https://ezid.cdlib.org" (EZID) and "https://mds.datacite.org" (DataCite) are the main valid values. 
 
-- :DoiProvider
-- :Protocol
-- :Authority
-- :DoiSeparator
+While the above two options are recommended because they have been tested by the Dataverse team, it is also possible to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the DataCite Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL.
+
+For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite and EZID must be tested with Dataverse to establish whether or not it will function properly.
+
+See also these related database settings below:
+
+- :ref:`:DoiProvider`
+- :ref:`:Protocol`  
+- :ref:`:Authority`
+- :ref:`:DoiSeparator`
 
 .. _doi.username:
 
@@ -351,13 +359,13 @@ The most commonly used configuration options are listed first.
 :BlockedApiPolicy
 +++++++++++++++++
 
-Out of the box, all API endpoints are completely open as mentioned in the section on security above. It is highly recommend that you choose one of the policies below and also configure ``:BlockedApiEndpoints``.
+Out of the box, all API endpoints are completely open, as mentioned in the section on security above. It is highly recommended that you choose one of the policies below and also configure ``:BlockedApiEndpoints``.
 
 - localhost-only: Allow from localhost.
 - unblock-key: Require a key defined in ``:BlockedApiKey``.
 - drop: Disallow the blocked endpoints completely.
 
-``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
+``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
 :BlockedApiEndpoints
 ++++++++++++++++++++
@@ -404,6 +412,12 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 As of this writing "EZID" and "DataCite" are the only valid options.
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
+
+This setting relates to the settings ``:Protocol``, ``:Authority``, ``:DoiSeparator``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
+
+- :ref:`doi.baseurlstring`
+- :ref:`doi.username`
+- :ref:`doi.password`
 
 .. _:Protocol:
 
@@ -694,3 +708,17 @@ It is recommended that you configure additional error handling for your Service 
 You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or any other page on your site that is accessible to anonymous users and will have the isPassive.js file loaded.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
+
+:ComputeBaseUrl
++++++++++++++++
+
+Set the base URL for the "Compute" button for a dataset.
+
+``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse?containerName=' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
+
+:CloudEnvironmentName
++++++++++++++++++++++
+
+Set the base URL for the "Compute" button for a dataset.
+
+``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``

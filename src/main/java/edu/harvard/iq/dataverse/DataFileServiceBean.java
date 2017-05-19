@@ -6,14 +6,10 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.sql.Timestamp;
@@ -25,7 +21,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -296,6 +291,9 @@ public class DataFileServiceBean implements java.io.Serializable {
                 + ";").getSingleResult();
     }
 
+    public FileMetadata findFileMetadata(Long fileMetadataId) {
+        return (FileMetadata) em.find(FileMetadata.class, fileMetadataId);
+    }
     
     public FileMetadata findFileMetadataByDatasetVersionIdAndDataFileId(Long datasetVersionId, Long dataFileId) {
 
@@ -991,18 +989,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (file == null) {
             return false; 
         } 
-        
+
         // If this file already has the "thumbnail generated" flag set,
         // we'll just trust that:
-        
         if (file.isPreviewImageAvailable()) {
             logger.info("returning true");
             return true;
         }
         
         // If thumbnails are not even supported for this class of files, 
-        // there's notthing to talk about: 
-        
+        // there's notthing to talk about:      
         if (!FileUtil.isThumbnailSupported(file)) {
             return false;
         }
@@ -1019,8 +1015,7 @@ public class DataFileServiceBean implements java.io.Serializable {
          db table should help with this. -- L.A. 4.2.1 DONE: 4.2.2
         
         */
-        
-        
+                
         
        if (ImageThumbConverter.isThumbnailAvailable(file)) {
            file = this.find(file.getId());
@@ -1028,6 +1023,7 @@ public class DataFileServiceBean implements java.io.Serializable {
            file = this.save(file); 
            return true;
        }
+
        return false;
     }
 

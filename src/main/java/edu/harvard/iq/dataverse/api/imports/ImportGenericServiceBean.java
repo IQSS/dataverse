@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.ForeignMetadataFieldMapping;
 import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;  
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -401,26 +402,46 @@ public class ImportGenericServiceBean {
        
         String protocol = identifierString.substring(0, index1);
         
-        if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
-            logger.warning("Unsupported protocol: "+identifierString);
-            return null;
-        }
+        if (GlobalId.DOI_PROTOCOL.equals(protocol) || GlobalId.HDL_PROTOCOL.equals(protocol)) {
+            logger.fine("Processing hdl:- or doi:-style identifier : "+identifierString);        
         
+        } else if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
+            
+            // We also recognize global identifiers formatted as global resolver URLs:
+            
+            if (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
+                logger.fine("Processing Handle identifier formatted as a resolver URL: "+identifierString);
+                protocol = GlobalId.HDL_PROTOCOL;
+                index1 = GlobalId.HDL_RESOLVER_URL.length() - 1; 
+            } else if (identifierString.startsWith(GlobalId.DOI_RESOLVER_URL)) {
+                logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
+                protocol = GlobalId.DOI_PROTOCOL;
+                index1 = GlobalId.DOI_RESOLVER_URL.length() - 1; 
+            } else {
+                logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);
+                return null;
+            }
+            // index2 was already found as the *last* index of '/' - so it's still good. 
+        } else {
+            logger.warning("Unknown identifier format: "+identifierString);
+            return null; 
+        }
         
         if (index2 == -1) {
             logger.warning("Error parsing identifier: " + identifierString + ". Second separator not found in string");
             return null;
-        } 
-        
-        String authority = identifierString.substring(index1+1, index2);
-        String identifier = identifierString.substring(index2+1);
-        
+        }
+
+        String authority = identifierString.substring(index1 + 1, index2);
+        String identifier = identifierString.substring(index2 + 1);
+
         datasetDTO.setProtocol(protocol);
         datasetDTO.setDoiSeparator("/");
         datasetDTO.setAuthority(authority);
         datasetDTO.setIdentifier(identifier);
-        
+
         // reassemble and return: 
+        logger.fine("parsed identifier, finalized " + protocol + ":" + authority + "/" + identifier);
         return protocol + ":" + authority + "/" + identifier;
     }
         

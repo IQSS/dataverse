@@ -22,6 +22,8 @@ public class GlobalId implements java.io.Serializable {
     
     public static final String DOI_PROTOCOL = "doi";
     public static final String HDL_PROTOCOL = "hdl";
+    public static final String HDL_RESOLVER_URL = "http://hdl.handle.net/";
+    public static final String DOI_RESOLVER_URL = "http://dx.doi.org/";
     
     @EJB
     SettingsServiceBean settingsService;
@@ -86,9 +88,9 @@ public class GlobalId implements java.io.Serializable {
         URL url = null;
         try {
             if (protocol.equals(DOI_PROTOCOL)){
-               url = new URL("http://dx.doi.org/" + authority + "/" + identifier); 
+               url = new URL(DOI_RESOLVER_URL + authority + "/" + identifier); 
             } else if (protocol.equals(HDL_PROTOCOL)){
-               url = new URL("http://hdl.handle.net/" + authority + "/" + identifier);  
+               url = new URL(HDL_RESOLVER_URL + authority + "/" + identifier);  
             }           
         } catch (MalformedURLException ex) {
             Logger.getLogger(GlobalId.class.getName()).log(Level.SEVERE, null, ex);
