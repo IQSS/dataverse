@@ -43,6 +43,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
@@ -54,6 +55,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -68,6 +70,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -591,6 +594,48 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+
+    @GET
+    @Path("{identifier}/dataCaptureModule/rsync")
+    public Response getRsync(@PathParam("identifier") String id) {
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+//            /**
+//             * @todo This logic really doesn't belong here but for now the Data
+//             * Capture Module will blindly create an rsync script for *any*
+//             * dataset, regardless of if the dataset has been configured to
+//             * support rsync or not.
+//             */
+//            for (DatasetField datasetField : dataset.getLatestVersion().getDatasetFields()) {
+//                /**
+//                 * @todo What should the trigger be for kicking off the
+//                 * RequestRsyncScriptCommand? For now we're looking for the
+//                 * presence of the "dataType" field, which is way too course.
+//                 * This is copied from CreateDatasetCommand.
+//                 */
+//                if ("dataType".equals(datasetField.getDatasetFieldType().getName())) {
+            JsonObjectBuilder jab = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(findUserOrDie()), dataset));
+            return ok(jab);
+//                }
+//            }
+//        } catch (EJBException ex) {
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        } catch (EJBException ex) {
+//            /**
+//             * @todo Ask Michael if we can simply have `execCommand` (and the
+//             * GUI equivalent, which is `commandEngine.submit` catch a
+//             * EJBException and/or RuntimeException instead of having this log
+//             * here. Note how DatasetPage, for example, has to catch
+//             * EJBException when issuing CreateDatasetCommand. The engine should
+//             * probably be doing more error handling.
+//             */
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Unable to get an rsync script: " + EjbUtil.ejbExceptionToString(ex));
+//            return error(Response.Status.INTERNAL_SERVER_ERROR, "Unable to get an rsync script: " + ex);
+        }
+//        return error(Response.Status.NOT_FOUND, "An rsync script was not found for dataset id " + id);
     }
 
     /**
