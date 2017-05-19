@@ -51,7 +51,8 @@ The script will prompt you for some configuration values. If this is a test/eval
 - Rserve User Password: rserve
 
 If desired, these default values can be configured by creating a ``default.config`` (example :download:`here <../_static/util/default.config>`) file in the installer's working directory with new values (if this file isn't present, the above defaults will be used).
-This allows the installer to be run in non-interactive mode (with ``./install -y -f > install.out 2> install.err ``), which can allow for easier interaction with automated provisioning tools.
+
+This allows the installer to be run in non-interactive mode (with ``./install -y -f > install.out 2> install.err``), which can allow for easier interaction with automated provisioning tools.
 
 **New, as of 4.3:**
 

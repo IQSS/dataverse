@@ -145,7 +145,7 @@ public class TestIngest {
                     output = output.concat ("NOBS: "+dataTable.getCaseQuantity()+"\n");
                     
                     try {
-                        ingestService.produceSummaryStatistics(dataFile);
+                        ingestService.produceSummaryStatistics(dataFile, tabFile);
                         output = output.concat ("UNF: "+dataTable.getUnf()+"\n");
                     } catch (IOException ioex) {
                         output = output.concat ("UNF: failed to calculate\n"+"\n");

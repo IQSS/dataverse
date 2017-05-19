@@ -330,7 +330,7 @@ Create both print and web version of the Dataverse Project logo by downloading t
 
   <div class="panel panel-default">
     <div class="panel-body text-center">
-      <img alt="Dataverse Project" src="../_images/dataverse-project.png">
+      <img alt="Dataverse Project" src="https://dataverse.harvard.edu/resources/images/dataverseproject_logo.jpg" class="img-responsive">
     </div>
   </div>
 
@@ -340,6 +340,9 @@ The brand logo (below) was created as a custom icon to represent the concept of 
 
   <div class="panel panel-default">
     <div class="panel-body text-center">
-      <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175">
+      <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175" class="img-responsive">
     </div>
   </div>
+
+.. |image1| image:: ./img/dataverse-icon.jpg
+   :class: img-responsive
