@@ -1147,12 +1147,12 @@ public class DatasetPage implements java.io.Serializable {
                     logger.warning("No such dataset: "+persistentId);
                     return permissionsWrapper.notFound();
                 }
-                logger.fine("retrived dataset, id="+dataset.getId());
+                logger.fine("retrieved dataset, id="+dataset.getId());
                 
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.info("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
@@ -1389,6 +1389,26 @@ public class DatasetPage implements java.io.Serializable {
         readOnly = false;
     }
     
+    public void testSelectedFilesForMapData(){
+        setSelectedFilesHasMapLayer(false); 
+        for (FileMetadata fmd : selectedFiles){
+            if(worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
+                setSelectedFilesHasMapLayer(true);
+                return; //only need one for warning message
+            }
+        }
+    }
+    
+    private boolean selectedFilesHasMapLayer;
+
+    public boolean isSelectedFilesHasMapLayer() {
+        return selectedFilesHasMapLayer;
+    }
+
+    public void setSelectedFilesHasMapLayer(boolean selectedFilesHasMapLayer) {
+        this.selectedFilesHasMapLayer = selectedFilesHasMapLayer;
+    }
+    
     private Integer chunkSize = 25;
 
     public Integer getChunkSize() {
@@ -1603,6 +1623,18 @@ public class DatasetPage implements java.io.Serializable {
         
         dvIn.setArchiveNote(getDeaccessionForwardURLFor());
         return dvIn;
+    }
+    
+    public boolean isMapLayerToBeDeletedOnPublish(){
+
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()){
+             if (worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
+                 if (fmd.isRestricted() || fmd.isRestrictedUI()){
+                        return true;
+                 }
+             }
+        }      
+        return false;
     }
 
     private String releaseDataset(boolean minor) {
@@ -2018,7 +2050,27 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
     
-    
+    public String testSelectedFilesForRestrict(){
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        if (selectedFiles.isEmpty()) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");           
+            return "";
+        } else {           
+            boolean validSelection = false;
+            for (FileMetadata fmd : selectedFiles) {
+                if (!fmd.isRestricted() ){
+                    validSelection = true;
+                }
+            }
+            if (!validSelection) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");
+                return "";
+            }                       
+            testSelectedFilesForMapData();
+            requestContext.execute("PF('accessPopup').show()");
+            return "";
+        }        
+    }
     
         
     public String restrictSelectedFiles(boolean restricted){
@@ -3591,7 +3643,7 @@ public class DatasetPage implements java.io.Serializable {
         this.guestbookResponseService = guestbookResponseService;
     }
     
-    
+       
     public WorldMapPermissionHelper getWorldMapPermissionHelper() {
         return worldMapPermissionHelper;
     }

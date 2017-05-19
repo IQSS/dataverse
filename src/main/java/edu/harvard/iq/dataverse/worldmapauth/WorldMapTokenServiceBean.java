@@ -11,9 +11,12 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -49,6 +52,7 @@ public class WorldMapTokenServiceBean {
      * @param dvUserID
      * @return WorldMapToken
      */
+    @TransactionAttribute(REQUIRES_NEW) 
     public WorldMapToken getNewToken(DataFile dataFile, AuthenticatedUser dvUser){
         if ((dataFile==null)||(dvUser==null)){
             logger.severe("dataFile or dvUser is null");
@@ -61,9 +65,8 @@ public class WorldMapTokenServiceBean {
         token.setModified();
         token.setToken();   
         return this.save(token);
-//        return token;
-       // getGeoConnectApplication
     }
+
     public WorldMapToken find(Object pk) {
         if (pk==null){
             return null;
@@ -148,6 +151,7 @@ public class WorldMapTokenServiceBean {
         if (token == null){
             return null;
         }
+
         try{
             return em.createQuery("select m from WorldMapToken m WHERE m.token=:token", WorldMapToken.class)
 					.setParameter("token", token)
@@ -157,7 +161,8 @@ public class WorldMapTokenServiceBean {
         }    
     }
 
-
+    
+    
     /**
      * Given a string token, retrieve the related WorldMapToken object
      * 

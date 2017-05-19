@@ -6,24 +6,21 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
-import static edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter.THUMBNAIL_SUFFIX;
-import java.io.File;
-import java.io.FileOutputStream;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -47,10 +44,20 @@ public class MapLayerMetadataServiceBean {
     private EntityManager em;
     
     @EJB
+    DataFileServiceBean dataFileService;
+    
+    @EJB
     PermissionServiceBean permissionService;
+    
+    @EJB
+    SystemConfig systemConfig;
+    
+    @EJB
+    WorldMapTokenServiceBean tokenServiceBean;
    
     private static final Logger logger = Logger.getLogger(MapLayerMetadataServiceBean.class.getCanonicalName());
 
+    private static final String GEOCONNECT_MAP_DELETE_API = "/tabular/delete-map-no-ui/";
     
     public MapLayerMetadata find(Object pk) {
         if (pk==null){
@@ -110,9 +117,16 @@ public class MapLayerMetadataServiceBean {
         }
         
         if (permissionService.userOn(user, mapLayerMetadata.getDataFile().getOwner()).has(Permission.EditDataset)) { 
+
+            // Remove thumbnails associated with the map metadata
+            // (this also sets theto set the "preview image" flag to false)
+            //
+            boolean success = this.deleteOlderMapThumbnails(mapLayerMetadata.getDataFile());
+            
+            // Remove the actual map metadata
+            //
             em.remove(em.merge(mapLayerMetadata));
 
-            this.deleteOlderMapThumbnails(mapLayerMetadata);
             return true;
         }
         return false;
@@ -156,18 +170,19 @@ public class MapLayerMetadataServiceBean {
      * @return
      * @throws IOException 
      */
-    private boolean deleteOlderMapThumbnails(MapLayerMetadata mapLayerMetadata) {
-        if (mapLayerMetadata==null){
-            logger.warning("mapLayerMetadata is null");
+    private boolean deleteOlderMapThumbnails(DataFile dataFile) {
+        if (dataFile==null){
+            logger.warning("dataFile is null");
             return false;
         }
 
-        // Retrieve the data file
-        //
-        DataFile df = mapLayerMetadata.getDataFile();
+        // Set the preview image available flag to false
+        dataFile.setPreviewImageAvailable(false);
+        dataFile = dataFileService.save(dataFile);
+
         
         try {
-            DataFileIO dataFileIO = df.getDataFileIO();
+            DataFileIO dataFileIO = dataFile.getDataFileIO();
 
             if (dataFileIO == null) {
                 logger.warning("Null DataFileIO in deleteOlderMapThumbnails()");
@@ -204,7 +219,7 @@ public class MapLayerMetadataServiceBean {
             //
             File fileDirectory = new File(fileDirname.normalize().toString());
             if (!(fileDirectory.isDirectory())){
-                logger.warning("DataFile directory is not actuall a directory.  Directory path: " + fileDirectory.toString());
+                logger.warning("DataFile directory is not actually a directory.  Directory path: " + fileDirectory.toString());
                 return false;            
             }
         
@@ -263,12 +278,8 @@ public class MapLayerMetadataServiceBean {
             return false;
         }
         
-        this.deleteOlderMapThumbnails(mapLayerMetadata);
-        
-        if (true){
-            // debug check
-            // return false;
-        }
+        this.deleteOlderMapThumbnails(mapLayerMetadata.getDataFile());
+
         if ((mapLayerMetadata.getMapImageLink()==null)||mapLayerMetadata.getMapImageLink().isEmpty()){
             logger.warning("mapLayerMetadata does not have a 'map_image_link' attribute");
             return false;
@@ -312,10 +323,78 @@ public class MapLayerMetadataServiceBean {
             logger.warning("Failed to save WorldMap-generated image; "+ioex.getMessage());
             return false;
         }
-            
+        
         logger.info("Done");
         return true;
     }   
+    
+    /* 
+     * This method calls GeoConnect and requests that a map layer for this 
+     * DataFile is deleted, from WorldMap and GeoConnect itself.
+     * The use case here is when a user restricts a tabular file for which 
+     * a geospatial map has already been made. 
+     * This process is initiated on the Dataverse side, without any GeoConnect
+     * UI in the picture. (The way a user normally deletes a layer map is by 
+     * clicking 'Delete' on the GeoConnect map page). 
+     * Otherwise this call follows the scheme used when accessing the 
+     * /shapefile/map-it on GeoConnect - we send along a WorldMap token and a 
+     * callback url for GC to download the file metadata.metadata
+     * Depending on how it goes we receive a yes or no response from the server.
+    */
+    public void deleteMapLayerFromWorldMap(DataFile dataFile, AuthenticatedUser user) throws IOException {
+
+        
+        if (dataFile == null){
+            logger.severe("dataFile cannot be null");
+            return;
+        }
+        
+        if (user == null){
+            logger.severe("user cannot be null");
+            return;            
+        }
+        
+        // Worldmap token: 
+        WorldMapToken token = tokenServiceBean.getNewToken(dataFile, user);
+        if (token == null){
+            logger.severe("token should NOT be null");
+            return;
+        }
+       
+        logger.info("-- new token id: " + token.getId());
+        // Callback url for geoConnect: 
+        String callback_url = URLEncoder.encode(systemConfig.getDataverseSiteUrl() + WorldMapRelatedData.GET_WORLDMAP_DATAFILE_API_PATH);
+        
+        String geoConnectAddress = token.getApplication().getMapitLink();
+        /* 
+         * this is a bit of a hack - there should be a cleaner way to get the base 
+         * geoconnect URL from the token!
+        */
+        geoConnectAddress = geoConnectAddress.replace("/shapefile/map-it", "");
+        
+        logger.log(Level.INFO, "callback_url: {0}", callback_url);
+        
+        //String geoConnectCommand = geoConnectAddress + GEOCONNECT_MAP_DELETE_API + token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  callback_url;
+        String geoConnectCommand = geoConnectAddress + GEOCONNECT_MAP_DELETE_API + token.getToken() + "/?cb=" +  callback_url;
+        logger.info("-- new token id 2: " + token.getId());
+
+        
+        logger.info("Attempting to call GeoConnect to request that the WorldMap layer for DataFile "+dataFile.getId()+":\n"+geoConnectCommand);
+        URL geoConnectUrl = new URL(geoConnectCommand);
+        
+        HttpURLConnection geoConnectConnection = (HttpURLConnection)geoConnectUrl.openConnection();
+        
+        geoConnectConnection.setRequestMethod("GET");
+        geoConnectConnection.connect();
+        
+        int code = geoConnectConnection.getResponseCode();
+        logger.info("response code: " + code);
+        if (code != 200) {
+            throw new IOException ("Failed to delete Map Layer via GeoConnect. /tabular/delete-map HTTP code response: "+code+"");
+        }
+        logger.info("response :" + geoConnectConnection.getContent());
+        
+    }
 
     public List<MapLayerMetadata> findAll() {
         TypedQuery<MapLayerMetadata> typedQuery = em.createNamedQuery("MapLayerMetadata.findAll", MapLayerMetadata.class);
