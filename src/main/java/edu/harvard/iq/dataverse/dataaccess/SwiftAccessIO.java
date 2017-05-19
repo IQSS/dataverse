@@ -455,13 +455,14 @@ public class SwiftAccessIO extends DataFileIO {
             swiftEndPoint = p.getProperty("swift.default.endpoint");
 
             //swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
-            String swiftFolderPathSeparator = "_";
+            String swiftFolderPathSeparator = "-";
             String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
             swiftFolderPath = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
                 authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
                 swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
 
             swiftFileName = storageIdentifier;
+            //setSwiftContainerName(swiftFolderPath);
             //swiftFileName = this.getDataFile().getDisplayName();
             //Storage Identifier is now updated after the object is uploaded on Swift.
             this.getDataFile().setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath+":"+swiftFileName);
@@ -589,6 +590,8 @@ public class SwiftAccessIO extends DataFileIO {
         String swiftEndPointSecretKey = p.getProperty("swift.password." + swiftEndPoint);
         String swiftEndPointTenantName = p.getProperty("swift.tenant." + swiftEndPoint);
         String swiftEndPointAuthMethod = p.getProperty("swift.auth_type." + swiftEndPoint);
+        String swiftEndPointUrl = p.getProperty("swift.swift_endpoint." + swiftEndPoint);
+        String swiftEndPointTenantId = p.getProperty("swift.tenant_id." + swiftEndPoint);
 
         if (swiftEndPointAuthUrl == null || swiftEndPointUsername == null || swiftEndPointSecretKey == null
                 || "".equals(swiftEndPointAuthUrl) || "".equals(swiftEndPointUsername) || "".equals(swiftEndPointSecretKey)) {
@@ -611,6 +614,7 @@ public class SwiftAccessIO extends DataFileIO {
             if (swiftEndPointAuthMethod.equals("keystone")) {
                 account = new AccountFactory()
                         .setTenantName(swiftEndPointTenantName)
+                        // .setTenantId(swiftEndPointTenantId)
                         .setUsername(swiftEndPointUsername)
                         .setPassword(swiftEndPointSecretKey)
                         .setAuthUrl(swiftEndPointAuthUrl)
@@ -661,5 +665,6 @@ public class SwiftAccessIO extends DataFileIO {
         }
         return fileUri;
     }
+
 
 }

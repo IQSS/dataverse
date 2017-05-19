@@ -324,11 +324,13 @@ Logos
 
 The Dataverse Project logo (below) is displayed in the footer, and was the basis for the creation of the application's icons and favicon.
 
+Create both print and web version of the Dataverse Project logo by downloading this vector-based SVG file: :download:`dataverse_project_logo.svg <../_static/dataverse_project_logo.svg>`
+
 .. raw:: html
 
   <div class="panel panel-default">
     <div class="panel-body text-center">
-      <img alt="Dataverse Project" src="../_images/dataverse-project.png">
+      <img alt="Dataverse Project" src="https://dataverse.harvard.edu/resources/images/dataverseproject_logo.jpg" class="img-responsive">
     </div>
   </div>
 
@@ -338,6 +340,9 @@ The brand logo (below) was created as a custom icon to represent the concept of 
 
   <div class="panel panel-default">
     <div class="panel-body text-center">
-      <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175">
+      <img alt="Dataverse Icon" src="../_images/dataverse-icon.jpg" height="175" class="img-responsive">
     </div>
   </div>
+
+.. |image1| image:: ./img/dataverse-icon.jpg
+   :class: img-responsive

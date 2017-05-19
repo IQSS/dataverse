@@ -154,9 +154,11 @@ Enabling a second authentication provider will result in the Log In page showing
 File Storage: Local Filesystem vs. Swift
 ----------------------------------------
 
-By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see "Running the Dataverse Installer" under the :doc:`installation-main` section) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
 
-Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset users create gets a corresponding "container" on the Swift side and each data file is saved as a file within that container.
+Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
+
+**Note:** At present, any file restrictions that users apply in Dataverse will not be honored in Swift. This means that a user without proper permissions **could bypass intended restrictions** by accessing the restricted file through Swift. 
 
 In order to configure a Swift installation, there are two steps you need to complete:
 
@@ -351,13 +353,13 @@ The most commonly used configuration options are listed first.
 :BlockedApiPolicy
 +++++++++++++++++
 
-Out of the box, all API endpoints are completely open as mentioned in the section on security above. It is highly recommend that you choose one of the policies below and also configure ``:BlockedApiEndpoints``.
+Out of the box, all API endpoints are completely open, as mentioned in the section on security above. It is highly recommended that you choose one of the policies below and also configure ``:BlockedApiEndpoints``.
 
 - localhost-only: Allow from localhost.
 - unblock-key: Require a key defined in ``:BlockedApiKey``.
 - drop: Disallow the blocked endpoints completely.
 
-``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
+``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
 :BlockedApiEndpoints
 ++++++++++++++++++++
@@ -694,3 +696,17 @@ It is recommended that you configure additional error handling for your Service 
 You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or any other page on your site that is accessible to anonymous users and will have the isPassive.js file loaded.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
+
+:ComputeBaseUrl
++++++++++++++++
+
+Set the base URL for the "Compute" button for a dataset.
+
+``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse?containerName=' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
+
+:CloudEnvironmentName
++++++++++++++++++++++
+
+Set the base URL for the "Compute" button for a dataset.
+
+``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
