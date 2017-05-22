@@ -76,7 +76,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
     @Override
     public boolean registerWhenPublished() {
-        return true; // TODO current value plays safe, can we loosen up?
+        return false; // TODO current value plays safe, can we loosen up?
     }
 
     public void reRegisterHandle(Dataset dataset) {
