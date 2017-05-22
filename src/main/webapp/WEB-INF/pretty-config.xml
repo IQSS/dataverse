@@ -4,7 +4,7 @@
 
     <url-mapping id="dataverse">
         <pattern value="/dataverse/#{alias}" />
-        <view-id value="/dataverse.xhtml" />
+        <view-id value="/dataverse_homepage.xhtml" />
     </url-mapping>
     
     <url-mapping id="iframe">
