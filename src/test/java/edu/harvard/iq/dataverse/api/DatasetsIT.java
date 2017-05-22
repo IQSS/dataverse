@@ -29,7 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
-import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.Json;
@@ -869,7 +869,7 @@ public class DatasetsIT {
         setDcmUrl.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response setUploadMethods = UtilIT.setSetting(SettingsServiceBean.Key.UploadMethods, Dataset.FileUploadMethods.RSYNC.toString());
+        Response setUploadMethods = UtilIT.setSetting(SettingsServiceBean.Key.UploadMethods, SystemConfig.FileUploadMethods.RSYNC.toString());
         setUploadMethods.then().assertThat()
                 .statusCode(OK.getStatusCode());
 

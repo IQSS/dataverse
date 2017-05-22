@@ -122,7 +122,6 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
             throw new RuntimeException(errorPreamble + "The script was null or empty.");
         }
         logger.fine("script for dataset " + dataset.getId() + ": " + script);
-        Dataset updatedDataset = ctxt.dataCaptureModule().persistRsyncScript(dataset, script);
         NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
                 .add("datasetId", dataset.getId())
                 .add("userId", au.getId())

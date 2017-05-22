@@ -98,9 +98,4 @@ public class DataCaptureModuleServiceBean implements Serializable {
 
     }
 
-    public Dataset persistRsyncScript(Dataset dataset, String script) {
-        dataset.setRsyncScript(script);
-        return em.merge(dataset);
-    }
-
 }

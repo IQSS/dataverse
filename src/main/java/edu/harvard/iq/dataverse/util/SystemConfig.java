@@ -643,4 +643,7 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
     }
 
+    public enum FileUploadMethods {
+        RSYNC
+    }
 }

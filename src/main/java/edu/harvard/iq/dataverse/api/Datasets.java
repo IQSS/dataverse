@@ -600,8 +600,8 @@ public class Datasets extends AbstractApiBean {
         if (uploadMethodsSettings == null) {
             return error(Response.Status.BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " is null.");
         }
-        if (!uploadMethodsSettings.contains(Dataset.FileUploadMethods.RSYNC.toString())) {
-            return error(Response.Status.BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " does not contain " + Dataset.FileUploadMethods.RSYNC);
+        if (!uploadMethodsSettings.contains(SystemConfig.FileUploadMethods.RSYNC.toString())) {
+            return error(Response.Status.BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC);
         }
         try {
             Dataset dataset = findDatasetOrDie(id);
