@@ -10,7 +10,6 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <div id="footer" class="#{widgetView ? 'widget-view' : ''}">
-        <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer"/>
         <div class="container">
             <div class="row">
                 <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
@@ -46,5 +45,7 @@
             </div>
         </div>
     </div>
+    
+    <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetWrapper.widgetView}"/>
     
 </ui:composition>

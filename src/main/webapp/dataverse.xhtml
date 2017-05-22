@@ -43,11 +43,6 @@
                 </f:metadata>
 
                 <h:form id="dataverseForm">
-                    <o:resourceInclude path="/CustomizationFilesServlet?customFileType=homePage" />
-                    <style>
-                        <o:resourceInclude path="/CustomizationFilesServlet?customFileType=style" />
-                    </style>
-                    
                     <!-- Edit Mode -->
                     <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
                         <p:focus context="dataverseForm"/>
