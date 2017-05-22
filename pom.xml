@@ -447,6 +447,11 @@
             <artifactId>unirest-java</artifactId>
             <version>1.4.9</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.jknack</groupId>
+            <artifactId>handlebars</artifactId>
+            <version>4.0.5</version>
+        </dependency>        
     </dependencies>
 
     <build>

@@ -5,8 +5,13 @@
  */
 package edu.harvard.iq.dataverse;
 
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -83,5 +88,65 @@ public class SettingsWrapper implements java.io.Serializable {
         return guidesBaseUrl;
     }
 
+    
+    public String getMustacheMessage() throws IOException{
+        
+        //String data = "{\"subject\": \"World\", \"link\": \"http://www.dataverse.org\"}";
+        String data = this.get(":GuidesData");
+        String templateText = this.get(":GuidesTemplate");//"Go to <a href=\"{{guides}}\">{{guides}}</a>!";
+        //String templateText = "Go to <a href=\"{{link}}\">{{subject}}</a>!";
+        
+        Handlebars handlebars = new Handlebars();
+        Gson gson = new Gson();
+
+        java.lang.reflect.Type type = new TypeToken<Map<String, Object>>(){}.getType();
+        Map<String, Object> map = gson.fromJson(data, type);   
+        //logger.info("guide links: " + map.size());
+
+        com.github.jknack.handlebars.Template template = handlebars.compileInline(templateText);
+        Context context = Context.newBuilder(map).build();
+
+        //com.github.jknack.handlebars.Template template = handlebars.compileInline("<a href='javascript:alert(\"{{this}}\");'>{{this}}</a>");
+        //String resultString = template.apply("guides.org");
+
+        return template.apply(context); // + " (ok)";
+        
+        /*
+        {
+    "guide_links": [
+        {
+            "name": "User Guide",
+            "link": "http://guides.dataverse.org/en/latest/user/"
+        },
+        {
+            "name": "Developer Guide",
+            "link": "http://guides.dataverse.org/en/latest/developers/"
+        },
+        {
+            "name": "Installation Guide",
+            "link": "http://guides.dataverse.org/en/latest/installation/"
+        },
+        {
+            "name": "API Guide",
+            "link": "http://guides.dataverse.org/en/latest/api/"
+        }
+
+    ]
+}
+        
+        
+        
+        <ul class="people_list">
+  {{#if guide_links}}
+      {{#each guide_links}}
+        <li><a href="{{this.link}}" target="_blank">{{this.name}}</a></li>
+      {{/each}}
+  {{else}}
+        (no guides)
+  {{/if}}
+</ul>
+        */
+    }
+    
 }
 
