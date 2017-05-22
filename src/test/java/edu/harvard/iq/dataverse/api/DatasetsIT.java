@@ -855,7 +855,7 @@ public class DatasetsIT {
     @Test
     public void testCreateDatasetWithDcmDependency() {
 
-        boolean disabled = true;
+        boolean disabled = false;
 
         if (disabled) {
             return;

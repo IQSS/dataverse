@@ -16,9 +16,14 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import org.junit.Test;
 
 public class DataCaptureModuleServiceBeanIT {
@@ -27,9 +32,19 @@ public class DataCaptureModuleServiceBeanIT {
 
     @Test
     public void testUrDotPy() {
-        String jsonString = "[]";
+
+        JsonObjectBuilder jab = Json.createObjectBuilder();
+        // The general rule should be to always pass the user id and dataset id to the DCM.
+        jab.add("userId", 42);
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        long timeInMillis = calendar.getTimeInMillis();
+        jab.add("datasetId", timeInMillis);
+        jab.add("datasetIdentifier", timeInMillis);
+        JsonObject jsonObject = jab.build();
+        String jsonString = jsonObject.toString();
         JsonNode jsonNode = new JsonNode(jsonString);
         try {
+            // curl -H 'Content-Type: application/json' -X POST -d '{"datasetId":"42", "userId":"1642","datasetIdentifier":"42"}' http://localhost/ur.py
             HttpResponse<String> uploadRequest = Unirest.post("http://localhost:8888" + "/ur.py")
                     //                    .body(jsonString)
                     .body(jsonNode)

@@ -65,7 +65,9 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
         JsonObjectBuilder jab = Json.createObjectBuilder();
         // The general rule should be to always pass the user id and dataset id to the DCM.
         jab.add("userId", au.getId());
-        jab.add("datasetId", dataset.getId());
+        // TODO: It would make more sense for the key to be "datasetId" since we're sending the primary key.
+//        jab.add("datasetId", dataset.getId());
+        jab.add("datasetIdentifier", dataset.getId());
         JsonObject jsonObject = jab.build();
         String errorPreamble = "User id " + au.getId() + " had a problem retrieving rsync script for dataset id " + dataset.getId() + " from Data Capture Module using JSON string `" + jsonObject.toString() + "`.";
         try {
@@ -100,7 +102,8 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
          * @todo Don't expect to get the script from ur.py (upload request). Go
          * fetch it from sr.py (script request) after a while.
          */
-        long millisecondsToSleep = 0;
+        // In dev, 400 milliseconds has been enough. Consider making this configurable.
+        long millisecondsToSleep = 500;
         try {
             Thread.sleep(millisecondsToSleep);
         } catch (InterruptedException ex) {

@@ -58,7 +58,7 @@ public class DataCaptureModuleServiceBean implements Serializable {
             throw new Exception("Problem POSTing JSON to Data Capture Module. The '" + DataCaptureModuleUrl + "' setting has not been configured.");
         }
         String jsonString = jab.toString();
-        // JSON to send to Data Capture Module: {"userId":1642,"datasetId":3813}]]
+        // curl -H 'Content-Type: application/json' -X POST -d '{"datasetId":"42", "userId":"1642","datasetIdentifier":"42"}' http://localhost/ur.py
         logger.info("JSON to send to Data Capture Module: " + jsonString);
         HttpResponse<String> uploadRequest = Unirest.post(dcmBaseUrl + "/ur.py")
                 .body(jsonString)
@@ -73,8 +73,6 @@ public class DataCaptureModuleServiceBean implements Serializable {
             throw new RuntimeException("Problem GETing JSON to Data Capture Module for dataset " + dataset.getId() + " The '" + DataCaptureModuleUrl + "' setting has not been configured.");
         }
         String bodyString = "datasetIdentifier=" + dataset.getId();
-        // FIXME: Remove this hard-coded value of "3813"! It's the only one that works!
-        bodyString = "datasetIdentifier=" + 3813;
         byte[] postData = bodyString.getBytes(StandardCharsets.UTF_8);
         int postDataLength = postData.length;
 //        String urlString = "http://localhost:8888/sr.py";
