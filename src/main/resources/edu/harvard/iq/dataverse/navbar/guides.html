@@ -1,0 +1,9 @@
+<ul class="dropdown-menu">
+  {{#if guide_links}}
+      {{#each guide_links}}
+        <li><a href="{{this.link}}" target="_blank">{{this.name}}</a></li>
+      {{/each}}
+  {{else}}
+        <li>(no guides)</li>
+  {{/if}}
+</ul>

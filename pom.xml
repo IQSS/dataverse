@@ -468,6 +468,7 @@
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.xml</include>
+                    <include>**/*.html</include>
                 </includes>
             </resource>
         </resources>
