@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -50,18 +49,14 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.List;
@@ -70,7 +65,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -606,19 +600,11 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(id);
             JsonObjectBuilder jab = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(findUserOrDie()), dataset));
-            return ok(jab);
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        } catch (EJBException ex) {
-            /**
-             * @todo Ask Michael if we can simply have `execCommand` (and the
-             * GUI equivalent, which is `commandEngine.submit` catch a
-             * EJBException and/or RuntimeException instead of having this log
-             * here. Note how DatasetPage, for example, has to catch
-             * EJBException when issuing CreateDatasetCommand. The engine should
-             * probably be doing more error handling.
-             */
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Unable to get an rsync script: " + EjbUtil.ejbExceptionToString(ex));
+            JsonObject jsonObject = jab.build();
+            String script = jsonObject.getString("script");
+            return ok(script, MediaType.valueOf(MediaType.TEXT_PLAIN));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 

@@ -932,8 +932,9 @@ public class DatasetsIT {
                 .get("/api/datasets/" + datasetId + "/dataCaptureModule/rsync");
         getRsyncScriptPermErrorGuest.prettyPrint();
         getRsyncScriptPermErrorGuest.then().assertThat()
-                .statusCode(401)
-                .body("message", equalTo("User :guest is not permitted to perform requested action."));
+                .contentType(ContentType.JSON)
+                .body("message", equalTo("User :guest is not permitted to perform requested action."))
+                .statusCode(401);
 
         Response createNoPermsUser = UtilIT.createRandomUser();
         String noPermsUsername = UtilIT.getUsernameFromResponse(createNoPermsUser);
@@ -943,18 +944,25 @@ public class DatasetsIT {
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, noPermsApiToken)
                 .get("/api/datasets/" + datasetId + "/dataCaptureModule/rsync");
         getRsyncScriptPermErrorNonGuest.then().assertThat()
-                .statusCode(401)
-                .body("message", equalTo("User @" + noPermsUsername + " is not permitted to perform requested action."));
+                //                .statusCode(NO_CONTENT.getStatusCode());
+                .contentType(ContentType.JSON)
+                .body("message", equalTo("User @" + noPermsUsername + " is not permitted to perform requested action."))
+                .statusCode(401);
 
         Response getRsyncScript = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/datasets/" + datasetId + "/dataCaptureModule/rsync");
         getRsyncScript.prettyPrint();
         getRsyncScript.then().assertThat()
-                .statusCode(200)
-                .body("data.datasetId", equalTo(datasetId))
-                //                .body("data.userId", equalTo(userId)) // Expected "1732L", actual "1732". Annoying.
-                .body("data.script", startsWith("#!"));
+                .contentType(ContentType.TEXT)
+                .statusCode(200);
+//                .body("data.datasetId", equalTo(datasetId))
+        //                .body("data.userId", equalTo(userId)) // Expected "1732L", actual "1732". Annoying.
+//                .body("data.script", startsWith("#!"));
+        String rsyncScript = getRsyncScript.body().asString();
+        System.out.println("script:\n" + rsyncScript);
+        assertTrue(rsyncScript.startsWith("#!"));
+        assertTrue(rsyncScript.contains(datasetId.toString()));
 
         Response createUser2 = UtilIT.createRandomUser();
 //        createUser.prettyPrint();
