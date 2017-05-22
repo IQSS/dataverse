@@ -39,6 +39,9 @@ public class SettingsServiceBean {
          * For example, https://datacapture.example.org
          */
         DataCaptureModuleUrl,
+        RepositoryStorageAbstractionLayerUrl,
+        UploadMethods,
+        DownloadMethods,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,

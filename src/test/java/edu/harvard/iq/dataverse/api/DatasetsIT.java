@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
+import edu.harvard.iq.dataverse.Dataset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.Json;
@@ -58,6 +59,10 @@ public class DatasetsIT {
 
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
         removeDcmUrl.then().assertThat()
+                .statusCode(200);
+
+        Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
+        removeUploadMethods.then().assertThat()
                 .statusCode(200);
     }
 
@@ -845,12 +850,9 @@ public class DatasetsIT {
     }
 
     /**
-     * In order for this test to pass you must have the Data Capture Module
-     * running:
-     * https://github.com/sbgrid/data-capture-module/blob/master/api/dcm.py
-     *
-     * Configure :DataCaptureModuleUrl to point at wherever you are running the
-     * DCM.
+     * In order for this test to pass you must have the Data Capture Module (
+     * https://github.com/sbgrid/data-capture-module ) running. We assume that
+     * most developers haven't set up the DCM so the test is disabled.
      */
     @Test
     public void testCreateDatasetWithDcmDependency() {
@@ -865,6 +867,10 @@ public class DatasetsIT {
 //        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888/ur.py");
         Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
         setDcmUrl.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response setUploadMethods = UtilIT.setSetting(SettingsServiceBean.Key.UploadMethods, Dataset.FileUploadMethods.RSYNC.toString());
+        setUploadMethods.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         Response urlConfigured = given()

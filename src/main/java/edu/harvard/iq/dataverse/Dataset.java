@@ -745,7 +745,7 @@ public class Dataset extends DvObjectContainer {
         this.rsyncScript = rsyncScript;
     }
 
-    public enum FileUploadMechanism {
+    public enum FileUploadMethods {
         /**
          * @todo Eventually, rather than hard-coding "RSYNC" et al here, each
          * should be a row in a table.

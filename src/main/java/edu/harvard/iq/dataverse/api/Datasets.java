@@ -119,9 +119,6 @@ public class Datasets extends AbstractApiBean {
     MetadataBlockServiceBean metadataBlockService;
     
     @EJB
-    SettingsServiceBean settingsService;
-    
-    @EJB
     DataFileServiceBean fileService;
 
     @EJB
@@ -599,6 +596,13 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{identifier}/dataCaptureModule/rsync")
     public Response getRsync(@PathParam("identifier") String id) {
+        String uploadMethodsSettings = settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        if (uploadMethodsSettings == null) {
+            return error(Response.Status.BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " is null.");
+        }
+        if (!uploadMethodsSettings.contains(Dataset.FileUploadMethods.RSYNC.toString())) {
+            return error(Response.Status.BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " does not contain " + Dataset.FileUploadMethods.RSYNC);
+        }
         try {
             Dataset dataset = findDatasetOrDie(id);
             JsonObjectBuilder jab = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(findUserOrDie()), dataset));
