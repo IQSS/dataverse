@@ -98,7 +98,7 @@ public class CustomizationFilesServlet extends HttpServlet {
         }
         if (fileTypeParam.equals("style")) {
             String nonNullDefaultIfKeyNotFound = "";
-            return settingsService.getValueForKey(SettingsServiceBean.Key.FooterCustomizationFile, nonNullDefaultIfKeyNotFound);
+            return settingsService.getValueForKey(SettingsServiceBean.Key.StyleCustomizationFile, nonNullDefaultIfKeyNotFound);
         }
 
         return "";
