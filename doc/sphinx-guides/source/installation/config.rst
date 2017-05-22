@@ -113,13 +113,21 @@ Non-superusers who are not "Admin" on the root dataverse will not be able to to 
 Persistent Identifiers and Publishing Datasets
 ++++++++++++++++++++++++++++++++++++++++++++++
 
-Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and HDL. By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: EZID (http://ezid.cdlib.org), DataCite (https://www.datacite.org), Handle.Net (https://www.handle.net). Once account credentials and namespace have been acquired, please complete the following identifier configuration parameters:
+Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and HDL. 
 
-JVM Options: :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`, :ref:`dataverse.handlenet.admcredfile`, :ref:`dataverse.handlenet.admprivphrase`
+By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. Note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
 
-Database Settings: :ref:`:DoiProvider <:DoiProvider>`, :ref:`:Protocol <:Protocol>`, :ref:`:Authority <:Authority>`, :ref:`:DoiSeparator <:DoiSeparator>`
+To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: **EZID** (http://ezid.cdlib.org), **DataCite** (https://www.datacite.org), **Handle.Net** (https://www.handle.net). 
 
-Please note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
+Once account credentials and namespace have been acquired, please complete the following identifier configuration parameters:
+
+**JVM Options:** :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`, :ref:`dataverse.handlenet.admcredfile`, :ref:`dataverse.handlenet.admprivphrase`
+
+**Database Settings:** :ref:`:DoiProvider <:DoiProvider>`, :ref:`:Protocol <:Protocol>`, :ref:`:Authority <:Authority>`, :ref:`:DoiSeparator <:DoiSeparator>`
+
+Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
+
+
 
 Customizing the Root Dataverse
 ++++++++++++++++++++++++++++++
@@ -340,14 +348,18 @@ doi.password
 
 Used in conjuction with ``doi.baseurlstring``.
 
+.. _dataverse.handlenet.admcredfile:
+
 dataverse.handlenet.admcredfile
 +++++++++++++++++++++++++++++++
 
-For Handle support, typically the full path to handle/svr_1/admpriv.bin
+If you're using **handles**, this JVM setting configures access credentials so your dataverse can talk to your Handle.Net server. This is the private key generated during Handle.Net server installation. Typically the full path is set to ``handle/svr_1/admpriv.bin``. Please refer to `Handle.Net's documentation <http://handle.net/hnr_documentation.html>`_ for more info.
+
+.. _dataverse.handlenet.admprivphrase:
 
 dataverse.handlenet.admprivphrase
 +++++++++++++++++++++++++++++++++
-For Handle support.
+This JVM setting is also part of **handles** configuration. The Handle.Net installer lets you choose whether to encrypt the admcredfile private key or not. If you do encrypt it, this is the pass phrase that it's encrypted with. 
 
 Database Settings
 -----------------
@@ -423,7 +435,7 @@ This setting relates to the settings ``:Protocol``, ``:Authority``, ``:DoiSepara
 
 :Protocol
 +++++++++
-.. _:Protocol:
+
 As of this writing "doi" and "hdl" are the only valid option for the protocol for a persistent ID.
 
 ``curl -X PUT -d doi http://localhost:8080/api/admin/settings/:Protocol``
@@ -432,7 +444,7 @@ As of this writing "doi" and "hdl" are the only valid option for the protocol fo
 
 :Authority
 ++++++++++
-.. _:Authority:
+
 Use the DOI authority assigned to you by your DoiProvider or HandleProvider, note to provide the handle authority without its "20." prefix.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
