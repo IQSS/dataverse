@@ -184,6 +184,14 @@ Then run the create command:
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
 
+You also have the option to set a custom container name separator. It is initialized to ``_``, so you must first run the delete command:
+
+``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.swift-folder-path-separator=_"``
+
+And then run the create command:
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-folder-path-separator=-"``
+
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
 
