@@ -4,30 +4,15 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.logging.Logger;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DataCaptureModuleUrl;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 /**
  * This class contains all the methods that have external runtime dependencies
@@ -41,9 +26,6 @@ public class DataCaptureModuleServiceBean implements Serializable {
 
     @EJB
     SettingsServiceBean settingsService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
 
     /**
      * @param user AuthenticatedUser
@@ -67,35 +49,26 @@ public class DataCaptureModuleServiceBean implements Serializable {
     }
 
     // TODO: Do we care about authenticating to the DCM?
-    public JsonObject retreiveRequestedRsyncScript(Dataset dataset) throws MalformedURLException, ProtocolException, IOException {
+    public ScriptRequestResponse retreiveRequestedRsyncScript(Dataset dataset) {
         String dcmBaseUrl = settingsService.getValueForKey(DataCaptureModuleUrl);
         if (dcmBaseUrl == null) {
             throw new RuntimeException("Problem GETing JSON to Data Capture Module for dataset " + dataset.getId() + " The '" + DataCaptureModuleUrl + "' setting has not been configured.");
         }
-        String bodyString = "datasetIdentifier=" + dataset.getId();
-        byte[] postData = bodyString.getBytes(StandardCharsets.UTF_8);
-        int postDataLength = postData.length;
-//        String urlString = "http://localhost:8888/sr.py";
-        String urlString = dcmBaseUrl + "/sr.py";
-        URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setDoOutput(true);
-        conn.setInstanceFollowRedirects(false);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        conn.setRequestProperty("charset", "utf-8");
-        conn.setRequestProperty("Content-Length", Integer.toString(postDataLength));
-        conn.setUseCaches(false);
-        try (DataOutputStream wr = new DataOutputStream(conn.getOutputStream())) {
-            wr.write(postData);
-        }
-        InputStreamReader inputStreamReader = new InputStreamReader((InputStream) conn.getContent());
-        String result = new BufferedReader(inputStreamReader)
-                .lines().collect(Collectors.joining("\n"));
-        JsonReader jsonReader = Json.createReader(new StringReader(result));
-        JsonObject jsonObject = jsonReader.readObject();
-        return jsonObject;
+        return getRsyncScriptForDataset(dcmBaseUrl, dataset.getId());
 
+    }
+
+    public static ScriptRequestResponse getRsyncScriptForDataset(String dcmBaseUrl, long datasetId) {
+        String scriptRequestUrl = dcmBaseUrl + "/sr.py";
+        try {
+            HttpResponse<String> scriptRequest = Unirest.post(scriptRequestUrl)
+                    .field("datasetIdentifier", datasetId)
+                    .asString();
+            return DataCaptureModuleUtil.getScriptFromRequest(scriptRequest);
+        } catch (UnirestException ex) {
+            logger.info("Error calling " + scriptRequestUrl + ": " + ex);
+            return null;
+        }
     }
 
 }

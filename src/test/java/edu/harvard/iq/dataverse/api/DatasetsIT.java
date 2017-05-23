@@ -953,6 +953,7 @@ public class DatasetsIT {
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/datasets/" + datasetId + "/dataCaptureModule/rsync");
         getRsyncScript.prettyPrint();
+        System.out.println("content type: " + getRsyncScript.getContentType()); // text/html;charset=ISO-8859-1
         getRsyncScript.then().assertThat()
                 .contentType(ContentType.TEXT)
                 .statusCode(200);

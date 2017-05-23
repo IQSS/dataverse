@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import com.mashape.unirest.http.HttpResponse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -110,14 +111,8 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
             throw new RuntimeException(errorPreamble + "Unable to wait " + millisecondsToSleep + " milliseconds: " + ex.getLocalizedMessage());
         }
 
-        String script;
-        JsonObject jsonWithScript;
-        try {
-            jsonWithScript = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset);
-        } catch (Exception ex) {
-            throw new RuntimeException(errorPreamble + "Problem retrieving rsync script: " + ex);
-        }
-        script = jsonWithScript.getString("script");
+        ScriptRequestResponse jsonWithScript = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset);
+        String script = jsonWithScript.getScript();
         if (script == null || script.isEmpty()) {
             throw new RuntimeException(errorPreamble + "The script was null or empty.");
         }
