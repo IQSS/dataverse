@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -364,6 +365,56 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setDataverseSiteUrl(String dataverseSiteUrl) {
         this.dataverseSiteUrl = dataverseSiteUrl;
+    }
+    //TODO: 
+    //Consolidate this & FilePage in static function in the SwiftAccessIO
+
+    public String getSwiftContainerName(){
+        String swiftContainerName = null;
+        String swiftFolderPathSeparator = "-";
+        if (persistentId != null) {
+            dataset = datasetService.findByGlobalId(persistentId); 
+            String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
+            swiftContainerName = dataset.getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
+                + swiftFolderPathSeparator + dataset.getIdentifier();
+            logger.fine("Swift container name: " + swiftContainerName);
+        }
+
+        return swiftContainerName;
+    }
+    
+    public void setSwiftContainerName(String name){
+        
+    }
+
+    //assumes that *ALL* files in ONE specified container are stored in swift backend 
+    //could be changed 
+    //SF 
+    public Boolean isSwiftStorage(){
+        Boolean swiftBool = false;
+        //dataset = datasetService.findByGlobalId(persistentId);
+        Long datasetVersion = workingVersion.getId();
+        if (datasetVersion != null) {
+                int unlimited = 0;
+                int maxResults = unlimited;
+            List<FileMetadata> metadatas = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);        
+                logger.fine("metadatas " + metadatas);
+            if (metadatas != null && metadatas.size() > 0) {
+                if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
+                    && metadatas.get(0).getDataFile().getStorageIdentifier().startsWith("swift://")) {
+                    swiftBool = true;
+                }
+            }
+        }
+        return swiftBool;
+    }
+
+    public String getComputeUrl() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+    }
+    
+    public String getCloudEnvironmentName() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.CloudEnvironmentName);
     }
     
     public DataFile getSelectedDownloadFile() {
@@ -1096,12 +1147,12 @@ public class DatasetPage implements java.io.Serializable {
                     logger.warning("No such dataset: "+persistentId);
                     return permissionsWrapper.notFound();
                 }
-                logger.fine("retrived dataset, id="+dataset.getId());
+                logger.fine("retrieved dataset, id="+dataset.getId());
                 
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.info("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
@@ -1338,6 +1389,26 @@ public class DatasetPage implements java.io.Serializable {
         readOnly = false;
     }
     
+    public void testSelectedFilesForMapData(){
+        setSelectedFilesHasMapLayer(false); 
+        for (FileMetadata fmd : selectedFiles){
+            if(worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
+                setSelectedFilesHasMapLayer(true);
+                return; //only need one for warning message
+            }
+        }
+    }
+    
+    private boolean selectedFilesHasMapLayer;
+
+    public boolean isSelectedFilesHasMapLayer() {
+        return selectedFilesHasMapLayer;
+    }
+
+    public void setSelectedFilesHasMapLayer(boolean selectedFilesHasMapLayer) {
+        this.selectedFilesHasMapLayer = selectedFilesHasMapLayer;
+    }
+    
     private Integer chunkSize = 25;
 
     public Integer getChunkSize() {
@@ -1552,6 +1623,18 @@ public class DatasetPage implements java.io.Serializable {
         
         dvIn.setArchiveNote(getDeaccessionForwardURLFor());
         return dvIn;
+    }
+    
+    public boolean isMapLayerToBeDeletedOnPublish(){
+
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()){
+             if (worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
+                 if (fmd.isRestricted() || fmd.isRestrictedUI()){
+                        return true;
+                 }
+             }
+        }      
+        return false;
     }
 
     private String releaseDataset(boolean minor) {
@@ -1967,7 +2050,27 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
     
-    
+    public String testSelectedFilesForRestrict(){
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        if (selectedFiles.isEmpty()) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");           
+            return "";
+        } else {           
+            boolean validSelection = false;
+            for (FileMetadata fmd : selectedFiles) {
+                if (!fmd.isRestricted() ){
+                    validSelection = true;
+                }
+            }
+            if (!validSelection) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");
+                return "";
+            }                       
+            testSelectedFilesForMapData();
+            requestContext.execute("PF('accessPopup').show()");
+            return "";
+        }        
+    }
     
         
     public String restrictSelectedFiles(boolean restricted){
@@ -3540,7 +3643,7 @@ public class DatasetPage implements java.io.Serializable {
         this.guestbookResponseService = guestbookResponseService;
     }
     
-    
+       
     public WorldMapPermissionHelper getWorldMapPermissionHelper() {
         return worldMapPermissionHelper;
     }

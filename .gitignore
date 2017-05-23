@@ -28,3 +28,6 @@ oauth-credentials.md
 
 /src/main/webapp/oauth2/newAccount.html
 scripts/api/setup-all.sh*
+
+# ctags generated tag file
+tags
