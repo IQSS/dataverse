@@ -263,6 +263,8 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public String init() {
+        //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+
         if (dataverse.getAlias() != null || dataverse.getId() != null || ownerId == null) {// view mode for a dataverse
             if (dataverse.getAlias() != null) {
                 dataverse = dataverseService.findByAlias(dataverse.getAlias());

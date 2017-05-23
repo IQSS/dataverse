@@ -1,12 +1,13 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -19,12 +20,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.NamedStoredProcedureQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
+import javax.persistence.ParameterMode;
+import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -35,6 +40,33 @@ import org.hibernate.validator.constraints.NotBlank;
 @NamedQueries(
         @NamedQuery(name = "Dataset.findByIdentifier",
                 query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier")
+)
+
+/*
+    Below is the stored procedure for getting a numeric value from a database 
+    sequence. Used when the Dataverse is (optionally) configured to use 
+    incremental numeric values for dataset ids, instead of the default 
+    random strings. 
+
+    Unfortunately, there's no standard EJB way of handling sequences. So in the 
+    past we would simply use a NativeQuery to call a proprietary Postgres
+    sequence query. A better way of handling this however is to define any 
+    proprietary SQL functionality outside of the application, in the database, 
+    and call it using the standard JPA @StoredProcedureQuery. 
+
+    The identifier sequence and the stored procedure for accessing it are currently 
+    implemented with PostgresQL "CREATE SEQUENCE ..." and "CREATE FUNCTION ..."; 
+    (we explain how to create these in the installation documentation and supply 
+    a script). If necessary, it can be implemented using other SQL flavors -
+    without having to modify the application code. 
+            -- L.A. 4.6.2
+*/ 
+@NamedStoredProcedureQuery(
+        name = "Dataset.generateIdentifierAsSequentialNumber",
+        procedureName = "generateIdentifierAsSequentialNumber",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Integer.class, name = "identifier")
+        }
 )
 @Entity
 @Table(indexes = {
@@ -72,6 +104,12 @@ public class Dataset extends DvObjectContainer {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "thumbnailfile_id")
     private DataFile thumbnailFile;
+    /**
+     * By default, Dataverse will attempt to show unique thumbnails for datasets
+     * based on images that have been uploaded to them. Setting this to true
+     * will result in a generic dataset thumbnail appearing instead.
+     */
+    private boolean useGenericThumbnail;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
@@ -544,6 +582,14 @@ public class Dataset extends DvObjectContainer {
         this.thumbnailFile = thumbnailFile;
     }
 
+    public boolean isUseGenericThumbnail() {
+        return useGenericThumbnail;
+    }
+
+    public void setUseGenericThumbnail(boolean useGenericThumbnail) {
+        this.useGenericThumbnail = useGenericThumbnail;
+    }
+
     @ManyToOne
     @JoinColumn(name="harvestingClient_id")
     private  HarvestingClient harvestedFrom;
@@ -673,4 +719,9 @@ public class Dataset extends DvObjectContainer {
     public boolean isAncestorOf( DvObject other ) {
         return equals(other) || equals(other.getOwner());
     }
+
+    public DatasetThumbnail getDatasetThumbnail() {
+        return DatasetUtil.getThumbnail(this);
+    }
+
 }

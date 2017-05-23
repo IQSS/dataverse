@@ -101,7 +101,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     dataset.setProtocol(protocol);
                     dataset.setAuthority(authority);
                     dataset.setDoiSeparator(separator);
-                    dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority, separator));
+                    dataset.setIdentifier(datasetService.generateDatasetIdentifier(protocol, authority, separator));
                     logger.log(Level.FINE, "DS Deposit identifier: {0}", dataset.getIdentifier());
 
                     CreateDatasetCommand createDatasetCommand = new CreateDatasetCommand(dataset, dvReq, false);

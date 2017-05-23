@@ -18,10 +18,17 @@ import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
 import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.path.xml.XmlPath.from;
 import com.jayway.restassured.specification.RequestSpecification;
 import java.util.List;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
+import java.io.InputStream;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import java.util.Base64;
+import org.apache.commons.io.IOUtils;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.xml.XmlPath.from;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -135,6 +142,13 @@ public class UtilIT {
         return alias;
     }
 
+    static Integer getDataverseIdFromResponse(Response createDataverseResponse) {
+        JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
+        int dataverseId = createdDataverse.getInt("data.id");
+        logger.info("Id found in create dataverse response: " + createdDataverse);
+        return dataverseId;
+    }
+
     static Integer getDatasetIdFromResponse(Response createDatasetResponse) {
         JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
         int datasetId = createdDataset.getInt("data.id");
@@ -209,6 +223,27 @@ public class UtilIT {
 
     private static String getDatasetJson() {
         File datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1.json");
+        try {
+            String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+            return datasetVersionAsJson;
+        } catch (IOException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    static Response createDatasetViaNativeApi(String dataverseAlias, String pathToJsonFile, String apiToken) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+        Response createDatasetResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType("application/json")
+                .post("/api/dataverses/" + dataverseAlias + "/datasets");
+        return createDatasetResponse;
+    }
+
+    private static String getDatasetJson(String pathToJsonFile) {
+        File datasetVersionJson = new File(pathToJsonFile);
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
             return datasetVersionAsJson;
@@ -297,11 +332,11 @@ public class UtilIT {
 
     /**
      * For test purposes, datasetId can be non-numeric
-     * 
+     *
      * @param datasetId
      * @param pathToFile
      * @param apiToken
-     * @return 
+     * @return
      */
     static Response uploadFileViaNative(String datasetId, String pathToFile, String apiToken) {
         String jsonAsString = null;
@@ -541,6 +576,12 @@ public class UtilIT {
         return response;
     }
 
+    static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/:latest-published/metadata/citation?persistentId=" + persistentId);
+    }
+
     static Response makeSuperUser(String username) {
         Response response = given().post("/api/admin/superuser/" + username);
         return response;
@@ -633,6 +674,51 @@ public class UtilIT {
         return response;
     }
 
+    static Response showDatasetThumbnailCandidates(String datasetPersistentId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/thumbnail/candidates" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response getDatasetThumbnail(String datasetPersistentId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response getDatasetThumbnailMetadata(Integer datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/datasets/thumbnailMetadata/" + datasetId);
+    }
+
+    static Response useThumbnailFromDataFile(String datasetPersistentId, long dataFileId1, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/datasets/:persistentId/thumbnail/" + dataFileId1 + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response uploadDatasetLogo(String datasetPersistentId, String pathToImageFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToImageFile))
+                .post("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response removeDatasetThumbnail(String datasetPersistentId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
+    }
+
+    static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
+//        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+                .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+    }
+
     static Response search(String query, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -708,6 +794,125 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("api/admin/assignee/" + roleAssignee);
+    }
+
+    /**
+     * Used to test Dataverse page query parameters
+     *
+     * @param alias
+     * @param queryParamString - do not include the "?"
+     * @return
+     */
+    static Response testDataverseQueryParamWithAlias(String alias, String queryParamString) {
+
+        System.out.println("testDataverseQueryParamWithAlias");
+        String testUrl;
+        if (alias.isEmpty()) {
+            testUrl = " ?" + queryParamString;
+        } else {
+            testUrl = "/dataverse/" + alias + "?" + queryParamString;
+        }
+        System.out.println("testUrl: " + testUrl);
+
+        return given()
+                .urlEncodingEnabled(false)
+                .get(testUrl);
+    }
+
+    /**
+     * Used to test Dataverse page query parameters
+     *
+     * The parameters may include "id={dataverse id}
+     *
+     * @param queryParamString
+     * @return
+     */
+    static Response testDataverseXhtmlQueryParam(String queryParamString) {
+
+        return given()
+                //.urlEncodingEnabled(false)
+                .get("dataverse.xhtml?" + queryParamString);
+    }
+
+    static Response setDataverseLogo(String dataverseAlias, String pathToImageFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToImageFile))
+                .put("/api/dataverses/" + dataverseAlias + "/logo");
+    }
+
+    /**
+     * @todo figure out how to get an InputStream from REST Assured instead.
+     */
+    static InputStream getInputStreamFromUnirest(String url, String apiToken) {
+        GetRequest unirestOut = Unirest.get(url);
+        try {
+            InputStream unirestInputStream = unirestOut.asBinary().getBody();
+            return unirestInputStream;
+        } catch (UnirestException ex) {
+            return null;
+        }
+    }
+
+    public static String inputStreamToDataUrlSchemeBase64Png(InputStream inputStream) {
+        if (inputStream == null) {
+            logger.fine("In inputStreamToDataUrlSchemeBase64Png but InputStream was null. Returning null.");
+            return null;
+        }
+        byte[] bytes = inputStreamToBytes(inputStream);
+        if (bytes == null) {
+            logger.fine("In inputStreamToDataUrlSchemeBase64Png but bytes was null. Returning null.");
+            return null;
+        }
+        String base64image = Base64.getEncoder().encodeToString(bytes);
+        return FileUtil.DATA_URI_SCHEME + base64image;
+    }
+
+    /**
+     * @todo When Java 9 comes out, switch to
+     * http://download.java.net/java/jdk9/docs/api/java/io/InputStream.html#readAllBytes--
+     */
+    private static byte[] inputStreamToBytes(InputStream inputStream) {
+        try {
+            return IOUtils.toByteArray(inputStream);
+        } catch (IOException ex) {
+            logger.fine("In inputStreamToBytes but caught an IOUtils.toByteArray Returning null.");
+            return null;
+        }
+    }
+
+    static Response listMapLayerMetadatas() {
+        return given().get("/api/admin/geoconnect/mapLayerMetadatas");
+    }
+
+    static Response checkMapLayerMetadatas(String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/admin/geoconnect/mapLayerMetadatas/check");
+    }
+
+    static Response checkMapLayerMetadatas(Long mapLayerMetadataId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/admin/geoconnect/mapLayerMetadatas/check/" + mapLayerMetadataId);
+    }
+
+    static Response getMapFromFile(long fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId + "/map");
+    }
+
+    static Response checkMapFromFile(long fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId + "/map/check");
+    }
+
+    static Response deleteMapFromFile(long fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/files/" + fileId + "/map?key=" + apiToken);
     }
 
     @Test

@@ -405,13 +405,15 @@ public class SystemConfig {
         return defaultMultipleUploadFilesLimit; 
     }
     
-    
+    public long getUploadLogoSizeLimit(){
+        return 500000;
+    }
 
     // TODO: (?)
     // create sensible defaults for these things? -- 4.2.2
     public long getThumbnailSizeLimitImage() {
         long limit = getThumbnailSizeLimit("Image");
-        return limit == 0 ? 5000000 : limit;
+        return limit == 0 ? 500000 : limit;
     } 
     
     public long getThumbnailSizeLimitPDF() {
@@ -421,11 +423,12 @@ public class SystemConfig {
     
     public long getThumbnailSizeLimit(String type) {
         String option = null; 
+        
+        //get options via jvm options
+        
         if ("Image".equals(type)) {
-            option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
             option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
         } else if ("PDF".equals(type)) {
-            option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitPDF);
             option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
         }
         Long limit = null; 
@@ -476,11 +479,6 @@ public class SystemConfig {
         String saneDefaultForPrivacyPolicyUrl = null;
         String appPrivacyPolicyUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationPrivacyPolicyUrl, saneDefaultForPrivacyPolicyUrl);
         return appPrivacyPolicyUrl;
-    }
-
-    public boolean isDdiExportEnabled() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.DdiExportEnabled, safeDefaultIfKeyNotFound);
     }
 
     public boolean myDataDoesNotUsePermissionDocs() {

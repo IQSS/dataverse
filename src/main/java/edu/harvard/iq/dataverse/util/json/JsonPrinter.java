@@ -33,11 +33,10 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Set;
 import javax.json.Json;
@@ -53,11 +52,11 @@ import java.util.Deque;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
@@ -70,6 +69,18 @@ import javax.json.JsonObject;
  * @author michael
  */
 public class JsonPrinter {
+
+    private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
+
+    static SettingsServiceBean settingsService;
+
+    public JsonPrinter(SettingsServiceBean settingsService) {
+        this.settingsService = settingsService;
+    }
+
+    public JsonPrinter() {
+        this(null);
+    }
 
     public static final BriefJsonPrinter brief = new BriefJsonPrinter();
 
@@ -428,7 +439,7 @@ public class JsonPrinter {
         blockBld.add("displayName", block.getDisplayName());
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
-        DatasetFieldWalker.walk(fields, new DatasetFieldsToJson(fieldsArray));
+        DatasetFieldWalker.walk(fields, settingsService, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
         return blockBld;

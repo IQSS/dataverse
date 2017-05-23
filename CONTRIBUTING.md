@@ -1,82 +1,62 @@
 # Contributing to Dataverse
 
-Thank you for your interest in contributing to Dataverse! We welcome contributions of ideas, bug reports, documentation, code, and more!
+Thank you for your interest in contributing to Dataverse! We welcome contributions of ideas, bug reports, usability testing, documentation, code, and more!
 
 ## Ideas/Feature Requests
 
-Your idea or feature request might already be captured in the collection of [Dataverse issues] but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] or cram your idea into 140 characters and mention [@dataverseorg][] on Twitter.
+Your idea or feature request might already be captured in the Dataverse [issue tracker] on GitHub but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] (which is [logged][]) or cram your idea into 140 characters and mention [@dataverseorg][] on Twitter. To discuss your idea privately, please email it to support@dataverse.org
 
-Once an idea/feature request has been received by the Dataverse Development Team the process outlined in the image below happens.
+There's a chance your idea is already on our roadmap, which is available at http://dataverse.org/goals-roadmap-and-releases
 
-![feature request process](doc/sphinx-guides/source/img/feature-request-process.png)
-
-A [Functional Requirements Document (FRD for short)] [] is where we outline the use cases, requirements, user interface workflows, and any questions we have before development of a feature begins. All FRDs are publicly available through a link that is added to the github issue for the idea/feature request. Once an FRD has been completed and reviewed, low fidelity mockups are created using [Balsamiq] [] so we know what the user interface and user experience will be once the feature is developed. The mockups are also publicly available through a link added to the github issue for the idea/feature request. Please feel free to comment on any FRDs and mockups!  
-
-To review FRDs for Dataverse, you can access them in this [Functional Requirements Document folder on Google Drive].
-
-See also our [Community and Support][] page.
-
-[#dataverse IRC channel]: http://webchat.freenode.net/?channels=dataverse
-[Dataverse issues]: https://github.com/IQSS/dataverse/issues
+[#dataverse IRC channel]: http://chat.dataverse.org
+[logged]: http://irclog.iq.harvard.edu/dataverse/today
+[issue tracker]: https://github.com/IQSS/dataverse/issues
 [@dataverseorg]: http://twitter.com/dataverseorg
-[Community and Support]: http://datascience.iq.harvard.edu/dataverse/support
 [Functional Requirements Document (FRD for short)]: https://docs.google.com/document/d/1PRyAlP6zlUlUuHfgyUezzuaVQ4JnapvgtGWo0o7tLEs/edit?usp=sharing
 [Balsamiq]: https://iqssharvard.mybalsamiq.com/projects
 [Functional Requirements Document folder on Google Drive]: https://drive.google.com/folderview?id=0B3_V6vFxEcx-fl92ek92OG1nTmhQenBRX1Z4OVJBLXpURmh2d2RyX1NZRUp6YktaYUU5YTA&usp=sharing
+
+## Usability testing
+
+Please email us at support@dataverse.org if you are interested in participating in usability testing.
 
 ## Bug Reports/Issues
 
 An issue is a bug (a feature is no longer behaving the way it should) or a feature (something new to Dataverse that helps users complete tasks). You can browse the Dataverse [issue tracker] on GitHub by open or closed issues or by milestones.
 
-[issue tracker]: https://github.com/IQSS/dataverse/issues
-
 Before submitting an issue, please search the existing issues by using the search bar at the top of the page. If there is an existing issue that matches the issue you want to report, please add a comment to it.
 
 If there is no pre-existing issue, please click on the "New Issue" button, log in, and write in what the issue is (unless it is a security issue which should be reported privately to security@dataverse.org). Someone on the Dataverse development team will appropriately tag and assign it to a member of the Dataverse development team.
 
-## Writing an Issue
+If you do not receive a reply to your new issue or comment in a timely manner, please email support@dataverse.org with a link to the issue.
 
-For the subject of an issue, please start it by writing the feature or functionality it relates to, i.e.-Create Account: or Dataset Page:. In the body of the issue, please outline the issue you are reporting with as much detail as possible. In order for the Dataverse development team to best respond to the issue, we need as much information about the issue as you can provide.
+### Writing an Issue
 
-### Issue Labels
-
-- **Component**: specifies the part of Dataverse the issue relates to
-- **Priority**:
-  - **Critical**: needs to be fixed right away, prevents a user from completing a task
-  - **High**: it’s a priority to be completed for the assigned milestone
-  - **Medium**: planned for that milestone, but if needed, it can be re-considered
-- **Status**:
-  - **In Dev**: being developed
-  - **In QA**: testing to make sure it is behaving as wanted
-- **Type**:
-  - **Bug**
-  - **Feature**
-  - **Suggestion**
+For the subject of an issue, please start it by writing the feature or functionality it relates to, i.e. "Create Account:..." or "Dataset Page:...". In the body of the issue, please outline the issue you are reporting with as much detail as possible. In order for the Dataverse development team to best respond to the issue, we need as much information about the issue as you can provide. Include steps to reproduce bugs. Indicate which version you're using. We love screenshots!
 
 ### Issue Attachments
 
-You can attach an image or screenshot by dragging and dropping, selecting them, or pasting from the clipboard. This file must be a [supported image format] such as PNG, GIF or JPG; otherwise you will have to include a URL that points to the file in question.
+You can attach certain files (images, screenshots, logs, etc.) by dragging and dropping, selecting them, or pasting from the clipboard. Files must be one of GitHub's [supported attachment formats] such as png, gif, jpg, txt, pdf, zip, etc. (Pro tip: A file ending in .log can be renamed to .txt so you can upload it.) If there's no easy way to attach your file, please include a URL that points to the file in question.
 
-[supported image format]: https://help.github.com/articles/issue-attachments
-
-## Milestones
-  - **In Review**: milestone for issues that are being reviewed for future releases
-  - **In Design**: milestone for issues that are being designed (FRDs, mockups, technical specifications, etc happen during this milestone). This is a way to see what we are working on for future releases
-  - **Candidate** candidate for [version] means that it is only under consideration. A developer works on issues that have been tagged with a particular milestone before dipping into the corresponding "candidate for" milestone. Usually are "nice to have" features or bug fixes for a release if there is time left after the primary work is done.
+[supported attachment formats]: https://help.github.com/articles/file-attachments-on-issues-and-pull-requests/
 
 ## Documentation
 
-The source for the documentation at http://guides.dataverse.org is in the GitHub repo under the "[doc][]" folder. If you find a typo or inaccuracy or something to clarify, please send us a pull request!
+The source for the documentation at http://guides.dataverse.org is in the GitHub repo under the "[doc][]" folder. If you find a typo or inaccuracy or something to clarify, please send us a pull request! For more on the tools used to write docs, please see the [documentation][] section of the Developer Guide.
+
+[doc]: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source
+[documentation]: http://guides.dataverse.org/en/latest/developers/documentation.html
 
 ## Code/Pull Requests
 
-To get started developing code for Dataverse, please read our Developer Guide at http://guides.dataverse.org/en/latest/developers
+Before you start coding, please reach out to us either on the [dataverse-community Google Group][], the [dataverse-dev Google Group][], [IRC][] (#dataverse on freenode), or via support@dataverse.org to make sure the effort is well coordinated and we avoid merge conflicts.
 
-[doc]: https://github.com/IQSS/dataverse/tree/master/doc/sphinx-guides/source
+We will encourage you to create a GitHub issue (if it doesn't exist already) to associate with your pull request.
 
-Before you start coding, please reach out to us either on our [dataverse-community Google Group][], [IRC][], or via support@dataverse.org to make sure the effort is well coordinated and we avoid merge conflicts.
+We hope you find the Developer Guide at http://guides.dataverse.org/en/latest/developers helpful.
+
+After making your pull request, your goal should be to help it advance through our kanban board at https://waffle.io/IQSS/dataverse . If no one has moved your pull request to the code review column in a timely manner, please reach out. Thanks!
 
 [dataverse-community Google Group]: https://groups.google.com/group/dataverse-community
-[IRC]: http://irclog.iq.harvard.edu/dataverse/today
-
-If your pull request is not assigned to anyone in a timely manner, please reach out. The assignee is responsible for evaluating the pull request and deciding whether or not to merge it in. Please try to make it easy to merge in pull requests. Tests are great. :)
+[dataverse-dev Google Group]: https://groups.google.com/group/dataverse-dev
+[IRC]: http://chat.dataverse.org

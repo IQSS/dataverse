@@ -65,7 +65,7 @@ There are a number of optional components you may choose to install or configure
 - Apache: a web server that can "reverse proxy" Glassfish applications and rewrite HTTP traffic.
 - Shibboleth: an authentication system described in :doc:`shibboleth`. Its use with Dataverse requires Apache.
 - OAuth2: an authentication system described in :doc:`oauth2`.
-- Geoconnect: :doc:`/user/data-exploration/worldmap` describes the feature and the code can be downloaded from https://github.com/IQSS/geoconnect
+- Geoconnect: a system that allows users to create maps from geospatial files, described in :doc:`geoconnect`.
 
 System Requirements
 -------------------
@@ -96,7 +96,7 @@ Here are some questions to keep in the back of your mind as you test and move in
 - How much storage do I need?
 - Which features do I want based on :ref:`architecture`?
 - How do I want my users to log in to Dataverse? With local accounts? With Shibboleth/SAML? With OAuth providers such as ORCID, GitHub, or Google?
-- Do I want to to run Glassfish on the standard web ports (80 and 443) or do I prefer to have a proxy such as Apache in front?
+- Do I want to to run Glassfish on the standard web ports (80 and 443) or do I want to "front" Glassfish with a proxy such as Apache or nginx? See "Network Ports" in the :doc:`config` section.
 - How many points of failure am I willing to tolerate? How much complexity do I want?
 - How much does it cost to subscribe to a service to create persistent identifiers such as DOIs?
 

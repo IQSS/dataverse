@@ -17,6 +17,11 @@ Maven
 
 With Maven installed you can run `mvn package` and `mvn test` from the command line. It can be downloaded from https://maven.apache.org
 
+PlantUML
+++++++++
+
+PlantUML is used to create diagrams in the guides and other places. Download it from http://plantuml.com and check out an example script at https://github.com/IQSS/dataverse/blob/v4.6.1/doc/Architecture/components.sh . Note that for this script to work, you'll need the ``dot`` program, which can be installed on Mac with ``brew install graphviz``.
+
 Eclipse Memory Analyzer Tool (MAT)
 ++++++++++++++++++++++++++++++++++
 
