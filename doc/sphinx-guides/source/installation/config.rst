@@ -445,7 +445,7 @@ As of this writing "doi" and "hdl" are the only valid option for the protocol fo
 :Authority
 ++++++++++
 
-Use the DOI authority assigned to you by your DoiProvider or HandleProvider, note to provide the handle authority without its "20." prefix.
+Use the DOI authority assigned to you by your DoiProvider or HandleProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
