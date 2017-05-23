@@ -87,9 +87,8 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
     
     protected String generateYear (Dataset datasetIn){
         if (datasetIn.isReleased()) {
-            return datasetIn.getPublicationDateFormattedYYYYMMDD().substring(0, 3);
+            return datasetIn.getPublicationDateFormattedYYYYMMDD().substring(0, 4);
         }
-
         return new SimpleDateFormat("yyyy").format(datasetIn.getCreateDate()); 
     }
 

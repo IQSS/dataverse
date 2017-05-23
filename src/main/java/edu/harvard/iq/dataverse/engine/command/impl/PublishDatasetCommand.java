@@ -266,7 +266,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             ctxt.em().merge(datasetDataverseUser);
         }
 
-        if (idServiceBean!= null && !idServiceBean.registerWhenPublished())
+        if (idServiceBean!= null )
             try{
                 idServiceBean.publicizeIdentifier(savedDataset);
             }catch (Throwable e) {
