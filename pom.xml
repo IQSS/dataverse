@@ -451,9 +451,13 @@
             <groupId>com.github.jknack</groupId>
             <artifactId>handlebars</artifactId>
             <version>4.0.5</version>
-        </dependency>        
+        </dependency>    
+         <dependency>
+            <groupId>com.github.jknack</groupId>
+            <artifactId>handlebars-humanize</artifactId>
+            <version>4.0.5</version>
+          </dependency>    
     </dependencies>
-
     <build>
         <resources>
             <resource>
