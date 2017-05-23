@@ -153,8 +153,6 @@ public class SettingsServiceBean {
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
-        // Option to override the navbar url underlying the "About" link
-        NavbarAboutUrl,
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
@@ -246,7 +244,14 @@ public class SettingsServiceBean {
         /**
          * Whether Export should exclude FieldType.EMAIL
          */
-        ExcludeEmailFromExport;
+        ExcludeEmailFromExport,
+        
+        // Option to override the navbar url underlying the "About" link
+        NavbarAboutUrl,
+        
+        // Option to override multiple guides with a single url
+        NavbarGuidesUrl; 
+
         
         @Override
         public String toString() {

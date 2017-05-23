@@ -52,14 +52,24 @@
                                 #{bundle['header.about']}
                             </h:outputLink>                         
                         </li>
+
+                        <ui:fragment rendered="#{!empty settingsWrapper.navbarGuidesUrl}">
+                        <li>
+                             <h:outputLink value="#{settingsWrapper.navbarGuidesUrl}" target="_blank">
+                                #{bundle['header.guides']}
+                            </h:outputLink>   
+                        </li>
+                        </ui:fragment>
+
+                        <ui:fragment rendered="#{empty settingsWrapper.navbarGuidesUrl}">
                         <li class="dropdown">
                             <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
-                                #{bundle['header.guides']} <b class="caret"></b>
+                                #{bundle['header.guides']} <b class="caret"></b> #{settingsWrapper.getNavbarGuidesUrl()}
                             </span>
                             <ul class="dropdown-menu">
                                 <li>
                                     <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/user" target="_blank">
-                                        #{bundle['header.guides.user']}
+                                        #{bundle['header.guides.user']} 
                                     </h:outputLink>
                                 </li>
                                 <li>
@@ -84,6 +94,7 @@
                                 </li>
                             </ul>
                         </li>
+                       </ui:fragment>
                         <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
                             <p:commandLink value="#{bundle['header.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>

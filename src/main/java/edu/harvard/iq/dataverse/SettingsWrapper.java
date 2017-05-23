@@ -33,9 +33,12 @@ public class SettingsWrapper implements java.io.Serializable {
     // Related to a specific setting for guide urls
     private String guidesBaseUrl = null; 
 
-    //Fully qualified url used as link for the navbar about section
+    // Fully qualified url used as link for the navbar about section
     private String navbarAboutUrl = null; 
-    
+
+    // Fully qualified url as a single guides link to replace the dropdown
+    private String navbarGuidesUrl = null; 
+
     /**
      * Values that are considered as "true".
      * @see #isTrue(java.lang.String, boolean) 
@@ -98,5 +101,20 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return navbarAboutUrl;
     } // end getNavbarAboutUrl
+
+    /**
+     * Inefficient - will usually return null if wrapper is not SessionScoped
+     * @return 
+     */
+    public String getNavbarGuidesUrl(){
+        if (navbarGuidesUrl != null){
+            return navbarGuidesUrl;
+        }
+        navbarGuidesUrl = settingService.getValueForKey(SettingsServiceBean.Key.NavbarGuidesUrl);
+
+        System.out.println("---- navbarguidesUrl: " + navbarGuidesUrl);
+        return navbarGuidesUrl;
+    } // end getNavbarAboutUrl
+
 }
 
