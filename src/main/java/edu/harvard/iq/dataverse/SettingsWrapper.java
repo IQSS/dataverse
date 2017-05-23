@@ -30,6 +30,12 @@ public class SettingsWrapper implements java.io.Serializable {
 
     private Map<String, String> settingsMap;
     
+    // Related to a specific setting for guide urls
+    private String guidesBaseUrl = null; 
+
+    //Fully qualified url used as link for the navbar about section
+    private String navbarAboutUrl = null; 
+    
     /**
      * Values that are considered as "true".
      * @see #isTrue(java.lang.String, boolean) 
@@ -62,13 +68,12 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
 
-    private String guidesBaseUrl = null; 
     
     public String getGuidesBaseUrl() {
         if (guidesBaseUrl == null) {
             String saneDefault = "http://guides.dataverse.org";
         
-            guidesBaseUrl = get(":GuidesBaseUrl");
+            guidesBaseUrl = settingService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
             if (guidesBaseUrl == null) {
                 guidesBaseUrl = saneDefault + "/en"; 
             } else {
@@ -83,5 +88,15 @@ public class SettingsWrapper implements java.io.Serializable {
         return guidesBaseUrl;
     }
 
+    public String getNavbarAboutUrl(){
+        if (navbarAboutUrl != null){
+            return navbarAboutUrl;
+        }
+        navbarAboutUrl = settingService.getValueForKey(SettingsServiceBean.Key.NavbarAboutUrl);
+        if (navbarAboutUrl == null){
+            navbarAboutUrl = "http://dataverse.org";
+        }
+        return navbarAboutUrl;
+    } // end getNavbarAboutUrl
 }
 
