@@ -13,7 +13,6 @@ import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import javax.json.JsonObject;
 
 /**
  * This class contains all the methods that have external runtime dependencies
@@ -24,32 +23,42 @@ import javax.json.JsonObject;
 public class DataCaptureModuleServiceBean implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DataCaptureModuleServiceBean.class.getCanonicalName());
+    /**
+     * You've got to give the DCM time to cook up an rsync script after making
+     * an upload request. In dev, 400 milliseconds has been enough. Consider
+     * making this configurable.
+     */
+    public static long millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls = 500;
 
     @EJB
     SettingsServiceBean settingsService;
 
-    /**
-     * @param user AuthenticatedUser
-     * @return Unirest response as JSON or null.
-     * @throws Exception if Data Capture Module URL hasn't been configured or if
-     * the POST failed for any reason.
-     */
     // TODO: Do we care about authenticating to the DCM? If not, no need for AuthenticatedUser here.
-    public HttpResponse<String> requestRsyncScriptCreation(AuthenticatedUser user, Dataset dataset, JsonObject jab) throws Exception {
+    public UploadRequestResponse requestRsyncScriptCreation(AuthenticatedUser user, Dataset dataset) {
         String dcmBaseUrl = settingsService.getValueForKey(DataCaptureModuleUrl);
         if (dcmBaseUrl == null) {
-            throw new Exception("Problem POSTing JSON to Data Capture Module. The '" + DataCaptureModuleUrl + "' setting has not been configured.");
+            throw new RuntimeException("Problem POSTing JSON to Data Capture Module. The '" + DataCaptureModuleUrl + "' setting has not been configured.");
         }
-        String jsonString = jab.toString();
-        // curl -H 'Content-Type: application/json' -X POST -d '{"datasetId":"42", "userId":"1642","datasetIdentifier":"42"}' http://localhost/ur.py
-        logger.info("JSON to send to Data Capture Module: " + jsonString);
-        HttpResponse<String> uploadRequest = Unirest.post(dcmBaseUrl + "/ur.py")
-                .body(jsonString)
-                .asString();
-        return uploadRequest;
+        return makeUploadRequest(dcmBaseUrl, user, dataset);
     }
 
-    // TODO: Do we care about authenticating to the DCM?
+    public static UploadRequestResponse makeUploadRequest(String dcmBaseUrl, AuthenticatedUser user, Dataset dataset) {
+        String uploadRequestUrl = dcmBaseUrl + "/ur.py";
+        String jsonString = DataCaptureModuleUtil.generateJsonForUploadRequest(user, dataset).toString();
+        // curl -H 'Content-Type: application/json' -X POST -d '{"datasetId":"42", "userId":"1642","datasetIdentifier":"42"}' http://localhost/ur.py
+        logger.info("JSON to send to Data Capture Module: " + jsonString);
+        try {
+            HttpResponse<String> uploadRequest = Unirest.post(uploadRequestUrl)
+                    .body(jsonString)
+                    .asString();
+            UploadRequestResponse uploadRequestResponse = DataCaptureModuleUtil.makeUploadRequest(uploadRequest);
+            return uploadRequestResponse;
+        } catch (UnirestException ex) {
+            logger.info("Error calling " + uploadRequestUrl + ": " + ex);
+            return null;
+        }
+    }
+
     public ScriptRequestResponse retreiveRequestedRsyncScript(Dataset dataset) {
         String dcmBaseUrl = settingsService.getValueForKey(DataCaptureModuleUrl);
         if (dcmBaseUrl == null) {

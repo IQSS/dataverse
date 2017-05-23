@@ -1,17 +1,17 @@
 package edu.harvard.iq.dataverse.datacapturemodule;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
+import static java.lang.Thread.sleep;
 import java.util.Calendar;
 import java.util.TimeZone;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import junit.framework.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class DataCaptureModuleServiceBeanIT {
@@ -19,50 +19,16 @@ public class DataCaptureModuleServiceBeanIT {
     private static final Logger logger = Logger.getLogger(DataCaptureModuleServiceBeanIT.class.getCanonicalName());
 
     @Test
-    public void testUrDotPy() {
-
-        JsonObjectBuilder jab = Json.createObjectBuilder();
-        // The general rule should be to always pass the user id and dataset id to the DCM.
-        jab.add("userId", 42);
+    public void testUploadRequestWorking() {
+        AuthenticatedUser user = makeAuthenticatedUser("Lauren", "Ipsum");
+        Dataset dataset = new Dataset();
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         long timeInMillis = calendar.getTimeInMillis();
-        jab.add("datasetId", timeInMillis);
-        jab.add("datasetIdentifier", timeInMillis);
-        JsonObject jsonObject = jab.build();
-        String jsonString = jsonObject.toString();
-        JsonNode jsonNode = new JsonNode(jsonString);
-        try {
-            // curl -H 'Content-Type: application/json' -X POST -d '{"datasetId":"42", "userId":"1642","datasetIdentifier":"42"}' http://localhost/ur.py
-            HttpResponse<String> uploadRequest = Unirest.post("http://localhost:8888" + "/ur.py")
-                    //                    .body(jsonString)
-                    .body(jsonNode)
-                    //                    .asJson();
-                    .asString();
-            System.out.println("out: " + uploadRequest.getBody());
-        } catch (UnirestException ex) {
-            Logger.getLogger(DataCaptureModuleServiceBeanIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    @Test
-    public void testSrDotPy() {
-        String datasetId = "3813";
-        String bodyString = "datasetIdentifier=" + datasetId;
-//        JsonNode jsonNode = new JsonNode(jsonString);
-        try {
-            HttpResponse<String> uploadRequest = Unirest.post("http://localhost:8888" + "/sr.py")
-                    //                    .body(jsonString)
-                    //                    .body(bodyString)
-                    .field("datasetIdentifier", datasetId)
-                    //                    .asJson();
-                    .asString();
-            System.out.println("status: " + uploadRequest.getStatus());
-            System.out.println("out:\n" + uploadRequest.getBody());
-        } catch (UnirestException ex) {
-            Logger.getLogger(DataCaptureModuleServiceBeanIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+        dataset.setId(timeInMillis);
+        UploadRequestResponse uploadRequestResponse = DataCaptureModuleServiceBean.makeUploadRequest("http://localhost:8888", user, dataset);
+        assertEquals(200, uploadRequestResponse.getHttpStatusCode());
+        assertTrue(uploadRequestResponse.getResponse().contains("recieved"));
+        assertEquals("\nrecieved\n", uploadRequestResponse.getResponse());
     }
 
     @Test
@@ -77,7 +43,30 @@ public class DataCaptureModuleServiceBeanIT {
     public void testScriptRequestNotWorking() {
         long notExpectedToWork = Long.MAX_VALUE;
         ScriptRequestResponse scriptRequestResponseBad = DataCaptureModuleServiceBean.getRsyncScriptForDataset("http://localhost:8888", notExpectedToWork);
-        Assert.assertNull(scriptRequestResponseBad.getScript());
+        assertNull(scriptRequestResponseBad.getScript());
+    }
+
+    @Test
+    public void testBothSteps() throws InterruptedException {
+        // Step 1: Upload request
+        AuthenticatedUser user = makeAuthenticatedUser("Lauren", "Ipsum");
+        Dataset dataset = new Dataset();
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        long timeInMillis = calendar.getTimeInMillis();
+        dataset.setId(timeInMillis);
+        UploadRequestResponse uploadRequestResponse = DataCaptureModuleServiceBean.makeUploadRequest("http://localhost:8888", user, dataset);
+        assertEquals(200, uploadRequestResponse.getHttpStatusCode());
+        assertTrue(uploadRequestResponse.getResponse().contains("recieved"));
+        assertEquals("\nrecieved\n", uploadRequestResponse.getResponse());
+
+        sleep(DataCaptureModuleServiceBean.millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls);
+
+        // Step 2: Script request.
+        ScriptRequestResponse scriptRequestResponseGood = DataCaptureModuleServiceBean.getRsyncScriptForDataset("http://localhost:8888", dataset.getId());
+        System.out.println("script: " + scriptRequestResponseGood.getScript());
+        assertNotNull(scriptRequestResponseGood.getScript());
+        assertTrue(scriptRequestResponseGood.getScript().startsWith("#!"));
+
     }
 
 }
