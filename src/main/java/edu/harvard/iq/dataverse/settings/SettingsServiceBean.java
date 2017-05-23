@@ -35,6 +35,13 @@ public class SettingsServiceBean {
     public enum Key {
         CloudEnvironmentName,
         ComputeBaseUrl,
+        /**
+         * For example, https://datacapture.example.org
+         */
+        DataCaptureModuleUrl,
+        RepositoryStorageAbstractionLayerUrl,
+        UploadMethods,
+        DownloadMethods,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
