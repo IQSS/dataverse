@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.datacapturemodule;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.logging.Logger;
 import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.harvard.iq.dataverse.Dataset;
@@ -61,9 +62,9 @@ public class DataCaptureModuleServiceBean implements Serializable {
     public static ScriptRequestResponse getRsyncScriptForDataset(String dcmBaseUrl, long datasetId) {
         String scriptRequestUrl = dcmBaseUrl + "/sr.py";
         try {
-            HttpResponse<String> scriptRequest = Unirest.post(scriptRequestUrl)
+            HttpResponse<JsonNode> scriptRequest = Unirest.post(scriptRequestUrl)
                     .field("datasetIdentifier", datasetId)
-                    .asString();
+                    .asJson();
             return DataCaptureModuleUtil.getScriptFromRequest(scriptRequest);
         } catch (UnirestException ex) {
             logger.info("Error calling " + scriptRequestUrl + ": " + ex);

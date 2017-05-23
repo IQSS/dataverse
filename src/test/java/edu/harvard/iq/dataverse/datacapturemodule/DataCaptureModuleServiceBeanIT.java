@@ -68,7 +68,6 @@ public class DataCaptureModuleServiceBeanIT {
     @Test
     public void testScriptRequestWorking() {
         long expectedToWork = 3813;
-        // FIXME Why does this expect strings but DatasetsIt expects numbers?
         ScriptRequestResponse scriptRequestResponseGood = DataCaptureModuleServiceBean.getRsyncScriptForDataset("http://localhost:8888", expectedToWork);
         System.out.println("script: " + scriptRequestResponseGood.getScript());
         Assert.assertTrue(scriptRequestResponseGood.getScript().startsWith("#!"));

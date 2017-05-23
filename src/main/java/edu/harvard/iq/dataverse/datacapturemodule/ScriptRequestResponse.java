@@ -7,6 +7,13 @@ public class ScriptRequestResponse {
     private final long userId;
     private final String script;
 
+    public ScriptRequestResponse(int httpStatusCode) {
+        this.httpStatusCode = httpStatusCode;
+        this.datasetId = -1;
+        this.userId = -1;
+        this.script = null;
+    }
+
     public ScriptRequestResponse(int httpStatusCode, long datasetId, long userId, String script) {
         this.httpStatusCode = httpStatusCode;
         this.datasetId = datasetId;
