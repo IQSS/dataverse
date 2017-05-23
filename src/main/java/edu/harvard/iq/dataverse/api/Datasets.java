@@ -593,7 +593,7 @@ public class Datasets extends AbstractApiBean {
     public Response getRsync(@PathParam("identifier") String id) {
         String uploadMethodsSettings = settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods);
         if (uploadMethodsSettings == null) {
-            return error(Response.Status.BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " is null.");
+            return error(Response.Status.BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " is null. This installation of Dataverse is not configured for rsync.");
         }
         if (!uploadMethodsSettings.contains(SystemConfig.FileUploadMethods.RSYNC.toString())) {
             return error(Response.Status.BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC);

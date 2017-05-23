@@ -957,42 +957,35 @@ public class DatasetsIT {
         getRsyncScript.then().assertThat()
                 .contentType(ContentType.TEXT)
                 .statusCode(200);
-//                .body("data.datasetId", equalTo(datasetId))
-        //                .body("data.userId", equalTo(userId)) // Expected "1732L", actual "1732". Annoying.
-//                .body("data.script", startsWith("#!"));
         String rsyncScript = getRsyncScript.body().asString();
         System.out.println("script:\n" + rsyncScript);
         assertTrue(rsyncScript.startsWith("#!"));
         assertTrue(rsyncScript.contains(datasetId.toString()));
 
+        Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
+        removeUploadMethods.then().assertThat()
+                .statusCode(200);
+
         Response createUser2 = UtilIT.createRandomUser();
-//        createUser.prettyPrint();
-        String username2 = UtilIT.getUsernameFromResponse(createUser);
-        // FIXME: consider changing this to apiToken2
-        String apiToken1 = UtilIT.getApiTokenFromResponse(createUser);
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
 
-        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.prettyPrint();
-        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken2);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
 
-        Response createDatasetResponse2 = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
-        createDatasetResponse.prettyPrint();
-        // FIXME: consider changing this to "datasetId2"
-        Integer datasetId1 = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        Response createDatasetResponse2 = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, apiToken2);
+        createDatasetResponse2.prettyPrint();
+        Integer datasetId2 = JsonPath.from(createDatasetResponse2.body().asString()).getInt("data.id");
         System.out.println("dataset id: " + datasetId);
 
-        boolean ableToConfigureSystemForRsyncOrNot = false;
-        if (ableToConfigureSystemForRsyncOrNot) {
-
-            Response attemptToGetRsyncScriptForNonRsyncDataset = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken1)
-                    .get("/api/datasets/" + datasetId1 + "/dataCaptureModule/rsync");
-            attemptToGetRsyncScriptForNonRsyncDataset.prettyPrint();
-            attemptToGetRsyncScriptForNonRsyncDataset.then().assertThat()
-                    .statusCode(404)
-                    .body("message", equalTo("An rsync script was not found for dataset id " + datasetId1));
-
-        }
+        Response attemptToGetRsyncScriptForNonRsyncDataset = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken2)
+                .get("/api/datasets/" + datasetId2 + "/dataCaptureModule/rsync");
+        attemptToGetRsyncScriptForNonRsyncDataset.prettyPrint();
+        attemptToGetRsyncScriptForNonRsyncDataset.then().assertThat()
+                .statusCode(400)
+                .body("message", equalTo(":UploadMethods is null. This installation of Dataverse is not configured for rsync."));
 
         boolean readyToStartWorkingOnChecksumValidationReporting = false;
         if (!readyToStartWorkingOnChecksumValidationReporting) {
@@ -1018,17 +1011,17 @@ public class DatasetsIT {
          */
         JsonObjectBuilder wrongDataset = Json.createObjectBuilder();
         wrongDataset.add("userId", userId);
-        wrongDataset.add("datasetId", datasetId1);
+        wrongDataset.add("datasetId", datasetId2);
         wrongDataset.add("status", "validation passed");
         Response datasetWithoutRsyncScript = given()
                 .body(wrongDataset.build().toString())
                 .contentType(ContentType.JSON)
-                .post("/api/datasets/" + datasetId1 + "/dataCaptureModule/checksumValidation");
+                .post("/api/datasets/" + datasetId2 + "/dataCaptureModule/checksumValidation");
         datasetWithoutRsyncScript.prettyPrint();
 
         datasetWithoutRsyncScript.then().assertThat()
                 .statusCode(400)
-                .body("message", equalTo("Dataset id " + datasetId1 + " does not have an rsync script."));
+                .body("message", equalTo("Dataset id " + datasetId2 + " does not have an rsync script."));
 
         JsonObjectBuilder badNews = Json.createObjectBuilder();
         badNews.add("userId", userId);
