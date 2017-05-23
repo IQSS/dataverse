@@ -18,6 +18,7 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -599,10 +600,8 @@ public class Datasets extends AbstractApiBean {
         }
         try {
             Dataset dataset = findDatasetOrDie(id);
-            JsonObjectBuilder jab = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(findUserOrDie()), dataset));
-            JsonObject jsonObject = jab.build();
-            String script = jsonObject.getString("script");
-            return ok(script, MediaType.valueOf(MediaType.TEXT_PLAIN));
+            ScriptRequestResponse scriptRequestResponse = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(findUserOrDie()), dataset));
+            return ok(scriptRequestResponse.getScript(), MediaType.valueOf(MediaType.TEXT_PLAIN));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

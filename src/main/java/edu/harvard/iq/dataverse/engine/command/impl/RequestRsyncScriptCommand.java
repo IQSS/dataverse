@@ -13,11 +13,8 @@ import edu.harvard.iq.dataverse.datacapturemodule.UploadRequestResponse;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.util.Collections;
 import java.util.logging.Logger;
-import javax.json.JsonObjectBuilder;
 
 /**
  * Always catch a RuntimeException when calling this command, which may occur on
@@ -27,7 +24,7 @@ import javax.json.JsonObjectBuilder;
  * a CommandExecutionException.
  */
 @RequiredPermissions(Permission.AddDataset)
-public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder> {
+public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResponse> {
 
     private static final Logger logger = Logger.getLogger(RequestRsyncScriptCommand.class.getCanonicalName());
 
@@ -41,7 +38,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
     }
 
     @Override
-    public JsonObjectBuilder execute(CommandContext ctxt) throws CommandException {
+    public ScriptRequestResponse execute(CommandContext ctxt) throws CommandException {
         User user = request.getUser();
         if (!(user instanceof AuthenticatedUser)) {
             /**
@@ -60,24 +57,20 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
             throw new RuntimeException("When making the upload request, rather than 200 the status code was " + statusCode + ". The body was \'" + response + "\'. We cannont proceed. Returning.");
         }
         long millisecondsToSleep = DataCaptureModuleServiceBean.millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls;
-        logger.info("Message from Data Caputure Module upload request endpoint: " + response + ". Sleeping " + millisecondsToSleep + "milliseconds.");
+        logger.info("Message from Data Caputure Module upload request endpoint: " + response + ". Sleeping " + millisecondsToSleep + "milliseconds before making rsync script request.");
         try {
             Thread.sleep(millisecondsToSleep);
         } catch (InterruptedException ex) {
             throw new RuntimeException(errorPreamble + "Unable to wait " + millisecondsToSleep + " milliseconds: " + ex.getLocalizedMessage());
         }
 
-        ScriptRequestResponse jsonWithScript = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset);
-        String script = jsonWithScript.getScript();
+        ScriptRequestResponse scriptRequestResponse = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset);
+        String script = scriptRequestResponse.getScript();
         if (script == null || script.isEmpty()) {
             throw new RuntimeException(errorPreamble + "The script was null or empty.");
         }
         logger.fine("script for dataset " + dataset.getId() + ": " + script);
-        NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
-                .add("datasetId", dataset.getId())
-                .add("userId", au.getId())
-                .add("script", script);
-        return nullSafeJsonBuilder;
+        return scriptRequestResponse;
     }
 
 }
