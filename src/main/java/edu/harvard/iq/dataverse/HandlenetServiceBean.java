@@ -394,12 +394,8 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
     private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
         logger.log(Level.FINE,"updateIdentifierStatus");
-        String identifier = getIdentifierFromDataset(dataset);
-        HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
-        metadata.put("_status", statusIn);
-        metadata.put("_target", getTargetUrl(dataset));
-        // TODO drop getting identifier and meatdata if indeed not required
-        return null == registerNewHandle(dataset); // Exception have been logged
+        reRegisterHandle(dataset); // No Need to register new - this is only called when a handle exists
+        return true;
     }
 
     private String getAuthHandle(Dataset datasetIn) {
