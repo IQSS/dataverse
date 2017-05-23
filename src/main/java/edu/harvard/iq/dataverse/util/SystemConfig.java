@@ -644,6 +644,31 @@ public class SystemConfig {
     }
 
     public enum FileUploadMethods {
-        RSYNC
+
+        RSYNC("dcm/rsync+ssh"),
+        NATIVE("NATIVE");
+
+        private final String text;
+
+        private FileUploadMethods(final String text) {
+            this.text = text;
+        }
+
+        public static FileUploadMethods fromString(String text) {
+            if (text != null) {
+                for (FileUploadMethods fileUploadMethods : FileUploadMethods.values()) {
+                    if (text.equals(fileUploadMethods.text)) {
+                        return fileUploadMethods;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("FileUploadMethods must be one of these values: " + Arrays.asList(FileUploadMethods.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
     }
+
 }

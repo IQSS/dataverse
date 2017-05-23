@@ -740,9 +740,9 @@ The URL for your Repository Storage Abstraction Layer (RSAL) installation. This 
 :UploadMethods
 ++++++++++++++
 
-This setting is experimental and to be used with the Data Capture Module (DCM). For now, if you set the upload methods to ``RSYNC`` it will allow your users to download rsync scripts from the DCM.
+This setting is experimental and to be used with the Data Capture Module (DCM). For now, if you set the upload methods to ``dcm/rsync+ssh`` it will allow your users to download rsync scripts from the DCM.
 
-``curl -X PUT -d 'RSYNC' http://localhost:8080/api/admin/settings/:UploadMethods``
+``curl -X PUT -d 'dcm/rsync+ssh' http://localhost:8080/api/admin/settings/:UploadMethods``
 
 :DownloadMethods
 ++++++++++++++++
