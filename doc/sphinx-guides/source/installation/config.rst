@@ -119,7 +119,7 @@ By default and for testing convenience, the installer configures a temporary DOI
 
 To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: **EZID** (http://ezid.cdlib.org), **DataCite** (https://www.datacite.org), **Handle.Net** (https://www.handle.net). 
 
-Once account credentials and namespace have been acquired, please complete the following identifier configuration parameters:
+Once account credentials and namespace have been acquired, please complete the identifier configuration parameters that are relevant to your installation. In the following list, parameters that apply only to DOI are preceded by "doi", those that apply only to handles include "handlenet", and those that apply to both kinds of installation contain neither.
 
 **JVM Options:** :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`, :ref:`dataverse.handlenet.admcredfile`, :ref:`dataverse.handlenet.admprivphrase`
 
