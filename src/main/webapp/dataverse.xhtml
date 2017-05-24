@@ -43,6 +43,16 @@
                 </f:metadata>
 
                 <h:form id="dataverseForm">
+                     <ui:fragment>
+                        <h2>mustache</h2>
+                        <h:outputText value="#{settingsWrapper.getMustacheMessage()}" escape="false"/>
+                        <br />---------<br />
+                    </ui:fragment>
+                    <ui:fragment>
+                        <h2>jinjava</h2>
+                        <h:outputText value="#{settingsWrapper.testJinjava()}" escape="false"/>
+                        <br />---------<br />
+                    </ui:fragment>
                     <!-- Edit Mode -->
                     <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
                         <p:focus context="dataverseForm"/>

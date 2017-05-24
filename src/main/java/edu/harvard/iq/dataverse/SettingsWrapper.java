@@ -14,6 +14,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.hubspot.jinjava.Jinjava;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.BufferedReader;
@@ -132,10 +133,40 @@ public class SettingsWrapper implements java.io.Serializable {
             resourceStream.close();
         } catch (IOException ex) {
             logger.warning(String.format("SettingsWrapper: (readLocalResource) resource stream from path \"%s\" was invalid", path));
+            return null;
         }
 
         // Return string
         return resourceAsString;
+    }
+    
+     
+    public String testJinjava(){
+        
+        Jinjava jinjava = new Jinjava();
+        
+        // -----------------------------
+        // Convert the JSON Data to a Map
+        // -----------------------------    
+        String data = this.get(":GuidesData");
+        Gson gson = new Gson();
+        java.lang.reflect.Type type = new TypeToken<Map<String, Object>>(){}.getType();
+        Map<String, Object> map = gson.fromJson(data, type);   
+
+        
+        //Map<String, Object> context = new HashMap<>();
+        //context.put("name", "rp");
+
+        String template = "<div>Hello, {{ name }}! {% for g in guide_links %}{{ g.name }} - {{ g.link }} <br />{% endfor %}</div>";
+        //template = readLocalResource("navbar/guides2.html");
+        //if (template == null){
+        //    return "Can't load template";
+        //}     
+        //Resources.toString(Resources.getResource("my-template.html"), Charsets.UTF_8);
+        
+        String renderedTemplate = jinjava.render(template, map);
+
+        return renderedTemplate;
     }
     
     public String getMustacheMessage() throws IOException{
@@ -149,12 +180,16 @@ public class SettingsWrapper implements java.io.Serializable {
         // -----------------------------
         // Load the Template from the database       
         // -----------------------------
-        String templateText = this.get(":GuidesTemplate");//"Go to <a href=\"{{guides}}\">{{guides}}</a>!";
-        //String templateText = "Go to <a href=\"{{link}}\">{{subject}}</a>!";
+        //String templateText = this.get(":GuidesTemplate");//"Go to <a href=\"{{guides}}\">{{guides}}</a>!";
+        String templateText = "{{#each guide_links}}\n" +
+                                "        <li><a href=\"{{this.link}}\" target=\"_blank\">{{this.name}}</a>\n" +
+                                "            {{this.dict.magicNumber}}\n" +
+                                "        </li>\n" +
+                                "      {{/each}}";
         logger.info("getMustacheMessage db template: " + templateText);
         
         // Load from a file
-        templateText = readLocalResource("navbar/guides.html");
+        //templateText = readLocalResource("navbar/guides.html");
                 
         
         // -----------------------------
@@ -163,21 +198,26 @@ public class SettingsWrapper implements java.io.Serializable {
         Gson gson = new Gson();
         java.lang.reflect.Type type = new TypeToken<Map<String, Object>>(){}.getType();
         Map<String, Object> map = gson.fromJson(data, type);   
+        Context context = Context.newBuilder(map).build();
 
         // -----------------------------
         // Render the template
         // -----------------------------                
         //templateText = readResourceFile();
         logger.info("getMustacheMessage try file template: ??" + templateText );
+        logger.info("getMustacheMessage 1");
 
         // Inline compiliation
         Handlebars handlebars = new Handlebars();
+        logger.info("getMustacheMessage 2");
         com.github.jknack.handlebars.Template template = handlebars.compileInline(templateText);
                
-        
-        Context context = Context.newBuilder(map).build();
-        return template.apply(context); 
-        
+        logger.info("getMustacheMessage 3");
+
+        String renderedTemplate = template.apply(context); 
+         logger.info("getMustacheMessage 4");
+       logger.info("renderedTemplate: " + renderedTemplate );
+        return renderedTemplate;
     }
     
 }
