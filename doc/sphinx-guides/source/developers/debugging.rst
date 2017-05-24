@@ -2,6 +2,8 @@
 Debugging
 =========
 
+.. contents:: :local:
+
 Logging
 -------
 

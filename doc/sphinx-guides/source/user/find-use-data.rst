@@ -1,6 +1,8 @@
 Finding and Using Data
 +++++++++++++++++++++++
 
+.. contents:: :local:
+
 Finding Data
 =============
 

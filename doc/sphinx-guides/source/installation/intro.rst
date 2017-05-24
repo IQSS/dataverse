@@ -2,6 +2,8 @@
 Introduction
 ============
 
+.. contents:: :local:
+
 Welcome! Thanks for installing `Dataverse <http://dataverse.org>`_!
 
 Quick Links

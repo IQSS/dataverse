@@ -1,6 +1,8 @@
 Tabular Data, Representation, Storage and Ingest
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+.. contents:: :local:
+
 This section explains the basics of how tabular data is handled in
 the application and what happens during the ingest process, as the
 files uploaded by the user are processed and converted into the

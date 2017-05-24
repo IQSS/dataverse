@@ -2,6 +2,8 @@
 Testing
 =======
 
+.. contents:: :local:
+
 Unit Tests
 ----------
 

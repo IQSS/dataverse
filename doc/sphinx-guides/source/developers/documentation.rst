@@ -2,6 +2,8 @@
 Documentation
 =============
 
+.. contents:: :local:
+
 Quick Fix
 -----------
 
@@ -61,3 +63,10 @@ After sphinx is done processing the files you should notice that the html folder
 You can click on the files in the html folder to preview the changes.
 
 Now you can make a commit with the changes to your own fork in GitHub and submit a pull request to the dataverse repository.
+
+Table of Contents
+-----------------
+
+Every non-index page should have ``.. contents:: :local:`` near the top as decided in https://github.com/IQSS/dataverse/issues/3796 . Here's a one-liner to check if it's missing:
+
+``ack -L '.. contents:: :local:' --type=rst | grep -v 'index.rst$'``

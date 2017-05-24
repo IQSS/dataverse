@@ -1,6 +1,8 @@
 Patterns
 ++++++++
 
+.. contents:: :local:
+
 Patterns are what emerge when using the foundation elements together with basic objects like buttons and alerts, more complex Javascript components from `Bootstrap <http://getbootstrap.com/components/>`__ like tooltips and dropdowns, and AJAX components from `PrimeFaces <https://www.primefaces.org/showcase/>`__ like datatables and commandlinks.
 
 

@@ -1,6 +1,8 @@
 SPSS
 +++++++
 
+.. contents:: :local:
+
 SPSS data files (POR and SAV formats).
 
 Supported Versions

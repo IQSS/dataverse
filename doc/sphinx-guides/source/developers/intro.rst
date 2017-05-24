@@ -2,6 +2,8 @@
 Introduction
 ============
 
+.. contents:: :local:
+
 Welcome! `Dataverse <http://dataverse.org>`_ is an `open source <https://github.com/IQSS/dataverse/blob/master/LICENSE.md>`_ project that loves `contributors <https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md>`_!
 
 Intended Audience

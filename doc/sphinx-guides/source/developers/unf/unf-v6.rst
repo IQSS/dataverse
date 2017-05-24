@@ -3,6 +3,8 @@
 UNF Version 6
 ================================
 
+.. contents:: :local:
+
 *(this document is a draft!)*
 
 The document is primarily intended for those who are interested in implementing their own UNF Version 6 calculator. We would like to encourage multiple parallel implementations, since that would be a great (the only, really) way to cross-validate UNF signatures calculated for specific sets of data.

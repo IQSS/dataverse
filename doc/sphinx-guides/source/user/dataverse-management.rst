@@ -1,6 +1,8 @@
 Dataverse Management
 ++++++++++++++++++++++++++++
 
+.. contents:: :local:
+
 A dataverse is a container for datasets (research data, code, documentation, and metadata) and other dataverses, which can be setup for individual researchers, departments, journals and organizations.
 
 |image1|
