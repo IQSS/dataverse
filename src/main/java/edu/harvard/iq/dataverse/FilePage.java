@@ -560,15 +560,33 @@ public class FilePage implements java.io.Serializable {
     }
 
     public String getSwiftContainerName(){
-        String swiftContainerName = null;
-        String swiftFolderPathSeparator = "-";
-        
-        String authorityNoSlashes = file.getOwner().getAuthority().replace(file.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-        swiftContainerName = file.getOwner().getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-            + swiftFolderPathSeparator + file.getOwner().getIdentifier();
-        logger.info("Swift container name: " + swiftContainerName);
+        String swiftContainerName;
+        try {
+            DataFileIO dataFileIO = getFile().getDataFileIO();
+            try {
+                SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+                swiftIO.open();
+                swiftContainerName = swiftIO.getSwiftContainerName();
+                logger.info("Swift container name: " + swiftContainerName);
+                return swiftContainerName;
 
-        return swiftContainerName;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+//        String swiftContainerName = null;
+//        String swiftFolderPathSeparator = "-";
+//        
+//        String authorityNoSlashes = file.getOwner().getAuthority().replace(file.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+//        swiftContainerName = file.getOwner().getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
+//            + swiftFolderPathSeparator + file.getOwner().getIdentifier();
+//        logger.info("Swift container name: " + swiftContainerName);
+//
+//        return swiftContainerName;
+        return "";
     }
 
     public String getComputeUrl() {

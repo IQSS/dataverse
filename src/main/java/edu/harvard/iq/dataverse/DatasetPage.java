@@ -1,12 +1,14 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -366,21 +368,41 @@ public class DatasetPage implements java.io.Serializable {
     public void setDataverseSiteUrl(String dataverseSiteUrl) {
         this.dataverseSiteUrl = dataverseSiteUrl;
     }
-    //TODO: 
-    //Consolidate this & FilePage in static function in the SwiftAccessIO
 
-    public String getSwiftContainerName(){
-        String swiftContainerName = null;
-        String swiftFolderPathSeparator = "-";
-        if (persistentId != null) {
-            dataset = datasetService.findByGlobalId(persistentId); 
-            String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
-            swiftContainerName = dataset.getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-                + swiftFolderPathSeparator + dataset.getIdentifier();
-            logger.fine("Swift container name: " + swiftContainerName);
+    public DataFile getInitialDataFile(){
+        Long datasetVersion = workingVersion.getId();
+        if (datasetVersion != null) {
+                int unlimited = 0;
+                int maxResults = unlimited;
+            List<FileMetadata> metadatas = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);        
+                logger.fine("metadatas " + metadatas);
+            if (metadatas != null && metadatas.size() > 0) {
+                return metadatas.get(0).getDataFile();
+            }
         }
+        return null;
+    }
+    
+    public String getSwiftContainerName(){
 
-        return swiftContainerName;
+        String swiftContainerName;
+        try {
+            DataFileIO dataFileIO = getInitialDataFile().getDataFileIO();
+            try {
+                SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+                swiftIO.open();
+                swiftContainerName = swiftIO.getSwiftContainerName();
+                logger.info("Swift container name: " + swiftContainerName);
+                return swiftContainerName;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return "";
     }
     
     public void setSwiftContainerName(String name){
@@ -392,24 +414,18 @@ public class DatasetPage implements java.io.Serializable {
     //SF 
     public Boolean isSwiftStorage(){
         Boolean swiftBool = false;
-        //dataset = datasetService.findByGlobalId(persistentId);
-        Long datasetVersion = workingVersion.getId();
-        if (datasetVersion != null) {
-                int unlimited = 0;
-                int maxResults = unlimited;
-            List<FileMetadata> metadatas = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);        
-                logger.fine("metadatas " + metadatas);
-            if (metadatas != null && metadatas.size() > 0) {
-                if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
-                    && metadatas.get(0).getDataFile().getStorageIdentifier().startsWith("swift://")) {
-                    swiftBool = true;
-                }
+        //containers without datafiles will not be stored in swift storage, so no compute
+        if (getInitialDataFile() != null){
+            if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
+                && getInitialDataFile().getStorageIdentifier().startsWith("swift://")) {
+                swiftBool = true;
             }
         }
+        
         return swiftBool;
     }
 
-    public String getComputeUrl() {
+    public String getComputeUrl() throws IOException {
         return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
     }
     
