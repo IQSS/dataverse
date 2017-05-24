@@ -69,7 +69,7 @@ public class SettingsWrapper implements java.io.Serializable {
      * @param key
      * @return 
      */
-    public String getFromKey(Key key){
+    public String getValueForKey(Key key){
         if (key == null){
             return null;
         }
@@ -84,11 +84,16 @@ public class SettingsWrapper implements java.io.Serializable {
      * @param defaultValue
      * @return 
      */
-    public String getFromKey(Key key, String defaultValue){
+    public String getValueForKey(Key key, String defaultValue){
         if (key == null){
             return null;
         }
         return get(key.toString(), defaultValue);
+    }
+
+    public boolean isTrueForKey(Key key, boolean safeDefaultIfKeyNotFound) {
+        
+        return isTrueForKey(key.toString(), safeDefaultIfKeyNotFound);
     }
 
     public boolean isTrueForKey(String settingKey, boolean safeDefaultIfKeyNotFound) {
@@ -115,7 +120,7 @@ public class SettingsWrapper implements java.io.Serializable {
             if (guidesBaseUrl == null) {
             String saneDefault = "http://guides.dataverse.org";
         
-            guidesBaseUrl = getFromKey(SettingsServiceBean.Key.GuidesBaseUrl);
+            guidesBaseUrl = getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
             if (guidesBaseUrl == null) {
                 guidesBaseUrl = saneDefault + "/en"; 
             } else {
@@ -134,7 +139,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (navbarAboutUrl != null){
             return navbarAboutUrl;
         }
-        navbarAboutUrl = getFromKey(SettingsServiceBean.Key.NavbarAboutUrl);
+        navbarAboutUrl = getValueForKey(SettingsServiceBean.Key.NavbarAboutUrl);
         if (navbarAboutUrl == null){
             navbarAboutUrl = "http://dataverse.org";
         }
@@ -145,7 +150,7 @@ public class SettingsWrapper implements java.io.Serializable {
      * @return 
      */
     public String getNavbarGuidesUrl(){
-        return getFromKey(SettingsServiceBean.Key.NavbarGuidesUrl);
+        return getValueForKey(SettingsServiceBean.Key.NavbarGuidesUrl);
     } // end getNavbarAboutUrl
 
 }
