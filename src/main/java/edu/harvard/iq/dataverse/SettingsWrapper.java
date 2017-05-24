@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,16 +37,8 @@ public class SettingsWrapper implements java.io.Serializable {
     // Fully qualified url used as link for the navbar about section
     private String navbarAboutUrl = null; 
 
-    // Fully qualified url as a single guides link to replace the dropdown
-    private String navbarGuidesUrl = null; 
 
-    /**
-     * Values that are considered as "true".
-     * @see #isTrue(java.lang.String, boolean) 
-     */
-    private static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
-            new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
-
+ 
     public String get(String settingKey) {
         if (settingsMap == null) {
             initSettingsMap();
@@ -53,14 +46,58 @@ public class SettingsWrapper implements java.io.Serializable {
         
         return settingsMap.get(settingKey);
     }
+    /**
+     * Return value from map, initiating settings map if needed
+     * @param settingKey
+     * @param defaultValue
+     * @return 
+     */
+    public String get(String settingKey, String defaultValue) {
+        if (settingsMap == null) {
+            initSettingsMap();
+        }
+        
+        if (!settingsMap.containsKey(settingKey)){
+            return defaultValue;
+        }
+        return settingsMap.get(settingKey);
+    }
     
+    /**
+     * Pass the map key as a "Key" object instead of a string
+     * 
+     * @param key
+     * @return 
+     */
+    public String getFromKey(Key key){
+        if (key == null){
+            return null;
+        }
+        return get(key.toString());
+    }
+
+    /**
+     * Pass the map key as a "Key" object instead of a string
+     * Allow a default value if null is encountered
+     * 
+     * @param key
+     * @param defaultValue
+     * @return 
+     */
+    public String getFromKey(Key key, String defaultValue){
+        if (key == null){
+            return null;
+        }
+        return get(key.toString(), defaultValue);
+    }
+
     public boolean isTrueForKey(String settingKey, boolean safeDefaultIfKeyNotFound) {
         if (settingsMap == null) {
             initSettingsMap();
         }
         
-        String val = settingsMap.get(settingKey);;
-        return ( val==null ) ? safeDefaultIfKeyNotFound : TRUE_VALUES.contains(val.trim().toLowerCase() );
+        String val = get(settingKey);;
+        return ( val==null ) ? safeDefaultIfKeyNotFound : settingService.TRUE_VALUES.contains(val.trim().toLowerCase() );
     }
 
     private void initSettingsMap() {
@@ -73,10 +110,12 @@ public class SettingsWrapper implements java.io.Serializable {
 
     
     public String getGuidesBaseUrl() {
-        if (guidesBaseUrl == null) {
+        if (true)
+
+            if (guidesBaseUrl == null) {
             String saneDefault = "http://guides.dataverse.org";
         
-            guidesBaseUrl = settingService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
+            guidesBaseUrl = getFromKey(SettingsServiceBean.Key.GuidesBaseUrl);
             if (guidesBaseUrl == null) {
                 guidesBaseUrl = saneDefault + "/en"; 
             } else {
@@ -95,7 +134,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (navbarAboutUrl != null){
             return navbarAboutUrl;
         }
-        navbarAboutUrl = settingService.getValueForKey(SettingsServiceBean.Key.NavbarAboutUrl);
+        navbarAboutUrl = getFromKey(SettingsServiceBean.Key.NavbarAboutUrl);
         if (navbarAboutUrl == null){
             navbarAboutUrl = "http://dataverse.org";
         }
@@ -103,17 +142,10 @@ public class SettingsWrapper implements java.io.Serializable {
     } // end getNavbarAboutUrl
 
     /**
-     * Inefficient - will usually return null if wrapper is not SessionScoped
      * @return 
      */
     public String getNavbarGuidesUrl(){
-        if (navbarGuidesUrl != null){
-            return navbarGuidesUrl;
-        }
-        navbarGuidesUrl = settingService.getValueForKey(SettingsServiceBean.Key.NavbarGuidesUrl);
-
-        System.out.println("---- navbarguidesUrl: " + navbarGuidesUrl);
-        return navbarGuidesUrl;
+        return getFromKey(SettingsServiceBean.Key.NavbarGuidesUrl);
     } // end getNavbarAboutUrl
 
 }
