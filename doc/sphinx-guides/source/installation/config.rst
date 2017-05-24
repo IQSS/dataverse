@@ -727,6 +727,6 @@ Set the base URL for the "Compute" button for a dataset.
 :CloudEnvironmentName
 +++++++++++++++++++++
 
-Set the base URL for the "Compute" button for a dataset.
+Set the desired name for the Cloud environment you are working in. Appears in an information box on the dataset page.
 
 ``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
