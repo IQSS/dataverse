@@ -1,7 +1,7 @@
 Data Capture Module
 ===================
 
-Data Capture Module (DCM) is an experimental component that allows users to upload large datasets via rsync. Installation instructions can be found at https://github.com/sbgrid/data-capture-module
+Data Capture Module (DCM) is an experimental component that allows users to upload large datasets via rsync over ssh. Installation instructions can be found at https://github.com/sbgrid/data-capture-module
 
 Once you have installed a DCM, you will need to configure Dataverse with its URL using the ``:DataCaptureModuleUrl`` setting metioned on the :doc:`config` section and set the ``:UploadMethods`` setting to ``dcm/rsync+ssh``. This will allow your Dataverse installation to communicate your DCM, so that Dataverse can download rsync scripts for your users.
 
