@@ -47,11 +47,13 @@
                                 <span class="glyphicon glyphicon-search"/> #{bundle.find}
                             </button>
                         </form>
+                        <ui:fragment rendered="#{!empty settingsWrapper.get(':NavbarAboutUrl')}">
                         <li>
-                            <h:outputLink value="#{settingsWrapper.navbarAboutUrl}" target="_blank">
+                            <h:outputLink value="#{settingsWrapper.get(':NavbarAboutUrl')}" target="_blank">
                                 #{bundle['header.about']}
                             </h:outputLink>                         
                         </li>
+                        </ui:fragment>
 
                         <ui:fragment rendered="#{!empty settingsWrapper.get(':NavbarGuidesUrl')}">
                         <li>
@@ -61,7 +63,7 @@
                         </li>
                         </ui:fragment>
 
-                        <ui:fragment rendered="#{empty settingsWrapper.navbarGuidesUrl}">
+                        <ui:fragment rendered="#{empty settingsWrapper.get(':NavbarGuidesUrl')}">
                         <li class="dropdown">
                             <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
                                 #{bundle['header.guides']} <b class="caret"></b>
