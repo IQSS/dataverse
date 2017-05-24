@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.customization.CustomizationConstants;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,7 +31,8 @@ public class CustomizationFilesServlet extends HttpServlet {
     
     @EJB
     SettingsServiceBean settingsService;
-
+            
+            
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -83,23 +85,35 @@ public class CustomizationFilesServlet extends HttpServlet {
     }
     
     private String getFilePath(String fileTypeParam){
- 
-        if (fileTypeParam.equals("homePage")) {
-            String nonNullDefaultIfKeyNotFound = "";
+
+        String nonNullDefaultIfKeyNotFound = "";
+        
+        if (fileTypeParam.equals(CustomizationConstants.fileTypeHomePage)) {
+            
+            // Homepage
             return settingsService.getValueForKey(SettingsServiceBean.Key.HomePageCustomizationFile, nonNullDefaultIfKeyNotFound);
-        }
-        if (fileTypeParam.equals("header")) {
-            String nonNullDefaultIfKeyNotFound = "";
+        
+        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeHeader)) {
+            
+            // Header
             return settingsService.getValueForKey(SettingsServiceBean.Key.HeaderCustomizationFile, nonNullDefaultIfKeyNotFound);
-        }
-        if (fileTypeParam.equals("footer")) {
-            String nonNullDefaultIfKeyNotFound = "";
+
+        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeFooter)) {
+            
+            // Footer        
             return settingsService.getValueForKey(SettingsServiceBean.Key.FooterCustomizationFile, nonNullDefaultIfKeyNotFound);
-        }
-        if (fileTypeParam.equals("style")) {
-            String nonNullDefaultIfKeyNotFound = "";
+        
+        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeStyle)) {
+            
+            // Style (css)               
             return settingsService.getValueForKey(SettingsServiceBean.Key.StyleCustomizationFile, nonNullDefaultIfKeyNotFound);
+        
+        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeLogo)) {
+
+            // Logo for installation - appears in header               
+            return settingsService.getValueForKey(SettingsServiceBean.Key.LogoCustomizationFile, nonNullDefaultIfKeyNotFound);
         }
+        
 
         return "";
     }

@@ -259,7 +259,11 @@ public class SettingsServiceBean {
         /*
          Location and name of CSS customization file
         */
-        StyleCustomizationFile;
+        StyleCustomizationFile,
+        /*
+         Location and name of installation logo customization file
+        */
+        LogoCustomizationFile;
         
         @Override
         public String toString() {
