@@ -274,7 +274,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         boolean u = em.createQuery(query).getResultList().size() == 0;
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = settingsService.getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        if (protocol.equals("doi") && doiProvider.equals("EZID")) {
+        if (protocol != null && protocol.equals("doi") && doiProvider.equals("EZID")) {
             // TODO would need CommandContext to use IdServiceBean.getBean, then replace condition above with something like idServiceBean.registerWhenPublished
             if (!doiEZIdServiceBean.lookupMetadataFromIdentifier(protocol, authority, separator, userIdentifier).isEmpty()) {
                 u = false;
