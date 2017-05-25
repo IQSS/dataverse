@@ -273,7 +273,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         query += " and d.authority = '" + dataset.getAuthority() + "'";
         boolean u = em.createQuery(query).getResultList().size() == 0;
 
-            if (!idServiceBean.lookupMetadataFromIdentifier(dataset.getProtocol(), dataset.getAuthority(), dataset.getDoiSeparator(), userIdentifier).isEmpty()) {
+            if (idServiceBean.registerWhenPublished() == false && !idServiceBean.lookupMetadataFromIdentifier(dataset.getProtocol(), dataset.getAuthority(), dataset.getDoiSeparator(), userIdentifier).isEmpty()) {
                 u = false;
             }
 
