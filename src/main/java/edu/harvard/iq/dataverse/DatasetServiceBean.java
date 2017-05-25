@@ -272,10 +272,14 @@ public class DatasetServiceBean implements java.io.Serializable {
         query += " and d.protocol ='" + dataset.getProtocol() + "'";
         query += " and d.authority = '" + dataset.getAuthority() + "'";
         boolean u = em.createQuery(query).getResultList().size() == 0;
-
-            if (idServiceBean.registerWhenPublished() == false && !idServiceBean.lookupMetadataFromIdentifier(dataset.getProtocol(), dataset.getAuthority(), dataset.getDoiSeparator(), userIdentifier).isEmpty()) {
+            
+        try{
+            if (idServiceBean.alreadyExists(dataset)) {
                 u = false;
             }
+        } catch (Exception e){
+            //we can live with failure - means identifier not found remotely
+        }
 
        
         return u;
