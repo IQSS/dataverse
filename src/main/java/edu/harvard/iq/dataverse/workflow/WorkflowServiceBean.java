@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,15 +54,22 @@ public class WorkflowServiceBean {
     public WorkflowServiceBean() {
         providers.put(":internal", new InternalWorkflowStepSP());
 
-        logger.log(Level.INFO, "Searching for Workflow Step Providers...");
-        ServiceLoader<WorkflowStepSPI> loader = ServiceLoader.load(WorkflowStepSPI.class);
-        for ( WorkflowStepSPI wss : loader ) {
-            logger.log(Level.INFO, "Found WorkflowStepProvider: {0}", wss.getClass().getCanonicalName());
-            providers.put( wss.getClass().getCanonicalName(), wss );
-        }
-        logger.log(Level.INFO, "Searching for Workflow Step Providers done.");
+        logger.log(Level.INFO, "Searching for workflow step providers...");
+//        ServiceLoader<WorkflowStepSPI> loader = ServiceLoader.load(WorkflowStepSPI.class);
+//        try {
+//            for ( WorkflowStepSPI wss : loader ) {
+//                logger.log(Level.INFO, "Found WorkflowStepProvider: {0}", wss.getClass().getCanonicalName());
+//                providers.put( wss.getClass().getCanonicalName(), wss );
+//            }
+//            logger.log(Level.INFO, "Searching for Workflow Step Providers done.");
+//        } catch (NoClassDefFoundError ncdfe) {
+//            logger.log(Level.WARNING, "Class not found: " + ncdfe.getMessage(), ncdfe);
+//        } catch (ServiceConfigurationError serviceError) {
+//            logger.log(Level.WARNING, "Service Error loading workflow step providers: " + serviceError.getMessage(), serviceError);
+//        }
+        
     }
-
+    
     /**
      * Starts executing workflow {@code wf} under the passed context.
      *

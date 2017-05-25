@@ -8,8 +8,20 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -22,6 +34,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * API Endpoint for managing workflows.
@@ -29,7 +42,9 @@ import javax.ws.rs.core.Response;
  */
 @Path("admin/workflows")
 public class WorkflowsAdmin extends AbstractApiBean {
-    
+      
+    private static final Logger logger = Logger.getLogger(WorkflowsAdmin.class.getName());
+       
     @EJB
     WorkflowServiceBean workflows;
     
@@ -147,4 +162,66 @@ public class WorkflowsAdmin extends AbstractApiBean {
         }
     }
     
+    
+    @Path("/test-cp1")
+    @GET
+    public Response testCP1() {
+        try {
+            Class.forName("edu.harvard.iq.dataverse.workflow.WorkflowStepSPI");
+            return ok("WorkflowStepSPI found using class.forName");
+        } catch (ClassNotFoundException ex) {
+            return ok("WorkflowStepSPI NOT found using class.forName");
+        }
+    }
+    
+    @Path("/test-cp")
+    @GET
+    public Response testCP() throws Exception {
+        String path = "/Applications/NetBeans/glassfish-4.1/glassfish/domains/domain1/lib/DataverseWorkflowStepProvider.jar";
+        URL jarUrl = new File(path).toURI().toURL();
+        URLClassLoader loader = new URLClassLoader(new URL[]{jarUrl}, Thread.currentThread().getContextClassLoader());
+        Class<?> clz = loader.loadClass("edu.harvard.iq.dataverse.samplestepprovider.SampleStepProvider");
+        Object newInstance = clz.newInstance();
+        return ok("Instantiated " + newInstance.toString() );
+    }
+    
+    @Path("/test-cp2")
+    @GET
+    public Response testCP2() throws MalformedURLException {
+        String path = "/Applications/NetBeans/glassfish-4.1/glassfish/domains/domain1/lib/DataverseWorkflowStepProvider.jar";
+        URL jarUrl = new File(path).toURI().toURL();
+        URLClassLoader loader = new URLClassLoader(new URL[]{jarUrl}, Thread.currentThread().getContextClassLoader());
+        ServiceLoader<WorkflowStepSPI> sl = ServiceLoader.load(WorkflowStepSPI.class, loader);
+        Iterator<WorkflowStepSPI> iterator = sl.iterator();
+        if ( iterator.hasNext() ) {
+            WorkflowStepSPI wss = iterator.next();
+            return ok("Loaded " + wss.toString() );
+        } else {
+            return ok("No services found");
+        }
+    }
+    
+    @Path("/test-spi")
+    @GET
+    public Response testSpi() {
+        try {
+            ServiceLoader<WorkflowStepSPI> loader = ServiceLoader.load(WorkflowStepSPI.class, Thread.currentThread().getContextClassLoader());
+            loader.reload();
+            List<String> names = new LinkedList<>();
+            Iterator<WorkflowStepSPI> itr = loader.iterator();
+            while ( itr.hasNext() ) {
+                WorkflowStepSPI wss = itr.next();
+                logger.log(Level.INFO, "Found WorkflowStepProvider: {0}", wss.getClass().getCanonicalName());
+                names.add(wss.toString());
+            }
+            logger.log(Level.INFO, "Searching for Workflow Step Providers done.");
+            return ok( names.toString() );
+        } catch (NoClassDefFoundError ncdfe) {
+            logger.log(Level.WARNING, "Class not found: " + ncdfe.getMessage(), ncdfe);
+            return error( Status.INTERNAL_SERVER_ERROR, ncdfe.getLocalizedMessage() );
+        } catch (ServiceConfigurationError serviceError) {
+            logger.log(Level.WARNING, "Service Error loading workflow step providers: " + serviceError.getMessage(), serviceError);
+            return error( Status.INTERNAL_SERVER_ERROR, serviceError.getLocalizedMessage() );
+        }
+    }
 }
