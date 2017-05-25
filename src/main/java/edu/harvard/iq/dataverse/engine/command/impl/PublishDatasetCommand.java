@@ -102,7 +102,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                         int attempts = 0;
                        
                         while (idServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(protocol, authority, theDataset.getDoiSeparator()));
+                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
                             attempts++;
                         }
                         

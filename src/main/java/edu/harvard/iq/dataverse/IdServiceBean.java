@@ -50,7 +50,9 @@ public interface IdServiceBean {
         logger.log(Level.FINE,"getting bean, protocol=" + protocol);
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-
+        if (protocol == null){
+            protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        }
         if ("hdl".equals(protocol))
             return (ctxt.handleNet());
         else if (protocol.equals("doi"))
