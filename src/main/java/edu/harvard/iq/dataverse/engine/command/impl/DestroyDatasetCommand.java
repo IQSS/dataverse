@@ -89,7 +89,9 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         
         IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
         try{
-            idServiceBean.deleteIdentifier(doomed);
+            if(idServiceBean.alreadyExists(doomed)){
+                idServiceBean.deleteIdentifier(doomed);
+            }
         }  catch (Exception e) {
              logger.log(Level.WARNING, "Identifier deletion was not successfull:",e.getMessage());
         } 
