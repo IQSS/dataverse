@@ -81,12 +81,6 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             ctxt.em().remove(ra);
         }   
         
-        //Register Cache
-        if(ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, "").equals("DataCite")){
-            // TODO make ignorant of configured bean
-            ctxt.doiDataCite().deleteRecordFromCache(doomed);
-        }
-        
         IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
         try{
             if(idServiceBean.alreadyExists(doomed)){
