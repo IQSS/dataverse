@@ -1,8 +1,9 @@
 Managing Harvesting Clients
 ===========================
 
-.. contents:: :local:
-
+.. contents:: On this page:
+	:local:
+	
 Your Dataverse as a Metadata Harvester
 --------------------------------------
 

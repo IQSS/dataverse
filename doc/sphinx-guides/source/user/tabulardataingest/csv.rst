@@ -1,7 +1,8 @@
 CSV
 ++++++
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 Ingest of Comma-Separated Values files as tabular data. 
 -------------------------------------------------------

@@ -2,7 +2,8 @@
 Upgrading
 =========
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 When upgrading within Dataverse 4.x, you will need to follow the upgrade instructions for each intermediate version. 
 

@@ -2,9 +2,10 @@
 Introduction
 ============
 
-.. contents:: :local:
-
 Welcome! Thanks for installing `Dataverse <http://dataverse.org>`_!
+
+.. contents:: On this page:
+	:local:
 
 Quick Links
 -----------

@@ -2,7 +2,8 @@
 Testing
 =======
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 Unit Tests
 ----------

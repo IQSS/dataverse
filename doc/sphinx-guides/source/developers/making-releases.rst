@@ -2,7 +2,8 @@
 Making Releases
 ===============
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 Bump Version Numbers
 --------------------

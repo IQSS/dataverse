@@ -2,7 +2,8 @@
 Debugging
 =========
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 Logging
 -------

@@ -1,7 +1,8 @@
 SWORD API
 =========
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 About
 -----

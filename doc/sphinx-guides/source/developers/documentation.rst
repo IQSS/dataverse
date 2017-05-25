@@ -2,7 +2,8 @@
 Documentation
 =============
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 Quick Fix
 -----------
@@ -67,6 +68,9 @@ Now you can make a commit with the changes to your own fork in GitHub and submit
 Table of Contents
 -----------------
 
-Every non-index page should have ``.. contents:: :local:`` near the top as decided in https://github.com/IQSS/dataverse/issues/3796 . Here's a one-liner to check if it's missing:
+Every non-index page should use the following code to display a table of contents of internal sub-headings: ::
 
-``ack -L '.. contents:: :local:' --type=rst | grep -v 'index.rst$'``
+	.. contents:: On this page:
+		:local:
+
+This code should be placed below any introductory text/images and directly above the first subheading, much like a Wikipedia page.

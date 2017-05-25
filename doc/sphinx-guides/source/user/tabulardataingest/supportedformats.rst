@@ -1,10 +1,11 @@
 Supported File Formats
 +++++++++++++++++++++++++++++
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 Tabular Data ingest supports the following file formats: 
-(see the sections below for more information on each of the supported formats)
+
 
 ================================ ==================================
 File format                      Versions supported 
@@ -15,3 +16,5 @@ R 				 up to 3
 Excel				 XLSX only (XLS is NOT supported)
 CSV (comma-separated values) 	 (limited support)
 ================================ ==================================
+
+See the subsections in the left sidebar for more information on each of these supported formats.

@@ -8,7 +8,8 @@ Settings within Dataverse itself are managed via JVM options or by manipulating 
 
 Once you have finished securing and configuring your Dataverse installation, proceed to the :doc:`administration` section. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
 
-.. contents:: :local:
+.. contents:: On this page:
+  :local:
 
 Securing Your Installation
 --------------------------

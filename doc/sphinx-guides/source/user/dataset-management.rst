@@ -1,11 +1,13 @@
 Dataset + File Management
 +++++++++++++++++++++++++
 
-.. contents:: :local:
-
 A dataset in Dataverse is a container for your data, documentation, code, and the metadata describing this Dataset.
 
 |image1|
+
+.. contents:: On this page:
+	:local:
+
 
 Supported Metadata
 ==================

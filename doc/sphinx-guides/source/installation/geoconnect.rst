@@ -1,7 +1,8 @@
 Geoconnect
 ==========
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 Geoconnect works as a middle layer, allowing geospatial data files in Dataverse to be visualized with Harvard WorldMap.
 

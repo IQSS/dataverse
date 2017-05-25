@@ -1,8 +1,6 @@
 Dataverse Management
 ++++++++++++++++++++++++++++
 
-.. contents:: :local:
-
 A dataverse is a container for datasets (research data, code, documentation, and metadata) and other dataverses, which can be setup for individual researchers, departments, journals and organizations.
 
 |image1|
@@ -10,6 +8,9 @@ A dataverse is a container for datasets (research data, code, documentation, and
 Once a user creates a dataverse they, by default, become the
 administrator of that dataverse. The dataverse administrator has access
 to manage the settings described in this guide.
+
+.. contents:: On this page:
+  :local:
 
 Create a Dataverse (Within the "Root" Dataverse)
 ===================================================

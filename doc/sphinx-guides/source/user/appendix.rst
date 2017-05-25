@@ -3,9 +3,10 @@
 Appendix
 +++++++++
 
-.. contents:: :local:
-
 Additional documentation complementary to the User Guide.
+
+.. contents:: On this page:
+	:local:
 
 Metadata References
 ======================

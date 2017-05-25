@@ -1,7 +1,8 @@
 Account Creation + Management
 =============================
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 Account Information
 -------------------

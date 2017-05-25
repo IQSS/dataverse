@@ -1,7 +1,8 @@
 Metadata Export
 ===============
 
-.. contents:: :local:
+.. contents:: On this page:
+	:local:
 
 Automatic Exports
 -----------------
