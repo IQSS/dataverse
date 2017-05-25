@@ -57,7 +57,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
             throw new RuntimeException("When making the upload request, rather than 200 the status code was " + statusCode + ". The body was \'" + response + "\'. We cannont proceed. Returning.");
         }
         long millisecondsToSleep = DataCaptureModuleServiceBean.millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls;
-        logger.info("Message from Data Caputure Module upload request endpoint: " + response + ". Sleeping " + millisecondsToSleep + "milliseconds before making rsync script request.");
+        logger.fine("Message from Data Caputure Module upload request endpoint: " + response + ". Sleeping " + millisecondsToSleep + " milliseconds before making rsync script request.");
         try {
             Thread.sleep(millisecondsToSleep);
         } catch (InterruptedException ex) {

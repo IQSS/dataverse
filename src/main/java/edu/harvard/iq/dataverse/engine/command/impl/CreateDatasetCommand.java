@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
+import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -186,6 +188,15 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         
         if(template != null){
             ctxt.templates().incrementUsageCount(template.getId());
+        }
+
+        if (DataCaptureModuleUtil.rsyncSupportEnabled(ctxt.settings().getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+            try {
+                ScriptRequestResponse scriptRequestResponse = ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), savedDataset));
+                logger.fine("script: " + scriptRequestResponse.getScript());
+            } catch (RuntimeException ex) {
+                logger.info("Problem getting rsync script: " + ex.getLocalizedMessage());
+            }
         }
 
         try {

@@ -4,6 +4,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -12,6 +13,15 @@ import javax.json.JsonObjectBuilder;
 public class DataCaptureModuleUtil {
 
     private static final Logger logger = Logger.getLogger(DataCaptureModuleUtil.class.getCanonicalName());
+
+    public static boolean rsyncSupportEnabled(String uploadMethodsSettings) {
+//        if (uploadMethodsSettings != null && uploadMethodsSettings.contains(SystemConfig.FileUploadMethods.RSYNC.toString())) {
+        if (uploadMethodsSettings != null && SystemConfig.FileUploadMethods.RSYNC.toString().equals(uploadMethodsSettings)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     static JsonObject generateJsonForUploadRequest(AuthenticatedUser user, Dataset dataset) {
         JsonObjectBuilder jab = Json.createObjectBuilder();
@@ -25,7 +35,7 @@ public class DataCaptureModuleUtil {
     public static ScriptRequestResponse getScriptFromRequest(HttpResponse<JsonNode> uploadRequest) {
         int status = uploadRequest.getStatus();
         JsonNode body = uploadRequest.getBody();
-        logger.info("Got " + status + " with body: " + body);
+        logger.fine("Got " + status + " with body: " + body);
         if (status == 404) {
             return new ScriptRequestResponse(status);
         }
@@ -40,7 +50,7 @@ public class DataCaptureModuleUtil {
     static UploadRequestResponse makeUploadRequest(HttpResponse<String> uploadRequest) {
         int status = uploadRequest.getStatus();
         String body = uploadRequest.getBody();
-        logger.info("Got " + status + " with body: " + body);
+        logger.fine("Got " + status + " with body: " + body);
         return new UploadRequestResponse(uploadRequest.getStatus(), body);
     }
 

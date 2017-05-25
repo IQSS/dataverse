@@ -18,6 +18,7 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -592,12 +593,8 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{identifier}/dataCaptureModule/rsync")
     public Response getRsync(@PathParam("identifier") String id) {
-        String uploadMethodsSettings = settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        if (uploadMethodsSettings == null) {
-            return error(Response.Status.BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " is null. This installation of Dataverse is not configured for rsync.");
-        }
-        if (!uploadMethodsSettings.contains(SystemConfig.FileUploadMethods.RSYNC.toString())) {
-            return error(Response.Status.BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC);
+        if (!DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+            return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC + ".");
         }
         try {
             Dataset dataset = findDatasetOrDie(id);

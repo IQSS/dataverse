@@ -18,6 +18,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -910,6 +911,13 @@ public class DatasetsIT {
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        String protocol1 = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.protocol");
+        String authority1 = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.authority");
+        String identifier1 = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol1 + ":" + authority1 + "/" + identifier1;
+
         Response getDatasetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/datasets/" + datasetId);
@@ -925,33 +933,30 @@ public class DatasetsIT {
 //        assertEquals("controlledVocabulary", dataTypeField.get(0).get("typeClass"));
 //        assertEquals("X-Ray Diffraction", dataTypeField.get(0).get("value"));
 //        assertTrue(dataTypeField.get(0).get("multiple").equals(false));
-        /**
-         * @todo Also test user who doesn't have permission.
-         */
-        Response getRsyncScriptPermErrorGuest = given()
-                .get("/api/datasets/" + datasetId + "/dataCaptureModule/rsync");
+        String nullTokenToIndicateGuest = null;
+        Response getRsyncScriptPermErrorGuest = UtilIT.getRsyncScript(datasetPersistentId, nullTokenToIndicateGuest);
         getRsyncScriptPermErrorGuest.prettyPrint();
         getRsyncScriptPermErrorGuest.then().assertThat()
                 .contentType(ContentType.JSON)
                 .body("message", equalTo("User :guest is not permitted to perform requested action."))
-                .statusCode(401);
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
         Response createNoPermsUser = UtilIT.createRandomUser();
         String noPermsUsername = UtilIT.getUsernameFromResponse(createNoPermsUser);
         String noPermsApiToken = UtilIT.getApiTokenFromResponse(createNoPermsUser);
 
-        Response getRsyncScriptPermErrorNonGuest = given()
-                .header(UtilIT.API_TOKEN_HTTP_HEADER, noPermsApiToken)
-                .get("/api/datasets/" + datasetId + "/dataCaptureModule/rsync");
+        Response getRsyncScriptPermErrorNonGuest = UtilIT.getRsyncScript(datasetPersistentId, noPermsApiToken);
         getRsyncScriptPermErrorNonGuest.then().assertThat()
-                //                .statusCode(NO_CONTENT.getStatusCode());
                 .contentType(ContentType.JSON)
                 .body("message", equalTo("User @" + noPermsUsername + " is not permitted to perform requested action."))
-                .statusCode(401);
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
-        Response getRsyncScript = given()
-                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/" + datasetId + "/dataCaptureModule/rsync");
+        boolean stopEarlyToVerifyTheScriptWasCreated = false;
+        if (stopEarlyToVerifyTheScriptWasCreated) {
+            logger.info("On the DCM, does /deposit/gen/upload-" + datasetId + ".bash exist? It should! Creating the dataset should be enough to create it.");
+            return;
+        }
+        Response getRsyncScript = UtilIT.getRsyncScript(datasetPersistentId, apiToken);
         getRsyncScript.prettyPrint();
         System.out.println("content type: " + getRsyncScript.getContentType()); // text/html;charset=ISO-8859-1
         getRsyncScript.then().assertThat()
@@ -984,8 +989,8 @@ public class DatasetsIT {
                 .get("/api/datasets/" + datasetId2 + "/dataCaptureModule/rsync");
         attemptToGetRsyncScriptForNonRsyncDataset.prettyPrint();
         attemptToGetRsyncScriptForNonRsyncDataset.then().assertThat()
-                .statusCode(400)
-                .body("message", equalTo(":UploadMethods is null. This installation of Dataverse is not configured for rsync."));
+                .body("message", equalTo(":UploadMethods does not contain dcm/rsync+ssh."))
+                .statusCode(METHOD_NOT_ALLOWED.getStatusCode());
 
         boolean readyToStartWorkingOnChecksumValidationReporting = false;
         if (!readyToStartWorkingOnChecksumValidationReporting) {
