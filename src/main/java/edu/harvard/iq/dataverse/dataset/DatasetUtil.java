@@ -73,11 +73,10 @@ public class DatasetUtil {
         return thumbnails;
     }
 
-    public static DatasetThumbnail getThumbnail(Dataset dataset) {
+    public static DatasetThumbnail getThumbnail(Dataset dataset, Long datasetVersionId) {
         if (dataset == null) {
             return null;
         }
-        String title = dataset.getLatestVersion().getTitle();
 
         Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         if (Files.exists(path)) {
@@ -85,7 +84,7 @@ public class DatasetUtil {
                 byte[] bytes = Files.readAllBytes(path);
                 String base64image = Base64.getEncoder().encodeToString(bytes);
                 DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
-                logger.fine(title + " will get thumbnail from dataset logo.");
+                logger.fine("will get thumbnail from dataset logo");
                 return datasetThumbnail;
             } catch (IOException ex) {
                 logger.fine("Unable to read thumbnail image from file: " + ex);
@@ -96,32 +95,42 @@ public class DatasetUtil {
 
             if (thumbnailFile == null) {
                 if (dataset.isUseGenericThumbnail()) {
-                    logger.fine(title + " does not have a thumbnail and is 'Use Generic'.");
+                    logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail and is 'Use Generic'.");
                     return null;
                 } else {
                     thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset);
                     if (thumbnailFile == null) {
-                        logger.fine(title + " does not have a thumbnail available that could be selected automatically.");
+                        logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail available that could be selected automatically.");
                         return null;
                     } else {
                         String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                         DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
-                        logger.fine(title + " will get thumbnail through automatic selection from DataFile id " + thumbnailFile.getId());
+                        logger.fine("thumbnailFile (id :" + thumbnailFile.getId() + ") will get thumbnail through automatic selection from DataFile id " + thumbnailFile.getId());
                         return defaultDatasetThumbnail;
                     }
                 }
             } else if (thumbnailFile.isRestricted()) {
-                logger.fine(title + " has a thumbnail the user selected but the file must have later been restricted. Returning null.");
+                logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail the user selected but the file must have later been restricted. Returning null.");
                 return null;
             } else {
                 String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                 DatasetThumbnail userSpecifiedDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
-                logger.fine(title + " will get thumbnail the user specified from DataFile id " + thumbnailFile.getId());
+                logger.fine("Dataset (id :" + dataset.getId() + ")  will get thumbnail the user specified from DataFile id " + thumbnailFile.getId());
                 return userSpecifiedDatasetThumbnail;
 
             }
         }
     }
+    
+    
+    public static DatasetThumbnail getThumbnail(Dataset dataset) {
+
+        if (dataset == null){
+            return null;
+        }
+        return getThumbnail(dataset, null);        
+    }
+
 
     public static boolean deleteDatasetLogo(Dataset dataset) {
         if (dataset == null) {
