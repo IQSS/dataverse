@@ -467,11 +467,9 @@ public class SearchServiceBean {
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 //Image url now set via thumbnail api
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
-                DvObject dvObject = dvObjectService.findDvObject(entityid);
-                if (dvObject != null) {
-                    Dataset dataset = (Dataset) dvObject;
-                    DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
-                    solrSearchResult.setDatasetThumbnail(dataset.getDatasetThumbnail(datasetVersion));
+                DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
+                if (datasetVersion != null){                    
+                    solrSearchResult.setDatasetThumbnail(datasetVersion.getDataset().getDatasetThumbnail(datasetVersion));
                 }
                 /**
                  * @todo Could use getFieldValues (plural) here.
