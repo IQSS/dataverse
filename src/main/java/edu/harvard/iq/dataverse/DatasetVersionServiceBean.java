@@ -862,7 +862,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     }
                 }
             }
-            ((Dataset)solrSearchResult.getEntity()).setUseGenericThumbnail((Boolean) searchResult[3]);
+            if (searchResult[3] != null) {
+                ((Dataset)solrSearchResult.getEntity()).setUseGenericThumbnail((Boolean) searchResult[3]);
+            } else {
+                ((Dataset)solrSearchResult.getEntity()).setUseGenericThumbnail(false);
+            }
         }
     }
     
