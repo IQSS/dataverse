@@ -136,8 +136,14 @@ public class GlobalId implements java.io.Serializable {
         } 
         
         this.protocol = protocol;
-        this.authority = identifierString.substring(index1+1, index2);
-        this.identifier = identifierString.substring(index2+1);
+        this.authority = formatIdentifierString(identifierString.substring(index1+1, index2));
+        this.identifier = formatIdentifierString(identifierString.substring(index2+1));
+        
+        if (this.protocol.equals(DOI_PROTOCOL)) {
+            if (!this.checkDOIAuthority(this.authority)) {
+                return false;
+            }
+        }
         return true;
 
     }
