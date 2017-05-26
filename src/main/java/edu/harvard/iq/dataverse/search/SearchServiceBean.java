@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DvObject;
@@ -68,6 +70,8 @@ public class SearchServiceBean {
      */
     @EJB
     DvObjectServiceBean dvObjectService;
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
@@ -466,7 +470,8 @@ public class SearchServiceBean {
                 DvObject dvObject = dvObjectService.findDvObject(entityid);
                 if (dvObject != null) {
                     Dataset dataset = (Dataset) dvObject;
-                    solrSearchResult.setDatasetThumbnail(dataset.getDatasetThumbnail());
+                    DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
+                    solrSearchResult.setDatasetThumbnail(dataset.getDatasetThumbnail(datasetVersion));
                 }
                 /**
                  * @todo Could use getFieldValues (plural) here.

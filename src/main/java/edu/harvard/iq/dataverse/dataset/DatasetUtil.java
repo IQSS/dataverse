@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -73,11 +74,20 @@ public class DatasetUtil {
         return thumbnails;
     }
 
-    public static DatasetThumbnail getThumbnail(Dataset dataset, Long datasetVersionId) {
+    /**
+     * Note "datasetVersionId" can be null.  
+     * If needed, it helps the "efficiency" of "attemptToAutomaticallySelectThumbnailFromDataFiles"
+     * 
+     * @param dataset
+     * @param datasetVersion
+     * @return 
+     */
+    public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion) {
         if (dataset == null) {
             return null;
         }
-
+        
+        
         Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         if (Files.exists(path)) {
             try {
@@ -98,7 +108,7 @@ public class DatasetUtil {
                     logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail and is 'Use Generic'.");
                     return null;
                 } else {
-                    thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset);
+                    thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset, datasetVersion);
                     if (thumbnailFile == null) {
                         logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail available that could be selected automatically.");
                         return null;
@@ -148,15 +158,29 @@ public class DatasetUtil {
         }
     }
 
-    public static DataFile attemptToAutomaticallySelectThumbnailFromDataFiles(Dataset dataset) {
+    /**
+     * Pass an optional datasetVersion in case the file system is checked
+     * 
+     * @param dataset
+     * @param datasetVersion
+     * @return 
+     */
+    public static DataFile attemptToAutomaticallySelectThumbnailFromDataFiles(Dataset dataset, DatasetVersion datasetVersion) {
         if (dataset == null) {
             return null;
         }
+                   
         if (dataset.isUseGenericThumbnail()) {
             logger.fine("Bypassing logic to find a thumbnail because a generic icon for the dataset is desired.");
             return null;
         }
-        for (FileMetadata fmd : dataset.getLatestVersion().getFileMetadatas()) {
+        
+        if (datasetVersion == null){
+            logger.fine("getting latest version of dataset");
+            datasetVersion = dataset.getLatestVersion();
+        }
+        
+        for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
             if (FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
                 return testFile;
