@@ -467,10 +467,13 @@ public class SearchServiceBean {
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 //Image url now set via thumbnail api
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
-                DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
-                if (datasetVersion != null){                    
-                    solrSearchResult.setDatasetThumbnail(datasetVersion.getDataset().getDatasetThumbnail(datasetVersion));
-                }
+                // No, we don't want to set the base64 thumbnails here. 
+                // We want to do it inside SearchIncludeFragment, AND ONLY once the rest of the 
+                // page has already loaded.
+                //DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
+                //if (datasetVersion != null){                    
+                //    solrSearchResult.setDatasetThumbnail(datasetVersion.getDataset().getDatasetThumbnail(datasetVersion));
+                //}
                 /**
                  * @todo Could use getFieldValues (plural) here.
                  */

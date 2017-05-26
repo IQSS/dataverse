@@ -20,9 +20,16 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1168,14 +1175,16 @@ public class SearchIncludeFragment implements java.io.Serializable {
                  */
                 result.setImageUrl(getDataverseCardImageUrl(result));
             } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
-                DatasetThumbnail datasetThumbnail = result.getDatasetThumbnail();
-                if (datasetThumbnail != null) {
-                    result.setImageUrl(datasetThumbnail.getBase64image());
+                
+                result.setImageUrl(getDatasetCardImageUrl(result));
+                
+                if (result.isHarvested()) {
+                    if (harvestedDatasetIds == null) {
+                        harvestedDatasetIds = new HashSet<>();
+                    }
+                    harvestedDatasetIds.add(result.getEntityId());
                 }
             } else if (result.getType().equals("files") /*&& result.getEntity() instanceof DataFile*/) {
-                // TODO: 
-                // use permissionsWrapper?  -- L.A. 4.2.1
-                // OK, done! (4.2.2; in the getFileCardImageUrl() method, below)
                 result.setImageUrl(getFileCardImageUrl(result));
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
@@ -1356,6 +1365,108 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return null;
     }
 
+    // it's the responsibility of the user - to make sure the search result
+    // passed to this method is of the Dataset type!
+    private String getDatasetCardImageUrl(SolrSearchResult result) {
+        Long datasetId = result.getEntity().getId();
+
+        if (datasetId != null) {
+            if (this.dvobjectThumbnailsMap.containsKey(datasetId)) {
+                // Yes, return previous answer
+                // (at max, there could only be 2 cards for the same dataset
+                // on the page - the draft, and the published version; but it's 
+                // still nice to try and cache the result - especially if it's an
+                // uploaded logo - we don't want to read it off disk twice). 
+                
+                if (!"".equals(this.dvobjectThumbnailsMap.get(datasetId))) {
+                    return this.dvobjectThumbnailsMap.get(datasetId);
+                }
+                return null;
+            }
+        }
+
+        if (((Dataset)result.getEntity()).isUseGenericThumbnail()) {
+            this.dvobjectThumbnailsMap.put(result.getEntityId(), "");
+            return null; 
+        }
+        
+        String cardImageUrl = null;
+        
+        Path path = Paths.get(((Dataset)result.getEntity()).getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoThumbnail + DatasetUtil.thumb48addedByImageThumbConverter);
+        if (Files.exists(path)) {
+            try {
+                byte[] bytes = Files.readAllBytes(path);
+                String base64image = Base64.getEncoder().encodeToString(bytes);
+                cardImageUrl = FileUtil.DATA_URI_SCHEME + base64image;
+                this.dvobjectThumbnailsMap.put(result.getEntityId(), cardImageUrl);
+                return cardImageUrl;
+            } catch (IOException ex) {
+                this.dvobjectThumbnailsMap.put(result.getEntityId(), "");
+                return null; 
+                // (alternatively, we could ignore the exception, and proceed with the 
+                // regular process of selecting the thumbnail from the available 
+                // image files - ?)
+            }
+        } 
+
+        if (result.getEntity() != null) {
+            cardImageUrl = this.getAssignedDatasetImage((Dataset) result.getEntity());
+
+            if (cardImageUrl != null) {
+                //logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
+                return cardImageUrl;
+            }
+        }
+
+        Long thumbnailImageFileId = datasetVersionService.getThumbnailByVersionId(result.getDatasetVersionId());
+
+        if (thumbnailImageFileId != null) {
+            //cardImageUrl = FILE_CARD_IMAGE_URL + thumbnailImageFileId;
+            if (this.dvobjectThumbnailsMap.containsKey(thumbnailImageFileId)) {
+                // Yes, return previous answer
+                //logger.info("using cached result for ... "+datasetId);
+                if (!"".equals(this.dvobjectThumbnailsMap.get(thumbnailImageFileId))) {
+                    return this.dvobjectThumbnailsMap.get(thumbnailImageFileId);
+                }
+                return null;
+            }
+
+            DataFile thumbnailImageFile = null;
+
+            if (dvobjectViewMap.containsKey(thumbnailImageFileId)
+                    && dvobjectViewMap.get(thumbnailImageFileId).isInstanceofDataFile()) {
+                thumbnailImageFile = (DataFile) dvobjectViewMap.get(thumbnailImageFileId);
+            } else {
+                thumbnailImageFile = dataFileService.findCheapAndEasy(thumbnailImageFileId);
+                if (thumbnailImageFile != null) {
+                    // TODO:
+                    // do we need this file on the map? - it may not even produce
+                    // a thumbnail!
+                    dvobjectViewMap.put(thumbnailImageFileId, thumbnailImageFile);
+                } else {
+                    this.dvobjectThumbnailsMap.put(thumbnailImageFileId, "");
+                    return null;
+                }
+            }
+
+            if (dataFileService.isThumbnailAvailable(thumbnailImageFile)) {
+                cardImageUrl = ImageThumbConverter.getImageThumbnailAsBase64(
+                        thumbnailImageFile,
+                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            }
+
+            if (cardImageUrl != null) {
+                this.dvobjectThumbnailsMap.put(thumbnailImageFileId, cardImageUrl);
+            } else {
+                this.dvobjectThumbnailsMap.put(thumbnailImageFileId, "");
+            }
+        }
+
+        //logger.info("dataset id " + result.getEntityId() + ", returning " + cardImageUrl);
+
+        return cardImageUrl;
+    }
+    
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of the Dataverse type!
     private String getDataverseCardImageUrl(SolrSearchResult result) {

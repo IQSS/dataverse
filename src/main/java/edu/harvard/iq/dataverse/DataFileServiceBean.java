@@ -1011,8 +1011,6 @@ public class DataFileServiceBean implements java.io.Serializable {
          queries; checking if the thumbnail is available may cost cpu time, if 
          it has to be generated on the fly - so you have to figure out which 
          is more important... 
-        TODO: adding a boolean flag isImageAlreadyGenerated to the DataFile 
-         db table should help with this. -- L.A. 4.2.1 DONE: 4.2.2
         
         */
                 
