@@ -37,10 +37,11 @@ There are some community-lead projects to use configuration management tools suc
 
 The Dataverse development team is happy to "bless" additional community efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a repo under https://github.com/IQSS and managing team access.
 
-Dataverse permits a fair amount of flexibility in where you choose to install the various components. The diagram below shows a load balancer, multiple proxies and web servers, redundant database servers, and offloading of potentially resource intensive work to a separate server. A setup such as this is advanced enough to be considered out of scope for this guide but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
+Dataverse permits a fair amount of flexibility in where you choose to install the various components. The diagram below shows a load balancer, multiple proxies and web servers, redundant database servers, and offloading of potentially resource intensive work to a separate server. 
 
 |3webservers|
 
+A setup such as this is advanced enough to be considered out of scope for this guide but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
 
 .. _architecture:
 
@@ -56,7 +57,7 @@ When planning your installation you should be aware of the following components 
 - PostgreSQL: a relational database.
 - Solr: a search engine. A Dataverse-specific schema is provided.
 - SMTP server: for sending mail for password resets and other notifications.
-- Persistent identifier service: DOI support is provided. An EZID subscription or DataCite account is required for production use.
+- Persistent identifier service: DOI and Handle support are provided. An EZID subscription, DataCite account, or Handle.Net account is required for production use.
 
 There are a number of optional components you may choose to install or configure, including:
 
