@@ -77,7 +77,7 @@ public class DatasetUtil {
         if (dataset == null) {
             return null;
         }
-        String title = dataset.getLatestVersion().getTitle();
+        String title = "Dataset id " + dataset.getId();
 
         Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         if (Files.exists(path)) {
