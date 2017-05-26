@@ -1,7 +1,7 @@
 Finding and Using Data
 +++++++++++++++++++++++
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Finding Data

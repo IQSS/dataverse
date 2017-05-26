@@ -3,7 +3,7 @@ Administration
 
 This section focuses on system and database administration tasks. Please see the :doc:`/user/index` for tasks having to do with having the "Admin" role on a dataverse or dataset.
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Solr Search Index

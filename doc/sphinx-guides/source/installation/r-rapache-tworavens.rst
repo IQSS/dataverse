@@ -37,7 +37,7 @@ rApache and a collection of required third-party R packages. The
 installation steps for these components are described in the
 individual sections of the document below.
 
-.. contents:: On this page:
+.. contents:: |toctitle|
   :local:
 
 0. Overview

@@ -5,7 +5,7 @@ Troubleshooting
 
 This new (as of v.4.6) section of the Admin guide is for tips on how to diagnose and fix system problems. 
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Deployment fails, "EJB Timer Service not available"

@@ -4,7 +4,7 @@ Data Access API
 The Data Access API provides programmatic download access to the files stored under Dataverse. 
 More advanced features of the Access API include format-specific transformations (thumbnail generation/resizing for images; converting tabular data into alternative file formats) and access to the data-level metadata that describes the contents of the tabular files. 
 
-.. contents:: On this page:
+.. contents:: |toctitle|
    :local:
 
 Basic File Access

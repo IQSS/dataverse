@@ -4,7 +4,7 @@ Introduction
 
 Welcome! Thanks for installing `Dataverse <http://dataverse.org>`_!
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Quick Links

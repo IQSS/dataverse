@@ -3,7 +3,7 @@
 UNF Version 5
 ================================
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 **Important Update:**

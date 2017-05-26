@@ -2,7 +2,7 @@
 Branching Strategy
 ==================
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Goals

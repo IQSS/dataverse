@@ -3,7 +3,7 @@ Foundations
 
 Foundation elements are the very basic building blocks to create a page in Dataverse. Here we will outline how we've applied Bootstrap CSS to our UI, and how the CSS settings in our stylesheet mesh with it. Each section includes links to relevant parts of the official Bootstrap guides and other useful resources, where you can find more detailed documentation. We will also outline other UI resources like FontCustom and Socicon and how they are utilized.
 
-.. contents:: On this page:
+.. contents:: |toctitle|
   :local:
 
 Grid Layout

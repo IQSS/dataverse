@@ -6,7 +6,7 @@ Before running the Dataverse installation script, you must install and configure
 
 You **may** find it helpful to look at how the configuration is done automatically by various tools such as Vagrant, Puppet, or Ansible. See the :doc:`prep` section for pointers on diving into these scripts.
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Java

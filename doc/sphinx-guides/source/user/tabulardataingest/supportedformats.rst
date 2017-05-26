@@ -1,7 +1,7 @@
 Supported File Formats
 +++++++++++++++++++++++++++++
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Tabular Data ingest supports the following file formats: 

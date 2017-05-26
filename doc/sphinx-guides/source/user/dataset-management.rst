@@ -5,7 +5,7 @@ A dataset in Dataverse is a container for your data, documentation, code, and th
 
 |image1|
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 

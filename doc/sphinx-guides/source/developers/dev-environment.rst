@@ -2,7 +2,7 @@
 Development Environment
 =======================
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Assumptions

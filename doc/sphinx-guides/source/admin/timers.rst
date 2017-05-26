@@ -5,7 +5,7 @@ Dataverse Application Timers
 
 Dataverse uses timers to automatically run scheduled Harvest and Metadata export jobs. 
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Dedicated timer server in a Dataverse server cluster

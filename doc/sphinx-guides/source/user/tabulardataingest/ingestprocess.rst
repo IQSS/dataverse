@@ -6,7 +6,7 @@ the application and what happens during the ingest process, as the
 files uploaded by the user are processed and converted into the
 archival format in the Dataverse application.
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 What Happens During this "Ingest"? 

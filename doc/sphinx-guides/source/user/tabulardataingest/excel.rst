@@ -1,7 +1,7 @@
 Excel 
 +++++++
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Excel files (**New** in Dataverse 4.0!)

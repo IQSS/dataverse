@@ -2,7 +2,7 @@
 Debugging
 =========
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Logging

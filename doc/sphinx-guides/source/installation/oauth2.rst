@@ -1,7 +1,7 @@
 OAuth Login: ORCID, GitHub, Google
 ==================================
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Introduction

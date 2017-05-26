@@ -1,7 +1,7 @@
 Shibboleth
 ==========
 
-.. contents:: On this page:
+.. contents:: |toctitle|
   :local:
   
 Introduction

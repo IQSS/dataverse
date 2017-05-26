@@ -3,7 +3,7 @@
 WorldMap: Geospatial Data Exploration
 +++++++++++++++++++++++++++++++++++++
 
-.. contents:: On this page:
+.. contents:: |toctitle|
    :local:
 
 Dataverse and WorldMap

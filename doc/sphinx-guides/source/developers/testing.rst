@@ -2,7 +2,7 @@
 Testing
 =======
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Unit Tests

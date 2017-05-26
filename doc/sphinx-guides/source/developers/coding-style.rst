@@ -2,7 +2,7 @@
 Coding Style
 ============
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Like all development teams, the `Dataverse developers at IQSS <http://datascience.iq.harvard.edu/team>`_ have their habits and styles when it comes to writing code.

@@ -3,7 +3,7 @@ SPSS
 
 SPSS data files (POR and SAV formats).
 
-.. contents:: On this page:
+.. contents:: |toctitle|
 	:local:
 
 Supported Versions
