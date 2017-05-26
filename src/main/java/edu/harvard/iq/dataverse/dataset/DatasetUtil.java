@@ -105,9 +105,10 @@ public class DatasetUtil {
                         return null;
                     } else {
                         String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-                        DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
+                        DatasetThumbnail automaticallySelectedThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
+                        automaticallySelectedThumbnail.setJustSelectedAutomatically(true);
                         logger.fine(title + " will get thumbnail through automatic selection from DataFile id " + thumbnailFile.getId());
-                        return defaultDatasetThumbnail;
+                        return automaticallySelectedThumbnail;
                     }
                 }
             } else if (thumbnailFile.isRestricted()) {

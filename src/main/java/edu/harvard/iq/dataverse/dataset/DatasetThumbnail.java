@@ -6,6 +6,7 @@ public class DatasetThumbnail {
 
     private final String base64image;
     private final DataFile dataFile;
+    private boolean justSelectedAutomatically;
 
     public DatasetThumbnail(String base64image, DataFile dataFile) {
         this.base64image = base64image;
@@ -35,4 +36,13 @@ public class DatasetThumbnail {
             return null;
         }
     }
+
+    public boolean wasJustSelectedAutomatically() {
+        return justSelectedAutomatically;
+    }
+
+    public void setJustSelectedAutomatically(boolean justSelectedAutomatically) {
+        this.justSelectedAutomatically = justSelectedAutomatically;
+    }
+
 }
