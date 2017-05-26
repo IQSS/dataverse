@@ -57,7 +57,7 @@ When planning your installation you should be aware of the following components 
 - PostgreSQL: a relational database.
 - Solr: a search engine. A Dataverse-specific schema is provided.
 - SMTP server: for sending mail for password resets and other notifications.
-- Persistent identifier service: DOI and Handle support are provided. An EZID subscription, DataCite account, or Handle.Net account is required for production use.
+- Persistent identifier service: DOI and Handle support are provided. Production use requires a registered DOI or Handle.net authority.
 
 There are a number of optional components you may choose to install or configure, including:
 
