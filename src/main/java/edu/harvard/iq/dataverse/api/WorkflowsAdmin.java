@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
+import edu.harvard.iq.dataverse.workflow.stepspi.WorkflowStepProviderInterface;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,6 +24,7 @@ import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -47,6 +49,9 @@ public class WorkflowsAdmin extends AbstractApiBean {
        
     @EJB
     WorkflowServiceBean workflows;
+    
+    @Inject
+    private javax.enterprise.inject.Instance<WorkflowStepProviderInterface> stepProviders;
     
     @POST
     public Response addWorkflow(JsonObject jsonWorkflow) {
@@ -216,6 +221,54 @@ public class WorkflowsAdmin extends AbstractApiBean {
             }
             logger.log(Level.INFO, "Searching for Workflow Step Providers done.");
             return ok( names.toString() );
+        } catch (NoClassDefFoundError ncdfe) {
+            logger.log(Level.WARNING, "Class not found: " + ncdfe.getMessage(), ncdfe);
+            return error( Status.INTERNAL_SERVER_ERROR, ncdfe.getLocalizedMessage() );
+        } catch (ServiceConfigurationError serviceError) {
+            logger.log(Level.WARNING, "Service Error loading workflow step providers: " + serviceError.getMessage(), serviceError);
+            return error( Status.INTERNAL_SERVER_ERROR, serviceError.getLocalizedMessage() );
+        }
+    }
+    
+    
+    @Path("/test-spi-i")
+    @GET
+    public Response testSpiI() {
+        try {
+            ServiceLoader<WorkflowStepProviderInterface> loader = ServiceLoader.load(WorkflowStepProviderInterface.class, Thread.currentThread().getContextClassLoader());
+            loader.reload();
+            List<String> names = new LinkedList<>();
+            Iterator<WorkflowStepProviderInterface> itr = loader.iterator();
+            while ( itr.hasNext() ) {
+                WorkflowStepProviderInterface wss = itr.next();
+                logger.log(Level.INFO, "Found WorkflowStepProviderInterface: {0}", wss.getClass().getCanonicalName());
+                logger.log(Level.INFO, "Got string: {0}", wss.getAString() );
+            }
+            logger.log(Level.INFO, "Searching for WorkflowStepProviderInterface done.");
+            return ok( names.toString() );
+        } catch (NoClassDefFoundError ncdfe) {
+            logger.log(Level.WARNING, "Class not found: " + ncdfe.getMessage(), ncdfe);
+            return error( Status.INTERNAL_SERVER_ERROR, ncdfe.getLocalizedMessage() );
+        } catch (ServiceConfigurationError serviceError) {
+            logger.log(Level.WARNING, "Service Error loading workflow step providers: " + serviceError.getMessage(), serviceError);
+            return error( Status.INTERNAL_SERVER_ERROR, serviceError.getLocalizedMessage() );
+        }
+    }
+    
+    @Path("/test-spi-i2")
+    @GET
+    public Response testSpiI2() {
+        try {
+            Iterator<WorkflowStepProviderInterface> spiItr = stepProviders.iterator();
+            StringBuilder sb = new StringBuilder();
+            
+            while ( spiItr.hasNext() ) {
+                WorkflowStepProviderInterface instance = spiItr.next();
+                logger.info( "found intance " + instance.toString() );
+                sb.append( instance.getAString() ).append("\n");
+            }
+            
+            return ok( sb.toString() );
         } catch (NoClassDefFoundError ncdfe) {
             logger.log(Level.WARNING, "Class not found: " + ncdfe.getMessage(), ncdfe);
             return error( Status.INTERNAL_SERVER_ERROR, ncdfe.getLocalizedMessage() );
