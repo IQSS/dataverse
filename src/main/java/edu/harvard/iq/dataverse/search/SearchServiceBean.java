@@ -455,7 +455,10 @@ public class SearchServiceBean {
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
-                solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
+                // Do not set the ImageUrl, let the search include fragment fill in
+                // the thumbnail, similarly to how the dataset and datafile cards
+                // are handled. 
+                //solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
                 /**
                  * @todo Expose this API URL after "dvs" is changed to
                  * "dataverses". Also, is an API token required for published
