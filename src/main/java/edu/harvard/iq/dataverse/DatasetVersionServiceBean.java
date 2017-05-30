@@ -711,6 +711,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
         if (thumbnailFileId != null) {
             logger.fine("DatasetVersionService,getThumbnailByVersionid(): found already generated thumbnail for version " + versionId + ": " + thumbnailFileId);
+            assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
             return thumbnailFileId;
         }
 

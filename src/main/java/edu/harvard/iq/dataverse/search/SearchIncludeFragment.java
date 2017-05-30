@@ -397,7 +397,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     dataverseService.populateDvSearchCard(solrSearchResult);
                     
                     /*
-                    Datasets cannot be harvested yet.
+                    Dataverses cannot be harvested yet.
                     if (isHarvestedDataverse(solrSearchResult.getEntityId())) {
                         solrSearchResult.setHarvested(true);
                     }*/
@@ -1165,7 +1165,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {
             //logger.info("checking DisplayImage for the search result " + i++);
-            if (result.getType().equals("dataverses") /*&& result.getEntity() instanceof Dataverse*/) {
+            if (result.getType().equals("dataverses")) {
                 /**
                  * @todo Someday we should probably revert this setImageUrl to
                  * the original meaning "image_url" to address this issue:
@@ -1174,7 +1174,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                  * https://github.com/IQSS/dataverse/issues/3616
                  */
                 result.setImageUrl(getDataverseCardImageUrl(result));
-            } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
+            } else if (result.getType().equals("datasets")) {
                 
                 result.setImageUrl(getDatasetCardImageUrl(result));
                 
@@ -1184,7 +1184,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                     harvestedDatasetIds.add(result.getEntityId());
                 }
-            } else if (result.getType().equals("files") /*&& result.getEntity() instanceof DataFile*/) {
+            } else if (result.getType().equals("files")) {
                 result.setImageUrl(getFileCardImageUrl(result));
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
@@ -1272,7 +1272,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         DataFile assignedThumbnailFile = dataset.getThumbnailFile();
 
         if (assignedThumbnailFile != null) {
-            Long assignedThumbnailFileId = null;
+            Long assignedThumbnailFileId = assignedThumbnailFile.getId();
 
             if (this.dvobjectThumbnailsMap.containsKey(assignedThumbnailFileId)) {
                 // Yes, return previous answer
@@ -1310,6 +1310,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of the Datafile type!
     private String getFileCardImageUrl(SolrSearchResult result) {
+        // Before we do anything else, check if it's a harvested dataset; 
+        // no need to check anything else if so (harvested objects never have 
+        // thumbnails)
+        
+        if (result.isHarvested()) {
+            return null; 
+        }
+        
         Long imageFileId = result.getEntity().getId();
 
         if (imageFileId != null) {
@@ -1368,6 +1376,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of the Dataset type!
     private String getDatasetCardImageUrl(SolrSearchResult result) {
+        // Before we do anything else, check if it's a harvested dataset; 
+        // no need to check anything else if so (harvested datasets never have 
+        // thumbnails)
+        
+        if (result.isHarvested()) {
+            return null; 
+        }
+        
         Long datasetId = result.getEntity().getId();
 
         if (datasetId != null) {
