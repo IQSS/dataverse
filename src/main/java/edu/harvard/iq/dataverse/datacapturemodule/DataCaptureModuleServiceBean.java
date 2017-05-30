@@ -7,14 +7,13 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.harvard.iq.dataverse.Dataset;
-import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DataCaptureModuleUrl;
 import java.io.Serializable;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 
 /**
  * This class contains all the methods that have external runtime dependencies
- * such as the Data Capture Module itself and PostgreSQL.
+ * such as the Data Capture Module itself.
  */
 @Stateless
 @Named
@@ -30,13 +29,6 @@ public class DataCaptureModuleServiceBean implements Serializable {
 
     // TODO: Do we care about authenticating to the DCM? If not, no need for AuthenticatedUser here.
     public UploadRequestResponse requestRsyncScriptCreation(AuthenticatedUser user, Dataset dataset, String dcmBaseUrl) throws DataCaptureModuleException {
-        if (dcmBaseUrl == null) {
-            throw new RuntimeException("Problem POSTing JSON to Data Capture Module. The '" + DataCaptureModuleUrl + "' setting has not been configured.");
-        }
-        return makeUploadRequest(dcmBaseUrl, user, dataset);
-    }
-
-    public static UploadRequestResponse makeUploadRequest(String dcmBaseUrl, AuthenticatedUser user, Dataset dataset) throws DataCaptureModuleException {
         String uploadRequestUrl = dcmBaseUrl + "/ur.py";
         String jsonString = DataCaptureModuleUtil.generateJsonForUploadRequest(user, dataset).toString();
         // curl -H 'Content-Type: application/json' -X POST -d '{"datasetId":"42", "userId":"1642","datasetIdentifier":"42"}' http://localhost/ur.py
@@ -55,14 +47,7 @@ public class DataCaptureModuleServiceBean implements Serializable {
     }
 
     public ScriptRequestResponse retreiveRequestedRsyncScript(Dataset dataset, String dcmBaseUrl) throws DataCaptureModuleException {
-        if (dcmBaseUrl == null) {
-            throw new RuntimeException("Problem GETing JSON to Data Capture Module for dataset " + dataset.getId() + " The '" + DataCaptureModuleUrl + "' setting has not been configured.");
-        }
-        return getRsyncScriptForDataset(dcmBaseUrl, dataset.getId());
-
-    }
-
-    public static ScriptRequestResponse getRsyncScriptForDataset(String dcmBaseUrl, long datasetId) throws DataCaptureModuleException {
+        Long datasetId = dataset.getId();
         String scriptRequestUrl = dcmBaseUrl + "/sr.py";
         try {
             HttpResponse<JsonNode> scriptRequest = Unirest.post(scriptRequestUrl)

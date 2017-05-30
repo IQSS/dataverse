@@ -27,13 +27,15 @@ public class DataCaptureModuleServiceBeanIT {
 
     @Test
     public void testUploadRequestAndScriptRequest() throws InterruptedException, DataCaptureModuleException {
+        DataCaptureModuleServiceBean dataCaptureModuleServiceBean = new DataCaptureModuleServiceBean();
+
         // Step 1: Upload request
         AuthenticatedUser user = makeAuthenticatedUser("Lauren", "Ipsum");
         Dataset dataset = new Dataset();
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         long timeInMillis = calendar.getTimeInMillis();
         dataset.setId(timeInMillis);
-        UploadRequestResponse uploadRequestResponse = DataCaptureModuleServiceBean.makeUploadRequest("http://localhost:8888", user, dataset);
+        UploadRequestResponse uploadRequestResponse = dataCaptureModuleServiceBean.requestRsyncScriptCreation(user, dataset, "http://localhost:8888");
         assertEquals(200, uploadRequestResponse.getHttpStatusCode());
         assertTrue(uploadRequestResponse.getResponse().contains("recieved"));
         assertEquals("\nrecieved\n", uploadRequestResponse.getResponse());
@@ -42,7 +44,7 @@ public class DataCaptureModuleServiceBeanIT {
         sleep(DataCaptureModuleServiceBean.millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls);
 
         // Step 2: Script request.
-        ScriptRequestResponse scriptRequestResponseGood = DataCaptureModuleServiceBean.getRsyncScriptForDataset("http://localhost:8888", dataset.getId());
+        ScriptRequestResponse scriptRequestResponseGood = dataCaptureModuleServiceBean.retreiveRequestedRsyncScript(dataset, "http://localhost:8888");
         System.out.println("script: " + scriptRequestResponseGood.getScript());
         assertNotNull(scriptRequestResponseGood.getScript());
         assertTrue(scriptRequestResponseGood.getScript().startsWith("#!"));

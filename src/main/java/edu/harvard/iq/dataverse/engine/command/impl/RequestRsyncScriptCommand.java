@@ -58,6 +58,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
             throw new PermissionException("This command can only be called by an AuthenticatedUser, not " + user,
                     this, Collections.singleton(Permission.AddDataset), dataset);
         }
+        // We need an AuthenticatedUser so we can pass its database id to the DCM.
         AuthenticatedUser au = (AuthenticatedUser) user;
         String errorPreamble = "User id " + au.getId() + " had a problem retrieving rsync script for dataset id " + dataset.getId() + " from Data Capture Module.";
         UploadRequestResponse uploadRequestResponse = null;
