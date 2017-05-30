@@ -501,7 +501,7 @@ Set ``:ExcludeEmailFromExport`` to prevent email addresses for dataset contacts 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ExcludeEmailFromExport``
 
 :NavbarAboutUrl
-++++++++++++++
++++++++++++++++
 
 Set ``NavbarAboutUrl`` to a fully-qualified url which will be used for the "About" link in the navbar. 
 

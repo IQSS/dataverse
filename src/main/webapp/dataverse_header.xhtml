@@ -55,48 +55,15 @@
                         </li>
                         </ui:fragment>
 
-                        <ui:fragment rendered="#{!empty settingsWrapper.get(':NavbarGuidesUrl')}">
                         <li>
-                             <h:outputLink value="#{settingsWrapper.get(':NavbarGuidesUrl')}" target="_blank">
-                                #{bundle['header.guides']}
-                            </h:outputLink>   
+                            <h:outputLink rendered="#{!empty settingsWrapper.get(':NavbarGuidesUrl')}" value="#{settingsWrapper.get(':NavbarGuidesUrl')}" target="_blank">
+                                #{bundle['header.guides.user']}
+                            </h:outputLink>
+                            <h:outputLink rendered="#{empty settingsWrapper.get(':NavbarGuidesUrl')}" value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/user" target="_blank">
+                                #{bundle['header.guides.user']}
+                            </h:outputLink>
                         </li>
-                        </ui:fragment>
 
-                        <ui:fragment rendered="#{empty settingsWrapper.get(':NavbarGuidesUrl')}">
-                        <li class="dropdown">
-                            <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
-                                #{bundle['header.guides']} <b class="caret"></b>
-                            </span>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/user" target="_blank">
-                                        #{bundle['header.guides.user']} 
-                                    </h:outputLink>
-                                </li>
-                                <li>
-                                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/latest/developers" target="_blank">
-                                        <h:outputText value="#{bundle['header.guides.developer']}" />
-                                    </h:outputLink>
-                                </li>
-                                <li>
-                                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/latest/installation" target="_blank">
-                                        <h:outputText value="#{bundle['header.guides.installation']}" />
-                                    </h:outputLink>
-                                </li>
-                                <li>
-                                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/api" target="_blank">
-                                        <h:outputText value="#{bundle['header.guides.api']}" />
-                                    </h:outputLink>
-                                </li>
-                                <li jsf:rendered="#{dataverseSession.user.superuser}">
-                                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/latest/admin" target="_blank">
-                                        <h:outputText value="#{bundle['header.guides.admin']}" />
-                                    </h:outputLink>
-                                </li>
-                            </ul>
-                        </li>
-                       </ui:fragment>
                         <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
                             <p:commandLink value="#{bundle['header.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
