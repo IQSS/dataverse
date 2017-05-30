@@ -59,11 +59,12 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
                     this, Collections.singleton(Permission.AddDataset), dataset);
         }
         // We need an AuthenticatedUser so we can pass its database id to the DCM.
-        AuthenticatedUser au = (AuthenticatedUser) user;
-        String errorPreamble = "User id " + au.getId() + " had a problem retrieving rsync script for dataset id " + dataset.getId() + " from Data Capture Module.";
+        AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+        String errorPreamble = "User id " + authenticatedUser.getId() + " had a problem retrieving rsync script for dataset id " + dataset.getId() + " from Data Capture Module.";
+        String jsonString = DataCaptureModuleUtil.generateJsonForUploadRequest(authenticatedUser, dataset).toString();
         UploadRequestResponse uploadRequestResponse = null;
         try {
-            uploadRequestResponse = ctxt.dataCaptureModule().requestRsyncScriptCreation(au, dataset, dcmBaseUrl);
+            uploadRequestResponse = ctxt.dataCaptureModule().requestRsyncScriptCreation(jsonString, dcmBaseUrl + DataCaptureModuleServiceBean.uploadRequestPath);
         } catch (DataCaptureModuleException ex) {
             throw new RuntimeException("Problem making upload request to Data Capture Module:  " + DataCaptureModuleUtil.getMessageFromException(ex));
         }
@@ -81,7 +82,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
         }
         ScriptRequestResponse scriptRequestResponse = null;
         try {
-            scriptRequestResponse = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset, dcmBaseUrl);
+            scriptRequestResponse = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset.getId(), dcmBaseUrl + DataCaptureModuleServiceBean.scriptRequestPath);
         } catch (DataCaptureModuleException ex) {
             throw new RuntimeException("Problem making script request to Data Capture Module:  " + DataCaptureModuleUtil.getMessageFromException(ex));
         }

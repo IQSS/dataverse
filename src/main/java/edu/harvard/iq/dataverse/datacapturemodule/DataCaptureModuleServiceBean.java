@@ -1,12 +1,10 @@
 package edu.harvard.iq.dataverse.datacapturemodule;
 
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.logging.Logger;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import edu.harvard.iq.dataverse.Dataset;
 import java.io.Serializable;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -26,13 +24,12 @@ public class DataCaptureModuleServiceBean implements Serializable {
      * making this configurable.
      */
     public static long millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls = 500;
+    public static String uploadRequestPath = "/ur.py";
+    public static String scriptRequestPath = "/sr.py";
 
     // TODO: Do we care about authenticating to the DCM? If not, no need for AuthenticatedUser here.
-    public UploadRequestResponse requestRsyncScriptCreation(AuthenticatedUser user, Dataset dataset, String dcmBaseUrl) throws DataCaptureModuleException {
-        String uploadRequestUrl = dcmBaseUrl + "/ur.py";
-        String jsonString = DataCaptureModuleUtil.generateJsonForUploadRequest(user, dataset).toString();
-        // curl -H 'Content-Type: application/json' -X POST -d '{"datasetId":"42", "userId":"1642","datasetIdentifier":"42"}' http://localhost/ur.py
-        logger.info("JSON to send to Data Capture Module: " + jsonString);
+    public UploadRequestResponse requestRsyncScriptCreation(String jsonString, String uploadRequestUrl) throws DataCaptureModuleException {
+        logger.fine("requestRsyncScriptCreation using JSON string: " + jsonString + " and sending to " + uploadRequestUrl);
         try {
             HttpResponse<String> uploadRequest = Unirest.post(uploadRequestUrl)
                     .body(jsonString)
@@ -46,9 +43,8 @@ public class DataCaptureModuleServiceBean implements Serializable {
         }
     }
 
-    public ScriptRequestResponse retreiveRequestedRsyncScript(Dataset dataset, String dcmBaseUrl) throws DataCaptureModuleException {
-        Long datasetId = dataset.getId();
-        String scriptRequestUrl = dcmBaseUrl + "/sr.py";
+    public ScriptRequestResponse retreiveRequestedRsyncScript(long datasetId, String scriptRequestUrl) throws DataCaptureModuleException {
+        logger.fine("retreiveRequestedRsyncScript using dataset id + " + datasetId + " to " + scriptRequestUrl);
         try {
             HttpResponse<JsonNode> scriptRequest = Unirest.post(scriptRequestUrl)
                     .field("datasetIdentifier", datasetId)

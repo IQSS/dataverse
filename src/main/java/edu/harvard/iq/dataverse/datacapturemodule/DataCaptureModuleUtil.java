@@ -23,7 +23,7 @@ public class DataCaptureModuleUtil {
         }
     }
 
-    static JsonObject generateJsonForUploadRequest(AuthenticatedUser user, Dataset dataset) {
+    public static JsonObject generateJsonForUploadRequest(AuthenticatedUser user, Dataset dataset) {
         JsonObjectBuilder jab = Json.createObjectBuilder();
 //        // The general rule should be to always pass the user id and dataset id to the DCM.
         jab.add("userId", user.getId());

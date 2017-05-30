@@ -27,15 +27,18 @@ public class DataCaptureModuleServiceBeanIT {
 
     @Test
     public void testUploadRequestAndScriptRequest() throws InterruptedException, DataCaptureModuleException {
+        String dcmBaseUrl = "http://localhost:8888";
         DataCaptureModuleServiceBean dataCaptureModuleServiceBean = new DataCaptureModuleServiceBean();
 
         // Step 1: Upload request
-        AuthenticatedUser user = makeAuthenticatedUser("Lauren", "Ipsum");
+        AuthenticatedUser authenticatedUser = makeAuthenticatedUser("Lauren", "Ipsum");
         Dataset dataset = new Dataset();
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         long timeInMillis = calendar.getTimeInMillis();
         dataset.setId(timeInMillis);
-        UploadRequestResponse uploadRequestResponse = dataCaptureModuleServiceBean.requestRsyncScriptCreation(user, dataset, "http://localhost:8888");
+        String jsonString = DataCaptureModuleUtil.generateJsonForUploadRequest(authenticatedUser, dataset).toString();
+        logger.info("jsonString: " + jsonString);
+        UploadRequestResponse uploadRequestResponse = dataCaptureModuleServiceBean.requestRsyncScriptCreation(jsonString, dcmBaseUrl + DataCaptureModuleServiceBean.uploadRequestPath);
         assertEquals(200, uploadRequestResponse.getHttpStatusCode());
         assertTrue(uploadRequestResponse.getResponse().contains("recieved"));
         assertEquals("\nrecieved\n", uploadRequestResponse.getResponse());
@@ -44,7 +47,7 @@ public class DataCaptureModuleServiceBeanIT {
         sleep(DataCaptureModuleServiceBean.millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls);
 
         // Step 2: Script request.
-        ScriptRequestResponse scriptRequestResponseGood = dataCaptureModuleServiceBean.retreiveRequestedRsyncScript(dataset, "http://localhost:8888");
+        ScriptRequestResponse scriptRequestResponseGood = dataCaptureModuleServiceBean.retreiveRequestedRsyncScript(dataset.getId(), dcmBaseUrl + DataCaptureModuleServiceBean.scriptRequestPath);
         System.out.println("script: " + scriptRequestResponseGood.getScript());
         assertNotNull(scriptRequestResponseGood.getScript());
         assertTrue(scriptRequestResponseGood.getScript().startsWith("#!"));

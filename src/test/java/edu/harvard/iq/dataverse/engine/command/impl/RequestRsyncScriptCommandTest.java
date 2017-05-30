@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.datacapturemodule.UploadRequestResponse;
@@ -44,14 +43,13 @@ public class RequestRsyncScriptCommandTest {
                 return new DataCaptureModuleServiceBean() {
 
                     @Override
-                    public UploadRequestResponse requestRsyncScriptCreation(AuthenticatedUser user, Dataset dataset, String dcmBaseUrl) {
+                    public UploadRequestResponse requestRsyncScriptCreation(String jsonString, String dcmBaseUrl) {
                         return new UploadRequestResponse(200, "myResponse");
                     }
 
                     @Override
-                    public ScriptRequestResponse retreiveRequestedRsyncScript(Dataset dataset, String dcmBaseUrl) {
+                    public ScriptRequestResponse retreiveRequestedRsyncScript(long datasetId, String dcmBaseUrl) {
                         int httpStatusCode = 200;
-                        long datasetId = dataset.getId();
                         long userId = 123l;
                         String script = "theScript";
                         ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetId, userId, script);
