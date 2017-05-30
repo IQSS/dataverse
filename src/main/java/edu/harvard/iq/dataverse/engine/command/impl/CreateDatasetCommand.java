@@ -196,6 +196,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             ctxt.templates().incrementUsageCount(template.getId());
         }
 
+        logger.fine("Checking if rsync support is enabled.");
         if (DataCaptureModuleUtil.rsyncSupportEnabled(ctxt.settings().getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             try {
                 ScriptRequestResponse scriptRequestResponse = ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), savedDataset));
@@ -204,6 +205,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 logger.info("Problem getting rsync script: " + ex.getLocalizedMessage());
             }
         }
+        logger.fine("Done with rsync request, if any.");
 
         try {
             /**

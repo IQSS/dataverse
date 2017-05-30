@@ -7,47 +7,26 @@ import static java.lang.Thread.sleep;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Logger;
-import junit.framework.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import static java.lang.Thread.sleep;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+/**
+ * These tests are not expected to pass unless you have a Data Capture Module
+ * (DCM) installed and configured properly. They are intended to help a
+ * developer get set up for DCM development.
+ */
 public class DataCaptureModuleServiceBeanIT {
 
     private static final Logger logger = Logger.getLogger(DataCaptureModuleServiceBeanIT.class.getCanonicalName());
 
     @Test
-    public void testUploadRequestWorking() {
-        AuthenticatedUser user = makeAuthenticatedUser("Lauren", "Ipsum");
-        Dataset dataset = new Dataset();
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        long timeInMillis = calendar.getTimeInMillis();
-        dataset.setId(timeInMillis);
-        UploadRequestResponse uploadRequestResponse = DataCaptureModuleServiceBean.makeUploadRequest("http://localhost:8888", user, dataset);
-        assertEquals(200, uploadRequestResponse.getHttpStatusCode());
-        assertTrue(uploadRequestResponse.getResponse().contains("recieved"));
-        assertEquals("\nrecieved\n", uploadRequestResponse.getResponse());
-    }
-
-    @Test
-    public void testScriptRequestWorking() {
-        long expectedToWork = 3813;
-        ScriptRequestResponse scriptRequestResponseGood = DataCaptureModuleServiceBean.getRsyncScriptForDataset("http://localhost:8888", expectedToWork);
-        System.out.println("script: " + scriptRequestResponseGood.getScript());
-        Assert.assertTrue(scriptRequestResponseGood.getScript().startsWith("#!"));
-    }
-
-    @Test
-    public void testScriptRequestNotWorking() {
-        long notExpectedToWork = Long.MAX_VALUE;
-        ScriptRequestResponse scriptRequestResponseBad = DataCaptureModuleServiceBean.getRsyncScriptForDataset("http://localhost:8888", notExpectedToWork);
-        assertNull(scriptRequestResponseBad.getScript());
-    }
-
-    @Test
-    public void testBothSteps() throws InterruptedException {
+    public void testUploadRequestAndScriptRequest() throws InterruptedException, DataCaptureModuleException {
         // Step 1: Upload request
         AuthenticatedUser user = makeAuthenticatedUser("Lauren", "Ipsum");
         Dataset dataset = new Dataset();

@@ -7,10 +7,8 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DataCaptureModuleUrl;
 import java.io.Serializable;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 
@@ -30,19 +28,15 @@ public class DataCaptureModuleServiceBean implements Serializable {
      */
     public static long millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls = 500;
 
-    @EJB
-    SettingsServiceBean settingsService;
-
     // TODO: Do we care about authenticating to the DCM? If not, no need for AuthenticatedUser here.
-    public UploadRequestResponse requestRsyncScriptCreation(AuthenticatedUser user, Dataset dataset) {
-        String dcmBaseUrl = settingsService.getValueForKey(DataCaptureModuleUrl);
+    public UploadRequestResponse requestRsyncScriptCreation(AuthenticatedUser user, Dataset dataset, String dcmBaseUrl) throws DataCaptureModuleException {
         if (dcmBaseUrl == null) {
             throw new RuntimeException("Problem POSTing JSON to Data Capture Module. The '" + DataCaptureModuleUrl + "' setting has not been configured.");
         }
         return makeUploadRequest(dcmBaseUrl, user, dataset);
     }
 
-    public static UploadRequestResponse makeUploadRequest(String dcmBaseUrl, AuthenticatedUser user, Dataset dataset) {
+    public static UploadRequestResponse makeUploadRequest(String dcmBaseUrl, AuthenticatedUser user, Dataset dataset) throws DataCaptureModuleException {
         String uploadRequestUrl = dcmBaseUrl + "/ur.py";
         String jsonString = DataCaptureModuleUtil.generateJsonForUploadRequest(user, dataset).toString();
         // curl -H 'Content-Type: application/json' -X POST -d '{"datasetId":"42", "userId":"1642","datasetIdentifier":"42"}' http://localhost/ur.py
@@ -54,13 +48,13 @@ public class DataCaptureModuleServiceBean implements Serializable {
             UploadRequestResponse uploadRequestResponse = DataCaptureModuleUtil.makeUploadRequest(uploadRequest);
             return uploadRequestResponse;
         } catch (UnirestException ex) {
-            logger.info("Error calling " + uploadRequestUrl + ": " + ex);
-            return null;
+            String error = "Error calling " + uploadRequestUrl + ": " + ex;
+            logger.info(error);
+            throw new DataCaptureModuleException(error, ex);
         }
     }
 
-    public ScriptRequestResponse retreiveRequestedRsyncScript(Dataset dataset) {
-        String dcmBaseUrl = settingsService.getValueForKey(DataCaptureModuleUrl);
+    public ScriptRequestResponse retreiveRequestedRsyncScript(Dataset dataset, String dcmBaseUrl) throws DataCaptureModuleException {
         if (dcmBaseUrl == null) {
             throw new RuntimeException("Problem GETing JSON to Data Capture Module for dataset " + dataset.getId() + " The '" + DataCaptureModuleUrl + "' setting has not been configured.");
         }
@@ -68,7 +62,7 @@ public class DataCaptureModuleServiceBean implements Serializable {
 
     }
 
-    public static ScriptRequestResponse getRsyncScriptForDataset(String dcmBaseUrl, long datasetId) {
+    public static ScriptRequestResponse getRsyncScriptForDataset(String dcmBaseUrl, long datasetId) throws DataCaptureModuleException {
         String scriptRequestUrl = dcmBaseUrl + "/sr.py";
         try {
             HttpResponse<JsonNode> scriptRequest = Unirest.post(scriptRequestUrl)
@@ -76,8 +70,9 @@ public class DataCaptureModuleServiceBean implements Serializable {
                     .asJson();
             return DataCaptureModuleUtil.getScriptFromRequest(scriptRequest);
         } catch (UnirestException ex) {
-            logger.info("Error calling " + scriptRequestUrl + ": " + ex);
-            return null;
+            String error = "Error calling " + scriptRequestUrl + ": " + ex;
+            logger.info(error);
+            throw new DataCaptureModuleException(error, ex);
         }
     }
 

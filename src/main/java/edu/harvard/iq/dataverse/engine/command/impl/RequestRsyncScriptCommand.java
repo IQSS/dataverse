@@ -7,12 +7,15 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.datacapturemodule.UploadRequestResponse;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DataCaptureModuleUrl;
 import java.util.Collections;
 import java.util.logging.Logger;
 
@@ -39,6 +42,13 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
 
     @Override
     public ScriptRequestResponse execute(CommandContext ctxt) throws CommandException {
+        if (request == null) {
+            throw new PermissionException("DataverseRequest cannot be null.", this, Collections.singleton(Permission.AddDataset), dataset);
+        }
+        String dcmBaseUrl = ctxt.settings().getValueForKey(DataCaptureModuleUrl);
+        if (dcmBaseUrl == null) {
+            throw new RuntimeException(DataCaptureModuleUrl + " is null!");
+        }
         User user = request.getUser();
         if (!(user instanceof AuthenticatedUser)) {
             /**
@@ -50,24 +60,33 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
         }
         AuthenticatedUser au = (AuthenticatedUser) user;
         String errorPreamble = "User id " + au.getId() + " had a problem retrieving rsync script for dataset id " + dataset.getId() + " from Data Capture Module.";
-        UploadRequestResponse uploadRequestResponse = ctxt.dataCaptureModule().requestRsyncScriptCreation(au, dataset);
+        UploadRequestResponse uploadRequestResponse = null;
+        try {
+            uploadRequestResponse = ctxt.dataCaptureModule().requestRsyncScriptCreation(au, dataset, dcmBaseUrl);
+        } catch (DataCaptureModuleException ex) {
+            throw new RuntimeException("Problem making upload request to Data Capture Module:  " + DataCaptureModuleUtil.getMessageFromException(ex));
+        }
         int statusCode = uploadRequestResponse.getHttpStatusCode();
         String response = uploadRequestResponse.getResponse();
         if (statusCode != 200) {
-            throw new RuntimeException("When making the upload request, rather than 200 the status code was " + statusCode + ". The body was \'" + response + "\'. We cannont proceed. Returning.");
+            throw new RuntimeException("When making the upload request, rather than 200 the status code was " + statusCode + ". The body was \'" + response + "\'. We cannot proceed. Returning.");
         }
         long millisecondsToSleep = DataCaptureModuleServiceBean.millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls;
         logger.fine("Message from Data Caputure Module upload request endpoint: " + response + ". Sleeping " + millisecondsToSleep + " milliseconds before making rsync script request.");
         try {
             Thread.sleep(millisecondsToSleep);
         } catch (InterruptedException ex) {
-            throw new RuntimeException(errorPreamble + "Unable to wait " + millisecondsToSleep + " milliseconds: " + ex.getLocalizedMessage());
+            throw new RuntimeException(errorPreamble + " Unable to wait " + millisecondsToSleep + " milliseconds: " + ex.getLocalizedMessage());
         }
-
-        ScriptRequestResponse scriptRequestResponse = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset);
+        ScriptRequestResponse scriptRequestResponse = null;
+        try {
+            scriptRequestResponse = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset, dcmBaseUrl);
+        } catch (DataCaptureModuleException ex) {
+            throw new RuntimeException("Problem making script request to Data Capture Module:  " + DataCaptureModuleUtil.getMessageFromException(ex));
+        }
         String script = scriptRequestResponse.getScript();
         if (script == null || script.isEmpty()) {
-            throw new RuntimeException(errorPreamble + "The script was null or empty.");
+            throw new RuntimeException(errorPreamble + " The script was null or empty.");
         }
         logger.fine("script for dataset " + dataset.getId() + ": " + script);
         return scriptRequestResponse;

@@ -15,7 +15,7 @@ public class DataCaptureModuleUtil {
     private static final Logger logger = Logger.getLogger(DataCaptureModuleUtil.class.getCanonicalName());
 
     public static boolean rsyncSupportEnabled(String uploadMethodsSettings) {
-//        if (uploadMethodsSettings != null && uploadMethodsSettings.contains(SystemConfig.FileUploadMethods.RSYNC.toString())) {
+        logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);
         if (uploadMethodsSettings != null && SystemConfig.FileUploadMethods.RSYNC.toString().equals(uploadMethodsSettings)) {
             return true;
         } else {
@@ -52,6 +52,21 @@ public class DataCaptureModuleUtil {
         String body = uploadRequest.getBody();
         logger.fine("Got " + status + " with body: " + body);
         return new UploadRequestResponse(uploadRequest.getStatus(), body);
+    }
+
+    public static String getMessageFromException(DataCaptureModuleException ex) {
+        if (ex == null) {
+            return "DataCaptureModuleException was null!";
+        }
+        Throwable cause = ex.getCause();
+        if (cause == null) {
+            return ex.toString();
+        }
+        String message = ex.getMessage();
+        if (message == null) {
+            return cause.toString();
+        }
+        return message + " was caused by " + cause.getMessage();
     }
 
 }

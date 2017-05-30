@@ -93,4 +93,16 @@ public class DataCaptureModuleUtilTest {
         assertEquals("received", result.getResponse());
     }
 
+    @Test
+    public void testGetMessageFromException() {
+        System.out.println("getMessageFromException");
+        // preferred form
+        assertEquals("message1 was caused by innerExceptionMessage", DataCaptureModuleUtil.getMessageFromException(new DataCaptureModuleException("message1", new NullPointerException("innerExceptionMessage"))));
+        // suboptimal messages
+        assertEquals("message1 was caused by null", DataCaptureModuleUtil.getMessageFromException(new DataCaptureModuleException("message1", new NullPointerException())));
+        assertEquals("java.lang.NullPointerException", DataCaptureModuleUtil.getMessageFromException(new DataCaptureModuleException(null, new NullPointerException())));
+        assertEquals("DataCaptureModuleException was null!", DataCaptureModuleUtil.getMessageFromException(null));
+        assertEquals("edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException", DataCaptureModuleUtil.getMessageFromException(new DataCaptureModuleException(null, null)));
+        assertEquals("edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException: message1", DataCaptureModuleUtil.getMessageFromException(new DataCaptureModuleException("message1", null)));
+    }
 }
