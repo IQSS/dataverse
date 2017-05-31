@@ -4,8 +4,10 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
@@ -57,6 +59,7 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import javax.inject.Inject;
 import javax.ws.rs.QueryParam;
 /**
  * Where the secure, setup API calls live.
@@ -74,6 +77,13 @@ public class Admin extends AbstractApiBean {
     ShibServiceBean shibService;
     @EJB
     AuthTestDataServiceBean authTestDataService;
+    @EJB
+    UserServiceBean userService;
+
+    // Make the session available
+    @Inject
+    DataverseSession session;    
+
 
     @Path("settings")
     @GET
@@ -291,7 +301,39 @@ public class Admin extends AbstractApiBean {
         return ok(userArray);
     }
 
+    
+    @GET
+    @Path("list-users")
+    @Produces({"application/json"})
+    public Response filterAuthenticatedUsers(@QueryParam("searchTerm") String userIdentifier) { 
+        System.out.println("_YE_OLDE_QUERY_COUNTER_");
+        
+        boolean DEBUG_MODE = true;
+              
 
+        AuthenticatedUser authUser = null;
+        
+        if (DEBUG_MODE==true){      // DEBUG: use userIdentifier
+            
+            //return ok("hello! (debug)");
+           
+        } else if ((session.getUser() != null)&&(session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())){            
+
+            authUser = (AuthenticatedUser)session.getUser();
+       
+        }else{
+            return error(Response.Status.FORBIDDEN, "forbidden, please leave");
+
+        }
+        
+        JsonObjectBuilder userList = userService.getUserListAsJSON(null, null, 25);
+        if (userList == null){
+            return ok("no users found!");
+        }
+        return ok(userList);
+    }
+    
+    
     /**
      * @todo Make this support creation of BuiltInUsers.
      *
