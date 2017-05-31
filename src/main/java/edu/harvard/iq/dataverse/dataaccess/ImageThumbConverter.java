@@ -115,7 +115,7 @@ public class ImageThumbConverter {
             return generateImageThumbnail(dataFileIO, size);
         } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
             return generatePDFThumbnail(dataFileIO, size);
-        } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile") || (file.isTabularData())) {
+        } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile") || (file.isTabularData() && file.hasGeospatialTag())) {
             return generateWorldMapThumbnail(dataFileIO, size);
         }
 

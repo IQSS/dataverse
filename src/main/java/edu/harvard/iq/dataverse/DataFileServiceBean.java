@@ -446,7 +446,8 @@ public class DataFileServiceBean implements java.io.Serializable {
                 
         dataFile.setOwner(owner);
 
-        // look up data table; but only if content type indicates it's tabular data:
+        // If content type indicates it's tabular data, spend 2 extra queries 
+        // looking up the data table and tabular tags objects:
         
         if (MIME_TYPE_TAB.equalsIgnoreCase(contentType)) {
             Object[] dtResult = null;
@@ -471,6 +472,28 @@ public class DataFileServiceBean implements java.io.Serializable {
                 
                 dataTable.setDataFile(dataFile);
                 dataFile.setDataTable(dataTable);
+                
+                // tabular tags: 
+                
+                List<Object[]> tagResults = null;
+                try {
+                    tagResults = em.createNativeQuery("SELECT t.TYPE, t.DATAFILE_ID FROM DATAFILETAG t WHERE t.DATAFILE_ID = " + id).getResultList();
+                } catch (Exception ex) {
+                    logger.info("EXCEPTION looking up tags.");
+                    tagResults = null;
+                }
+                
+                if (tagResults != null) {
+                    List<String> fileTagLabels = DataFileTag.listTags();
+                    
+                    for (Object[] tagResult : tagResults) {
+                        Integer tagId = (Integer)tagResult[0];
+                        DataFileTag tag = new DataFileTag();
+                        tag.setTypeByLabel(fileTagLabels.get(tagId));
+                        tag.setDataFile(dataFile);
+                        dataFile.addTag(tag);
+                    }
+                }
             }
         }
         
