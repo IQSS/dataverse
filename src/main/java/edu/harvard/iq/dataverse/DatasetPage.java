@@ -1260,7 +1260,8 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setProtocol(protocol);
             dataset.setAuthority(authority);
             dataset.setDoiSeparator(separator);
-            dataset.setIdentifier(datasetService.generateDatasetIdentifier(protocol, authority, separator));
+            //Wait until the create command before actually getting an identifier  
+            //dataset.setIdentifier(datasetService.generateDatasetIdentifier(protocol, authority, separator));
 
             if (dataset.getOwner() == null) {
                 return permissionsWrapper.notFound();
