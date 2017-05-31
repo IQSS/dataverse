@@ -446,7 +446,8 @@ public class DataFileServiceBean implements java.io.Serializable {
                 
         dataFile.setOwner(owner);
 
-        // look up data table; but only if content type indicates it's tabular data:
+        // If content type indicates it's tabular data, spend 2 extra queries 
+        // looking up the data table and tabular tags objects:
         
         if (MIME_TYPE_TAB.equalsIgnoreCase(contentType)) {
             Object[] dtResult = null;
@@ -471,6 +472,28 @@ public class DataFileServiceBean implements java.io.Serializable {
                 
                 dataTable.setDataFile(dataFile);
                 dataFile.setDataTable(dataTable);
+                
+                // tabular tags: 
+                
+                List<Object[]> tagResults = null;
+                try {
+                    tagResults = em.createNativeQuery("SELECT t.TYPE, t.DATAFILE_ID FROM DATAFILETAG t WHERE t.DATAFILE_ID = " + id).getResultList();
+                } catch (Exception ex) {
+                    logger.info("EXCEPTION looking up tags.");
+                    tagResults = null;
+                }
+                
+                if (tagResults != null) {
+                    List<String> fileTagLabels = DataFileTag.listTags();
+                    
+                    for (Object[] tagResult : tagResults) {
+                        Integer tagId = (Integer)tagResult[0];
+                        DataFileTag tag = new DataFileTag();
+                        tag.setTypeByLabel(fileTagLabels.get(tagId));
+                        tag.setDataFile(dataFile);
+                        dataFile.addTag(tag);
+                    }
+                }
             }
         }
         
@@ -1011,8 +1034,6 @@ public class DataFileServiceBean implements java.io.Serializable {
          queries; checking if the thumbnail is available may cost cpu time, if 
          it has to be generated on the fly - so you have to figure out which 
          is more important... 
-        TODO: adding a boolean flag isImageAlreadyGenerated to the DataFile 
-         db table should help with this. -- L.A. 4.2.1 DONE: 4.2.2
         
         */
                 
