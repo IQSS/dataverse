@@ -57,11 +57,11 @@ public class DatasetUtil {
             }
         }
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();  
-            
+            DataFile dataFile = fileMetadata.getDataFile();
+
             if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
                     && ImageThumbConverter.isThumbnailAvailable(dataFile)
-                    && !dataFile.isRestricted()) {                
+                    && !dataFile.isRestricted()) {
                 String imageSourceBase64 = null;
                 imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
@@ -69,25 +69,24 @@ public class DatasetUtil {
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
                     thumbnails.add(datasetThumbnail);
                 }
-            }           
+            }
         }
         return thumbnails;
     }
 
     /**
-     * Note "datasetVersionId" can be null.  
-     * If needed, it helps the "efficiency" of "attemptToAutomaticallySelectThumbnailFromDataFiles"
-     * 
+     * Note "datasetVersionId" can be null. If needed, it helps the "efficiency"
+     * of "attemptToAutomaticallySelectThumbnailFromDataFiles"
+     *
      * @param dataset
      * @param datasetVersion
-     * @return 
+     * @return
      */
     public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion) {
         if (dataset == null) {
             return null;
         }
-        
-        
+
         Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         if (Files.exists(path)) {
             try {
@@ -131,16 +130,13 @@ public class DatasetUtil {
             }
         }
     }
-    
-    
-    public static DatasetThumbnail getThumbnail(Dataset dataset) {
 
-        if (dataset == null){
+    public static DatasetThumbnail getThumbnail(Dataset dataset) {
+        if (dataset == null) {
             return null;
         }
-        return getThumbnail(dataset, null);        
+        return getThumbnail(dataset, null);
     }
-
 
     public static boolean deleteDatasetLogo(Dataset dataset) {
         if (dataset == null) {
@@ -160,26 +156,26 @@ public class DatasetUtil {
 
     /**
      * Pass an optional datasetVersion in case the file system is checked
-     * 
+     *
      * @param dataset
      * @param datasetVersion
-     * @return 
+     * @return
      */
     public static DataFile attemptToAutomaticallySelectThumbnailFromDataFiles(Dataset dataset, DatasetVersion datasetVersion) {
         if (dataset == null) {
             return null;
         }
-                   
+
         if (dataset.isUseGenericThumbnail()) {
             logger.fine("Bypassing logic to find a thumbnail because a generic icon for the dataset is desired.");
             return null;
         }
-        
-        if (datasetVersion == null){
+
+        if (datasetVersion == null) {
             logger.fine("getting latest version of dataset");
             datasetVersion = dataset.getLatestVersion();
         }
-        
+
         for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
             if (FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
