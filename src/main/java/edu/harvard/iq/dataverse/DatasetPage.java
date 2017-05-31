@@ -2311,9 +2311,6 @@ public class DatasetPage implements java.io.Serializable {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
-               
-        // Finally, save the files permanently: 
-        ingestService.addFiles(workingVersion, newFiles);
 
         // Use the API to save the dataset: 
         Command<Dataset> cmd;
