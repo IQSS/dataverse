@@ -203,7 +203,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 // enough number of values will be legitimately registered 
                 // by another entity sharing the same authority...)
                 
-                    theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+                    theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
                     doiRetString = idServiceBean.createIdentifier(theDataset);
 
                     attempts++;
