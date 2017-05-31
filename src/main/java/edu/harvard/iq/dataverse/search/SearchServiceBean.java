@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -39,7 +40,9 @@ import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionRolledbackLocalException;
 import javax.inject.Named;
+import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServer;
@@ -74,6 +77,9 @@ public class SearchServiceBean {
     GroupServiceBean groupService;
     @EJB
     SystemConfig systemConfig;
+
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    private EntityManager em;
 
     public static final JsfHelper JH = new JsfHelper();
     private SolrServer solrServer;
@@ -466,7 +472,15 @@ public class SearchServiceBean {
                 DvObject dvObject = dvObjectService.findDvObject(entityid);
                 if (dvObject != null) {
                     Dataset dataset = (Dataset) dvObject;
-                    solrSearchResult.setDatasetThumbnail(dataset.getDatasetThumbnail());
+                    DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+                    if (datasetThumbnail != null) {
+                        solrSearchResult.setDatasetThumbnail(datasetThumbnail);
+                        if (datasetThumbnail.wasJustSelectedAutomatically()) {
+                            dataset.setThumbnailFile(datasetThumbnail.getDataFile());
+                            // Persist the automatically-selected thumbnail to avoid the future cost of automatic selection.
+                            em.merge(dataset);
+                        }
+                    }
                 }
                 /**
                  * @todo Could use getFieldValues (plural) here.
