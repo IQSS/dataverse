@@ -112,7 +112,7 @@ public class UserServiceBean {
                     .add("firstName", this.getStringOrNull(result[3]))
                     .add("email", this.getStringOrNull(result[4]))
                     .add("affiliation", this.getStringOrNull(result[5]))
-                    .add("is_superuser", (boolean)result[6])
+                    .add("isSuperuser", (boolean)result[6])
                     .add("position", this.getStringOrNull(result[7]))
                     .add("modificationTime", this.getTimestampStringOrNull(result[8]));
             jsonUserListArray.add(singleUserData);            
@@ -139,8 +139,8 @@ public class UserServiceBean {
             sortKey = "u." + sortKey;
         }
         
-        if ((resultLimit == null)||(resultLimit < 25)){
-            resultLimit = 25;
+        if ((resultLimit == null)||(resultLimit < 1)){
+            resultLimit = 1;
         }
         
         if ((searchTerm==null)||(searchTerm.isEmpty())){
@@ -189,6 +189,7 @@ public class UserServiceBean {
         String searchClause = " u.useridentifier ILIKE #searchTerm";
         searchClause += " OR u.firstname ILIKE #searchTerm";
         searchClause += " OR u.lastname ILIKE #searchTerm"; 
+        searchClause += " OR u.email ILIKE #searchTerm"; 
         
         return searchClause;
     }

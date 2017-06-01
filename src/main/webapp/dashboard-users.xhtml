@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <f:metadata>
+            <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.users.header'])}"/>
+        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{bundle['dashboard.card.users.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:define name="body">
+                <ui:fragment>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <input name="searchTerm" id="searchTerm" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" placeholder="Filter users..."/>
+                            <input type="hidden" name="selectedPage" id="selectedPage" value="1" />
+                        </div>                        
+                    </div>
+                    <div id="div-result-message"></div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <!-- place holder for user table -->
+                            <div id="div-pagination"></div>
+                            <div id="div-user-list"></div>
+                        </div>
+                    </div>
+                    <div id="div-json-results"></div>
+                    
+                    <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
+                    <script src="#{resource['js/dashboard_users.js']}?version=#{systemConfig.getVersion()}"></script>
+                    <script> 
+                        <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
+                        var RETRIEVE_USER_DATA_API_PATH = '#{DashboardUsersPage.getListUsersAPIPath()}';
+                    </script>
+                    <script>            
+                          $(document).ready(function() {
+                              initPage();
+                           });
+                    </script>    
+                </ui:fragment>
+                        
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

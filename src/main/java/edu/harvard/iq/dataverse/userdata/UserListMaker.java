@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import java.math.BigDecimal;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -27,6 +28,7 @@ public class UserListMaker {
     
     public static final int ITEMS_PER_PAGE = 25;
 
+    
     
     /*
      * Constructor
@@ -97,8 +99,8 @@ public class UserListMaker {
         jsonOverallData.add("userCount", userCount)
                        .add("pagination", pager.asJsonObjectBuilder())
                        .add("users", jsonUserListArray)
-                       .add("selectedPage", 1);
-
+                       .add("selectedPage", 1)
+                       ;
         return jsonOverallData;
         
     }

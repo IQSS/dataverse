@@ -86,6 +86,9 @@ public class Admin extends AbstractApiBean {
     @Inject
     DataverseSession session;    
 
+    public static final String listUsersPartialAPIPath = "list-users";
+    public static final String listUsersFullAPIPath = "/api/v1/admin/" + listUsersPartialAPIPath;
+
 
     @Path("settings")
     @GET
@@ -305,9 +308,9 @@ public class Admin extends AbstractApiBean {
 
     
     @GET
-    @Path("list-users")
+    @Path(listUsersPartialAPIPath)
     @Produces({"application/json"})
-    public Response filterAuthenticatedUsers(@QueryParam("q") String searchTerm,
+    public Response filterAuthenticatedUsers(@QueryParam("searchTerm") String searchTerm,
                         @QueryParam("selectedPage") Integer selectedPage,
                         @QueryParam("numDisplay") Integer itemsPerPage,
                         @QueryParam("sortKey") String sortKey

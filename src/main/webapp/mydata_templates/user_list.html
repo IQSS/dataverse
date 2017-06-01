@@ -1,0 +1,27 @@
+
+
+{#<p><br /><b>{{ data.userCount }} User{% if data.userCount > 1 or data.userCount == 0 %}s{% endif %}</b> found.</p>#}
+<table class="table table-bordered table-condensed">
+    <thead>
+    <tr>
+        <th>&nbsp;</th>
+        <th>username </th>
+        <th>Last Name </th>
+        <th>First Name </th>
+        <th>Email </th>
+        <th>Is Superuser? </th>
+    </tr>
+    </thead>
+    <tbody id="row-list">
+    {% for name_info in data.users -%}
+    <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ name_info.userIdentifier }}</td>
+        <td>{{ name_info.lastName }}</td>
+        <td>{{ name_info.firstName }}</td>
+        <td>{{ name_info.email }}</td>
+        <td>{{ name_info.isSuperuser }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
