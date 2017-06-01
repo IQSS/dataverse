@@ -1,5 +1,5 @@
 
-var USER_LIST_DEBUG_ON = true;
+var USER_LIST_DEBUG_ON = false;
 
 function initPage(){
     nunjucks.configure({ autoescape: true });

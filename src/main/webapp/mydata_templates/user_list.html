@@ -1,27 +1,29 @@
-<table class="table table-bordered table-condensed">
+<table class="table table-bordered table-condensed table-striped table-hover">
     <thead>
     <tr>
-        <th>&nbsp;</th>
-        <th>{{ data.bundleStrings.userIdentifier }}</th>
-        <th>{{ data.bundleStrings.lastName }}</th>
-        <th>{{ data.bundleStrings.firstName }}</th>
-        <th>{{ data.bundleStrings.email }}</th>
-        <th>{{ data.bundleStrings.isSuperuser }}</th>
+        <th class="text-center">#</th>
+        <th class="text-center">{{ data.bundleStrings.userIdentifier }}</th>
+        <th class="text-center">{{ data.bundleStrings.lastName }}</th>
+        <th class="text-center">{{ data.bundleStrings.firstName }}</th>
+        <th class="text-center">{{ data.bundleStrings.email }}</th>
+        <th class="text-center">{{ data.bundleStrings.userId }}</th>
+        <th class="text-center">{{ data.bundleStrings.isSuperuser }}</th>
     </tr>
     </thead>
     <tbody id="div-user-list">
         {% for name_info in data.users -%}
         <tr>
-            <td>{{ loop.index }}</td>
+            <td>{{ name_info.rowNum }}</td>
             <td>{{ name_info.userIdentifier }}</td>
             <td>{{ name_info.lastName }}</td>
             <td>{{ name_info.firstName }}</td>
             <td>{{ name_info.email }}</td>
+            <td>{{ name_info.id }}</td>
             <td>{{ name_info.isSuperuser }}</td>
         </tr>
         {% else %}
         <tr>
-            <td colspan="6">Sorry.  No users found.</td>
+            <td colspan="7"><h5>Sorry.  No users found.</h5></td>
         </tr>
         {% endfor %}
     </tbody>

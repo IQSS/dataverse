@@ -120,7 +120,8 @@ public class UserListMaker {
     
     public JsonObjectBuilder getBundleStrings(){
      
-           return Json.createObjectBuilder()
+           return Json.createObjectBuilder()                   
+                .add("userId", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userId"))
                 .add("userIdentifier", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userIdentifier"))
                 .add("lastName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastName"))
                 .add("firstName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.firstName"))

@@ -84,6 +84,9 @@ public class UserServiceBean {
     public JsonArrayBuilder getUserListAsJSON(String searchTerm, String sortKey, Integer resultLimit, Integer offset) {
         System.out.println("getUserListAsJSON 1");
 
+        if ((offset == null)||(offset < 0)){
+            offset = 0;
+        }
         // -------------------------------------------------
         // Retrieve a list of user attributes from a native query
         // -------------------------------------------------
@@ -100,6 +103,8 @@ public class UserServiceBean {
         // We have results, format them into a JSON object
         // -------------------------------------------------
         JsonArrayBuilder jsonUserListArray = Json.createArrayBuilder();
+
+        offset++;   // used for the rowNumber
         for (Object[] result : userResults) {            
 
             // not putting explicit nulls for now b/c https://stackoverflow.com/questions/22363925/jsr-353-how-to-add-null-values-using-javax-json-jsonobjectbuilder
@@ -107,6 +112,7 @@ public class UserServiceBean {
             NullSafeJsonBuilder singleUserData = NullSafeJsonBuilder.jsonObjectBuilder();
             
             singleUserData.add("id", (int)result[0])
+                    .add("rowNum", offset++)
                     .add("userIdentifier", (String)result[1])
                     .add("lastName", this.getStringOrNull(result[2]))
                     .add("firstName", this.getStringOrNull(result[3]))

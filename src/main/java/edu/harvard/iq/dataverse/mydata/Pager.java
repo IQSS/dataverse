@@ -342,6 +342,8 @@ public class Pager {
                     .add("nextPageNumber", this.nextPageNumber)
                     .add("startCardNumber", this.startCardNumber)
                     .add("endCardNumber", this.endCardNumber)
+                    .add("startCardNumberString", this.addCommasToNumber(this.startCardNumber))
+                    .add("endCardNumberString", this.addCommasToNumber(this.endCardNumber))
                     .add("remainingCards", this.remainingCards)
                     .add("numberNextResults", this.numberNextResults);
         
