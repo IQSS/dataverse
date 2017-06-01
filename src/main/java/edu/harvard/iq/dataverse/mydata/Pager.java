@@ -12,8 +12,10 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonBuilderFactory;
@@ -316,6 +318,13 @@ public class Pager {
         return this.asJsonObjectBuilder().build().toString();
     }
     
+    
+    public String addCommasToNumber(int count){
+        
+        return NumberFormat.getNumberInstance(Locale.US).format(count);
+    }
+    
+    
     public JsonObjectBuilder asJsonObjectBuilder(){
         
         JsonObjectBuilder jsonPageInfo = Json.createObjectBuilder();
@@ -323,6 +332,7 @@ public class Pager {
        
         jsonPageInfo.add("isNecessary", this.isPagerNecessary())
                     .add("numResults", this.numResults)
+                    .add("numResultsString", this.addCommasToNumber(numResults))
                     .add("docsPerPage", this.docsPerPage)
                     .add("selectedPageNumber", this.selectedPageNumber)
                     .add("pageCount", this.pageCount)

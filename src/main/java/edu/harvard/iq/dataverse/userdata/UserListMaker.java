@@ -8,9 +8,12 @@ package edu.harvard.iq.dataverse.userdata;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.search.SearchConstants;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -97,9 +100,10 @@ public class UserListMaker {
 
         JsonObjectBuilder jsonOverallData = Json.createObjectBuilder();
         jsonOverallData.add("userCount", userCount)
-                       .add("pagination", pager.asJsonObjectBuilder())
-                       .add("users", jsonUserListArray)
                        .add("selectedPage", 1)
+                       .add("pagination", pager.asJsonObjectBuilder())
+                       .add("bundleStrings", getBundleStrings())
+                       .add("users", jsonUserListArray)
                        ;
         return jsonOverallData;
         
@@ -109,8 +113,21 @@ public class UserListMaker {
         
          return Json.createObjectBuilder()
                         .add("userCount", 0)
-                        .add("users", Json.createArrayBuilder()) // empty array
-                        .add("selectedPage", 1);
+                        .add("selectedPage", 1)
+                        .add("bundleStrings", getBundleStrings())
+                        .add("users", Json.createArrayBuilder()); // empty array
+    }
+    
+    public JsonObjectBuilder getBundleStrings(){
+     
+           return Json.createObjectBuilder()
+                .add("userIdentifier", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userIdentifier"))
+                .add("lastName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastName"))
+                .add("firstName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.firstName"))
+                .add("email", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.email"))
+                .add("isSuperuser", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.isSuperuser"))
+                ;
+                       
     }
     
     public boolean hasError(){

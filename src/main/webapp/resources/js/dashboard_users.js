@@ -1,5 +1,5 @@
 
-var USER_LIST_DEBUG_ON = false;
+var USER_LIST_DEBUG_ON = true;
 
 function initPage(){
     nunjucks.configure({ autoescape: true });
@@ -57,6 +57,7 @@ function runRegularSearch(){
          var user_list_html =  nunjucks.render('mydata_templates/user_list.html', data);
         $("#div-user-list").html(user_list_html);                            
         
+
     });
 }
 
