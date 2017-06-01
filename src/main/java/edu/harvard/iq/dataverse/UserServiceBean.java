@@ -161,27 +161,26 @@ public class UserServiceBean {
             searchKey = "";
         }
         
+       
+        System.out.println("Search key: " + searchKey); 
 
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";
         qstr += " u.affiliation, u.superuser,";
         qstr += " u.position, u.modificationtime";
         qstr += " FROM authenticateduser u";
-        /*qstr += " WHERE u.useridentifier ILIKE ':searchKey%'";
-        qstr += " OR u.firstname ILIKE ':searchKey%'";
-        qstr += " OR u.lastname ILIKE ':searchKey%'";*/
+        qstr += " WHERE u.useridentifier ILIKE #searchKey";
+        qstr += " OR u.firstname ILIKE #searchKey";
+        qstr += " OR u.lastname ILIKE #searchKey";
+        //qstr += " WHERE u.useridentifier = #searchKey";
+  
         qstr += " ORDER BY u.useridentifier";
         qstr += " LIMIT " + resultLimit;
         
         System.out.println("--------------\n\n" + qstr);
         
         Query nativeQuery = em.createNativeQuery(qstr);  
-        //nativeQuery.setParameter("searchKey", searchKey);  
-        //nativeQuery.setParameter(2, searchKey);  
-        //nativeQuery.setParameter(3, searchKey);  
-        //nativeQuery.setParameter(4, sortKey);  
-
-        System.out.println("--------------\n\n" + nativeQuery.toString());
+        nativeQuery.setParameter("searchKey", searchKey + "%");  
 
         
         return nativeQuery.getResultList();
