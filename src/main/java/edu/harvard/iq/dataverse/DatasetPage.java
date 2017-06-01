@@ -433,6 +433,11 @@ public class DatasetPage implements java.io.Serializable {
         return settingsService.getValueForKey(SettingsServiceBean.Key.CloudEnvironmentName);
     }
     
+    public boolean isPublicInstall(){
+        boolean defaultValue = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
+    }
+    
     public DataFile getSelectedDownloadFile() {
         return selectedDownloadFile;
     }
@@ -2130,7 +2135,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void restrictFiles(boolean restricted) {
-
+   
         //if (previouslyRestrictedFiles == null) {
         // we don't need to buther with this "previously restricted" business 
         // when in Create mode... because all the files are new, so none could 

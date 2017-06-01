@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
@@ -129,14 +130,22 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         Timestamp updateTime = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         theDataset.setModificationTime(updateTime);
+         
         for (DataFile dataFile : theDataset.getFiles()) {
+            // if the file is public, we should not be able to restrict it 
+            boolean defaultValue = false;
+            boolean publicInstall = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
+            if (dataFile.isRestricted() && publicInstall) {
+                throw new CommandExecutionException("Restricting files is not permitted on a public installation.", this);
+            }
+            
             if (dataFile.getCreateDate() == null) {
                 dataFile.setCreateDate(updateTime);
                 dataFile.setCreator((AuthenticatedUser) getUser());
             }
             dataFile.setModificationTime(updateTime);
         }
-        
+                
         // Remove / delete any files that were removed
         
         // If any of the files that we are deleting has a UNF, we will need to 
@@ -144,7 +153,9 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         // of the UNFs of the individual files. 
         boolean recalculateUNF = false;
         
-        for (FileMetadata fmd : filesToDelete) {              
+        for (FileMetadata fmd : filesToDelete) {
+            
+            
             //  check if this file is being used as the default thumbnail
             if (fmd.getDataFile().equals(theDataset.getThumbnailFile())) {
                 logger.info("deleting the dataset thumbnail designation");

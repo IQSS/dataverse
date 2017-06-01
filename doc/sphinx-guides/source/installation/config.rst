@@ -730,3 +730,12 @@ Set the base URL for the "Compute" button for a dataset.
 Set the desired name for the Cloud environment you are working in. Appears in an information box on the dataset page.
 
 ``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
+
+:PublicInstall
++++++++++++++++++++++
+
+Setting an installation to public indicates the admin will not be able to restrict data files or datasets.
+
+This is useful for specific cases where files are stored in public access, therefore removing the need for restrictions.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:PublicInstall``

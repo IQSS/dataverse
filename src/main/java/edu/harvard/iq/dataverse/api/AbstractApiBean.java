@@ -267,7 +267,7 @@ public abstract class AbstractApiBean {
         String queryParamApiKey = httpRequest.getParameter("key");
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
     }
-    
+        
     /* ========= *\
      *  Finders  *
     \* ========= */

@@ -697,10 +697,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
+     
+    public boolean isPublicInstall(){
+        boolean defaultValue = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
+    }
     
-    public void restrictFiles(boolean restricted) {
+    public void restrictFiles(boolean restricted) throws UnsupportedOperationException{
+
         // since we are restricted files, first set the previously restricted file list, so we can compare for
-        // determinin whether to show the access popup
+        // determining whether to show the access popup
         previouslyRestrictedFiles = new ArrayList();
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (fmd.isRestricted()) {
@@ -1165,7 +1171,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             StringBuilder saveError = new StringBuilder();
         
             for (FileMetadata fileMetadata : fileMetadatas) {
-
+          
                 if (fileMetadata.getDataFile().getCreateDate() == null) {
                     fileMetadata.getDataFile().setCreateDate(updateTime);
                     fileMetadata.getDataFile().setCreator((AuthenticatedUser) session.getUser());

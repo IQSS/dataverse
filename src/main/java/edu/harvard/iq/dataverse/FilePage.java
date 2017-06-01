@@ -233,8 +233,12 @@ public class FilePage implements java.io.Serializable {
         return retList;  
     }
   
+    public boolean isPublicInstall(){
+        boolean defaultValue = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
+    }
     
-    public String restrictFile(boolean restricted) {
+    public String restrictFile(boolean restricted) throws UnsupportedOperationException{
         String fileNames = null;
         String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
         Boolean allowRequest = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
