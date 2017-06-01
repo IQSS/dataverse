@@ -164,6 +164,7 @@ public class DatasetPage implements java.io.Serializable {
     @Inject FileDownloadHelper fileDownloadHelper;
     @Inject TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
+    @Inject ThumbnailServiceWrapper thumbnailServiceWrapper;
 
 
 
@@ -241,13 +242,30 @@ public class DatasetPage implements java.io.Serializable {
             return thumbnailString;
         }
 
+        if (!readOnly) {
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail == null) {
             thumbnailString = "";
             return null; 
         } 
+        
+        if (datasetThumbnail.isFromDataFile()) {
+            if (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile())) {
+                datasetService.assignDatasetThumbnailByNativeQuery(dataset, datasetThumbnail.getDataFile());
+                dataset = datasetService.find(dataset.getId());
+            }
+        }
            
         thumbnailString = datasetThumbnail.getBase64image();
+        } else {
+            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId());
+            if (thumbnailString == null) {
+                thumbnailString = "";
+                return null;
+            }
+            
+            
+        }
         return thumbnailString;
     }
 
