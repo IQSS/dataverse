@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
 import javax.ejb.EJB;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -31,16 +32,20 @@ public class HomepageServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-            String nonNullDefaultIfKeyNotFound = "";
-            String customFile = settingsService.getValueForKey(SettingsServiceBean.Key.HomePageCustomizationFile, nonNullDefaultIfKeyNotFound);
-            if (customFile.isEmpty()){
-                response.sendRedirect("dataverse.xhtml");
-            } else {
-                response.sendRedirect("dataverse_homepage.xhtml");
-            }
+        String nonNullDefaultIfKeyNotFound = "";
+        String customFile = settingsService.getValueForKey(SettingsServiceBean.Key.HomePageCustomizationFile, nonNullDefaultIfKeyNotFound);
+        String forwardPage = "";
+        if (customFile.isEmpty()) {
+            forwardPage = "/dataverse.xhtml";
+        } else {
+            forwardPage = "/dataverse_homepage.xhtml";
+        }
+
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(forwardPage);
+        dispatcher.forward(request, response);
 
     }
-
+    
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
