@@ -61,10 +61,15 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     public boolean alreadyExists(Dataset dataset) throws Exception {
         logger.log(Level.FINE,"alreadyExists");
         try {
-            HashMap<String, String> result = ezidService.getMetadata(getIdentifierFromDataset(dataset));
+            HashMap<String, String> result = ezidService.getMetadata(getIdentifierFromDataset(dataset));            
             return result != null && !result.isEmpty();
             // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
         } catch (EZIDException e ){
+            //No such identifier is treated as an exception
+            //but if that is the case then we want to just return false
+            if (e.getLocalizedMessage().contains("no such identifier")){
+                return false;
+            }
             logger.log(Level.WARNING, "alreadyExists failed");
             logger.log(Level.WARNING, "String {0}", e.toString());
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());

@@ -723,4 +723,16 @@ public class Dataset extends DvObjectContainer {
         return DatasetUtil.getThumbnail(this);
     }
 
+    /** 
+     * Handle the case where we also have the datasetVersionId.
+     * This saves trying to find the latestDatasetVersion, and 
+     * other costly queries, etc.
+     * 
+     * @param datasetVersionId
+     * @return 
+     */
+    public DatasetThumbnail getDatasetThumbnail(DatasetVersion datasetVersion) {
+        return DatasetUtil.getThumbnail(this, datasetVersion);
+    }
+
 }
