@@ -205,6 +205,10 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 }
                
             }
+            
+            if (dataFile.isRestricted() && dataFile.equals(theDataset.getThumbnailFile())) {
+                theDataset.setThumbnailFile(null);
+            }
         }
 
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
