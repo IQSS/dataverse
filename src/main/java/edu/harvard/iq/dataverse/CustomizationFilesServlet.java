@@ -60,7 +60,7 @@ public class CustomizationFilesServlet extends HttpServlet {
 
                 StringBuilder responseData = new StringBuilder();
                 try (PrintWriter out = response.getWriter()) {
-
+                    
                     while ((line = in.readLine()) != null) {
                         responseData.append(line);
                         out.println(line);
@@ -92,7 +92,7 @@ public class CustomizationFilesServlet extends HttpServlet {
             
             // Homepage
             return settingsService.getValueForKey(SettingsServiceBean.Key.HomePageCustomizationFile, nonNullDefaultIfKeyNotFound);
-        
+                
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeHeader)) {
             
             // Header

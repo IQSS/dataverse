@@ -263,7 +263,14 @@ public class SettingsServiceBean {
         /*
          Location and name of installation logo customization file
         */
-        LogoCustomizationFile;
+        LogoCustomizationFile,
+        
+        // Option to override the navbar url underlying the "About" link
+        NavbarAboutUrl,
+        
+        // Option to override multiple guides with a single url
+        NavbarGuidesUrl; 
+
         
         @Override
         public String toString() {
