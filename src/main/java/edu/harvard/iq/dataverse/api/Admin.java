@@ -59,6 +59,7 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import javax.inject.Inject;
 import javax.ws.rs.QueryParam;
@@ -307,7 +308,10 @@ public class Admin extends AbstractApiBean {
     @Path("list-users")
     @Produces({"application/json"})
     public Response filterAuthenticatedUsers(@QueryParam("q") String searchTerm,
-                        @QueryParam("numDisplay") Integer itemsPerPage) { 
+                        @QueryParam("numDisplay") Integer itemsPerPage,
+                        @QueryParam("selectedPage") Integer selectedPage,
+                        @QueryParam("sortKey") String sortKey
+    ) { 
         System.out.println("_YE_OLDE_QUERY_COUNTER_");
         
         boolean DEBUG_MODE = true;
@@ -326,20 +330,13 @@ public class Admin extends AbstractApiBean {
             return error(Response.Status.FORBIDDEN, "forbidden, please leave");
 
         }
+        //return ok("hey");
         
-        if ((searchTerm == null) || (searchTerm.trim().isEmpty())){
-            searchTerm = null;
-        }
-        if ((itemsPerPage == null) || (itemsPerPage < 10)){
-            itemsPerPage = 25;
-        }
-        String sortKey = null;
+        UserListMaker userListMaker = new UserListMaker(userService);
         
-        JsonObjectBuilder userList = userService.getUserListAsJSON(searchTerm, sortKey  , itemsPerPage);
-        if (userList == null){
-            return ok("no users found!");
-        }
-        return ok(userList);
+        JsonObjectBuilder userInfo = userListMaker.runSearch(searchTerm, itemsPerPage, selectedPage, null);
+        
+        return ok(userInfo);
     }
     
     

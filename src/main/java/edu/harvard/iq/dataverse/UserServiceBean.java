@@ -76,39 +76,30 @@ public class UserServiceBean {
             
     /**
      * 
-     * @param searchKey
+     * @param searchTerm
      * @param sortKey
      * @param resultLimit
      * @return 
      */
-    public JsonObjectBuilder getUserListAsJSON(String searchKey, String sortKey, Integer resultLimit) {
+    public JsonArrayBuilder getUserListAsJSON(String searchTerm, String sortKey, Integer resultLimit, Integer offset) {
         System.out.println("getUserListAsJSON 1");
 
         // -------------------------------------------------
         // Retrieve a list of user attributes from a native query
         // -------------------------------------------------
-        List<Object[]> userResults = getUserList(searchKey, sortKey, resultLimit);
-
-
-        // -------------------------------------------------
-        // Initialize the overall JSON response object (jsonUserData)
-        // as well as the JSOn user List
-        // -------------------------------------------------
-        JsonObjectBuilder jsonUserData = Json.createObjectBuilder();
-        JsonArrayBuilder jsonUserListArray = Json.createArrayBuilder();
+        List<Object[]> userResults = getUserList(searchTerm, sortKey, resultLimit, offset);
 
         // -------------------------------------------------
         // No results..... Return count of 0 and empty array
         // -------------------------------------------------
         if ((userResults==null)||(userResults.isEmpty())){
-            jsonUserData.add("userCount", 0)
-                        .add("users", jsonUserListArray);
-            return jsonUserData;
+            return Json.createArrayBuilder(); // return an empty array
         }
         
         // -------------------------------------------------
         // We have results, format them into a JSON object
         // -------------------------------------------------
+        JsonArrayBuilder jsonUserListArray = Json.createArrayBuilder();
         for (Object[] result : userResults) {            
 
             // not putting explicit nulls for now b/c https://stackoverflow.com/questions/22363925/jsr-353-how-to-add-null-values-using-javax-json-jsonobjectbuilder
@@ -126,13 +117,8 @@ public class UserServiceBean {
                     .add("modificationTime", this.getTimestampStringOrNull(result[8]));
             jsonUserListArray.add(singleUserData);            
         }
-        
-        jsonUserData.add("userCount", userResults.size())
-                    .add("users", jsonUserListArray);
-                
-
-        return jsonUserData;
-
+       
+        return jsonUserListArray;
        
     }
     
@@ -140,12 +126,12 @@ public class UserServiceBean {
     
     /**
      * 
-     * @param searchKey
+     * @param searchTerm
      * @param sortKey
      * @param resultLimit
      * @return 
      */
-    public List<Object[]> getUserList(String searchKey, String sortKey, Integer resultLimit) {
+    public List<Object[]> getUserList(String searchTerm, String sortKey, Integer resultLimit, Integer offset) {
 
         if ((sortKey == null) || (sortKey.isEmpty())){
             sortKey = "u.username";
@@ -157,34 +143,80 @@ public class UserServiceBean {
             resultLimit = 25;
         }
         
-        if ((searchKey==null)||(searchKey.isEmpty())){
-            searchKey = "";
+        if ((searchTerm==null)||(searchTerm.isEmpty())){
+            searchTerm = "";
+        }
+        
+        if ((offset == null)||(offset < 0)){
+            offset = 0;
         }
         
        
-        System.out.println("Search key: " + searchKey); 
+        System.out.println("Search key: " + searchTerm); 
 
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";
         qstr += " u.affiliation, u.superuser,";
         qstr += " u.position, u.modificationtime";
         qstr += " FROM authenticateduser u";
-        qstr += " WHERE u.useridentifier ILIKE #searchKey";
-        qstr += " OR u.firstname ILIKE #searchKey";
-        qstr += " OR u.lastname ILIKE #searchKey";
-        //qstr += " WHERE u.useridentifier = #searchKey";
-  
+        qstr += " WHERE ";
+        qstr += getSharedSearchClause();
         qstr += " ORDER BY u.useridentifier";
         qstr += " LIMIT " + resultLimit;
+        qstr += " OFFSET " + offset;
+        qstr += ";";
         
         System.out.println("--------------\n\n" + qstr);
         
         Query nativeQuery = em.createNativeQuery(qstr);  
-        nativeQuery.setParameter("searchKey", searchKey + "%");  
+        nativeQuery.setParameter("searchTerm", searchTerm + "%");  
 
         
         return nativeQuery.getResultList();
 
     }
+    
+    /**
+     * The search clause needs to be consistent between the searches that:
+     * (1) get a user count
+     * (2) get a list of users
+     * 
+     * @param searchTerm
+     * @return 
+     */
+    private String getSharedSearchClause(){
+        
+        String searchClause = " u.useridentifier ILIKE #searchTerm";
+        searchClause += " OR u.firstname ILIKE #searchTerm";
+        searchClause += " OR u.lastname ILIKE #searchTerm"; 
+        
+        return searchClause;
+    }
+    
+    /**
+     * 
+     * @param searchTerm
+     * @return 
+     */
+    public Long getUserCount(String searchTerm) {
+        
+        if ((searchTerm==null)||(searchTerm.isEmpty())){
+            searchTerm = "";
+        }        
+
+        String qstr = "SELECT count(u.id)";
+        qstr += " FROM authenticateduser u";
+        qstr += " WHERE ";
+        qstr += getSharedSearchClause();
+        qstr += ";";
+        
+        Query nativeQuery = em.createNativeQuery(qstr);  
+        nativeQuery.setParameter("searchTerm", searchTerm + "%");  
+        
+        return (Long)nativeQuery.getSingleResult();
+
+    }
+    
+    
     
 }
