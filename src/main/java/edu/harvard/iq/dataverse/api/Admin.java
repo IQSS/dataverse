@@ -308,8 +308,8 @@ public class Admin extends AbstractApiBean {
     @Path("list-users")
     @Produces({"application/json"})
     public Response filterAuthenticatedUsers(@QueryParam("q") String searchTerm,
-                        @QueryParam("numDisplay") Integer itemsPerPage,
                         @QueryParam("selectedPage") Integer selectedPage,
+                        @QueryParam("numDisplay") Integer itemsPerPage,
                         @QueryParam("sortKey") String sortKey
     ) { 
         System.out.println("_YE_OLDE_QUERY_COUNTER_");

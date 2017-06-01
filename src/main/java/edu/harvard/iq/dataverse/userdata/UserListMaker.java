@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse.userdata;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.mydata.Pager;
+import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.List;
 import javax.json.Json;
@@ -22,6 +24,9 @@ public class UserListMaker {
     
     public boolean errorFound = false;
     public String errorMessage = null;
+    
+    public static final int ITEMS_PER_PAGE = 25;
+
     
     /*
      * Constructor
@@ -43,7 +48,7 @@ public class UserListMaker {
 
         // Initialize itemsPerPage
         if ((itemsPerPage == null) || (itemsPerPage < 10)){
-            itemsPerPage = 25;
+            itemsPerPage = ITEMS_PER_PAGE;
         }
 
         // Initialize selectedPage
@@ -69,18 +74,28 @@ public class UserListMaker {
         // (2) Do some calculations here regarding the selected page, offset, etc.
         // -------------------------------------------------
         
-        // e.g Are there enough results to justify the selected page, etc.
+        int offset = (selectedPage - 1) * itemsPerPage;
+        if (offset > userCount){
+            offset = 0;
+            selectedPage = 1;
+        }
+
         
         // -------------------------------------------------
         // (3) Retrieve the users
         // -------------------------------------------------
-        JsonArrayBuilder jsonUserListArray = userService.getUserListAsJSON(searchTerm, sortKey, itemsPerPage, 0);       
+        
+        
+        JsonArrayBuilder jsonUserListArray = userService.getUserListAsJSON(searchTerm, sortKey, itemsPerPage, offset);       
         if (jsonUserListArray==null){
             return getNoResultsJSON();
         }
+        
+         Pager pager = new Pager(userCount.intValue(), itemsPerPage, selectedPage);
 
         JsonObjectBuilder jsonOverallData = Json.createObjectBuilder();
         jsonOverallData.add("userCount", userCount)
+                       .add("pagination", pager.asJsonObjectBuilder())
                        .add("users", jsonUserListArray)
                        .add("selectedPage", 1);
 
