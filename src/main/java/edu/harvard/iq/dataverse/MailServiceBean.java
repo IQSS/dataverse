@@ -101,6 +101,8 @@ public class MailServiceBean implements java.io.Serializable {
     private Session session;
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
+        if (true) return true;
+
         boolean sent = false;
         String body = messageText + ResourceBundle.getBundle("Bundle").getString("notification.email.closing");
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
@@ -178,7 +180,8 @@ public class MailServiceBean implements java.io.Serializable {
         }
     }
     
-    public Boolean sendNotificationEmail(UserNotification notification){        
+    public Boolean sendNotificationEmail(UserNotification notification){  
+        if (true) return true;
         boolean retval = false;
         String emailAddress = getUserEmailAddress(notification);
         if (emailAddress != null){
