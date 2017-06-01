@@ -1,5 +1,5 @@
 
-var USER_LIST_DEBUG_ON = true;
+var USER_LIST_DEBUG_ON = false;
 
 function initPage(){
     nunjucks.configure({ autoescape: true });
@@ -63,6 +63,7 @@ function runRegularSearch(){
 
 function updatePagination(json_data){
      //   console.log(json_data);
+    $("#div-pagination").html('');
     if (json_data.data.hasOwnProperty('pagination')){
         var pagination_json = json_data.data.pagination;        
         // Use nunjucks to create the pagination HTML
@@ -82,7 +83,7 @@ function bindPages(){
     $("a.page_link").click(function(evt) {
        evt.preventDefault(); // stop link from using href
        var page_num = $(this).attr('rel');
-       $("#selected_page").val(page_num);  // update the selected page in the form
+       $("#selectedPage").val(page_num);  // update the selected page in the form
        runRegularSearch();    // run search
    });
 }
