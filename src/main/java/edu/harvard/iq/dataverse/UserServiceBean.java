@@ -3,6 +3,9 @@ package edu.harvard.iq.dataverse;
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
@@ -12,6 +15,7 @@ import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -44,6 +48,33 @@ public class UserServiceBean {
     
     
     /**
+     * Convenience method to format dbResult
+     * @param dbResult
+     * @return 
+     */
+    private String getStringOrNull(Object dbResult){
+        
+        if (dbResult == null){
+            return null;
+        }
+        return (String)dbResult;
+    }
+    
+    /**
+     * Convenience method to format dbResult
+     * @param dbResult
+     * @return 
+     */
+    private String getTimestampStringOrNull(Object dbResult){
+        
+        if (dbResult == null){
+            return null;
+        }
+        return ((Timestamp)dbResult).toString();
+    }
+                
+            
+    /**
      * 
      * @param searchKey
      * @param sortKey
@@ -53,46 +84,58 @@ public class UserServiceBean {
     public JsonObjectBuilder getUserListAsJSON(String searchKey, String sortKey, Integer resultLimit) {
         System.out.println("getUserListAsJSON 1");
 
+        // -------------------------------------------------
+        // Retrieve a list of user attributes from a native query
+        // -------------------------------------------------
         List<Object[]> userResults = getUserList(searchKey, sortKey, resultLimit);
 
-        System.out.println("getUserListAsJSON 2");
 
-        if ((userResults==null)||(userResults.isEmpty())){
-            return null;
-        }
-        
-        /*
-         u.id, u.useridentifier,";
-        qstr += " u.lastname, u.firstname, u.email,";
-        qstr += " u.affiliation, u.superuser,";
-        qstr += " u.position, u.modificationtime";
-        qstr += " FROM authenticateduser u";
-        */
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
-        for (Object[] result : userResults) {
-            JsonObjectBuilder jsonData = Json.createObjectBuilder();
-            jsonData.add("id", (int)result[0])
-                    .add("userIdentifier", (String)result[1])
-                    .add("lastName", (String)result[2])
-                    .add("firstName", (String)result[3])
-                    .add("email", (String)result[4]);
-            //jsonData.add("affiliation", (boolean)result[5]);
-            //jsonData.add("superuser", (boolean)result[6]);
-            jsonArray.add(jsonData);            
-        }
-        
+        // -------------------------------------------------
+        // Initialize the overall JSON response object (jsonUserData)
+        // as well as the JSOn user List
+        // -------------------------------------------------
         JsonObjectBuilder jsonUserData = Json.createObjectBuilder();
+        JsonArrayBuilder jsonUserListArray = Json.createArrayBuilder();
+
+        // -------------------------------------------------
+        // No results..... Return count of 0 and empty array
+        // -------------------------------------------------
+        if ((userResults==null)||(userResults.isEmpty())){
+            jsonUserData.add("userCount", 0)
+                        .add("users", jsonUserListArray);
+            return jsonUserData;
+        }
+        
+        // -------------------------------------------------
+        // We have results, format them into a JSON object
+        // -------------------------------------------------
+        for (Object[] result : userResults) {            
+
+            // not putting explicit nulls for now b/c https://stackoverflow.com/questions/22363925/jsr-353-how-to-add-null-values-using-javax-json-jsonobjectbuilder
+            //
+            NullSafeJsonBuilder singleUserData = NullSafeJsonBuilder.jsonObjectBuilder();
+            
+            singleUserData.add("id", (int)result[0])
+                    .add("userIdentifier", (String)result[1])
+                    .add("lastName", this.getStringOrNull(result[2]))
+                    .add("firstName", this.getStringOrNull(result[3]))
+                    .add("email", this.getStringOrNull(result[4]))
+                    .add("affiliation", this.getStringOrNull(result[5]))
+                    .add("is_superuser", (boolean)result[6])
+                    .add("position", this.getStringOrNull(result[7]))
+                    .add("modificationTime", this.getTimestampStringOrNull(result[8]));
+            jsonUserListArray.add(singleUserData);            
+        }
+        
         jsonUserData.add("userCount", userResults.size())
-                    .add("users", jsonArray);
-        
-       
-        System.out.println("getUserListAsJSON 3: " + userResults.size());
-        
+                    .add("users", jsonUserListArray);
+                
 
         return jsonUserData;
 
        
     }
+    
     
     
     /**
