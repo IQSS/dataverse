@@ -12,7 +12,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? bundle.new : DataversePage.dataverse.name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? bundle.new : DataversePage.dataverse.name}"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
             <ui:define name="body">
                 <f:metadata>
@@ -57,11 +57,8 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-9 form-col-container">
-                                    <div class="input-group">
-                                        <p:inputText id="name" tabindex="1" styleClass="form-control" value="#{DataversePage.dataverse.name}"/>
-                                        <div class="input-group-addon">#{bundle.dataverse}</div>
-                                    </div>
-                                    <p:watermark for="name" value="#{bundle['dataverse.enterName']}"/>
+                                    <p:inputText id="name" tabindex="1" styleClass="form-control" value="#{DataversePage.dataverse.name}"/>
+                                    <p:watermark for="name" value="#{DataversePage.suggestedDataverseNameOnCreate}"/>
                                 </div>
                             </div>
                             <div class="col-xs-6 form-group form-col-container">
@@ -399,7 +396,7 @@
                                                         <i class="icon-dataverse text-brand"></i>
                                                     </div>
                                                     <div class="dataverse-info-general">
-                                                        <div><h:outputText value="#{DataversePage.dataverse.name} #{bundle.dataverse}" styleClass="highlightBold"/> <h:outputText value=" (#{DataversePage.dataverse.affiliation})" styleClass="text-muted" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
+                                                        <div><h:outputText value="#{DataversePage.dataverse.name}" styleClass="highlightBold"/> <h:outputText value=" (#{DataversePage.dataverse.affiliation})" styleClass="text-muted" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
                                                         <div class="text-muted">#{DataversePage.dataverse.alias}</div>
                                                     </div>
                                                 </div>

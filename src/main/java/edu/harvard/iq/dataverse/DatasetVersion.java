@@ -809,7 +809,7 @@ public class DatasetVersion implements Serializable {
         }
         String rootDataverseName = root.getName();
         if (!StringUtil.isEmpty(rootDataverseName)) {
-            return rootDataverseName + " Dataverse";
+            return rootDataverseName;
         } else {
             return "";
         }
