@@ -5,15 +5,7 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -27,6 +19,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonAsDatasetDto;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -63,12 +56,14 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
      */
     public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor) {
         super(aRequest, datasetIn);
+        logger.log(Level.FINE,"Constructor");
         minorRelease = minor;
         theDataset = datasetIn;
     }
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
+        logger.log(Level.FINE,"execute");
 
         if (!theDataset.getOwner().isReleased()) {
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
@@ -95,68 +90,35 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         String protocol = theDataset.getProtocol();
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         String authority = theDataset.getAuthority();
+        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
+        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, protocol, theDataset.getGlobalIdCreateTime()});
         if (theDataset.getGlobalIdCreateTime() == null) {
-            if (protocol.equals("doi")
-                    && (doiProvider.equals("EZID") || doiProvider.equals("DataCite"))) {
-                String doiRetString = "";
-                
-                // Whether it's EZID or DataCiteif, if the registration is 
-                // refused because the identifier already exists, we'll generate another one
-                // and try to register again... but only up to some
-                // reasonably high number of times - so that we don't 
-                // go into an infinite loop here, if EZID is giving us 
-                // these duplicate messages in error. 
-                // 
-                // (and we do want the limit to be a "reasonably high" number! 
-                // true, if our identifiers are randomly generated strings, 
-                // then it is highly unlikely that we'll ever run into a 
-                // duplicate race condition repeatedly; but if they are sequential
-                // numeric values, than it is entirely possible that a large
-                // enough number of values will be legitimately registered 
-                // by another entity sharing the same authority...)
-                
-                int attempts = 0;
-                
-                if (doiProvider.equals("EZID")) {
-                    doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                    
-                    while (!doiRetString.contains(theDataset.getIdentifier())
-                            && doiRetString.contains("identifier already exists")
-                            && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-
-                        theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
-                        doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-
-                        attempts++;
-
-                    }
-
-                    if (doiRetString.contains(theDataset.getIdentifier())) {
+            if (idServiceBean!=null) {
+                try {
+                    if (!idServiceBean.alreadyExists(theDataset)) {
+                        idServiceBean.createIdentifier(theDataset);
                         theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                    } else if (doiRetString.contains("identifier already exists")) {
-                        throw new IllegalCommandException("EZID refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
                     } else {
-                        throw new IllegalCommandException("Failed to create identifier (" + theDataset.getIdentifier() + ") with EZID: " + doiRetString, this);
-                    }                    
-                }
-                
-                if (doiProvider.equals("DataCite")) {
-                    try {
-                        while (ctxt.doiDataCite().alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(protocol, authority, theDataset.getDoiSeparator()));
+                        int attempts = 0;
+                       
+                        while (idServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+                            attempts++;
                         }
                         
-                        if (ctxt.doiDataCite().alreadyExists(theDataset)) {
-                            throw new IllegalCommandException("DataCite refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
+                        if (idServiceBean.alreadyExists(theDataset)) {
+                            throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset;gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
                         }
-                        ctxt.doiDataCite().createIdentifier(theDataset);
+                        idServiceBean.createIdentifier(theDataset);
                         theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                    } catch (Exception e) {
-                        throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
-                    }
+                        
+                        }
+                   
+                } catch (Throwable e) {
+                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
                 }
             } else {
-                throw new IllegalCommandException("This dataset may not be published because its DOI provider is not supported. Please contact Dataverse Support for assistance.", this);
+                throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);
             }
         }
         
@@ -304,24 +266,12 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             ctxt.em().merge(datasetDataverseUser);
         }
 
-        if (protocol.equals("doi")
-                && doiProvider.equals("EZID")) {
-            ctxt.doiEZId().publicizeIdentifier(savedDataset);
-        }
-        if (protocol.equals("doi")
-                && doiProvider.equals("DataCite")) {
-            try {
-                ctxt.doiDataCite().publicizeIdentifier(savedDataset);
-            } catch (IOException io) {
-                throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
-            } catch (Exception e) {
-                if (e.toString().contains("Internal Server Error")) {
-                    throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
-                }
-                throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
+        if (idServiceBean!= null )
+            try{
+                idServiceBean.publicizeIdentifier(savedDataset);
+            }catch (Throwable e) {
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
             }
-        }
-
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), savedDataset));
         if (privateUrl != null) {
             logger.fine("Deleting Private URL for dataset id " + savedDataset.getId());
@@ -344,6 +294,6 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataset);
 
         return savedDataset;
-    }
+    }    
 
 }

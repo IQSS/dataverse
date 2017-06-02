@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,16 +47,43 @@ public class DatasetUtilTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of getThumbnail method, of class DatasetUtil.
-     */
     @Test
-    public void testGetThumbnail() {
-        System.out.println("getThumbnail");
+    public void testGetThumbnailNullDataset() {
+        System.out.println("testGetThumbnailNullDataset");
         Dataset dataset = null;
         DatasetThumbnail expResult = null;
         DatasetThumbnail result = DatasetUtil.getThumbnail(dataset);
         assertEquals(expResult, result);
+    }
+
+    @Test
+    public void testGetThumbnailUseGeneric() {
+        System.out.println("testGetThumbnailUseGeneric");
+        Dataset dataset = new Dataset();
+        dataset.setUseGenericThumbnail(true);
+        DatasetThumbnail result = DatasetUtil.getThumbnail(dataset);
+        assertNull(result);
+    }
+
+    @Test
+    public void testGetThumbnailRestricted() {
+        System.out.println("testGetThumbnailRestricted");
+        Dataset dataset = new Dataset();
+        DataFile thumbnailFile = new DataFile();
+        thumbnailFile.setId(42l);
+        thumbnailFile.setRestricted(true);
+        dataset.setThumbnailFile(thumbnailFile);
+        DatasetThumbnail result = DatasetUtil.getThumbnail(dataset);
+        assertNull(result);
+    }
+
+    @Test
+    public void testGetThumbnailNullDatasetNullDatasetVersion() {
+        System.out.println("testGetThumbnailNullDatasetNullDatasetVersion");
+        Dataset dataset = null;
+        DatasetVersion datasetVersion = null;
+        DatasetThumbnail result = DatasetUtil.getThumbnail(dataset, datasetVersion);
+        assertEquals(null, result);
     }
 
     /**
@@ -78,7 +106,7 @@ public class DatasetUtilTest {
         System.out.println("getDefaultThumbnailFile");
         Dataset dataset = null;
         DataFile expResult = null;
-        DataFile result = DatasetUtil.attemptToAutomaticallySelectThumbnailFromDataFiles(dataset);
+        DataFile result = DatasetUtil.attemptToAutomaticallySelectThumbnailFromDataFiles(dataset, null);
         assertEquals(expResult, result);
     }
 

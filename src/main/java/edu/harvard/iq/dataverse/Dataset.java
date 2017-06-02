@@ -76,7 +76,6 @@ import org.hibernate.validator.constraints.NotBlank;
 public class Dataset extends DvObjectContainer {
     private static final Logger logger = Logger.getLogger(Dataset.class.getCanonicalName());
 
-//    public static final String REDIRECT_URL = "/dataset.xhtml?persistentId=";
     public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
 
@@ -722,6 +721,18 @@ public class Dataset extends DvObjectContainer {
 
     public DatasetThumbnail getDatasetThumbnail() {
         return DatasetUtil.getThumbnail(this);
+    }
+
+    /** 
+     * Handle the case where we also have the datasetVersionId.
+     * This saves trying to find the latestDatasetVersion, and 
+     * other costly queries, etc.
+     * 
+     * @param datasetVersionId
+     * @return 
+     */
+    public DatasetThumbnail getDatasetThumbnail(DatasetVersion datasetVersion) {
+        return DatasetUtil.getThumbnail(this, datasetVersion);
     }
 
 }

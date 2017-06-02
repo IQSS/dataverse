@@ -110,23 +110,58 @@ Publishing the Root Dataverse
 
 Non-superusers who are not "Admin" on the root dataverse will not be able to to do anything useful until the root dataverse has been published.
 
-Persistent Identifiers and Publishing Datasets
-++++++++++++++++++++++++++++++++++++++++++++++
-
-Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and additionally displaying identifiers created using HDL. By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from one of two DOI providers: EZID (http://ezid.cdlib.org)  or DataCite (https://www.datacite.org). Once account credentials and DOI namespace have been acquired, please complete the following identifier configuration parameters:
-
-JVM Options: :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`
-
-Database Settings: :ref:`:DoiProvider <:DoiProvider>`, :ref:`:Protocol <:Protocol>`, :ref:`:Authority <:Authority>`, :ref:`:DoiSeparator <:DoiSeparator>`
-
-Please note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
-
 Customizing the Root Dataverse
 ++++++++++++++++++++++++++++++
 
-As the person installing Dataverse you may or may not be local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root dataverse to configure metadata fields, browse/search facets, templates, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
+As the person installing Dataverse you may or may not be a local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root dataverse to configure metadata fields, templates, browse/search facets, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
 
-Once this configuration is complete, your Dataverse installation should be ready for users to start playing with it. That said, there are many more configuration options available, which will be explained below.
+Once this configuration is complete, your Dataverse installation should be ready for users to start playing with. That said, there are many more configuration options available, which will be explained below.
+
+Persistent Identifiers and Publishing Datasets
+----------------------------------------------
+
+Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and Handle.
+
+By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. Note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
+
+To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: **EZID** (http://ezid.cdlib.org), **DataCite** (https://www.datacite.org), **Handle.Net** (https://www.handle.net). 
+
+Once you have your DOI or Handle account credentials and a namespace, configure Dataverse to use them using the JVM options and database settings below.
+
+Configuring Dataverse for DOIs
+++++++++++++++++++++++++++++++
+
+Out of the box, Dataverse is configured for DOIs. Here are the configuration options for DOIs:
+
+**JVM Options:**
+
+- :ref:`doi.baseurlstring`
+- :ref:`doi.username`
+- :ref:`doi.password`
+
+**Database Settings:**
+
+- :ref:`:DoiProvider <:DoiProvider>`
+- :ref:`:Protocol <:Protocol>`
+- :ref:`:Authority <:Authority>`
+- :ref:`:DoiSeparator <:DoiSeparator>`
+
+Configuring Dataverse for Handles
++++++++++++++++++++++++++++++++++
+
+Here are the configuration options for handles:
+
+**JVM Options:**
+
+- :ref:`dataverse.handlenet.admcredfile`
+- :ref:`dataverse.handlenet.admprivphrase`
+
+**Database Settings:**
+
+- :ref:`:Protocol <:Protocol>`
+- :ref:`:Authority <:Authority>`
+
+Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
 Auth Modes: Local vs. Remote vs. Both
 -------------------------------------
@@ -340,14 +375,18 @@ doi.password
 
 Used in conjuction with ``doi.baseurlstring``.
 
+.. _dataverse.handlenet.admcredfile:
+
 dataverse.handlenet.admcredfile
 +++++++++++++++++++++++++++++++
 
-For Handle support (not fully developed).
+If you're using **handles**, this JVM setting configures access credentials so your dataverse can talk to your Handle.Net server. This is the private key generated during Handle.Net server installation. Typically the full path is set to ``handle/svr_1/admpriv.bin``. Please refer to `Handle.Net's documentation <http://handle.net/hnr_documentation.html>`_ for more info.
+
+.. _dataverse.handlenet.admprivphrase:
 
 dataverse.handlenet.admprivphrase
 +++++++++++++++++++++++++++++++++
-For Handle support (not fully developed).
+This JVM setting is also part of **handles** configuration. The Handle.Net installer lets you choose whether to encrypt the admcredfile private key or not. If you do encrypt it, this is the pass phrase that it's encrypted with. 
 
 Database Settings
 -----------------
@@ -409,11 +448,11 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "EZID" and "DataCite" are the only valid options.
+As of this writing "EZID" and "DataCite" are the only valid options. DoiProvider is only needed if you are using DOI.
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
 
-This setting relates to the settings ``:Protocol``, ``:Authority``, ``:DoiSeparator``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
+This setting relates to the ``:Protocol``, ``:Authority``, ``:DoiSeparator``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
 
 - :ref:`doi.baseurlstring`
 - :ref:`doi.username`
@@ -424,7 +463,7 @@ This setting relates to the settings ``:Protocol``, ``:Authority``, ``:DoiSepara
 :Protocol
 +++++++++
 
-As of this writing "doi" is the only valid option for the protocol for a persistent ID.
+As of this writing "doi" and "hdl" are the only valid option for the protocol for a persistent ID.
 
 ``curl -X PUT -d doi http://localhost:8080/api/admin/settings/:Protocol``
 
@@ -433,7 +472,7 @@ As of this writing "doi" is the only valid option for the protocol for a persist
 :Authority
 ++++++++++
 
-Use the DOI authority assigned to you by your DoiProvider.
+Use the authority assigned to you by your DoiProvider or HandleProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
@@ -445,6 +484,8 @@ Use the DOI authority assigned to you by your DoiProvider.
 It is recommended that you keep this as a slash ("/").
 
 ``curl -X PUT -d "/" http://localhost:8080/api/admin/settings/:DoiSeparator``
+
+**Note:** The name DoiSeparator is a misnomer. This setting is used by some **handles**-specific code too. It *must* be set to '/' when using handles.
 
 .. _:IdentifierGenerationStyle:
 
