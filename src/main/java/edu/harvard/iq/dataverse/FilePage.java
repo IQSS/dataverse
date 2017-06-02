@@ -6,8 +6,10 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
+import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -96,6 +98,14 @@ public class FilePage implements java.io.Serializable {
     @Inject
     TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
+
+    public WorldMapPermissionHelper getWorldMapPermissionHelper() {
+        return worldMapPermissionHelper;
+    }
+
+    public void setWorldMapPermissionHelper(WorldMapPermissionHelper worldMapPermissionHelper) {
+        this.worldMapPermissionHelper = worldMapPermissionHelper;
+    }
 
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
@@ -200,13 +210,13 @@ public class FilePage implements java.io.Serializable {
     public List< String[]> getExporters(){
         List<String[]> retList = new ArrayList();
         String myHostURL = systemConfig.getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
+        for (String [] provider : ExportService.getInstance(settingsService).getExportersLabels() ){
             String formatName = provider[1];
             String formatDisplayName = provider[0];
             
             Exporter exporter = null; 
             try {
-                exporter = ExportService.getInstance().getExporter(formatName);
+                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
             } catch (ExportException ex) {
                 exporter = null;
             }
@@ -223,6 +233,7 @@ public class FilePage implements java.io.Serializable {
         return retList;  
     }
   
+    
     public String restrictFile(boolean restricted) {
         String fileNames = null;
         String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
@@ -540,7 +551,30 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
-    
+    public Boolean isSwiftStorage () {
+        Boolean swiftBool = false;
+        if (file.getStorageIdentifier().startsWith("swift://")){
+            swiftBool = true;
+        }
+        return swiftBool;
+    }
+
+    public String getSwiftContainerName(){
+        String swiftContainerName = null;
+        String swiftFolderPathSeparator = "-";
+        
+        String authorityNoSlashes = file.getOwner().getAuthority().replace(file.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+        swiftContainerName = file.getOwner().getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
+            + swiftFolderPathSeparator + file.getOwner().getIdentifier();
+        logger.info("Swift container name: " + swiftContainerName);
+
+        return swiftContainerName;
+    }
+
+    public String getComputeUrl() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+    }
+
     private List<DataFile> allRelatedFiles() {
         List<DataFile> dataFiles = new ArrayList();
         DataFile dataFileToTest = fileMetadata.getDataFile();
@@ -616,6 +650,25 @@ public class FilePage implements java.io.Serializable {
     }
 
     public String getPublicDownloadUrl() {
+            try {
+            DataFileIO dataFileIO = getFile().getDataFileIO();
+            if (dataFileIO instanceof SwiftAccessIO) {
+                String fileDownloadUrl = null;
+                try {
+                    SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+                    swiftIO.open();
+                    fileDownloadUrl = swiftIO.getRemoteUrl();
+                    logger.info("Swift url: " + fileDownloadUrl);
+                    return fileDownloadUrl;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
     }
 

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
@@ -54,9 +55,8 @@ import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.concurrent.Future;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import javax.ws.rs.QueryParam;
 /**
  * Where the secure, setup API calls live.
@@ -874,6 +874,33 @@ public class Admin extends AbstractApiBean {
                            @QueryParam("forceRecalculate") boolean forceRecalculate) {
         JsonObjectBuilder info = datasetVersionSvc.fixMissingUnf(datasetVersionId, forceRecalculate);
         return ok(info);
+    }
+
+    /**
+     * This method is used in API tests, called from UtilIt.java.
+     */
+    @GET
+    @Path("datasets/thumbnailMetadata/{id}")
+    public Response getDatasetThumbnailMetadata(@PathParam("id") Long idSupplied) {
+        Dataset dataset = datasetSvc.find(idSupplied);
+        if (dataset == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+        }
+        JsonObjectBuilder data = Json.createObjectBuilder();
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+        data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
+        data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset));
+        if (datasetThumbnail != null) {
+            data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());
+            DataFile dataFile = datasetThumbnail.getDataFile();
+            if (dataFile != null) {
+                /**
+                 * @todo Change this from a String to a long.
+                 */
+                data.add("dataFileId", dataFile.getId().toString());
+            }
+        }
+        return ok(data);
     }
 
 }

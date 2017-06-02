@@ -6,6 +6,8 @@ Now that the :doc:`prerequisites` are in place, we are ready to execute the Data
 
 .. contents:: :local:
 
+.. _dataverse-installer:
+
 Running the Dataverse Installer
 -------------------------------
 
@@ -47,6 +49,10 @@ The script will prompt you for some configuration values. If this is a test/eval
 - Rserve Server Port: 6311
 - Rserve User Name: rserve
 - Rserve User Password: rserve
+
+If desired, these default values can be configured by creating a ``default.config`` (example :download:`here <../_static/util/default.config>`) file in the installer's working directory with new values (if this file isn't present, the above defaults will be used).
+
+This allows the installer to be run in non-interactive mode (with ``./install -y -f > install.out 2> install.err``), which can allow for easier interaction with automated provisioning tools.
 
 **New, as of 4.3:**
 
@@ -151,4 +157,4 @@ Rerun Installer
 
 With all the data cleared out, you should be ready to rerun the installer per above.
 
-Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. Your mileage may vary. :)
+Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. Your mileage may vary. :) For more on this topic, see "Rebuilding Your Dev Environment" in the :doc:`/developers/dev-environment` section of the Developer Guide.

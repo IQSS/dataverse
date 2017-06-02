@@ -10,13 +10,14 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,8 +37,12 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NamedStoredProcedureQuery;
+import javax.persistence.ParameterMode;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureParameter;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -49,6 +54,8 @@ import org.ocpsoft.common.util.Strings;
  *
  * @author skraffmiller
  */
+
+
 @Stateless
 @Named
 public class DatasetServiceBean implements java.io.Serializable {
@@ -214,13 +221,44 @@ public class DatasetServiceBean implements java.io.Serializable {
         return foundDataset;
     }
 
-    public String generateIdentifierSequence(String protocol, String authority, String separator) {
+    public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        switch (doiIdentifierType) {
+            case "randomString":
+                return generateIdentifierAsRandomString(dataset, idServiceBean);
+            case "sequentialNumber":
+                return generateIdentifierAsSequentialNumber(dataset, idServiceBean);
+            default:
+                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
+                return generateIdentifierAsRandomString(dataset, idServiceBean);
+        }
+    }
+    
+    private String generateIdentifierAsRandomString(Dataset dataset, IdServiceBean idServiceBean) {
 
         String identifier = null;
         do {
             identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isUniqueIdentifier(identifier, protocol, authority, separator));
+        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
 
+        return identifier;
+    }
+
+    private String generateIdentifierAsSequentialNumber(Dataset dataset, IdServiceBean idServiceBean) {
+        
+        String identifier; 
+        do {
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
+            query.execute();
+            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // because the stored procedure hasn't been created in the database?
+            if (identifierNumeric == null) {
+                return null; 
+            }
+            identifier = identifierNumeric.toString();
+        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
+        
         return identifier;
     }
 
@@ -229,18 +267,21 @@ public class DatasetServiceBean implements java.io.Serializable {
      * for any other study in this Dataverse Network) alos check for duplicate
      * in EZID if needed
      */
-    public boolean isUniqueIdentifier(String userIdentifier, String protocol, String authority, String separator) {
+    public boolean isIdentifierUniqueInDatabase(String userIdentifier, Dataset dataset, IdServiceBean idServiceBean) {
         String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
-        query += " and d.protocol ='" + protocol + "'";
-        query += " and d.authority = '" + authority + "'";
+        query += " and d.protocol ='" + dataset.getProtocol() + "'";
+        query += " and d.authority = '" + dataset.getAuthority() + "'";
         boolean u = em.createQuery(query).getResultList().size() == 0;
-        String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = settingsService.getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        if (doiProvider.equals("EZID")) {
-            if (!doiEZIdServiceBean.lookupMetadataFromIdentifier(protocol, authority, separator, userIdentifier).isEmpty()) {
+            
+        try{
+            if (idServiceBean.alreadyExists(dataset)) {
                 u = false;
             }
+        } catch (Exception e){
+            //we can live with failure - means identifier not found remotely
         }
+
+       
         return u;
     }
 
@@ -767,5 +808,63 @@ public class DatasetServiceBean implements java.io.Serializable {
         Date now = new Date();
         em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
     }
+
+    public Dataset setNonDatasetFileAsThumbnail(Dataset dataset, InputStream inputStream) {
+        if (dataset == null) {
+            logger.fine("In setNonDatasetFileAsThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        if (inputStream == null) {
+            logger.fine("In setNonDatasetFileAsThumbnail but inputStream is null! Returning null.");
+            return null;
+        }
+        dataset = DatasetUtil.persistDatasetLogoToDiskAndCreateThumbnail(dataset, inputStream);
+        dataset.setThumbnailFile(null);
+        return merge(dataset);
+    }
+
+    public Dataset setDatasetFileAsThumbnail(Dataset dataset, DataFile datasetFileThumbnailToSwitchTo) {
+        if (dataset == null) {
+            logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        if (datasetFileThumbnailToSwitchTo == null) {
+            logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        DatasetUtil.deleteDatasetLogo(dataset);
+        dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
+        dataset.setUseGenericThumbnail(false);
+        return merge(dataset);
+    }
+
+    public Dataset removeDatasetThumbnail(Dataset dataset) {
+        if (dataset == null) {
+            logger.fine("In removeDatasetThumbnail but dataset is null! Returning null.");
+            return null;
+        }
+        DatasetUtil.deleteDatasetLogo(dataset);
+        dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(true);
+        return merge(dataset);
+    }
     
+    // persist assigned thumbnail in a single one-field-update query:
+    // (the point is to avoid doing an em.merge() on an entire dataset object...)
+    public void assignDatasetThumbnailByNativeQuery(Long datasetId, Long dataFileId) {
+        try {
+            em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id=" + datasetId).executeUpdate();
+        } catch (Exception ex) {
+            // it's ok to just ignore... 
+        }
+    }
+    
+    public void assignDatasetThumbnailByNativeQuery(Dataset dataset, DataFile dataFile) {
+        try {
+            em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFile.getId() + " WHERE id=" + dataset.getId()).executeUpdate();
+        } catch (Exception ex) {
+            // it's ok to just ignore... 
+        }
+    }
+
 }

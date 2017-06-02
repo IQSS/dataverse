@@ -6,15 +6,12 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +21,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -118,8 +114,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     // (only FITS at this point)
     
     private static final String MIME_TYPE_FITS  = "application/fits";
-    private static final String MIME_TYPE_FITSIMAGE = "image/fits";
-   
+
     // Network Data files: 
     // (only GRAPHML at this point): 
     
@@ -127,9 +122,7 @@ public class DataFileServiceBean implements java.io.Serializable {
    
     // SHAPE file type: 
     // this is the only supported file type in the GEO DATA class:
-    
-    private static final String MIME_TYPE_GEO_SHAPE = "application/zipped-shapefile";
-    
+        
     private static final String MIME_TYPE_ZIP   = "application/zip";
     
     private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
@@ -298,6 +291,9 @@ public class DataFileServiceBean implements java.io.Serializable {
                 + ";").getSingleResult();
     }
 
+    public FileMetadata findFileMetadata(Long fileMetadataId) {
+        return (FileMetadata) em.find(FileMetadata.class, fileMetadataId);
+    }
     
     public FileMetadata findFileMetadataByDatasetVersionIdAndDataFileId(Long datasetVersionId, Long dataFileId) {
 
@@ -450,7 +446,8 @@ public class DataFileServiceBean implements java.io.Serializable {
                 
         dataFile.setOwner(owner);
 
-        // look up data table; but only if content type indicates it's tabular data:
+        // If content type indicates it's tabular data, spend 2 extra queries 
+        // looking up the data table and tabular tags objects:
         
         if (MIME_TYPE_TAB.equalsIgnoreCase(contentType)) {
             Object[] dtResult = null;
@@ -475,6 +472,28 @@ public class DataFileServiceBean implements java.io.Serializable {
                 
                 dataTable.setDataFile(dataFile);
                 dataFile.setDataTable(dataTable);
+                
+                // tabular tags: 
+                
+                List<Object[]> tagResults = null;
+                try {
+                    tagResults = em.createNativeQuery("SELECT t.TYPE, t.DATAFILE_ID FROM DATAFILETAG t WHERE t.DATAFILE_ID = " + id).getResultList();
+                } catch (Exception ex) {
+                    logger.info("EXCEPTION looking up tags.");
+                    tagResults = null;
+                }
+                
+                if (tagResults != null) {
+                    List<String> fileTagLabels = DataFileTag.listTags();
+                    
+                    for (Object[] tagResult : tagResults) {
+                        Integer tagId = (Integer)tagResult[0];
+                        DataFileTag tag = new DataFileTag();
+                        tag.setTypeByLabel(fileTagLabels.get(tagId));
+                        tag.setDataFile(dataFile);
+                        dataFile.addTag(tag);
+                    }
+                }
             }
         }
         
@@ -984,61 +1003,26 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     */
     
-    
-    /* 
-     * This method tells you if thumbnail generation is *supported* 
-     * on this type of file. i.e., if true, it does not guarantee that a thumbnail 
-     * can/will be generated; but it means that we can try. 
-     */
-    public boolean thumbnailSupported (DataFile file) {
-        if (file == null) {
-            return false;
-        }
-        
-        if (file.isHarvested() || "".equals(file.getStorageIdentifier())) {
-            return false;
-        }
-        
-        String contentType = file.getContentType();
-        
-        // Some browsers (Chrome?) seem to identify FITS files as mime
-        // type "image/fits" on upload; this is both incorrect (the official
-        // mime type for FITS is "application/fits", and problematic: then
-        // the file is identified as an image, and the page will attempt to 
-        // generate a preview - which of course is going to fail...
-        if (MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType)) {
-            return false;
-        }
-        // besides most image/* types, we can generate thumbnails for 
-        // pdf and "world map" files:
-        
-        return (contentType != null && 
-                (contentType.startsWith("image/") || 
-                contentType.equalsIgnoreCase("application/pdf") ||
-                contentType.equalsIgnoreCase(MIME_TYPE_GEO_SHAPE)));
-    }
-    
-    /* 
+    /*
      * This method will return true if the thumbnail is *actually available* and
      * ready to be downloaded. (it will try to generate a thumbnail for supported
      * file types, if not yet available)
-    */
+     */
     public boolean isThumbnailAvailable (DataFile file) {
         if (file == null) {
             return false; 
         } 
-        
+
         // If this file already has the "thumbnail generated" flag set,
         // we'll just trust that:
-        
         if (file.isPreviewImageAvailable()) {
+            logger.info("returning true");
             return true;
         }
         
         // If thumbnails are not even supported for this class of files, 
-        // there's notthing to talk about: 
-        
-        if (!thumbnailSupported(file)) {
+        // there's notthing to talk about:      
+        if (!FileUtil.isThumbnailSupported(file)) {
             return false;
         }
         
@@ -1050,31 +1034,22 @@ public class DataFileServiceBean implements java.io.Serializable {
          queries; checking if the thumbnail is available may cost cpu time, if 
          it has to be generated on the fly - so you have to figure out which 
          is more important... 
-        TODO: adding a boolean flag isImageAlreadyGenerated to the DataFile 
-         db table should help with this. -- L.A. 4.2.1 DONE: 4.2.2
         
-        // Also, thumbnails are only shown to users who have permission to see 
-        // the full-size image file. So before we do anything else, let's
-        // do some authentication and authorization:        
-        if (!permissionService.userOn(user, file).has(Permission.DownloadFile)) { 
-            logger.fine("No permission to download the file.");
-            return false; 
-        }*/
-        
-        
+        */
+                
         
        if (ImageThumbConverter.isThumbnailAvailable(file)) {
            file = this.find(file.getId());
            file.setPreviewImageAvailable(true);
-           file = this.save(file); //em.merge(file);
-           // (should this be done here? - TODO:)
+           file = this.save(file); 
            return true;
        }
+
        return false;
     }
 
     
-    // TODO: 
+    /*// TODO: 
     // Document this.
     // -- L.A. 4.0 beta14
     
@@ -1090,9 +1065,9 @@ public class DataFileServiceBean implements java.io.Serializable {
         String imageThumbFileName = null;
         
         if ("application/pdf".equals(mimeType)) {
-            imageThumbFileName = ImageThumbConverter.generatePDFThumb(fileSystemName);
+            imageThumbFileName = ImageThumbConverter.generatePDFThumbnailFromFile(fileSystemName);
         } else if (mimeType != null && mimeType.startsWith("image/")) {
-            imageThumbFileName = ImageThumbConverter.generateImageThumb(fileSystemName);
+            imageThumbFileName = ImageThumbConverter.generateImageThumbnailFromFile(fileSystemName);
         }
         
         if (imageThumbFileName != null) {
@@ -1100,16 +1075,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
             
         return false;
-    }
+    }*/
     
     /* 
      * TODO: 
      * similar method, but for non-default thumbnail sizes:
-    */
+    
     
     public boolean isThumbnailAvailableForSize (DataFile file) {
         return false; 
-    }
+    }*/
     
     public boolean ingestableAsTabular(DataFile dataFile) {
         /* 
@@ -1215,7 +1190,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // the file is identified as an image, and the page will attempt to 
         // generate a preview - which of course is going to fail...
         
-        if (MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType)) {
+        if (FileUtil.MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType)) {
             return false;
         }
         // besides most image/* types, we can generate thumbnails for 
@@ -1286,7 +1261,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // The only known/supported "Astro" file type is FITS,
         // so far:
         
-        return (MIME_TYPE_FITS.equalsIgnoreCase(contentType) || MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType));
+        return (MIME_TYPE_FITS.equalsIgnoreCase(contentType) || FileUtil.MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType));
         
     }
     
@@ -1326,7 +1301,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // The only known/supported Geo Data type is SHAPE,
         // so far:
         
-        return MIME_TYPE_GEO_SHAPE.equalsIgnoreCase(contentType);
+        return FileUtil.MIME_TYPE_GEO_SHAPE.equalsIgnoreCase(contentType);
     }
     
     public boolean isFileClassTabularData (DataFile file) {

@@ -22,8 +22,8 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,8 +34,9 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Iterator;
+import java.util.List;
 
 
 import org.apache.commons.httpclient.Header;
@@ -80,13 +81,24 @@ public abstract class DataFileIO {
     // This method will return a Path, if the storage method is a 
     // local filesystem. Otherwise should throw an IOException. 
     public abstract Path getFileSystemPath() throws IOException;
+    
+    public abstract boolean exists() throws IOException; 
 
     // This method will delete the physical file (object), if delete
     // functionality is supported by the physical driver. 
     // TODO: this method should throw something other than IOException 
     // if delete functionality is not supported by the access driver!
     // -- L.A. 4.0. beta
+    // (there is now a dedicated exception for this purpose: UnsupportedDataAccessOperationException,
+    // that extends IOException -- 4.6.2) 
     public abstract void delete() throws IOException;
+    
+    // this method for copies a local Path (for ex., a
+    // temp file, into this DataAccess location):
+    public abstract void savePath(Path fileSystemPath) throws IOException;
+    
+    // same, for an InputStream:
+    public abstract void saveInputStream(InputStream inputStream) throws IOException;
     
     // Auxiliary File Management: (new as of 4.0.2!)
     
@@ -100,10 +112,24 @@ public abstract class DataFileIO {
     
     public abstract long getAuxObjectSize(String auxItemTag) throws IOException; 
     
+    public abstract Path getAuxObjectAsPath(String auxItemTag) throws IOException; 
+    
     public abstract boolean isAuxObjectCached(String auxItemTag) throws IOException; 
     
     public abstract void backupAsAux(String auxItemTag) throws IOException; 
-
+    
+    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
+    public abstract void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException;
+    
+    // this method copies a local InputStream into this DataAccess Auxiliary location:
+    public abstract void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException; 
+    
+    public abstract List<String>listAuxObjects() throws IOException;
+    
+    public abstract void deleteAuxObject(String auxItemTag) throws IOException; 
+    
+    public abstract void deleteAllAuxObjects() throws IOException;
+    
 
     private DataFile dataFile;
     private DataAccessRequest req;
@@ -120,6 +146,8 @@ public abstract class DataFileIO {
     private String varHeader;
     private String errorMessage;
 
+    //private String swiftContainerName;
+
     private Boolean isLocalFile = false;
     private Boolean isRemoteAccess = false;
     private Boolean isHttpAccess = false;
@@ -135,71 +163,6 @@ public abstract class DataFileIO {
     private String remoteUrl;
     private GetMethod method = null;
     private Header[] responseHeaders;
-    
-    
-    // this is a convenience method for copying a local Path (for ex., a
-    // temp file, into this DataAccess location):
-    public void copyPath(Path fileSystemPath) throws IOException {
-        long newFileSize = -1; 
-        // if this is a local fileystem file, we'll use a 
-        // quick Files.copy method: 
-        if (isLocalFile()) {
-            Path outputPath = null;
-            try {
-                outputPath = getFileSystemPath();
-            } catch (IOException ex) {
-                outputPath = null;
-            }
-            if (outputPath != null) {
-                Files.copy(fileSystemPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
-                newFileSize = outputPath.toFile().length();
-            }
-            
-        } else {
-            // otherwise we'll open a writable byte channel and 
-            // copy the source file bytes using Channel.transferTo():
-            
-            WritableByteChannel writeChannel = null;
-            FileChannel readChannel = null;
-            String failureMsg = null; 
-
-            try {
-
-                open(DataAccessOption.WRITE_ACCESS);
-                writeChannel = getWriteChannel();
-                readChannel = new FileInputStream(fileSystemPath.toFile()).getChannel();
-
-                long bytesPerIteration = 16 * 1024; // 16K bytes
-                long start = 0;
-                while (start < readChannel.size()) {
-                    readChannel.transferTo(start, bytesPerIteration, writeChannel);
-                    start += bytesPerIteration;
-                }
-                newFileSize = readChannel.size(); 
-
-            } catch (IOException ioex) {
-                failureMsg = ioex.getMessage();
-                if (failureMsg == null) {
-                    failureMsg = "Unknown exception occured.";
-                }
-            } finally {
-                if (readChannel != null) {
-                    try {readChannel.close();}catch(IOException e){}
-                }
-                if (writeChannel != null) {
-                    try {writeChannel.close();}catch(IOException e){}
-                }
-            }
-            
-            if (failureMsg != null) {
-                throw new IOException(failureMsg);
-            }
-        }
-        
-        // if it has worked successfully, we also need to reset the size
-        // of the object. 
-        setSize(newFileSize);
-    }
 
     // getters:
     
@@ -239,15 +202,11 @@ public abstract class DataFileIO {
         return size;
     }
 
-    //public String getLocation() {
-    //    return location;
-    //}
-
     public InputStream getInputStream() {
         return in;
     }
     
-    public OutputStream getOutputStream() {
+    public OutputStream getOutputStream() throws IOException {
         return out; 
     }
 
@@ -270,6 +229,10 @@ public abstract class DataFileIO {
     public String getRemoteUrl() {
         return remoteUrl;
     }
+
+    // public String getSwiftContainerName(){
+    //     return swiftContainerName;
+    // }
 
     public GetMethod getHTTPMethod() {
         return method;
@@ -356,6 +319,10 @@ public abstract class DataFileIO {
         remoteUrl = u;
     }
 
+    // public void setSwiftContainerName(String u){
+    //     swiftContainerName = u;
+    // }
+
     public void setHTTPMethod(GetMethod hm) {
         method = hm;
     }
@@ -413,5 +380,28 @@ public abstract class DataFileIO {
                 }
             }
         }
+    }
+    
+    public String generateVariableHeader(List dvs) {
+        String varHeader = null;
+
+        if (dvs != null) {
+            Iterator iter = dvs.iterator();
+            DataVariable dv;
+
+            if (iter.hasNext()) {
+                dv = (DataVariable) iter.next();
+                varHeader = dv.getName();
+            }
+
+            while (iter.hasNext()) {
+                dv = (DataVariable) iter.next();
+                varHeader = varHeader + "\t" + dv.getName();
+            }
+
+            varHeader = varHeader + "\n";
+        }
+
+        return varHeader;
     }
 }

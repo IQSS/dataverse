@@ -73,13 +73,25 @@ Without this ``requestHeaderSize`` line in place, which increases the default si
 Network Ports
 -------------
 
-The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has already been mentioned above and the fact that Glassfish puts these services on 8080 and 8181, respectively, was touched on in the :doc:`installation-main` section. You have a few options that basically boil down to if you want to introduce Apache into the mix or not. If you need :doc:`shibboleth` support you need Apache and you should proceed directly to that doc for guidance on fronting Glassfish with Apache.
+Remember how under "Decisions to Make" in the :doc:`prep` section we mentioned you'll need to make a decision about whether or not to introduce a proxy in front of Dataverse such as Apache or nginx? The time has come to make that decision.
 
-If you don't want to front Glassfish with a proxy such as Apache or nginx, you will need to configure Glassfish to run HTTPS on 443 like this:
+The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has already been mentioned above and the fact that Glassfish puts these services on 8080 and 8181, respectively, was touched on in the :doc:`installation-main` section. In production, you don't want to tell your users to use Dataverse on ports 8080 and 8181. You should have them use the stardard HTTPS port, which is 443.
+
+Your decision to proxy or not should primarily be driven by which features of Dataverse you'd like to use. If you'd like to use Shibboleth, the decision is easy because proxying or "fronting" Glassfish with Apache is required. The details are covered in the :doc:`shibboleth` section.
+
+If you'd like to use TwoRavens, you should also consider fronting with Apache because you will be required to install an Apache anyway to make use of the rApache module. For details, see the :doc:`r-rapache-tworavens` section.
+
+Even if you have no interest in Shibboleth nor TwoRavens, you may want to front Dataverse with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Glassfish is arduous and not for the faint of heart. The Dataverse team cannot provide much help with adding certificates to Glassfish beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
+
+Still not convinced you should put Glassfish behind another web server? Even if you manage to get your SSL certificate into Glassfish, how are you going to run Glassfish on low ports such as 80 and 443? Are you going to run Glassfish as root? Bad idea. This is a security risk. Under "Additional Recommendations" under "Securing Your Installation" above you are advised to configure Glassfish to run as a user other than root. (The Dataverse team will close https://github.com/IQSS/dataverse/issues/1934 after updating the Glassfish init script provided in the :doc:`prerequisites` section to not require root.)
+
+There's also the issue of serving a production-ready version of robots.txt. By using a proxy such as Apache, this is a one-time "set it and forget it" step as explained below in the "Going Live" section.
+
+If you are convinced you'd like to try fronting Glassfish with Apache, the :doc:`shibboleth` section should be good resource for you.
+
+If you really don't want to front Glassfish with any proxy (not recommended), you can configure Glassfish to run HTTPS on port 443 like this:
 
 ``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=443``
-
-Most likely you'll want to put a valid cert into Glassfish, which is certainly possible but out of scope for this guide.
 
 What about port 80? Even if you don't front Dataverse with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS as described above. You can use a similar command as above to change the HTTP port that Glassfish uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Glassfish can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: http://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
 
@@ -98,23 +110,58 @@ Publishing the Root Dataverse
 
 Non-superusers who are not "Admin" on the root dataverse will not be able to to do anything useful until the root dataverse has been published.
 
-Persistent Identifiers and Publishing Datasets
-++++++++++++++++++++++++++++++++++++++++++++++
-
-Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and additionally displaying identifiers created using HDL. By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from one of two DOI providers: EZID (http://ezid.cdlib.org)  or DataCite (https://www.datacite.org). Once account credentials and DOI namespace have been acquired, please complete the following identifier configuration parameters:
-
-JVM Options: :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`
-
-Database Settings: :ref:`:DoiProvider <:DoiProvider>`, :ref:`:Protocol <:Protocol>`, :ref:`:Authority <:Authority>`, :ref:`:DoiSeparator <:DoiSeparator>`
-
-Please note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
-
 Customizing the Root Dataverse
 ++++++++++++++++++++++++++++++
 
-As the person installing Dataverse you may or may not be local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root dataverse to configure metadata fields, browse/search facets, templates, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
+As the person installing Dataverse you may or may not be a local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root dataverse to configure metadata fields, templates, browse/search facets, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
 
-Once this configuration is complete, your Dataverse installation should be ready for users to start playing with it. That said, there are many more configuration options available, which will be explained below.
+Once this configuration is complete, your Dataverse installation should be ready for users to start playing with. That said, there are many more configuration options available, which will be explained below.
+
+Persistent Identifiers and Publishing Datasets
+----------------------------------------------
+
+Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and Handle.
+
+By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. Note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
+
+To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: **EZID** (http://ezid.cdlib.org), **DataCite** (https://www.datacite.org), **Handle.Net** (https://www.handle.net). 
+
+Once you have your DOI or Handle account credentials and a namespace, configure Dataverse to use them using the JVM options and database settings below.
+
+Configuring Dataverse for DOIs
+++++++++++++++++++++++++++++++
+
+Out of the box, Dataverse is configured for DOIs. Here are the configuration options for DOIs:
+
+**JVM Options:**
+
+- :ref:`doi.baseurlstring`
+- :ref:`doi.username`
+- :ref:`doi.password`
+
+**Database Settings:**
+
+- :ref:`:DoiProvider <:DoiProvider>`
+- :ref:`:Protocol <:Protocol>`
+- :ref:`:Authority <:Authority>`
+- :ref:`:DoiSeparator <:DoiSeparator>`
+
+Configuring Dataverse for Handles
++++++++++++++++++++++++++++++++++
+
+Here are the configuration options for handles:
+
+**JVM Options:**
+
+- :ref:`dataverse.handlenet.admcredfile`
+- :ref:`dataverse.handlenet.admprivphrase`
+
+**Database Settings:**
+
+- :ref:`:Protocol <:Protocol>`
+- :ref:`:Authority <:Authority>`
+
+Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
 Auth Modes: Local vs. Remote vs. Both
 -------------------------------------
@@ -138,6 +185,75 @@ Enabling a second authentication provider will result in the Log In page showing
 - Shibboleth or OAuth has been enabled.
 - ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. 
 - The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work. This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to builtin. Then the user initiates a conversion from builtin to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
+
+File Storage: Local Filesystem vs. Swift
+----------------------------------------
+
+By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+
+Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
+
+**Note:** At present, any file restrictions that users apply in Dataverse will not be honored in Swift. This means that a user without proper permissions **could bypass intended restrictions** by accessing the restricted file through Swift. 
+
+In order to configure a Swift installation, there are two steps you need to complete:
+
+First, create a file named ``swift.properties`` as follows in the ``config`` directory for your installation of Glassfish (by default, this would be ``/usr/local/glassfish4/glassfish/domains/domain1/config/swift.properties``):
+
+.. code-block:: none
+
+    swift.default.endpoint=endpoint1
+    swift.auth_type.endpoint1=your-authentication-type
+    swift.auth_url.endpoint1=your-auth-url
+    swift.tenant.endpoint1=your-tenant-name
+    swift.username.endpoint1=your-username
+    swift.password.endpoint1=your-password
+    swift.swift_endpoint.endpoint1=your-swift-endpoint
+
+``auth_type`` can either be ``keystone`` or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. ``https://openstack.example.edu:35357/v2.0/tokens``). ``swift_endpoint`` is a URL that look something like ``http://rdgw.swift.example.org/swift/v1``.
+
+Second, update the JVM option ``dataverse.files.storage-driver-id`` by running the delete command:
+
+``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
+
+Then run the create command:
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
+
+Going Live: Launching Your Production Deployment
+------------------------------------------------
+
+This guide has attempted to take you from kicking the tires on Dataverse to finalizing your installation before letting real users in. In theory, all this work could be done on a single server but better would be to have separate staging and production environments so that you can deploy upgrades to staging before deploying to production. This "Going Live" section is about launching your **production** environment.
+
+Before going live with your installation of Dataverse, you must take the steps above under "Securing Your Installation" and you should at least review the various configuration options listed below. An attempt has been made to put the more commonly-configured options earlier in the list.
+
+Out of the box, Dataverse attempts to block search engines from crawling your installation of Dataverse so that test datasets do not appear in search results until you're ready.
+
+Letting Search Engines Crawl Your Installation
+++++++++++++++++++++++++++++++++++++++++++++++
+
+For a public production Dataverse installation, it is probably desired that search agents be able to index published pages (aka - pages that are visible to an unauthenticated user).
+Polite crawlers usually respect the `Robots Exclusion Standard <https://en.wikipedia.org/wiki/Robots_exclusion_standard>`_; we have provided an example of a production robots.txt :download:`here </_static/util/robots.txt>`).
+
+You have a couple of options for putting an updated robots.txt file into production. If you are fronting Glassfish with Apache as recommended above, you can place robots.txt in the root of the directory specified in your ``VirtualHost`` and to your Apache config a ``ProxyPassMatch`` line like the one below to prevent Glassfish from serving the version of robots.txt that embedded in the Dataverse war file:
+
+.. code-block:: text
+
+    # don't let Glassfish serve its version of robots.txt
+    ProxyPassMatch ^/robots.txt$ !
+
+For more of an explanation of ``ProxyPassMatch`` see the :doc:`shibboleth` section.
+
+If you are not fronting Glassfish with Apache you'll need to prevent Glassfish from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of Dataverse. Furthermore, since the version of Dataverse is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse 4.6.1 the path to robots.txt may be ``/usr/local/glassfish4/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt`` with the version number ``4.6.1`` as part of the path.
+
+Putting Your Dataverse Installation on the Map at dataverse.org
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Congratulations! You've gone live! It's time to announce your new data respository to the world! You are also welcome to contact support@dataverse.org to have the Dataverse team add your installation to the map at http://dataverse.org . Thank you for installing Datavese!
+
+Administration of Your Dataverse Installation
++++++++++++++++++++++++++++++++++++++++++++++
+
+Now that you're live you'll want to review the :doc:`/admin/index`. Please note that there is also an :doc:`administration` section of this Installation Guide that will be moved to the newer Admin Guide in the future.
 
 JVM Options
 -----------
@@ -220,24 +336,30 @@ For overriding the default path to the ``convert`` binary from ImageMagick (``/u
 dataverse.dataAccess.thumbnail.image.limit
 ++++++++++++++++++++++++++++++++++++++++++
 
-For limiting the size of thumbnail images generated from files.
+For limiting the size (in bytes) of thumbnail images generated from files.
 
 dataverse.dataAccess.thumbnail.pdf.limit
 ++++++++++++++++++++++++++++++++++++++++
 
-For limiting the size of thumbnail images generated from files.
+For limiting the size (in bytes) of thumbnail images generated from files.
 
 .. _doi.baseurlstring:
 
 doi.baseurlstring
 +++++++++++++++++
 
-As of this writing "https://ezid.cdlib.org" and "https://mds.datacite.org" are the only valid values. See also these related database settings below:
+As of this writing, "https://ezid.cdlib.org" (EZID) and "https://mds.datacite.org" (DataCite) are the main valid values. 
 
-- :DoiProvider
-- :Protocol
-- :Authority
-- :DoiSeparator
+While the above two options are recommended because they have been tested by the Dataverse team, it is also possible to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the DataCite Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL.
+
+For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite and EZID must be tested with Dataverse to establish whether or not it will function properly.
+
+See also these related database settings below:
+
+- :ref:`:DoiProvider`
+- :ref:`:Protocol`  
+- :ref:`:Authority`
+- :ref:`:DoiSeparator`
 
 .. _doi.username:
 
@@ -253,14 +375,18 @@ doi.password
 
 Used in conjuction with ``doi.baseurlstring``.
 
+.. _dataverse.handlenet.admcredfile:
+
 dataverse.handlenet.admcredfile
 +++++++++++++++++++++++++++++++
 
-For Handle support (not fully developed).
+If you're using **handles**, this JVM setting configures access credentials so your dataverse can talk to your Handle.Net server. This is the private key generated during Handle.Net server installation. Typically the full path is set to ``handle/svr_1/admpriv.bin``. Please refer to `Handle.Net's documentation <http://handle.net/hnr_documentation.html>`_ for more info.
+
+.. _dataverse.handlenet.admprivphrase:
 
 dataverse.handlenet.admprivphrase
 +++++++++++++++++++++++++++++++++
-For Handle support (not fully developed).
+This JVM setting is also part of **handles** configuration. The Handle.Net installer lets you choose whether to encrypt the admcredfile private key or not. If you do encrypt it, this is the pass phrase that it's encrypted with. 
 
 Database Settings
 -----------------
@@ -272,13 +398,13 @@ The most commonly used configuration options are listed first.
 :BlockedApiPolicy
 +++++++++++++++++
 
-Out of the box, all API endpoints are completely open as mentioned in the section on security above. It is highly recommend that you choose one of the policies below and also configure ``:BlockedApiEndpoints``.
+Out of the box, all API endpoints are completely open, as mentioned in the section on security above. It is highly recommended that you choose one of the policies below and also configure ``:BlockedApiEndpoints``.
 
 - localhost-only: Allow from localhost.
 - unblock-key: Require a key defined in ``:BlockedApiKey``.
 - drop: Disallow the blocked endpoints completely.
 
-``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
+``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
 :BlockedApiEndpoints
 ++++++++++++++++++++
@@ -322,16 +448,22 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "EZID" and "DataCite" are the only valid options.
+As of this writing "EZID" and "DataCite" are the only valid options. DoiProvider is only needed if you are using DOI.
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
+
+This setting relates to the ``:Protocol``, ``:Authority``, ``:DoiSeparator``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
+
+- :ref:`doi.baseurlstring`
+- :ref:`doi.username`
+- :ref:`doi.password`
 
 .. _:Protocol:
 
 :Protocol
 +++++++++
 
-As of this writing "doi" is the only valid option for the protocol for a persistent ID.
+As of this writing "doi" and "hdl" are the only valid option for the protocol for a persistent ID.
 
 ``curl -X PUT -d doi http://localhost:8080/api/admin/settings/:Protocol``
 
@@ -340,7 +472,7 @@ As of this writing "doi" is the only valid option for the protocol for a persist
 :Authority
 ++++++++++
 
-Use the DOI authority assigned to you by your DoiProvider.
+Use the authority assigned to you by your DoiProvider or HandleProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
@@ -352,6 +484,31 @@ Use the DOI authority assigned to you by your DoiProvider.
 It is recommended that you keep this as a slash ("/").
 
 ``curl -X PUT -d "/" http://localhost:8080/api/admin/settings/:DoiSeparator``
+
+**Note:** The name DoiSeparator is a misnomer. This setting is used by some **handles**-specific code too. It *must* be set to '/' when using handles.
+
+.. _:IdentifierGenerationStyle:
+
+:IdentifierGenerationStyle
+++++++++++++++++++++++++++
+
+By default, Dataverse generates a random 6 character string to use as the identifier
+for a Dataset. Set this to "``sequentialNumber``" to use sequential numeric values 
+instead. (the assumed default setting is "``randomString``"). 
+In addition to this setting, a database sequence must be created in the database. 
+We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`).
+You may need to make some changes to suit your system setup, see the comments for more information: 
+
+.. literalinclude:: ../_static/util/createsequence.sql
+
+Note that the SQL above is Postgres-specific. If necessary, it can be reimplemented 
+in any other SQL flavor - the standard JPA code in the application simply expects 
+the database to have a saved function ("stored procedure") named ``generateIdentifierAsSequentialNumber``
+with the single return argument ``identifier``. 
+
+For systems using Postgresql 8.4 or older, the procedural language `plpgsql` should be enabled first.
+We have provided an example :download:`here </_static/util/pg8-createsequence-prep.sql>`.
+
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
@@ -375,6 +532,13 @@ Specify a URL where users can read your Privacy Policy, linked from the bottom o
 Specify a URL where users can read your API Terms of Use.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
+
+:ExcludeEmailFromExport
++++++++++++++++++++++++
+
+Set ``:ExcludeEmailFromExport`` to prevent email addresses for dataset contacts from being exposed in XML or JSON representations of dataset metadata. For a list exported formats such as DDI, see the :doc:`/admin/metadataexport` section of the Admin Guide.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ExcludeEmailFromExport``
 
 :GuidesBaseUrl
 ++++++++++++++
@@ -529,7 +693,7 @@ The duration in minutes before "Confirm Email" URLs expire. The default is 1440 
 :DefaultAuthProvider
 ++++++++++++++++++++
 
-If you have enabled Shibboleth and/or one or more OAuth providers, you may wish to make one of these authentication providers the default when users visit the Log In page. If unset, this will default to ``builtin`` but thes valid options (depending if you've done the setup described in the :doc:`shibboleth` or doc:`oauth2` sections) are:
+If you have enabled Shibboleth and/or one or more OAuth providers, you may wish to make one of these authentication providers the default when users visit the Log In page. If unset, this will default to ``builtin`` but thes valid options (depending if you've done the setup described in the :doc:`shibboleth` or :doc:`oauth2` sections) are:
 
 - ``builtin``
 - ``shib``
@@ -570,3 +734,32 @@ or
 Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
 
 The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
+
+:ShibPassiveLoginEnabled
+++++++++++++++++++++++++
+
+Set ``:ShibPassiveLoginEnabled`` to true to enable passive login for Shibboleth. When this feature is enabled, an additional Javascript file (isPassive.js) will be loaded for every page. It will generate a passive login request to your Shibboleth SP when an anonymous user navigates to the site. A cookie named "_check_is_passive_dv" will be created to keep track of whether or not a passive login request has already been made for the user.
+
+This implementation follows the example on the Shibboleth wiki documentation page for the isPassive feature: https://wiki.shibboleth.net/confluence/display/SHIB2/isPassive
+
+It is recommended that you configure additional error handling for your Service Provider if you enable passive login. A good way of doing this is described in the Shibboleth wiki documentation:
+
+- *In your Service Provider 2.x shibboleth2.xml file, add redirectErrors="#THIS PAGE#" to the Errors element.*
+
+You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or any other page on your site that is accessible to anonymous users and will have the isPassive.js file loaded.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
+
+:ComputeBaseUrl
++++++++++++++++
+
+Set the base URL for the "Compute" button for a dataset.
+
+``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse?containerName=' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
+
+:CloudEnvironmentName
++++++++++++++++++++++
+
+Set the base URL for the "Compute" button for a dataset.
+
+``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``

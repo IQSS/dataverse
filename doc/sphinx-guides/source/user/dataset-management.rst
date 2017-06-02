@@ -23,15 +23,15 @@ Adding a New Dataset
 
 #. Navigate to the dataverse in which you want to add a dataset. 
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
-#. To quickly get started, enter at minimum all the required fields with an asterisk to get a Data Citation with a DOI (e.g., the Dataset Title, Author, 
-   Description, Contact Email and Subject).
+#. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
+   Description, Contact Email and Subject) to get a Data Citation with a DOI.
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop,
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
    description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
 #. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
 
-Note 1: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
+Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
 
 Supported HTML Fields
 ---------------------
@@ -115,8 +115,27 @@ Advanced Options
 
 There are several advanced options available for certain file types.
 
-- Image files: jpgs, pngs, and tiff files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
+- Image files: .jpg, .png, and .tif files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
 - SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
+
+.. _cloud-storage:
+
+Cloud Storage + Computing
+-------------------------
+
+Dataverse installations can be configured to facilitate cloud-based storage and/or computing (this feature is considered experimental at this time, and some of the kinks are still being worked out). While the default configuration for Dataverse uses a local file system for storing data, a cloud-enabled Dataverse installation can use a Swift object storage database for its data. This allows users to perform computations on data using an integrated cloud computing environment.
+
+**Note:** At present, any file restrictions that users apply in Dataverse will not be supported in Swift. This means: if you set a file on Dataverse as "restricted", a user without proper permissions **could bypass that restriction** by accessing the file through Swift. For now, do not rely on file restrictions to limit access to data in a cloud-enabled Dataverse.
+
+Cloud Computing
+~~~~~~~~~~~~~~~
+
+The "Compute" button on dataset and file pages will take you directly to the cloud computing environment that is integrated with Dataverse, allowing you to perform computations on that file or dataset.
+
+Cloud Storage Access
+~~~~~~~~~~~~~~~~~~~~
+
+If you need to access a dataset in a more flexible way than the Compute button provides, then you can use the Cloud Storage Access box on the dataset page to copy the dataset's container name. This unique identifer can then be used to allow direct access to the dataset.
 
 Edit Files
 ==========
@@ -202,9 +221,62 @@ The panel below that is "Roles" where you can find all the roles set up in your 
 File-Level
 ----------
 
-If you have restricted specific files the file-level permissions is where you will need to go to grant users/groups access to specific restricted files. Dataset file permissions are located under Permissions in the Edit button on a dataset page. The file permissions page has two sections: Users/Groups and Files.
+If you have restricted specific files the file-level permissions is where you will need to go to grant users/groups access to
+specific restricted files. Dataset file permissions are located under Permissions in the Edit button on a dataset page. 
+The file permissions page has two sections: Users/Groups and Files.
 
-To give someone access to your restricted files, click on the "Grant Access to Users/Groups" button in the Users/Groups section. 
+To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
+
+.. _thumbnails-widgets:
+
+Thumbnails + Widgets
+====================
+
+Thumbnails
+----------
+
+Thumbnail images can be assigned to a dataset manually or automatically. The thumbnail for a dataset appears on the search result card for that dataset and on the dataset page itself. If a dataset contains one or more data files that Dataverse recognizes as an image, then one of those images is automatically selected as the dataset thumbnail. 
+
+If you would like to manually select your dataset's thumbnail, you can do so by clicking the "Edit" button on your dataset, and selecting "Thumbnails + Widgets" from the dropdown menu.
+
+On this page, under the Thumbnail tab you will see three possible actions.
+
+**Select Available File:** Click the "Select Thumbnail" button to choose an image from your dataset to use as the dataset thumbnail.
+
+**Upload New File:** Upload an image file from your computer to use as the dataset thumbnail. While by default your thumbnail image is drawn from a file in your dataset, this will allow you to upload a separate image file to use as your dataset thumbnail. This uploaded image file will only be used as the dataset thumbnail; it will not be stored as a data file in your dataset.
+
+**Remove Thumbnail:** If you click the "Remove" button under the thumbnail image, you will remove the dataset's current thumbnail. The Dataset will then revert to displaying a basic default icon as the dataset thumbnail.
+
+When you're finished on this page, be sure to click "Save Changes" to save what you've done.
+
+Note: If you prefer, it is also possible to set an image file in your dataset as your thumbnail by selecting the file, going to Edit Files -> Metadata, and using the "Set Thumbnail" button.
+
+Widgets
+-------
+
+The Widgets feature provides you with code for your personal website so your dataset can be displayed. There are two types of Widgets for a dataset: the Dataset Widget and the Dataset Citation Widget. Widgets are found by going to your dataset page, clicking the "Edit" button (the one with the pencil icon) and selecting "Thumbnails + Widgets" from the dropdown menu.
+
+In the Widgets tab, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
+
+Dataset Widget
+~~~~~~~~~~~~~~
+
+The Dataset Widget allows the citation, metadata, files and terms of your dataset to be displayed on your website. When someone downloads a data file in the widget, it will download directly from the datasets on your website. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site. 
+
+To edit your dataset, you will need to return to the Dataverse repository where the dataset is stored. You can easily do this by clicking on the link that says "Data Stored in (Name) Dataverse" found in the bottom of the widget.
+
+Dataset Citation Widget
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The Dataset Citation Widget will provide a citation for your dataset on your personal or project website. Users can download the citation in various formats by using the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse.
+
+Adding Widgets to an OpenScholar Website
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. Log in to your OpenScholar website
+#. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
+#. Click on the Settings Cog and select Layout
+#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Dataset and the Dataverse Dataset Citation Widgets. Click on the widget you would like to add, fill out the form, and then drag it to where you would like it to display in the page.
 
 Publish Dataset
 ===============
@@ -276,35 +348,6 @@ Add more information as to why this was deaccessioned in the free-text box. If t
 If you deaccession the most recently published version of the dataset but not all versions of the dataset, you are able to go in and create a new draft for the dataset. For example, you have a version 1 and version 2 of a dataset, both published, and deaccession version 2. You are then able to edit version 1 of the dataset and a new draft vresion will be created.
 
 **Important Note**: A tombstone landing page with the basic citation metadata will always be accessible to the public if they use the persistent URL (Handle or DOI) provided in the citation for that dataset.  Users will not be able to see any of the files or additional metadata that were previously available prior to deaccession.
-
-.. _dataset-widgets:
-
-Widgets
-=======
-
-The Widgets feature provides you with code for your personal website so your dataset can be displayed. There are two types of Widgets for a dataset: the Dataset Widget and the Dataset Citation Widget. The Widgets are found by going to your dataset page, clicking the Edit button (the one with the pencil icon) and selecting Widgets from the dropdown menu.
-
-On the Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
-
-Dataset Widget
---------------
-
-The Dataset Widget allows the citation, metadata, files and terms of your dataset to be displayed on your website. When someone downloads a data file in the widget, it will download directly from the datasets on your website. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site. 
-
-To edit your dataset, you will need to return to the Dataverse repository where the dataset is stored. You can easily do this by clicking on the link that says "Data Stored in (Name) Dataverse" found in the bottom of the widget.
-
-Dataset Citation Widget
------------------------
-
-The Dataset Citation Widget will provide a citation for your dataset on your personal or project website. Users can download the citation in various formats by using the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse. 
-
-Adding Widgets to an OpenScholar Website
-----------------------------------------
-
-#. Log in to your OpenScholar website
-#. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
-#. Click on the Settings Cog and select Layout
-#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Dataset and the Dataverse Dataset Citation Widgets. Click on the widget you would like to add, fill out the form, and then drag it to where you would like it to display in the page.
 
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive

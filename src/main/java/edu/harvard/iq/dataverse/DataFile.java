@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.Entity;
@@ -61,6 +63,7 @@ import org.hibernate.validator.constraints.NotBlank;
 		, @Index(columnList="contenttype")
 		, @Index(columnList="restricted")})
 public class DataFile extends DvObject implements Comparable {
+    private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
     
     public static final char INGEST_STATUS_NONE = 65;
@@ -535,15 +538,6 @@ public class DataFile extends DvObject implements Comparable {
         this.restricted = restricted;
     }
 
-
-
-
-
-
-
-
-
-     
     public ChecksumType getChecksumType() {
         return checksumType;
     }
@@ -564,51 +558,15 @@ public class DataFile extends DvObject implements Comparable {
         return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
     }
 
-    public DataFileIO getAccessObject() throws IOException {
-        DataFileIO dataAccess =  DataAccess.createDataAccessObject(this);
+    public DataFileIO getDataFileIO() throws IOException {
+        DataFileIO dataFileIO =  DataAccess.getDataFileIO(this);
         
-        if (dataAccess == null) {
-            throw new IOException("Failed to create access object for datafile.");
+        if (dataFileIO == null) {
+            throw new IOException("Failed to create DataFileIO for datafile.");
         }
         
-        return dataAccess; 
+        return dataFileIO; 
     }
-    
-    
-    // The 2 methods below - TODO: 
-    // remove everything filesystem-specific; 
-    // move the functionality into storage drivers. 
-    // -- L.A. 4.0.2
-    
-    public Path getSavedOriginalFile() {
-       
-        if (!this.isTabularData() || this.fileSystemName == null) {
-            return null; 
-        }
-        
-        Path studyDirectoryPath = this.getOwner().getFileSystemDirectory();
-        if (studyDirectoryPath == null) {
-            return null;
-        }
-        String studyDirectory = studyDirectoryPath.toString();
- 
-        Path savedOriginal = Paths.get(studyDirectory, "_" + this.fileSystemName);
-        if (Files.exists(savedOriginal)) {
-            return savedOriginal;
-        }
-        return null; 
-    }
-    
-    /*
-    public String getFilename() {
-        String studyDirectory = this.getOwner().getFileSystemDirectory().toString();
- 
-        if (studyDirectory == null || this.fileSystemName == null || this.fileSystemName.equals("")) {
-            return null;
-        }
-        String fileSystemPath = studyDirectory + "/" + this.fileSystemName;
-        return fileSystemPath.replaceAll("/", "%2F");
-    }*/
     
     /*
         Does the contentType indicate a shapefile?
@@ -799,7 +757,21 @@ public class DataFile extends DvObject implements Comparable {
     public String getDisplayName() {
         // @todo should we show the published version label instead?
         // currently this method is not being used
-        return getLatestFileMetadata().getLabel();
+       return getLatestFileMetadata().getLabel(); 
+       /*
+       Taking out null check to see if npe persists.
+       Really shouldn't need it 
+       a file should always have a latest metadata
+       
+               ////if (getLatestFileMetadata() != null) {
+           return getLatestFileMetadata().getLabel(); 
+       // }
+       // logger.fine("DataFile getLatestFileMetadata is null for DataFile id = " + this.getId());
+       // return "";
+       
+       */
+
+
     }
     
     @Override
@@ -982,6 +954,16 @@ public class DataFile extends DvObject implements Comparable {
         }
         return null;
     }
+    
+    
+    public String getThumbnailString() {
+        DatasetThumbnail datasetThumbnail = FileUtil.getThumbnail(this);
+        if (datasetThumbnail == null) {
+            return null;
+        }
+        return datasetThumbnail.getBase64image();
+    }
+    
 
 } // end of class
     

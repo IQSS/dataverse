@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -36,6 +35,25 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class GuestbookResponseServiceBean {
+    
+    public static final String BASE_QUERY_STRING_WITH_GUESTBOOK = "select r.id, g.name, v.value,  r.responsetime, r.downloadtype,  m.label, r.dataFile_id, r.name, r.email, r.institution, r.position from guestbookresponse r,"
+                + " datasetfieldvalue v, filemetadata m, dvobject o, guestbook g  "
+                + " where "  
+                + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
+                + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
+                + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
+                + "  and m.datafile_id = r.datafile_id "
+                + "  and r.dataset_id = o.id "
+                + "  and r.guestbook_id = g.id ";
+    
+    public static final String BASE_QUERY_STRING_WITHOUT_GUESTBOOK = "select  r.id, v.value, r.responsetime, r.downloadtype,  m.label, r.name from guestbookresponse r,"
+                + " datasetfieldvalue v, filemetadata m , dvobject o    "
+                + " where "  
+                + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
+                + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
+                + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
+                + "  and m.datafile_id = r.datafile_id "
+                + "  and r.dataset_id = o.id ";
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -66,15 +84,7 @@ public class GuestbookResponseServiceBean {
     
     public List<Object[]> findArrayByDataverseId (Long dataverseId){
 
-        String queryString = "select r.id, g.name, v.value,  r.responsetime, r.downloadtype,  m.label, r.dataFile_id, r.name, r.email, r.institution, r.position from guestbookresponse r,"
-                + " datasetfieldvalue v, filemetadata m, dvobject o, guestbook g  "
-                + " where "  
-                + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
-                + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
-                + " and m.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
-                + "  and m.datafile_id = r.datafile_id "
-                + "  and r.dataset_id = o.id "
-                + "  and r.guestbook_id = g.id "
+        String queryString = BASE_QUERY_STRING_WITH_GUESTBOOK
                 + " and  o.owner_id = "
                 + dataverseId.toString()
                 + ";";           
@@ -84,15 +94,7 @@ public class GuestbookResponseServiceBean {
     
     public List<Object[]> findArrayByDataverseIdAndGuestbookId (Long dataverseId, Long guestbookId){
 
-        String queryString = "select r.id, g.name, v.value,  r.responsetime, r.downloadtype,  m.label, r.dataFile_id, r.name, r.email, r.institution, r.position from guestbookresponse r,"
-                + " datasetfieldvalue v, filemetadata m, dvobject o, guestbook g  "
-                + " where "  
-                + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
-                + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
-                + " and m.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
-                + "  and m.datafile_id = r.datafile_id "
-                + "  and r.dataset_id = o.id "
-                + "  and r.guestbook_id = g.id "
+        String queryString = BASE_QUERY_STRING_WITH_GUESTBOOK
                 + " and  o.owner_id = "
                 + dataverseId.toString()
                 + " and r.guestbook_id = "
@@ -153,14 +155,7 @@ public class GuestbookResponseServiceBean {
         boolean hasCustomQuestions = gbIn.getCustomQuestions() != null;
         List<Object[]> retVal =  new ArrayList<>();
 
-        String queryString = "select  r.id, v.value, r.responsetime, r.downloadtype,  m.label, r.name from guestbookresponse r,"
-                + " datasetfieldvalue v, filemetadata m , dvobject o    "
-                + " where "  
-                + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
-                + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
-                + " and m.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
-                + "  and m.datafile_id = r.datafile_id "
-                + "  and r.dataset_id = o.id "
+        String queryString = BASE_QUERY_STRING_WITHOUT_GUESTBOOK
                 + " and  o.owner_id = "
                 + dataverseId.toString()
                 + " and  r.guestbook_id = "
@@ -409,13 +404,15 @@ public class GuestbookResponseServiceBean {
         } else {
             workingVersion = dataset.getLatestVersion();
         }
-
+       
        
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         
         if(workingVersion != null && workingVersion.isDraft()){           
             guestbookResponse.setWriteResponse(false);
         } 
+        
+       // guestbookResponse.setDatasetVersion(workingVersion);
         
         if (fileMetadata != null){
            guestbookResponse.setDataFile(fileMetadata.getDataFile());
@@ -440,6 +437,7 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDownloadtype("Download");
 
         guestbookResponse.setDataset(dataset);
+        
         
         return guestbookResponse;
     }

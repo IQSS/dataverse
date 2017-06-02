@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -52,12 +53,17 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
                 this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
         }
         
+        // If there is a dedicated thumbnail DataFile, it needs to be reset
+        // explicitly, or we'll get a constraint violation when deleting:
+        doomed.setThumbnailFile(null);
         final Dataset managedDoomed = ctxt.em().merge(doomed);
 
         
         List<String> datasetAndFileSolrIdsToDelete = new ArrayList<>();
         // files need to iterate through and remove 'by hand' to avoid
-        // optimistic lock issues....        
+        // optimistic lock issues... (plus the physical files need to be 
+        // deleted too!)
+        
         Iterator <DataFile> dfIt = doomed.getFiles().iterator();
         while (dfIt.hasNext()){
             DataFile df = dfIt.next();
@@ -80,11 +86,14 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             ctxt.em().remove(ra);
         }   
         
-        //Register Cache
-        if(ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, "").equals("DataCite")){
-            ctxt.doiDataCite().deleteRecordFromCache(doomed);
-        }
-
+        IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
+        try{
+            if(idServiceBean.alreadyExists(doomed)){
+                idServiceBean.deleteIdentifier(doomed);
+            }
+        }  catch (Exception e) {
+             logger.log(Level.WARNING, "Identifier deletion was not successfull:",e.getMessage());
+        } 
         Dataverse toReIndex = managedDoomed.getOwner();
 
         // dataset

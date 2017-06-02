@@ -11,7 +11,7 @@
 
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
-        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation" jsf:rendered="#{!widgetWrapper.widgetView}">
+        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
@@ -272,6 +272,9 @@
         <!-- Message Panel -->
         <p:fragment id="messagePanel" rendered="#{showMessagePanel}">
             <div class="container messagePanel">
+                <ui:remove>
+                    <!--change this to <h:messages id="messages"/> to see otherwise hidden errors such as `Conversion Error setting value 'foo.jpg' for 'null Converter'`-->
+                </ui:remove>
                 <iqbs:messages id="messages" collapsible="true" />
             </div>
         </p:fragment>
