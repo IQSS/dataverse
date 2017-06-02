@@ -219,6 +219,19 @@ Then run the create command:
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
 
+Branding Your Installation
+--------------------------
+
+We provide configurable options for easy to add (and maintain) custom branding to your Dataverse installation. These custom content options include a homepage for your installation ``:HomePageCustomizationFile``, as well as a header ``:HeaderCustomizationFile``, navbar logo ``:LogoCustomizationFile``, footer ``:FooterCustomizationFile`` and stylesheet ``:StyleCustomizationFile``.
+
+In order to help get you started, we have provided these sample files.
+
+Simply put those file into the ``/custom-directory/`` directory of your server, and run the necessary curl commands to configure the settings, as in the example below.
+
+``curl -X PUT -d "/custom-directory/custom-homepage-include.xhtml" http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+
+Refresh your page, and you'll see everything displayed!
+
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
 
@@ -435,6 +448,28 @@ The key required to create users via API as documented at :doc:`/api/native-api`
 This is the email address that "system" emails are sent from such as password reset links.
 
 ``curl -X PUT -d "Support <support@example.edu>" http://localhost:8080/api/admin/settings/:SystemEmail``
+
+:HomePageCustomizationFile
+++++++++++++++++++++++++++
+
+By default the homepage for your Dataverse application, is the Root Dataverse page. If you prefer, you can create a custom welcome page that your users will see when navigating to your domain. You can configure this as in the example below.
+
+``curl -X PUT -d "/Applications/Custom/custom-homepage-include.xhtml" http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+
+:HeaderCustomizationFile
+++++++++++++++++++++++++
+
+``curl -X PUT -d "/Applications/Custom/custom-header-include.xhtml" http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
+
+:FooterCustomizationFile
+++++++++++++++++++++++++
+
+``curl -X PUT -d "/Applications/Custom/custom-footer-include.xhtml" http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
+
+:StyleCustomizationFile
++++++++++++++++++++++++
+
+``curl -X PUT -d "/Applications/Custom/custom-stylesheet.css" http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
 :FooterCopyright
 ++++++++++++++++
