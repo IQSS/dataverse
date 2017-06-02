@@ -53,12 +53,17 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
                 this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
         }
         
+        // If there is a dedicated thumbnail DataFile, it needs to be reset
+        // explicitly, or we'll get a constraint violation when deleting:
+        doomed.setThumbnailFile(null);
         final Dataset managedDoomed = ctxt.em().merge(doomed);
 
         
         List<String> datasetAndFileSolrIdsToDelete = new ArrayList<>();
         // files need to iterate through and remove 'by hand' to avoid
-        // optimistic lock issues....        
+        // optimistic lock issues... (plus the physical files need to be 
+        // deleted too!)
+        
         Iterator <DataFile> dfIt = doomed.getFiles().iterator();
         while (dfIt.hasNext()){
             DataFile df = dfIt.next();
