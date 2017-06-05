@@ -6,7 +6,7 @@ Now that you've successfully logged into Dataverse with a superuser account afte
 
 Settings within Dataverse itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls. Configuring Solr requires manipulating XML files.
 
-Once you have finished securing and configuring your Dataverse installation, proceed to the :doc:`administration` section. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
+Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
 
 .. contents:: :local:
 
@@ -226,7 +226,7 @@ Congratulations! You've gone live! It's time to announce your new data resposito
 Administration of Your Dataverse Installation
 +++++++++++++++++++++++++++++++++++++++++++++
 
-Now that you're live you'll want to review the :doc:`/admin/index`. Please note that there is also an :doc:`administration` section of this Installation Guide that will be moved to the newer Admin Guide in the future.
+Now that you're live you'll want to review the :doc:`/admin/index` for more information about the ongoing administration of a Dataverse installation.
 
 JVM Options
 -----------
@@ -661,7 +661,7 @@ Allow for migration of non-conformant data (especially dates) from DVN 3.x to Da
 :MinutesUntilConfirmEmailTokenExpires
 +++++++++++++++++++++++++++++++++++++
 
-The duration in minutes before "Confirm Email" URLs expire. The default is 1440 minutes (24 hours).  See also :doc:`/installation/administration`.
+The duration in minutes before "Confirm Email" URLs expire. The default is 1440 minutes (24 hours).  See also the :doc:`/admin/user-administration` section of our Admin Guide.
 
 :DefaultAuthProvider
 ++++++++++++++++++++
