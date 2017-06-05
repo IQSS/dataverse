@@ -21,18 +21,19 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <ui:fragment>
-
                     <div class="row">
                         <div class="col-sm-12">
                             <input name="searchTerm" id="searchTerm" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" placeholder="Filter users..."/>
-                            <input type="hidden" name="selectedPage" id="selectedPage" value="1" />
+                            <ui:remove>
+                            </ui:remove>
+                            <!--input type="hidden" name="selectedPage" id="selectedPage" value="1" /-->
                         </div>                        
                     </div>
                     <div id="div-result-message"></div>
                     <div class="row">
                         <div class="col-sm-12">
                             <!-- place holder for user table -->
-                            <div id="div-pagination"></div>
+                            <div id="div-pagination" style="border:1px solid #006699; height:85px; padding:20px;"></div>
                             <div id="div-user-list">
                                 
                             </div>
@@ -41,18 +42,8 @@
                     </div>
                     <div id="div-json-results"></div>
                     
-                    <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
-                    <script src="#{resource['js/dashboard_users.js']}?version=#{systemConfig.getVersion()}"></script>
-                    <script> 
-                        <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
-                        var RETRIEVE_USER_DATA_API_PATH = '#{DashboardUsersPage.getListUsersAPIPath()}';
-                    </script>
-                    <script>            
-                          $(document).ready(function() {
-                              initPage();
-                           });
-                    </script>    
                 </ui:fragment>
+                
                 <p:dataTable value="#{DashboardUsersPage.userList}"  var="user">
                     <p:column headerText="Id">
                         <h:outputText value="#{user[0]}" />
@@ -69,9 +60,8 @@
                     <p:column headerText="Color">
                         <h:outputText value="#{user[3]}" />
                     </p:column>
-
-
-                </p:dataTable>     
+                </p:dataTable> 
+                <ui:remove></ui:remove> 
             </ui:define>
         </ui:composition>
     </h:body>

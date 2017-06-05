@@ -1,12 +1,9 @@
 package edu.harvard.iq.dataverse;
 
-import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -14,8 +11,6 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -173,8 +168,8 @@ public class UserServiceBean {
         
         System.out.println("--------------\n\n" + qstr);
         
-        Query nativeQuery = em.createNativeQuery(qstr);  
-        nativeQuery.setParameter("searchTerm", searchTerm + "%");  
+        Query nativeQuery = em.createNativeQuery(qstr);          
+        nativeQuery.setParameter("searchTerm", "%" + searchTerm + "%");  
 
         
         return nativeQuery.getResultList();
@@ -194,15 +189,47 @@ public class UserServiceBean {
             return "";
         }
         
-        
-        String searchClause = "WHERE u.useridentifier LIKE '%" + searchTerm +"%'";
+        /*
+        String searchClause = " WHERE u.useridentifier LIKE '%" + searchTerm +"%'";
         searchClause += " OR u.firstname LIKE '%" + searchTerm +"%'";
         searchClause += " OR u.lastname LIKE '%" + searchTerm +"%'";
         searchClause += " OR u.email LIKE '%" + searchTerm +"%'";
+        */
+        String searchClause = " WHERE u.useridentifier ILIKE #searchTerm";
+        searchClause += " OR u.firstname ILIKE #searchTerm";
+        searchClause += " OR u.lastname ILIKE #searchTerm"; 
+        searchClause += " OR u.email ILIKE #searchTerm"; 
         
         return searchClause;
     }
     
+    
+    /**
+     * Return the number of superusers -- for the dashboard
+     * @return 
+     */
+    public Long getSuperUserCount() {
+        
+        String qstr = "SELECT count(id)";
+        qstr += " FROM authenticateduser";
+        qstr += " WHERE superuser = true";
+        qstr += ";";
+        
+        Query nativeQuery = em.createNativeQuery(qstr);  
+
+        return (Long)nativeQuery.getSingleResult();
+
+    }
+
+    /**
+     * Return count of all users
+     * @return 
+     */
+    public Long getTotalUserCount(){
+        
+        return getUserCount(null);
+    }
+
     /**
      * 
      * @param searchTerm
@@ -220,7 +247,7 @@ public class UserServiceBean {
         qstr += ";";
         
         Query nativeQuery = em.createNativeQuery(qstr);  
-        nativeQuery.setParameter("searchTerm", searchTerm + "%");  
+        nativeQuery.setParameter("searchTerm", "%" + searchTerm + "%");  
         
         return (Long)nativeQuery.getSingleResult();
 
