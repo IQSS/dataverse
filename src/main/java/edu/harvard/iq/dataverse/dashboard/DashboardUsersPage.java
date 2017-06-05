@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.api.Admin;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -18,6 +19,16 @@ public class DashboardUsersPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DashboardUsersPage.class.getCanonicalName());
     private AuthenticatedUser authUser = null;
+    
+    private List<Object[]> userList = null;
+
+    public List<Object[]> getUserList() {
+        return userService.getUserList("", null, Integer.SIZE, Integer.SIZE);
+    }
+
+    public void setUserList(List<Object[]> userList) {
+        this.userList = userList;
+    }
 
     @EJB
     AuthenticationServiceBean authenticationService;
@@ -34,6 +45,7 @@ public class DashboardUsersPage implements java.io.Serializable {
 
         if ((session.getUser() != null) && (session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())) {
             authUser = (AuthenticatedUser) session.getUser();
+            userList = userService.getUserList("", null, Integer.SIZE, Integer.SIZE);
         } else {
             return permissionsWrapper.notAuthorized();
             // redirect to login OR give some type ‘you must be logged in message'

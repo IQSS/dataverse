@@ -53,7 +53,25 @@
                            });
                     </script>    
                 </ui:fragment>
-                        
+                <p:dataTable value="#{DashboardUsersPage.userList}"  var="user">
+                    <p:column headerText="Id">
+                        <h:outputText value="#{user[0]}" />
+                    </p:column>
+
+                    <p:column headerText="Year">
+                        <h:outputText value="#{user[1]}" />
+                    </p:column>
+
+                    <p:column headerText="Brand">
+                        <h:outputText value="#{user[2]}" />
+                    </p:column>
+
+                    <p:column headerText="Color">
+                        <h:outputText value="#{user[3]}" />
+                    </p:column>
+
+
+                </p:dataTable>     
             </ui:define>
         </ui:composition>
     </h:body>

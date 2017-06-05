@@ -165,8 +165,7 @@ public class UserServiceBean {
         qstr += " u.affiliation, u.superuser,";
         qstr += " u.position, u.modificationtime";
         qstr += " FROM authenticateduser u";
-        qstr += " WHERE ";
-        qstr += getSharedSearchClause();
+        qstr += getSharedSearchClause(searchTerm);
         qstr += " ORDER BY u.useridentifier";
         qstr += " LIMIT " + resultLimit;
         qstr += " OFFSET " + offset;
@@ -190,12 +189,16 @@ public class UserServiceBean {
      * @param searchTerm
      * @return 
      */
-    private String getSharedSearchClause(){
+    private String getSharedSearchClause(String searchTerm){       
+        if (searchTerm.isEmpty()){
+            return "";
+        }
         
-        String searchClause = " u.useridentifier ILIKE #searchTerm";
-        searchClause += " OR u.firstname ILIKE #searchTerm";
-        searchClause += " OR u.lastname ILIKE #searchTerm"; 
-        searchClause += " OR u.email ILIKE #searchTerm"; 
+        
+        String searchClause = "WHERE u.useridentifier LIKE '%" + searchTerm +"%'";
+        searchClause += " OR u.firstname LIKE '%" + searchTerm +"%'";
+        searchClause += " OR u.lastname LIKE '%" + searchTerm +"%'";
+        searchClause += " OR u.email LIKE '%" + searchTerm +"%'";
         
         return searchClause;
     }
@@ -213,8 +216,7 @@ public class UserServiceBean {
 
         String qstr = "SELECT count(u.id)";
         qstr += " FROM authenticateduser u";
-        qstr += " WHERE ";
-        qstr += getSharedSearchClause();
+        qstr += getSharedSearchClause(searchTerm);
         qstr += ";";
         
         Query nativeQuery = em.createNativeQuery(qstr);  
