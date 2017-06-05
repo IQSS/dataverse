@@ -115,6 +115,8 @@ Customizing the Root Dataverse
 
 As the person installing Dataverse you may or may not be a local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root dataverse to configure metadata fields, templates, browse/search facets, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
 
+You are also welcome to adjust the theme of the root dataverse by adding a logo or changing header colors, etc.
+
 Once this configuration is complete, your Dataverse installation should be ready for users to start playing with. That said, there are many more configuration options available, which will be explained below.
 
 Persistent Identifiers and Publishing Datasets
@@ -222,15 +224,57 @@ Then run the create command:
 Branding Your Installation
 --------------------------
 
-We provide configurable options for easy to add (and maintain) custom branding to your Dataverse installation. These custom content options include a homepage for your installation ``:HomePageCustomizationFile``, as well as a header ``:HeaderCustomizationFile``, navbar logo ``:LogoCustomizationFile``, footer ``:FooterCustomizationFile`` and stylesheet ``:StyleCustomizationFile``.
+Dataverse provides configurable options for easy-to-add (and maintain) custom branding to your Dataverse installation. Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
-In order to help get you started, we have provided these sample files.
+From the top to the bottom of a page, you can make the following branding changes:
 
-Simply put those file into the ``/custom-directory/`` directory of your server, and run the necessary curl commands to configure the settings, as in the example below.
+- Add a logo to the nav bar.
+- Add a custom header.
+- Add a custom footer.
+- Add a custom CSS stylesheet.
 
-``curl -X PUT -d "/custom-directory/custom-homepage-include.xhtml" http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+In addition, you can replace the entire homepage with an HTML you write yourself:
 
-Refresh your page, and you'll see everything displayed!
+- Replace the homepage with the ``:HomePageCustomizationFile`` setting.
+
+Custom Nav Bar Logo
++++++++++++++++++++
+
+Assuming you installed Glassfish in the default location, place an logo for your installation at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png`` and run the following curl command:
+
+``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
+
+Note that the custom nav bar logo is different than the logo within the root dataverse theme, which is discussed under the "Customizing the Root Dataverse" section above.
+
+Custom Header
++++++++++++++
+
+You can download :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` as a starting point and place it at ``/var/www/dataverse/branding/custom-header.html``, for example. Then, run the following curl command:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
+
+Custom Footer
++++++++++++++
+
+You can download :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` as a starting point and place it at ``/var/www/dataverse/branding/custom-footer.html``, for example. Then, run the following curl command:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
+
+Custom CSS Stylesheet
++++++++++++++++++++++
+
+You can download :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` as a starting point and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``, for example. Then, run the following curl command:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
+
+Custom Home Page
+++++++++++++++++
+
+A custom home page gives you complete control over the look and feel of the home page, replacing the page the appears out of the box.
+
+You can download :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` as a starting point and place it at ``/var/www/dataverse/branding/custom-homepage.html``, for example. Then, run the following curl command:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
@@ -452,24 +496,22 @@ This is the email address that "system" emails are sent from such as password re
 :HomePageCustomizationFile
 ++++++++++++++++++++++++++
 
-By default the homepage for your Dataverse application, is the Root Dataverse page. If you prefer, you can create a custom welcome page that your users will see when navigating to your domain. You can configure this as in the example below.
-
-``curl -X PUT -d "/Applications/Custom/custom-homepage-include.xhtml" http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+See "Branding Your Installation" above.
 
 :HeaderCustomizationFile
 ++++++++++++++++++++++++
 
-``curl -X PUT -d "/Applications/Custom/custom-header-include.xhtml" http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
+See "Branding Your Installation" above.
 
 :FooterCustomizationFile
 ++++++++++++++++++++++++
 
-``curl -X PUT -d "/Applications/Custom/custom-footer-include.xhtml" http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
+See "Branding Your Installation" above.
 
 :StyleCustomizationFile
 +++++++++++++++++++++++
 
-``curl -X PUT -d "/Applications/Custom/custom-stylesheet.css" http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
+See "Branding Your Installation" above.
 
 :FooterCopyright
 ++++++++++++++++
