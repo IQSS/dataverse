@@ -3,8 +3,6 @@
 TwoRavens
 =========
 
-.. contents:: :local:
-
 TwoRavens is a web application for tabular data exploration and statistical analysis.
 It can be integrated with Dataverse, as an **optional** component.  While TwoRavens was originally created at IQSS, its developers have since left the organization. Plans
 for the future of the Dataverse/TwoRavens collaboration are still being worked out. As
@@ -39,8 +37,10 @@ rApache and a collection of required third-party R packages. The
 installation steps for these components are described in the
 individual sections of the document below.
 
+.. contents:: |toctitle|
+  :local:
 
-0. OVERVIEW
+0. Overview
 +++++++++++
 
 TwoRavens is itself a compact JavaScript application that **runs on the user's 
@@ -93,7 +93,7 @@ section ``1.b.`` where we explain how to completely erase all the previously
 built packages.
  
 
-1. PREREQUISITES
+1. Prerequisites
 ++++++++++++++++
 
 a. httpd (Apache): 

@@ -427,3 +427,7 @@ epub_exclude_files = ['search.html']
 intersphinx_mapping = {'http://docs.python.org/': None}
 # Suppress "WARNING: unknown mimetype for ..." https://github.com/IQSS/dataverse/issues/3391
 suppress_warnings = ['epub.unknown_project_files']
+rst_prolog = """
+.. |toctitle| replace:: Contents:
+.. |anotherSub| replace:: Yes, there can be multiple.
+"""

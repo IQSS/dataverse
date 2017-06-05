@@ -15,7 +15,7 @@ Rather than using a production installation of Dataverse, API users are welcome 
 
 Please note that the APIs in this guide are shipped with the Dataverse software itself but additional APIs are available if you install the "miniverse" application from https://github.com/IQSS/miniverse and give it read only access to your production Dataverse database. http://dataverse.org/metrics is powered by miniverse.
 
-Contents:
+**Contents:**
 
 .. toctree::
 

@@ -5,6 +5,10 @@ A dataset in Dataverse is a container for your data, documentation, code, and th
 
 |image1|
 
+.. contents:: |toctitle|
+	:local:
+
+
 Supported Metadata
 ==================
 

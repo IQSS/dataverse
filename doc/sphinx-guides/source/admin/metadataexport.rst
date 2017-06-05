@@ -1,7 +1,8 @@
 Metadata Export
 ===============
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Automatic Exports
 -----------------
