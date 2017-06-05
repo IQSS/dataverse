@@ -46,7 +46,7 @@
                 </ui:fragment>
                 
                 <p:dataTable value="#{DashboardUsersPage.userList}"  var="user">
-                 <p:column headerText="hello">
+                 <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
                        <h:outputText value="#{user[0]}" />
                    </p:column>
 
@@ -63,15 +63,15 @@
                    </p:column>
    
                    <p:column headerText="#{bundle['dashboard.list_users.tbl_header.email']}">
-                       <h:outputText value="#{user[3]}" />
+                       <h:outputText value="#{user[4]}" />
                    </p:column>
    
-                   <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
-                       <h:outputText value="#{user[3]}" />
+                   <p:column headerText="#{bundle['dashboard.list_users.tbl_header.affiliation']}">
+                       <h:outputText value="#{user[5]}" />
                    </p:column>
    
                    <p:column headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
-                       <h:outputText value="#{user[3]}" />
+                       <h:outputText value="#{user[6]}" />
                    </p:column>                    
                     
                 </p:dataTable> 
