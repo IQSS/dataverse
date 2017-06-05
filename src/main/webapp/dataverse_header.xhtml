@@ -29,10 +29,10 @@
                             <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
                         </a>
                     </ui:fragment>
-                    
-                    <ui:fragment rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}">
+
+                    <ui:fragment rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}">                       
                         <a href="/">
-                            <h:graphicImage value="#{settingsWrapper.get(':LogoCustomizationFile')}"/>
+                            <h:graphicImage url="#{settingsWrapper.get(':LogoCustomizationFile')}"/>
                         </a>
                     </ui:fragment>
                     
