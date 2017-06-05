@@ -5,6 +5,9 @@ Appendix
 
 Additional documentation complementary to the User Guide.
 
+.. contents:: |toctitle|
+	:local:
+
 Metadata References
 ======================
 

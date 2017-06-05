@@ -5,6 +5,9 @@ Currently there are client libraries for Python, R, and Java that can be used to
 
 Because Dataverse is a SWORD server, additional client libraries exist for Java, Ruby, and PHP per the :doc:`/api/sword` page.
 
+.. contents:: |toctitle|
+	:local:
+
 Python
 ------
 

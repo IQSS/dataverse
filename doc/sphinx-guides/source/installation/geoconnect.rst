@@ -1,6 +1,9 @@
 Geoconnect
 ==========
 
+.. contents:: |toctitle|
+	:local:
+
 Geoconnect works as a middle layer, allowing geospatial data files in Dataverse to be visualized with Harvard WorldMap.
 
 To understand the feature from the user perspective, see the :doc:`/user/data-exploration/worldmap` section of the User Guide.

@@ -4,6 +4,9 @@ Introduction
 
 Welcome! Thanks for installing `Dataverse <http://dataverse.org>`_!
 
+.. contents:: |toctitle|
+	:local:
+
 Quick Links
 -----------
 
