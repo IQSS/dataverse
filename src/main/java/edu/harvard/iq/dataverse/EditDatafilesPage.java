@@ -10,7 +10,9 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -703,7 +705,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
     }
     
-    public void restrictFiles(boolean restricted) throws UnsupportedOperationException{
+    public void restrictFiles(boolean restricted) throws CommandException{
 
         // since we are restricted files, first set the previously restricted file list, so we can compare for
         // determining whether to show the access popup
@@ -726,13 +728,18 @@ public class EditDatafilesPage implements java.io.Serializable {
                     fileNames = fileNames.concat(", " + fmd.getLabel());
                 }
             }
-            fmd.setRestricted(restricted);
-            if (workingVersion.isDraft() && !fmd.getDataFile().isReleased()) {
-                // We do not really need to check that the working version is 
-                // a draft here - it must be a draft, if we've gotten this
-                // far. But just in case. -- L.A. 4.2.1
-                fmd.getDataFile().setRestricted(restricted);
-            }
+            //fmd.setRestricted(restricted);
+            Command cmd;
+            logger.info("editdatafilespage");
+            cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
+            commandEngine.submit(cmd);
+                       
+//            if (workingVersion.isDraft() && !fmd.getDataFile().isReleased()) {
+//                // We do not really need to check that the working version is 
+//                // a draft here - it must be a draft, if we've gotten this
+//                // far. But just in case. -- L.A. 4.2.1
+//                  fmd.getDataFile().setRestricted(restricted);              
+//            }
         }
         if (fileNames != null) {
             String successMessage = getBundleString("file.restricted.success");

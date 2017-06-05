@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
@@ -238,16 +239,19 @@ public class FilePage implements java.io.Serializable {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
     }
     
-    public String restrictFile(boolean restricted) throws UnsupportedOperationException{
+    public String restrictFile(boolean restricted) throws CommandException{
         String fileNames = null;
         String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
         Boolean allowRequest = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
         editDataset = this.file.getOwner();
-
+        
+        Command cmd;
         for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
             if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
                 fileNames += fmw.getLabel();
-                fmw.setRestricted(restricted);
+                //fmw.setRestricted(restricted);
+                cmd = new RestrictFileCommand(fmw.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
+                commandEngine.submit(cmd);
             }
         }
         

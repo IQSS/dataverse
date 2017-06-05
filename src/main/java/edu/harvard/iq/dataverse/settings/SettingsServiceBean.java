@@ -35,7 +35,6 @@ public class SettingsServiceBean {
     public enum Key {
         /**
          * Defines a public installation -- all datafiles are unrestricted
-         * and there are no defined roles
          */
         PublicInstall,
         /**

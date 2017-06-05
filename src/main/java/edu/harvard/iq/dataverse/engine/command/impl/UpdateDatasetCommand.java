@@ -132,12 +132,6 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         theDataset.setModificationTime(updateTime);
          
         for (DataFile dataFile : theDataset.getFiles()) {
-            // if the file is public, we should not be able to restrict it 
-            boolean defaultValue = false;
-            boolean publicInstall = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
-            if (dataFile.isRestricted() && publicInstall) {
-                throw new CommandExecutionException("Restricting files is not permitted on a public installation.", this);
-            }
             
             if (dataFile.getCreateDate() == null) {
                 dataFile.setCreateDate(updateTime);

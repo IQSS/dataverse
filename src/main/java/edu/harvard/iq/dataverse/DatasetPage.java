@@ -79,6 +79,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
@@ -2094,7 +2095,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
         
-    public String restrictSelectedFiles(boolean restricted){
+    public String restrictSelectedFiles(boolean restricted) throws CommandException{
         
         RequestContext requestContext = RequestContext.getCurrentInstance();
         if (selectedFiles.isEmpty()) {
@@ -2134,7 +2135,7 @@ public class DatasetPage implements java.io.Serializable {
         return  returnToDraftVersion();
     }
 
-    public void restrictFiles(boolean restricted) {
+    public void restrictFiles(boolean restricted) throws CommandException {
    
         //if (previouslyRestrictedFiles == null) {
         // we don't need to buther with this "previously restricted" business 
@@ -2152,7 +2153,8 @@ public class DatasetPage implements java.io.Serializable {
                     previouslyRestrictedFiles.add(fmd);
                 }
             }
-
+            
+            Command cmd;
             String fileNames = null;
             for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fmd : this.getSelectedFiles()) {
@@ -2169,13 +2171,17 @@ public class DatasetPage implements java.io.Serializable {
                         }
                     }
                     if (fmd.getDataFile().equals(fmw.getDataFile())) {
-                        fmw.setRestricted(restricted);
-                        if (workingVersion.isDraft() && !fmw.getDataFile().isReleased()) {
-                            // We do not really need to check that the working version is 
-                            // a draft here - it must be a draft, if we've gotten this
-                            // far. But just in case. -- L.A. 4.2.1
-                            fmw.getDataFile().setRestricted(restricted);
-                        }
+                        cmd = new RestrictFileCommand(fmw.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
+                        commandEngine.submit(cmd);
+                        
+                        
+//                        fmw.setRestricted(restricted);
+//                        if (workingVersion.isDraft() && !fmw.getDataFile().isReleased()) {
+//                            // We do not really need to check that the working version is 
+//                            // a draft here - it must be a draft, if we've gotten this
+//                            // far. But just in case. -- L.A. 4.2.1
+//                            fmw.getDataFile().setRestricted(restricted);
+//                        }
                     }
                 }
             }
