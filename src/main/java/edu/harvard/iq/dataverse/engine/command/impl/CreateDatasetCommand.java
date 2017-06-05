@@ -1,18 +1,11 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -26,7 +19,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
@@ -82,8 +74,14 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
-       
-        if ( (importType != ImportType.MIGRATION && importType != ImportType.HARVEST) && !ctxt.datasets().isIdentifierUniqueInDatabase(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
+        
+        
+        
+        IdServiceBean idServiceBean = IdServiceBean.getBean(theDataset.getProtocol(), ctxt);
+        if(theDataset.getIdentifier() == null || theDataset.getIdentifier().isEmpty()){
+            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+        }
+        if ( (importType != ImportType.MIGRATION && importType != ImportType.HARVEST) && !ctxt.datasets().isIdentifierUniqueInDatabase(theDataset.getIdentifier(), theDataset, idServiceBean)) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);
@@ -108,7 +106,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
         theDataset.setCreateDate(new Timestamp(new Date().getTime()));
-        
+
         Iterator<DatasetField> dsfIt = dsv.getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
             if (dsfIt.next().removeBlankDatasetFieldValues()) {
@@ -151,52 +149,40 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                         -- L.A. 4.6.2
              */
             
-            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
             
         }
+        logger.fine("Saving the files permanently.");
+        ctxt.ingest().addFiles(dsv, theDataset.getFiles());
+        logger.log(Level.FINE,"doiProvider={0} protocol={1}  importType={2}  GlobalIdCreateTime=={3}", new Object[]{doiProvider, protocol,  importType, theDataset.getGlobalIdCreateTime()});
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
         if ((importType == null || importType.equals(ImportType.NEW))
                 && theDataset.getGlobalIdCreateTime() == null) {
-            if (protocol.equals("doi")) {
                 String doiRetString = "";
-                if (doiProvider.equals("EZID")) {
-                    doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                    
-                    if (doiRetString.contains(theDataset.getIdentifier())) {
-                        theDataset.setGlobalIdCreateTime(createDate);
-                    } else {
-                        logger.warning("Failed to create identifier (" + theDataset.getIdentifier() + ") with EZId: " + doiRetString);
-                    }
-                    
+                idServiceBean = IdServiceBean.getBean(ctxt);
+                try{
+                    logger.log(Level.FINE,"creating identifier");
+                    doiRetString = idServiceBean.createIdentifier(theDataset);
+                } catch (Throwable e){
+                    logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
                 }
-                if (doiProvider.equals("DataCite")) {
-                    try{
-                        doiRetString = ctxt.doiDataCite().createIdentifier(theDataset);
-                    } catch (Exception e){
-                         logger.warning("Exception while creating identifier (" + theDataset.getIdentifier() + ") with DataCite:" + e.getMessage());
-                    }
-                    // Note that the DataCite service bean doesn't actually try 
-                    // to register the identifier with the naming authority - 
-                    // that's EZID. So even if doiDataCite().createIdentifier() 
-                    // didn't throw an exception, we leave the GlobalIdCreateTime 
-                    // blank here. 
-                }
-            }
 
-        } else {
-            // If harvest or migrate, and this is a released dataset, we don't need to register,
-            // so set the globalIdCreateTime to now
-            if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED)) {
-                theDataset.setGlobalIdCreateTime(new Date());
-            }
+                // Check return value to make sure registration succeeded
+                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataset.getIdentifier())) {
+                    theDataset.setGlobalIdCreateTime(createDate);
+                }
+        } else // If harvest or migrate, and this is a released dataset, we don't need to register,
+        // so set the globalIdCreateTime to now
+        if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED)) {
+            theDataset.setGlobalIdCreateTime(new Date());
         }
         
         if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
             throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
                }
-        logger.log(Level.FINE, "after doi {0}", formatter.format(new Date().getTime()));          
+        logger.log(Level.FINE, "after doi {0}", formatter.format(new Date().getTime()));
         Dataset savedDataset = ctxt.em().merge(theDataset);
-         logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));       
+        logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));
         // set the role to be default contributor role for its dataverse
         if (importType==null || importType.equals(ImportType.NEW)) {
             String privateUrlToken = null;
