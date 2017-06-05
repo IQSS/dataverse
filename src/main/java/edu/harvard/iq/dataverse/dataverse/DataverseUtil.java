@@ -10,7 +10,7 @@ public class DataverseUtil {
             return null;
         }
         // getDisplayInfo() is never null.
-        return user.getDisplayInfo().getTitle() + " " + BundleUtil.getStringFromBundle("suggestedDataverseNameEnding");
+        return user.getDisplayInfo().getTitle() + " " + BundleUtil.getStringFromBundle("dataverse");
     }
 
 }

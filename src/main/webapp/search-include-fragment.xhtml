@@ -466,7 +466,7 @@
 
                         <c:set var="dvParentUrl" value="#{dataversePage}?alias=#{result.dataverseParentAlias}"/>
                         <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
-                            <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
+                            <h:outputText value="#{result.parent.get('name')}"/>
                         </h:outputLink>
 
                         <hr style="margin:.5em;border:0;"/>
