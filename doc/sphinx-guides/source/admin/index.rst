@@ -19,4 +19,8 @@ Contents:
    metadataexport
    timers
    geoconnect-worldmap
+   user-administration
+   solr-search-index
+   monitoring
+   maintenance
    troubleshooting
