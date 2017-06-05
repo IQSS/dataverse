@@ -45,7 +45,7 @@ public class DashboardUsersPage implements java.io.Serializable {
         System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
         if ((session.getUser() != null) && (session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())) {
-            authUser = (AuthenticatedUser) session.getUser();
+           authUser = (AuthenticatedUser) session.getUser();
             userListMaker = new UserListMaker(userService);
             runUserSearch();
         } else {
@@ -59,13 +59,15 @@ public class DashboardUsersPage implements java.io.Serializable {
     
     public boolean runUserSearch(){
 
+        msgt("Run the search!");
+
         String searchTerm = "a";
-        
         /**
          * (1) Determine the number of users returned by the count        
          */
-        Long userCount = userListMaker.getUserCountWithSearch(null);
+        Long userCount = userListMaker.getUserCountWithSearch(searchTerm);
         
+        msgt("userCount: " + userCount);
         int itemsPerPage = UserListMaker.ITEMS_PER_PAGE;
         /**
          * (2) Based on the page number and number of users,
@@ -79,14 +81,20 @@ public class DashboardUsersPage implements java.io.Serializable {
         setSelectedPage(offsetPageValues.getPageNumber());        
         int offset = offsetPageValues.getOffset();
         
+        msg("offset: " + offset);
+
         /**
          * (3) Run the search and update the user list 
          */
         String sortKey = null;
         this.userList = userService.getUserList(searchTerm, sortKey, UserListMaker.ITEMS_PER_PAGE, offsetPageValues.getOffset());
 
+        msg("userList size: " + userList.size());
+
         pager = new Pager(userCount.intValue(), itemsPerPage, getSelectedPage());
-       
+
+        msg("pager: " + pager.asJSONString());
+
         return true;
     }
 
@@ -136,4 +144,16 @@ public class DashboardUsersPage implements java.io.Serializable {
         }
         return selectedPage;
     }
+    
+    
+    private void msg(String s){
+        System.out.println(s);
+    }
+    
+    private void msgt(String s){
+        msg("-------------------------------");
+        msg(s);
+        msg("-------------------------------");
+    }
+    
 }

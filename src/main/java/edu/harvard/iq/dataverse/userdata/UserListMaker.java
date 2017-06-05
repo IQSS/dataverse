@@ -7,13 +7,7 @@ package edu.harvard.iq.dataverse.userdata;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.mydata.Pager;
-import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.Locale;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -30,7 +24,7 @@ public class UserListMaker {
     public String errorMessage = null;
     
     public static final int ITEMS_PER_PAGE = 25;
-
+    public static final int DEFAULT_OFFSET = 0;
     
     
     /*
@@ -41,6 +35,36 @@ public class UserListMaker {
         this.userService = userService;
     }
     
+    
+    public Long getTotalUserCount(boolean superusers_only){
+    
+        if (superusers_only){
+            return userService.getSuperUserCount();            
+        }else{
+            return userService.getUserCount(null);  // send null for the optional search term
+        }
+    
+    }
+    
+    
+    /** 
+     * 
+     * Get user count with search
+     * 
+     * @param searchTerm
+     * @return 
+     */
+    public Long getUserCountWithSearch(String searchTerm){
+
+        if (searchTerm == null){
+            searchTerm = "";
+        }else{
+            searchTerm = searchTerm.trim();
+        }
+        
+        return userService.getUserCount(searchTerm);
+    }
+  
     /*
      * Run the search
      */
@@ -79,18 +103,20 @@ public class UserListMaker {
         // (2) Do some calculations here regarding the selected page, offset, etc.
         // -------------------------------------------------
         
-        int offset = (selectedPage - 1) * itemsPerPage;
-        if (offset > userCount){
-            offset = 0;
-            selectedPage = 1;
-        }
+        OffsetPageValues offsetPageValues = getOffset(userCount, selectedPage, itemsPerPage);
+        selectedPage = offsetPageValues.getPageNumber();
+        int offset = offsetPageValues.getOffset();
+        
+        //int offset = (selectedPage - 1) * itemsPerPage;
+        //if (offset > userCount){
+        //    offset = DEFAULT_OFFSET;
+        //    selectedPage = 1;
+        //}
 
         
         // -------------------------------------------------
         // (3) Retrieve the users
         // -------------------------------------------------
-        
-        
         JsonArrayBuilder jsonUserListArray = userService.getUserListAsJSON(searchTerm, sortKey, itemsPerPage, offset);       
         if (jsonUserListArray==null){
             return getNoResultsJSON();
@@ -108,6 +134,30 @@ public class UserListMaker {
         return jsonOverallData;
         
     }
+    
+    public OffsetPageValues getOffset(Long userCount, Integer selectedPage, Integer itemsPerPage){
+        
+        if (userCount == null){
+            return new OffsetPageValues(DEFAULT_OFFSET, 0);
+        }
+        
+        if (itemsPerPage == null){
+            itemsPerPage = ITEMS_PER_PAGE;
+        }
+        if ((selectedPage == null)||(selectedPage < 1)){
+            selectedPage = 1;
+        }
+        
+        int offset = (selectedPage - 1) * itemsPerPage;
+        if (offset > userCount){
+            offset = DEFAULT_OFFSET;
+            selectedPage = 1;
+        }
+        
+        return new OffsetPageValues(offset, selectedPage);
+                
+    }
+    
     
     private JsonObjectBuilder getNoResultsJSON(){
         
@@ -153,4 +203,5 @@ public class UserListMaker {
         msg(s);
         msg("-------------------------------");
     }
+    
 }

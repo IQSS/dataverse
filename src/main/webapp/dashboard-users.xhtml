@@ -15,6 +15,7 @@
             <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.users.header'])}"/>
+            <f:viewAction action="#{DashboardUsersPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dashboard.card.users.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
@@ -45,21 +46,34 @@
                 </ui:fragment>
                 
                 <p:dataTable value="#{DashboardUsersPage.userList}"  var="user">
-                    <p:column headerText="Id">
-                        <h:outputText value="#{user[0]}" />
-                    </p:column>
+                 <p:column headerText="hello">
+                       <h:outputText value="#{user[0]}" />
+                   </p:column>
 
-                    <p:column headerText="Year">
-                        <h:outputText value="#{user[1]}" />
-                    </p:column>
+                   <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userIdentifier']}">
+                       <h:outputText value="#{user[1]}" />
+                   </p:column>
 
-                    <p:column headerText="Brand">
-                        <h:outputText value="#{user[2]}" />
-                    </p:column>
+                   <p:column headerText="#{bundle['dashboard.list_users.tbl_header.lastName']}">
+                       <h:outputText value="#{user[2]}" />
+                   </p:column>
 
-                    <p:column headerText="Color">
-                        <h:outputText value="#{user[3]}" />
-                    </p:column>
+                   <p:column headerText="#{bundle['dashboard.list_users.tbl_header.firstName']}">
+                       <h:outputText value="#{user[3]}" />
+                   </p:column>
+   
+                   <p:column headerText="#{bundle['dashboard.list_users.tbl_header.email']}">
+                       <h:outputText value="#{user[3]}" />
+                   </p:column>
+   
+                   <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
+                       <h:outputText value="#{user[3]}" />
+                   </p:column>
+   
+                   <p:column headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
+                       <h:outputText value="#{user[3]}" />
+                   </p:column>                    
+                    
                 </p:dataTable> 
                 <ui:remove></ui:remove> 
             </ui:define>
