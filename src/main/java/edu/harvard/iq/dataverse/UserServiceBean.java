@@ -101,11 +101,29 @@ public class UserServiceBean {
     }
     
     
+    /**
+     * Return the user information as a List of Arrays--e.g. straight from the db query
+     * 
+     * @param searchTerm
+     * @param sortKey
+     * @param resultLimit
+     * @param offset
+     * @return 
+     */
     public List<Object[]> getUserList(String searchTerm, String sortKey, Integer resultLimit, Integer offset){
         
         return getUserListCore(searchTerm, sortKey, resultLimit, offset);
     }
     
+    /**
+     * Return the user information as a List of SingleUserView objects -- easier to work with in the UI
+     * 
+     * @param searchTerm
+     * @param sortKey
+     * @param resultLimit
+     * @param offset
+     * @return 
+     */
     public List<SingleUserView> getUserListAsSingleUserObjects(String searchTerm, String sortKey, Integer resultLimit, Integer offset){
         
         if ((offset == null)||(offset < 0)){

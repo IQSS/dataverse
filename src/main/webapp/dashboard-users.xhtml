@@ -39,32 +39,36 @@
                         </div>
                     </div>
                     <p:dataTable value="#{DashboardUsersPage.userList}"  var="user" widgetVar="userTable">
-                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
-                            <h:outputText value="#{user[0]}" />
-                        </p:column>
+                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.rowNumber']}">
+                            <h:outputText value="#{user.rowNum}" />
+                        </p:column>                        
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userIdentifier']}">
-                            <h:outputText value="#{user[1]}" />
+                            <h:outputText value="#{user.userIdentifier}" />
                         </p:column>
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.lastName']}">
-                            <h:outputText value="#{user[2]}" />
+                            <h:outputText value="#{user.lastName}" />
                         </p:column>
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.firstName']}">
-                            <h:outputText value="#{user[3]}" />
+                            <h:outputText value="#{user.firstName}" />
                         </p:column>
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.email']}">
-                            <h:outputText value="#{user[4]}" />
+                            <h:outputText value="#{user.email}" />
+                        </p:column>
+                        
+                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
+                            <h:outputText value="#{user.id}" />
                         </p:column>
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.affiliation']}">
-                            <h:outputText value="#{user[5]}" />
+                            <h:outputText value="#{user.affiliation}" />
                         </p:column>
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
-                            <h:outputText value="#{user[6]}" />
+                            <h:outputText value="#{user.isSuperuser}" />
                         </p:column>                    
 
                     </p:dataTable>                 
