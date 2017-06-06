@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DvObject;
@@ -68,6 +70,8 @@ public class SearchServiceBean {
      */
     @EJB
     DvObjectServiceBean dvObjectService;
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
@@ -451,7 +455,10 @@ public class SearchServiceBean {
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
-                solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
+                // Do not set the ImageUrl, let the search include fragment fill in
+                // the thumbnail, similarly to how the dataset and datafile cards
+                // are handled. 
+                //solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
                 /**
                  * @todo Expose this API URL after "dvs" is changed to
                  * "dataverses". Also, is an API token required for published
@@ -463,11 +470,13 @@ public class SearchServiceBean {
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 //Image url now set via thumbnail api
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
-                DvObject dvObject = dvObjectService.findDvObject(entityid);
-                if (dvObject != null) {
-                    Dataset dataset = (Dataset) dvObject;
-                    solrSearchResult.setDatasetThumbnail(dataset.getDatasetThumbnail());
-                }
+                // No, we don't want to set the base64 thumbnails here. 
+                // We want to do it inside SearchIncludeFragment, AND ONLY once the rest of the 
+                // page has already loaded.
+                //DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
+                //if (datasetVersion != null){                    
+                //    solrSearchResult.setDatasetThumbnail(datasetVersion.getDataset().getDatasetThumbnail(datasetVersion));
+                //}
                 /**
                  * @todo Could use getFieldValues (plural) here.
                  */
@@ -510,7 +519,7 @@ public class SearchServiceBean {
                  * JSON.
                  */
 //                solrSearchResult.setApiUrl(baseUrl + "/api/meta/datafile/" + entityid);
-                solrSearchResult.setImageUrl(baseUrl + "/api/access/fileCardImage/" + entityid);
+                //solrSearchResult.setImageUrl(baseUrl + "/api/access/fileCardImage/" + entityid);
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
                 solrSearchResult.setFileContentType(fileContentType);

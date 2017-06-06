@@ -8,7 +8,8 @@ Settings within Dataverse itself are managed via JVM options or by manipulating 
 
 Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
 
-.. contents:: :local:
+.. contents:: |toctitle|
+  :local:
 
 Securing Your Installation
 --------------------------
@@ -110,31 +111,58 @@ Publishing the Root Dataverse
 
 Non-superusers who are not "Admin" on the root dataverse will not be able to to do anything useful until the root dataverse has been published.
 
-Persistent Identifiers and Publishing Datasets
-++++++++++++++++++++++++++++++++++++++++++++++
+Customizing the Root Dataverse
+++++++++++++++++++++++++++++++
 
-Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and HDL. 
+As the person installing Dataverse you may or may not be a local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root dataverse to configure metadata fields, templates, browse/search facets, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
+
+Once this configuration is complete, your Dataverse installation should be ready for users to start playing with. That said, there are many more configuration options available, which will be explained below.
+
+Persistent Identifiers and Publishing Datasets
+----------------------------------------------
+
+Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets they represent. Dataverse currently supports creating identifiers using DOI and Handle.
 
 By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets but they are not citable nor guaranteed to be preserved. Note that any datasets creating using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
 
 To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: **EZID** (http://ezid.cdlib.org), **DataCite** (https://www.datacite.org), **Handle.Net** (https://www.handle.net). 
 
-Once account credentials and namespace have been acquired, please complete the identifier configuration parameters that are relevant to your installation. In the following list, parameters that apply only to DOI are preceded by "doi", those that apply only to handles include "handlenet", and those that apply to both kinds of installation contain neither.
+Once you have your DOI or Handle account credentials and a namespace, configure Dataverse to use them using the JVM options and database settings below.
 
-**JVM Options:** :ref:`doi.baseurlstring`, :ref:`doi.username`, :ref:`doi.password`, :ref:`dataverse.handlenet.admcredfile`, :ref:`dataverse.handlenet.admprivphrase`
-
-**Database Settings:** :ref:`:DoiProvider <:DoiProvider>`, :ref:`:Protocol <:Protocol>`, :ref:`:Authority <:Authority>`, :ref:`:DoiSeparator <:DoiSeparator>`
-
-Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
-
-
-
-Customizing the Root Dataverse
+Configuring Dataverse for DOIs
 ++++++++++++++++++++++++++++++
 
-As the person installing Dataverse you may or may not be local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root dataverse to configure metadata fields, browse/search facets, templates, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
+Out of the box, Dataverse is configured for DOIs. Here are the configuration options for DOIs:
 
-Once this configuration is complete, your Dataverse installation should be ready for users to start playing with it. That said, there are many more configuration options available, which will be explained below.
+**JVM Options:**
+
+- :ref:`doi.baseurlstring`
+- :ref:`doi.username`
+- :ref:`doi.password`
+
+**Database Settings:**
+
+- :ref:`:DoiProvider <:DoiProvider>`
+- :ref:`:Protocol <:Protocol>`
+- :ref:`:Authority <:Authority>`
+- :ref:`:DoiSeparator <:DoiSeparator>`
+
+Configuring Dataverse for Handles
++++++++++++++++++++++++++++++++++
+
+Here are the configuration options for handles:
+
+**JVM Options:**
+
+- :ref:`dataverse.handlenet.admcredfile`
+- :ref:`dataverse.handlenet.admprivphrase`
+
+**Database Settings:**
+
+- :ref:`:Protocol <:Protocol>`
+- :ref:`:Authority <:Authority>`
+
+Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
 Auth Modes: Local vs. Remote vs. Both
 -------------------------------------

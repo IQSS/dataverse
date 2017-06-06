@@ -9,6 +9,9 @@ Once a user creates a dataverse they, by default, become the
 administrator of that dataverse. The dataverse administrator has access
 to manage the settings described in this guide.
 
+.. contents:: |toctitle|
+  :local:
+
 Create a Dataverse (Within the "Root" Dataverse)
 ===================================================
 

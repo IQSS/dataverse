@@ -6,7 +6,7 @@
 Installation Guide
 ==================
 
-Contents:
+**Contents:**
 
 .. toctree::
 

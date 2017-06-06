@@ -1,8 +1,9 @@
 Shibboleth
 ==========
 
-.. contents:: :local:
-
+.. contents:: |toctitle|
+  :local:
+  
 Introduction
 ------------
 

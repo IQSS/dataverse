@@ -848,5 +848,23 @@ public class DatasetServiceBean implements java.io.Serializable {
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);
     }
+    
+    // persist assigned thumbnail in a single one-field-update query:
+    // (the point is to avoid doing an em.merge() on an entire dataset object...)
+    public void assignDatasetThumbnailByNativeQuery(Long datasetId, Long dataFileId) {
+        try {
+            em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id=" + datasetId).executeUpdate();
+        } catch (Exception ex) {
+            // it's ok to just ignore... 
+        }
+    }
+    
+    public void assignDatasetThumbnailByNativeQuery(Dataset dataset, DataFile dataFile) {
+        try {
+            em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFile.getId() + " WHERE id=" + dataset.getId()).executeUpdate();
+        } catch (Exception ex) {
+            // it's ok to just ignore... 
+        }
+    }
 
 }
