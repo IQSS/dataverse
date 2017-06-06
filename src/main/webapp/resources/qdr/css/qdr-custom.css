@@ -1,3 +1,6 @@
 /*--------- Header --------- */
 span.navbar-brand {padding:1px; height:60px;}
 img.navbar-custom-logo {height:60px;}
+
+/*--------- Page Elements --------- */
+#datasetButtonBar, #dataverseButtonBar {display:none;}
