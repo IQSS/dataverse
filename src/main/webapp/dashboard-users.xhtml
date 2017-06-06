@@ -26,6 +26,7 @@
                     <div jsf:id="userssHeaderBlock" class="row">
                         <div class="col-xs-6">
                             <div class="input-group">
+                                <p:inputText type="hidden" id="selectedPage" value="#{DashboardUsersPage.selectedPage}" />
                                 <p:inputText id="searchFiles" styleClass="form-control" value="#{DashboardUsersPage.searchTerm}" widgetVar="inputSearchTerm"
                                              onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                                 <p:watermark for="searchFiles" value="#{bundle['dashboard.list_users.searchTerm.watermark']}"/>
@@ -38,6 +39,7 @@
                             </div>
                         </div>
                     </div>
+                    
                     <p:dataTable value="#{DashboardUsersPage.userList}"  var="user" widgetVar="userTable">
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.rowNumber']}">
                             <h:outputText value="#{user.rowNum}" />
@@ -76,6 +78,11 @@
                         </p:column>                    
 
                     </p:dataTable>                 
+
+                    <ui:include src="dashboard-users-pager.xhtml">
+                        <ui:param name="listPager" value="#{DashboardUsersPage.pager}" />
+                    </ui:include>
+
                 </h:form>
             </ui:define>
         </ui:composition>

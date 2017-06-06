@@ -129,6 +129,12 @@ public class DashboardUsersPage implements java.io.Serializable {
         return this.userList;
     }
 
+    /**
+     * Pager for when user list exceeds the number of display rows
+     * (default: UserListMaker.ITEMS_PER_PAGE)
+     * 
+     * @return 
+     */
     public Pager getPager() {
         return this.pager;
     }

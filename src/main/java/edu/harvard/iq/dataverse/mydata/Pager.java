@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import javax.json.Json;
@@ -229,6 +230,17 @@ public class Pager {
         return this.pageNumberList;
     }
     
+    public Integer[] getPageListAsIntegerList(){
+
+        if (pageNumberList == null){
+            return null;
+        }
+        
+        // source: https://stackoverflow.com/questions/880581/how-to-convert-int-to-integer-in-java            
+        return Arrays.stream(pageNumberList).boxed().toArray( Integer[]::new );
+        
+
+    }
 
     /**
      * @param pageNumberList
