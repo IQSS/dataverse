@@ -17,17 +17,18 @@
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.users.header'])}"/>
             <f:viewAction action="#{DashboardUsersPage.init}"/>
         </f:metadata>
+
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dashboard.card.users.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <ui:fragment>
-                    
+                    <h:form>
                         <p:inputText id="searchFiles" styleClass="form-control" value="#{DashboardUsersPage.searchTerm}" widgetVar="inputSearchTerm"
                                      onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                         <p:watermark for="searchFiles" value="#{bundle['dashboard.list_users.searchTerm.watermark']}"/>
                         <p:remoteCommand name="submitsearch" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
-                    
+                    </h:form>
                     
                     <div class="row">
                         <div class="col-sm-12">
@@ -52,7 +53,7 @@
                     
                 </ui:fragment>
                 
-                <p:dataTable value="#{DashboardUsersPage.userList}"  var="user">
+                <p:dataTable value="#{DashboardUsersPage.userList}"  var="user" widgetVar="userTable">
                  <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
                        <h:outputText value="#{user[0]}" />
                    </p:column>
@@ -85,5 +86,6 @@
                 <ui:remove></ui:remove> 
             </ui:define>
         </ui:composition>
+
     </h:body>
 </html>
