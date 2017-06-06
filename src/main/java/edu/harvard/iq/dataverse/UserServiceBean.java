@@ -180,7 +180,7 @@ public class UserServiceBean {
         System.out.println("--------------\n\n" + qstr);
         
         Query nativeQuery = em.createNativeQuery(qstr);          
-        nativeQuery.setParameter("searchTerm", searchTerm + "%");  
+        nativeQuery.setParameter("searchTerm", formatSearchTerm(searchTerm));  
 
         
         return nativeQuery.getResultList();
@@ -241,6 +241,17 @@ public class UserServiceBean {
         return getUserCount(null);
     }
 
+    private String formatSearchTerm(String searchTerm){
+        
+        if (searchTerm == null){
+            return "";
+        }
+        
+        return searchTerm + "%";    // for LIKE query on right side
+
+        //return "%" + searchTerm + "%";    // for LIKE query on both sides
+    }
+    
     /**
      * 
      * @param searchTerm
@@ -258,7 +269,7 @@ public class UserServiceBean {
         qstr += ";";
         
         Query nativeQuery = em.createNativeQuery(qstr);  
-        nativeQuery.setParameter("searchTerm", searchTerm + "%");  
+        nativeQuery.setParameter("searchTerm", formatSearchTerm(searchTerm));  
         
         return (Long)nativeQuery.getSingleResult();
 
