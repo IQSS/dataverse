@@ -66,6 +66,10 @@
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.affiliation']}">
                             <h:outputText value="#{user.affiliation}" />
                         </p:column>
+                        
+                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.roles']}">
+                            <h:outputText value="#{user.roles}" />
+                        </p:column>
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
                             <h:outputText value="#{user.isSuperuser}" />

@@ -41,7 +41,7 @@ public class SingleUserView {
     /*
      * Constructor
      */
-    public SingleUserView(Object[] dbRowValues, Integer rowNum){
+    public SingleUserView(Object[] dbRowValues, String roles, Integer rowNum){
 
         this.id = (int)dbRowValues[0];
         this.userIdentifier = (String)dbRowValues[1];
@@ -52,6 +52,7 @@ public class SingleUserView {
         this.isSuperuser = (boolean)dbRowValues[6];
         this.position = UserUtil.getStringOrNull(dbRowValues[7]);
         this.modificationTime = UserUtil.getTimestampOrNull(dbRowValues[8]);
+        this.roles = roles;
       
         this.rowNum = rowNum;
     }

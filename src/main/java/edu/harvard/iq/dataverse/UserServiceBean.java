@@ -146,13 +146,42 @@ public class UserServiceBean {
         int rowNum = offset++;   // used for the rowNumber
         for (Object[] dbResultRow : userResults) {            
             rowNum++;
-            SingleUserView singleUser = new SingleUserView(dbResultRow, rowNum);            
+            String roles = getUserRolesAsString((Integer) dbResultRow[0]);
+            SingleUserView singleUser = new SingleUserView(dbResultRow, roles, rowNum);            
             viewObjects.add(singleUser);
         }
         
         return viewObjects;
     }
+    
+    private String getUserRolesAsString(Integer userId) {
+        String retval = "";
+        String userIdentifier = "";
+        String qstr = "select useridentifier ";
+        qstr += " FROM authenticateduser";
+        qstr += " WHERE id = " + userId.toString();
+        qstr += ";";
+        
+        Query nativeQuery = em.createNativeQuery(qstr);
 
+        userIdentifier = '@' + (String) nativeQuery.getSingleResult();
+
+        qstr = " select distinct d.name from roleassignment a, dataverserole d";
+        qstr += " where d.id = a.role_id and a.assigneeidentifier='" + userIdentifier + "'"
+                + " Order by d.name;";
+
+        nativeQuery = em.createNativeQuery(qstr);
+
+        List<Object[]> roleList = nativeQuery.getResultList();
+
+        for (Object o : roleList) {
+            if (!retval.isEmpty()) {
+                retval += ", ";
+            }
+            retval += (String) o;
+        }
+        return retval;
+    }
     
     /**
      * 
