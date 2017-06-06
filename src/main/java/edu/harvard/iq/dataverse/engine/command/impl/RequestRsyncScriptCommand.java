@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  * "actiontype" in the actionlogrecord rather than "InternalError" if you throw
  * a CommandExecutionException.
  */
-@RequiredPermissions(Permission.AddDataset)
+@RequiredPermissions(Permission.EditDataset)
 public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResponse> {
 
     private static final Logger logger = Logger.getLogger(RequestRsyncScriptCommand.class.getCanonicalName());
