@@ -181,8 +181,8 @@ public class UserServiceBean {
             offset = 0;
         }
         
-       
-        System.out.println("Search key: " + searchTerm); 
+              
+        // NOTE: IF YOU CHANGE THIS QUERY, THEN CHANGE: SingleUserView.java
 
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";
