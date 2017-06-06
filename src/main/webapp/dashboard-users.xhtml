@@ -22,6 +22,13 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <ui:fragment>
+                    
+                        <p:inputText id="searchFiles" styleClass="form-control" value="#{DashboardUsersPage.searchTerm}" widgetVar="inputSearchTerm"
+                                     onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                        <p:watermark for="searchFiles" value="#{bundle['dashboard.list_users.searchTerm.watermark']}"/>
+                        <p:remoteCommand name="submitsearch" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
+                    
+                    
                     <div class="row">
                         <div class="col-sm-12">
                             <input name="searchTerm" id="searchTerm" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" placeholder="Filter users..."/>

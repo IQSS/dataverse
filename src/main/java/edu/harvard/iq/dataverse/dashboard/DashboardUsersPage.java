@@ -39,7 +39,8 @@ public class DashboardUsersPage implements java.io.Serializable {
 
     private Pager pager;
     private List<Object[]> userList;
-
+    
+    private String searchTerm;
 
     public String init() {
         System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
@@ -61,7 +62,7 @@ public class DashboardUsersPage implements java.io.Serializable {
 
         msgt("Run the search!");
 
-        String searchTerm = "a";
+
         /**
          * (1) Determine the number of users returned by the count        
          */
@@ -144,6 +145,15 @@ public class DashboardUsersPage implements java.io.Serializable {
         }
         return selectedPage;
     }
+    
+    public String getSearchTerm() {
+        return searchTerm;
+    }
+
+    public void setSearchTerm(String searchTerm) {
+        this.searchTerm = searchTerm;
+    }
+
     
     
     private void msg(String s){
