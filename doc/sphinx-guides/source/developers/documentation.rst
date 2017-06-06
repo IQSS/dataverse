@@ -2,6 +2,8 @@
 Documentation
 =============
 
+.. contents:: :local:
+
 Quick Fix
 -----------
 
