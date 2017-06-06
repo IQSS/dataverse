@@ -3,7 +3,8 @@ Administration
 
 This section focuses on system and database administration tasks. Please see the :doc:`/user/index` for tasks having to do with having the "Admin" role on a dataverse or dataset.
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Solr Search Index
 -----------------
@@ -18,15 +19,15 @@ There are two ways to perform a full reindex of the Dataverse search index. Star
 Clear and Reindex
 ~~~~~~~~~~~~~~~~~
 
-Clearing Data from Solr
-.......................
+**Clearing Data from Solr**
+...........................
 
 Please note that the moment you issue this command, it will appear to end users looking at the home page that all data is gone! This is because the home page is powered by the search index.
 
 ``curl http://localhost:8080/api/admin/index/clear``
 
-Start Async Reindex
-...................
+**Start Async Reindex**
+.......................
 
 Please note that this operation may take hours depending on the amount of data in your system. This known issue is being tracked at https://github.com/IQSS/dataverse/issues/50
 
@@ -37,13 +38,13 @@ Reindex in Place
 
 An alternative to completely clearing the search index is to reindex in place.
 
-Clear Index Timestamps
-......................
+**Clear Index Timestamps**
+..........................
 
 ``curl -X DELETE http://localhost:8080/api/admin/index/timestamps``
 
-Start or Continue Async Reindex
-................................
+**Start or Continue Async Reindex**
+...................................
 
 If indexing stops, this command should pick up where it left off based on which index timestamps have been set, which is why we start by clearing these timestamps above. These timestamps are stored in the ``dvobject`` database table.
 
