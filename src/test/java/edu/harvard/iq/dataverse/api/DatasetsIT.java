@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import static com.jayway.restassured.RestAssured.given;
+import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 import org.junit.BeforeClass;
@@ -16,6 +18,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -24,17 +27,20 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.UUID;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import org.apache.commons.lang.StringUtils;
-import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Assert;
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class DatasetsIT {
 
@@ -50,6 +56,14 @@ public class DatasetsIT {
 
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
+                .statusCode(200);
+
+        Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
+        removeDcmUrl.then().assertThat()
+                .statusCode(200);
+
+        Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
+        removeUploadMethods.then().assertThat()
                 .statusCode(200);
     }
 
@@ -833,6 +847,241 @@ public class DatasetsIT {
                 .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"))
                 .body("data.latestVersion.files[0].dataFile.checksum.value", equalTo("17ea9225aa0e96ae6ff61c256237d6add6c197d1"))
                 .statusCode(OK.getStatusCode());
+
+    }
+
+    /**
+     * In order for this test to pass you must have the Data Capture Module (
+     * https://github.com/sbgrid/data-capture-module ) running. We assume that
+     * most developers haven't set up the DCM so the test is disabled.
+     */
+    @Test
+    public void testCreateDatasetWithDcmDependency() {
+
+        boolean disabled = true;
+
+        if (disabled) {
+            return;
+        }
+
+        // TODO: Test this with a value like "junk" rather than a valid URL which would give `java.net.MalformedURLException: no protocol`.
+//        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888/ur.py");
+        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
+        setDcmUrl.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response setUploadMethods = UtilIT.setSetting(SettingsServiceBean.Key.UploadMethods, SystemConfig.FileUploadMethods.RSYNC.toString());
+        setUploadMethods.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response urlConfigured = given()
+                //                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/settings/" + SettingsServiceBean.Key.DataCaptureModuleUrl.toString());
+        if (urlConfigured.getStatusCode() != 200) {
+            fail(SettingsServiceBean.Key.DataCaptureModuleUrl + " has not been not configured. This test cannot run without it.");
+        }
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        long userId = JsonPath.from(createUser.body().asString()).getLong("data.authenticatedUser.id");
+
+        /**
+         * @todo Query system to see which file upload mechanisms are available.
+         */
+//        String dataverseAlias = "dv" + UtilIT.getRandomIdentifier();
+//        List<String> fileUploadMechanismsEnabled = Arrays.asList(Dataset.FileUploadMechanism.RSYNC.toString());
+//        Response createDataverseResponse = UtilIT.createDataverse(dataverseAlias, fileUploadMechanismsEnabled, apiToken);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                //                .body("data.alias", equalTo(dataverseAlias))
+                //                .body("data.fileUploadMechanismsEnabled[0]", equalTo(Dataset.FileUploadMechanism.RSYNC.toString()))
+                .statusCode(201);
+
+        /**
+         * @todo Make this configurable at runtime similar to
+         * UtilIT.getRestAssuredBaseUri
+         */
+//        Response createDatasetResponse = UtilIT.createDatasetWithDcmDependency(dataverseAlias, apiToken);
+//        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        String protocol1 = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.protocol");
+        String authority1 = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.authority");
+        String identifier1 = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol1 + ":" + authority1 + "/" + identifier1;
+
+        Response getDatasetResponse = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId);
+        getDatasetResponse.prettyPrint();
+        getDatasetResponse.then().assertThat()
+                .statusCode(200);
+
+//        final List<Map<String, ?>> dataTypeField = JsonPath.with(getDatasetResponse.body().asString())
+//                .get("data.latestVersion.metadataBlocks.citation.fields.findAll { it.typeName == 'dataType' }");
+//        logger.fine("dataTypeField: " + dataTypeField);
+//        assertThat(dataTypeField.size(), equalTo(1));
+//        assertEquals("dataType", dataTypeField.get(0).get("typeName"));
+//        assertEquals("controlledVocabulary", dataTypeField.get(0).get("typeClass"));
+//        assertEquals("X-Ray Diffraction", dataTypeField.get(0).get("value"));
+//        assertTrue(dataTypeField.get(0).get("multiple").equals(false));
+        String nullTokenToIndicateGuest = null;
+        Response getRsyncScriptPermErrorGuest = UtilIT.getRsyncScript(datasetPersistentId, nullTokenToIndicateGuest);
+        getRsyncScriptPermErrorGuest.prettyPrint();
+        getRsyncScriptPermErrorGuest.then().assertThat()
+                .contentType(ContentType.JSON)
+                .body("message", equalTo("User :guest is not permitted to perform requested action."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        Response createNoPermsUser = UtilIT.createRandomUser();
+        String noPermsUsername = UtilIT.getUsernameFromResponse(createNoPermsUser);
+        String noPermsApiToken = UtilIT.getApiTokenFromResponse(createNoPermsUser);
+
+        Response getRsyncScriptPermErrorNonGuest = UtilIT.getRsyncScript(datasetPersistentId, noPermsApiToken);
+        getRsyncScriptPermErrorNonGuest.then().assertThat()
+                .contentType(ContentType.JSON)
+                .body("message", equalTo("User @" + noPermsUsername + " is not permitted to perform requested action."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        boolean stopEarlyToVerifyTheScriptWasCreated = false;
+        if (stopEarlyToVerifyTheScriptWasCreated) {
+            logger.info("On the DCM, does /deposit/gen/upload-" + datasetId + ".bash exist? It should! Creating the dataset should be enough to create it.");
+            return;
+        }
+        Response getRsyncScript = UtilIT.getRsyncScript(datasetPersistentId, apiToken);
+        getRsyncScript.prettyPrint();
+        System.out.println("content type: " + getRsyncScript.getContentType()); // text/html;charset=ISO-8859-1
+        getRsyncScript.then().assertThat()
+                .contentType(ContentType.TEXT)
+                .statusCode(200);
+        String rsyncScript = getRsyncScript.body().asString();
+        System.out.println("script:\n" + rsyncScript);
+        assertTrue(rsyncScript.startsWith("#!"));
+        assertTrue(rsyncScript.contains(datasetId.toString()));
+
+        Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
+        removeUploadMethods.then().assertThat()
+                .statusCode(200);
+
+        Response createUser2 = UtilIT.createRandomUser();
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken2);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+
+        Response createDatasetResponse2 = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, apiToken2);
+        createDatasetResponse2.prettyPrint();
+        Integer datasetId2 = JsonPath.from(createDatasetResponse2.body().asString()).getInt("data.id");
+        System.out.println("dataset id: " + datasetId);
+
+        Response attemptToGetRsyncScriptForNonRsyncDataset = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken2)
+                .get("/api/datasets/" + datasetId2 + "/dataCaptureModule/rsync");
+        attemptToGetRsyncScriptForNonRsyncDataset.prettyPrint();
+        attemptToGetRsyncScriptForNonRsyncDataset.then().assertThat()
+                .body("message", equalTo(":UploadMethods does not contain dcm/rsync+ssh."))
+                .statusCode(METHOD_NOT_ALLOWED.getStatusCode());
+
+        boolean readyToStartWorkingOnChecksumValidationReporting = false;
+        if (!readyToStartWorkingOnChecksumValidationReporting) {
+            return;
+        }
+
+        /**
+         * Here we are pretending to be the Data Capture Module reporting on if
+         * checksum validation success or failure. Don't notify the user on
+         * success (too chatty) but do notify on failure.
+         *
+         * @todo On success a process should be kicked off to crawl the files so
+         * they are imported into Dataverse. Once the crawling and importing is
+         * complete, notify the user.
+         *
+         * @todo What authentication should be used here? The API token of the
+         * user? (If so, pass the token in the initial upload request payload.)
+         * This is suboptimal because of the security risk of having the Data
+         * Capture Module store the API token. Or should Dataverse be able to be
+         * configured so that it only will receive these messages from trusted
+         * IP addresses? Should there be a shared secret that's used for *all*
+         * requests from the Data Capture Module to Dataverse?
+         */
+        JsonObjectBuilder wrongDataset = Json.createObjectBuilder();
+        wrongDataset.add("userId", userId);
+        wrongDataset.add("datasetId", datasetId2);
+        wrongDataset.add("status", "validation passed");
+        Response datasetWithoutRsyncScript = given()
+                .body(wrongDataset.build().toString())
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/" + datasetId2 + "/dataCaptureModule/checksumValidation");
+        datasetWithoutRsyncScript.prettyPrint();
+
+        datasetWithoutRsyncScript.then().assertThat()
+                .statusCode(400)
+                .body("message", equalTo("Dataset id " + datasetId2 + " does not have an rsync script."));
+
+        JsonObjectBuilder badNews = Json.createObjectBuilder();
+        badNews.add("userId", userId);
+        badNews.add("datasetId", datasetId);
+        // Status options are documented at https://github.com/sbgrid/data-capture-module/blob/master/doc/api.md#post-upload
+        badNews.add("status", "validation failed");
+        Response uploadFailed = given()
+                .body(badNews.build().toString())
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/" + datasetId + "/dataCaptureModule/checksumValidation");
+        uploadFailed.prettyPrint();
+
+        uploadFailed.then().assertThat()
+                /**
+                 * @todo Double check that we're ok with 200 here. We're saying
+                 * "Ok, the bad news was delivered."
+                 */
+                .statusCode(200)
+                .body("data.message", equalTo("User notified about checksum validation failure."));
+
+        /**
+         * @todo How can we test what the checksum validation notification looks
+         * like in the GUI? There is no API for retrieving notifications.
+         *
+         * @todo How can we test that the email notification looks ok?
+         */
+//        System.out.println("try logging in with " + username);
+        // Meanwhile, the user trys uploading again...
+        JsonObjectBuilder goodNews = Json.createObjectBuilder();
+        goodNews.add("userId", userId);
+        goodNews.add("datasetId", datasetId);
+        goodNews.add("status", "validation passed");
+        Response uploadSuccessful = given()
+                .body(goodNews.build().toString())
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/" + datasetId + "/dataCaptureModule/checksumValidation");
+        uploadSuccessful.prettyPrint();
+
+        uploadSuccessful.then().assertThat()
+                .statusCode(200)
+                .body("data.message", startsWith("Next we will write code to kick off crawling and importing of files"));
+
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+        UtilIT.deleteUser(noPermsUsername);
 
     }
 

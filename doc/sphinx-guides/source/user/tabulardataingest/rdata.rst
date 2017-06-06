@@ -3,6 +3,8 @@ R Data Format
 
 Support for R (.RData) files has been introduced in DVN 3.5.
 
+.. contents:: |toctitle|
+	:local:
 
 Overview.
 ===========

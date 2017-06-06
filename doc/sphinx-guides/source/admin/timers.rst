@@ -3,10 +3,10 @@
 Dataverse Application Timers
 ============================
 
-.. contents:: :local:
-
 Dataverse uses timers to automatically run scheduled Harvest and Metadata export jobs. 
 
+.. contents:: |toctitle|
+	:local:
 
 Dedicated timer server in a Dataverse server cluster
 ----------------------------------------------------

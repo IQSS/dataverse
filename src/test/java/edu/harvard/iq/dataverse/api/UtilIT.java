@@ -915,6 +915,15 @@ public class UtilIT {
                 .delete("/api/files/" + fileId + "/map?key=" + apiToken);
     }
 
+    static Response getRsyncScript(String datasetPersistentId, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/:persistentId/dataCaptureModule/rsync?persistentId=" + datasetPersistentId);
+    }
+
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"

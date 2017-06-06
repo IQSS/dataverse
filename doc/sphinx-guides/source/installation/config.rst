@@ -8,7 +8,8 @@ Settings within Dataverse itself are managed via JVM options or by manipulating 
 
 Once you have finished securing and configuring your Dataverse installation, proceed to the :doc:`administration` section. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
 
-.. contents:: :local:
+.. contents:: |toctitle|
+  :local:
 
 Securing Your Installation
 --------------------------
@@ -763,3 +764,29 @@ Set the base URL for the "Compute" button for a dataset.
 Set the base URL for the "Compute" button for a dataset.
 
 ``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
+
+:DataCaptureModuleUrl
++++++++++++++++++++++
+
+The URL for your Data Capture Module (DCM) installation. This component is experimental and can be downloaded from https://github.com/sbgrid/data-capture-module .
+
+``curl -X PUT -d 'https://dcm.example.edu' http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl``
+
+:RepositoryStorageAbstractionLayerUrl
++++++++++++++++++++++++++++++++++++++
+
+The URL for your Repository Storage Abstraction Layer (RSAL) installation. This component is experimental and can be downloaded from https://github.com/sbgrid/rsal .
+
+``curl -X PUT -d 'https://rsal.example.edu' http://localhost:8080/api/admin/settings/:RepositoryStorageAbstractionLayerUrl``
+
+:UploadMethods
+++++++++++++++
+
+This setting is experimental and to be used with the Data Capture Module (DCM). For now, if you set the upload methods to ``dcm/rsync+ssh`` it will allow your users to download rsync scripts from the DCM.
+
+``curl -X PUT -d 'dcm/rsync+ssh' http://localhost:8080/api/admin/settings/:UploadMethods``
+
+:DownloadMethods
+++++++++++++++++
+
+This setting is experimental and related to Repository Storage Abstraction Layer (RSAL). As of this writing it has no effect.

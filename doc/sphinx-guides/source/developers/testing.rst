@@ -2,6 +2,9 @@
 Testing
 =======
 
+.. contents:: |toctitle|
+	:local:
+
 Unit Tests
 ----------
 
