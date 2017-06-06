@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.userdata.UserUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.sql.Timestamp;
 import java.util.List;
@@ -42,32 +43,6 @@ public class UserServiceBean {
     }
     
     
-    /**
-     * Convenience method to format dbResult
-     * @param dbResult
-     * @return 
-     */
-    private String getStringOrNull(Object dbResult){
-        
-        if (dbResult == null){
-            return null;
-        }
-        return (String)dbResult;
-    }
-    
-    /**
-     * Convenience method to format dbResult
-     * @param dbResult
-     * @return 
-     */
-    private String getTimestampStringOrNull(Object dbResult){
-        
-        if (dbResult == null){
-            return null;
-        }
-        return ((Timestamp)dbResult).toString();
-    }
-                
             
     /**
      * 
@@ -109,13 +84,13 @@ public class UserServiceBean {
             singleUserData.add("id", (int)result[0])
                     .add("rowNum", offset++)
                     .add("userIdentifier", (String)result[1])
-                    .add("lastName", this.getStringOrNull(result[2]))
-                    .add("firstName", this.getStringOrNull(result[3]))
-                    .add("email", this.getStringOrNull(result[4]))
-                    .add("affiliation", this.getStringOrNull(result[5]))
+                    .add("lastName", UserUtil.getStringOrNull(result[2]))
+                    .add("firstName", UserUtil.getStringOrNull(result[3]))
+                    .add("email", UserUtil.getStringOrNull(result[4]))
+                    .add("affiliation", UserUtil.getStringOrNull(result[5]))
                     .add("isSuperuser", (boolean)result[6])
-                    .add("position", this.getStringOrNull(result[7]))
-                    .add("modificationTime", this.getTimestampStringOrNull(result[8]));
+                    .add("position", UserUtil.getStringOrNull(result[7]))
+                    .add("modificationTime", UserUtil.getTimestampStringOrNull(result[8]));
             jsonUserListArray.add(singleUserData);            
         }
        
@@ -169,7 +144,7 @@ public class UserServiceBean {
         System.out.println("--------------\n\n" + qstr);
         
         Query nativeQuery = em.createNativeQuery(qstr);          
-        nativeQuery.setParameter("searchTerm", "%" + searchTerm + "%");  
+        nativeQuery.setParameter("searchTerm", searchTerm + "%");  
 
         
         return nativeQuery.getResultList();
@@ -247,7 +222,7 @@ public class UserServiceBean {
         qstr += ";";
         
         Query nativeQuery = em.createNativeQuery(qstr);  
-        nativeQuery.setParameter("searchTerm", "%" + searchTerm + "%");  
+        nativeQuery.setParameter("searchTerm", searchTerm + "%");  
         
         return (Long)nativeQuery.getSingleResult();
 

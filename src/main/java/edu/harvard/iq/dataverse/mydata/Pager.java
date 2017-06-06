@@ -34,6 +34,7 @@ public class Pager {
     
     /* inputs */
     public int numResults;
+    public String numResultsString;
     public int docsPerPage = SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE;
     public int selectedPageNumber = 1;
 
@@ -401,6 +402,12 @@ public class Pager {
         for(int i=0; i< NUM_VISIBLE_PAGES_BUTTONS; i++){
             this.pageNumberList[i] = i + startPage;
         }        
+    }
+    
+    public String getNumResultsString(){
+        
+        return this.addCommasToNumber(numResults);
+
     }
     
     public static void main(String[] args) throws IOException {
