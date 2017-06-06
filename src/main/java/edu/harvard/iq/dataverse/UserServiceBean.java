@@ -2,9 +2,11 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.userdata.SingleUserView;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -99,6 +101,40 @@ public class UserServiceBean {
     }
     
     
+    public List<Object[]> getUserList(String searchTerm, String sortKey, Integer resultLimit, Integer offset){
+        
+        return getUserListCore(searchTerm, sortKey, resultLimit, offset);
+    }
+    
+    public List<SingleUserView> getUserListAsSingleUserObjects(String searchTerm, String sortKey, Integer resultLimit, Integer offset){
+        
+        if ((offset == null)||(offset < 0)){
+            offset = 0;
+        }
+        
+        List<Object[]> userResults = getUserListCore(searchTerm, sortKey, resultLimit, offset);
+        
+        // Initialize empty list for SingleUserView objects
+        //
+        List<SingleUserView> viewObjects = new ArrayList<>();
+        
+        if (userResults == null){
+            return viewObjects;
+        }
+        
+        // -------------------------------------------------
+        // We have results, format them into SingleUserView objects
+        // -------------------------------------------------
+        int rowNum = offset++;   // used for the rowNumber
+        for (Object[] dbResultRow : userResults) {            
+            rowNum++;
+            SingleUserView singleUser = new SingleUserView(dbResultRow, rowNum);            
+            viewObjects.add(singleUser);
+        }
+        
+        return viewObjects;
+    }
+
     
     /**
      * 
@@ -107,7 +143,7 @@ public class UserServiceBean {
      * @param resultLimit
      * @return 
      */
-    public List<Object[]> getUserList(String searchTerm, String sortKey, Integer resultLimit, Integer offset) {
+    private List<Object[]> getUserListCore(String searchTerm, String sortKey, Integer resultLimit, Integer offset) {
 
         if ((sortKey == null) || (sortKey.isEmpty())){
             sortKey = "u.username";

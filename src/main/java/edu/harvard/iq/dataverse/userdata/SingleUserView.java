@@ -41,7 +41,7 @@ public class SingleUserView {
     /*
      * Constructor
      */
-    public SingleUserView(Object[] dbRowValues){
+    public SingleUserView(Object[] dbRowValues, Integer rowNum){
 
         this.id = (int)dbRowValues[0];
         this.userIdentifier = (String)dbRowValues[1];
@@ -53,6 +53,7 @@ public class SingleUserView {
         this.position = UserUtil.getStringOrNull(dbRowValues[7]);
         this.modificationTime = UserUtil.getTimestampOrNull(dbRowValues[8]);
       
+        this.rowNum = rowNum;
     }
 
     /**
