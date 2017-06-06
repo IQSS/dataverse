@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
@@ -8,23 +9,9 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
-import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
-import edu.harvard.iq.dataverse.workflow.stepspi.WorkflowStepProviderInterface;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -36,7 +23,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 /**
  * API Endpoint for managing workflows.
@@ -45,13 +31,10 @@ import javax.ws.rs.core.Response.Status;
 @Path("admin/workflows")
 public class WorkflowsAdmin extends AbstractApiBean {
       
-    private static final Logger logger = Logger.getLogger(WorkflowsAdmin.class.getName());
-       
+    public static final String IP_WHITELIST_KEY="WorkflowsAdmin#IP_WHITELIST_KEY";
+    
     @EJB
     WorkflowServiceBean workflows;
-    
-    @Inject
-    private javax.enterprise.inject.Instance<WorkflowStepProviderInterface> stepProviders;
     
     @POST
     public Response addWorkflow(JsonObject jsonWorkflow) {
@@ -167,114 +150,39 @@ public class WorkflowsAdmin extends AbstractApiBean {
         }
     }
     
-    
-    @Path("/test-cp1")
+    @Path("/ip-whitelist")
     @GET
-    public Response testCP1() {
-        try {
-            Class.forName("edu.harvard.iq.dataverse.workflow.WorkflowStepSPI");
-            return ok("WorkflowStepSPI found using class.forName");
-        } catch (ClassNotFoundException ex) {
-            return ok("WorkflowStepSPI NOT found using class.forName");
-        }
+    public Response getIpWhitelist() {
+        return ok( settingsSvc.get(IP_WHITELIST_KEY, "120.0.0.1;::1") );
     }
     
-    @Path("/test-cp")
-    @GET
-    public Response testCP() throws Exception {
-        String path = "/Applications/NetBeans/glassfish-4.1/glassfish/domains/domain1/lib/DataverseWorkflowStepProvider.jar";
-        URL jarUrl = new File(path).toURI().toURL();
-        URLClassLoader loader = new URLClassLoader(new URL[]{jarUrl}, Thread.currentThread().getContextClassLoader());
-        Class<?> clz = loader.loadClass("edu.harvard.iq.dataverse.samplestepprovider.SampleStepProvider");
-        Object newInstance = clz.newInstance();
-        return ok("Instantiated " + newInstance.toString() );
-    }
-    
-    @Path("/test-cp2")
-    @GET
-    public Response testCP2() throws MalformedURLException {
-        String path = "/Applications/NetBeans/glassfish-4.1/glassfish/domains/domain1/lib/DataverseWorkflowStepProvider.jar";
-        URL jarUrl = new File(path).toURI().toURL();
-        URLClassLoader loader = new URLClassLoader(new URL[]{jarUrl}, Thread.currentThread().getContextClassLoader());
-        ServiceLoader<WorkflowStepSPI> sl = ServiceLoader.load(WorkflowStepSPI.class, loader);
-        Iterator<WorkflowStepSPI> iterator = sl.iterator();
-        if ( iterator.hasNext() ) {
-            WorkflowStepSPI wss = iterator.next();
-            return ok("Loaded " + wss.toString() );
+    @Path("/ip-whitelist")
+    @PUT
+    public Response setIpWhitelist(String body) {
+        String ipList = body.trim();
+        String[] ips = ipList.split(";");
+        boolean allIpsOk = Arrays.stream(ips).allMatch(ip->{
+            try {
+                IpAddress.valueOf(ip);
+                return true;
+            } catch ( IllegalArgumentException iae ) {
+                return false;
+            }
+        } );
+        if (allIpsOk) {
+            settingsSvc.set(IP_WHITELIST_KEY, ipList);
+            return ok( settingsSvc.get(IP_WHITELIST_KEY, "120.0.0.1;::1") );
         } else {
-            return ok("No services found");
+            return badRequest("Request contains illegal IP addresses.");
         }
+                
     }
     
-    @Path("/test-spi")
-    @GET
-    public Response testSpi() {
-        try {
-            ServiceLoader<WorkflowStepSPI> loader = ServiceLoader.load(WorkflowStepSPI.class, Thread.currentThread().getContextClassLoader());
-            loader.reload();
-            List<String> names = new LinkedList<>();
-            Iterator<WorkflowStepSPI> itr = loader.iterator();
-            while ( itr.hasNext() ) {
-                WorkflowStepSPI wss = itr.next();
-                logger.log(Level.INFO, "Found WorkflowStepProvider: {0}", wss.getClass().getCanonicalName());
-                names.add(wss.toString());
-            }
-            logger.log(Level.INFO, "Searching for Workflow Step Providers done.");
-            return ok( names.toString() );
-        } catch (NoClassDefFoundError ncdfe) {
-            logger.log(Level.WARNING, "Class not found: " + ncdfe.getMessage(), ncdfe);
-            return error( Status.INTERNAL_SERVER_ERROR, ncdfe.getLocalizedMessage() );
-        } catch (ServiceConfigurationError serviceError) {
-            logger.log(Level.WARNING, "Service Error loading workflow step providers: " + serviceError.getMessage(), serviceError);
-            return error( Status.INTERNAL_SERVER_ERROR, serviceError.getLocalizedMessage() );
-        }
+    @Path("/ip-whitelist")
+    @DELETE
+    public Response deleteIpWhitelist() {
+        settingsSvc.delete(IP_WHITELIST_KEY);
+        return ok( "Restored whitelist to default (120.0.0.1;::1)" );
     }
     
-    
-    @Path("/test-spi-i")
-    @GET
-    public Response testSpiI() {
-        try {
-            ServiceLoader<WorkflowStepProviderInterface> loader = ServiceLoader.load(WorkflowStepProviderInterface.class, Thread.currentThread().getContextClassLoader());
-            loader.reload();
-            List<String> names = new LinkedList<>();
-            Iterator<WorkflowStepProviderInterface> itr = loader.iterator();
-            while ( itr.hasNext() ) {
-                WorkflowStepProviderInterface wss = itr.next();
-                logger.log(Level.INFO, "Found WorkflowStepProviderInterface: {0}", wss.getClass().getCanonicalName());
-                logger.log(Level.INFO, "Got string: {0}", wss.getAString() );
-            }
-            logger.log(Level.INFO, "Searching for WorkflowStepProviderInterface done.");
-            return ok( names.toString() );
-        } catch (NoClassDefFoundError ncdfe) {
-            logger.log(Level.WARNING, "Class not found: " + ncdfe.getMessage(), ncdfe);
-            return error( Status.INTERNAL_SERVER_ERROR, ncdfe.getLocalizedMessage() );
-        } catch (ServiceConfigurationError serviceError) {
-            logger.log(Level.WARNING, "Service Error loading workflow step providers: " + serviceError.getMessage(), serviceError);
-            return error( Status.INTERNAL_SERVER_ERROR, serviceError.getLocalizedMessage() );
-        }
-    }
-    
-    @Path("/test-spi-i2")
-    @GET
-    public Response testSpiI2() {
-        try {
-            Iterator<WorkflowStepProviderInterface> spiItr = stepProviders.iterator();
-            StringBuilder sb = new StringBuilder();
-            
-            while ( spiItr.hasNext() ) {
-                WorkflowStepProviderInterface instance = spiItr.next();
-                logger.info( "found intance " + instance.toString() );
-                sb.append( instance.getAString() ).append("\n");
-            }
-            
-            return ok( sb.toString() );
-        } catch (NoClassDefFoundError ncdfe) {
-            logger.log(Level.WARNING, "Class not found: " + ncdfe.getMessage(), ncdfe);
-            return error( Status.INTERNAL_SERVER_ERROR, ncdfe.getLocalizedMessage() );
-        } catch (ServiceConfigurationError serviceError) {
-            logger.log(Level.WARNING, "Service Error loading workflow step providers: " + serviceError.getMessage(), serviceError);
-            return error( Status.INTERNAL_SERVER_ERROR, serviceError.getLocalizedMessage() );
-        }
-    }
 }
