@@ -301,4 +301,24 @@ public class AdminIT {
         assertEquals(200, deleteSuperuser.getStatusCode());
     }
 
+    @Test
+    public void testCreateManyUsers() {
+        boolean disabled = true;
+        if (disabled) {
+            return;
+        }
+        // FIXME: JSF datatable performance is horrific with this many users. There may be code
+        // in DVN 3 we can grab. Otherwise, we should look into
+        // https://www.primefaces.org/showcase/ui/data/datatable/lazy.xhtml
+        // and/or these answers from BalusC: 
+        // https://stackoverflow.com/questions/2372648/large-jsf-datatable-backed-by-database-that-can-handle-paging-sorting
+        // https://stackoverflow.com/questions/1986998/resultset-to-pagination
+        int numUsersInProdAtHarvard = 14000;
+        int numUsersToCreate = numUsersInProdAtHarvard;
+        for (int i = 0; i < numUsersToCreate; i++) {
+            System.out.println("creating user " + i);
+            Response createRandomUserResponse = UtilIT.createRandomUser();
+        }
+    }
+
 }

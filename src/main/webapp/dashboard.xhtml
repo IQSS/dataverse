@@ -102,6 +102,31 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-md-4">
+                                <div class="card-box">
+                                    <h4 class="header-title">#{bundle['dashboard.card.users.header']}</h4>
+                                    <div class="row text-center" jsf:rendered="#{true}">
+                                        <div class="col-xs-12" jsf:rendered="#{true}">
+                                            <p class="small text-muted">#{bundle['dashboard.card.users.empty']}</p>
+                                        </div>
+                                        <div class="col-xs-6" jsf:rendered="#{true}">
+                                            <h:outputText value="##,###"/>
+                                            <p class="small text-muted">Users</p>
+                                        </div>
+                                        <div class="col-xs-6" jsf:rendered="#{true}">
+                                            <h:outputText value="##"/>
+                                            <p class="small text-muted">Super-Users</p>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div  class="col-xs-12">
+                                            <p>
+                                                <a href="/dashboard-users.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.users.btn.manage']}</a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
