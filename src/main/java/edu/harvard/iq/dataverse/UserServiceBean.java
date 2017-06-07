@@ -272,16 +272,34 @@ public class UserServiceBean {
      * @return 
      */
     private String getSharedSearchClause(String searchTerm){       
-        if (searchTerm.isEmpty()){
+        if (searchTerm == null){
             return "";
         }
 
         String searchClause = "";
+
+        searchTerm = searchTerm.trim();
+        if (searchTerm.isEmpty()){
+            return "";
+        }        
         
+        //--------------------------------------------------------
+        // Search for term anywhere at beginning of string
+        //--------------------------------------------------------
+        searchClause += " (u.useridentifier LIKE '" + searchTerm +"%'";
+        searchClause += " OR u.firstname ILIKE '" + searchTerm +"%'";
+        searchClause += " OR u.lastname ILIKE '" + searchTerm +"%'";
+        searchClause += " OR u.email ILIKE '" + searchTerm +"%')";
+        
+        /*
+        //--------------------------------------------------------
+        // Search for term anywhere in string
+        //--------------------------------------------------------
         searchClause += " u.useridentifier LIKE '%" + searchTerm +"%'";
         searchClause += " OR u.firstname ILIKE '%" + searchTerm +"%'";
         searchClause += " OR u.lastname ILIKE '%" + searchTerm +"%'";
         searchClause += " OR u.email ILIKE '%" + searchTerm +"%'";
+        */
         return searchClause;
     }
     
