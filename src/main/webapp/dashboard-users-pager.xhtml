@@ -1,0 +1,71 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui"
+     xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+         
+    
+    <!-- PAGINATOR -->
+    <ui:fragment rendered="#{listPager != null}">
+        <div class="row">
+                
+            <div class="col-xs-12 col-md-3"><!-- number of results -->
+                <br />
+                <ui:fragment rendered="#{listPager.numResults > 1}">                    
+                    Found: <b>#{listPager.numResultsString} results</b>
+                </ui:fragment>
+                <ui:fragment rendered="#{listPager.numResults == 1}">                    
+                    Found: <b>#{listPager.numResultsString} result</b>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{listPager.endCardNumber > listPager.startCardNumber}">                    
+                    <br />Displaying: <b>#{listPager.startCardNumber} to #{listPager.endCardNumber}</b>
+                </ui:fragment>
+                <br />
+            </div>
+        
+            <div class="col-xs-12 col-md-9">
+    
+            <ui:fragment rendered="#{listPager.pagerNecessary}">
+                <ul>
+                <!-- previous page controls -->
+                <ui:fragment rendered="#{listPager.hasPreviousPageNumber()}">
+                   <li><a aria-label="First" class="page_link" rel="1"><span aria-hidden="true">&lt;&lt;</span></a></li>
+                   <li><a aria-label="Previous" class="page_link" rel="#{listPager.previousPageNumber}"><span aria-hidden="true">&lt; Previous</span></a></li>
+                </ui:fragment>
+                <ui:fragment rendered="#{!listPager.hasPreviousPageNumber()}">
+                   <li class="disabled"><a aria-label="First"><span aria-hidden="true">&lt;&lt;</span></a></li>
+                   <li class="disabled"><a aria-label="Previous"><span aria-hidden="true">&lt; Previous</span></a></li>
+                </ui:fragment>
+
+
+                <!-- page numbers -->
+                <ui:repeat value="#{listPager.getPageListAsIntegerList()}" var="pg">
+                    <ui:fragment rendered="#{pg == listPager.selectedPageNumber}">
+                       <li class="active"><a rel="#{pg}" class="page_link">#{pg}</a></li>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{pg != listPager.selectedPageNumber}">
+                       <li><a rel="#{pg}" class="page_link">#{pg}</a></li>
+                    </ui:fragment>
+                </ui:repeat>
+ 
+                
+                <!-- next page | last page -->
+                <ui:fragment rendered="#{listPager.hasNextPageNumber()}">
+                    <li><a href="#" aria-label="Next" class="page_link" rel="#{listPager.nextPageNumber}"><span aria-hidden="true">Next &gt;</span></a></li>
+                    <li><a href="#" aria-label="Last" class="page_link" rel="#{listPager.pageCount}"><span aria-hidden="true">&gt;&gt;</span></a></li>
+                </ui:fragment>
+                <ui:fragment rendered="#{!listPager.hasNextPageNumber()}">
+                    <li class="disabled"><a href="#" aria-label="Next"><span aria-hidden="true">Next &gt;</span></a></li>
+                    <li class="disabled"><a href="#" aria-label="Last"><span aria-hidden="true">&gt;&gt;</span></a></li>
+                </ui:fragment>
+                </ul>
+                page count: #{listPager.pageCount}<br />
+             
+            </ui:fragment>
+            </div>
+        </div>
+    </ui:fragment>
+</ui:composition>
