@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -53,7 +52,6 @@ public class UserServiceBean {
      * @return 
      */
     public JsonArrayBuilder getUserListAsJSON(String searchTerm, String sortKey, Integer resultLimit, Integer offset) {
-        System.out.println("getUserListAsJSON 1");
 
         if ((offset == null)||(offset < 0)){
             offset = 0;
@@ -244,12 +242,8 @@ public class UserServiceBean {
         qstr += " OFFSET " + offset;
         qstr += ";";
         
-        System.out.println("--------------\n\n" + qstr);
-        
-        Query nativeQuery = em.createNativeQuery(qstr);          
-        //nativeQuery.setParameter("searchTerm", formatSearchTerm(searchTerm));  
-
-        
+        Query nativeQuery = em.createNativeQuery(qstr);           
+       
         return nativeQuery.getResultList();
 
     }
@@ -266,8 +260,7 @@ public class UserServiceBean {
         if (searchTerm.isEmpty()){
             return "";
         }
-        
-       
+      
         String searchClause = " WHERE";
         searchClause += " u.id = prov_lookup.authenticateduser_id";
         searchClause += " prov_lookup.authenticationproviderid = prov.id";
@@ -275,12 +268,6 @@ public class UserServiceBean {
         searchClause += " OR u.firstname ILIKE '%" + searchTerm +"%'";
         searchClause += " OR u.lastname ILIKE '%" + searchTerm +"%'";
         searchClause += " OR u.email ILIKE '%" + searchTerm +"%'";
-        /*
-        String searchClause = " WHERE u.useridentifier ILIKE :searchTerm";
-        searchClause += " OR u.firstname ILIKE :searchTerm";
-        searchClause += " OR u.lastname ILIKE :searchTerm"; 
-        searchClause += " OR u.email ILIKE :searchTerm"; 
-        */
         return searchClause;
     }
     
@@ -310,17 +297,6 @@ public class UserServiceBean {
         
         return getUserCount(null);
     }
-
-    private String formatSearchTerm(String searchTerm){
-        
-        if (searchTerm == null){
-            return "";
-        }
-        
-        return searchTerm + "%";    // for LIKE query on right side
-
-        //return "%" + searchTerm + "%";    // for LIKE query on both sides
-    }
     
     /**
      * 
@@ -339,7 +315,6 @@ public class UserServiceBean {
         qstr += ";";
         
         Query nativeQuery = em.createNativeQuery(qstr);  
-        nativeQuery.setParameter("searchTerm", formatSearchTerm(searchTerm));  
         
         return (Long)nativeQuery.getSingleResult();
 
