@@ -35,7 +35,7 @@ public class MailUtil {
             case REVOKEROLE:
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.revoke.role.subject");
             case CREATEDV:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.create.dataverse.subject");
+                return BundleUtil.getStringFromBundle("notification.email.create.dataverse.subject", Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName)));
             case REQUESTFILEACCESS:
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.request.file.access.subject");
             case GRANTFILEACCESS:

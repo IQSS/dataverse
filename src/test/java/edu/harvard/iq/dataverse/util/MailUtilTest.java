@@ -43,4 +43,9 @@ public class MailUtilTest {
         assertEquals("Dataverse: You have been assigned a role", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
     }
 
+    @Test
+    public void testSubjectCreateDataverse() {
+        userNotification.setType(UserNotification.Type.CREATEDV);
+        assertEquals("LibraScholar: Your dataverse has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
+    }
 }
