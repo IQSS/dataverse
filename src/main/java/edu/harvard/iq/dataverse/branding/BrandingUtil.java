@@ -6,6 +6,10 @@ import javax.mail.internet.InternetAddress;
 
 public class BrandingUtil {
 
+    public static String getInstallationBrandName(String rootDataverseName) {
+        return rootDataverseName;
+    }
+
     public static String getSupportTeamName(InternetAddress systemAddress, String rootDataverseName) {
         if (systemAddress != null) {
             String personalName = systemAddress.getPersonal();
@@ -18,6 +22,13 @@ public class BrandingUtil {
         }
         String saneDefault = BundleUtil.getStringFromBundle("dataverse");
         return BundleUtil.getStringFromBundle("contact.support.dynamic", Arrays.asList(saneDefault));
+    }
+
+    public static String getSupportTeamEmailAddress(InternetAddress systemAddress) {
+        if (systemAddress == null) {
+            return null;
+        }
+        return systemAddress.getAddress();
     }
 
     public static String getContactHeader(InternetAddress systemAddress, String rootDataverseName) {
