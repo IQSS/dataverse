@@ -91,7 +91,10 @@ public class UserServiceBean {
                     .add("affiliation", UserUtil.getStringOrNull(result[5]))
                     .add("isSuperuser", (boolean)result[6])
                     .add("position", UserUtil.getStringOrNull(result[7]))
-                    .add("modificationTime", UserUtil.getTimestampStringOrNull(result[8]));
+                    .add("modificationTime", UserUtil.getTimestampStringOrNull(result[8]))
+                    .add("authProviderId", UserUtil.getStringOrNull(result[9]))
+                    .add("authFactoryAlias", UserUtil.getStringOrNull(result[10]));
+
             jsonUserListArray.add(singleUserData);            
         }
        
@@ -230,8 +233,11 @@ public class UserServiceBean {
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";
         qstr += " u.affiliation, u.superuser,";
-        qstr += " u.position, u.modificationtime";
-        qstr += " FROM authenticateduser u";
+        qstr += " u.position, u.modificationtime,";
+        qstr += " prov.id, prov.factoryalias";
+        qstr += " FROM authenticateduser u,";
+        qstr += " authenticateduserlookup prov_lookup,";
+        qstr += " authenticationproviderrow prov";
         qstr += getSharedSearchClause(searchTerm);
         qstr += " ORDER BY u.useridentifier";
         qstr += " LIMIT " + resultLimit;
@@ -262,7 +268,10 @@ public class UserServiceBean {
         }
         
        
-        String searchClause = " WHERE u.useridentifier LIKE '%" + searchTerm +"%'";
+        String searchClause = " WHERE";
+        searchClause += " u.id = prov_lookup.authenticateduser_id";
+        searchClause += " prov_lookup.authenticationproviderid = prov.id";
+        searchClause += " u.useridentifier LIKE '%" + searchTerm +"%'";
         searchClause += " OR u.firstname ILIKE '%" + searchTerm +"%'";
         searchClause += " OR u.lastname ILIKE '%" + searchTerm +"%'";
         searchClause += " OR u.email ILIKE '%" + searchTerm +"%'";
