@@ -159,6 +159,7 @@ public class SettingsServiceBean {
         TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
+
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
@@ -250,7 +251,14 @@ public class SettingsServiceBean {
         /**
          * Whether Export should exclude FieldType.EMAIL
          */
-        ExcludeEmailFromExport;
+        ExcludeEmailFromExport,
+        
+        // Option to override the navbar url underlying the "About" link
+        NavbarAboutUrl,
+        
+        // Option to override multiple guides with a single url
+        NavbarGuidesUrl; 
+
         
         @Override
         public String toString() {
@@ -268,7 +276,7 @@ public class SettingsServiceBean {
      * Values that are considered as "true".
      * @see #isTrue(java.lang.String, boolean) 
      */
-    private static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
+    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
             new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
     
     /**

@@ -29,19 +29,20 @@ When logged in, the account name is a dropdown menu, linking the user to account
                     <ul class="nav navbar-nav navbar-right">
                         <li class="dropdown">
                             <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
-                                Guides <b class="caret"></b>
+                                User Name <b class="caret"></b>
                             </span>
                             <ul class="dropdown-menu">
-                                <li><a href="#" onclick="return false;">
-                                        User Guide
-                                    </a>
+                                <li><a href="#" onclick="return false;">My Data</a>
                                 </li>
-                                <li><a href="#" onclick="return false;">Developer Guide</a>
+                                <li><a href="#" onclick="return false;">Notifications</a>
                                 </li>
-                                <li><a href="#" onclick="return false;">Installation Guide</a>
+                                <li><a href="#" onclick="return false;">Account Information</a>
                                 </li>
-                                <li><a href="#" onclick="return false;">API Guide</a>
-                                </li><li><a href="#" onclick="return false;">Admin Guide</a></li>
+                                <li><a href="#" onclick="return false;">API Token</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li class="logout"><a href="#" onclick="return false;">Log Out</a>
+                                </li>
                             </ul>
                         </li>
                     </ul>
