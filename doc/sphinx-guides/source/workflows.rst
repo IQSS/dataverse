@@ -5,9 +5,16 @@ Dataverse can perform two sequences of actions when datasets are published: one 
 
 Workflow steps are created using *step providers*. Dataverse ships with an internal step provider that offers some basic functionality, and with the ability to load 3rd party step providers. This allows installations to implement functionality they need without changing the Dataverse source code.
 
-Steps can be internal (say, writing some data to the log) or external. External steps involve Dataverse sending a request to an internal system, and waiting for the system to reply. The wait period is arbitrary, and so allows the external system unbounded operation time. To this end. Dataverse' internal step provider has a step that sends and receives HTTP requests.
+Steps can be internal (say, writing some data to the log) or external. External steps involve Dataverse sending a request to an external system, and waiting for the system to reply. The wait period is arbitrary, and so allows the external system unbounded operation time. This is useful, e.g., for steps that require human intervension, such as manual approval of a dataset publication.
+
+The external system reports the step result back to dataverse, by sending a HTTP ``POST`` command to ``api/workflows/{invocation-id}``. The body of the request is passed to the paused step for further processing.
 
 If a step in a workflow fails, Dataverse make an effort to roll back all the steps that preceeded it. Some actions, such as writing to the log, cannot be rolled back. If such an action has a public external effect (e.g. send an EMail to a mailing list) it is advisable to put it in the post-release workflow.
+
+.. tip::
+  For invoking external systems using a REST api, Dataverse's internal step
+  provider offers a step for sending and receiving customizable HTTP requests.
+  It's called *http/sr*, and is detailed below.
 
 Administration
 --------------

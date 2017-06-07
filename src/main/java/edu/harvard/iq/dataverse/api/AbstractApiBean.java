@@ -562,6 +562,10 @@ public abstract class AbstractApiBean {
     }
 
     protected Response permissionError( String message ) {
+        return unauthorized( message );
+    }
+    
+    protected Response unauthorized( String message ) {
         return error( Status.UNAUTHORIZED, message );
     }
     
