@@ -5,8 +5,11 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -15,6 +18,7 @@ import javax.json.JsonArrayBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import org.ocpsoft.common.util.Strings;
 
 @Stateless
 @Named
@@ -173,6 +177,67 @@ public class UserServiceBean {
         return user;
     } 
     
+    /**
+     * Attempt to retrieve all the user roles in 1 query
+     * Consider putting limits on this -- e.g. no more than 1,000 user identifiers or something similar
+     * 
+     * @param userIdentifierList
+     * @return 
+     */
+    private HashMap<String, List<String>> retrieveRolesForUsers(List<String> userIdentifierList){
+        
+        if ((userIdentifierList==null)||(userIdentifierList.isEmpty())){
+            return null;
+        }
+               
+        // Add '@' to each identifier and delimit the list by ","
+        //
+        String identifierList = userIdentifierList.stream()
+                                     .filter(x -> !Strings.isNullOrEmpty(x))
+                                     .map(x -> "'@" + x + "'")
+                                     .collect(Collectors.joining(", "));
+        
+        String qstr = "SELECT distinct a.assigneeidentifier,";
+        qstr += " d.name";
+        qstr += " FROM roleassignment a,";
+        qstr += " dataverserole d";
+        qstr += " WHERE d.id = a.role_id";
+        qstr += " AND a.assigneeidentifier IN (" + identifierList + ")";
+        qstr += " ORDER by a.assigneeidentifier, d.name;";
+
+        Query nativeQuery = em.createNativeQuery(qstr);
+
+        List<Object[]> dbRoleResults = nativeQuery.getResultList();
+        if (dbRoleResults == null){
+            return null;
+        }
+        
+        HashMap<String, List<String>> userRoleLookup = new HashMap<>();
+
+        String userIdentifier;
+        String userRole;
+        for (Object[] dbResultRow : dbRoleResults) {            
+            
+            userIdentifier = UserUtil.getStringOrNull(dbResultRow[0]);
+            userRole = UserUtil.getStringOrNull(dbResultRow[1]);
+            if ((userIdentifier != null)&&(userRole != null)){  // should never be null
+                
+                List<String> userRoleList = userRoleLookup.getOrDefault(userIdentifier, new ArrayList<String>());
+                if (!userRoleList.contains(userRole)){
+                    userRoleList.add(userRole);
+                    userRoleLookup.put(userIdentifier, userRoleList);
+                }
+            }
+        }
+        
+        return userRoleLookup;
+    }
+    
+    /**
+     * 
+     * @param userId
+     * @return 
+     */
     private String getUserRolesAsString(Integer userId) {
         String retval = "";
         String userIdentifier = "";
