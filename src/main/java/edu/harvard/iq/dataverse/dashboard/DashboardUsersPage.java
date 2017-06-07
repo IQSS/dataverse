@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.userdata.OffsetPageValues;
-import edu.harvard.iq.dataverse.userdata.SingleUserView;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import java.text.NumberFormat;
 import java.util.List;
