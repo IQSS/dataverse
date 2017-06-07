@@ -74,7 +74,6 @@ public class DatasetVersion implements Serializable {
     //IMPORTANT: If you add a new value to this enum, you will also have to modify the
     // StudyVersionsFragment.xhtml in order to display the correct value from a Resource Bundle
     public enum VersionState {
-
         DRAFT, RELEASED, ARCHIVED, DEACCESSIONED
     };
 
@@ -82,15 +81,73 @@ public class DatasetVersion implements Serializable {
         NONE, CC0
     }
 
-
-    public DatasetVersion() {
-
-    }
-
+    public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
+    public static final int VERSION_NOTE_MAX_LENGTH = 1000;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    private String UNF;
 
+    @Version
+    private Long version;
+
+    private Long versionNumber;
+    private Long minorVersionNumber;
+    
+    @Column(length = VERSION_NOTE_MAX_LENGTH)
+    private String versionNote;
+    
+    /**
+     * @todo versionState should never be null so when we are ready, uncomment
+     * the `nullable = false` below.
+     */
+//    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private VersionState versionState;
+
+    @ManyToOne
+    private Dataset dataset;
+
+    @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
+    private List<FileMetadata> fileMetadatas = new ArrayList();
+    
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
+    @JoinColumn(name = "termsOfUseAndAccess_id")
+    private TermsOfUseAndAccess termsOfUseAndAccess;
+    
+    @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetField> datasetFields = new ArrayList();
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @Column( nullable=false )
+    private Date createTime;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @Column( nullable=false )
+    private Date lastUpdateTime;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date releaseTime;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date archiveTime;
+    
+    @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
+    private String archiveNote;
+    
+    private String deaccessionLink;
+    
+    private boolean inReview;
+
+    @Transient
+    private String contributorNames;
+
+    @OneToMany(mappedBy="datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetVersionUser> datasetVersionUsers;
+    
     public Long getId() {
         return this.id;
     }
@@ -106,7 +163,6 @@ public class DatasetVersion implements Serializable {
     public void setUNF(String UNF) {
         this.UNF = UNF;
     }
-    
 
     /**
      * This is JPA's optimistic locking mechanism, and has no semantic meaning in the DV object model.
@@ -119,33 +175,6 @@ public class DatasetVersion implements Serializable {
     public void setVersion(Long version) {
     }
     
-    private String UNF;
-
-    @Version
-    private Long version;
-
-    private Long versionNumber;
-    private Long minorVersionNumber;
-    public static final int VERSION_NOTE_MAX_LENGTH = 1000;
-    @Column(length = VERSION_NOTE_MAX_LENGTH)
-    private String versionNote;
-    
-    /**
-     * @todo versionState should never be null so when we are ready, uncomment
-     * the `nullable = false` below.
-     */
-//    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private VersionState versionState;
-
-
-    @ManyToOne
-    private Dataset dataset;
-
-    @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
-    private List<FileMetadata> fileMetadatas = new ArrayList();
-
     public List<FileMetadata> getFileMetadatas() {
         return fileMetadatas;
     }
@@ -159,11 +188,6 @@ public class DatasetVersion implements Serializable {
         this.fileMetadatas = fileMetadatas;
     }
     
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
-    @JoinColumn(name = "termsOfUseAndAccess_id")
-    private TermsOfUseAndAccess termsOfUseAndAccess;
-
-
     public TermsOfUseAndAccess getTermsOfUseAndAccess() {
         return termsOfUseAndAccess;
     }
@@ -171,11 +195,7 @@ public class DatasetVersion implements Serializable {
     public void setTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
         this.termsOfUseAndAccess = termsOfUseAndAccess;
     }
-
-    @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    //@OrderBy("datasetField.displayOrder") 
-    private List<DatasetField> datasetFields = new ArrayList();
-
+    
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
     }
@@ -191,37 +211,14 @@ public class DatasetVersion implements Serializable {
         }
         this.datasetFields = datasetFields;
     }
-
-    /*
-     @OneToMany(mappedBy="studyVersion", cascade={CascadeType.REMOVE, CascadeType.PERSIST})
-     private List<VersionContributor> versionContributors;
-     */
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
-    private Date createTime;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
-    private Date lastUpdateTime;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date releaseTime;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date archiveTime;
-    public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
-    @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
-    private String archiveNote;
-    private String deaccessionLink;
     
-
-    
-
-    
-    private boolean inReview;
     public void setInReview(boolean inReview){
         this.inReview = inReview;
     }
 
     /**
      * The only time a dataset can be in review is when it is in draft.
+     * @return 
      */
     public boolean isInReview() {
         if (versionState != null && versionState.equals(VersionState.DRAFT)) {
@@ -230,30 +227,6 @@ public class DatasetVersion implements Serializable {
             return false;
         }
     }
-
-
-    
-    /**
-     * Quick hack to disable <script> tags
-     * for Terms of Use and Terms of Access.
-     * 
-     * Need to add jsoup or something similar.
-     * 
-     * @param str
-     * @return 
-     */
-    private String stripScriptTags(String str){        
-        if (str == null){
-            return null;
-        }
-
-        str = str.replaceAll("(?i)<script\\b[^<]*(?:(?!<\\/script>)<[^<]*)*<\\/script>", "");
-        str = str.replaceAll("(?i)<\\/script>", "");
-        str = str.replaceAll("(?i)<script\\b", "");
-
-        return str;
-    }
-
 
     public Date getArchiveTime() {
         return archiveTime;
@@ -326,9 +299,6 @@ public class DatasetVersion implements Serializable {
         this.releaseTime = releaseTime;
     }
 
-    @OneToMany(mappedBy="datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetVersionUser> datasetVersionUsers;
-
     public List<DatasetVersionUser> getDatasetVersionUsers() {
         return datasetVersionUsers;
     }
@@ -347,9 +317,6 @@ public class DatasetVersion implements Serializable {
         }
         return ret;
     }
-
-    @Transient
-    private String contributorNames;
 
     public String getContributorNames() {
         return contributorNames;
@@ -444,7 +411,6 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setVersionState(VersionState versionState) {
-
         this.versionState = versionState;
     }
 

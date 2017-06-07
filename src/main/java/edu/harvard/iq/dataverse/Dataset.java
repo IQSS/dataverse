@@ -74,7 +74,7 @@ import org.hibernate.validator.constraints.NotBlank;
         uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
 public class Dataset extends DvObjectContainer {
     private static final Logger logger = Logger.getLogger(Dataset.class.getCanonicalName());
-
+    
 //    public static final String REDIRECT_URL = "/dataset.xhtml?persistentId=";
     public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
@@ -89,20 +89,25 @@ public class Dataset extends DvObjectContainer {
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
+    
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastExportTime;
 
     @NotBlank(message = "Please enter an identifier for your dataset.")
     @Column(nullable = false)
     private String identifier;
+    
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("versionNumber DESC, minorVersionNumber DESC")
     private List<DatasetVersion> versions = new ArrayList();
+    
     @OneToOne(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private DatasetLock datasetLock;
+    
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "thumbnailfile_id")
     private DataFile thumbnailFile;
+    
     /**
      * By default, Dataverse will attempt to show unique thumbnails for datasets
      * based on images that have been uploaded to them. Setting this to true
