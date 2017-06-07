@@ -21,8 +21,8 @@ public class BrandingUtilTest {
     @Test
     public void testGetSupportTeamName() throws AddressException, UnsupportedEncodingException {
         System.out.println("testGetSupportTeamName");
-        assertEquals("Dataverse Support", BrandingUtil.getSupportTeamName(null, null));
-        assertEquals("Dataverse Support", BrandingUtil.getSupportTeamName(null, ""));
+        assertEquals("Support", BrandingUtil.getSupportTeamName(null, null));
+        assertEquals("Support", BrandingUtil.getSupportTeamName(null, ""));
         assertEquals("LibraScholar Support", BrandingUtil.getSupportTeamName(null, "LibraScholar"));
         assertEquals("LibraScholar Support", BrandingUtil.getSupportTeamName(new InternetAddress("support@librascholar.edu"), "LibraScholar"));
         assertEquals("LibraScholar Support Team", BrandingUtil.getSupportTeamName(new InternetAddress("support@librascholar.edu", "LibraScholar Support Team"), "LibraScholar"));
@@ -102,7 +102,7 @@ public class BrandingUtilTest {
     @Test
     public void testGetContactHeader() {
         System.out.println("testGetContactHeader");
-        assertEquals("Contact Dataverse Support", BrandingUtil.getContactHeader(null, null));
+        assertEquals("Contact Support", BrandingUtil.getContactHeader(null, null));
     }
 
 }

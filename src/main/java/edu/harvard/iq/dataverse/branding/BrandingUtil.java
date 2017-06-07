@@ -18,10 +18,10 @@ public class BrandingUtil {
             }
         }
         if (rootDataverseName != null && !rootDataverseName.isEmpty()) {
-            return BundleUtil.getStringFromBundle("contact.support.dynamic", Arrays.asList(rootDataverseName));
+            return rootDataverseName + " " + BundleUtil.getStringFromBundle("contact.support");
         }
         String saneDefault = BundleUtil.getStringFromBundle("dataverse");
-        return BundleUtil.getStringFromBundle("contact.support.dynamic", Arrays.asList(saneDefault));
+        return BundleUtil.getStringFromBundle("contact.support", Arrays.asList(saneDefault));
     }
 
     public static String getSupportTeamEmailAddress(InternetAddress systemAddress) {
