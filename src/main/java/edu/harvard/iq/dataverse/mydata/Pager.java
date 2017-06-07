@@ -364,10 +364,13 @@ public class Pager {
         // pageNumberList
         // --------------------
         JsonArrayBuilder jsonPageNumberArrayBuilder = Json.createArrayBuilder();
-        for (int pg : this.pageNumberList){
-            jsonPageNumberArrayBuilder.add(pg);
+        if (this.pageNumberList != null) {
+            for (int pg : this.pageNumberList) {
+                jsonPageNumberArrayBuilder.add(pg);
+            }
+            jsonPageInfo.add("pageNumberList", jsonPageNumberArrayBuilder);
         }
-        jsonPageInfo.add("pageNumberList", jsonPageNumberArrayBuilder);
+
         // --------------------
    
         return jsonPageInfo;

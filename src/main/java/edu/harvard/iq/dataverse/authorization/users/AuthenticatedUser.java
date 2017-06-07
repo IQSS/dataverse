@@ -132,6 +132,33 @@ public class AuthenticatedUser implements User, Serializable {
             setPosition( inf.getPosition());
         }
     }
+
+
+    //For User List Admin dashboard
+    @Transient
+    private String roles;
+    
+    public String getRoles() {
+        return roles;
+    }
+
+    public void setRoles(String roles) {
+        this.roles = roles;
+    }
+
+    //For User List Admin dashboard    
+    @Transient
+    private Integer rowNum;
+
+    public Integer getRowNum() {
+        return rowNum;
+    }
+
+    public void setRowNum(Integer rowNum) {
+        this.rowNum = rowNum;
+    }
+    
+    
     
     @Override
     public boolean isAuthenticated() { return true; }

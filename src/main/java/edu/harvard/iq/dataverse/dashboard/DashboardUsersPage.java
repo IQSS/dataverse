@@ -39,7 +39,7 @@ public class DashboardUsersPage implements java.io.Serializable {
     private UserListMaker userListMaker = null;
 
     private Pager pager;
-    private List<SingleUserView> userList;
+    private List<AuthenticatedUser> userList;
     
     private String searchTerm;
 
@@ -89,7 +89,7 @@ public class DashboardUsersPage implements java.io.Serializable {
          * (3) Run the search and update the user list 
          */
         String sortKey = null;
-        this.userList = userService.getUserListAsSingleUserObjects(searchTerm, sortKey, UserListMaker.ITEMS_PER_PAGE, offsetPageValues.getOffset());
+        this.userList = userService.getAuthenticatedUserList(searchTerm, sortKey, UserListMaker.ITEMS_PER_PAGE, offsetPageValues.getOffset());
 
         msg("userList size: " + userList.size());
 
@@ -124,8 +124,7 @@ public class DashboardUsersPage implements java.io.Serializable {
         return userService.getSuperUserCount();
     }
 
-        
-    public List<SingleUserView> getUserList() {
+    public List<AuthenticatedUser> getUserList() {
         return this.userList;
     }
 

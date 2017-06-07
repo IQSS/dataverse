@@ -116,15 +116,15 @@ public class UserServiceBean {
     }
     
     /**
-     * Return the user information as a List of SingleUserView objects -- easier to work with in the UI
-     * 
+     * Return the user information as a List of AuthenticatedUser objects -- easier to work with in the UI
+     * - With Role added as a transient field
      * @param searchTerm
      * @param sortKey
      * @param resultLimit
      * @param offset
      * @return 
      */
-    public List<SingleUserView> getUserListAsSingleUserObjects(String searchTerm, String sortKey, Integer resultLimit, Integer offset){
+    public List<AuthenticatedUser> getAuthenticatedUserList(String searchTerm, String sortKey, Integer resultLimit, Integer offset){
         
         if ((offset == null)||(offset < 0)){
             offset = 0;
@@ -132,27 +132,43 @@ public class UserServiceBean {
         
         List<Object[]> userResults = getUserListCore(searchTerm, sortKey, resultLimit, offset);
         
-        // Initialize empty list for SingleUserView objects
+        // Initialize empty list for AuthenticatedUser objects
         //
-        List<SingleUserView> viewObjects = new ArrayList<>();
+        List<AuthenticatedUser> viewObjects = new ArrayList<>();
         
         if (userResults == null){
             return viewObjects;
         }
         
         // -------------------------------------------------
-        // We have results, format them into SingleUserView objects
+        // We have results, format them into AuthenticatedUser objects
         // -------------------------------------------------
         int rowNum = offset++;   // used for the rowNumber
         for (Object[] dbResultRow : userResults) {            
             rowNum++;
             String roles = getUserRolesAsString((Integer) dbResultRow[0]);
-            SingleUserView singleUser = new SingleUserView(dbResultRow, roles, rowNum);            
+            AuthenticatedUser singleUser = createAuthenticatedUserForView(dbResultRow, roles, rowNum);            
             viewObjects.add(singleUser);
         }
         
         return viewObjects;
     }
+    
+    private AuthenticatedUser createAuthenticatedUserForView (Object[] dbRowValues, String roles, int rowNum){
+        AuthenticatedUser user = new AuthenticatedUser();
+        user.setRowNum(rowNum);
+        user.setId(new Long((Integer)dbRowValues[0]));
+        user.setUserIdentifier((String)dbRowValues[1]);
+        user.setLastName(UserUtil.getStringOrNull(dbRowValues[2]));
+        user.setFirstName(UserUtil.getStringOrNull(dbRowValues[3]));
+        user.setEmail(UserUtil.getStringOrNull(dbRowValues[4]));
+        user.setAffiliation(UserUtil.getStringOrNull(dbRowValues[5]));
+        user.setSuperuser((Boolean)(dbRowValues[6]));
+        user.setPosition(UserUtil.getStringOrNull(dbRowValues[7]));
+        user.setModificationTime(UserUtil.getTimestampOrNull(dbRowValues[8]));
+        user.setRoles(roles);
+        return user;
+    } 
     
     private String getUserRolesAsString(Integer userId) {
         String retval = "";
@@ -210,8 +226,7 @@ public class UserServiceBean {
             offset = 0;
         }
         
-              
-        // NOTE: IF YOU CHANGE THIS QUERY, THEN CHANGE: SingleUserView.java
+        //Results of thius query are used to build Authenticated User records
 
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";
@@ -227,7 +242,7 @@ public class UserServiceBean {
         System.out.println("--------------\n\n" + qstr);
         
         Query nativeQuery = em.createNativeQuery(qstr);          
-        nativeQuery.setParameter("searchTerm", formatSearchTerm(searchTerm));  
+        //nativeQuery.setParameter("searchTerm", formatSearchTerm(searchTerm));  
 
         
         return nativeQuery.getResultList();
@@ -247,17 +262,17 @@ public class UserServiceBean {
             return "";
         }
         
-        /*
+       
         String searchClause = " WHERE u.useridentifier LIKE '%" + searchTerm +"%'";
-        searchClause += " OR u.firstname LIKE '%" + searchTerm +"%'";
-        searchClause += " OR u.lastname LIKE '%" + searchTerm +"%'";
-        searchClause += " OR u.email LIKE '%" + searchTerm +"%'";
+        searchClause += " OR u.firstname ILIKE '%" + searchTerm +"%'";
+        searchClause += " OR u.lastname ILIKE '%" + searchTerm +"%'";
+        searchClause += " OR u.email ILIKE '%" + searchTerm +"%'";
+        /*
+        String searchClause = " WHERE u.useridentifier ILIKE :searchTerm";
+        searchClause += " OR u.firstname ILIKE :searchTerm";
+        searchClause += " OR u.lastname ILIKE :searchTerm"; 
+        searchClause += " OR u.email ILIKE :searchTerm"; 
         */
-        String searchClause = " WHERE u.useridentifier ILIKE #searchTerm";
-        searchClause += " OR u.firstname ILIKE #searchTerm";
-        searchClause += " OR u.lastname ILIKE #searchTerm"; 
-        searchClause += " OR u.email ILIKE #searchTerm"; 
-        
         return searchClause;
     }
     
