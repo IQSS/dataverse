@@ -138,11 +138,6 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>iqss</groupId>
-            <artifactId>dataverseStepProvider</artifactId>
-            <version>0.5.5</version>
-        </dependency>
-        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <version>7.0</version>
