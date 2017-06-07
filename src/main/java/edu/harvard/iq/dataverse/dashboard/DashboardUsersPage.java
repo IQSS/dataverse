@@ -57,6 +57,12 @@ public class DashboardUsersPage implements java.io.Serializable {
         return null;
     }
     
+    public boolean runUserSearchWithPage(Integer pageNumber){
+        System.err.println("runUserSearchWithPage");
+        setSelectedPage(pageNumber);
+        runUserSearch();
+        return true;
+    }
     
     public boolean runUserSearch(){
 
@@ -92,13 +98,39 @@ public class DashboardUsersPage implements java.io.Serializable {
 
         msg("userList size: " + userList.size());
 
-        pager = new Pager(userCount.intValue(), itemsPerPage, getSelectedPage());
+        makeNewPager(userCount.intValue(), itemsPerPage, getSelectedPage());
 
         msg("pager: " + pager.asJSONString());
 
         return true;
     }
 
+    /** 
+     * Make sure there is a pager--even if the user count is 0
+     * 
+     * @param userCount
+     * @param displayItemsPerPage
+     * @param chosenPage
+     * @return 
+     */
+    private boolean makeNewPager(Integer userCount, Integer displayItemsPerPage, Integer chosenPage){
+        
+        if (userCount == null){
+            userCount = 0;
+        }
+        if (chosenPage == null){
+            chosenPage = 1;
+        }
+        if (displayItemsPerPage == null){
+            displayItemsPerPage = UserListMaker.ITEMS_PER_PAGE;
+        }
+        
+        pager = new Pager(userCount, displayItemsPerPage, chosenPage);
+        
+        return true;
+    }
+
+    
     public String getListUsersAPIPath() {
         //return "ok";
         return Admin.listUsersFullAPIPath;

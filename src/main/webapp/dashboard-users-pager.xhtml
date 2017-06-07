@@ -27,43 +27,72 @@
             </div>
         
             <div class="col-xs-12 col-md-9">
-    
+                <ui:fragment rendered="#{!listPager.pagerNecessary}">
+                    &#160;
+                </ui:fragment>
+
             <ui:fragment rendered="#{listPager.pagerNecessary}">
-                <ul>
+
+                <ul class="pagination">
                 <!-- previous page controls -->
                 <ui:fragment rendered="#{listPager.hasPreviousPageNumber()}">
-                   <li><a aria-label="First" class="page_link" rel="1"><span aria-hidden="true">&lt;&lt;</span></a></li>
-                   <li><a aria-label="Previous" class="page_link" rel="#{listPager.previousPageNumber}"><span aria-hidden="true">&lt; Previous</span></a></li>
+                   <li><p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(1)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">                       
+                           <span aria-hidden="true">&lt;&lt;</span>
+                        </p:commandLink>
+                   </li>
+                   <li>
+                       <p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(listPager.previousPageNumber)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                            <span aria-hidden="true">&lt; Previous</span>
+                        </p:commandLink>
+                   </li>
                 </ui:fragment>
+               
                 <ui:fragment rendered="#{!listPager.hasPreviousPageNumber()}">
                    <li class="disabled"><a aria-label="First"><span aria-hidden="true">&lt;&lt;</span></a></li>
                    <li class="disabled"><a aria-label="Previous"><span aria-hidden="true">&lt; Previous</span></a></li>
                 </ui:fragment>
 
-
                 <!-- page numbers -->
                 <ui:repeat value="#{listPager.getPageListAsIntegerList()}" var="pg">
                     <ui:fragment rendered="#{pg == listPager.selectedPageNumber}">
-                       <li class="active"><a rel="#{pg}" class="page_link">#{pg}</a></li>
+                        <li class="active">
+                            <p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(pg)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                #{pg}
+                            </p:commandLink>
+                       </li>
                     </ui:fragment>
                     <ui:fragment rendered="#{pg != listPager.selectedPageNumber}">
-                       <li><a rel="#{pg}" class="page_link">#{pg}</a></li>
+                        <li>
+                            <p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(pg)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                #{pg}
+                            </p:commandLink>
+                       </li>
                     </ui:fragment>
                 </ui:repeat>
  
                 
                 <!-- next page | last page -->
                 <ui:fragment rendered="#{listPager.hasNextPageNumber()}">
-                    <li><a href="#" aria-label="Next" class="page_link" rel="#{listPager.nextPageNumber}"><span aria-hidden="true">Next &gt;</span></a></li>
-                    <li><a href="#" aria-label="Last" class="page_link" rel="#{listPager.pageCount}"><span aria-hidden="true">&gt;&gt;</span></a></li>
+                    <li>
+                        <p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(listPager.nextPageNumber)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                            <span aria-hidden="true">Next &gt;</span>
+                        </p:commandLink>
+                    </li>
+                    <li>
+                        <p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(listPager.pageCount)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                            <span aria-hidden="true">&gt;&gt;</span>
+                        </p:commandLink>
+                    </li>
                 </ui:fragment>
+
                 <ui:fragment rendered="#{!listPager.hasNextPageNumber()}">
                     <li class="disabled"><a href="#" aria-label="Next"><span aria-hidden="true">Next &gt;</span></a></li>
                     <li class="disabled"><a href="#" aria-label="Last"><span aria-hidden="true">&gt;&gt;</span></a></li>
                 </ui:fragment>
+
+
                 </ul>
-                page count: #{listPager.pageCount}<br />
-             
+                <!--page count: #{listPager.pageCount}<br />-->
             </ui:fragment>
             </div>
         </div>

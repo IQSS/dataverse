@@ -40,6 +40,10 @@
                         </div>
                     </div>
                     
+                    <ui:include src="dashboard-users-pager.xhtml">
+                        <ui:param name="listPager" value="#{DashboardUsersPage.pager}" />
+                    </ui:include>
+
                     <p:dataTable value="#{DashboardUsersPage.userList}"  var="user" widgetVar="userTable">
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.rowNumber']}">
                             <h:outputText value="#{user.rowNum}" />
@@ -79,10 +83,7 @@
 
                     </p:dataTable>                 
 
-                    <ui:include src="dashboard-users-pager.xhtml">
-                        <ui:param name="listPager" value="#{DashboardUsersPage.pager}" />
-                    </ui:include>
-
+                   
                 </h:form>
             </ui:define>
         </ui:composition>
