@@ -1,6 +1,12 @@
 SWORD API
 =========
 
+.. contents:: |toctitle|
+	:local:
+
+About
+-----
+
 SWORD_ stands for "Simple Web-service Offering Repository Deposit" and is a "profile" of AtomPub (`RFC 5023`_) which is a RESTful API that allows non-Dataverse software to deposit files and metadata into a Dataverse installation. :ref:`client-libraries` are available in Python, Java, R, Ruby, and PHP.
 
 Introduced in Dataverse Network (DVN) `3.6 <http://guides.dataverse.org/en/3.6.2/dataverse-api-main.html#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs continue to work (with deprecation warnings). Due to architectural changes and security improvements (especially the introduction of API tokens) in Dataverse 4.0, a few backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
@@ -16,8 +22,6 @@ As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse 4.0 datas
 .. _RFC 5023: https://tools.ietf.org/html/rfc5023
 
 .. _SWORDv2 specification: http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html
-
-.. contents::
 
 .. _incompatible:
 

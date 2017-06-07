@@ -1,6 +1,8 @@
 # Contributing to Dataverse
 
-Thank you for your interest in contributing to Dataverse! We welcome contributions of ideas, bug reports, usability testing, documentation, code, and more!
+Thank you for your interest in contributing to Dataverse!  We are open to contributions from everyone. You don't need permission to participate, just jump in using the resources below.  If you have questions, reach out to us on the [#dataverse IRC channel][], and hang around a while, as it may take time for community members to de-idle.
+
+We aren't just looking for developers, there are many ways to contribute to Dataverse.  We welcome contributions of ideas, bug reports, usability research/feedback, documentation, code, and more!
 
 ## Ideas/Feature Requests
 

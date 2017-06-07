@@ -4,7 +4,8 @@ Installation
 
 Now that the :doc:`prerequisites` are in place, we are ready to execute the Dataverse installation script (the "installer") and verify that the installation was successful by logging in with a "superuser" account.
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 .. _dataverse-installer:
 
