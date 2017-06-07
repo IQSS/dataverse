@@ -4,7 +4,8 @@ Testing
 
 For testing in Dataverse, JUnit passes along test information to utilities like `Coveralls <https://coveralls.io/github/IQSS/dataverse>`_ which builds a quantifiable report of how much code coverage (% of code with verifiable tests) the project’s codebase has. We encourage test-driven development to help ensure new code has functional backend logic that can be repeated and help diagnose issues within the app.
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Unit Tests
 ----------

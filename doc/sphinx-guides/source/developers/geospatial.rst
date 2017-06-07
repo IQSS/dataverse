@@ -2,7 +2,8 @@
 Geospatial Data
 ===============
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 How Dataverse Ingests Shapefiles
 --------------------------------
