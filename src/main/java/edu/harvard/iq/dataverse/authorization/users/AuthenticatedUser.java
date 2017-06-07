@@ -158,6 +158,30 @@ public class AuthenticatedUser implements User, Serializable {
         this.rowNum = rowNum;
     }
     
+    //For User List Admin dashboard - AuthenticatedProviderId
+    @Transient
+    private String authProviderId;    
+
+    public String getAuthProviderId() {
+        return authProviderId;
+    }
+
+    public void setAuthProviderId(String authProviderId) {
+        this.authProviderId = authProviderId;
+    }
+    
+    
+    @Transient
+    private String authProviderFactoryAlias;    
+
+    public String getAuthProviderFactoryAlias() {
+        return authProviderFactoryAlias;
+    }
+
+    public void setAuthProviderFactoryAlias(String authProviderFactoryAlias) {
+        this.authProviderFactoryAlias = authProviderFactoryAlias;
+    }
+    
     
     
     @Override

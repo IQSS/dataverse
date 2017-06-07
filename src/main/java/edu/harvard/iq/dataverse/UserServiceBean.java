@@ -91,7 +91,7 @@ public class UserServiceBean {
                     .add("position", UserUtil.getStringOrNull(result[7]))
                     .add("modificationTime", UserUtil.getTimestampStringOrNull(result[8]))
                     .add("authProviderId", UserUtil.getStringOrNull(result[9]))
-                    .add("authFactoryAlias", UserUtil.getStringOrNull(result[10]));
+                    .add("authProviderFactoryAlias", UserUtil.getStringOrNull(result[10]));
 
             jsonUserListArray.add(singleUserData);            
         }
@@ -166,6 +166,9 @@ public class UserServiceBean {
         user.setSuperuser((Boolean)(dbRowValues[6]));
         user.setPosition(UserUtil.getStringOrNull(dbRowValues[7]));
         user.setModificationTime(UserUtil.getTimestampOrNull(dbRowValues[8]));
+        user.setAuthProviderId(UserUtil.getStringOrNull(dbRowValues[9]));
+        user.setAuthProviderFactoryAlias(UserUtil.getStringOrNull(dbRowValues[10]));
+        
         user.setRoles(roles);
         return user;
     } 

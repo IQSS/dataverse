@@ -77,6 +77,10 @@
                             <h:outputText value="#{user.roles}" />
                         </p:column>
 
+                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.authProviderFactoryAlias']}">
+                            <h:outputText value="#{user.authProviderFactoryAlias}" />
+                        </p:column>                    
+
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
                             <h:outputText value="#{user.isSuperuser()}" />
                         </p:column>                    
