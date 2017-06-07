@@ -203,6 +203,7 @@ public class MailServiceBean implements java.io.Serializable {
     }
         
     private String getSubjectTextBasedOnNotification(UserNotification userNotification) {
+        String rootDataverseName = dataverseService.findRootDataverse().getName();
         switch (userNotification.getType()) {
             case ASSIGNROLE:
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.assign.role.subject");
@@ -229,7 +230,7 @@ public class MailServiceBean implements java.io.Serializable {
             case RETURNEDDS:
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.returned.dataset.subject");
             case CREATEACC:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.create.account.subject");
+                return BundleUtil.getStringFromBundle("notification.email.create.account.subject", Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName)));
             case CHECKSUMFAIL:
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.checksumfail.subject");
             case FILESYSTEMIMPORT:

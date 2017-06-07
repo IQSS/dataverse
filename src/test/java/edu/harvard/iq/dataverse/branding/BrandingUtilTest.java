@@ -88,6 +88,18 @@ public class BrandingUtilTest {
     }
 
     @Test
+    public void testEmailSubject() {
+        System.out.println("testEmailSubject");
+        String message = BundleUtil.getStringFromBundle("notification.email.create.account.subject",
+                Arrays.asList(
+                        "LibraScholar"
+                ));
+        System.out.println("message: " + message);
+        assertEquals("LibraScholar: Your account has been created",
+                message);
+    }
+
+    @Test
     public void testGetContactHeader() {
         System.out.println("testGetContactHeader");
         assertEquals("Contact Dataverse Support", BrandingUtil.getContactHeader(null, null));
