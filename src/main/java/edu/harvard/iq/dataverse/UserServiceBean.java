@@ -228,6 +228,13 @@ public class UserServiceBean {
         
         //Results of thius query are used to build Authenticated User records
 
+        String sharedSearchClause = getSharedSearchClause(searchTerm);
+        if (sharedSearchClause.isEmpty()){
+            sharedSearchClause = "";
+        }else{
+            sharedSearchClause = " AND " + sharedSearchClause;
+        }
+        
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";
         qstr += " u.affiliation, u.superuser,";
@@ -236,12 +243,17 @@ public class UserServiceBean {
         qstr += " FROM authenticateduser u,";
         qstr += " authenticateduserlookup prov_lookup,";
         qstr += " authenticationproviderrow prov";
-        qstr += getSharedSearchClause(searchTerm);
+        qstr += " WHERE";
+        qstr += " u.id = prov_lookup.authenticateduser_id";
+        qstr += " AND prov_lookup.authenticationproviderid = prov.id";       
+        qstr += sharedSearchClause;
         qstr += " ORDER BY u.useridentifier";
         qstr += " LIMIT " + resultLimit;
         qstr += " OFFSET " + offset;
         qstr += ";";
         
+        System.out.println("getUserCount: " + qstr);
+
         Query nativeQuery = em.createNativeQuery(qstr);           
        
         return nativeQuery.getResultList();
@@ -260,10 +272,9 @@ public class UserServiceBean {
         if (searchTerm.isEmpty()){
             return "";
         }
-      
-        String searchClause = " WHERE";
-        searchClause += " u.id = prov_lookup.authenticateduser_id";
-        searchClause += " prov_lookup.authenticationproviderid = prov.id";
+
+        String searchClause = "";
+        
         searchClause += " u.useridentifier LIKE '%" + searchTerm +"%'";
         searchClause += " OR u.firstname ILIKE '%" + searchTerm +"%'";
         searchClause += " OR u.lastname ILIKE '%" + searchTerm +"%'";
@@ -309,10 +320,18 @@ public class UserServiceBean {
             searchTerm = "";
         }        
 
+        String sharedSearchClause = getSharedSearchClause(searchTerm);
+        if (sharedSearchClause.isEmpty()){
+            sharedSearchClause = "";
+        }else{
+            sharedSearchClause = " WHERE " + sharedSearchClause;
+        }
         String qstr = "SELECT count(u.id)";
         qstr += " FROM authenticateduser u";
-        qstr += getSharedSearchClause(searchTerm);
+        qstr += sharedSearchClause;
         qstr += ";";
+        
+        System.out.println("getUserCount: " + qstr);
         
         Query nativeQuery = em.createNativeQuery(qstr);  
         

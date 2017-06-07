@@ -31,7 +31,6 @@ public class UserListMaker {
      * Constructor
      */
     public UserListMaker(UserServiceBean userService) {
-        this.msgt("MyDataFinder, constructor");
         this.userService = userService;
     }
     
