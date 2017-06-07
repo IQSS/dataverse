@@ -730,7 +730,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
             //fmd.setRestricted(restricted);
             Command cmd;
-            logger.info("editdatafilespage");
             cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
             commandEngine.submit(cmd);
                        

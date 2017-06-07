@@ -67,19 +67,34 @@ public class RestrictFileCommand extends AbstractVoidCommand {
                 throw new CommandExecutionException("File " + file.getDisplayName() + " is already " + text, this);
             }
 
-        //TODO: do we need this check? SF
             // check if this dataset is a draft (should be), then we can update restrict
             if (workingVersion.isDraft()) {
-                for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
-                    if (file.equals(fmw.getDataFile())) {
-                        fmw.setRestricted(restrict);
+                // required for updating from a published version to a draft
+                // because we must update the working version metadata
+                if (dataset.isReleased()){
+                    for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
+                        if (file.equals(fmw.getDataFile())) {
+                            fmw.setRestricted(restrict);
+                            if (!file.isReleased()) {
+                                file.setRestricted(restrict); 
+                            }
 
-                        if (!file.isReleased()) {
-                            file.setRestricted(restrict); 
                         }
+
                     }
                 }
-
+                else {
+                    file.getFileMetadata().setRestricted(restrict);
+                    if (!file.isReleased()) {
+                        file.setRestricted(restrict);
+                    }
+                    if (file.getFileMetadata().isRestricted() != restrict) {
+                        throw new CommandExecutionException("Failed to update the file metadata", this);
+                    }
+                }
+            }
+            else{
+                throw new CommandExecutionException("Working version must be a draft", this);
             }
 
 
