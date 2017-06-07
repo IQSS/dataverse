@@ -103,7 +103,8 @@ public class MailServiceBean implements java.io.Serializable {
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
         boolean sent = false;
-        String body = messageText + ResourceBundle.getBundle("Bundle").getString("notification.email.closing");
+        String rootDataverseName = dataverseService.findRootDataverse().getName();
+        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName)));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
              Message msg = new MimeMessage(session);

@@ -76,6 +76,18 @@ public class BrandingUtilTest {
     }
 
     @Test
+    public void testEmailClosing() {
+        System.out.println("testEmailClosing");
+        String message = BundleUtil.getStringFromBundle("notification.email.closing",
+                Arrays.asList(
+                        "LibraScholar"
+                ));
+        System.out.println("message: " + message);
+        assertEquals("\n\nThank you,\nLibraScholar",
+                message);
+    }
+
+    @Test
     public void testGetContactHeader() {
         System.out.println("testGetContactHeader");
         assertEquals("Contact Dataverse Support", BrandingUtil.getContactHeader(null, null));
