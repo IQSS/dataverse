@@ -117,6 +117,25 @@ If you do have push access to https://github.com/IQSS/dataverse clone it:
 
 ``git clone git@github.com:IQSS/dataverse.git``
 
+Building the WAR File
+~~~~~~~~~~~~~~~~~~~~~
+
+Soon, we'll be running the Dataverse installer, but before we do, we must build the Dataverse application, which is delivered as a "WAR" file. WAR stands for "Web application ARchive" and you can read more about this packaging format at https://en.wikipedia.org/wiki/WAR_(file_format)
+
+The first time you build the war file, it may take a few minutes while dependencies are downloaded from Maven Central.
+
+We'll describe below how to build the WAR file from both Netbean and the terminal, but in both cases, you'll want to see the output "BUILD SUCCESS".
+
+Building the War File from Netbeans
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+From Netbeans, click "Run" and then "Build Project (dataverse)".
+
+Building the War File from the Terminal
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+After cloning the git repo, you need to ``cd`` into ``dataverse`` and run ``mvn package``. If you don't have the ``mvn`` command available to you, you need to install Maven, which is mentioned in the :doc:`tools` section.
+
 Installing and Running Solr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -139,7 +158,7 @@ Once some dataverses, datasets, and files have been created and indexed, you can
 Run Installer
 ~~~~~~~~~~~~~
 
-Once you install Glassfish and PostgreSQL, you need to configure the environment for the Dataverse app - configure the database connection, set some options, etc. We have a new installer script that should do it all for you. Again, assuming that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects:
+Now that you have all the prerequisites in place, you need to configure the environment for the Dataverse app - configure the database connection, set some options, etc. We have an installer script that should do it all for you. Again, assuming that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects:
 
 ``cd ~/NetBeansProjects/dataverse/scripts/installer``
 
