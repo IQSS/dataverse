@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.SystemEmail;
 import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.mail.internet.AddressException;
@@ -29,39 +30,40 @@ public class MailUtil {
     }
 
     public static String getSubjectTextBasedOnNotification(UserNotification userNotification, String rootDataverseName) {
+        List<String> rootDvNameAsList = Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName));
         switch (userNotification.getType()) {
             case ASSIGNROLE:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.assign.role.subject");
+                return BundleUtil.getStringFromBundle("notification.email.assign.role.subject", rootDvNameAsList);
             case REVOKEROLE:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.revoke.role.subject");
+                return BundleUtil.getStringFromBundle("notification.email.revoke.role.subject", rootDvNameAsList);
             case CREATEDV:
-                return BundleUtil.getStringFromBundle("notification.email.create.dataverse.subject", Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName)));
+                return BundleUtil.getStringFromBundle("notification.email.create.dataverse.subject", rootDvNameAsList);
             case REQUESTFILEACCESS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.request.file.access.subject");
+                return BundleUtil.getStringFromBundle("notification.email.request.file.access.subject", rootDvNameAsList);
             case GRANTFILEACCESS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.grant.file.access.subject");
+                return BundleUtil.getStringFromBundle("notification.email.grant.file.access.subject", rootDvNameAsList);
             case REJECTFILEACCESS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.rejected.file.access.subject");
+                return BundleUtil.getStringFromBundle("notification.email.rejected.file.access.subject", rootDvNameAsList);
             case MAPLAYERUPDATED:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.update.maplayer");
+                return BundleUtil.getStringFromBundle("notification.email.update.maplayer", rootDvNameAsList);
             case MAPLAYERDELETEFAILED:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.maplayer.deletefailed.subject");
+                return BundleUtil.getStringFromBundle("notification.email.maplayer.deletefailed.subject", rootDvNameAsList);
             case CREATEDS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.create.dataset.subject");
+                return BundleUtil.getStringFromBundle("notification.email.create.dataset.subject", rootDvNameAsList);
             case SUBMITTEDDS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.submit.dataset.subject");
+                return BundleUtil.getStringFromBundle("notification.email.submit.dataset.subject", rootDvNameAsList);
             case PUBLISHEDDS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.publish.dataset.subject");
+                return BundleUtil.getStringFromBundle("notification.email.publish.dataset.subject", rootDvNameAsList);
             case RETURNEDDS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.returned.dataset.subject");
+                return BundleUtil.getStringFromBundle("notification.email.returned.dataset.subject", rootDvNameAsList);
             case CREATEACC:
-                return BundleUtil.getStringFromBundle("notification.email.create.account.subject", Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName)));
+                return BundleUtil.getStringFromBundle("notification.email.create.account.subject", rootDvNameAsList);
             case CHECKSUMFAIL:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.checksumfail.subject");
+                return BundleUtil.getStringFromBundle("notification.email.checksumfail.subject", rootDvNameAsList);
             case FILESYSTEMIMPORT:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.import.filesystem.subject");
+                return BundleUtil.getStringFromBundle("notification.email.import.filesystem.subject", rootDvNameAsList);
             case CHECKSUMIMPORT:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.import.checksum.subject");
+                return BundleUtil.getStringFromBundle("notification.email.import.checksum.subject", rootDvNameAsList);
         }
         return "";
     }

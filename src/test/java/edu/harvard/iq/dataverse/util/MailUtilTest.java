@@ -39,8 +39,7 @@ public class MailUtilTest {
     @Test
     public void testSubjectAssignRole() {
         userNotification.setType(UserNotification.Type.ASSIGNROLE);
-        // FIXME: Instead of "Dataverse:" it should be "LibraScholar:"
-        assertEquals("Dataverse: You have been assigned a role", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
+        assertEquals("LibraScholar: You have been assigned a role", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
     }
 
     @Test
