@@ -92,7 +92,7 @@ From the terminal, ``ssh-keygen`` will create new ssh keys for you:
 Clone Project from GitHub
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before making commits, please read about our :doc:`/developers/branching-strategy` to make sure you commit to the right branch.
+Before cloning the repo, you are invited to read about our branching strategy in the  :doc:`version-control` section but we'll explain the basics here.
 
 Determine Which Repo To Push To
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
