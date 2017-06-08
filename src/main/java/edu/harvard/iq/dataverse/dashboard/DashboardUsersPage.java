@@ -169,7 +169,7 @@ public class DashboardUsersPage implements java.io.Serializable {
         return this.pager;
     }
 
-    private void setSelectedPage(Integer pgNum){
+    public void setSelectedPage(Integer pgNum){
         if ((pgNum == null)||(pgNum < 1)){
             this.selectedPage = 1;
         }
@@ -190,8 +190,26 @@ public class DashboardUsersPage implements java.io.Serializable {
     public void setSearchTerm(String searchTerm) {
         this.searchTerm = searchTerm;
     }
-
     
+    public void toggleSuperUserStatus(AuthenticatedUser user){
+        logger.info("Toggling user's "+user.getIdentifier()+" superuser status;");
+        user.setSuperuser(!user.isSuperuser());
+        logger.info("Attempting to save user "+user.getIdentifier());
+        authenticationService.update(user);
+        
+    }
+    
+    /* Methods for an alternative, two-step implementation: first a confirmation popup, 
+       "are you sure you want to toggle the superuser status of user ...?"
+       - and if yes, save... 
+       
+    AuthenticatedUser selectedUser = null; 
+    
+    public void setUserToToggleSuperuserStatus(AuthenticatedUser user) {
+        logger.info("selecting user "+user.getIdentifier());
+        selectedUser = user; 
+    }
+    */
     
     private void msg(String s){
         System.out.println(s);

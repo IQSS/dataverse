@@ -82,12 +82,17 @@
                         </p:column>                    
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
-                            <h:outputText value="#{user.isSuperuser()}" />
-                        </p:column>                    
+                            <!-- A simple implementation of the superuser status toggle - via a boolean checkbox with an immediate ajax update. -->
+                            <!-- An alternative implementation would be to show a confirmation popup ("are you sure you want to toggle this? ...") first. -->
+                            <!-- Seeing how this is part of the SuperAdmin-only dashboard functionality, I feel this confirmation popup would be unnecessary. - L.A. [to be reviewed] -->
+                            <!-- Also, I feel like toggling the superuser status for the primary, original "dataverseAdmin" superuser should not be allowed; -->
+                            <!-- Is there a better way to recognize this user, than by the id=1 and/or identifier="dataverseAdmin"? [to be reviewed] -->
+                            <p:selectBooleanCheckbox immediate="true"  id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.toggleSuperUserStatus(user)}"  disabled="#{user.id == 1}">
+                                <p:ajax event="change" process="@this"/>
+                            </p:selectBooleanCheckbox>
+                        </p:column>                  
 
                     </p:dataTable>                 
-
-                   
                 </h:form>
             </ui:define>
         </ui:composition>
