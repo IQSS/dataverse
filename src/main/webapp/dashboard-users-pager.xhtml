@@ -2,54 +2,39 @@
      xmlns:h="http://java.sun.com/jsf/html"
      xmlns:f="http://java.sun.com/jsf/core"
      xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:jsf="http://xmlns.jcp.org/jsf"
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui"
      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
-         
     
-    <!-- PAGINATOR -->
-    <ui:fragment rendered="#{listPager != null}">
-        <div class="row">
-                
-            <div class="col-xs-12 col-md-3"><!-- number of results -->
-                <br />
-                <ui:fragment rendered="#{listPager.numResults > 1}">                    
-                    Found: <b>#{listPager.numResultsString} results</b>
-                </ui:fragment>
-                <ui:fragment rendered="#{listPager.numResults == 1}">                    
-                    Found: <b>#{listPager.numResultsString} result</b>
-                </ui:fragment>
-
-                <ui:fragment rendered="#{listPager.endCardNumber > listPager.startCardNumber}">                    
-                    <br />Displaying: <b>#{listPager.startCardNumberString} to #{listPager.endCardNumberString}</b>
-                </ui:fragment>
-                <br />
-            </div>
-        
-            <div class="col-xs-12 col-md-9">
-                <ui:fragment rendered="#{!listPager.pagerNecessary}">
-                    &#160;
-                </ui:fragment>
-
-            <ui:fragment rendered="#{listPager.pagerNecessary}">
-
-                <ul class="pagination">
+    <div class="row" jsf:rendered="#{listPager != null}">
+        <!-- PAGINATOR --> 
+        <div class="col-xs-12 col-md-3">
+            <!-- number of results -->
+            <h:outputFormat styleClass="highlightBold" value="#{bundle['dataverse.results.count.toofresults']}">
+                <f:param value="#{listPager.startCardNumber}"/>
+                <f:param value="#{listPager.endCardNumber}"/>
+                <f:param value="#{listPager.numResults}"/>
+            </h:outputFormat>
+        </div>
+        <div class="col-xs-12 col-md-9" jsf:rendered="#{listPager.pagerNecessary}">
+            <ul class="pagination">
                 <!-- previous page controls -->
                 <ui:fragment rendered="#{listPager.hasPreviousPageNumber()}">
-                   <li><p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(1)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">                       
-                           <span aria-hidden="true">&lt;&lt;</span>
+                    <li><p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(1)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">                       
+                            <span aria-hidden="true">&lt;&lt;</span>
                         </p:commandLink>
-                   </li>
-                   <li>
-                       <p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(listPager.previousPageNumber)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                            <span aria-hidden="true">&lt; Previous</span>
+                    </li>
+                    <li>
+                        <p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(listPager.previousPageNumber)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                            <span aria-hidden="true">&lt; #{bundle['previous']}</span>
                         </p:commandLink>
-                   </li>
+                    </li>
                 </ui:fragment>
-               
+
                 <ui:fragment rendered="#{!listPager.hasPreviousPageNumber()}">
-                   <li class="disabled"><a aria-label="First"><span aria-hidden="true">&lt;&lt;</span></a></li>
-                   <li class="disabled"><a aria-label="Previous"><span aria-hidden="true">&lt; Previous</span></a></li>
+                    <li class="disabled"><a aria-label="#{bundle['first']}"><span aria-hidden="true">&lt;&lt;</span></a></li>
+                    <li class="disabled"><a aria-label="#{bundle['previous']}"><span aria-hidden="true">&lt; #{bundle['previous']}</span></a></li>
                 </ui:fragment>
 
                 <!-- page numbers -->
@@ -59,23 +44,22 @@
                             <p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(pg)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
                                 #{pg}
                             </p:commandLink>
-                       </li>
+                        </li>
                     </ui:fragment>
                     <ui:fragment rendered="#{pg != listPager.selectedPageNumber}">
                         <li>
                             <p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(pg)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
                                 #{pg}
                             </p:commandLink>
-                       </li>
+                        </li>
                     </ui:fragment>
                 </ui:repeat>
- 
-                
+
                 <!-- next page | last page -->
                 <ui:fragment rendered="#{listPager.hasNextPageNumber()}">
                     <li>
                         <p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(listPager.nextPageNumber)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                            <span aria-hidden="true">Next &gt;</span>
+                            <span aria-hidden="true">#{bundle['next']} &gt;</span>
                         </p:commandLink>
                     </li>
                     <li>
@@ -84,17 +68,11 @@
                         </p:commandLink>
                     </li>
                 </ui:fragment>
-
                 <ui:fragment rendered="#{!listPager.hasNextPageNumber()}">
-                    <li class="disabled"><a href="#" aria-label="Next"><span aria-hidden="true">Next &gt;</span></a></li>
-                    <li class="disabled"><a href="#" aria-label="Last"><span aria-hidden="true">&gt;&gt;</span></a></li>
+                    <li class="disabled"><a href="#" aria-label="#{bundle['next']}"><span aria-hidden="true">#{bundle['next']} &gt;</span></a></li>
+                    <li class="disabled"><a href="#" aria-label="#{bundle['last']}"><span aria-hidden="true">&gt;&gt;</span></a></li>
                 </ui:fragment>
-
-
-                </ul>
-                <!--page count: #{listPager.pageCount}<br />-->
-            </ui:fragment>
-            </div>
+            </ul>
         </div>
-    </ui:fragment>
+    </div>
 </ui:composition>

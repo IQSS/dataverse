@@ -13,9 +13,10 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.users.header'])}"/>
             <f:viewAction action="#{DashboardUsersPage.init}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/> 
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.users.manage'])}"/>
         </f:metadata>
 
         <ui:composition template="/dataverse_template.xhtml">
@@ -45,28 +46,24 @@
                     </ui:include>
 
                     <p:dataTable id="userTable" value="#{DashboardUsersPage.userList}"  var="user" widgetVar="userTable">
-                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.rowNumber']}">
+                        <!--<p:column headerText="#{bundle['dashboard.list_users.tbl_header.rowNumber']}">
                             <h:outputText value="#{user.rowNum}" />
-                        </p:column>                        
+                        </p:column>                        -->
+                        
+                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
+                            <h:outputText value="#{user.id}" />
+                        </p:column>
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userIdentifier']}">
                             <h:outputText value="#{user.userIdentifier}" />
                         </p:column>
 
-                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.lastName']}">
-                            <h:outputText value="#{user.lastName}" />
-                        </p:column>
-
-                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.firstName']}">
-                            <h:outputText value="#{user.firstName}" />
+                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.firstName']} #{bundle['dashboard.list_users.tbl_header.lastName']}">
+                            <h:outputText value="#{user.firstName} #{user.lastName}" />
                         </p:column>
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.email']}">
                             <h:outputText value="#{user.email}" />
-                        </p:column>
-                        
-                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
-                            <h:outputText value="#{user.id}" />
                         </p:column>
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.affiliation']}">
@@ -104,7 +101,7 @@
                         </p>
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.list_users.toggleSuperuser.confirm']}" action="#{DashboardUsersPage.saveSuperuserStatus()}" update="userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
-                            <p:commandButton styleClass="btn btn-default" value="cancel" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}"  update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}"  update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
                         </div>
                     </p:dialog>
                 </h:form>
