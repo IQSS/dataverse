@@ -2,7 +2,8 @@
 SELinux
 =======
 
-.. contents:: :local:
+.. contents:: |toctitle|
+    :local:
 
 Introduction
 ------------

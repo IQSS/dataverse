@@ -6,7 +6,7 @@
 Developer Guide
 =======================================================
 
-Contents:
+**Contents:**
 
 .. toctree::
 

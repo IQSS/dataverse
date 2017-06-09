@@ -1,7 +1,8 @@
 Account Creation + Management
 =============================
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Account Information
 -------------------
