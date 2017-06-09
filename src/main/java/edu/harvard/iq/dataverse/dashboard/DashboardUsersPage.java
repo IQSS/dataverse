@@ -7,11 +7,12 @@ import edu.harvard.iq.dataverse.api.Admin;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mydata.Pager;
-import edu.harvard.iq.dataverse.userdata.OffsetPageValues;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
+import edu.harvard.iq.dataverse.userdata.UserListResult;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -72,63 +73,24 @@ public class DashboardUsersPage implements java.io.Serializable {
         /**
          * (1) Determine the number of users returned by the count        
          */
-        Long userCount = userListMaker.getUserCountWithSearch(searchTerm);
-        
-        msgt("userCount: " + userCount);
-        int itemsPerPage = UserListMaker.ITEMS_PER_PAGE;
-        /**
-         * (2) Based on the page number and number of users,
-         *      determine the off set to use when querying
-         */
-        OffsetPageValues offsetPageValues = userListMaker.getOffset(userCount, getSelectedPage(), itemsPerPage);
-        
-        /**
-         * Update the pageNumber on the page
-         */
-        setSelectedPage(offsetPageValues.getPageNumber());        
-        int offset = offsetPageValues.getOffset();
-        
-        msg("offset: " + offset);
-
-        /**
-         * (3) Run the search and update the user list 
-         */
-        String sortKey = null;
-        this.userList = userService.getAuthenticatedUserList(searchTerm, sortKey, UserListMaker.ITEMS_PER_PAGE, offsetPageValues.getOffset());
-
-        msg("userList size: " + userList.size());
-
-        makeNewPager(userCount.intValue(), itemsPerPage, getSelectedPage());
-
-        msg("pager: " + pager.asJSONString());
-
-        return true;
-    }
-
-    /** 
-     * Make sure there is a pager--even if the user count is 0
-     * 
-     * @param userCount
-     * @param displayItemsPerPage
-     * @param chosenPage
-     * @return 
-     */
-    private boolean makeNewPager(Integer userCount, Integer displayItemsPerPage, Integer chosenPage){
-        
-        if (userCount == null){
-            userCount = 0;
+        UserListResult userListResult = userListMaker.runUserSearch(searchTerm, UserListMaker.ITEMS_PER_PAGE, getSelectedPage(), null);
+        if (userListResult==null){
+            msg("Uh oh!!!!!");
+            try {
+                throw new Exception("userListResult should not be null!");
+            } catch (Exception ex) {
+                Logger.getLogger(DashboardUsersPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-        if (chosenPage == null){
-            chosenPage = 1;
-        }
-        if (displayItemsPerPage == null){
-            displayItemsPerPage = UserListMaker.ITEMS_PER_PAGE;
-        }
-        
-        pager = new Pager(userCount, displayItemsPerPage, chosenPage);
+        setSelectedPage(userListResult.getSelectedPageNumber());        
+
+        this.userList = userListResult.getUserList();
+        this.pager = userListResult.getPager();
         
         return true;
+        
     }
+
 
     
     public String getListUsersAPIPath() {

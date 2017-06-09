@@ -6,8 +6,10 @@
 package edu.harvard.iq.dataverse.userdata;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -64,8 +66,64 @@ public class UserListMaker {
         return userService.getUserCount(searchTerm);
     }
   
+    public UserListResult runUserSearch(String searchTerm, Integer itemsPerPage, Integer selectedPage, String sorKey){
+        
+        // Initialize searchTerm
+        if ((searchTerm == null) || (searchTerm.trim().isEmpty())){
+            searchTerm = null;
+        }
+
+        // Initialize itemsPerPage
+        if ((itemsPerPage == null) || (itemsPerPage < 10)){
+            itemsPerPage = ITEMS_PER_PAGE;
+        }
+
+        // Initialize selectedPage
+        if ((selectedPage == null) || (selectedPage < 1)){
+            selectedPage = 1;
+        }
+
+        // Initialize sortKey
+        String sortKey = null;
+        
+        Pager pager;
+
+         // -------------------------------------------------
+        // (1) What is the user count for this search?
+        // -------------------------------------------------
+        Long userCount = userService.getUserCount(searchTerm);
+        
+        // Are there any hits?  No; return info
+        if ((userCount == null)||(userCount == 0)){
+            pager = new Pager(0, itemsPerPage, selectedPage);
+            return new UserListResult(searchTerm, pager, null);
+        }
+              
+        // -------------------------------------------------
+        // (2) Do some calculations here regarding the selected page, offset, etc.
+        // -------------------------------------------------
+        
+        OffsetPageValues offsetPageValues = getOffset(userCount, selectedPage, itemsPerPage);
+        selectedPage = offsetPageValues.getPageNumber();
+        int offset = offsetPageValues.getOffset();
+                
+        // -------------------------------------------------
+        // (3) Retrieve the users
+        // -------------------------------------------------
+        List<AuthenticatedUser> userList = userService.getAuthenticatedUserList(searchTerm, sortKey, itemsPerPage, offset);       
+        if (userList ==null){
+            pager = new Pager(0, itemsPerPage, selectedPage);
+            return new UserListResult(searchTerm, pager, null);
+        }
+        
+        pager = new Pager(userCount.intValue(), itemsPerPage, selectedPage);
+
+        return new UserListResult(searchTerm, pager, userList);
+
+    }
+    
     /*
-     * Run the search
+     * Run the search (API currently)
      */
     public JsonObjectBuilder runSearch(String searchTerm, Integer itemsPerPage, Integer selectedPage, String sorKey){
         

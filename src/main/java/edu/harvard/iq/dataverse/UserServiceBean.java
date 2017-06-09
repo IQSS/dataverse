@@ -144,16 +144,24 @@ public class UserServiceBean {
             return viewObjects;
         }
         
+        // GATHER GIANT HASHMAP OF ALL USERS
+        //  1st Loop : 
+        // gather  [ @user, .....] 
+        // get the hashmap
+        
+        
         // -------------------------------------------------
         // We have results, format them into AuthenticatedUser objects
         // -------------------------------------------------
         int rowNum = offset++;   // used for the rowNumber
-        for (Object[] dbResultRow : userResults) {            
+        for (Object[] dbResultRow : userResults) {  
+            // GET ROLES FOR THIS USER FROM GIANT HASHMAP
             rowNum++;
             String roles = getUserRolesAsString((Integer) dbResultRow[0]);
             AuthenticatedUser singleUser = createAuthenticatedUserForView(dbResultRow, roles, rowNum);            
             viewObjects.add(singleUser);
         }
+        
         
         return viewObjects;
     }
