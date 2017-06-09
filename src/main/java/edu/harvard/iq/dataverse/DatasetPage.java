@@ -3602,16 +3602,7 @@ public class DatasetPage implements java.io.Serializable {
     public String[] getDatasetAuthors()
     {
 	assert( null != workingVersion );
-        List<DatasetAuthor> authorList = workingVersion.getDatasetAuthors();
-
-        String[] authors = new String[ authorList.size() ];
-	int pos = 0;
-        for( DatasetAuthor author : authorList )
-        {
-	    authors[pos] = author.getName().getValue();
-            ++pos;
-	}
-        return authors;
+        return workingVersion.getDatasetAuthorNames();
     }
     /**
      * dataset subjects
@@ -3620,17 +3611,9 @@ public class DatasetPage implements java.io.Serializable {
     public String[] getDatasetSubjects()
     {
 	assert( null != workingVersion );
-        List<String> subjectList= workingVersion.getDatasetSubjects();
-        
-        String[] subjects = new String[ subjectList.size() ];
-        int pos = 0;
-        for(String subject : subjectList)
-        {
-            subjects[pos] = subjectList.get(pos);
-            pos++;
-        }
-	return subjects;
+        return workingVersion.getDatasetSubjects();
     }
+    
     /**
      * publisher (aka - name of root dataverse)
      * @return the publisher of the version

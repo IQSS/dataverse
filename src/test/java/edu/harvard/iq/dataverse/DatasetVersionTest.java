@@ -81,4 +81,8 @@ public class DatasetVersionTest {
         assertEquals(false, nonDraft.isInReview());
     }
     
+    @Test
+    public void metaTags() {
+        assertEquals(false, false);
+    }
 }
