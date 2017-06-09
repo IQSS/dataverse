@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
@@ -308,19 +309,22 @@ public class AuthenticatedUser implements User, Serializable {
     }
     
     public JsonObjectBuilder toJson() {
-        JsonObjectBuilder authenicatedUserJson = Json.createObjectBuilder();
+        //JsonObjectBuilder authenicatedUserJson = Json.createObjectBuilder();
         
+        NullSafeJsonBuilder authenicatedUserJson = NullSafeJsonBuilder.jsonObjectBuilder();
+         
         authenicatedUserJson.add("id", this.id);
         authenicatedUserJson.add("rowNum", this.rowNum);
         authenicatedUserJson.add("userIdentifier", this.userIdentifier);
         authenicatedUserJson.add("lastName", this.lastName);
         authenicatedUserJson.add("firstName", this.firstName);
         authenicatedUserJson.add("email", this.email);
-        authenicatedUserJson.add("affiliation", UserUtil.getStringOrBlankForNull(this.affiliation));
+        authenicatedUserJson.add("affiliation", UserUtil.getStringOrNull(this.affiliation));
         authenicatedUserJson.add("isSuperuser", this.superuser);
-        authenicatedUserJson.add("position", UserUtil.getStringOrBlankForNull(this.position));
+        authenicatedUserJson.add("position", UserUtil.getStringOrNull(this.position));
         authenicatedUserJson.add("authenticationProvider", this.authProviderFactoryAlias);
-        authenicatedUserJson.add("roles", UserUtil.getStringOrBlankForNull(this.roles));
+        authenicatedUserJson.add("roles", UserUtil.getStringOrNull(this.roles));
+        
         return authenicatedUserJson;
     }
     

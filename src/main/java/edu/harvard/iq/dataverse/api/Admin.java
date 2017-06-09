@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -52,7 +53,6 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 import java.util.List;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
@@ -62,6 +62,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import java.util.ResourceBundle;
 import javax.inject.Inject;
 import javax.ws.rs.QueryParam;
 /**
@@ -318,21 +319,32 @@ public class Admin extends AbstractApiBean {
     ) { 
         System.out.println("_YE_OLDE_QUERY_COUNTER_");
         
-        boolean DEBUG_MODE = true;
-              
-        AuthenticatedUser authUser = null;
-        
+        boolean DEBUG_MODE = false; // DANGER HERE!  Make sure it's false!
+                
         if (DEBUG_MODE==true){      // DEBUG: use userIdentifier
             
-            //return ok("hello! (debug)");
+            // DEBUG MODE, pass on by to the actual logic
            
         } else if ((session.getUser() != null)&&(session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())){            
 
-            authUser = (AuthenticatedUser)session.getUser();
+            // Looks good, we have an authenticated superuser
        
         }else{
-            return error(Response.Status.FORBIDDEN, "forbidden, please leave");
-
+             
+            User authUser;
+            try {
+                authUser = this.findUserOrDie();
+            } catch (AbstractApiBean.WrappedResponse ex) {
+                return error(Response.Status.FORBIDDEN, 
+                        ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.invalid_apikey")
+                        );
+            }
+            
+            if (!authUser.isSuperuser()){
+                return error(Response.Status.FORBIDDEN, 
+                        ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
+            }
+            //
         }
         
         UserListMaker userListMaker = new UserListMaker(userService);      
