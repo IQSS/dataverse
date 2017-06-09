@@ -22,7 +22,7 @@
             <ui:param name="pageTitle" value="#{bundle['dashboard.card.users.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
-                <h:form>
+                <h:form id="dashboardUsersForm">
                     <div jsf:id="userssHeaderBlock" class="row">
                         <div class="col-xs-6">
                             <div class="input-group">
@@ -44,7 +44,7 @@
                         <ui:param name="listPager" value="#{DashboardUsersPage.pager}" />
                     </ui:include>
 
-                    <p:dataTable value="#{DashboardUsersPage.userList}"  var="user" widgetVar="userTable">
+                    <p:dataTable id="userTable" value="#{DashboardUsersPage.userList}"  var="user" widgetVar="userTable">
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.rowNumber']}">
                             <h:outputText value="#{user.rowNum}" />
                         </p:column>                        
@@ -83,16 +83,30 @@
 
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
                             <!-- A simple implementation of the superuser status toggle - via a boolean checkbox with an immediate ajax update. -->
-                            <!-- An alternative implementation would be to show a confirmation popup ("are you sure you want to toggle this? ...") first. -->
-                            <!-- Seeing how this is part of the SuperAdmin-only dashboard functionality, I feel this confirmation popup would be unnecessary. - L.A. [to be reviewed] -->
-                            <!-- Also, I feel like toggling the superuser status for the primary, original "dataverseAdmin" superuser should not be allowed; -->
-                            <!-- Is there a better way to recognize this user, than by the id=1 and/or identifier="dataverseAdmin"? [to be reviewed] -->
-                            <p:selectBooleanCheckbox immediate="true"  id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.toggleSuperUserStatus(user)}"  disabled="#{user.id == 1}">
-                                <p:ajax event="change" process="@this"/>
+                            <!-- Uses our standard approach, of showing a confirmation popup ("are you sure you want to toggle this? ...") first,  -->
+                            <!-- before saving the toggled value. -->
+                            <!-- [to be reviewed:] I feel like toggling the superuser status for the primary, original "dataverseAdmin" superuser should not be allowed; -->
+                            <!-- Is there a better way to recognize this user, than by the id=1 and/or identifier="dataverseAdmin"? -->
+                            <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"  disabled="#{user.id == 1}">
+                                <p:ajax event="change" process="@this" oncomplete="PF('toggleSuperuserConfirmation').show();"  update=":dashboardUsersForm:toggleSuperuserConfirmation"/>
                             </p:selectBooleanCheckbox>
                         </p:column>                  
 
-                    </p:dataTable>                 
+                    </p:dataTable>
+                    <p:dialog styleClass="smallPopUp" id="toggleSuperuserConfirmation" header="#{bundle['dashboard.list_users.toggleSuperuser']}" widgetVar="toggleSuperuserConfirmation" modal="true" closable="false">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/>
+                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.add']} " rendered="#{DashboardUsersPage.selectedUser.superuser}">
+                                <f:param value="#{DashboardUsersPage.selectedUser.userIdentifier}"/>
+                            </h:outputFormat>
+                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.remove']} " rendered="#{!DashboardUsersPage.selectedUser.superuser}">
+                                <f:param value="#{DashboardUsersPage.selectedUser.userIdentifier}"/>
+                            </h:outputFormat>
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.list_users.toggleSuperuser.confirm']}" action="#{DashboardUsersPage.saveSuperuserStatus()}" update="userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                            <p:commandButton styleClass="btn btn-default" value="cancel" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}"  update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                        </div>
+                    </p:dialog>
                 </h:form>
             </ui:define>
         </ui:composition>

@@ -152,25 +152,39 @@ public class DashboardUsersPage implements java.io.Serializable {
         this.searchTerm = searchTerm;
     }
     
-    public void toggleSuperUserStatus(AuthenticatedUser user){
-        logger.info("Toggling user's "+user.getIdentifier()+" superuser status;");
-        user.setSuperuser(!user.isSuperuser());
-        logger.info("Attempting to save user "+user.getIdentifier());
-        authenticationService.update(user);
-        
-    }
-    
-    /* Methods for an alternative, two-step implementation: first a confirmation popup, 
-       "are you sure you want to toggle the superuser status of user ...?"
-       - and if yes, save... 
+    /* 
+       Methods for toggling the supeuser status of a selected user. 
+       Our normal two step approach is used: first showing the "are you sure?" 
+       popup, then finalizing the toggled value. 
+    */
        
     AuthenticatedUser selectedUser = null; 
+    
+    public void setSelectedUser(AuthenticatedUser user) {
+        this.selectedUser = user;
+    }
+    
+    public AuthenticatedUser getSelectedUser() {
+        return this.selectedUser;
+    }
+    
     
     public void setUserToToggleSuperuserStatus(AuthenticatedUser user) {
         logger.info("selecting user "+user.getIdentifier());
         selectedUser = user; 
     }
-    */
+    public void saveSuperuserStatus(){
+        logger.info("Toggling user's "+selectedUser.getIdentifier()+" superuser status; (current status: "+selectedUser.isSuperuser()+")");
+        logger.info("Attempting to save user "+selectedUser.getIdentifier());
+        authenticationService.update(selectedUser);
+        
+    }
+    
+    public void cancelSuperuserStatusChange(){
+        logger.info("unToggling user's "+selectedUser.getIdentifier()+" superuser status; (current status: "+selectedUser.isSuperuser()+")");
+        selectedUser.setSuperuser(!selectedUser.isSuperuser());
+        
+    }
     
     private void msg(String s){
         System.out.println(s);
