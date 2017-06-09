@@ -7,7 +7,6 @@ package edu.harvard.iq.dataverse.userdata;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.mydata.Pager;
 import java.util.List;
 import java.util.logging.Logger;
@@ -125,75 +124,6 @@ public class UserListMaker {
 
     }
     
-    /*
-     * Run the search (API currently)
-     */
-    public JsonObjectBuilder runSearch(String searchTerm, Integer itemsPerPage, Integer selectedPage, String sorKey){
-        
-        // Initialize searchTerm
-        if ((searchTerm == null) || (searchTerm.trim().isEmpty())){
-            searchTerm = null;
-        }
-
-        // Initialize itemsPerPage
-        if ((itemsPerPage == null) || (itemsPerPage < 10)){
-            itemsPerPage = ITEMS_PER_PAGE;
-        }
-
-        // Initialize selectedPage
-        if ((selectedPage == null) || (selectedPage < 1)){
-            selectedPage = 1;
-        }
-
-        // Initialize sortKey
-        String sortKey = null;
-
-              
-        // -------------------------------------------------
-        // (1) What is the user count for this search?
-        // -------------------------------------------------
-        Long userCount = userService.getUserCount(searchTerm);
-        
-        // Are there any hits?  No; return info
-        if ((userCount == null)||(userCount == 0)){
-            return null; //getNoResultsJSON();
-        }
-              
-        // -------------------------------------------------
-        // (2) Do some calculations here regarding the selected page, offset, etc.
-        // -------------------------------------------------
-        
-        OffsetPageValues offsetPageValues = getOffset(userCount, selectedPage, itemsPerPage);
-        selectedPage = offsetPageValues.getPageNumber();
-        int offset = offsetPageValues.getOffset();
-        
-        //int offset = (selectedPage - 1) * itemsPerPage;
-        //if (offset > userCount){
-        //    offset = DEFAULT_OFFSET;
-        //    selectedPage = 1;
-        //}
-
-        
-        // -------------------------------------------------
-        // (3) Retrieve the users
-        // -------------------------------------------------
-        JsonArrayBuilder jsonUserListArray = userService.getUserListAsJSON(searchTerm, sortKey, itemsPerPage, offset);       
-        if (jsonUserListArray==null){
-            return null;//getNoResultsJSON();
-        }
-        
-         Pager pager = new Pager(userCount.intValue(), itemsPerPage, selectedPage);
-
-        JsonObjectBuilder jsonOverallData = Json.createObjectBuilder();
-        jsonOverallData.add("userCount", userCount)
-                       .add("selectedPage", 1)
-                       .add("pagination", pager.asJsonObjectBuilder())
-                       //.add("bundleStrings", getBundleStrings())
-                       .add("users", jsonUserListArray)
-                       ;
-        return jsonOverallData;
-        
-    }
     
     public OffsetPageValues getOffset(Long userCount, Integer selectedPage, Integer itemsPerPage){
         

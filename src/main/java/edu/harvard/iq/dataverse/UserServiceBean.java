@@ -143,8 +143,23 @@ public class UserServiceBean {
         if (userResults == null){
             return viewObjects;
         }
-        
-        // GATHER GIANT HASHMAP OF ALL USERS
+
+        // -------------------------------------------------
+        // GATHER GIANT HASHMAP OF ALL { user identifier : [role, role, role] }
+        // -------------------------------------------------
+
+        // Iterate through results, retrieving only the assignee identifiers
+        // Note: userInfo[1], the assigneeIdentifier, cannot be null in the database
+        //
+        List<String> identifiers = userResults.stream()
+                                        .map(userInfo -> (String)userInfo[1])
+                                        .collect(Collectors.toList())
+                                       ;
+  
+        HashMap<String, List<String>> roleLookup = retrieveRolesForUsers(identifiers);
+        if (roleLookup == null){
+            roleLookup = new HashMap<>();
+        }
         //  1st Loop : 
         // gather  [ @user, .....] 
         // get the hashmap
@@ -154,11 +169,18 @@ public class UserServiceBean {
         // We have results, format them into AuthenticatedUser objects
         // -------------------------------------------------
         int rowNum = offset++;   // used for the rowNumber
-        for (Object[] dbResultRow : userResults) {  
+        String roleString;
+        for (Object[] userInfo : userResults) {  
             // GET ROLES FOR THIS USER FROM GIANT HASHMAP
             rowNum++;
-            String roles = getUserRolesAsString((Integer) dbResultRow[0]);
-            AuthenticatedUser singleUser = createAuthenticatedUserForView(dbResultRow, roles, rowNum);            
+            
+            //String roles = getUserRolesAsString((Integer) dbResultRow[0]);
+            roleString = "";
+            List<String> roleList = roleLookup.get("@" + (String)userInfo[1]);
+            if ((roleList != null)&&(!roleList.isEmpty())){
+                roleString = roleList.stream().collect(Collectors.joining(", "));
+            }
+            AuthenticatedUser singleUser = createAuthenticatedUserForView(userInfo, roleString, rowNum);            
             viewObjects.add(singleUser);
         }
         
@@ -197,13 +219,16 @@ public class UserServiceBean {
         if ((userIdentifierList==null)||(userIdentifierList.isEmpty())){
             return null;
         }
-               
+        
         // Add '@' to each identifier and delimit the list by ","
         //
         String identifierList = userIdentifierList.stream()
                                      .filter(x -> !Strings.isNullOrEmpty(x))
                                      .map(x -> "'@" + x + "'")
                                      .collect(Collectors.joining(", "));
+
+        System.out.println("identifierList: " + identifierList);
+
         
         String qstr = "SELECT distinct a.assigneeidentifier,";
         qstr += " d.name";
@@ -212,6 +237,8 @@ public class UserServiceBean {
         qstr += " WHERE d.id = a.role_id";
         qstr += " AND a.assigneeidentifier IN (" + identifierList + ")";
         qstr += " ORDER by a.assigneeidentifier, d.name;";
+
+        System.out.println("qstr: " + qstr);
 
         Query nativeQuery = em.createNativeQuery(qstr);
 
@@ -237,6 +264,10 @@ public class UserServiceBean {
                 }
             }
         }
+        
+        System.out.println("userRoleLookup: " + userRoleLookup.size());
+
+    
         
         return userRoleLookup;
     }
