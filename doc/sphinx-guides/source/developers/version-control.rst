@@ -2,8 +2,16 @@
 Version Control
 ==================
 
+The Dataverse Project uses git for version control and GitHub for hosting. On this page we'll explain where to find the code, our branching strategey, some tips on how to make a pull request, and other git tips.
+
 .. contents:: |toctitle|
 	:local:
+
+
+Where to Find the Dataverse Code
+--------------------------------
+
+The main code in question is at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
 
 Branching Strategy
 ------------------
@@ -34,53 +42,83 @@ The "`develop <https://github.com/IQSS/dataverse>`_" branch represents code that
 Feature Branches
 ****************
 
-Feature branches are used for both developing features and fixing bugs. They are named after the GitHub issue they are meant to address, which means the branch should not be created until the GitHub issue exists. For example, if https://github.com/IQSS/dataverse/issues/1234 had a title of "Bug fix", you would name your branch "1234-bug-fix" or some other short "slug" with the issue number at the start.
+Feature branches are used for both developing features and fixing bugs. They are named after the GitHub issue they are meant to address, so create a GitHub issue if you need to.
 
-Always create your feature branch from the latest code in develop, pulling if necessary. Push your feature branch either to your fork of Dataverse or to the main repo at IQSS if you have write access. Create a pull request based on the feature branch you pushed. As mentioned in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md if you do not have access to advance your pull request into the "Code Review" column at https://waffle.io/IQSS/dataverse you should reach out to ask for it to be moved on your behalf.
+"3728-doc-apipolicy-fix" is an example of a fine name for your feature branch. It tells us that you are addressing https://github.com/IQSS/dataverse/issues/3728 and the "slug" is short, descriptive, and starts with the issue number.
 
-Using Git
----------
-This section explains step-by-step some of the most important processes involved in using Git to contribute to Dataverse.
+How to Make a Pull Request
+--------------------------
 
-Contribution Checklist
-~~~~~~~~~~~~~~~~~~~~~~
-To make a contribution to Dataverse's code:
+Pull requests take all shapes and sizes, from a one-character typo fix to hundreds of files changing at once. Generally speaking, smaller pull requests are better so that they are easier to code review. That said, don't hold back on writing enough code or documentation to address the issue to the best of your ability.
 
-1. Find or create a GitHub issue explaining what you'd like to contribute.
+If you are writing code, please see :doc:`testing` for guidance on writing tests.
 
-**e.g.** `Issue #3728 <https://github.com/IQSS/dataverse/issues/3728>`_ points out a typo in a page of Dataverse's documentation.
+The example of creating a pull request below has to do with fixing an important issue with the :doc:`documentation` but applies to fixing code as well.
 
-2. Create a new branch that you will commit your change to.
+Find or Create a GitHub Issue
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**e.g.**  *3728-doc-apipolicy-fix*
+For guidance on which issue to work on, please ask! Also, see https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md
 
-3. Make your change in the form of a commit to that branch. Make sure the title of your commit includes a reference to the number of the issue it relates to.
+Let's say you want to tackle https://github.com/IQSS/dataverse/issues/3728 which points out a typo in a page of Dataverse's documentation.
 
-**e.g.** *Fixed BlockedApiPolicy [ref: #3728]*
+Create a New Branch Off the develop Branch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-4. Make a pull request to get approval to merge your changes into the Develop branch.
+Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing, and ends with a short, descriptive name.
 
-**For more details** see our `Pull Request Template <https://github.com/IQSS/dataverse/blob/develop/PULL_REQUEST_TEMPLATE.md>`_.
+Commit Your Change to Your New Branch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Merge Conflict Resolution Checklist
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-When merging a branch to Develop, you may encounter a merge conflict. Here is a checklist for how to resolve this situation. Note that this checklist presumes that you're using the free software tools GitHub Desktop and Netbeans. There are other tools that can accomplish this, but your checklist may look different.
+Make your change in the form of a commit to that branch. Make sure the title of your commit includes a reference to the number of the issue it relates to, such as ``Fixed BlockedApiPolicy #3728``. Ideally the title is 50 characters or fewer, but don't worry about it. Use as much space in the body of the commit message as you need! 
+
+Push Your Branch to GitHub
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Push your feature branch to your fork of Dataverse (or to the main repo at IQSS, if you have write access). Create a pull request based on the feature branch you pushed. As mentioned in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md if you do not have access to advance your pull request into the "Code Review" column at https://waffle.io/IQSS/dataverse you should reach out to ask for it to be moved on your behalf.
+
+Make a Pull Request
+~~~~~~~~~~~~~~~~~~~
+
+Make a pull request to get approval to merge your changes into the develop branch. Feedback on the pull request template we use is welcome! The "connects to #3728" syntax is important because it's used at https://waffle.io/IQSS/dataverse to associate pull requests with issues.
+
+Here's an example of a pull request for issue #3728: https://github.com/IQSS/dataverse/pull/3827
+
+Make Sure Your Pull Request Has Been Advanced to Code Review
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://waffle.io/IQSS/dataverse 
+
+Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
+
+How to Resolve Conflicts in Your Pull Request
+---------------------------------------------
+
+Unfortunately, pull requests can quickly become "stale" and unmergable as other pull requests are merged into the develop branch ahead of you. This is completely normal because other developers made their pull requests before you did.
+
+The Dataverse team may ping you to ask you to merge the latest from the develop branch into your branch and resolve merge conflicts. If this sounds daunting, please just say so and we will assist you.
+
+If you'd like to resolve the merge conflicts yourself, here are some steps that work well GitHub Desktop and Netbeans.
 
 **In GitHub Desktop:**
 
-1. Sync from Develop
-2. Open specific branch that's having the merge conflict.
-3. Click "Update from develop"
+1. Sync from develop.
+2. Open the specific branch that's having the merge conflict.
+3. Click "Update from develop".
 
 **In Netbeans:**
 
-4. Click Window -> Favorites and open your local Dataverse project folder in the Favorites panel
-5. In this file browser, you can follow the red cylinder icon to find files with merge conflicts
-6. Double click the red merge conflicted file
-7. Right click on the red tab for that file and select Git -> Resolve Conflicts
-8. Resolve on right or left (if you select "both" you can do finer edits after)
+4. Click Window -> Favorites and open your local Dataverse project folder in the Favorites panel.
+5. In this file browser, you can follow the red cylinder icon to find files with merge conflicts.
+6. Double click the red merge conflicted file.
+7. Right click on the red tab for that file and select Git -> Resolve Conflicts.
+8. Resolve on right or left (if you select "both" you can do finer edits after).
 9. Save all changes
 
 **In GitHub Desktop:**
 
 10. Commit the merge (append issue number to end, e.g. #3728) and leave note about what was resolved.
+
+**In GitHub Issues:**
+
+11. Leave a comment for the Dataverse team that you have resolved the merge conflicts.
