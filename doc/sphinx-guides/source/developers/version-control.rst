@@ -2,7 +2,7 @@
 Version Control
 ==================
 
-The Dataverse Project uses git for version control and GitHub for hosting. On this page we'll explain where to find the code, our branching strategey, some tips on how to make a pull request, and other git tips.
+The Dataverse Project uses git for version control and GitHub for hosting. On this page we'll explain where to find the code, our branching strategey, advice on how to make a pull request, and other git tips.
 
 .. contents:: |toctitle|
 	:local:
@@ -62,7 +62,7 @@ For guidance on which issue to work on, please ask! Also, see https://github.com
 
 Let's say you want to tackle https://github.com/IQSS/dataverse/issues/3728 which points out a typo in a page of Dataverse's documentation.
 
-Create a New Branch Off the develop Branch
+Create a New Branch off the develop Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing, and ends with a short, descriptive name.
@@ -94,11 +94,11 @@ Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for variou
 How to Resolve Conflicts in Your Pull Request
 ---------------------------------------------
 
-Unfortunately, pull requests can quickly become "stale" and unmergable as other pull requests are merged into the develop branch ahead of you. This is completely normal because other developers made their pull requests before you did.
+Unfortunately, pull requests can quickly become "stale" and unmergable as other pull requests are merged into the develop branch ahead of you. This is completely norma, and often occurs because other developers made their pull requests before you did.
 
 The Dataverse team may ping you to ask you to merge the latest from the develop branch into your branch and resolve merge conflicts. If this sounds daunting, please just say so and we will assist you.
 
-If you'd like to resolve the merge conflicts yourself, here are some steps that work well GitHub Desktop and Netbeans.
+If you'd like to resolve the merge conflicts yourself, here are some steps to do so that make use of GitHub Desktop and Netbeans.
 
 **In GitHub Desktop:**
 
