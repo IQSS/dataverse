@@ -290,6 +290,7 @@ public class Admin extends AbstractApiBean {
         }
     }
 
+    @Deprecated
     @GET
     @Path("authenticatedUsers")
     public Response listAuthenticatedUsers() {
