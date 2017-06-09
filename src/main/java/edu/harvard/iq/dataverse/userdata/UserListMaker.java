@@ -7,9 +7,10 @@ package edu.harvard.iq.dataverse.userdata;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.mydata.Pager;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -20,6 +21,8 @@ import javax.json.JsonObjectBuilder;
  */
 public class UserListMaker {
     
+    private static final Logger logger = Logger.getLogger(UserListMaker.class.getName());
+
     UserServiceBean userService;
     
     public boolean errorFound = false;
@@ -153,7 +156,7 @@ public class UserListMaker {
         
         // Are there any hits?  No; return info
         if ((userCount == null)||(userCount == 0)){
-            return getNoResultsJSON();
+            return null; //getNoResultsJSON();
         }
               
         // -------------------------------------------------
@@ -176,7 +179,7 @@ public class UserListMaker {
         // -------------------------------------------------
         JsonArrayBuilder jsonUserListArray = userService.getUserListAsJSON(searchTerm, sortKey, itemsPerPage, offset);       
         if (jsonUserListArray==null){
-            return getNoResultsJSON();
+            return null;//getNoResultsJSON();
         }
         
          Pager pager = new Pager(userCount.intValue(), itemsPerPage, selectedPage);
@@ -185,7 +188,7 @@ public class UserListMaker {
         jsonOverallData.add("userCount", userCount)
                        .add("selectedPage", 1)
                        .add("pagination", pager.asJsonObjectBuilder())
-                       .add("bundleStrings", getBundleStrings())
+                       //.add("bundleStrings", getBundleStrings())
                        .add("users", jsonUserListArray)
                        ;
         return jsonOverallData;
@@ -216,27 +219,6 @@ public class UserListMaker {
     }
     
     
-    private JsonObjectBuilder getNoResultsJSON(){
-        
-         return Json.createObjectBuilder()
-                        .add("userCount", 0)
-                        .add("selectedPage", 1)
-                        .add("bundleStrings", getBundleStrings())
-                        .add("users", Json.createArrayBuilder()); // empty array
-    }
-    
-    public JsonObjectBuilder getBundleStrings(){
-     
-           return Json.createObjectBuilder()                   
-                .add("userId", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userId"))
-                .add("userIdentifier", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userIdentifier"))
-                .add("lastName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastName"))
-                .add("firstName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.firstName"))
-                .add("email", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.email"))
-                .add("isSuperuser", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.isSuperuser"))
-                ;
-                       
-    }
     
     public boolean hasError(){
         return this.errorFound;

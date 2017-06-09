@@ -7,8 +7,12 @@ package edu.harvard.iq.dataverse.userdata;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mydata.Pager;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
 /**
@@ -17,6 +21,8 @@ import javax.json.JsonObjectBuilder;
  */
 public class UserListResult {
     
+    private static final Logger logger = Logger.getLogger(UserListResult.class.getName());
+
     private String searchTerm;
 
     private Pager pager;
@@ -29,12 +35,16 @@ public class UserListResult {
         
     public UserListResult(String searchTerm, Pager pager, List<AuthenticatedUser> userList){
         
+        
         if (searchTerm == null){
             searchTerm = "";
         }
         this.searchTerm = searchTerm;
         
         this.pager = pager;
+        if (this.pager==null){
+            logger.severe("Pager should never be null!");
+        }
         
         this.userList = userList;
         if (this.userList == null){
@@ -100,17 +110,6 @@ public class UserListResult {
         return this.userList;
     }
     
-    /**
-     * TO DO!
-     * Return this object as a JsonObjectBuilder object
-     * 
-     * @return 
-     */
-    public JsonObjectBuilder asJSON(){
-        
-        return null;
-    }
-    
     
     /**
      *  Set success
@@ -146,5 +145,56 @@ public class UserListResult {
         return this.errorMessage;
     }
 
+    
+    /**
+     * TO DO!
+     * Return this object as a JsonObjectBuilder object
+     * 
+     * @return 
+     */
+    public JsonObjectBuilder asJSON(){
+        
+        if (userList.isEmpty()){
+            return getNoResultsJSON();
+        }
+        if (pager==null){
+            logger.severe("Pager should never be null!");
+            return getNoResultsJSON();
+           
+        }
+
+        
+        JsonObjectBuilder jsonOverallData = Json.createObjectBuilder();
+        jsonOverallData.add("userCount", pager.getNumResults())
+                       .add("selectedPage", pager.getSelectedPageNumber())
+                       .add("pagination", pager.asJsonObjectBuilder())
+                       .add("bundleStrings", getBundleStrings())
+                       //.add("users", jsonUserListArray)
+                       ;
+        return jsonOverallData;
+    }
+    
+    
+    private JsonObjectBuilder getNoResultsJSON(){
+        
+         return Json.createObjectBuilder()
+                        .add("userCount", 0)
+                        .add("selectedPage", 1)
+                        .add("bundleStrings", getBundleStrings())
+                        .add("users", Json.createArrayBuilder()); // empty array
+    }
+    
+    public JsonObjectBuilder getBundleStrings(){
+     
+           return Json.createObjectBuilder()                   
+                .add("userId", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userId"))
+                .add("userIdentifier", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userIdentifier"))
+                .add("lastName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastName"))
+                .add("firstName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.firstName"))
+                .add("email", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.email"))
+                .add("isSuperuser", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.isSuperuser"))
+                ;
+                       
+    }
 
 }

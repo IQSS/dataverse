@@ -60,6 +60,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
+import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import javax.inject.Inject;
 import javax.ws.rs.QueryParam;
@@ -337,9 +338,15 @@ public class Admin extends AbstractApiBean {
         
         UserListMaker userListMaker = new UserListMaker(userService);
         
-        JsonObjectBuilder userInfo = userListMaker.runSearch(searchTerm, itemsPerPage, selectedPage, null);
         
-        return ok(userInfo);
+        // placeholder
+        UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, null);
+
+        return ok(userListResult.asJSON());
+        
+        //JsonObjectBuilder userInfo = userListMaker.runSearch(searchTerm, itemsPerPage, selectedPage, null);
+        
+        //return ok(userInfo);
     }
     
     

@@ -75,7 +75,6 @@ public class DashboardUsersPage implements java.io.Serializable {
          */
         UserListResult userListResult = userListMaker.runUserSearch(searchTerm, UserListMaker.ITEMS_PER_PAGE, getSelectedPage(), null);
         if (userListResult==null){
-            msg("Uh oh!!!!!");
             try {
                 throw new Exception("userListResult should not be null!");
             } catch (Exception ex) {
