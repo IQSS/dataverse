@@ -66,8 +66,7 @@
                 </ui:fragment>
                 <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{msg.summary}</strong>&#160;<h:outputText value="#{msg.detail}" rendered="#{!empty msg.detail and (msg.detail != msg.summary)}"/>
                 <ui:fragment rendered="#{level eq 'FATAL'}">
-                    Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact " #{settingsWrapper.supportTeamName}>#{settingsWrapper.supportTeamName}</a> for assistance.
-                    <strong>Date/Time: </strong>
+                    Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact #{settingsWrapper.supportTeamName}">#{settingsWrapper.supportTeamName}</a> for assistance.                    <strong>Date/Time: </strong>
                     <h:outputText value="#{now}">
                         <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" type="date" />
                     </h:outputText>
