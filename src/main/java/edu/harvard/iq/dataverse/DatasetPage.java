@@ -422,7 +422,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void updateLinkableDataverses() {
-        dataversesForLinking = new ArrayLis<>();
+        dataversesForLinking = new ArrayList<>();
         linkingDVSelectItems = new ArrayList<>();
         
         //Since this is a super user we are getting all dataverses
