@@ -723,6 +723,21 @@ public class DatasetVersion implements Serializable {
         return retList;
     }
     
+    /**
+     *
+     * @return
+     */
+    public List<String> getDatasetSubjects() {
+        //todo get "List of Authors" from datasetfieldvalue table
+        List <String> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {            
+                retList.add(dsf.getValue());
+            }
+        }
+        return retList;
+    }
+    
     public String getDatasetProducersString(){
         String retVal = "";
         for (DatasetField dsf : this.getDatasetFields()) {

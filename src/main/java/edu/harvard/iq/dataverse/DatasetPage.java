@@ -3560,54 +3560,85 @@ public class DatasetPage implements java.io.Serializable {
 
     /**
      * dataset title
+     * @return title of workingVersion
      */
     public String getTitle()
-    {  //workingVersion
-	    assert( null != workingVersion );
-	    return workingVersion.getTitle();
+    {
+        assert( null != workingVersion );   
+        return workingVersion.getTitle();
     }
-
+    
     /**
-     * dataset publication date (dd MMM yyyy).
+     * dataset description
+     * @return title of workingVersion
+     */
+    public String getDescription()
+    {
+        assert( null != workingVersion );   
+        return workingVersion.getDescription();
+    }
+    
+    /** 
+     * dataset publication date
      * unpublished datasets will return an empty string.
-     *
+     * @return String dataset publication date (dd MMM yyyy).
      */
     public String getPublicationDate()
     {
-	    assert( null != workingVersion );
-	    if ( DatasetVersion.VersionState.DRAFT == workingVersion.getVersionState() )
-	    {
-		    return "";
-	    }
-	    Date rel_date = workingVersion.getReleaseTime();
-	    SimpleDateFormat fmt = new SimpleDateFormat("dd MMM yyyy");
-	    String r = fmt.format( rel_date.getTime() );
-	    return r;
+	assert( null != workingVersion );
+	if ( DatasetVersion.VersionState.DRAFT == workingVersion.getVersionState() )
+        {
+	    return "";
+        }
+        Date rel_date = workingVersion.getReleaseTime();
+        SimpleDateFormat fmt = new SimpleDateFormat("dd MMM yyyy");
+        String r = fmt.format( rel_date.getTime() );
+        return r;
     }
     /**
      * dataset authors
+     * @return list of author names
      */
     public String[] getDatasetAuthors()
     {
-	    assert( null != workingVersion );
-	    List<DatasetAuthor> authors = workingVersion.getDatasetAuthors();
-	    int n_authors = authors.size();
-	    String[] rs = new String[ n_authors ];
-	    int pos = 0;
-	    for( DatasetAuthor author : authors )
-	    {
-		    rs[pos] = author.getName().getValue();
-		    ++pos;
-	    }
-	    return rs;
+	assert( null != workingVersion );
+        List<DatasetAuthor> authorList = workingVersion.getDatasetAuthors();
+
+        String[] authors = new String[ authorList.size() ];
+	int pos = 0;
+        for( DatasetAuthor author : authorList )
+        {
+	    authors[pos] = author.getName().getValue();
+            ++pos;
+	}
+        return authors;
+    }
+    /**
+     * dataset subjects
+     * @return array of String containing the subjects for a page
+     */
+    public String[] getDatasetSubjects()
+    {
+	assert( null != workingVersion );
+        List<String> subjectList= workingVersion.getDatasetSubjects();
+        
+        String[] subjects = new String[ subjectList.size() ];
+        int pos = 0;
+        for(String subject : subjectList)
+        {
+            subjects[pos] = subjectList.get(pos);
+            pos++;
+        }
+	return subjects;
     }
     /**
      * publisher (aka - name of root dataverse)
+     * @return the publisher of the version
      */
     public String getPublisher()
     {
-	    assert( null != workingVersion );
-	    return workingVersion.getRootDataverseNameforCitation();
+        assert( null != workingVersion );
+        return workingVersion.getRootDataverseNameforCitation();
     }
     
     /*
