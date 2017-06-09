@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 
 /**
@@ -26,13 +27,13 @@ public class UserListResult {
     private String searchTerm;
 
     private Pager pager;
-
     private List<AuthenticatedUser> userList;
 
     private boolean success;
 
     private String errorMessage;
         
+    
     public UserListResult(String searchTerm, Pager pager, List<AuthenticatedUser> userList){
         
         
@@ -50,6 +51,7 @@ public class UserListResult {
         if (this.userList == null){
             this.userList = new ArrayList<>();  // new empty list
         }
+       
     }
 
     public Integer getSelectedPageNumber(){
@@ -162,16 +164,37 @@ public class UserListResult {
             return getNoResultsJSON();
            
         }
-
         
         JsonObjectBuilder jsonOverallData = Json.createObjectBuilder();
         jsonOverallData.add("userCount", pager.getNumResults())
                        .add("selectedPage", pager.getSelectedPageNumber())
                        .add("pagination", pager.asJsonObjectBuilder())
                        .add("bundleStrings", getBundleStrings())
-                       //.add("users", jsonUserListArray)
+                       .add("users", getUsersAsJSONArray())
                        ;
         return jsonOverallData;
+    }
+    
+
+    
+    private JsonArrayBuilder getUsersAsJSONArray(){
+        
+         // -------------------------------------------------
+        // No results..... Return count of 0 and empty array
+        // -------------------------------------------------
+        if ((userList==null)||(userList.isEmpty())){
+            return Json.createArrayBuilder(); // return an empty array
+        }
+        
+        // -------------------------------------------------
+        // We have results, format them into a JSON object
+        // -------------------------------------------------
+        JsonArrayBuilder jsonUserListArray = Json.createArrayBuilder();
+
+        for (AuthenticatedUser oneUser : userList) {            
+            //jsonUserListArray.add(oneUser.toJSON());
+        }            
+        return jsonUserListArray;
     }
     
     
@@ -184,6 +207,11 @@ public class UserListResult {
                         .add("users", Json.createArrayBuilder()); // empty array
     }
     
+    /**
+     * May be used for table headers or translating field names
+     * 
+     * @return 
+     */
     public JsonObjectBuilder getBundleStrings(){
      
            return Json.createObjectBuilder()                   
