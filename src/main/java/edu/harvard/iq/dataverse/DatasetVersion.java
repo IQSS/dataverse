@@ -731,41 +731,27 @@ public class DatasetVersion implements Serializable {
     /**
      * @return array of strings containing the names of the authors.
      */
-    public String[] getDatasetAuthorNames()
-    {
-        List<DatasetAuthor> authorList = this.getDatasetAuthors();
-
-        String[] authors = new String[ authorList.size() ];
-	int pos = 0;
-        for( DatasetAuthor author : authorList )
-        {
-	    authors[pos] = author.getName().getValue();
-            ++pos;
-	}
+    public List<String> getDatasetAuthorNames() {
+        List<String> authors = new ArrayList<>();
+        for (DatasetAuthor author : this.getDatasetAuthors()) {
+            authors.add(author.getName().getValue());
+        }
         return authors;
     }
-    
+
     /**
      * @return array of strings containing the dataset's subjects
      */
-    public String[] getDatasetSubjects() {
-        //todo get "List of Authors" from datasetfieldvalue table
-        List <String> subjectList = new ArrayList<>();
+    public List<String> getDatasetSubjects() {
+        List<String> subjects = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {            
-                subjectList.add(dsf.getDisplayValue());
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
+                subjects.add(dsf.getDisplayValue());
             }
-        }
-        String[] subjects = new String[ subjectList.size() ];
-        int pos = 0;
-        for(String subject : subjectList)
-        {
-            subjects[pos] = subjectList.get(pos);
-            pos++;
         }
         return subjects;
     }
-    
+
     public String getDatasetProducersString(){
         String retVal = "";
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -787,7 +773,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setDatasetAuthors(List<DatasetAuthor> authors) {
-        // FIXME add the authores to the relevant fields
+        // FIXME add the authors to the relevant fields
     }
 
     public String getCitation() {
@@ -811,6 +797,10 @@ public class DatasetVersion implements Serializable {
         return null;
     }
     
+    /**
+     * @param dsfType The type of DatasetField required
+     * @return the first field of type dsfType encountered.
+     */
     public DatasetField getDatasetField(DatasetFieldType dsfType) {
         if (dsfType != null) {
             for (DatasetField dsf : this.getFlatDatasetFields()) {
@@ -820,9 +810,8 @@ public class DatasetVersion implements Serializable {
             }
         }
         return null;
-
     }
-
+    
     public String getDistributionDate() {
         //todo get dist date from datasetfieldvalue table
         for (DatasetField dsf : this.getDatasetFields()) {

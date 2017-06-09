@@ -1,5 +1,5 @@
 #!/bin/sh
 . scripts/search/export-keys
-OUTPUT=`curl -s -X POST -H "Content-type:application/json" -d "{\"assignee\": \":authenticated-users\",\"role\": \"fullContributor\"}" "http://localhost:8080/api/dataverses/root/assignments?key=$ADMINKEY"`
+OUTPUT=`curl -s -X POST -H "Content-type:application/json" -d "{\"assignee\": \":authenticated-users\",\"role\": \"fullContributor\"}" "http://localhost:8080/api/dataverses/root/assignments?key=edf308d1-f62f-471b-8973-dfd65c4a0016"`
 echo $OUTPUT
 echo $OUTPUT | jq ' .data | {assignee,_roleAlias}'

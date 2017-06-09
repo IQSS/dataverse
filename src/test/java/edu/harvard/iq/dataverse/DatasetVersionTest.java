@@ -3,9 +3,11 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetVersion;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -18,6 +20,8 @@ import org.junit.Test;
  * @author michael
  */
 public class DatasetVersionTest {
+    
+    private static final Logger logger = Logger.getLogger(DatasetVersionTest.class.getCanonicalName());
     
     public DatasetVersionTest() {
     }
@@ -81,8 +85,4 @@ public class DatasetVersionTest {
         assertEquals(false, nonDraft.isInReview());
     }
     
-    @Test
-    public void metaTags() {
-        assertEquals(false, false);
-    }
 }
