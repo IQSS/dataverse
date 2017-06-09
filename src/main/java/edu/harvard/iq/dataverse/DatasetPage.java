@@ -160,12 +160,18 @@ public class DatasetPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject
     DatasetVersionUI datasetVersionUI;
-    @Inject PermissionsWrapper permissionsWrapper;
-    @Inject FileDownloadHelper fileDownloadHelper;
-    @Inject TwoRavensHelper twoRavensHelper;
-    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
-    @Inject ThumbnailServiceWrapper thumbnailServiceWrapper;
-
+    @Inject
+    PermissionsWrapper permissionsWrapper;
+    @Inject
+    FileDownloadHelper fileDownloadHelper;
+    @Inject
+    TwoRavensHelper twoRavensHelper;
+    @Inject
+    WorldMapPermissionHelper worldMapPermissionHelper;
+    @Inject
+    ThumbnailServiceWrapper thumbnailServiceWrapper;
+    @Inject
+    SettingsWrapper settingsWrapper; 
 
 
     private Dataset dataset = new Dataset();
@@ -428,11 +434,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getComputeUrl() {
-        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
     }
     
     public String getCloudEnvironmentName() {
-        return settingsService.getValueForKey(SettingsServiceBean.Key.CloudEnvironmentName);
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.CloudEnvironmentName);
     }
     
     public DataFile getSelectedDownloadFile() {
@@ -1077,7 +1083,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, false)){
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, false)){
             return true;
         }    
         return false;
@@ -1146,9 +1152,9 @@ public class DatasetPage implements java.io.Serializable {
         guestbookResponse = new GuestbookResponse();
         
         String nonNullDefaultIfKeyNotFound = "";
-        protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
+        protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        separator = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         
         if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
 
@@ -2723,7 +2729,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getDatasetPublishCustomText(){
-        String datasetPublishCustomText = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+        String datasetPublishCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         if( datasetPublishCustomText!= null && !datasetPublishCustomText.isEmpty()){
             return datasetPublishCustomText;
             
@@ -2732,7 +2738,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public Boolean isDatasetPublishPopupCustomTextOnAllVersions(){
-        return  settingsService.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
+        return  settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
     }
 
     public String getVariableMetadataURL(Long fileid) {

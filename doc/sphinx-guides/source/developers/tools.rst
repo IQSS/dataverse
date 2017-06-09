@@ -4,7 +4,8 @@ Tools
 
 These are handy tools for your :doc:`/developers/dev-environment/`.
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Netbeans Connector Chrome Extension
 +++++++++++++++++++++++++++++++++++

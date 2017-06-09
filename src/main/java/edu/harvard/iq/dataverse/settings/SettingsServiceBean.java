@@ -35,6 +35,13 @@ public class SettingsServiceBean {
     public enum Key {
         CloudEnvironmentName,
         ComputeBaseUrl,
+        /**
+         * For example, https://datacapture.example.org
+         */
+        DataCaptureModuleUrl,
+        RepositoryStorageAbstractionLayerUrl,
+        UploadMethods,
+        DownloadMethods,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
@@ -152,6 +159,7 @@ public class SettingsServiceBean {
         TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
+
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
@@ -288,7 +296,7 @@ public class SettingsServiceBean {
      * Values that are considered as "true".
      * @see #isTrue(java.lang.String, boolean) 
      */
-    private static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
+    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
             new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
     
     /**

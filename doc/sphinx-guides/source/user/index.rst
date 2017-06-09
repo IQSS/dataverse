@@ -6,7 +6,7 @@
 User Guide
 =================================================
 
-Contents:
+**Contents:**
 
 .. toctree::
 
