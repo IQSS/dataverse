@@ -32,6 +32,19 @@ public class UserUtil {
      * @param dbResult
      * @return 
      */
+    public static String getStringOrBlankForNull(Object dbResult){
+        
+        if (dbResult == null){
+            return "";
+        }
+        return (String)dbResult;
+    }
+    
+    /**
+     * Convenience method to format dbResult
+     * @param dbResult
+     * @return 
+     */
     public static String getTimestampStringOrNull(Object dbResult){
         
         if (dbResult == null){

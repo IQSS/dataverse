@@ -5,11 +5,14 @@ import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import edu.harvard.iq.dataverse.userdata.UserUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -303,6 +306,25 @@ public class AuthenticatedUser implements User, Serializable {
     public void setShibIdentityProvider(String shibIdentityProvider) {
         this.shibIdentityProvider = shibIdentityProvider;
     }
+    
+    public JsonObjectBuilder toJson() {
+        JsonObjectBuilder authenicatedUserJson = Json.createObjectBuilder();
+        
+        authenicatedUserJson.add("id", this.id);
+        authenicatedUserJson.add("rowNum", this.rowNum);
+        authenicatedUserJson.add("userIdentifier", this.userIdentifier);
+        authenicatedUserJson.add("lastName", this.lastName);
+        authenicatedUserJson.add("firstName", this.firstName);
+        authenicatedUserJson.add("email", this.email);
+        authenicatedUserJson.add("affiliation", UserUtil.getStringOrBlankForNull(this.affiliation));
+        authenicatedUserJson.add("isSuperuser", this.superuser);
+        authenicatedUserJson.add("position", UserUtil.getStringOrBlankForNull(this.position));
+        authenicatedUserJson.add("authenticationProvider", this.authProviderFactoryAlias);
+        authenicatedUserJson.add("roles", UserUtil.getStringOrBlankForNull(this.roles));
+        return authenicatedUserJson;
+    }
+    
+    
     
     @Override
     public String toString() {

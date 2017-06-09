@@ -191,8 +191,8 @@ public class UserListResult {
         // -------------------------------------------------
         JsonArrayBuilder jsonUserListArray = Json.createArrayBuilder();
 
-        for (AuthenticatedUser oneUser : userList) {            
-            //jsonUserListArray.add(oneUser.toJSON());
+        for (AuthenticatedUser oneUser : userList) {    
+            jsonUserListArray.add(oneUser.toJson());
         }            
         return jsonUserListArray;
     }

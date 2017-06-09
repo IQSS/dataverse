@@ -45,66 +45,7 @@ public class UserServiceBean {
 
         return user;
     }
-    
-    
-            
-    /**
-     * 
-     * @param searchTerm
-     * @param sortKey
-     * @param resultLimit
-     * @return 
-     */
-    public JsonArrayBuilder getUserListAsJSON(String searchTerm, String sortKey, Integer resultLimit, Integer offset) {
-
-        if ((offset == null)||(offset < 0)){
-            offset = 0;
-        }
-        // -------------------------------------------------
-        // Retrieve a list of user attributes from a native query
-        // -------------------------------------------------
-        List<Object[]> userResults = getUserList(searchTerm, sortKey, resultLimit, offset);
-
-        // -------------------------------------------------
-        // No results..... Return count of 0 and empty array
-        // -------------------------------------------------
-        if ((userResults==null)||(userResults.isEmpty())){
-            return Json.createArrayBuilder(); // return an empty array
-        }
-        
-        // -------------------------------------------------
-        // We have results, format them into a JSON object
-        // -------------------------------------------------
-        JsonArrayBuilder jsonUserListArray = Json.createArrayBuilder();
-
-        offset++;   // used for the rowNumber
-        for (Object[] result : userResults) {            
-
-            // not putting explicit nulls for now b/c https://stackoverflow.com/questions/22363925/jsr-353-how-to-add-null-values-using-javax-json-jsonobjectbuilder
-            //
-            NullSafeJsonBuilder singleUserData = NullSafeJsonBuilder.jsonObjectBuilder();
-            
-            singleUserData.add("id", (int)result[0])
-                    .add("rowNum", offset++)
-                    .add("userIdentifier", (String)result[1])
-                    .add("lastName", UserUtil.getStringOrNull(result[2]))
-                    .add("firstName", UserUtil.getStringOrNull(result[3]))
-                    .add("email", UserUtil.getStringOrNull(result[4]))
-                    .add("affiliation", UserUtil.getStringOrNull(result[5]))
-                    .add("isSuperuser", (boolean)result[6])
-                    .add("position", UserUtil.getStringOrNull(result[7]))
-                    .add("modificationTime", UserUtil.getTimestampStringOrNull(result[8]))
-                    .add("authProviderId", UserUtil.getStringOrNull(result[9]))
-                    .add("authProviderFactoryAlias", UserUtil.getStringOrNull(result[10]));
-
-            jsonUserListArray.add(singleUserData);            
-        }
-       
-        return jsonUserListArray;
-       
-    }
-    
-    
+   
     /**
      * Return the user information as a List of Arrays--e.g. straight from the db query
      * 
