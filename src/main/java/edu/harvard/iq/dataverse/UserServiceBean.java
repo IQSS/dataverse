@@ -227,7 +227,7 @@ public class UserServiceBean {
                                      .map(x -> "'@" + x + "'")
                                      .collect(Collectors.joining(", "));
 
-        System.out.println("identifierList: " + identifierList);
+        //System.out.println("identifierList: " + identifierList);
 
         
         String qstr = "SELECT distinct a.assigneeidentifier,";
@@ -238,7 +238,7 @@ public class UserServiceBean {
         qstr += " AND a.assigneeidentifier IN (" + identifierList + ")";
         qstr += " ORDER by a.assigneeidentifier, d.name;";
 
-        System.out.println("qstr: " + qstr);
+        //System.out.println("qstr: " + qstr);
 
         Query nativeQuery = em.createNativeQuery(qstr);
 
@@ -461,7 +461,7 @@ public class UserServiceBean {
         qstr += sharedSearchClause;
         qstr += ";";
         
-        System.out.println("getUserCount: " + qstr);
+        //System.out.println("getUserCount: " + qstr);
         
         Query nativeQuery = em.createNativeQuery(qstr);  
         

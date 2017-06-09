@@ -334,19 +334,12 @@ public class Admin extends AbstractApiBean {
             return error(Response.Status.FORBIDDEN, "forbidden, please leave");
 
         }
-        //return ok("hey");
         
-        UserListMaker userListMaker = new UserListMaker(userService);
+        UserListMaker userListMaker = new UserListMaker(userService);      
         
-        
-        // placeholder
         UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, null);
 
         return ok(userListResult.asJSON());
-        
-        //JsonObjectBuilder userInfo = userListMaker.runSearch(searchTerm, itemsPerPage, selectedPage, null);
-        
-        //return ok(userInfo);
     }
     
     
