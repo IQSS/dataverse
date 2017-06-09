@@ -1,1 +1,6 @@
-#title {font-size:1.7em;font-weight:bold;}
+/* Add any CSS necessary for your custom content */
+
+.navbar-default {
+	background-color: gold;
+	background-image: none;
+}
