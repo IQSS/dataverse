@@ -222,10 +222,12 @@ Then run the create command:
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
 
+.. _Branding Your Installation:
+
 Branding Your Installation
 --------------------------
 
-Dataverse provides configurable options for easy-to-add (and maintain) custom branding to your Dataverse installation. Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
+Dataverse provides configurable options for easy-to-add (and maintain) custom branding for your Dataverse installation. Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
 You can add a custom welcome/homepage as well as other custom content, to further brand your installation and make it your own. Here are the custom branding and content options you can add:
 
@@ -238,39 +240,39 @@ You can add a custom welcome/homepage as well as other custom content, to furthe
 Custom Homepage
 ++++++++++++++++
 
-A custom homepage or welcome page, allows for complete control over the look and feel of the homepage, replacing the default root datavere page as the homepage for your installation.
+Dataverse allows you to use a custom homepage or welcome page in place of the default root dataverse page. This allows for complete control over the look and feel of your installation's homepage.
 
-Download this sample :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html`` for starters. Then run this curl command:
+Download this sample: :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``. Then run this curl command:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
 Custom Navbar Logo
 +++++++++++++++++++
 
-With the default location for Glassfish, place an logo for your installation at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png``. Then run this curl command:
+Dataverse allows you to replace the default Dataverse icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
+
+Create a "navbar" folder in your Glassfish "logos" directory and place your custom logo there. By Glassfish default, it'll be located at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png``. Then run this curl command:
 
 ``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
-
-Note that the custom navbar logo is different than the logo within the root dataverse theme, as outlined in the "Customizing the Root Dataverse" section above.
 
 Custom Header
 +++++++++++++
 
-Download this sample :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html`` for starters. Then run this curl command:
+Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``. Then run this curl command:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
 
 Custom Footer
 +++++++++++++
 
-Download this sample :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html`` for starters. Then run this curl command:
+Download this sample: :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``. Then run this curl command:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
 
 Custom CSS Stylesheet
 +++++++++++++++++++++
 
-Download this sample :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css`` for starters. Then run this curl command:
+Download this sample: :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``. Then run this curl command:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
@@ -494,22 +496,22 @@ This is the email address that "system" emails are sent from such as password re
 :HomePageCustomizationFile
 ++++++++++++++++++++++++++
 
-See "Branding Your Installation" above.
+See :ref:`Branding Your Installation` above.
 
 :HeaderCustomizationFile
 ++++++++++++++++++++++++
 
-See "Branding Your Installation" above.
+See :ref:`Branding Your Installation` above.
 
 :FooterCustomizationFile
 ++++++++++++++++++++++++
 
-See "Branding Your Installation" above.
+See :ref:`Branding Your Installation` above.
 
 :StyleCustomizationFile
 +++++++++++++++++++++++
 
-See "Branding Your Installation" above.
+See :ref:`Branding Your Installation` above.
 
 :FooterCopyright
 ++++++++++++++++
