@@ -226,55 +226,52 @@ Branding Your Installation
 
 Dataverse provides configurable options for easy-to-add (and maintain) custom branding to your Dataverse installation. Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
-From the top to the bottom of a page, you can make the following branding changes:
+You can add a custom welcome/homepage as well as other custom content, to further brand your installation and make it your own. Here are the custom branding and content options you can add:
 
-- Add a logo to the nav bar.
-- Add a custom header.
-- Add a custom footer.
-- Add a custom CSS stylesheet.
+- Custom welcome/homepage
+- Logo image to navbar
+- Header
+- Footer
+- CSS stylesheet
 
-In addition, you can replace the entire homepage with an HTML you write yourself:
+Custom Homepage
+++++++++++++++++
 
-- Replace the homepage with the ``:HomePageCustomizationFile`` setting.
+A custom homepage or welcome page, allows for complete control over the look and feel of the homepage, replacing the default root datavere page as the homepage for your installation.
 
-Custom Nav Bar Logo
+Download this sample :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html`` for starters. Then run this curl command:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+
+Custom Navbar Logo
 +++++++++++++++++++
 
-Assuming you installed Glassfish in the default location, place an logo for your installation at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png`` and run the following curl command:
+With the default location for Glassfish, place an logo for your installation at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png``. Then run this curl command:
 
 ``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
 
-Note that the custom nav bar logo is different than the logo within the root dataverse theme, which is discussed under the "Customizing the Root Dataverse" section above.
+Note that the custom navbar logo is different than the logo within the root dataverse theme, as outlined in the "Customizing the Root Dataverse" section above.
 
 Custom Header
 +++++++++++++
 
-You can download :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` as a starting point and place it at ``/var/www/dataverse/branding/custom-header.html``, for example. Then, run the following curl command:
+Download this sample :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html`` for starters. Then run this curl command:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
 
 Custom Footer
 +++++++++++++
 
-You can download :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` as a starting point and place it at ``/var/www/dataverse/branding/custom-footer.html``, for example. Then, run the following curl command:
+Download this sample :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html`` for starters. Then run this curl command:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
 
 Custom CSS Stylesheet
 +++++++++++++++++++++
 
-You can download :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` as a starting point and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``, for example. Then, run the following curl command:
+Download this sample :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css`` for starters. Then run this curl command:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
-
-Custom Home Page
-++++++++++++++++
-
-A custom home page gives you complete control over the look and feel of the home page, replacing the page the appears out of the box.
-
-You can download :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` as a starting point and place it at ``/var/www/dataverse/branding/custom-homepage.html``, for example. Then, run the following curl command:
-
-``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
