@@ -49,6 +49,9 @@ public class Pager {
     public int startCardNumber = 0;
     public int endCardNumber = 0;
     
+    public String startCardNumberString;
+    public String endCardNumberString;
+
     public int remainingCards = 0;
     public int numberNextResults =0;
     
@@ -292,7 +295,11 @@ public class Pager {
         return this.startCardNumber;
     }
     
+    public String getStartCardNumberString(){
+        
+        return this.addCommasToNumber(startCardNumber);
 
+    }
     /**
      * @param startCardNumber
      */
@@ -309,7 +316,11 @@ public class Pager {
         return this.endCardNumber;
     }
     
+    public String getEndCardNumberString(){
+        
+        return this.addCommasToNumber(endCardNumber);
 
+    }
     /**
      * @param endCardNumber
      */
