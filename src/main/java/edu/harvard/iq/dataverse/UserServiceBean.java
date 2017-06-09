@@ -449,10 +449,15 @@ public class UserServiceBean {
         if (sharedSearchClause.isEmpty()){
             sharedSearchClause = "";
         }else{
-            sharedSearchClause = " WHERE " + sharedSearchClause;
+            sharedSearchClause = " AND " + sharedSearchClause;
         }
         String qstr = "SELECT count(u.id)";
-        qstr += " FROM authenticateduser u";
+         qstr += " FROM authenticateduser u,";
+        qstr += " authenticateduserlookup prov_lookup,";
+        qstr += " authenticationproviderrow prov";
+        qstr += " WHERE";
+        qstr += " u.id = prov_lookup.authenticateduser_id";
+        qstr += " AND prov_lookup.authenticationproviderid = prov.id";    
         qstr += sharedSearchClause;
         qstr += ";";
         
