@@ -202,9 +202,6 @@ public class UserServiceBean {
             }
         }
         
-        System.out.println("userRoleLookup: " + userRoleLookup.size());
-
-    
         
         return userRoleLookup;
     }

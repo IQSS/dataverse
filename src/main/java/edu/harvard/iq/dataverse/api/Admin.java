@@ -318,7 +318,6 @@ public class Admin extends AbstractApiBean {
                         @QueryParam("numDisplay") Integer itemsPerPage,
                         @QueryParam("sortKey") String sortKey
     ) { 
-        System.out.println("_YE_OLDE_QUERY_COUNTER_");
         
         boolean DEBUG_MODE = false; // DANGER HERE!  Make sure it's false!
                 

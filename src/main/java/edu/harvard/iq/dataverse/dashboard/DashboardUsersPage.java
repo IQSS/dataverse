@@ -44,7 +44,6 @@ public class DashboardUsersPage implements java.io.Serializable {
     private String searchTerm;
 
     public String init() {
-        System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
         if ((session.getUser() != null) && (session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())) {
            authUser = (AuthenticatedUser) session.getUser();
@@ -187,7 +186,7 @@ public class DashboardUsersPage implements java.io.Serializable {
     }
     
     private void msg(String s){
-        System.out.println(s);
+        //System.out.println(s);
     }
     
     private void msgt(String s){
