@@ -21,12 +21,12 @@ public class BundleUtilTest {
     public void testGetStringFromBundleWithArguments() {
         assertEquals(null, BundleUtil.getStringFromBundle(null, null));
         String actual = BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList("http://guides.dataverse.org/en", "4.0"));
-        String expected = "You have successfully created your dataverse! To learn more about what you can do with your dataverse, check out the <a href=\"http://guides.dataverse.org/en/4.0/user/dataverse-management.html\" title=\"Dataverse Management - Dataverse User Guide\" target=\"_blank\">User Guide</a>.";
+        String expected = "You have successfully created your collection! To learn more about what you can do with your collection, check out the <a href=\"http://guides.dataverse.org/en/4.0/user/dataverse-management.html\" title=\"Dataverse Management - Dataverse User Guide\" target=\"_blank\">User Guide</a>.";
         assertEquals(expected, actual);
-        assertEquals("Your new dataverse named "
+        assertEquals("Your new collection named "
                 + "dvName (view at dvUrl ) "
                 + "was created in parentDvName (view at parentDvUrl ). To learn more "
-                + "about what you can do with your dataverse, check out "
+                + "about what you can do with your collection, check out "
                 + "the Dataverse Management - Dataverse User Guide at "
                 + "http://guides.dataverse.org/en/4.0/user/dataverse-management.html .",
                 BundleUtil.getStringFromBundle("notification.email.createDataverse",
@@ -34,11 +34,11 @@ public class BundleUtilTest {
         assertEquals("Your new data project named dsName (view at dsUrl ) "
                 + "was created in parentDvName (view at parentDvUrl ). "
                 + "To learn more about what you can do with a data project, "
-                + "check out the Data Project Management - Data Project User Guide at "
+                + "check out the Dataset Management - Dataverse User Guide at "
                 + "http://guides.dataverse.org/en/4.0/user/dataset-management.html .",
                 BundleUtil.getStringFromBundle("notification.email.createDataset",
                         Arrays.asList("dsName", "dsUrl", "parentDvName", "parentDvUrl", "http://guides.dataverse.org/en", "4.0")));
-        assertEquals("There are no dataverses, data projects, or files that match your search. "
+        assertEquals("There are no collections, data projects, or files that match your search. "
                 + "Please try a new search by using other or broader terms. You can also check out "
                 + "the <a href=\"http://guides.dataverse.org/en/4.2/user/find-use-data.html\" title=\"Finding &amp; Using "
                 + "Data - Dataverse User Guide\" target=\"_blank\">search guide</a> for tips.",
