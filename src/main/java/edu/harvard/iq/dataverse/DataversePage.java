@@ -303,6 +303,9 @@ public class DataversePage implements java.io.Serializable {
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
             setupForGeneralInfoEdit();
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
+            if (dataverse.getName() == null) {
+                dataverse.setName(DataverseUtil.getSuggestedDataverseNameOnCreate(session.getUser()));
+            }
         }
 
         return null;
@@ -1014,7 +1017,4 @@ public class DataversePage implements java.io.Serializable {
         }
     }
 
-    public String getSuggestedDataverseNameOnCreate() {
-        return DataverseUtil.getSuggestedDataverseNameOnCreate(session.getUser());
-    }
 }
