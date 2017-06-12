@@ -1,7 +1,8 @@
 Search API
 ==========
 
-.. contents:: :local:
+.. contents:: |toctitle|
+    :local:
 
 About
 -----

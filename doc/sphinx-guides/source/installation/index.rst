@@ -6,7 +6,7 @@
 Installation Guide
 ==================
 
-Contents:
+**Contents:**
 
 .. toctree::
 
@@ -21,3 +21,4 @@ Contents:
    geoconnect
    shibboleth
    oauth2
+   data-capture-module

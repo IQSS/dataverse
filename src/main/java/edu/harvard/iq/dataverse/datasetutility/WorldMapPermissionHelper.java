@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -48,7 +49,7 @@ import javax.inject.Named;
 @Named
 public class WorldMapPermissionHelper implements java.io.Serializable {
     
-    @Inject SettingsServiceBean settingsService;
+    @Inject SettingsWrapper settingsWrapper;
     @Inject MapLayerMetadataServiceBean mapLayerMetadataService;
     @Inject PermissionServiceBean permissionService;
     @Inject DataverseSession session;
@@ -168,7 +169,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
             Is setting for GeoconnectViewMaps true?
             Nope? no button
         */
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectViewMaps, false)){
+        if (!settingsWrapper.isTrueForKey(SettingsServiceBean.Key.GeoconnectViewMaps, false)){
             this.fileMetadataWorldMapExplore.put(fm.getId(), false);
             return false;
         } 
@@ -413,7 +414,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         }
         
         //  (1) Is the view GeoconnectViewMaps 
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
+        if (!settingsWrapper.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
             return false;
         }
         
@@ -528,12 +529,21 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
 
 
         //  (2) Is the view GeoconnectViewMaps 
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
+        if (!settingsWrapper.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps, false)){
              
             return false;
         }
+        
+        
+        // (3) Is File restricted? if Yes - no button.
+        if (fm.isRestricted() || fm.getDataFile().isRestricted()){
+            
+            return false;
+        }
+        
+        
                      
-        //  (3) Is File released?
+        //  (4) Is File released?
         //
         if (fm.getDataFile().isReleased()){
             

@@ -515,7 +515,16 @@ public abstract class AbstractApiBean {
             .add("status", STATUS_OK)
             .add("data", value).build() ).build();
     }
-    
+
+    /**
+     * @param data Payload to return.
+     * @param mediaType Non-JSON media type.
+     * @return Non-JSON response, such as a shell script.
+     */
+    protected Response ok(String data, MediaType mediaType) {
+        return Response.ok().entity(data).type(mediaType).build();
+    }
+
     protected Response created( String uri, JsonObjectBuilder bld ) {
         return Response.created( URI.create(uri) )
                 .entity( Json.createObjectBuilder()

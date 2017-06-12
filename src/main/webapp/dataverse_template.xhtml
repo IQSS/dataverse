@@ -60,8 +60,6 @@
             </f:facet>
         </p:ajaxStatus>
         <ui:include src="contactFormFragment.xhtml">
-            <ui:param name="formTitle" value="#{bundle['contact.header']}"/>
-            <ui:param name="formTo" value="#{bundle['contact.to']}"/>
         </ui:include>
         <p:dialog id="statusInfo" header="#{settingsWrapper.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
             <p><h:outputText value="#{settingsWrapper.get(':StatusMessageText')}" escape="false"/></p>
@@ -77,7 +75,8 @@
         <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>        
+        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>  
+        <script type="text/javascript" defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>          
         <ui:fragment rendered="#{systemConfig.isShibPassiveLoginEnabled()}">
             <script type="text/javascript" language="javascript" src="#{resource['js/shib/isPassive.js']}"></script>
         </ui:fragment>

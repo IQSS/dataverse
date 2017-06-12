@@ -22,14 +22,12 @@ public class GlobalId implements java.io.Serializable {
     
     public static final String DOI_PROTOCOL = "doi";
     public static final String HDL_PROTOCOL = "hdl";
+    public static final String HDL_RESOLVER_URL = "http://hdl.handle.net/";
+    public static final String DOI_RESOLVER_URL = "http://dx.doi.org/";
     
     @EJB
     SettingsServiceBean settingsService;
 
-    // I'm marking this constructor as "deprecated" because it's not reliable;
-    // it uses the parser (below) that makes incorrect assumptions about 
-    // handles and dois. (see comments there)
-    @Deprecated
     public GlobalId(String identifier) {
         
         // set the protocol, authority, and identifier via parsePersistentId        
@@ -86,9 +84,9 @@ public class GlobalId implements java.io.Serializable {
         URL url = null;
         try {
             if (protocol.equals(DOI_PROTOCOL)){
-               url = new URL("http://dx.doi.org/" + authority + "/" + identifier); 
+               url = new URL(DOI_RESOLVER_URL + authority + "/" + identifier); 
             } else if (protocol.equals(HDL_PROTOCOL)){
-               url = new URL("http://hdl.handle.net/" + authority + "/" + identifier);  
+               url = new URL(HDL_RESOLVER_URL + authority + "/" + identifier);  
             }           
         } catch (MalformedURLException ex) {
             Logger.getLogger(GlobalId.class.getName()).log(Level.SEVERE, null, ex);
@@ -110,71 +108,44 @@ public class GlobalId implements java.io.Serializable {
      *       authority: 1902.1
      *       identifier: 111012
      *
-     * @param persistentId
+     * @param identifierString
      * 
      */
-    // This parser makes an incorrect assumption, that a handle has to be made of 2
-    // "/"-separated parts, and a doi - of 3. ICPSR's DOIs are an example of a DOI
-    // that has 2 parts only: doi:10.3886/ICPSR24006.v2
-    // We already have working global id parsers elsewhere in the app:
-    // for ex., parseStudyIdDOI() and parseStudyIdHandle() in importDDIServiceBean;
-    // We should probably copy that code here, than change the app so that all 
-    // the pieces are using this class, instead of replicating the functionality
-    // in multiple places.
+    
+    private boolean parsePersistentId(String identifierString){
 
-    @Deprecated
-    private boolean parsePersistentId(String persistentId){
-
-        if (persistentId==null){
+        if (identifierString == null){
             return false;
         } 
         
-        String doiSeparator = "/";//settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, "/");
+        int index1 = identifierString.indexOf(':');
+        int index2 = identifierString.lastIndexOf('/');
+        if (index1==-1) {
+            return false; 
+        }  
+       
+        String protocol = identifierString.substring(0, index1);
         
-        // Looking for this split  
-        //  doi:10.5072/FK2/BYM3IW => (doi) (10.5072/FK2/BYM3IW)
-        //
-        //  or this one: (hdl) (1902.1/xxxxx)
-        //
-        String[] items = persistentId.split(":");
-        if (items.length != 2){
+        if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
             return false;
         }
-        String protocolPiece = items[0].toLowerCase();
         
-        String[] pieces = items[1].split(doiSeparator);
-
-        // -----------------------------
-        // Is this a handle?
-        // -----------------------------
-        if ( pieces.length == 2 && protocolPiece.equals(HDL_PROTOCOL)){
-            // example: hdl:1902.1/111012
-            
-            this.protocol = protocolPiece;  // hdl
-            this.authority = formatIdentifierString(pieces[0]);     // 1902.1
-            this.identifier = formatIdentifierString(pieces[1]);    // 111012            
-            return true;
-                    
-        }else if (pieces.length == 3 && protocolPiece.equals(DOI_PROTOCOL)){
-            // -----------------------------
-            // Is this a DOI?
-            // -----------------------------
-            // example: doi:10.5072/FK2/BYM3IW
-            
-            this.protocol = protocolPiece;  // doi
-            
-            String doiAuthority = formatIdentifierString(pieces[0]) + doiSeparator + formatIdentifierString(pieces[1]); // "10.5072/FK2"
-            if (this.checkDOIAuthority(doiAuthority)){
-                this.authority = doiAuthority;
-            } else {
+        
+        if (index2 == -1) {
+            return false;
+        } 
+        
+        this.protocol = protocol;
+        this.authority = formatIdentifierString(identifierString.substring(index1+1, index2));
+        this.identifier = formatIdentifierString(identifierString.substring(index2+1));
+        
+        if (this.protocol.equals(DOI_PROTOCOL)) {
+            if (!this.checkDOIAuthority(this.authority)) {
                 return false;
             }
-                        
-            this.identifier = formatIdentifierString(pieces[2]); // "BYM3IW"
-            return true;
         }
-        
-        return false;
+        return true;
+
     }
 
     

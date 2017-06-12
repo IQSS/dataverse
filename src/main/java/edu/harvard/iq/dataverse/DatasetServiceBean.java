@@ -221,30 +221,30 @@ public class DatasetServiceBean implements java.io.Serializable {
         return foundDataset;
     }
 
-    public String generateDatasetIdentifier(String protocol, String authority, String separator) {
+    public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         switch (doiIdentifierType) {
             case "randomString":
-                return generateIdentifierAsRandomString(protocol, authority, separator);
+                return generateIdentifierAsRandomString(dataset, idServiceBean);
             case "sequentialNumber":
-                return generateIdentifierAsSequentialNumber(protocol, authority, separator);
+                return generateIdentifierAsSequentialNumber(dataset, idServiceBean);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(protocol, authority, separator);
+                return generateIdentifierAsRandomString(dataset, idServiceBean);
         }
     }
     
-    private String generateIdentifierAsRandomString(String protocol, String authority, String separator) {
+    private String generateIdentifierAsRandomString(Dataset dataset, IdServiceBean idServiceBean) {
 
         String identifier = null;
         do {
             identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isIdentifierUniqueInDatabase(identifier, protocol, authority, separator));
+        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
 
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(String protocol, String authority, String separator) {
+    private String generateIdentifierAsSequentialNumber(Dataset dataset, IdServiceBean idServiceBean) {
         
         String identifier; 
         do {
@@ -257,7 +257,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 return null; 
             }
             identifier = identifierNumeric.toString();
-        } while (!isIdentifierUniqueInDatabase(identifier, protocol, authority, separator));
+        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
         
         return identifier;
     }
@@ -267,18 +267,21 @@ public class DatasetServiceBean implements java.io.Serializable {
      * for any other study in this Dataverse Network) alos check for duplicate
      * in EZID if needed
      */
-    public boolean isIdentifierUniqueInDatabase(String userIdentifier, String protocol, String authority, String separator) {
+    public boolean isIdentifierUniqueInDatabase(String userIdentifier, Dataset dataset, IdServiceBean idServiceBean) {
         String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
-        query += " and d.protocol ='" + protocol + "'";
-        query += " and d.authority = '" + authority + "'";
+        query += " and d.protocol ='" + dataset.getProtocol() + "'";
+        query += " and d.authority = '" + dataset.getAuthority() + "'";
         boolean u = em.createQuery(query).getResultList().size() == 0;
-        String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = settingsService.getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        if (doiProvider.equals("EZID")) {
-            if (!doiEZIdServiceBean.lookupMetadataFromIdentifier(protocol, authority, separator, userIdentifier).isEmpty()) {
+            
+        try{
+            if (idServiceBean.alreadyExists(dataset)) {
                 u = false;
             }
+        } catch (Exception e){
+            //we can live with failure - means identifier not found remotely
         }
+
+       
         return u;
     }
 
@@ -844,6 +847,24 @@ public class DatasetServiceBean implements java.io.Serializable {
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);
+    }
+    
+    // persist assigned thumbnail in a single one-field-update query:
+    // (the point is to avoid doing an em.merge() on an entire dataset object...)
+    public void assignDatasetThumbnailByNativeQuery(Long datasetId, Long dataFileId) {
+        try {
+            em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id=" + datasetId).executeUpdate();
+        } catch (Exception ex) {
+            // it's ok to just ignore... 
+        }
+    }
+    
+    public void assignDatasetThumbnailByNativeQuery(Dataset dataset, DataFile dataFile) {
+        try {
+            em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFile.getId() + " WHERE id=" + dataset.getId()).executeUpdate();
+        } catch (Exception ex) {
+            // it's ok to just ignore... 
+        }
     }
 
 }

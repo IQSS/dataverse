@@ -2,6 +2,9 @@
 Debugging
 =========
 
+.. contents:: |toctitle|
+	:local:
+
 Logging
 -------
 

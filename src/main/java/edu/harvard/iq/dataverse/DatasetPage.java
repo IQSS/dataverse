@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -159,11 +160,18 @@ public class DatasetPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject
     DatasetVersionUI datasetVersionUI;
-    @Inject PermissionsWrapper permissionsWrapper;
-    @Inject FileDownloadHelper fileDownloadHelper;
-    @Inject TwoRavensHelper twoRavensHelper;
-    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
-
+    @Inject
+    PermissionsWrapper permissionsWrapper;
+    @Inject
+    FileDownloadHelper fileDownloadHelper;
+    @Inject
+    TwoRavensHelper twoRavensHelper;
+    @Inject
+    WorldMapPermissionHelper worldMapPermissionHelper;
+    @Inject
+    ThumbnailServiceWrapper thumbnailServiceWrapper;
+    @Inject
+    SettingsWrapper settingsWrapper; 
 
 
     private Dataset dataset = new Dataset();
@@ -240,13 +248,30 @@ public class DatasetPage implements java.io.Serializable {
             return thumbnailString;
         }
 
+        if (!readOnly) {
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
         if (datasetThumbnail == null) {
             thumbnailString = "";
             return null; 
         } 
+        
+        if (datasetThumbnail.isFromDataFile()) {
+            if (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile())) {
+                datasetService.assignDatasetThumbnailByNativeQuery(dataset, datasetThumbnail.getDataFile());
+                dataset = datasetService.find(dataset.getId());
+            }
+        }
            
         thumbnailString = datasetThumbnail.getBase64image();
+        } else {
+            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId());
+            if (thumbnailString == null) {
+                thumbnailString = "";
+                return null;
+            }
+            
+            
+        }
         return thumbnailString;
     }
 
@@ -364,6 +389,56 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setDataverseSiteUrl(String dataverseSiteUrl) {
         this.dataverseSiteUrl = dataverseSiteUrl;
+    }
+    //TODO: 
+    //Consolidate this & FilePage in static function in the SwiftAccessIO
+
+    public String getSwiftContainerName(){
+        String swiftContainerName = null;
+        String swiftFolderPathSeparator = "-";
+        if (persistentId != null) {
+            dataset = datasetService.findByGlobalId(persistentId); 
+            String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
+            swiftContainerName = dataset.getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
+                + swiftFolderPathSeparator + dataset.getIdentifier();
+            logger.fine("Swift container name: " + swiftContainerName);
+        }
+
+        return swiftContainerName;
+    }
+    
+    public void setSwiftContainerName(String name){
+        
+    }
+
+    //assumes that *ALL* files in ONE specified container are stored in swift backend 
+    //could be changed 
+    //SF 
+    public Boolean isSwiftStorage(){
+        Boolean swiftBool = false;
+        //dataset = datasetService.findByGlobalId(persistentId);
+        Long datasetVersion = workingVersion.getId();
+        if (datasetVersion != null) {
+                int unlimited = 0;
+                int maxResults = unlimited;
+            List<FileMetadata> metadatas = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);        
+                logger.fine("metadatas " + metadatas);
+            if (metadatas != null && metadatas.size() > 0) {
+                if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
+                    && metadatas.get(0).getDataFile().getStorageIdentifier().startsWith("swift://")) {
+                    swiftBool = true;
+                }
+            }
+        }
+        return swiftBool;
+    }
+
+    public String getComputeUrl() {
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+    }
+    
+    public String getCloudEnvironmentName() {
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.CloudEnvironmentName);
     }
     
     public DataFile getSelectedDownloadFile() {
@@ -1008,7 +1083,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, false)){
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, false)){
             return true;
         }    
         return false;
@@ -1077,9 +1152,9 @@ public class DatasetPage implements java.io.Serializable {
         guestbookResponse = new GuestbookResponse();
         
         String nonNullDefaultIfKeyNotFound = "";
-        protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
+        protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        separator = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         
         if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
 
@@ -1096,12 +1171,12 @@ public class DatasetPage implements java.io.Serializable {
                     logger.warning("No such dataset: "+persistentId);
                     return permissionsWrapper.notFound();
                 }
-                logger.fine("retrived dataset, id="+dataset.getId());
+                logger.fine("retrieved dataset, id="+dataset.getId());
                 
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.info("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
@@ -1208,7 +1283,8 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setProtocol(protocol);
             dataset.setAuthority(authority);
             dataset.setDoiSeparator(separator);
-            dataset.setIdentifier(datasetService.generateDatasetIdentifier(protocol, authority, separator));
+            //Wait until the create command before actually getting an identifier  
+            //dataset.setIdentifier(datasetService.generateDatasetIdentifier(protocol, authority, separator));
 
             if (dataset.getOwner() == null) {
                 return permissionsWrapper.notFound();
@@ -1336,6 +1412,26 @@ public class DatasetPage implements java.io.Serializable {
             selectedFiles.add(fmdn);
         }
         readOnly = false;
+    }
+    
+    public void testSelectedFilesForMapData(){
+        setSelectedFilesHasMapLayer(false); 
+        for (FileMetadata fmd : selectedFiles){
+            if(worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
+                setSelectedFilesHasMapLayer(true);
+                return; //only need one for warning message
+            }
+        }
+    }
+    
+    private boolean selectedFilesHasMapLayer;
+
+    public boolean isSelectedFilesHasMapLayer() {
+        return selectedFilesHasMapLayer;
+    }
+
+    public void setSelectedFilesHasMapLayer(boolean selectedFilesHasMapLayer) {
+        this.selectedFilesHasMapLayer = selectedFilesHasMapLayer;
     }
     
     private Integer chunkSize = 25;
@@ -1552,6 +1648,18 @@ public class DatasetPage implements java.io.Serializable {
         
         dvIn.setArchiveNote(getDeaccessionForwardURLFor());
         return dvIn;
+    }
+    
+    public boolean isMapLayerToBeDeletedOnPublish(){
+
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()){
+             if (worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
+                 if (fmd.isRestricted() || fmd.isRestrictedUI()){
+                        return true;
+                 }
+             }
+        }      
+        return false;
     }
 
     private String releaseDataset(boolean minor) {
@@ -1967,7 +2075,27 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
     
-    
+    public String testSelectedFilesForRestrict(){
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        if (selectedFiles.isEmpty()) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");           
+            return "";
+        } else {           
+            boolean validSelection = false;
+            for (FileMetadata fmd : selectedFiles) {
+                if (!fmd.isRestricted() ){
+                    validSelection = true;
+                }
+            }
+            if (!validSelection) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");
+                return "";
+            }                       
+            testSelectedFilesForMapData();
+            requestContext.execute("PF('accessPopup').show()");
+            return "";
+        }        
+    }
     
         
     public String restrictSelectedFiles(boolean restricted){
@@ -2189,9 +2317,6 @@ public class DatasetPage implements java.io.Serializable {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
-               
-        // Finally, save the files permanently: 
-        ingestService.addFiles(workingVersion, newFiles);
 
         // Use the API to save the dataset: 
         Command<Dataset> cmd;
@@ -2604,7 +2729,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getDatasetPublishCustomText(){
-        String datasetPublishCustomText = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+        String datasetPublishCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         if( datasetPublishCustomText!= null && !datasetPublishCustomText.isEmpty()){
             return datasetPublishCustomText;
             
@@ -2613,7 +2738,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public Boolean isDatasetPublishPopupCustomTextOnAllVersions(){
-        return  settingsService.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
+        return  settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
     }
 
     public String getVariableMetadataURL(Long fileid) {
@@ -3540,7 +3665,7 @@ public class DatasetPage implements java.io.Serializable {
         this.guestbookResponseService = guestbookResponseService;
     }
     
-    
+       
     public WorldMapPermissionHelper getWorldMapPermissionHelper() {
         return worldMapPermissionHelper;
     }

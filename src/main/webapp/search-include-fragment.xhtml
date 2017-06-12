@@ -32,7 +32,7 @@
                 <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
                 <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
                                          or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand'))}">
-                    <button type="button" class="btn btn-default" onclick="PF('addData_popup').show()">
+                    <button type="button" class="btn btn-default btn-access" onclick="PF('addData_popup').show()">
                         <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']}
                     </button>
                 </ui:fragment>
@@ -40,7 +40,7 @@
                         rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)
                                      or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse))}">
                     <div class="btn-group">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                             <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']} <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
@@ -445,8 +445,8 @@
                             <span class="icon-dataverse text-brand pull-right" title="#{bundle.dataverse}"/>
                             <c:set var="dvUrl" value="#{dataversePage}?alias=#{result.dataverseAlias}"/>
                             <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
-                                <h:outputText value="#{result.name} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                <h:outputText value="#{result.nameHighlightSnippet} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                 <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
                             </h:outputLink>
                             <h:outputText value="(#{result.dataverseAffiliation})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}"/>
@@ -466,7 +466,7 @@
 
                         <c:set var="dvParentUrl" value="#{dataversePage}?alias=#{result.dataverseParentAlias}"/>
                         <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
-                            <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
+                            <h:outputText value="#{result.parent.get('name')}"/>
                         </h:outputLink>
 
                         <hr style="margin:.5em;border:0;"/>
@@ -526,7 +526,7 @@
                         
                         <c:set var="dvParentAlias" value="#{dataversePage}?alias=#{result.dataverseAlias}"/>
                         <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
-                            <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
+                            <h:outputText value="#{result.parent.get('name')}"/>
                         </h:outputLink>
 
                         <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">

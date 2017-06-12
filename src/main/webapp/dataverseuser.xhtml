@@ -12,7 +12,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name}"/>
             <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
@@ -81,7 +81,7 @@
                                                             <h:outputText value="#{dataverseServiceBean.findRootDataverse().name}"/>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['dataverse']} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>
                                                         </o:param>
                                                         <o:param>
                                                             <a href="https://demo.dataverse.org">#{bundle['notification.demoSite']}</a>
@@ -178,6 +178,15 @@
                                                     <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'MAPLAYERDELETEFAILED'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.maplayer.deletefailed']}" escape="false">
+                                                        <o:param value="#{item.theObject.getLabel()}"/>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDatasetVersion().getDataset().getGlobalId()}" title="#{item.theObject.getDatasetVersion().getDataset().getDisplayName()}">#{item.theObject.getDatasetVersion().getDataset().getDisplayName()}</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -301,7 +310,7 @@
                                             <span class="glyphicon glyphicon-info-sign"/>
                                             <h:outputText value=" #{bundle['user.isShibUser']}" />
                                             <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibBeforeLink']} " />
-                                            <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                            <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -318,7 +327,7 @@
                                             <h:outputFormat value=" #{bundle['user.helpOAuthBeforeLink']} ">
                                                 <f:param value="#{DataverseUserPage.userAuthProvider.info.title}"/>
                                             </h:outputFormat>
-                                            <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                            <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>

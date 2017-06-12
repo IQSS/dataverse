@@ -1,7 +1,8 @@
 Account Creation + Management
 =============================
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Account Information
 -------------------
@@ -98,7 +99,7 @@ If you already have a Dataverse account associated with the Username/Email log i
 Convert your Dataverse account away from your Institutional Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are leaving your institution and need to convert your Dataverse account to the Dataverse Username/Email log in option, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance.
+If you are leaving your institution and need to convert your Dataverse account to the Dataverse Username/Email log in option, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link that will open a popup form to contact support for assistance.
 
 ORCID Log In
 ~~~~~~~~~~~~~
@@ -131,7 +132,7 @@ If you already have a Dataverse account associated with the Username/Email log i
 Convert your Dataverse account away from ORCID for log in
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you don't want to log in to Dataverse using ORCID any more, you will want to convert your Dataverse account to the Dataverse Username/Email log in option. To do this, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link for "Dataverse Support" that will open the popup form to contact support for assistance.
+If you don't want to log in to Dataverse using ORCID any more, you will want to convert your Dataverse account to the Dataverse Username/Email log in option. To do this, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link that will open a popup form to contact support for assistance.
 
 GitHub and Google Log In
 ~~~~~~~~~~~~~~~~~~~~~~~~~
