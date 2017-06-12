@@ -39,6 +39,7 @@ Related Projects
 
 As a developer, you also may be interested in these projects related to Dataverse:
 
+- Miniverse - expose metrics from a Dataverse database: https://github.com/IQSS/miniverse
 - `Zelig <http://zeligproject.org>`_ (R) - run statistical models on files uploaded to Dataverse: https://github.com/IQSS/Zelig
 - `TwoRavens <http://datascience.iq.harvard.edu/about-tworavens>`_ (Javascript) - a `d3.js <http://d3js.org>`_ interface for exploring data and running Zelig models: https://github.com/IQSS/TwoRavens
 - :doc:`/developers/unf/index` (Java) -  a Universal Numerical Fingerprint: https://github.com/IQSS/UNF
@@ -46,4 +47,5 @@ As a developer, you also may be interested in these projects related to Datavers
 - GeoConnect (Python) - create a map by uploading files to Dataverse: https://github.com/IQSS/geoconnect
 - Dataverse API client libraries - use Dataverse APIs from various languages: :doc:`/api/client-libraries`
 - Third party apps - make use of Dataverse APIs: :doc:`/api/apps`
+- chat.dataverse.org - chat interface for Dataverse users and developers: https://github.com/IQSS/chat.dataverse.org
 - [Your project here] :)

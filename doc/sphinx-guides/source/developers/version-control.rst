@@ -11,7 +11,7 @@ The Dataverse Project uses git for version control and GitHub for hosting. On th
 Where to Find the Dataverse Code
 --------------------------------
 
-The main code in question is at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
+The main Dataverse code at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
 
 Branching Strategy
 ------------------
@@ -94,7 +94,7 @@ Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for variou
 How to Resolve Conflicts in Your Pull Request
 ---------------------------------------------
 
-Unfortunately, pull requests can quickly become "stale" and unmergable as other pull requests are merged into the develop branch ahead of you. This is completely norma, and often occurs because other developers made their pull requests before you did.
+Unfortunately, pull requests can quickly become "stale" and unmergable as other pull requests are merged into the develop branch ahead of you. This is completely normal, and often occurs because other developers made their pull requests before you did.
 
 The Dataverse team may ping you to ask you to merge the latest from the develop branch into your branch and resolve merge conflicts. If this sounds daunting, please just say so and we will assist you.
 
