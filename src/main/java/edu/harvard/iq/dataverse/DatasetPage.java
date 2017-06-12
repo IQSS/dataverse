@@ -3589,7 +3589,7 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
         Date rel_date = workingVersion.getReleaseTime();
-        SimpleDateFormat fmt = new SimpleDateFormat("dd MMM yyyy");
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
         String r = fmt.format(rel_date.getTime());
         return r;
     }

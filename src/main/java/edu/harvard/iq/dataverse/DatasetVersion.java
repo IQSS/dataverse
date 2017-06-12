@@ -746,7 +746,7 @@ public class DatasetVersion implements Serializable {
         List<String> subjects = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
-                subjects.add(dsf.getDisplayValue());
+                subjects.addAll(dsf.getValues());
             }
         }
         return subjects;
