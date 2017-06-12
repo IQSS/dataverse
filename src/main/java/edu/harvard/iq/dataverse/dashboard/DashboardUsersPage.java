@@ -66,7 +66,7 @@ public class DashboardUsersPage implements java.io.Serializable {
     
     public boolean runUserSearch(){
 
-        msgt("Run the search!");
+        logger.fine("Run the search!");
 
 
         /**
@@ -185,14 +185,5 @@ public class DashboardUsersPage implements java.io.Serializable {
         
     }
     
-    private void msg(String s){
-        //System.out.println(s);
-    }
-    
-    private void msgt(String s){
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
     
 }
