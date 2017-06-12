@@ -57,7 +57,9 @@ When writing tests, you may find it helpful to first map out which functions of 
 
 Recall that integration tests should live in the ``/dataverse/src/test/java/edu/harvard/iq/dataverse/api`` directory, or if you’re on Netbeans then navigate to the project’s Test Packages → edu.harvard.iq.dataverse.api and place your testnameIT.java file there!
 
-If writing tests is new to you: in NetBeans, poke around existing tests. If you read through any you may notice each test within a file (bearing the @Test prefix) has an assertion which specifies the expected result (expected, from the Run menu, select Test File.
+If writing tests is new to you: in NetBeans, poke around existing tests. If you read through any you may notice each test within a file (bearing the @Test prefix) has an assertion which specifies the expected result (expected by the test program). 
+
+To run a test in Netbeans: from the Run dropdown menu, select Test File. You can view the glassfish logs and the test output back to back.
 
 The output in the file’s test window (beside the console) corresponds to what each line of each @Test block is doing. Many existing tests provide readable Json output, and how verbose the output is up to you as a developer.
 
@@ -73,3 +75,28 @@ Remember, it’s only a test (and it's not graded)! Some guidelines to bear in m
   * A useful resource would be `HTTP status codes <http://www.restapitutorial.com/httpstatuscodes.html>`_
 - Let the code do the labor; automate everything that happens when you run your test file.
 - Just as with any development, if you’re stuck: ask for help!
+
+
+Troubleshooting
+---------------
+
+In your local development environment, it canbe tricky to make *all* tests pass. This is especially true for some isolated features and tests that aren't necessarily indicative of a working/non-working Dataverse app. 
+
+One such example as of 4.6.2 is in ``DatasetsIT.java``. Three of the thirteen tests in this file depend on a numeric identifier sequence for datasets (to test a certain non-default feature), but this sequence may not be preconfigured in your database. To remedy this, there is a SQL script you can run found `here <http://guides.dataverse.org/en/latest/installation/config.html#identifiergenerationstyle>`_ which will enable the test conditions to pass. Read the :IdentifierGenerationStyle section for more information.
+
+If the ``DatasetsIT.java`` test is still failing, and your logs are complaining about privateurl or "unable to find valid certification path to requested target" then you may need to configure your siteUrl to specify localhost:8080 via glassfish. This can be done with the following:
+
+``asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"`` 
+
+Defining the siteUrl as localhost:8080 stops the app from referring to your domain name and will also clean up referential email links sent from your app such as email confirmation, password reset, etc.
+
+It's also helpful to publish your root dataverse before running all REST-assured tests. Some discrepancies can stop certain tests from working, such as ``FilesIT.java``. If this integration test is mostly failing, it is likely due to the permissions of your root dataverse. The solution to this:
+
++ From the localhost Dataverse UI, log in as dataverseAdmin (password: admin) and click the Edit button for your root dataverse.
++ Navigate to Permissions, then the Edit Access button.
++ Under "Who can add to this dataverse?" choose "Anyone with a dataverse account can add sub dataverses"
++ This should allow the 10 tests dependent on adding new dataverses to now pass. Save changes and run tests for ``FilesIT.java`` again.
+
+Alternatively, this same step can be done with a script, found here:
+``scripts/search/tests/grant-authusers-add-on-root``
+
