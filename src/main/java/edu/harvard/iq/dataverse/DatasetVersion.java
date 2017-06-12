@@ -729,7 +729,7 @@ public class DatasetVersion implements Serializable {
     }
     
     /**
-     * @return array of strings containing the names of the authors.
+     * @return List of Strings containing the names of the authors.
      */
     public List<String> getDatasetAuthorNames() {
         List<String> authors = new ArrayList<>();
@@ -740,7 +740,7 @@ public class DatasetVersion implements Serializable {
     }
 
     /**
-     * @return array of strings containing the dataset's subjects
+     * @return List of Strings containing the dataset's subjects
      */
     public List<String> getDatasetSubjects() {
         List<String> subjects = new ArrayList<>();
@@ -811,7 +811,7 @@ public class DatasetVersion implements Serializable {
         }
         return null;
     }
-    
+
     public String getDistributionDate() {
         //todo get dist date from datasetfieldvalue table
         for (DatasetField dsf : this.getDatasetFields()) {

@@ -40,7 +40,6 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.DatasetAuthor;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

@@ -3,7 +3,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,9 +19,7 @@ import org.junit.Test;
  * @author michael
  */
 public class DatasetVersionTest {
-    
-    private static final Logger logger = Logger.getLogger(DatasetVersionTest.class.getCanonicalName());
-    
+
     public DatasetVersionTest() {
     }
     
