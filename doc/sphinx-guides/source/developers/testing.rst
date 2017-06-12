@@ -32,18 +32,18 @@ Creating unit tests for your code is a helpful way to test what you've built pie
 
 Unit tests can be executed without runtime dependencies on PostgreSQL, Solr, or any other external system. They are the lowest level of testing and are executed constantly on developers' laptops as part of the build process and via continous integration services in the cloud.
 
-A unit test should execute an operation of your code in a controlled fashion. You must make an assertion of what the expected response gives back. It's important to test optimistic output and assertions, the "happy path", as well as unexpected intput that leads to failure conditions. Know how your program should handle anticipated errors/exceptions and confirm with your test(s) that it does so properly. 
+A unit test should execute an operation of your code in a controlled fashion. You must make an assertion of what the expected response gives back. It's important to test optimistic output and assertions (the "happy path"), as well as unexpected input that leads to failure conditions. Know how your program should handle anticipated errors/exceptions and confirm with your test(s) that it does so properly. 
 
 Unit Test Automation Overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We use a variety of tools to write, execute, and measure the code coverage of unit tests, including Maven, JUnit, Jacoco, GitHub, Travis, Coveralls. We'll explain the role of each tool below, but here's an overview of what you can expect from the automation we've set up in terms of 
+We use a variety of tools to write, execute, and measure the code coverage of unit tests, including Maven, JUnit, Jacoco, GitHub, Travis, and Coveralls. We'll explain the role of each tool below, but here's an overview of what you can expect from the automation we've set up.
 
 As you prepare to make a pull request, as described in the :doc:`version-control` section, you will be working on a new branch you create from the "develop" branch. Let's say your branch is called ``1012-private-url``. As you work, you are constantly invoking Maven to build the war file. When you do a "clean and build" in Netbeans, Maven runs all the unit tests (anything ending with ``Test.java``) and the runs the results through a tool called Jacoco that calculates code coverage. When you push your branch to GitHub and make a pull request, a web service called Travis CI runs Maven and Jacoco on your branch and pushes the results to Coveralls, which is a web service that tracks changes to code coverage over time.
 
-To make this more concrete, observe that https://github.com/IQSS/dataverse/pull/3111 has comments from a GitHub user called ``coveralls`` saying things like "Coverage increased (+0.5%) to 5.547% when pulling dd6ceb1 on 1012-private-url into be5b26e on develop." Clicking on the comment should lead you to a URL such as https://coveralls.io/builds/7013870 which shows how code coverage has gone up or down and that page links to a page such as https://travis-ci.org/IQSS/dataverse/builds/144840165 which shows the build on the Travis side that pushed the results ton Coveralls.
+To make this more concrete, observe that https://github.com/IQSS/dataverse/pull/3111 has comments from a GitHub user called ``coveralls`` saying things like "Coverage increased (+0.5%) to 5.547% when pulling dd6ceb1 on 1012-private-url into be5b26e on develop." Clicking on the comment should lead you to a URL such as https://coveralls.io/builds/7013870 which shows how code coverage has gone up or down. That page links to a page such as https://travis-ci.org/IQSS/dataverse/builds/144840165 which shows the build on the Travis side that pushed the results ton Coveralls.
 
-The main take away should be that we care about unit testing enough to measure the changes to code coverage over time using automation. Now let's talk about how you can help keep our code coverage up by writing unit tests with JUnit.
+The main takeaway should be that we care about unit testing enough to measure the changes to code coverage over time using automation. Now let's talk about how you can help keep our code coverage up by writing unit tests with JUnit.
 
 Writing Unit Tests with JUnit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,7 +67,7 @@ In addition to seeing code coverage in Netbeans, you can also see code coverage 
 Integration Tests
 -----------------
 
-Unit tests are fantastic for low level testing of logic but aren't especially real-world because they do not exercise Dataverse as it runs in production with a database and other runtime dependencies. We test in depth by also writing integration tests to exercise a running system.
+Unit tests are fantastic for low level testing of logic but aren't especially real-world-applicable because they do not exercise Dataverse as it runs in production with a database and other runtime dependencies. We test in-depth by also writing integration tests to exercise a running system.
 
 Unfortunately, the term "integration tests" can mean different things to different people. For our purposes, an integration test has the following qualities:
 
@@ -79,9 +79,9 @@ Unfortunately, the term "integration tests" can mean different things to differe
 Getting Set Up to Run REST Assured Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Unit tests are run automatically on every build but dev environments and servers requires special setup to run REST Assured tests. In short, Dataverse needs to be placed into an insecure mode that allows arbitrary users and datasets to be created and destroyed. This differs greatly from the out of the box behavior of Dataverse, which we strive to keep secure for sysadming installing the software for their institutions in a production environment.
+Unit tests are run automatically on every build, but dev environments and servers require special setup to run REST Assured tests. In short, Dataverse needs to be placed into an insecure mode that allows arbitrary users and datasets to be created and destroyed. This differs greatly from the out-of-the-box behavior of Dataverse, which we strive to keep secure for sysadmins installing the software for their institutions in a production environment.
 
-The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests but we'd like to add some sort of "dev" flag to the installer to put Dataverse in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
+The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put Dataverse in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
 
 The Burrito Key
 ^^^^^^^^^^^^^^^
@@ -118,7 +118,7 @@ If ``dataverse.siteUrl`` is absent, you can add it with:
 Identifier Generation 
 ^^^^^^^^^^^^^^^^^^^^^
 
-``DatasetsIT.java`` exercises the a feature where the "identifier" of a DOI can be a digit and requires a sequence to be added to your database.  See ``:IdentifierGenerationStyle`` under the :doc:`/installation/config` section for adding this sequence to your installation of PostgreSQL.
+``DatasetsIT.java`` exercises the feature where the "identifier" of a DOI can be a digit and requires a sequence to be added to your database.  See ``:IdentifierGenerationStyle`` under the :doc:`/installation/config` section for adding this sequence to your installation of PostgreSQL.
 
 
 Writing Integration Tests with REST Assured
@@ -158,16 +158,16 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 The Phoenix Server
 ------------------
 
-A server at http://phoenix.dataverse.org has been set up to test the latest code from the develop branch. Testing done using chained builds of Jenkins jobs:
+A server at http://phoenix.dataverse.org has been set up to test the latest code from the develop branch. Testing is done using chained builds of Jenkins jobs:
 
 - A war file is built from the latest code in develop: https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-build-develop/
 - The resulting war file is depoyed to the Phoenix server: https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-deploy-develop/
-- REST Assured Tests are run across the wire from the Jenkins server to the Phoenix server  https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-apitest-develop/
+- REST Assured Tests are run across the wire from the Jenkins server to the Phoenix server:  https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-apitest-develop/
 
 Future Work
 -----------
 
-We'd like to make improvements to our automated testing. See also a [thread on the mailing list](https://groups.google.com/forum/#!topic/dataverse-community/X8OrRWbPimA) asking for ideas from the community and discussion at https://github.com/IQSS/dataverse/issues/2746
+We'd like to make improvements to our automated testing. See also 'this thread from our mailing list <https://groups.google.com/forum/#!topic/dataverse-community/X8OrRWbPimA>'_ asking for ideas from the community, and discussion at 'this GitHub issue. <https://github.com/IQSS/dataverse/issues/2746>'_ 
 
 Future Work on Unit Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -194,7 +194,7 @@ Browser-Based Testing
 Installation Testing
 ~~~~~~~~~~~~~~~~~~~~
 
-- Run `vagrant up` on a server to test the installer: http://guides.dataverse.org/en/latest/developers/tools.html#vagrant . We haven't been able to get this working in Travis: https://travis-ci.org/IQSS/dataverse/builds/96292683 . Perhaps it would be possible to use AWS as a provider from Vagrant judging from https://circleci.com/gh/critical-alert/circleci-vagrant/6
+- Run `vagrant up` on a server to test the installer: http://guides.dataverse.org/en/latest/developers/tools.html#vagrant . We haven't been able to get this working in Travis: https://travis-ci.org/IQSS/dataverse/builds/96292683 . Perhaps it would be possible to use AWS as a provider from Vagrant judging from https://circleci.com/gh/critical-alert/circleci-vagrant/6 .
 - Work with @lwo to automate testing of https://github.com/IQSS/dataverse-puppet . Consider using Travis: https://github.com/IQSS/dataverse-puppet/issues/10
 - Work with @donsizemore to automate testing of https://github.com/IQSS/dataverse-ansible with Travis or similar.
 
