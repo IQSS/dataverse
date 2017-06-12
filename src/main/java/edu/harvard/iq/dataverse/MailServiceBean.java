@@ -9,6 +9,7 @@ import com.sun.mail.smtp.SMTPSendFailedException;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
@@ -102,7 +103,8 @@ public class MailServiceBean implements java.io.Serializable {
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
         boolean sent = false;
-        String body = messageText + ResourceBundle.getBundle("Bundle").getString("notification.email.closing");
+        String rootDataverseName = dataverseService.findRootDataverse().getName();
+        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName)));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
              Message msg = new MimeMessage(session);
@@ -185,7 +187,8 @@ public class MailServiceBean implements java.io.Serializable {
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification);
-               String subjectText = getSubjectTextBasedOnNotification(notification);              
+               String rootDataverseName = dataverseService.findRootDataverse().getName();
+               String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, rootDataverseName);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                     retval = sendSystemEmail(emailAddress, subjectText, messageText); 
                } else {
@@ -199,45 +202,7 @@ public class MailServiceBean implements java.io.Serializable {
         }
         return retval;
     }
-        
-    private String getSubjectTextBasedOnNotification(UserNotification userNotification) {
-        switch (userNotification.getType()) {
-            case ASSIGNROLE:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.assign.role.subject");
-            case REVOKEROLE:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.revoke.role.subject");
-            case CREATEDV:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.create.dataverse.subject");
-            case REQUESTFILEACCESS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.request.file.access.subject");
-            case GRANTFILEACCESS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.grant.file.access.subject");
-            case REJECTFILEACCESS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.rejected.file.access.subject");
-            case MAPLAYERUPDATED:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.update.maplayer");
-            case MAPLAYERDELETEFAILED:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.maplayer.deletefailed.subject");
-            case CREATEDS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.create.dataset.subject");
-            case SUBMITTEDDS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.submit.dataset.subject");
-            case PUBLISHEDDS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.publish.dataset.subject");
-            case RETURNEDDS:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.returned.dataset.subject");
-            case CREATEACC:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.create.account.subject");
-            case CHECKSUMFAIL:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.checksumfail.subject");
-            case FILESYSTEMIMPORT:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.import.filesystem.subject");
-            case CHECKSUMIMPORT:
-                return ResourceBundle.getBundle("Bundle").getString("notification.email.import.checksum.subject");
-        }
-        return "";
-    }
-    
+
     private String getDatasetManageFileAccessLink(DataFile datafile){
         return  systemConfig.getDataverseSiteUrl() + "/permissions-manage-files.xhtml?id=" + datafile.getOwner().getId();
     } 
@@ -442,9 +407,14 @@ public class MailServiceBean implements java.io.Serializable {
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
                 return messageText;
             case CREATEACC:
+                String rootDataverseName = dataverseService.findRootDataverse().getName();
+                InternetAddress systemAddress = getSystemAddress();
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
+                        BrandingUtil.getInstallationBrandName(rootDataverseName),
                         systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getGuidesVersion()
+                        systemConfig.getGuidesVersion(),
+                        BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName),
+                        BrandingUtil.getSupportTeamEmailAddress(systemAddress)
                 ));
                 String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
                 accountCreatedMessage += optionalConfirmEmailAddon;

@@ -16,7 +16,7 @@
         <div class="card-title-icon-block" style="font-size: 110%;"> 
  {% if card_info.type == "dataverse" %}
             <span class="icon-dataverse text-brand pull-right" title="Dataverse"></span>
-            <a href="/dataverse/{{ card_info.identifier }}"><span style="padding:4px 0;">{{ card_info.name }} Dataverse</span></a>
+            <a href="/dataverse/{{ card_info.identifier }}"><span style="padding:4px 0;">{{ card_info.name }}</span></a>
            {# <span class="text-muted">(<em>Affiliation</em>)</span>#}
  {% elif card_info.type == "dataset" %}
             <span class="icon-dataset text-info pull-right" title="Dataset"></span>
@@ -46,7 +46,7 @@
         <span class="text-muted">{{ card_info.date_to_display_on_card }} 
             {% if card_info.parentId %}
                 {% if card_info.parentId != card_info.identifier %}
-                  -  <a href="/dataverse.xhtml?id={{ card_info.parentId }}">{{ card_info.parentName }} Dataverse</a>
+                  -  <a href="/dataverse.xhtml?id={{ card_info.parentId }}">{{ card_info.parentName }}</a>
                 {% endif %}
             {% endif %}
         </span>
@@ -60,7 +60,7 @@
                 <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}"><span class="icon-dataset text-info"></span></a>
             </div>
             <span class="text-muted">{{ card_info.date_to_display_on_card }}
-                - <a href="/dataverse.xhtml?id={{ card_info.parentId }}">{{ card_info.parentName }} Dataverse</a>
+                - <a href="/dataverse.xhtml?id={{ card_info.parentId }}">{{ card_info.parentName }}</a>
             </span>
             <span class="resultDatasetCitationBlock{%if card_info.is_deaccesioned %} bg-danger{% else %} bg-citation {% endif %}">
                 {%if card_info.citationHtml %}{{ card_info.citationHtml|safe }}{% else %}{{ card_info.citation|safe }}{% endif %}</span>
