@@ -294,14 +294,6 @@ public class OptionalFileParams {
             fm.setDescription(this.getDescription());
         }
         
-        // ---------------------------
-        // Add restriction
-        // ---------------------------
-        if (restrict != fm.isRestricted()) {
-            fm.setRestricted(restrict);
-            //since this is a new file, we must also set the restriction on the datafile
-            fm.getDataFile().setRestricted(restrict);
-        }
         
         // ---------------------------
         // Add categories

@@ -792,7 +792,7 @@ Setting an installation to public indicates the admin will not be able to restri
 This is useful for specific cases where files are stored in public access, therefore removing the need for restrictions.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:PublicInstall``
-=======
+
 :DataCaptureModuleUrl
 +++++++++++++++++++++
 

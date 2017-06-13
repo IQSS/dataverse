@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.EditDataset)
 public class RestrictFileCommand extends AbstractVoidCommand {
-    //private static final Logger logger = Logger.getLogger(RestrictFileCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(RestrictFileCommand.class.getCanonicalName());
 
     private final DataFile file;
     private final boolean restrict;
@@ -47,10 +47,11 @@ public class RestrictFileCommand extends AbstractVoidCommand {
         boolean defaultValue = false;
         boolean publicInstall = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
         
+        logger.info("Using restrict file command");
+
         if (publicInstall) {
             throw new CommandExecutionException("Restricting files is not permitted on a public installation.", this);
         }
-        
         if (file.getOwner() == null){
             // this is a new file through upload, restrict
             file.getFileMetadata().setRestricted(restrict);

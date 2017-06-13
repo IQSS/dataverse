@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import com.jayway.restassured.path.json.JsonPath;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static java.lang.Thread.sleep;
 import java.util.Arrays;
@@ -846,6 +847,121 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
     }
 
+    @Test
+    public void testRestrictFile() {
+        msgt("testRestrictFile");
+        
+        //get publicInstall setting so we can change it back
+        Response publicInstallResponse = UtilIT.getSetting(SettingsServiceBean.Key.PublicInstall);
+        //TODO: fix this its a little hacky
+        String publicInstall = String.valueOf(publicInstallResponse.getBody().asString().contains("true"));
+        
+        // make sure this is not a public installation
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
+        
+        // Set restrict to true
+        boolean restrict = true;
+        // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+        
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        msg("Add initial file");
+        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .statusCode(OK.getStatusCode());
+        
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+
+        msg("Orig file id: " + origFileId);
+        assertNotNull(origFileId);    // If checkOut fails, display message
+        
+        //restrict file good
+        Response restrictResponse = UtilIT.restrictFile(origFileId, restrict, apiToken);
+        
+        restrictResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //restrict already restricted file bad
+        Response restrictResponseBad = UtilIT.restrictFile(origFileId, restrict, apiToken);
+        
+        restrictResponseBad.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        
+        //unrestrict file
+        restrict = false;
+        Response unrestrictResponse = UtilIT.restrictFile(origFileId, restrict, apiToken);
+        
+        unrestrictResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //reset public install
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, publicInstall);
+
+        
+    }
+    
+        @Test
+    public void testRestrictAddedFile() {
+        msgt("testRestrictAddedFile");
+        
+        //get publicInstall setting so we can change it back
+        Response publicInstallResponse = UtilIT.getSetting(SettingsServiceBean.Key.PublicInstall);
+        String publicInstall = String.valueOf(publicInstallResponse.getBody().asString().contains("true"));
+        
+        // make sure this is not a public installation
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
+        
+        // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+        
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        msg("Add initial file");
+        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", "my description")
+                .add("categories", Json.createArrayBuilder()
+                    .add("Data")
+                    )
+                .add("restrict", "true");
+
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
+
+        //addResponse.prettyPrint();
+        msgt("Here it is: " + addResponse.prettyPrint());
+        String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .statusCode(OK.getStatusCode()); 
+        
+         //reset public install
+        UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, publicInstall);
+        
+    }
     
     private void msg(String m){
         System.out.println(m);
