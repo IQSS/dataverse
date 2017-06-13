@@ -198,7 +198,7 @@ Installation Testing
 - Work with @lwo to automate testing of https://github.com/IQSS/dataverse-puppet . Consider using Travis: https://github.com/IQSS/dataverse-puppet/issues/10
 - Work with @donsizemore to automate testing of https://github.com/IQSS/dataverse-ansible with Travis or similar.
 
-Load/Perfomance Testing
+Load/Performance Testing
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 - Run stress tests on a period basis: https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests 
