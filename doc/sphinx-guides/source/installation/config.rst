@@ -489,9 +489,11 @@ The key required to create users via API as documented at :doc:`/api/native-api`
 :SystemEmail
 ++++++++++++
 
-This is the email address that "system" emails are sent from such as password reset links.
+This is the email address that "system" emails are sent from such as password reset links. Your Dataverse installation will not send mail without this setting in place.
 
-``curl -X PUT -d "Support <support@example.edu>" http://localhost:8080/api/admin/settings/:SystemEmail``
+``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
+
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
 
 :HomePageCustomizationFile
 ++++++++++++++++++++++++++

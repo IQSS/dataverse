@@ -68,8 +68,6 @@
             </f:facet>
         </p:ajaxStatus>
         <ui:include src="contactFormFragment.xhtml">
-            <ui:param name="formTitle" value="#{bundle['contact.header']}"/>
-            <ui:param name="formTo" value="#{bundle['contact.to']}"/>
         </ui:include>
         <p:dialog id="statusInfo" header="#{settingsWrapper.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
             <p><h:outputText value="#{settingsWrapper.get(':StatusMessageText')}" escape="false"/></p>

@@ -15,7 +15,7 @@
             <f:viewAction action="#{OAuth2FirstLoginPage.init()}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
