@@ -19,16 +19,16 @@ public final class DatasetVersionDifference {
     private List<List> detailDataByBlock = new ArrayList<>();
     private List<datasetFileDifferenceItem> datasetFilesDiffList;
     private List<datasetReplaceFileItem> datasetFilesReplacementList;
-    private List<FileMetadata> addedFiles = new ArrayList();
-    private List<FileMetadata> removedFiles = new ArrayList();
-    private List<FileMetadata> changedFileMetadata = new ArrayList();
-    private List<FileMetadata[]> replacedFiles = new ArrayList();
-    private List<List> changedTermsAccess = new ArrayList();
-    private List<Object[]> summaryDataForNote = new ArrayList();
-    private List<Object[]> blockDataForNote = new ArrayList();
+    private List<FileMetadata> addedFiles = new ArrayList<>();
+    private List<FileMetadata> removedFiles = new ArrayList<>();
+    private List<FileMetadata> changedFileMetadata = new ArrayList<>();
+    private List<FileMetadata[]> replacedFiles = new ArrayList<>();
+    private List<List> changedTermsAccess = new ArrayList<>();
+    private List<Object[]> summaryDataForNote = new ArrayList<>();
+    private List<Object[]> blockDataForNote = new ArrayList<>();
     String noFileDifferencesFoundLabel = "";
     
-    private List<DifferenceSummaryGroup> differenceSummaryGroups = new ArrayList();
+    private List<DifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();
 
     public List<DifferenceSummaryGroup> getDifferenceSummaryGroups() {
         return differenceSummaryGroups;
@@ -139,22 +139,24 @@ public final class DatasetVersionDifference {
         //sort via metadatablock order - citation first...
         for (List blockList : detailDataByBlock) {
             Collections.sort(blockList, new Comparator<DatasetField[]>() {
+                @Override
                 public int compare(DatasetField[] l1, DatasetField[] l2) {
                     DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
                     DatasetField dsfb = l2[0];
                     int a = dsfa.getDatasetFieldType().getDisplayOrder();
                     int b = dsfb.getDatasetFieldType().getDisplayOrder();
-                    return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                    return Integer.valueOf(a).compareTo(b);
                 }
             });
         }
         Collections.sort(detailDataByBlock, new Comparator<List>() {
+            @Override
             public int compare(List l1, List l2) {
                 DatasetField dsfa[] = (DatasetField[]) l1.get(0);
                 DatasetField dsfb[] = (DatasetField[]) l2.get(0);
                 int a = dsfa[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
                 int b = dsfb[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
-                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                return Integer.valueOf(a).compareTo(b);
             }
         });
         getTermsDifferences();
@@ -164,8 +166,8 @@ public final class DatasetVersionDifference {
         if (addedFiles.isEmpty() || removedFiles.isEmpty()) {
             return;
         }
-        List<FileMetadata> addedToReplaced = new ArrayList();
-        List<FileMetadata> removedToReplaced = new ArrayList();
+        List<FileMetadata> addedToReplaced = new ArrayList<>();
+        List<FileMetadata> removedToReplaced = new ArrayList<>();
         for (FileMetadata added : addedFiles) {
             DataFile addedDF = added.getDataFile();
             Long replacedId = addedDF.getPreviousDataFileId();
@@ -196,7 +198,7 @@ public final class DatasetVersionDifference {
        
     private void getTermsDifferences() {
 
-        changedTermsAccess = new ArrayList();
+        changedTermsAccess = new ArrayList<>();
         if (newVersion.getTermsOfUseAndAccess() != null && originalVersion.getTermsOfUseAndAccess() != null) {
             if (!StringUtil.nullToEmpty(newVersion.getTermsOfUseAndAccess().getTermsOfUse()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUseAndAccess().getTermsOfUse()))) {
                 String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfUse.header");
@@ -437,9 +439,8 @@ public final class DatasetVersionDifference {
         return null;
     }
 
-    private List addToTermsChangedList(List listIn, String label, String origVal, String newVal) {
-        String[] diffArray;
-        diffArray = new String[3];
+    private List<List> addToTermsChangedList(List listIn, String label, String origVal, String newVal) {
+        String[] diffArray = new String[3];
         diffArray[0] = label;
         diffArray[1] = origVal;
         diffArray[2] = newVal;
@@ -449,8 +450,7 @@ public final class DatasetVersionDifference {
 
 
     private void addToList(List listIn, DatasetField dsfo, DatasetField dsfn) {
-        DatasetField[] dsfArray;
-        dsfArray = new DatasetField[2];
+        DatasetField[] dsfArray = new DatasetField[2];
         dsfArray[0] = dsfo;
         dsfArray[1] = dsfn;
         listIn.add(dsfArray);
@@ -729,8 +729,8 @@ public final class DatasetVersionDifference {
     }
 
     private void initDatasetFilesDifferencesList() {
-        datasetFilesDiffList = new ArrayList<datasetFileDifferenceItem>();
-        datasetFilesReplacementList = new ArrayList <datasetReplaceFileItem>();
+        datasetFilesDiffList = new ArrayList<>();
+        datasetFilesReplacementList = new ArrayList <>();
         
 
         // Study Files themselves are version-less;
@@ -797,12 +797,13 @@ public final class DatasetVersionDifference {
 
 
         Collections.sort(fileMetadatasOriginal, new Comparator<FileMetadata>() {
+            @Override
             public int compare(FileMetadata l1, FileMetadata l2) {
                 FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
                 FileMetadata fm2 = l2;
                 int a = fm1.getDataFile().getId().intValue();
                 int b = fm2.getDataFile().getId().intValue();
-                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                return Integer.valueOf(a).compareTo(b);
             }
         });
 
@@ -820,6 +821,7 @@ public final class DatasetVersionDifference {
         
 
         Collections.sort(fileMetadatasNew, new Comparator<FileMetadata>() {
+            @Override
             public int compare(FileMetadata l1, FileMetadata l2) {
                 FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
                 FileMetadata fm2 = l2;
@@ -947,10 +949,10 @@ public final class DatasetVersionDifference {
         value1 = fm1.getLabel();
         value2 = fm2.getLabel();
 
-        if (value1 == null || value1.equals("") || value1.equals(" ")) {
+        if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
             value1 = "";
         }
-        if (value2 == null || value2.equals("") || value2.equals(" ")) {
+        if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
             value2 = "";
         }
 
@@ -962,10 +964,10 @@ public final class DatasetVersionDifference {
         value1 = fm1.getDataFile().getFriendlyType();
         value2 = fm2.getDataFile().getFriendlyType();
 
-        if (value1 == null || value1.equals("") || value1.equals(" ")) {
+        if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
             value1 = "";
         }
-        if (value2 == null || value2.equals("") || value2.equals(" ")) {
+        if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
             value2 = "";
         }
 
@@ -993,10 +995,10 @@ public final class DatasetVersionDifference {
         value1 = fm1.getCategoriesByName().toString();
         value2 = fm2.getCategoriesByName().toString();
 
-        if (value1 == null || value1.equals("") || value1.equals(" ")) {
+        if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
             value1 = "";
         }
-        if (value2 == null || value2.equals("") || value2.equals(" ")) {
+        if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
             value2 = "";
         }
 
@@ -1008,10 +1010,10 @@ public final class DatasetVersionDifference {
         value1 = fm1.getDescription();
         value2 = fm2.getDescription();
 
-        if (value1 == null || value1.equals("") || value1.equals(" ")) {
+        if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
             value1 = "";
         }
-        if (value2 == null || value2.equals("") || value2.equals(" ")) {
+        if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
             value2 = "";
         }
 
@@ -1024,11 +1026,8 @@ public final class DatasetVersionDifference {
         value1 = fm1.isRestricted() ? "Restricted" : "Not Restricted";
         value2 = fm2.isRestricted() ? "Restricted" : "Not Restricted";
         
-        if (!value1.equals(value2)) {
-            return true;
-        }
-        // if we got this far, the 2 metadatas are identical:
-        return false;
+        // If values are equal objects are equal
+        return !value1.equals(value2);
     }
 
     private datasetFileDifferenceItem selectFileMetadataDiffs(FileMetadata fm1, FileMetadata fm2) {
@@ -1082,10 +1081,10 @@ public final class DatasetVersionDifference {
             value1 = fm1.getLabel();
             value2 = fm2.getLabel();
 
-            if (value1 == null || value1.equals("") || value1.equals(" ")) {
+            if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
                 value1 = "";
             }
-            if (value2 == null || value2.equals("") || value2.equals(" ")) {
+            if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
                 value2 = "";
             }
 
@@ -1102,10 +1101,10 @@ public final class DatasetVersionDifference {
             // file category:
             value1 = fm1.getCategoriesByName().toString();
             value2 = fm2.getCategoriesByName().toString();
-            if (value1 == null || value1.equals("") || value1.equals(" ")) {
+            if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
                 value1 = "";
             }
-            if (value2 == null || value2.equals("") || value2.equals(" ")) {
+            if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
                 value2 = "";
             }
 
@@ -1118,10 +1117,10 @@ public final class DatasetVersionDifference {
             value1 = fm1.getDescription();
             value2 = fm2.getDescription();
 
-            if (value1 == null || value1.equals("") || value1.equals(" ")) {
+            if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
                 value1 = "";
             }
-            if (value2 == null || value2.equals("") || value2.equals(" ")) {
+            if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
                 value2 = "";
             }
 

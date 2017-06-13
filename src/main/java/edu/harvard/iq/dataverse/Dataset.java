@@ -81,7 +81,7 @@ public class Dataset extends DvObjectContainer {
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
     @OrderBy("id")
-    private List<DataFile> files = new ArrayList();
+    private List<DataFile> files = new ArrayList<>();
 
     private String protocol;
     private String authority;
@@ -97,7 +97,7 @@ public class Dataset extends DvObjectContainer {
     private String identifier;
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("versionNumber DESC, minorVersionNumber DESC")
-    private List<DatasetVersion> versions = new ArrayList();
+    private List<DatasetVersion> versions = new ArrayList<>();
     @OneToOne(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private DatasetLock datasetLock;
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
@@ -146,7 +146,7 @@ public class Dataset extends DvObjectContainer {
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(this);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-        datasetVersion.setFileMetadatas(new ArrayList());
+        datasetVersion.setFileMetadatas(new ArrayList<>());
         datasetVersion.setVersionNumber(new Long(1));
         datasetVersion.setMinorVersionNumber(new Long(0));
         versions.add(datasetVersion);
@@ -243,10 +243,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     public boolean isLocked() {
-        if (datasetLock != null) {
-            return true;
-        }
-        return false;
+        return datasetLock != null;
     }
 
     public boolean isDeaccessioned() {
@@ -291,7 +288,7 @@ public class Dataset extends DvObjectContainer {
     private DatasetVersion createNewDatasetVersion(Template template) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
-        dsv.setFileMetadatas(new ArrayList());
+        dsv.setFileMetadatas(new ArrayList<>());
         DatasetVersion latestVersion;
 
         //if the latest version has values get them copied over
@@ -341,7 +338,7 @@ public class Dataset extends DvObjectContainer {
         if (template == null) {
             getVersions().add(0, dsv);
         } else {
-            this.setVersions(new ArrayList());
+            this.setVersions(new ArrayList<>());
             getVersions().add(0, dsv);
         }
 
@@ -374,7 +371,7 @@ public class Dataset extends DvObjectContainer {
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setDataset(this);
         dsv.initDefaultValues();
-        this.setVersions(new ArrayList());
+        this.setVersions(new ArrayList<>());
         getVersions().add(0, dsv);
         return dsv;
     }
@@ -384,7 +381,7 @@ public class Dataset extends DvObjectContainer {
             return getVersions().get(0).getReleaseTime();
         } else {
             for (DatasetVersion version : this.getVersions()) {
-                if (version.isReleased() && version.getMinorVersionNumber().equals(new Long(0))) {
+                if (version.isReleased() && version.getMinorVersionNumber().equals((long) 0)) {
                     return version.getReleaseTime();
                 }
             }
@@ -439,10 +436,10 @@ public class Dataset extends DvObjectContainer {
         if (newCategoryNames != null) {
             Collection<String> oldCategoryNames = getCategoryNames();
 
-            for (int i = 0; i < newCategoryNames.size(); i++) {
-                if (!oldCategoryNames.contains(newCategoryNames.get(i))) {
+            for (String newCategoryName : newCategoryNames) {
+                if (!oldCategoryNames.contains(newCategoryName)) {
                     DataFileCategory newCategory = new DataFileCategory();
-                    newCategory.setName(newCategoryNames.get(i));
+                    newCategory.setName(newCategoryName);
                     newCategory.setDataset(this);
                     this.addFileCategory(newCategory);
                 }
@@ -463,11 +460,11 @@ public class Dataset extends DvObjectContainer {
      }*/
 
     public DataFileCategory getCategoryByName(String categoryName) {
-        if (categoryName != null && !categoryName.equals("")) {
+        if (categoryName != null && !categoryName.isEmpty()) {
             if (dataFileCategories != null) {
-                for (int i = 0; i < dataFileCategories.size(); i++) {
-                    if (categoryName.equals(dataFileCategories.get(i).getName())) {
-                        return dataFileCategories.get(i);
+                for (DataFileCategory dataFileCategorie : dataFileCategories) {
+                    if (categoryName.equals(dataFileCategorie.getName())) {
+                        return dataFileCategorie;
                     }
                 }
             }
@@ -498,7 +495,7 @@ public class Dataset extends DvObjectContainer {
         Path studyDir = null;
 
         String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
+        if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
             filesRootDirectory = "/tmp/files";
         }
 
@@ -618,62 +615,65 @@ public class Dataset extends DvObjectContainer {
 
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
-            if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
-            } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
-                int c = rootArchiveUrl.indexOf("/OAIHandler");
-                if (c > 0) {
-                    rootArchiveUrl = rootArchiveUrl.substring(0, c);
-                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
-                }
-            } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                // For the ICPSR, it turns out that the best thing to do is to 
-                // rely on the DOI to send the user to the right landing page for 
-                // the study: 
-                //String icpsrId = identifier;
-                //return this.getOwner().getHarvestingClient().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
-                return "http://doi.org/" + authority + "/" + identifier;
-            } else if (HarvestingClient.HARVEST_STYLE_NESSTAR.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                String nServerURL = this.getHarvestedFrom().getArchiveUrl();
-                // chop any trailing slashes in the server URL - or they will result
-                // in multiple slashes in the final URL pointing to the study 
-                // on server of origin; Nesstar doesn't like it, apparently. 
-                nServerURL = nServerURL.replaceAll("/*$", "");
-
-                String nServerURLencoded = nServerURL;
-
-                nServerURLencoded.replace(":", "%3A");
-                nServerURLencoded.replace("/", "%2F");
-
-                String NesstarWebviewPage = nServerURL
-                        + "/webview/?mode=documentation&submode=abstract&studydoc="
-                        + nServerURLencoded + "%2Fobj%2FfStudy%2F"
-                        + identifier
-                        + "&top=yes";
-
-                return NesstarWebviewPage;
-            } else if (HarvestingClient.HARVEST_STYLE_ROPER.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                return this.getHarvestedFrom().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
-            } else if (HarvestingClient.HARVEST_STYLE_HGL.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                // a bit of a hack, true. 
-                // HGL documents, when turned into Dataverse studies/datasets
-                // all 1 datafile; the location ("storage identifier") of the file
-                // is the URL pointing back to the HGL GUI viewer. This is what 
-                // we will display for the dataset URL.  -- L.A. 
-                // TODO: create a 4.+ ticket for a cleaner solution. 
-                List<DataFile> dataFiles = this.getFiles();
-                if (dataFiles != null && dataFiles.size() == 1) {
-                    if (dataFiles.get(0) != null) {
-                        String hglUrl = dataFiles.get(0).getStorageIdentifier();
-                        if (hglUrl != null && hglUrl.matches("^http.*")) {
-                            return hglUrl;
+            if (null != this.getHarvestedFrom().getHarvestStyle()) {
+                switch (this.getHarvestedFrom().getHarvestStyle()) {
+                    case HarvestingClient.HARVEST_STYLE_DATAVERSE:
+                        return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
+                    case HarvestingClient.HARVEST_STYLE_VDC:
+                        String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
+                        int c = rootArchiveUrl.indexOf("/OAIHandler");
+                        if (c > 0) {
+                            rootArchiveUrl = rootArchiveUrl.substring(0, c);
+                            return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
+                        }   break;
+                    case HarvestingClient.HARVEST_STYLE_ICPSR:
+                        // For the ICPSR, it turns out that the best thing to do is to
+                        // rely on the DOI to send the user to the right landing page for
+                        // the study:
+                        //String icpsrId = identifier;
+                        //return this.getOwner().getHarvestingClient().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
+                        return "http://doi.org/" + authority + "/" + identifier;
+                    case HarvestingClient.HARVEST_STYLE_NESSTAR:
+                        String nServerURL = this.getHarvestedFrom().getArchiveUrl();
+                        // chop any trailing slashes in the server URL - or they will result
+                        // in multiple slashes in the final URL pointing to the study
+                        // on server of origin; Nesstar doesn't like it, apparently.
+                        nServerURL = nServerURL.replaceAll("/*$", "");
+                        
+                        String nServerURLencoded = nServerURL;
+                        
+                        nServerURLencoded.replace(":", "%3A");
+                        nServerURLencoded.replace("/", "%2F");
+                        
+                        String NesstarWebviewPage = nServerURL
+                                + "/webview/?mode=documentation&submode=abstract&studydoc="
+                                + nServerURLencoded + "%2Fobj%2FfStudy%2F"
+                                + identifier
+                                + "&top=yes";
+                        
+                        return NesstarWebviewPage;
+                    case HarvestingClient.HARVEST_STYLE_ROPER:
+                        return this.getHarvestedFrom().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
+                    case HarvestingClient.HARVEST_STYLE_HGL:
+                        // a bit of a hack, true.
+                        // HGL documents, when turned into Dataverse studies/datasets
+                        // all 1 datafile; the location ("storage identifier") of the file
+                        // is the URL pointing back to the HGL GUI viewer. This is what
+                        // we will display for the dataset URL.  -- L.A.
+                        // TODO: create a 4.+ ticket for a cleaner solution.
+                        List<DataFile> dataFiles = this.getFiles();
+                        if (dataFiles != null && dataFiles.size() == 1) {
+                            if (dataFiles.get(0) != null) {
+                                String hglUrl = dataFiles.get(0).getStorageIdentifier();
+                                if (hglUrl != null && hglUrl.matches("^http.*")) {
+                                    return hglUrl;
+                                }
+                            }
                         }
-                    }
+                        return this.getHarvestedFrom().getArchiveUrl();
+                    default:
+                        return this.getHarvestedFrom().getArchiveUrl();
                 }
-                return this.getHarvestedFrom().getArchiveUrl();
-            }else {
-                return this.getHarvestedFrom().getArchiveUrl();
             }
         }
 
