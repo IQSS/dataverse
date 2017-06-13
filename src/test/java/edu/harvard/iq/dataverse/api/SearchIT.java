@@ -57,6 +57,7 @@ import static com.jayway.restassured.path.xml.XmlPath.from;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
+import java.util.Arrays;
 import org.junit.After;
 
 /**
@@ -497,12 +498,10 @@ public class SearchIT {
         shouldBeVisible.prettyPrint();
         String discoverableBy = JsonPath.from(shouldBeVisible.asString()).getString("response.docs.discoverableBy");
 
-        Set actual = new HashSet<>();
-        for (String userOrGroup : discoverableBy.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll(" ", "").split(",")) {
-            actual.add(userOrGroup);
-        }
+        Set<String> actual = new HashSet<>();
+        actual.addAll(Arrays.asList(discoverableBy.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll(" ", "").split(",")));
 
-        Set expected = new HashSet<>();
+        Set<String> expected = new HashSet<>();
         createUser1.prettyPrint();
         String userid1 = JsonPath.from(createUser1.asString()).getString("data.user.id");
         String userid2 = JsonPath.from(createUser2.asString()).getString("data.user.id");
@@ -557,12 +556,10 @@ public class SearchIT {
         shouldBeVisible.prettyPrint();
         String discoverableBy = JsonPath.from(shouldBeVisible.asString()).getString("response.docs.discoverableBy");
 
-        Set actual = new HashSet<>();
-        for (String userOrGroup : discoverableBy.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll(" ", "").split(",")) {
-            actual.add(userOrGroup);
-        }
+        Set<String> actual = new HashSet<>();
+        actual.addAll(Arrays.asList(discoverableBy.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll(" ", "").split(",")));
 
-        Set expected = new HashSet<>();
+        Set<String> expected = new HashSet<>();
         createUser1.prettyPrint();
         String userid1 = JsonPath.from(createUser1.asString()).getString("data.authenticatedUser.id");
         expected.add("group_user" + userid1);
@@ -588,7 +585,7 @@ public class SearchIT {
         searchResponse.prettyPrint();
         Set<String> titles = new HashSet<>(JsonPath.from(searchResponse.asString()).getList("data.items.name"));
         System.out.println("title: " + titles);
-        Set expectedNames = new HashSet<>();
+        Set<String> expectedNames = new HashSet<>();
         expectedNames.add(dvAlias);
         expectedNames.add("Darwin's Finches");
         assertEquals(expectedNames, titles);
@@ -649,7 +646,7 @@ public class SearchIT {
         Response fileDataBeforePublishingV1Ned = getFileSearchData(dataset3, DRAFT, ned.getApiToken());
 //        fileDataBeforePublishingV1Ned.prettyPrint();
         Set<String> actualInitialFilesed = getFileData(fileDataBeforePublishingV1Ned);
-        assertEquals(new HashSet<String>(), actualInitialFilesed);
+        assertEquals(new HashSet<>(), actualInitialFilesed);
 
         Response publishDatasetResponse = publishDatasetViaSword(dataset3, homer.getApiToken());
 //        publishDatasetResponse.prettyPrint();
@@ -1458,7 +1455,7 @@ public class SearchIT {
         logger.info("DataFile uploaded, should automatically become the thumbnail:");
 
         File trees = new File("scripts/search/data/binary/trees.png");
-        String treesAsBase64 = null;
+        String treesAsBase64;
         treesAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(trees, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         if (treesAsBase64 == null) {

@@ -251,7 +251,7 @@ public class CreateDataverseCommandTest {
                                                                     makeDataverseFieldTypeInputLevel(makeDatasetFieldType()),
                                                                     makeDataverseFieldTypeInputLevel(makeDatasetFieldType()));
         
-        CreateDataverseCommand sut = new CreateDataverseCommand(dv, request, new LinkedList(expectedFacets), new LinkedList(dftils) );
+        CreateDataverseCommand sut = new CreateDataverseCommand(dv, request, new LinkedList<>(expectedFacets), new LinkedList<>(dftils) );
         Dataverse result = engine.submit(sut);
         
         assertEquals( creation, result.getCreateDate() );
