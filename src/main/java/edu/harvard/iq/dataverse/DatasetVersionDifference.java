@@ -439,7 +439,7 @@ public final class DatasetVersionDifference {
         return null;
     }
 
-    private List<List> addToTermsChangedList(List listIn, String label, String origVal, String newVal) {
+    private List addToTermsChangedList(List listIn, String label, String origVal, String newVal) {
         String[] diffArray = new String[3];
         diffArray[0] = label;
         diffArray[1] = origVal;
@@ -449,7 +449,7 @@ public final class DatasetVersionDifference {
     }
 
 
-    private void addToList(List listIn, DatasetField dsfo, DatasetField dsfn) {
+    private void addToList(List<DatasetField[]> listIn, DatasetField dsfo, DatasetField dsfn) {
         DatasetField[] dsfArray = new DatasetField[2];
         dsfArray[0] = dsfo;
         dsfArray[1] = dsfn;
