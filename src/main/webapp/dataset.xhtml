@@ -19,7 +19,21 @@
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
-            <ui:param name="showMessagePanel" value="#{true}"/>
+	    <ui:param name="showMessagePanel" value="#{true}"/>
+	    <ui:define name="dc_meta_header">
+	    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
+	    <meta name="DC.type" content="Dataset"/>
+	    <meta name="DC.title" content="#{DatasetPage.title}"/>
+	    <meta name="DC.date" content="#{DatasetPage.publicationDate}"/>
+	    <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
+            <meta name="DC.description" content="#{DatasetPage.description}" />
+	    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
+            <meta name="DC.creator" content="#{author}"/>
+	    </ui:repeat>
+            <ui:repeat var="subject" value="#{DatasetPage.datasetSubjects}">
+            <meta name="DC.subject" content="#{subject}"/>
+	    </ui:repeat>
+	    </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
