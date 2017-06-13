@@ -21,7 +21,7 @@
                         <span class="icon-bar"></span>
                     </button>
                     <a href="/">
-                        <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
+                        <span class="navbar-brand"><img class="navbar-custom-logo" src="/resources/qdr/images/QDR_Logo_transparent_hiqual.png"/></span>
                     </a>
                     <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
                         <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
@@ -105,7 +105,8 @@
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink value="/loginpage.xhtml?#{loginRedirectPage}">
+                                <h:outputLink value="/Shibboleth.sso/Login">
+                                    <f:param name="target" value="#{request.contextPath.concat('/shib.xhtml').concat(navigationWrapper.redirectPage)}" />
                                     #{bundle.login}
                                 </h:outputLink>
                             </li>

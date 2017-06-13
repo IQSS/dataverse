@@ -241,6 +241,11 @@ public class SettingsServiceBean {
         */
         ShibPassiveLoginEnabled,
         /**
+         * URL for Shibboleth Single Logout
+         */
+        ShibLogoutUrl,
+      
+         /**
          * Whether Export should exclude FieldType.EMAIL
          */
         ExcludeEmailFromExport;
