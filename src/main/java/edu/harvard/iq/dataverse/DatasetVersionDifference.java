@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import java.util.ResourceBundle;
@@ -16,14 +15,14 @@ public final class DatasetVersionDifference {
 
     private DatasetVersion newVersion;
     private DatasetVersion originalVersion;
-    private List<List> detailDataByBlock = new ArrayList<>();
+    private List<List<DatasetField[]>> detailDataByBlock = new ArrayList<>();
     private List<datasetFileDifferenceItem> datasetFilesDiffList;
     private List<datasetReplaceFileItem> datasetFilesReplacementList;
     private List<FileMetadata> addedFiles = new ArrayList<>();
     private List<FileMetadata> removedFiles = new ArrayList<>();
     private List<FileMetadata> changedFileMetadata = new ArrayList<>();
     private List<FileMetadata[]> replacedFiles = new ArrayList<>();
-    private List<List> changedTermsAccess = new ArrayList<>();
+    private List<String[]> changedTermsAccess = new ArrayList<>();
     private List<Object[]> summaryDataForNote = new ArrayList<>();
     private List<Object[]> blockDataForNote = new ArrayList<>();
     String noFileDifferencesFoundLabel = "";
@@ -137,27 +136,21 @@ public final class DatasetVersionDifference {
 
         //Sort within blocks by datasetfieldtype dispaly order then....
         //sort via metadatablock order - citation first...
-        for (List blockList : detailDataByBlock) {
-            Collections.sort(blockList, new Comparator<DatasetField[]>() {
-                @Override
-                public int compare(DatasetField[] l1, DatasetField[] l2) {
-                    DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
-                    DatasetField dsfb = l2[0];
-                    int a = dsfa.getDatasetFieldType().getDisplayOrder();
-                    int b = dsfb.getDatasetFieldType().getDisplayOrder();
-                    return Integer.valueOf(a).compareTo(b);
-                }
+        for (List<DatasetField[]> blockList : detailDataByBlock) {
+            Collections.sort(blockList, (DatasetField[] l1, DatasetField[] l2) -> {
+                DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
+                DatasetField dsfb = l2[0];
+                int a = dsfa.getDatasetFieldType().getDisplayOrder();
+                int b = dsfb.getDatasetFieldType().getDisplayOrder();
+                return Integer.valueOf(a).compareTo(b);
             });
         }
-        Collections.sort(detailDataByBlock, new Comparator<List>() {
-            @Override
-            public int compare(List l1, List l2) {
-                DatasetField dsfa[] = (DatasetField[]) l1.get(0);
-                DatasetField dsfb[] = (DatasetField[]) l2.get(0);
-                int a = dsfa[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
-                int b = dsfb[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
-                return Integer.valueOf(a).compareTo(b);
-            }
+        Collections.sort(detailDataByBlock, (List l1, List l2) -> {
+            DatasetField dsfa[] = (DatasetField[]) l1.get(0);
+            DatasetField dsfb[] = (DatasetField[]) l2.get(0);
+            int a = dsfa[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
+            int b = dsfb[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
+            return Integer.valueOf(a).compareTo(b);
         });
         getTermsDifferences();
     }
@@ -439,8 +432,9 @@ public final class DatasetVersionDifference {
         return null;
     }
 
-    private List addToTermsChangedList(List listIn, String label, String origVal, String newVal) {
-        String[] diffArray = new String[3];
+    private List<String[]> addToTermsChangedList(List<String[]> listIn, String label, String origVal, String newVal) {
+        String[] diffArray;
+        diffArray = new String[3];
         diffArray[0] = label;
         diffArray[1] = origVal;
         diffArray[2] = newVal;
@@ -450,7 +444,8 @@ public final class DatasetVersionDifference {
 
 
     private void addToList(List<DatasetField[]> listIn, DatasetField dsfo, DatasetField dsfn) {
-        DatasetField[] dsfArray = new DatasetField[2];
+        DatasetField[] dsfArray;
+        dsfArray = new DatasetField[2];
         dsfArray[0] = dsfo;
         dsfArray[1] = dsfn;
         listIn.add(dsfArray);
@@ -466,8 +461,8 @@ public final class DatasetVersionDifference {
             dsfn.setDatasetFieldType(dsfo.getDatasetFieldType());
         }
         boolean addedToAll = false;
-        for (List blockList : detailDataByBlock) {
-            DatasetField dsft[] = (DatasetField[]) blockList.get(0);
+        for (List<DatasetField[]> blockList : detailDataByBlock) {
+            DatasetField dsft[] = blockList.get(0);
             if (dsft[0].getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
                 addToList(blockList, dsfo, dsfn);
                 addedToAll = true;
@@ -655,11 +650,11 @@ public final class DatasetVersionDifference {
         this.datasetFilesReplacementList = datasetFilesReplacementList;
     }
 
-    public List<List> getDetailDataByBlock() {
+    public List<List<DatasetField[]>> getDetailDataByBlock() {
         return detailDataByBlock;
     }
 
-    public void setDetailDataByBlock(List<List> detailDataByBlock) {
+    public void setDetailDataByBlock(List<List<DatasetField[]>> detailDataByBlock) {
         this.detailDataByBlock = detailDataByBlock;
     }
 
@@ -720,11 +715,11 @@ public final class DatasetVersionDifference {
     }
     
     
-    public List<List> getChangedTermsAccess() {
+    public List<String[]> getChangedTermsAccess() {
         return changedTermsAccess;
     }
 
-    public void setChangedTermsAccess(List<List> changedTermsAccess) {
+    public void setChangedTermsAccess(List<String[]> changedTermsAccess) {
         this.changedTermsAccess = changedTermsAccess;
     }
 
@@ -796,15 +791,12 @@ public final class DatasetVersionDifference {
         }
 
 
-        Collections.sort(fileMetadatasOriginal, new Comparator<FileMetadata>() {
-            @Override
-            public int compare(FileMetadata l1, FileMetadata l2) {
-                FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
-                FileMetadata fm2 = l2;
-                int a = fm1.getDataFile().getId().intValue();
-                int b = fm2.getDataFile().getId().intValue();
-                return Integer.valueOf(a).compareTo(b);
-            }
+        Collections.sort(fileMetadatasOriginal, (FileMetadata l1, FileMetadata l2) -> {
+            FileMetadata fm3 = l1; //(DatasetField[]) l1.get(0);
+            FileMetadata fm4 = l2;
+            int a = fm3.getDataFile().getId().intValue();
+            int b = fm4.getDataFile().getId().intValue();
+            return Integer.valueOf(a).compareTo(b);
         });
 
         // Here's a potential problem: this new version may have been created
@@ -820,23 +812,19 @@ public final class DatasetVersionDifference {
         //   -- L.A. Aug. 2014
         
 
-        Collections.sort(fileMetadatasNew, new Comparator<FileMetadata>() {
-            @Override
-            public int compare(FileMetadata l1, FileMetadata l2) {
-                FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
-                FileMetadata fm2 = l2;
-                Long a = fm1.getDataFile().getId();
-                Long b = fm2.getDataFile().getId();
-
-                if (a == null && b == null) {
-                    return 0;
-                } else if (a == null) {
-                    return 1;
-                } else if (b == null) {
-                    return -1;
-                }
-                return a.compareTo(b);
+        Collections.sort(fileMetadatasNew, (FileMetadata l1, FileMetadata l2) -> {
+            FileMetadata fm3 = l1; //(DatasetField[]) l1.get(0);
+            FileMetadata fm4 = l2;
+            Long a = fm3.getDataFile().getId();
+            Long b = fm4.getDataFile().getId();
+            if (a == null && b == null) {
+                return 0;
+            } else if (a == null) {
+                return 1;
+            } else if (b == null) {
+                return -1;
             }
+            return a.compareTo(b);
         });
 
         while (i < fileMetadatasOriginal.size()
@@ -926,15 +914,10 @@ public final class DatasetVersionDifference {
     }
 
     private boolean fileMetadataIsDifferent(FileMetadata fm1, FileMetadata fm2) {
-        if (fm1 == null && fm2 == null) {
-            return false;
+        if (fm1 == null){
+            return fm2 != null;
         }
-
-        if (fm1 == null && fm2 != null) {
-            return true;
-        }
-
-        if (fm2 == null && fm1 != null) {
+        if (fm2 == null) {
             return true;
         }
 
@@ -980,10 +963,10 @@ public final class DatasetVersionDifference {
          value1 = FileUtil.byteCountToDisplaySize(new File(fm1.getStudyFile().getFileSystemLocation()).length());
          value2 = FileUtil.byteCountToDisplaySize(new File(fm2.getStudyFile().getFileSystemLocation()).length());
 
-         if (value1 == null || value1.equals("") || value1.equals(" ")) {
+         if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
          value1 = "";
          }
-         if (value2 == null || value2.equals("") || value2.equals(" ")) {
+         if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
          value2 = "";
          }
 
@@ -1026,21 +1009,19 @@ public final class DatasetVersionDifference {
         value1 = fm1.isRestricted() ? "Restricted" : "Not Restricted";
         value2 = fm2.isRestricted() ? "Restricted" : "Not Restricted";
         
-        // If values are equal objects are equal
         return !value1.equals(value2);
     }
 
     private datasetFileDifferenceItem selectFileMetadataDiffs(FileMetadata fm1, FileMetadata fm2) {
         datasetFileDifferenceItem fdi = new datasetFileDifferenceItem();
 
-        if (fm1 == null && fm2 == null) {
-            // this should never happen; but if it does,
-            // we return an empty diff object.
-
-            return fdi;
-
-        }
         if (fm2 == null) {
+            if (fm1 == null) {
+                // this should never happen; but if it does,
+                // we return an empty diff object.
+
+                return fdi;
+            }
             fdi.setFileName1(fm1.getLabel());
             fdi.setFileType1(fm1.getDataFile().getFriendlyType());
             //fdi.setFileSize1(FileUtil. (new File(fm1.getDataFile().getFileSystemLocation()).length()));
