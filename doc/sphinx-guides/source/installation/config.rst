@@ -787,9 +787,9 @@ Set the desired name for the Cloud environment you are working in. Appears in an
 :PublicInstall
 +++++++++++++++++++++
 
-Setting an installation to public indicates the admin will not be able to restrict data files or datasets.
+Setting an installation to public will remove the ability to restrict data files or datasets. This functionality of Dataverse will be disabled from your installation.
 
-This is useful for specific cases where files are stored in public access, therefore removing the need for restrictions.
+This is useful for specific cases where an installation's files are stored in public access. Because files stored this way do not obey Dataverse's file restrictions, users would still be able to access the files even when they're restricted. In these cases it's best to use :PublicInstall to disable the feature altogether.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:PublicInstall``
 
