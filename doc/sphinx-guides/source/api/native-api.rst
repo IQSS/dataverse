@@ -302,7 +302,7 @@ Files
 
 .. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
 
-Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict.
+Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
     
     PUT http://$SERVER/api/files/{id}/restrict?key=$apiKey
 
