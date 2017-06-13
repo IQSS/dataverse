@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.EditDataset)
 public class RestrictFileCommand extends AbstractVoidCommand {
-    private static final Logger logger = Logger.getLogger(RestrictFileCommand.class.getCanonicalName());
+    //private static final Logger logger = Logger.getLogger(RestrictFileCommand.class.getCanonicalName());
 
     private final DataFile file;
     private final boolean restrict;
