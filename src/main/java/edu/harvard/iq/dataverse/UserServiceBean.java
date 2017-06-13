@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.userdata.UserUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -128,7 +129,8 @@ public class UserServiceBean {
     private AuthenticatedUser createAuthenticatedUserForView (Object[] dbRowValues, String roles, int rowNum){
         AuthenticatedUser user = new AuthenticatedUser();
         user.setRowNum(rowNum);
-        user.setId(new Long((Integer)dbRowValues[0]));
+        
+        user.setId(new Long((int)dbRowValues[0]));
         user.setUserIdentifier((String)dbRowValues[1]);
         user.setLastName(UserUtil.getStringOrNull(dbRowValues[2]));
         user.setFirstName(UserUtil.getStringOrNull(dbRowValues[3]));
@@ -242,6 +244,10 @@ public class UserServiceBean {
     
     /**
      * 
+     * Run a native query, returning a List<Object[]> containing
+     * AuthenticatedUser information as well as information about the 
+     * Authenticated Provider (e.g. builtin user, etc)
+     * 
      * @param searchTerm
      * @param sortKey
      * @param resultLimit
@@ -293,7 +299,7 @@ public class UserServiceBean {
         qstr += " OFFSET " + offset;
         qstr += ";";
         
-        System.out.println("getUserCount: " + qstr);
+        logger.log(Level.FINE, "getUserCount: {0}", qstr);
 
         Query nativeQuery = em.createNativeQuery(qstr);           
        
@@ -365,7 +371,7 @@ public class UserServiceBean {
      */
     public Long getTotalUserCount(){
         
-        return getUserCount(null);
+        return getUserCount("");
     }
     
     /**
