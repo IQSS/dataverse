@@ -615,7 +615,7 @@ public class DatasetsIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get(urlWithToken);
         String title = getDatasetAsUserWhoClicksPrivateUrl.getBody().htmlPath().getString("html.head.title");
-        assertEquals("Darwin's Finches - " + dataverseAlias + " Dataverse", title);
+        assertEquals("Darwin's Finches - " + dataverseAlias, title);
         assertEquals(OK.getStatusCode(), getDatasetAsUserWhoClicksPrivateUrl.getStatusCode());
 
         Response junkPrivateUrlToken = given()

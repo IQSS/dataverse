@@ -607,7 +607,7 @@ public class SystemConfig {
     }
 
     public String getNameOfInstallation() {
-        return dataverseService.findRootDataverse().getName() + " Dataverse";
+        return dataverseService.findRootDataverse().getName();
     }
 
     public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {

@@ -16,7 +16,7 @@
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle.login} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle.login} - #{dataverseServiceBean.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
@@ -95,7 +95,7 @@
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
                                         <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
-                                        <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -159,7 +159,7 @@
                                             <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <o:param value="#{systemConfig.guidesVersion}"/>
                                             <o:param>
-                                                <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>

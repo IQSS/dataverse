@@ -14,7 +14,7 @@
     </h:head>
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
@@ -361,7 +361,7 @@
                                 </span>
                             </label>
                             <div class="col-sm-10">
-                                <h:outputText styleClass="highlightBold" value="#{DatasetPage.dataset.owner.name} #{bundle.dataverse}"/>
+                                <h:outputText styleClass="highlightBold" value="#{DatasetPage.dataset.owner.name}"/>
                                 <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverse" />
                                 <ui:remove><!-- removed for beta -->
                                     <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
