@@ -273,14 +273,17 @@ public class UserServiceBean {
             offset = 0;
         }
         
-        //Results of thius query are used to build Authenticated User records
+        //Results of this query are used to build Authenticated User records:
 
-        String sharedSearchClause = getSharedSearchClause(searchTerm);
-        if (sharedSearchClause.isEmpty()){
-            sharedSearchClause = "";
-        }else{
-            sharedSearchClause = " AND " + sharedSearchClause;
+        searchTerm = searchTerm.trim();
+
+
+        String sharedSearchClause = "";
+        
+        if (!searchTerm.isEmpty()) {
+            sharedSearchClause = " AND " + getSharedSearchClause();
         }
+        
         
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";
@@ -301,7 +304,8 @@ public class UserServiceBean {
         
         logger.log(Level.FINE, "getUserCount: {0}", qstr);
 
-        Query nativeQuery = em.createNativeQuery(qstr);           
+        Query nativeQuery = em.createNativeQuery(qstr);
+        nativeQuery.setParameter("searchTerm", searchTerm + "%");
        
         return nativeQuery.getResultList();
 
@@ -312,38 +316,15 @@ public class UserServiceBean {
      * (1) get a user count
      * (2) get a list of users
      * 
-     * @param searchTerm
      * @return 
      */
-    private String getSharedSearchClause(String searchTerm){       
-        if (searchTerm == null){
-            return "";
-        }
-
-        String searchClause = "";
-
-        searchTerm = searchTerm.trim();
-        if (searchTerm.isEmpty()){
-            return "";
-        }        
+    private String getSharedSearchClause(){
         
-        //--------------------------------------------------------
-        // Search for term anywhere at beginning of string
-        //--------------------------------------------------------
-        searchClause += " (u.useridentifier LIKE '" + searchTerm +"%'";
-        searchClause += " OR u.firstname ILIKE '" + searchTerm +"%'";
-        searchClause += " OR u.lastname ILIKE '" + searchTerm +"%'";
-        searchClause += " OR u.email ILIKE '" + searchTerm +"%')";
+        String searchClause = " (u.useridentifier ILIKE #searchTerm";
+        searchClause += " OR u.firstname ILIKE #searchTerm";
+        searchClause += " OR u.lastname ILIKE #searchTerm"; 
+        searchClause += " OR u.email ILIKE #searchTerm)"; 
         
-        /*
-        //--------------------------------------------------------
-        // Search for term anywhere in string
-        //--------------------------------------------------------
-        searchClause += " u.useridentifier LIKE '%" + searchTerm +"%'";
-        searchClause += " OR u.firstname ILIKE '%" + searchTerm +"%'";
-        searchClause += " OR u.lastname ILIKE '%" + searchTerm +"%'";
-        searchClause += " OR u.email ILIKE '%" + searchTerm +"%'";
-        */
         return searchClause;
     }
     
@@ -383,16 +364,18 @@ public class UserServiceBean {
         
         if ((searchTerm==null)||(searchTerm.isEmpty())){
             searchTerm = "";
-        }        
-
-        String sharedSearchClause = getSharedSearchClause(searchTerm);
-        if (sharedSearchClause.isEmpty()){
-            sharedSearchClause = "";
-        }else{
-            sharedSearchClause = " AND " + sharedSearchClause;
         }
+        searchTerm = searchTerm.trim();
+
+
+        String sharedSearchClause = "";
+        
+        if (!searchTerm.isEmpty()) {
+            sharedSearchClause = " AND " + getSharedSearchClause();
+        }
+        
         String qstr = "SELECT count(u.id)";
-         qstr += " FROM authenticateduser u,";
+        qstr += " FROM authenticateduser u,";
         qstr += " authenticateduserlookup prov_lookup,";
         qstr += " authenticationproviderrow prov";
         qstr += " WHERE";
@@ -403,7 +386,8 @@ public class UserServiceBean {
         
         //System.out.println("getUserCount: " + qstr);
         
-        Query nativeQuery = em.createNativeQuery(qstr);  
+        Query nativeQuery = em.createNativeQuery(qstr);
+        nativeQuery.setParameter("searchTerm", searchTerm + "%");
         
         return (Long)nativeQuery.getSingleResult();
 
