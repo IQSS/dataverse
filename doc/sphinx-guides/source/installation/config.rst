@@ -227,6 +227,8 @@ Then run the create command:
 Branding Your Installation
 --------------------------
 
+The name of your root dataverse is the brand of your installation of Dataverse and appears in various places such as notifications. Notifications and support links also contain the name of your support team, which will either be "[YourBrand] Support" or a name of your choosing when you configure a name for the ``:SystemEmail`` database setting described below. 
+
 Dataverse provides configurable options for easy-to-add (and maintain) custom branding for your Dataverse installation. Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
 You can add a custom welcome/homepage as well as other custom content, to further brand your installation and make it your own. Here are the custom branding and content options you can add:
