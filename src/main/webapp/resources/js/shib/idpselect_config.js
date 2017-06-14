@@ -13,6 +13,11 @@ function IdPSelectUIParms() {
 //    this.defaultReturn = null;       // If non null, then the default place to send users who are not
     // Approaching via the Discovery Protocol for example
     //this.defaultReturn = "https://example.org/Shibboleth.sso/DS?SAMLDS=1&target=https://example.org/secure";
+    
+    if (window.location.href.search("redirectPage") > 0){
+        redirectStr = urlParam('redirectPage');
+        shibRedirectPage = encodeURIComponent("?redirectPage=" + redirectStr);
+    }
 
     this.defaultReturn = window.location.protocol + "//" + window.location.hostname + "/Shibboleth.sso/Login?SAMLDS=1&target=" + window.location.protocol + "//" + window.location.hostname + "/shib.xhtml" + shibRedirectPage;
     this.defaultReturnIDParam = null;
@@ -138,4 +143,9 @@ function IdPSelectUIParms() {
     this.maxWidth = 115;
     this.maxHeight = 69;
     this.bestRatio = Math.log(80 / 60);
+}
+
+function urlParam(name) {
+    var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+    return results[1] || 0;
 }
