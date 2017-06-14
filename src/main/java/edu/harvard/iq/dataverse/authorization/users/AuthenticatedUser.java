@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
@@ -288,4 +289,12 @@ public class AuthenticatedUser implements User, Serializable {
         return this.lastLogin;
     }
     
+    public void setLastLoginToCurrentTime(){
+        this.setLastLogin(new Timestamp(new Date().getTime()));
+    }
+
+    public void setCreatedToCurrentTime(){
+        //this.setCreated(new Timestamp(new Date().getTime()));
+    }
+
 }

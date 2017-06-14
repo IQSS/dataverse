@@ -27,6 +27,11 @@ public class UserServiceBean {
     }    
 
     public AuthenticatedUser save( AuthenticatedUser user ) {
+        
+        if (user.getLastLogin() == null){
+            user.setLastLoginToCurrentTime(); // default last login to user creation time
+        }
+        
         if ( user.getId() == null ) {
             em.persist(this);
         } else {
@@ -50,10 +55,7 @@ public class UserServiceBean {
             return null;
         }
         
-        // Get current timestamp
-        Timestamp lastLogin = new Timestamp(new Date().getTime());
-        
-        user.setLastLogin(lastLogin);
+        user.setLastLoginToCurrentTime();
         
         return save(user);
         
