@@ -390,6 +390,11 @@ Generates a new user. Data about the user are posted via JSON. *Note that the pa
 
   POST http://$SERVER/api/builtin-users?password=$password&key=$key
 
+Example JSON:
+.. code-block::json
+
+{"userName":"dataverseAdmin"","firstName":"Bob","lastName":"Admin","email":"dataverse@mailinator.com","affiliation":"Dataverse.org"}
+
 Gets the API token of the user, given the password. ::
 
   GET http://$SERVER/api/builtin-users/$username/api-token?password=$password
