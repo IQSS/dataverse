@@ -199,7 +199,7 @@ Installation Testing
 - Work with @donsizemore to automate testing of https://github.com/IQSS/dataverse-ansible with Travis or similar.
 
 Load/Performance Testing
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Run stress tests on a period basis: https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests 
 - Marcel Duran created a command-line wrapper for the WebPagetest API that can be used to test performance in your continuous integration pipeline (TAP, Jenkins, Travis-CI, etc): https://github.com/marcelduran/webpagetest-api/wiki/Test-Specs#jenkins-integration
