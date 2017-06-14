@@ -176,8 +176,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         
         String qstr = "SELECT h.dataverse_id FROM harvestingclient h;";
 
-        return em.createNativeQuery(qstr)
-                        .getResultList();
+        return em.createNativeQuery(qstr).getResultList();
         
     }
     
@@ -216,11 +215,11 @@ public class DvObjectServiceBean implements java.io.Serializable {
         Map<Long, Long> treeMap = new HashMap<>();
         
         for (Object[] result : searchResults) {
-            Long objectId = null;
-            Long ownerId = null;
+            Long objectId;
+            Long ownerId;
             if (result[0] != null) {
                 try {
-                    objectId = ((Integer)result[0]).longValue();
+                    objectId = ((Number)result[0]).longValue();
                 } catch (Exception ex) {
                     logger.warning("OBJECT PATH: could not cast result[0] (dvobject id) to Integer!");
                     objectId = null;
@@ -231,7 +230,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 
                 ownerId = (Long)result[1];
                 logger.fine("OBJECT PATH: id: "+objectId+", owner: "+ownerId);
-                if (ownerId != null && (ownerId.longValue() != 1L)) {
+                if (ownerId != null && (ownerId != 1L)) {
                     treeMap.put(objectId, ownerId);
                 }
             }
@@ -251,8 +250,6 @@ public class DvObjectServiceBean implements java.io.Serializable {
             logger.fine("OBJECT PATH: returning "+treePath+" for "+objectId);
             ret.put(objectId, treePath);
         }
-        
-        treeMap = null;
         return ret;        
     }
 }

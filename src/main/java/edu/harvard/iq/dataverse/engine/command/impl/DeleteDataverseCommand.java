@@ -74,7 +74,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
             DataverseFieldTypeInputLevel merged = ctxt.em().merge(inputLevel);
             ctxt.em().remove(merged);
         }
-        doomed.setDataverseFieldTypeInputLevels(new ArrayList());
+        doomed.setDataverseFieldTypeInputLevels(new ArrayList<>());
         // DATAVERSE
         Dataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);

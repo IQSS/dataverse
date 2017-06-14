@@ -62,7 +62,7 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
         }
 
         // they match up, so compare based on who stll has tokens
-        return new Integer(tokenizedList1.size()).compareTo(new Integer(tokenizedList2.size()));
+        return new Integer(tokenizedList1.size()).compareTo(tokenizedList2.size());
     }
 
     /* this method returns a list of the String as tokens of BigDecimals and Strings
@@ -77,7 +77,7 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
     // a '-' is only used to denote negative if it is the first character of the String
     */
     private List getTokenizedList(String value) {
-        List tokenizedList = new ArrayList();
+        List<Object> tokenizedList = new ArrayList<>();
         char[] charArray = value.trim().toCharArray();
 
         StringBuffer currentToken = new StringBuffer("");
