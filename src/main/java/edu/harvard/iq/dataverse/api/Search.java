@@ -78,10 +78,6 @@ public class Search extends AbstractApiBean {
             return ex.getResponse();
         }
         
-        logger.info("In Search. User is:" + user.getIdentifier());
-        boolean shouldAskForKey = settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiRequireToken, false);
-        logger.info("Should ask for key: " + shouldAskForKey);
-        
         if (query != null) {
 
             // sanity checking on user-supplied arguments
