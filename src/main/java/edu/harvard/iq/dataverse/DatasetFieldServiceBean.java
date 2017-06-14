@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import java.util.List;
@@ -12,7 +7,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 /**
@@ -26,10 +20,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    private static final String NAME_QUERY = "SELECT dsfType from DatasetFieldType dsfType where dsfType.name= :fieldName";
-
     public List<DatasetFieldType> findAllAdvancedSearchFieldTypes() {
-        return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id").getResultList();
+        return em.createNamedQuery("DatasetFieldType.findAllAdvancedSearchFieldTypes", DatasetFieldType.class)
+                .getResultList();
     }
 
     public List<DatasetFieldType> findAllFacetableFieldTypes() {
@@ -44,15 +37,15 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
 
     public List<DatasetFieldType> findAllRequiredFields() {
-        return em.createQuery("select object(o) from DatasetFieldType as o where o.required = true order by o.id").getResultList();
+        return em.createNamedQuery("DatasetFieldType.findAllRequiredFields").getResultList();
     }
 
     public List<DatasetFieldType> findAllOrderedById() {
-        return em.createQuery("select object(o) from DatasetFieldType as o order by o.id").getResultList();
+        return em.createNamedQuery("DatasetFieldType.findAllOrderedById").getResultList();
     }
 
     public List<DatasetFieldType> findAllOrderedByName() {
-        return em.createQuery("select object(o) from DatasetFieldType as o order by o.name").getResultList();
+        return em.createNamedQuery("DatasetFieldType.findAllOrderedByName").getResultList();
     }
 
     public DatasetFieldType find(Object pk) {
@@ -61,7 +54,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
     public DatasetFieldType findByName(String name) {
         try {
-            return  (DatasetFieldType) em.createQuery(NAME_QUERY).setParameter("fieldName", name).getSingleResult();
+            return  (DatasetFieldType) em.createNamedQuery("DatasetFieldType.findByName").setParameter("name", name).getSingleResult();
         } catch (NoResultException e) {
             return null;
         }

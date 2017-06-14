@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
@@ -18,8 +12,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -29,6 +24,10 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(indexes = {@Index(columnList="datasetfieldtype_id"), @Index(columnList="displayorder")})
+@NamedQueries({
+    @NamedQuery(name="ControlledVocabularyValue.findByDatasetFieldTypeId",
+                 query="select o from ControlledVocabularyValue o where o.datasetFieldType.id=:dataverseFieldTypeId")
+})
 public class ControlledVocabularyValue implements Serializable  {
     
     public static final Comparator<ControlledVocabularyValue> DisplayOrder = new Comparator<ControlledVocabularyValue>() {

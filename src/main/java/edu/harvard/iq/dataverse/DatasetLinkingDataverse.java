@@ -9,6 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -22,6 +24,14 @@ import javax.persistence.TemporalType;
 @Table(indexes = {
         @Index(columnList = "dataset_id"),
     @Index(columnList = "linkingDataverse_id")
+})
+@NamedQueries({
+  @NamedQuery( name="DatasetLinkingDataverse.findByLinkingDataverseId",
+                query="SELECT o FROM DatasetLinkingDataverse o WHERE o.linkingDataverse.id = :linkingDataverseId"),
+  @NamedQuery( name="DatasetLinkingDataverse.findByDatasetId",
+                query="select o from DatasetLinkingDataverse o where o.dataset.id =:datasetId order by o.id"),
+  @NamedQuery( name="DatasetLinkingDataverse.findByDatasetIdAndDataverseId",
+                query="SELECT o FROM DatasetLinkingDataverse o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId")
 })
 public class DatasetLinkingDataverse implements Serializable {
     private static final long serialVersionUID = 1L;

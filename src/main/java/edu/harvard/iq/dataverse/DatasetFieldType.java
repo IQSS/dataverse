@@ -18,11 +18,19 @@ import javax.persistence.*;
  */
 @NamedQueries({
         @NamedQuery(name="DatasetFieldType.findByName",
-                            query= "SELECT dsfType FROM DatasetFieldType dsfType WHERE dsfType.name=:name"),
-	@NamedQuery(name = "DatasetFieldType.findAllFacetable",
-			    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' order by dsfType.id"),
+                    query= "SELECT dsfType FROM DatasetFieldType dsfType WHERE dsfType.name=:name"),
+        @NamedQuery(name = "DatasetFieldType.findAllFacetable",
+                    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' order by dsfType.id"),
+        @NamedQuery(name = "DatasetFieldType.findAllRequiredFields",
+                    query= "select object(o) from DatasetFieldType as o where o.required = true order by o.id"),
+        @NamedQuery(name = "DatasetFieldType.findAllOrderedById",
+                    query= "select object(o) from DatasetFieldType as o order by o.id"),
+        @NamedQuery(name = "DatasetFieldType.findAllOrderedByName",
+                    query= "select object(o) from DatasetFieldType as o order by o.name"),
         @NamedQuery(name = "DatasetFieldType.findFacetableByMetadaBlock",
-			    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' and dsfType.metadataBlock.id = :metadataBlockId order by dsfType.id")
+                    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' and dsfType.metadataBlock.id = :metadataBlockId order by dsfType.id"),
+        @NamedQuery(name="DatasetFieldtype.findAllAdvancedSearchFieldTypes",
+                    query="select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id")
 })
 @Entity
 @Table(indexes = {@Index(columnList="metadatablock_id"),@Index(columnList="parentdatasetfieldtype_id")})

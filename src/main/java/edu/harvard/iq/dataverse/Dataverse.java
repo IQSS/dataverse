@@ -40,9 +40,15 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 @NamedQueries({
     @NamedQuery(name = "Dataverse.ownedObjectsById", query = "SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
-    @NamedQuery(name = "Dataverse.findByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias)=:alias"),
-    @NamedQuery(name = "Dataverse.filterByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
-    @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias")
+    @NamedQuery(name = "Dataverse.findByAlias",      query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias)=:alias"),
+    @NamedQuery(name = "Dataverse.findByOwnerId",    query="select dv from Dataverse dv where dv.owner.id =:ownerId order by dv.name"),
+    @NamedQuery(name = "Dataverse.findRoot",         query="SELECT dv FROM Dataverse dv WHERE dv.owner.id = null"),
+    @NamedQuery(name = "Dataverse.countRoot",        query="SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null"),
+    @NamedQuery(name = "Dataverse.filterByAlias",    query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
+    @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation",
+                        query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias"),
+    @NamedQuery(name = "Dataverse.findPublishedByOwnerId",
+                        query="select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name")
 })
 @Entity
 @Table(indexes = {@Index(columnList="defaultcontributorrole_id")

@@ -26,7 +26,11 @@ import javax.persistence.Transient;
 @Table(indexes = {@Index(columnList="name")
 		, @Index(columnList="owner_id")})
 @NamedQueries({
-    @NamedQuery( name="MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb"),
+    @NamedQuery( name="MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb order by mdb.id"),
+    @NamedQuery( name="MetadataBlock.findSystemBlocks", 
+                                                  query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.owner.id=null order by mdb.id"),
+    @NamedQuery( name="MetadataBlock.findSystemDataverseId", 
+                                                  query = "select mdb from MetadataBlock mdb where mdb.owner.id=:dataverseId order by mdb.id"),
     @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
 })
 @Entity

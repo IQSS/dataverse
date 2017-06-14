@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -11,23 +6,14 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
-import java.util.ResourceBundle;
-import java.util.MissingResourceException;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Future;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
+import java.util.logging.Level;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -77,7 +63,6 @@ public class DataverseServiceBean implements java.io.Serializable {
          * @todo check the result to see if indexing was successful or not
          */
         Future<String> indexingResult = indexService.indexDataverse(savedDataverse);
-//        logger.log(Level.INFO, "during dataverse save, indexing result was: {0}", indexingResult);
         return savedDataverse;
     }
 
@@ -119,23 +104,24 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<Dataverse> findByOwnerId(Long ownerId) {
-        Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name");
-        query.setParameter("ownerId", ownerId);
-        return query.getResultList();
+        return em.createNamedQuery("Dataverse.findByOwnerId")
+                 .setParameter("ownerId", ownerId)
+                 .getResultList();
     }
     
     public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
-        Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name");
-        query.setParameter("ownerId", ownerId);
-        return query.getResultList();
+        return em.createNamedQuery("Dataverse.findPublishedByOwnerId")
+                .setParameter("ownerId", ownerId)
+                .getResultList();
     }
 
     /**
+     * @return 
      * @todo Do we really want this method to sometimes throw a
      * NoResultException which is a RuntimeException?
      */
     public Dataverse findRootDataverse() {
-        return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
+        return (Dataverse) em.createNamedQuery("Dataverse.findRoot").getSingleResult();
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
@@ -156,6 +142,8 @@ public class DataverseServiceBean implements java.io.Serializable {
      * A lookup of a dataverse alias should be case insensitive. If "cfa"
      * belongs to the Center for Astrophysics, we don't want to allow Code for
      * America to start using "CFA". Force all queries to be lower case.
+     * @param anAlias Alias of teh sought dataverse
+     * @return The dataverse, or {@code null}.
      */
     public Dataverse findByAlias(String anAlias) {
         try {
@@ -165,7 +153,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 					.setParameter("alias", anAlias.toLowerCase())
 					.getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
-            logger.fine("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
+            logger.log(Level.FINE, "Unable to find a single dataverse using alias \"{0}\": {1}", new Object[]{anAlias, ex});
             return null;
         }
     }
@@ -178,7 +166,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 	}
 	
     public boolean isRootDataverseExists() {
-        long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
+        long count = em.createNamedQuery("Dataverse.countRoot", Long.class).getSingleResult();
         return (count == 1);
     }
 
@@ -197,30 +185,26 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public MetadataBlock findMDBByName(String name) {
-        return em.createQuery("select m from MetadataBlock m WHERE m.name=:name", MetadataBlock.class)
+        return em.createNamedQuery("MetadataBlock.findByName", MetadataBlock.class)
                 .setParameter("name", name)
                 .getSingleResult();
     }
 
     public List<MetadataBlock> findAllMetadataBlocks() {
-        return em.createQuery("select object(o) from MetadataBlock as o order by o.id").getResultList();
+        return em.createNamedQuery("MetadataBlock.listAll").getResultList();
     }
     
     public List<MetadataBlock> findSystemMetadataBlocks(){
-        return em.createQuery("select object(o) from MetadataBlock as o where o.owner.id=null  order by o.id").getResultList();
+        return em.createNamedQuery("MetadataBlock.findSystemBlocks").getResultList();
     }
     
     public List<MetadataBlock> findMetadataBlocksByDataverseId(Long dataverse_id) {
-        return em.createQuery("select object(o) from MetadataBlock as o where o.owner.id=:dataverse_id order by o.id")
-                .setParameter("dataverse_id", dataverse_id).getResultList();
+        return em.createNamedQuery("MetadataBlock.findSystemDataverseId")
+                .setParameter("dataverseId", dataverse_id).getResultList();
     }
     
     public DataverseFacet findFacet(Long id) {
         return (DataverseFacet) em.find(DataverseFacet.class, id);
-    }
-    
-    public List<DataverseFacet> findAllDataverseFacets() {
-        return em.createQuery("select object(o) from DataverseFacet as o order by o.display").getResultList();
     }
     
     public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {
@@ -262,51 +246,6 @@ public class DataverseServiceBean implements java.io.Serializable {
         return null;
     }
     
-    /*
-    public boolean isDataverseLogoThumbnailAvailable(Dataverse dataverse, User user) {    
-        if (dataverse == null) {
-            return false; 
-        }
-                
-        // First, check if the dataverse has a defined logo: 
-        
-        //if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
-            File dataverseLogoFile = getLogo(dataverse);
-            if (dataverseLogoFile != null) {
-                String logoThumbNailPath = null;
-
-                if (dataverseLogoFile.exists()) {
-                    logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
-                    if (logoThumbNailPath != null) {
-                        return true;
-                    }
-                }
-            }
-        //}
-        */
-        // If there's no uploaded logo for this dataverse, go through its 
-        // [released] datasets and see if any of them have card images:
-        // 
-        // TODO:
-        // Discuss/Decide if we really want to do this - i.e., go through every
-        // file in every dataset below... 
-        // -- L.A. 4.0 beta14
-        /*
-        for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverse.getId())) {
-            if (dataset != null) {
-                DatasetVersion releasedVersion = dataset.getReleasedVersion();
-                
-                if (releasedVersion != null) {
-                    if (datasetService.isDatasetCardImageAvailable(releasedVersion, user)) {
-                        return true;
-                    }
-                }
-            }
-        }   */     
-        /*
-        return false; 
-    } */
-        
     private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {
             return null; 
@@ -334,10 +273,11 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null; 
         }
         
-        String logoFileName = null;
+        String logoFileName;
         
         try {
-                logoFileName = (String) em.createNativeQuery("SELECT logo FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+           logoFileName = em.createNamedQuery("DataverseTheme.findLogoByDataverseId", String.class)
+                            .setParameter("dataverseId", id).getSingleResult();
             
         } catch (Exception ex) {
             return null;
@@ -367,7 +307,10 @@ public class DataverseServiceBean implements java.io.Serializable {
         Object[] result = null;
         
         try {
-                result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+            DataverseTheme dvt = em.createNamedQuery("DataverseTheme.findByDataverseId", DataverseTheme.class)
+                                   .setParameter("dataverseId", id)
+                                   .getSingleResult();
+            result = new Object[]{dvt.getLogo(), dvt.getLogoFormat()};
             
         } catch (Exception ex) {
             return null;
@@ -427,47 +370,6 @@ public class DataverseServiceBean implements java.io.Serializable {
         return ret;
     }
     
-    /**
-     * Used to identify and properly display Harvested objects on the dataverse page.
-     * 
-     *//*
-    @Deprecated
-    public Map<Long, String> getAllHarvestedDataverseDescriptions(){
-        
-        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingClient;";
-        List<Object[]> searchResults = null;
-        
-        try {
-            searchResults = em.createNativeQuery(qstr).getResultList();
-        } catch (Exception ex) {
-            searchResults = null;
-        }
-        
-        if (searchResults == null) {
-            return null;
-        }
-        
-        Map<Long, String> ret = new HashMap<>();
-        
-        for (Object[] result : searchResults) {
-            Long dvId = null;
-            if (result[0] != null) {
-                try {
-                    dvId = (Long)result[0];
-                } catch (Exception ex) {
-                    dvId = null;
-                }
-                if (dvId == null) {
-                    continue;
-                }
-                
-                ret.put(dvId, (String)result[1]);
-            }
-        }
-        
-        return ret;        
-    }*/
-
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {
   
         Long dvId = solrSearchResult.getEntityId();

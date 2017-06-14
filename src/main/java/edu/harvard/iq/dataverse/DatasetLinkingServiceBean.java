@@ -25,28 +25,10 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    /**
-     * @todo Should this method simply be deleted? It isn't used anywhere and is
-     * throwing exceptions: Syntax error parsing [select object(o.dataverse.id)
-     * from DatasetLinkingDataverse as o where o.linkingDataverse.id
-     * =:linkingDataverseId order by o.id]
-     */
-    @Deprecated
-    public List<Dataset> findLinkedDataverses(Long linkingDataverseId) {
-        List<Dataset> retList = new ArrayList();
-        Query query = em.createQuery("select object(o.dataverse.id) from DatasetLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
-        query.setParameter("linkingDataverseId", linkingDataverseId);
-        for (Object o : query.getResultList()) {
-            DatasetLinkingDataverse convterted = (DatasetLinkingDataverse) o;
-            retList.add(convterted.getDataset());
-        }
-        return retList;
-    }
-
     public List<Dataset> findDatasetsThisDataverseIdHasLinkedTo(Long dataverseId) {
         List<Dataset> datasets = new ArrayList<>();
-        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId", DatasetLinkingDataverse.class);
-        typedQuery.setParameter("dataverseId", dataverseId);
+        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findByLinkingDataverseId", DatasetLinkingDataverse.class);
+        typedQuery.setParameter("linkingDataverseId", dataverseId);
         List<DatasetLinkingDataverse> datasetLinkingDataverses = typedQuery.getResultList();
         for (DatasetLinkingDataverse datasetLinkingDataverse : datasetLinkingDataverses) {
             datasets.add(datasetLinkingDataverse.getDataset());
@@ -63,7 +45,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     }
 
     public List<DatasetLinkingDataverse> findDatasetLinkingDataverses(Long datasetId) {
-        return em.createQuery("select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id")
+        return em.createNamedQuery("DatasetLinkingDataverse.findByDatasetId")
                 .setParameter("datasetId", datasetId)
                 .getResultList();
     }
@@ -77,7 +59,8 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     }
 
     public boolean alreadyLinked(Dataverse dataverse, Dataset dataset) {
-        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId", DatasetLinkingDataverse.class);
+        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findByDatasetIdAndDataverseId",
+                                                                              DatasetLinkingDataverse.class);
         typedQuery.setParameter("dataverseId", dataverse.getId());
         typedQuery.setParameter("datasetId", dataset.getId());
         return !typedQuery.getResultList().isEmpty();
