@@ -76,6 +76,11 @@ public class SettingsServiceBean {
         SearchApiNonPublicAllowed,
         
         /**
+         * For search api, require a valid API token even when searching public data.
+         */
+        SearchApiRequireToken,
+        
+        /**
          * Experimental: Use Solr to power the file listing on the dataset page.
          */
         FilesOnDatasetPageFromSolr,
