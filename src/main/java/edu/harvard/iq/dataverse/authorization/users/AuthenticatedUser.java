@@ -73,12 +73,19 @@ public class AuthenticatedUser implements User, Serializable {
     private String email;
     private String affiliation;
     private String position;
+    
     @NotBlank(message = "Please enter your last name.")
     private String lastName;
+    
     @NotBlank(message = "Please enter your first name.")
     private String firstName;
+    
     @Column(nullable = true)
     private Timestamp emailConfirmed;
+    
+    @Column(nullable=false)
+    private Timestamp lastLogin;
+    
     private boolean superuser;
 
     /**
@@ -260,6 +267,25 @@ public class AuthenticatedUser implements User, Serializable {
     
     public String getSortByString() {
         return this.getLastName() + " " + this.getFirstName() + " " + this.getUserIdentifier();
+    }
+    
+    /**
+     * 
+     * @param lastLogin 
+     */
+    public void setLastLogin(Timestamp lastLogin){
+        
+        this.lastLogin = lastLogin;
+    }
+    
+
+    /**
+     * 
+     * @param lastLogin 
+     */
+    public Timestamp getLastLogin(){
+        
+        return this.lastLogin;
     }
     
 }

@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -35,4 +37,25 @@ public class UserServiceBean {
         return user;
     }
 
+    
+    /**
+     * After a user logs in, update his/her last login time
+     * @param user
+     * @return 
+     */
+    public AuthenticatedUser updateLastLogin(AuthenticatedUser user){
+        
+        if (user == null){
+            logger.severe("user should not be null");
+            return null;
+        }
+        
+        // Get current timestamp
+        Timestamp lastLogin = new Timestamp(new Date().getTime());
+        
+        user.setLastLogin(lastLogin);
+        
+        return save(user);
+        
+    }
 }
