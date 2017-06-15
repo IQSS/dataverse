@@ -721,7 +721,7 @@ public class Dataverse extends DvObjectContainer {
     
     @Override
     public String getDisplayName() {
-        return getName() + " Dataverse";
+        return getName();
     }
     
     @Override

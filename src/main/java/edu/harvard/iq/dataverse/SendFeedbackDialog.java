@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.MailUtil;
@@ -36,6 +37,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     // If there is no recipient, this is a general feeback message
     private DvObject recipient;
     private Logger logger = Logger.getLogger(SendFeedbackDialog.class.getCanonicalName());
+    private InternetAddress systemAddress;
     
     @EJB
     MailServiceBean mailService;
@@ -55,7 +57,6 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
     
     public void initUserInput(ActionEvent ae) {
-        System.out.println("initUserInput()");
         userEmail="";
         userMessage="";
         messageTo="";
@@ -64,7 +65,8 @@ public class SendFeedbackDialog implements java.io.Serializable {
         op1 = new Long(random.nextInt(10));
         op2 = new Long(random.nextInt(10));
         userSum=null;
-        
+        String systemEmail = settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail);
+        systemAddress = MailUtil.parseSystemAddress(systemEmail);
     }
 
     public Long getOp1() {
@@ -94,16 +96,17 @@ public class SendFeedbackDialog implements java.io.Serializable {
     
     public String getMessageTo() {
         if (recipient == null) {
-            return JH.localize("contact.support");
+            return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
         } else if (recipient.isInstanceofDataverse()) {
-            return  ((Dataverse)recipient).getDisplayName() +" "+ JH.localize("contact.contact");
-        } else 
+            return ((Dataverse) recipient).getDisplayName() + " " + JH.localize("contact.contact");
+        } else {
             return JH.localize("dataset") + " " + JH.localize("contact.contact");
+        }
     }
     
     public String getFormHeader() {
         if (recipient == null) {
-            return JH.localize("contact.header");
+            return BrandingUtil.getContactHeader(systemAddress, dataverseService.findRootDataverse().getName());
         } else if (recipient.isInstanceofDataverse()) {
             return   JH.localize("contact.dataverse.header");
         } else 

@@ -27,7 +27,7 @@ Glassfish
 
 As a `Java Enterprise Edition <http://en.wikipedia.org/wiki/Java_Platform,_Enterprise_Edition>`_ 7 (Java EE 7) application, Dataverse requires an applications server to run.
 
-Glassfish 4.1 is required (not 4.1.1 until https://github.com/IQSS/dataverse/issues/2628 is resolved), which can be downloaded from https://javaee.github.io/glassfish . If you have downloaded Glassfish as part of a Netbeans bundle, you can manually add the proper version by clicking "Tools", "Servers", "Add Server".
+Glassfish 4.1 is required (not any earlier or later versions until https://github.com/IQSS/dataverse/issues/2628 is resolved), which can be downloaded from http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip . If you have downloaded Glassfish as part of a Netbeans bundle, you can manually add the proper version by clicking "Tools", "Servers", "Add Server".
 
 PostgreSQL
 ~~~~~~~~~~
