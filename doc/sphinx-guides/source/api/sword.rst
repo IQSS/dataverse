@@ -223,7 +223,7 @@ Client libraries
 
 - Python: https://github.com/swordapp/python-client-sword2
 - Java: https://github.com/swordapp/JavaClient2.0
-- R: https://github.com/ropensci/dvn
+- R: https://github.com/IQSS/dataverse-client-r
 - Ruby: https://github.com/swordapp/sword2ruby
 - PHP: https://github.com/swordapp/swordappv2-php-library
 
