@@ -38,7 +38,7 @@ public class FeaturedDataverseServiceBean {
     }
     
     public List<Dataverse> findByDataverseIdQuick(Long dataverseId) {
-         List<Object[]> searchResults = null;
+         List<Object[]> searchResults;
          
          try {
              //searchResults = em.createNativeQuery("SELECT id, alias, name FROM dataverse WHERE id IN (select featureddataverse_id from DataverseFeaturedDataverse where dataverse_id = "+dataverseId+" order by displayOrder)").getResultList();

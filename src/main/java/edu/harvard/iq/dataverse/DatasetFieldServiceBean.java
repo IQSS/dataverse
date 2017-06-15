@@ -163,7 +163,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     /**
      * @param dsft The DatasetFieldType in which to look up a
      * ControlledVocabularyValue.
-     * @param strIdentiifer String Identifier that may exist in a controlled vocabulary of
+     * @param identifier String Identifier that may exist in a controlled vocabulary of
      * the provided DatasetFieldType.
      *
      * @return The ControlledVocabularyValue found or null.

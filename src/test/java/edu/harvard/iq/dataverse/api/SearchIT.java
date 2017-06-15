@@ -752,8 +752,8 @@ public class SearchIT {
          * all belong to the publish v1 dataset. We don't index drafts unless
          * the content has changed (again per issue 528).
          */
-        System.out.println(new TreeSet(expectedDraftFilesAfterDeleteHomerAfterIssue2455Implemented) + " expected after issue 2455 implemented");
-        System.out.println(new TreeSet(actualDraftFilesAfterDeleteHomer) + " actual");
+        System.out.println(new TreeSet<>(expectedDraftFilesAfterDeleteHomerAfterIssue2455Implemented) + " expected after issue 2455 implemented");
+        System.out.println(new TreeSet<>(actualDraftFilesAfterDeleteHomer) + " actual");
 //        assertEquals(expectedDraftFilesAfterDeleteHomer, actualDraftFilesAfterDeleteHomer);
 
         Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
@@ -1524,7 +1524,7 @@ public class SearchIT {
                 .statusCode(200);
 
         File dataverseProjectLogo = new File(pathToFile);
-        String dataverseProjectLogoAsBase64 = null;
+        String dataverseProjectLogoAsBase64;
         dataverseProjectLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(dataverseProjectLogo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         if (dataverseProjectLogoAsBase64 == null) {
@@ -1586,7 +1586,7 @@ public class SearchIT {
 
         String datasetLogo = "src/main/webapp/resources/images/cc0.png";
         File datasetLogoFile = new File(datasetLogo);
-        String datasetLogoAsBase64 = datasetLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(datasetLogoFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+        String datasetLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(datasetLogoFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         if (datasetLogoAsBase64 == null) {
             Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file dataverseproject.png");

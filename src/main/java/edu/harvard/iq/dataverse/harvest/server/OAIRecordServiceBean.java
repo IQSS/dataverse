@@ -85,7 +85,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         
         // create Map of OaiRecords
         List<OAIRecord> oaiRecords = findOaiRecordsBySetName( setName );
-        Map<String,OAIRecord> recordMap = new HashMap();
+        Map<String,OAIRecord> recordMap = new HashMap<>();
         if (oaiRecords != null) {
             for (OAIRecord record : oaiRecords) {
                 // look for duplicates here? delete?

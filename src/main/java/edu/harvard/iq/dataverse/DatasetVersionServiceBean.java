@@ -120,26 +120,19 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             //logger.fine("check version. requested: " + this.requestedVersion + " returned: " + actualVersion);
             // This may often be the case if version is not specified
             //
-            if (requestedVersion == null || requestedVersion.equals("")){
+            if (requestedVersion == null || requestedVersion.isEmpty()){
                 this.wasSpecificVersionRequested = false;         
                 return;
             }
 
             this.wasSpecificVersionRequested = true;                
 
-            if (this.requestedVersion.equalsIgnoreCase(actualVersion)){
-                this.didSpecificVersionMatch = true;
-            }else{
-                this.didSpecificVersionMatch = false;       // redundant, already the default               
-            }      
+            this.didSpecificVersionMatch = this.requestedVersion.equalsIgnoreCase(actualVersion);
             
         }
         
         public boolean wasRequestedVersionRetrieved(){
-            if (this.wasSpecificVersionRequested && !this.didSpecificVersionMatch){
-                return false;
-            }
-            return true;
+            return !(this.wasSpecificVersionRequested && !this.didSpecificVersionMatch);
         }
         
         
@@ -153,7 +146,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
-
+        // THIS LOGIC DOESN"T WORK
         Long majorVersionNumber = null;
         Long minorVersionNumber = null;
 
@@ -171,7 +164,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             return null;
         }
 
-        if (majorVersionNumber != null && minorVersionNumber != null) {
+        if (minorVersionNumber != null) {
             String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
             DatasetVersion foundDatasetVersion = null;
             try {
@@ -796,11 +789,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         Long datasetVersionId = solrSearchResult.getDatasetVersionId();
         Long datasetId = solrSearchResult.getEntityId();
         
-        if (dataverseId == 0 || datasetVersionId == null) {
+        if (dataverseId == 0) {
             return;
         }
         
-        Object[] searchResult = null;
+        Object[] searchResult;
         
         try {
             if (datasetId != null) {
@@ -854,7 +847,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 // the dataset:
                 Long thumbnailFile_id = (Long) searchResult[2];
                 if (thumbnailFile_id != null) {
-                    DataFile thumbnailFile = null;
+                    DataFile thumbnailFile;
                     try {
                         thumbnailFile = datafileService.findCheapAndEasy(thumbnailFile_id);
                     } catch (Exception ex) {
@@ -944,10 +937,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
         List<HashMap> hashList = new ArrayList<>();
         
-        HashMap mMap;
+        HashMap<String, Object> mMap = new HashMap<>();
         for (Object[] dvInfo : datasetVersionInfoList) {
-            
-            mMap = new HashMap();
+            mMap.clear();
             mMap.put("datasetVersionId", dvInfo[0]);
             mMap.put("datasetId", dvInfo[1]);
             mMap.put("releaseTime", dvInfo[2]);

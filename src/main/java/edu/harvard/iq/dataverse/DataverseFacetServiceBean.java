@@ -18,7 +18,7 @@ import javax.persistence.Query;
 @Named
 public class DataverseFacetServiceBean implements java.io.Serializable {
     
-    public static final LruCache<Long,List<DataverseFacet>> cache = new LruCache();
+    public static final LruCache<Long,List<DataverseFacet>> cache = new LruCache<>();
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
