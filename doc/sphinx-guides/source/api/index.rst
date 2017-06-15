@@ -6,10 +6,7 @@
 API Guide
 =========
 
-We encourage anyone interested in building tools to
-interoperate with the Dataverse to utilize our 
-APIs. In 4.0, we require to get a token, by simply registering for a Dataverse account, before using our APIs 
-(We are considering making some of the APIs completely public in the future - no token required - if you use it only a few times).
+We encourage anyone interested in building tools to interoperate with the Dataverse to utilize our APIs. Some API calls do not require authentication. Calls that require authentication require the user's API key. That key can be passed either via an extra query parameter, ``key``, as in ``ENPOINT?key=API_KEY``, or via the HTTP header ``X-Dataverse-key``. Note that while the header option normally requires more work on client side, it is considered safer, as the API key is not logged in the server access logs.
 
 Rather than using a production installation of Dataverse, API users are welcome to use http://demo.dataverse.org for testing.
 
