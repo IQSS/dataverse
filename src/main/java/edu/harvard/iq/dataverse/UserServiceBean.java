@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -25,6 +27,13 @@ public class UserServiceBean {
     }    
 
     public AuthenticatedUser save( AuthenticatedUser user ) {
+         //Set new timestamp for time of user account creation 
+        if (user.getCreated() == null){
+            Timestamp created = new Timestamp(new Date().getTime());
+            user.setCreated(created);
+            logger.info("New user was created at " + created);
+        }
+        
         if ( user.getId() == null ) {
             em.persist(this);
         } else {
