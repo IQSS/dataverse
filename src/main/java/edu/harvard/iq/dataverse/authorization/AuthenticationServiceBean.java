@@ -493,12 +493,12 @@ public class AuthenticationServiceBean {
      * @throws EJBException which may wrap an ConstraintViolationException if the proposed user does not pass bean validation.
      */
     public AuthenticatedUser createAuthenticatedUser(UserRecordIdentifier userRecordId,
-            String proposedAuthenticatedUserIdentifier,
-            AuthenticatedUserDisplayInfo userDisplayInfo,
-            boolean generateUniqueIdentifier) {
+                                                     String proposedAuthenticatedUserIdentifier,
+                                                     AuthenticatedUserDisplayInfo userDisplayInfo,
+                                                     boolean generateUniqueIdentifier) {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         authenticatedUser.applyDisplayInfo(userDisplayInfo);
-
+        
         // we have no desire for leading or trailing whitespace in identifiers
         if (proposedAuthenticatedUserIdentifier != null) {
             proposedAuthenticatedUserIdentifier = proposedAuthenticatedUserIdentifier.trim();
@@ -535,7 +535,7 @@ public class AuthenticationServiceBean {
              * better to do something like "startConfirmEmailProcessForNewUser". */
             confirmEmailService.createToken(authenticatedUser);
         }
-        
+
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
             .setInfo(authenticatedUser.getIdentifier()));
 

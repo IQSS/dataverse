@@ -65,13 +65,14 @@ public class AuthenticatedUser implements User, Serializable {
      */
     @NotNull
     @Column(nullable = false, unique=true)
-    private String userIdentifier;    
+    private String userIdentifier;
+
     @ValidateEmail(message = "Please enter a valid email address.")
     @NotNull
     @Column(nullable = false, unique=true)
     private String email;
     private String affiliation;
-    private String position;    
+    private String position;
     @NotBlank(message = "Please enter your last name.")
     private String lastName;
     @NotBlank(message = "Please enter your first name.")
@@ -79,9 +80,6 @@ public class AuthenticatedUser implements User, Serializable {
     @Column(nullable = true)
     private Timestamp emailConfirmed;
     private boolean superuser;
-
-    @NotNull
-    private Timestamp created;
 
     /**
      * @todo Remove? Check for accuracy? For Solr JOINs we used to care about
@@ -95,7 +93,6 @@ public class AuthenticatedUser implements User, Serializable {
      */
     @Transient
     private String shibIdentityProvider;
-    private Timestamp userCreated;
 
     @Override
     public String getIdentifier() {
@@ -207,14 +204,6 @@ public class AuthenticatedUser implements User, Serializable {
         this.emailConfirmed = emailConfirmed;
     }
 
-    public Timestamp getCreated() {
-        return created;
-    }
-    
-    public void setCreated(Timestamp created) {
-        this.created = created;
-    }
-    
     @Override
     public boolean isSuperuser() {
         return superuser;
