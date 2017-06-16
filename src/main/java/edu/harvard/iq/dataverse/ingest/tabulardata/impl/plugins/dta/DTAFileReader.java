@@ -635,14 +635,14 @@ public class DTAFileReader extends TabularDataFileReader{
         }
 
         // 4.0 Initialize dataverse variable objects: 
-        List<DataVariable> variableList = new ArrayList<DataVariable>();
+        List<DataVariable> variableList = new ArrayList<>();
 
         for (int i = 0; i < nvar; i++) {
             DataVariable dv = new DataVariable();
-            dv.setInvalidRanges(new ArrayList());
-            dv.setSummaryStatistics( new ArrayList() );
+            dv.setInvalidRanges(new ArrayList<>());
+            dv.setSummaryStatistics( new ArrayList<>() );
             dv.setUnf("UNF:6:XXX");
-            dv.setCategories(new ArrayList());
+            dv.setCategories(new ArrayList<>());
             variableList.add(dv);
 
             dv.setFileOrder(i);

@@ -1805,7 +1805,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String deleteDatasetVersion() {
-        Command cmd;
+        Command<?> cmd;
         try {
             cmd = new DeleteDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
             commandEngine.submit(cmd);
