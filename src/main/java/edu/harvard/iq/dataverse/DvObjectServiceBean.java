@@ -72,6 +72,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }
 
     /**
+     * @param dvObject
+     * @return 
      * @todo DRY! Perhaps we should merge this with the older
      * updateContentIndexTime method.
      */
@@ -137,7 +139,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         qstr += " WHERE  dv.id IN " + dvObjectClause;
         qstr += ";";
 
-        return em.createNativeQuery(qstr).getResultList();
+        return em.createNativeQuery(qstr, Object[].class).getResultList();
         
     }
     
@@ -163,7 +165,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         qstr += " WHERE  dv.owner_id IN " + dvObjectClause;
         qstr += ";";
 
-        return em.createNativeQuery(qstr).getResultList();
+        return em.createNativeQuery(qstr, Object[].class).getResultList();
         
     }
     
@@ -185,6 +187,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
      * dataverse page. (In order to determine if "linked" or not).
      * *done in recursive 1 query!*
      * 
+     * @param objectIds
      * @return 
      */
     public Map<Long, String> getObjectPathsByIds(Set<Long> objectIds){
@@ -200,7 +203,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             " SELECT o.id, o.owner_id FROM path_elements p, dvobject o WHERE o.id = p.owner_id) " +
             "SELECT id, owner_id FROM path_elements WHERE owner_id IS NOT NULL;"; // ORDER by id ASC;";
         
-        List<Object[]> searchResults = null;
+        List<Object[]> searchResults;
         
         try {
             searchResults = em.createNativeQuery(qstr).getResultList();

@@ -119,7 +119,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public List<Dataset> findAll() {
-        return em.createQuery("select object(o) from Dataset as o order by o.id").getResultList();
+        return em.createQuery("select object(o) from Dataset as o order by o.id", Dataset.class).getResultList();
     }
     
     
@@ -498,7 +498,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public List<DatasetLock> getDatasetLocks() {
         String query = "SELECT sl FROM DatasetLock sl";
-        return (List<DatasetLock>) em.createQuery(query).getResultList();
+        return em.createQuery(query, DatasetLock.class).getResultList();
     }
 
     public boolean checkDatasetLock(Long datasetId) {

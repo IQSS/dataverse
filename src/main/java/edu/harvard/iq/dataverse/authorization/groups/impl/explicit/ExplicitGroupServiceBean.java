@@ -69,7 +69,7 @@ public class ExplicitGroupServiceBean {
     }
     
     public List<ExplicitGroup> findByOwner( Long dvObjectId ) {
-        return provider.updateProvider(em.createNamedQuery( "ExplicitGroup.findByOwnerId" )
+        return provider.updateProvider(em.createNamedQuery( "ExplicitGroup.findByOwnerId", ExplicitGroup.class)
                  .setParameter("ownerId", dvObjectId )
                  .getResultList());
     }

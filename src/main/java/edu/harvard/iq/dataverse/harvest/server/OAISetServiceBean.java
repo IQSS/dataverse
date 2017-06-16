@@ -64,7 +64,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
     public OAISet find(Object pk) {
-        return (OAISet) em.find(OAISet.class, pk);
+        return em.find(OAISet.class, pk);
     }
     
     public boolean specExists(String spec) {
@@ -92,7 +92,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     public List<OAISet> findAll() {
         try {
             logger.fine("setService, findAll; query: select object(o) from OAISet as o order by o.name");
-            List<OAISet> oaiSets = em.createQuery("select object(o) from OAISet as o order by o.name").getResultList();
+            List<OAISet> oaiSets = em.createQuery("select object(o) from OAISet as o order by o.name", OAISet.class).getResultList();
             logger.fine((oaiSets != null ? oaiSets.size() : 0) + " results found.");
             return oaiSets;
         } catch (Exception e) {
@@ -106,7 +106,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         if (oaiSet == null) {
             return;
         }
-        em.createQuery("delete from OAIRecord hs where hs.setName = '" + oaiSet.getSpec() + "'").executeUpdate();
+        em.createQuery("delete from OAIRecord hs where hs.setName = '" + oaiSet.getSpec() + "'", OAISet.class).executeUpdate();
         //OAISet merged = em.merge(oaiSet);
         em.remove(oaiSet);
     }
@@ -140,7 +140,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         
         String query = managedSet.getDefinition();
 
-        List<Long> datasetIds = null;
+        List<Long> datasetIds;
         try {
             datasetIds = expandSetQuery(query);
             exportLogger.info("set query expanded to " + datasetIds.size() + " datasets.");
@@ -169,16 +169,13 @@ public class OAISetServiceBean implements java.io.Serializable {
             fileHandler = new FileHandler(logFileName);
             exportLogger.setUseParentHandlers(false);
             fileHandlerSuceeded = true;
-        } catch (IOException ex) {
-            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
+        } catch (IOException | SecurityException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         if (fileHandlerSuceeded) {
             exportLogger.addHandler(fileHandler);
         } else {
-            exportLogger = null;
             exportLogger = logger;
         }
         
