@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -95,6 +96,9 @@ public class AuthenticationServiceBean {
     @EJB
     PasswordResetServiceBean passwordResetServiceBean;
 
+    @EJB
+    UserServiceBean userService; 
+        
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -321,13 +325,17 @@ public class AuthenticationServiceBean {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
+            if (user != null){
+                user = userService.updateLastLogin(user);
+            }
+            
             /**
              * @todo Why does a method called "authenticate" have the potential
              * to call "createAuthenticatedUser"? Isn't the creation of a user a
              * different action than authenticating?
              *
              * @todo Wouldn't this be more readable with if/else rather than
-             * ternary?
+             * ternary?  (please)
              */
             return ( user == null ) ?
                 AuthenticationServiceBean.this.createAuthenticatedUser(
