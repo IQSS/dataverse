@@ -206,14 +206,13 @@
             
             <ui:fragment rendered="#{fileMetadata.datasetVersion.released or ((fileMetadata.datasetVersion.deaccessioned or fileMetadata.datasetVersion.draft) 
                                      and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
-                <ui:fragment rendered="#{!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}">
-                    <a id="fileNameLink" href="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.versionState}" class="ui-commandlink ui-widget">
-                        <h:outputText value="#{fileMetadata.label}" /></a>
-                </ui:fragment>
-                <ui:fragment rendered="#{(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}">
-                    <a id="fileNameLink" href="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.versionNumber}.#{fileMetadata.datasetVersion.minorVersionNumber}" class="ui-commandlink ui-widget">
-                        <h:outputText value="#{fileMetadata.label}" /></a>
-                </ui:fragment>
+                <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
+                <h:outputLink id="fileNameLink" value="#{widgetWrapper.wrapURL('/file.xhtml')}">
+                    <f:param name="fileId" value="#{fileMetadata.dataFile.id}" />
+                    <f:param name="version" value="#{fileMetadata.datasetVersion.versionState}" />
+                    <f:param name="version" rendered="#{(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" value=".#{fileMetadata.datasetVersion.minorVersionNumber}" />
+                    <h:outputText value="#{fileMetadata.label}" />
+                </h:outputLink>
             </ui:fragment>
 
             <!-- TYPE + SIZE + DATE + CHECKSUM -->
@@ -263,8 +262,6 @@
 
         </p:column>
         <p:column class="col-file-action text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-            
-            
             <f:facet name="header" class="col-file-action text-right">
                 <!-- EDIT -->
                 <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
@@ -345,7 +342,7 @@
                 #{bundle['file.ingestInProgress']}
             </div>
             
-            <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
+            <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
                 <ui:include src="file-setup-button.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
