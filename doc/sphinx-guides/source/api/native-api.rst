@@ -1,7 +1,7 @@
 Native API
 ==========
 
-Dataverse 4.0 exposes most of its GUI functionality via a REST-based API. Some API calls do not require authentication. Calls that do require authentication require the user's API key. That key can be passed either via an extra query parameter, ``key``, as in ``ENPOINT?key=API_KEY``, or via the HTTP header ``X-Dataverse-key``. Note that while the header option normally requires more work on client side, it is considered safer, as the API key is not logged in the server access logs.
+Dataverse 4.0 exposes most of its GUI functionality via a REST-based API. This guide describes that functionality. Most native API endpoints require an API key to be passed as a query parameter, ``key``, or HTTP request header, ``X-Dataverse-key``.
 
 .. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge. 
 
