@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.EditableValueHolder;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
@@ -205,7 +206,7 @@ public class DataverseUserPage implements java.io.Serializable {
         boolean userNameFound = authenticationService.identifierExists(userName);
         
         if (editMode == EditMode.CREATE && userNameFound) {
-            ((UIInput) toValidate).setValid(false);
+            ((EditableValueHolder) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
@@ -215,7 +216,7 @@ public class DataverseUserPage implements java.io.Serializable {
         String userEmail = (String) value;
         boolean emailValid = EMailValidator.isEmailValid(userEmail, null);
         if (!emailValid) {
-            ((UIInput) toValidate).setValid(false);
+            ((EditableValueHolder) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);
             context.addMessage(toValidate.getClientId(context), message);
             logger.info("Email is not valid: " + userEmail);
@@ -237,7 +238,7 @@ public class DataverseUserPage implements java.io.Serializable {
             }
         }
         if (userEmailFound) {
-            ((UIInput) toValidate).setValid(false);
+            ((EditableValueHolder) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.email.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
@@ -249,7 +250,7 @@ public class DataverseUserPage implements java.io.Serializable {
         if (StringUtils.isBlank(password)){
             logger.log(Level.WARNING, "new password is blank");
 
-            ((UIInput) toValidate).setValid(false);
+            ((EditableValueHolder) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Password Error", "The new password is blank: re-type it again");
@@ -267,7 +268,7 @@ public class DataverseUserPage implements java.io.Serializable {
         PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
         boolean passwordIsComplexEnough = password!= null && validator.validatePassword(password);
         if (!passwordIsComplexEnough) {
-            ((UIInput) toValidate).setValid(false);
+            ((EditableValueHolder) toValidate).setValid(false);
             String messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", messageDetail);
             context.addMessage(toValidate.getClientId(context), message);
@@ -406,7 +407,7 @@ public class DataverseUserPage implements java.io.Serializable {
     private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
         // Find user's role(s) for given dataverse/dataset
         Set<RoleAssignment> roles = permissionService.assignmentsFor(au, dvObj);
-        List<String> roleNames = new ArrayList();
+        List<String> roleNames = new ArrayList<>();
 
         // Include roles derived from a user's groups
         Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
@@ -621,7 +622,7 @@ public class DataverseUserPage implements java.io.Serializable {
         return notificationsList;
     }
 
-    public void setNotificationsList(List notificationsList) {
+    public void setNotificationsList(List<UserNotification> notificationsList) {
         this.notificationsList = notificationsList;
     }
 

@@ -64,7 +64,7 @@ public class PermissionsWrapper implements java.io.Serializable {
             }
 
         } else {
-            Map newDvoCommandMap = new HashMap();
+            Map<Class<? extends Command>, Boolean> newDvoCommandMap = new HashMap<>();
             commandMap.put(dvo.getId(), newDvoCommandMap);
             return addCommandtoDvoCommandMap(dvo, command, newDvoCommandMap);
         }

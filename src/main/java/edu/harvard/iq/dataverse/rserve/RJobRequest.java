@@ -264,26 +264,27 @@ public class RJobRequest {
             if (!StringUtils.isEmpty(dv.getFormatCategory())) {
                 //if (dv.getFormatSchema().toLowerCase().equals("spss")){
                 if (dv.getDataTable().getOriginalFileFormat().toLowerCase().startsWith("application/x-spss")) {
-                    if (dv.getFormatCategory().toLowerCase().equals("date")){
-                        // add this var to this map value D
-                        // (but only if it's a full date format! - partial dates, like "year only" 
-                        // are not going to be treated as dates)
-                        if ("yyyy-MM-dd".equals(dv.getFormat())) {
-                            variableFormats.put(getSafeVariableName(dv.getName()), "D");
-                        }
-                    } else if (dv.getFormatCategory().toLowerCase().equals("time")){
-                        // add this var to this map
-                        if ( dv.getFormatCategory().toLowerCase().startsWith("dtime")){
-                            // value JT
-                            variableFormats.put(getSafeVariableName(dv.getName()), "JT");
-                            
-                        } else if ( dv.getFormatCategory().toLowerCase().startsWith("datetime")){
-                            // value DT
-                            variableFormats.put(getSafeVariableName(dv.getName()), "DT");
-                        } else {
-                            // value T
-                            variableFormats.put(getSafeVariableName(dv.getName()), "T");
-                        }
+                    switch (dv.getFormatCategory().toLowerCase()) {
+                        case "date":
+                            // add this var to this map value D
+                            // (but only if it's a full date format! - partial dates, like "year only"
+                            // are not going to be treated as dates)
+                            if ("yyyy-MM-dd".equals(dv.getFormat())) {
+                                variableFormats.put(getSafeVariableName(dv.getName()), "D");
+                            }   break;
+                        case "time":
+                            // add this var to this map
+                            if ( dv.getFormatCategory().toLowerCase().startsWith("dtime")){
+                                // value JT
+                                variableFormats.put(getSafeVariableName(dv.getName()), "JT");
+                                
+                            } else if ( dv.getFormatCategory().toLowerCase().startsWith("datetime")){
+                                // value DT
+                                variableFormats.put(getSafeVariableName(dv.getName()), "DT");
+                            } else {
+                                // value T
+                                variableFormats.put(getSafeVariableName(dv.getName()), "T");
+                            }   break;
                     }
                 }
                 //else if (dv.getFormatSchema().toLowerCase().equals("rdata")) {
@@ -336,7 +337,7 @@ public class RJobRequest {
     }
         
     private String getSafeVariableName(String raw){
-        String safe =null;
+        String safe;
         if ((raw2safeTable == null) || (raw2safeTable.isEmpty())) {
             // use raw
             dbgLog.fine("no unsafe variables");
@@ -357,7 +358,7 @@ public class RJobRequest {
     }
     
     public String[] getVariableNames() {
-        String[] variableNames=null;
+        String[] variableNames;
         
         List<String> rw = new ArrayList<>();
         for (DataVariable dv : dataVariablesForRequest) {
@@ -392,7 +393,7 @@ public class RJobRequest {
     }
     
     public List<String> getFilteredVarNameSet(List<String> varIdSet){
-        List<String> varNameSet = new ArrayList<String>();
+        List<String> varNameSet = new ArrayList<>();
         for (String vid : varIdSet){
             dbgLog.fine("name list: vid="+vid);
             String raw = getVarIdToRawVarNameTable().get(vid);
@@ -414,7 +415,7 @@ public class RJobRequest {
     }
     
     public String[] getVariableIds(){
-        String[] variableIds=null;
+        String[] variableIds;
         List<String> rw = new ArrayList<>();
         for (DataVariable dv : dataVariablesForRequest) {
             rw.add("v"+dv.getId().toString());
@@ -425,7 +426,7 @@ public class RJobRequest {
     }
 
     public Map<String, String> getVarIdToRawVarNameTable(){
-        Map<String, String> vi2rwn = new HashMap<String, String>();
+        Map<String, String> vi2rwn = new HashMap<>();
         
         for(DataVariable dv :dataVariablesForRequest){
             vi2rwn.put("v"+dv.getId(), dv.getName());
@@ -434,7 +435,7 @@ public class RJobRequest {
     }
 
     public Map<String, String> getRawVarNameToVarIdTable(){
-        Map<String, String> rwn2Id = new HashMap<String, String>();
+        Map<String, String> rwn2Id = new HashMap<>();
         
         for(DataVariable dv :dataVariablesForRequest){
             rwn2Id.put(dv.getName(), "v"+dv.getId());
@@ -443,7 +444,7 @@ public class RJobRequest {
     }
 
     public String[] getUpdatedVariableNames(){
-        List<String> tmp = new ArrayList<String>();
+        List<String> tmp = new ArrayList<>();
         if (!hasUnsafeVariableNames){
             // neither renemaed nor recoded vars
             return  getVariableNames();
@@ -458,14 +459,14 @@ public class RJobRequest {
      * @return    A String array of variable labels
      */
     public String[] getVariableLabels(){
-        String [] variableLabels=null;
-        List<String> rw = new ArrayList();
-        for(int i=0;i < dataVariablesForRequest.size(); i++){
-            DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
-                rw.add(dv.getLabel());
+        String[] variableLabels;
+        List<String> rw = new ArrayList<>();
+        for (DataVariable dataVariablesForRequest1 : dataVariablesForRequest) {
+            DataVariable dv = dataVariablesForRequest1;
+            rw.add(dv.getLabel());
         }
         
-        variableLabels = (String[])rw.toArray(new String[rw.size()]);
+        variableLabels = rw.toArray(new String[rw.size()]);
         return variableLabels;
     }
 

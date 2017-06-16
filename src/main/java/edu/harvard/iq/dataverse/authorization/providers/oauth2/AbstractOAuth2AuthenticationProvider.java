@@ -92,7 +92,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     
     public AbstractOAuth2AuthenticationProvider(){}
     
-    public abstract BaseApi getApiInstance();
+    public abstract BaseApi<?> getApiInstance();
     
     protected abstract ParsedUserResponse parseUserResponse( String responseBody );
     

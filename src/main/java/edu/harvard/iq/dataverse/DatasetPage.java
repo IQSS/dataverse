@@ -330,7 +330,7 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-        private Long numberOfFilesToShow = new Long(25);
+        private Long numberOfFilesToShow = (long) 25;
 
     public Long getNumberOfFilesToShow() {
         return numberOfFilesToShow;
@@ -1774,7 +1774,7 @@ public class DatasetPage implements java.io.Serializable {
     
     public String deleteDataset() {
 
-        Command cmd;
+        Command<?> cmd;
         try {
             cmd = new DestroyDatasetCommand(dataset, dvRequestService.getDataverseRequest());
             commandEngine.submit(cmd);
@@ -2719,7 +2719,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<DatasetVersion> resetReleasedVersionTabList() {
-        List<DatasetVersion> retList = new ArrayList();
+        List<DatasetVersion> retList = new ArrayList<>();
         for (DatasetVersion version : dataset.getVersions()) {
             if (version.isReleased() || version.isArchived()) {
                 retList.add(version);
@@ -3096,7 +3096,7 @@ public class DatasetPage implements java.io.Serializable {
         selectedTags = null;
         selectedTags = new String[0];
         
-        List selectedCategoriesByName= new ArrayList<>();
+        List<String> selectedCategoriesByName= new ArrayList<>();
         for (FileMetadata fm : selectedFiles) {
             if (fm.getCategories() != null) {
                 for (int i = 0; i < fm.getCategories().size(); i++) {
@@ -3112,7 +3112,7 @@ public class DatasetPage implements java.io.Serializable {
         if (selectedCategoriesByName.size() > 0) {
             selectedTags = new String[selectedCategoriesByName.size()];
             for (int i = 0; i < selectedCategoriesByName.size(); i++) {
-                selectedTags[i] = (String) selectedCategoriesByName.get(i);
+                selectedTags[i] = selectedCategoriesByName.get(i);
             }
         }
         Arrays.sort(selectedTags);
@@ -3147,15 +3147,13 @@ public class DatasetPage implements java.io.Serializable {
                         }
                         if (fmd.getDataFile().isTabularData()) {
                             fmd.getDataFile().setTags(null);
-                            for (int i = 0; i < selectedTabFileTags.length; i++) {
-
+                            for (String selectedTabFileTag : selectedTabFileTags) {
                                 DataFileTag tag = new DataFileTag();
                                 try {
-                                    tag.setTypeByLabel(selectedTabFileTags[i]);
+                                    tag.setTypeByLabel(selectedTabFileTag);
                                     tag.setDataFile(fmd.getDataFile());
                                     fmd.getDataFile().addTag(tag);
-
-                                } catch (IllegalArgumentException iax) {
+                                }catch (IllegalArgumentException iax) {
                                     // ignore 
                                 }
                             }
@@ -3477,7 +3475,7 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
        
-        Long idForNotification = new Long(0);
+        Long idForNotification = (long) 0;
         if (fileIdString != null) {
             String[] ids = fileIdString.split(",");
             for (String id : ids) {

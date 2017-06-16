@@ -64,9 +64,9 @@ public class MyDataPage implements java.io.Serializable {
     private AuthenticatedUser authUser = null;
     private Boolean isSuperuserLoggedIn = null;
     
-    private long totalUserFileCount = (long) 0;
-    private long totalUserDataverseCount = (long) 0;
-    private long totalUserDatasetCount = (long) 0;
+    private long totalUserFileCount = 0;
+    private long totalUserDataverseCount = 0;
+    private long totalUserDatasetCount = 0;
     
     private void msg(String s){
         System.out.println(s);
@@ -99,10 +99,7 @@ public class MyDataPage implements java.io.Serializable {
     }
     
     public boolean hasFilterParams(){
-        if (this.filterParams == null){
-            return false;
-        }
-        return true;
+        return this.filterParams != null;
     }
     
     public List<String[]> getRoleInfoForCheckboxes(){
@@ -113,7 +110,7 @@ public class MyDataPage implements java.io.Serializable {
         if (retVal != null){
             return retVal;
         } else {
-            return new ArrayList();
+            return new ArrayList<>();
         }
     }
            
@@ -195,7 +192,7 @@ public class MyDataPage implements java.io.Serializable {
         }
         // Initialize the role checboxes
         //
-        List<DataverseRole> roleList = new ArrayList();
+        List<DataverseRole> roleList = new ArrayList<>();
         
         // (1) For a superuser, show all the roles--in case they want to
         //    see another user's "My Data"

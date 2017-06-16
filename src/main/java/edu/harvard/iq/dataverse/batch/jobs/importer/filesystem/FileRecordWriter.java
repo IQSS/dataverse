@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -282,7 +283,7 @@ public class FileRecordWriter extends AbstractItemWriter {
                 checksumValue = ((HashMap<String, String>) jobContext.getTransientUserData()).get(manifestPath);
                 if (checksumValue != null) {
                     // remove the key, so we can check for unused checksums when the job is complete
-                    ((HashMap<String, String>) jobContext.getTransientUserData()).remove(manifestPath);
+                    ((Map<String, String>) jobContext.getTransientUserData()).remove(manifestPath);
 
                 } else {
                     getJobLogger().log(Level.WARNING, "Unable to find checksum in manifest for: " + file.getAbsolutePath());

@@ -166,12 +166,12 @@ public class DatasetsIT {
         RestAssured.unregisterParser("text/plain");
 
         // FIXME: It would be awesome if we could just get a JSON object back instead. :(
-        Map<String, Object> datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
+        Map<String, List<Map<String, Object>>> datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("datasetVersion.metadataBlocks.citation.fields.find { fields -> fields.typeName == datasetContact }");
         System.out.println("datasetContactFromExport: " + datasetContactFromExport);
 
         assertEquals("datasetContact", datasetContactFromExport.get("typeName"));
-        List<Map<String, Object>> valuesArray = (List<Map<String, Object>>) datasetContactFromExport.get("value");
+        List<Map<String, Object>> valuesArray = datasetContactFromExport.get("value");
         // FIXME: it's brittle to rely on the first value but what else can we do, given our API?
         Map<String, Object> firstValue = valuesArray.get(0);
 //        System.out.println("firstValue: " + firstValue);
@@ -296,12 +296,12 @@ public class DatasetsIT {
         RestAssured.unregisterParser("text/plain");
 
         // FIXME: It would be awesome if we could just get a JSON object back instead. :(
-        Map<String, Object> datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
+        Map<String, List<Map<String, Object>> > datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("datasetVersion.metadataBlocks.citation.fields.find { fields -> fields.typeName == datasetContact }");
         System.out.println("datasetContactFromExport: " + datasetContactFromExport);
 
         assertEquals("datasetContact", datasetContactFromExport.get("typeName"));
-        List<Map<String, Object>> valuesArray = (List<Map<String, Object>>) datasetContactFromExport.get("value");
+        List<Map<String, Object>> valuesArray = datasetContactFromExport.get("value");
         // FIXME: it's brittle to rely on the first value but what else can we do, given our API?
         Map<String, Object> firstValue = valuesArray.get(0);
 //        System.out.println("firstValue: " + firstValue);

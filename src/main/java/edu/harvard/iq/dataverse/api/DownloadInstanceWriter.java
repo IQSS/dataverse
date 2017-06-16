@@ -80,7 +80,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             dataFileIO = ImageThumbConverter.getImageThumbnailAsInputStream(dataFileIO, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE); 
                         } else {
                             try {
-                                int size = new Integer(di.getConversionParamValue()).intValue();
+                                int size = new Integer(di.getConversionParamValue());
                                 if (size > 0) {                                    
                                     dataFileIO = ImageThumbConverter.getImageThumbnailAsInputStream(dataFileIO, size);
                                 }
@@ -101,104 +101,104 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // tab files tagged as "geospatial"). We are going to assume that you can 
                         // do only ONE thing at a time - request the thumbnail for the file, or 
                         // request any tabular-specific services. 
-                        
-                        if (di.getConversionParam().equals("noVarHeader")) {
-                            logger.fine("tabular data with no var header requested");
-                            dataFileIO.setNoVarHeader(Boolean.TRUE);
-                            dataFileIO.setVarHeader(null);
-                        } else if (di.getConversionParam().equals("format")) {
-                            // Conversions, and downloads of "stored originals" are 
-                            // now supported on all DataFiles for which DataFileIO 
-                            // access drivers are available.
-                            
-                            if ("original".equals(di.getConversionParamValue())) {
-                                logger.fine("stored original of an ingested file requested");
-                                dataFileIO = StoredOriginalFile.retreive(dataFileIO);
-                            } else {
-                                // Other format conversions: 
-                                logger.fine("format conversion on a tabular file requested ("+di.getConversionParamValue()+")");
-                                String requestedMimeType = di.getServiceFormatType(di.getConversionParam(), di.getConversionParamValue()); 
-                                if (requestedMimeType == null) {
-                                    // default mime type, in case real type is unknown;
-                                    // (this shouldn't happen in real life - but just in case): 
-                                    requestedMimeType = "application/octet-stream";
-                                } 
-                                dataFileIO = 
-                                        DataConverter.performFormatConversion(dataFile, 
-                                        dataFileIO, 
-                                        di.getConversionParamValue(), requestedMimeType);
-                            } 
-                        } else if (di.getConversionParam().equals("subset")) {
-                            logger.fine("processing subset request.");
-                            
-                            // TODO: 
-                            // If there are parameters on the list that are 
-                            // not valid variable ids, or if the do not belong to 
-                            // the datafile referenced - I simply skip them; 
-                            // perhaps I should throw an invalid argument exception 
-                            // instead. 
-                            
-                            if (di.getExtraArguments() != null && di.getExtraArguments().size() > 0) {
-                                logger.fine("processing extra arguments list of length "+di.getExtraArguments().size());
-                                List <Integer> variablePositionIndex = new ArrayList<>();
-                                String subsetVariableHeader = null;
-                                for (int i = 0; i < di.getExtraArguments().size(); i++) {
-                                    DataVariable variable = (DataVariable)di.getExtraArguments().get(i);
-                                    if (variable != null) {
-                                        if (variable.getDataTable().getDataFile().getId().equals(dataFile.getId())) {
-                                            logger.fine("adding variable id "+variable.getId()+" to the list.");
-                                            variablePositionIndex.add(variable.getFileOrder());
-                                            if (subsetVariableHeader == null) {
-                                                subsetVariableHeader = variable.getName();
-                                            } else {
-                                                subsetVariableHeader = subsetVariableHeader.concat("\t");
-                                                subsetVariableHeader = subsetVariableHeader.concat(variable.getName());
-                                            }
-                                        } else {
-                                            logger.warning("variable does not belong to this data file.");
-                                        }
-                                    }  
-                                }
+                        switch (di.getConversionParam()) {
+                            case "noVarHeader":
+                                logger.fine("tabular data with no var header requested");
+                                dataFileIO.setNoVarHeader(Boolean.TRUE);
+                                dataFileIO.setVarHeader(null);
+                                break;
+                            case "format":
+                                // Conversions, and downloads of "stored originals" are
+                                // now supported on all DataFiles for which DataFileIO
+                                // access drivers are available.
                                 
-                                if (variablePositionIndex.size() > 0) {
-
-                                    try {
-                                        File tempSubsetFile = File.createTempFile("tempSubsetFile", ".tmp");
-                                        TabularSubsetGenerator tabularSubsetGenerator = new TabularSubsetGenerator();
-                                        tabularSubsetGenerator.subsetFile(dataFileIO.getInputStream(), tempSubsetFile.getAbsolutePath(), variablePositionIndex, dataFile.getDataTable().getCaseQuantity(), "\t");
-
-                                        if (tempSubsetFile.exists()) {
-                                            FileInputStream subsetStream = new FileInputStream(tempSubsetFile);
-                                            long subsetSize = tempSubsetFile.length();
-
-                                            InputStreamIO subsetStreamIO = new InputStreamIO(subsetStream, subsetSize);
-                                            logger.fine("successfully created subset output stream.");
-                                            subsetVariableHeader = subsetVariableHeader.concat("\n");
-                                            subsetStreamIO.setVarHeader(subsetVariableHeader);
-
-                                            String tabularFileName = dataFileIO.getFileName();
-
-                                            if (tabularFileName != null && tabularFileName.endsWith(".tab")) {
-                                                tabularFileName = tabularFileName.replaceAll("\\.tab$", "-subset.tab");
-                                            } else if (tabularFileName != null && !"".equals(tabularFileName)) {
-                                                tabularFileName = tabularFileName.concat("-subset.tab");
+                                if ("original".equals(di.getConversionParamValue())) {
+                                    logger.fine("stored original of an ingested file requested");
+                                    dataFileIO = StoredOriginalFile.retreive(dataFileIO);
+                                } else {
+                                    // Other format conversions:
+                                    logger.fine("format conversion on a tabular file requested ("+di.getConversionParamValue()+")");
+                                    String requestedMimeType = di.getServiceFormatType(di.getConversionParam(), di.getConversionParamValue());
+                                    if (requestedMimeType == null) {
+                                        // default mime type, in case real type is unknown;
+                                        // (this shouldn't happen in real life - but just in case):
+                                        requestedMimeType = "application/octet-stream";
+                                    }
+                                    dataFileIO =
+                                            DataConverter.performFormatConversion(dataFile,
+                                                    dataFileIO,
+                                                    di.getConversionParamValue(), requestedMimeType);
+                                }   break;
+                            case "subset":
+                                logger.fine("processing subset request.");
+                                // TODO:
+                                // If there are parameters on the list that are
+                                // not valid variable ids, or if the do not belong to
+                                // the datafile referenced - I simply skip them;
+                                // perhaps I should throw an invalid argument exception
+                                // instead.
+                                
+                                if (di.getExtraArguments() != null && di.getExtraArguments().size() > 0) {
+                                    logger.fine("processing extra arguments list of length "+di.getExtraArguments().size());
+                                    List <Integer> variablePositionIndex = new ArrayList<>();
+                                    String subsetVariableHeader = null;
+                                    for (int i = 0; i < di.getExtraArguments().size(); i++) {
+                                        DataVariable variable = (DataVariable)di.getExtraArguments().get(i);
+                                        if (variable != null) {
+                                            if (variable.getDataTable().getDataFile().getId().equals(dataFile.getId())) {
+                                                logger.fine("adding variable id "+variable.getId()+" to the list.");
+                                                variablePositionIndex.add(variable.getFileOrder());
+                                                if (subsetVariableHeader == null) {
+                                                    subsetVariableHeader = variable.getName();
+                                                } else {
+                                                    subsetVariableHeader = subsetVariableHeader.concat("\t");
+                                                    subsetVariableHeader = subsetVariableHeader.concat(variable.getName());
+                                                }
                                             } else {
-                                                tabularFileName = "subset.tab";
+                                                logger.warning("variable does not belong to this data file.");
                                             }
-
-                                            subsetStreamIO.setFileName(tabularFileName);
-                                            subsetStreamIO.setMimeType(dataFileIO.getMimeType());
-                                            dataFileIO = subsetStreamIO;
-                                        } else {
+                                        }
+                                    }
+                                    
+                                    if (variablePositionIndex.size() > 0) {
+                                        
+                                        try {
+                                            File tempSubsetFile = File.createTempFile("tempSubsetFile", ".tmp");
+                                            TabularSubsetGenerator tabularSubsetGenerator = new TabularSubsetGenerator();
+                                            tabularSubsetGenerator.subsetFile(dataFileIO.getInputStream(), tempSubsetFile.getAbsolutePath(), variablePositionIndex, dataFile.getDataTable().getCaseQuantity(), "\t");
+                                            
+                                            if (tempSubsetFile.exists()) {
+                                                FileInputStream subsetStream = new FileInputStream(tempSubsetFile);
+                                                long subsetSize = tempSubsetFile.length();
+                                                
+                                                InputStreamIO subsetStreamIO = new InputStreamIO(subsetStream, subsetSize);
+                                                logger.fine("successfully created subset output stream.");
+                                                subsetVariableHeader = subsetVariableHeader.concat("\n");
+                                                subsetStreamIO.setVarHeader(subsetVariableHeader);
+                                                
+                                                String tabularFileName = dataFileIO.getFileName();
+                                                
+                                                if (tabularFileName != null && tabularFileName.endsWith(".tab")) {
+                                                    tabularFileName = tabularFileName.replaceAll("\\.tab$", "-subset.tab");
+                                                } else if (tabularFileName != null && !"".equals(tabularFileName)) {
+                                                    tabularFileName = tabularFileName.concat("-subset.tab");
+                                                } else {
+                                                    tabularFileName = "subset.tab";
+                                                }
+                                                
+                                                subsetStreamIO.setFileName(tabularFileName);
+                                                subsetStreamIO.setMimeType(dataFileIO.getMimeType());
+                                                dataFileIO = subsetStreamIO;
+                                            } else {
+                                                dataFileIO = null;
+                                            }
+                                        } catch (IOException ioex) {
                                             dataFileIO = null;
                                         }
-                                    } catch (IOException ioex) {
-                                        dataFileIO = null;
                                     }
-                                }
-                            } else {
-                                logger.fine("empty list of extra arguments.");
-                            }
+                                } else {
+                                    logger.fine("empty list of extra arguments.");
+                            }   break;
                         } 
                     }
                     
@@ -282,7 +282,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     if (di.getGbr() != null && !(isThumbnailDownload(di) || isPreprocessedMetadataDownload(di))) {
                         try {
                             logger.fine("writing guestbook response.");
-                            Command cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
+                            Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                             di.getCommand().submit(cmd);
                         } catch (CommandException e) {
                             //if an error occurs here then download won't happen no need for response recs...

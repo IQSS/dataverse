@@ -139,7 +139,7 @@ public class CSVFileReader extends TabularDataFileReader {
         
         // Create variables: 
         
-        List<DataVariable> variableList = new ArrayList<DataVariable>();
+        List<DataVariable> variableList = new ArrayList<>();
         
         for (int i = 0; i < variableCount; i++) {
             String varName = valueTokens[i];
@@ -154,10 +154,10 @@ public class CSVFileReader extends TabularDataFileReader {
             DataVariable dv = new DataVariable();
             dv.setName(varName);
             dv.setLabel(varName);
-            dv.setInvalidRanges(new ArrayList());
-            dv.setSummaryStatistics(new ArrayList());
+            dv.setInvalidRanges(new ArrayList<>());
+            dv.setSummaryStatistics(new ArrayList<>());
             dv.setUnf("UNF:6:NOTCALCULATED");
-            dv.setCategories(new ArrayList());
+            dv.setCategories(new ArrayList<>());
             variableList.add(dv);
 
             dv.setTypeCharacter();

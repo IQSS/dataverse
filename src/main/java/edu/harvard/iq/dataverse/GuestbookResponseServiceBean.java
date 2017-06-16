@@ -298,7 +298,7 @@ public class GuestbookResponseServiceBean {
 
     private List<Object[]> convertIntegerToLong(List<Object[]> list, int index) {
         for (Object[] item : list) {
-            item[index] = (long) item[index];
+            item[index] = new Long((long) item[index]);
         }
 
         return list;

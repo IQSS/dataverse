@@ -1124,7 +1124,7 @@ public class AddReplaceFileHelper{
         }
 
         // Initialize new file list
-        this.finalFileList = new ArrayList();
+        this.finalFileList = new ArrayList<>();
 
         String warningMessage  = null;
         

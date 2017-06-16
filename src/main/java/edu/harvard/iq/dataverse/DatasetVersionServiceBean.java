@@ -911,10 +911,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         Query nativeQuery = em.createNativeQuery(query);
         List<String> checksumList = nativeQuery.getResultList();
 
-        if (checksumList.size() > 0){
-            return true;
-        }
-        return false;
+        return checksumList.size() > 0;
     }
         
     

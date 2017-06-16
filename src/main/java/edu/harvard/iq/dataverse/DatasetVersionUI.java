@@ -39,8 +39,8 @@ public class DatasetVersionUI implements Serializable {
     public DatasetVersionUI() {
     }
 
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap();
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap();
+    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<>();
+    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<>();
 
     public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
@@ -66,7 +66,7 @@ public class DatasetVersionUI implements Serializable {
         
         setDatasetVersion(datasetVersion);
         //this.setDatasetAuthors(new ArrayList());
-        this.setDatasetRelPublications(new ArrayList());
+        this.setDatasetRelPublications(new ArrayList<>());
 
         // loop through vaues to get fields for view mode
         for (DatasetField dsf : datasetVersion.getDatasetFields()) {
@@ -270,7 +270,7 @@ public class DatasetVersionUI implements Serializable {
     //TODO - make sure getCitation works
     private String getYearForCitation(String dateString) {
         //get date to first dash only
-        if (dateString.indexOf("-") > -1) {
+        if (dateString.contains("-")) {
             return dateString.substring(0, dateString.indexOf("-"));
         }
         return dateString;
@@ -343,7 +343,7 @@ public class DatasetVersionUI implements Serializable {
 
     private List<DatasetField> initDatasetFields(boolean createBlanks) {
         //retList - Return List of values
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList<>();
         for (DatasetField dsf : this.datasetVersion.getDatasetFields()) {
             retList.add(initDatasetField(dsf, createBlanks));
         }
@@ -372,24 +372,20 @@ public class DatasetVersionUI implements Serializable {
         }
 
         //sort via display order on dataset field
-        Collections.sort(retList, new Comparator<DatasetField>() {
-            public int compare(DatasetField d1, DatasetField d2) {
-                int a = d1.getDatasetFieldType().getDisplayOrder();
-                int b = d2.getDatasetFieldType().getDisplayOrder();
-                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-            }
+        Collections.sort(retList, (DatasetField d1, DatasetField d2) -> {
+            int a = d1.getDatasetFieldType().getDisplayOrder();
+            int b = d2.getDatasetFieldType().getDisplayOrder();
+            return Integer.valueOf(a).compareTo(b);
         });
 
         return sortDatasetFields(retList);
     }  
     
     private List<DatasetField> sortDatasetFields (List<DatasetField> dsfList) {
-        Collections.sort(dsfList, new Comparator<DatasetField>() {
-            public int compare(DatasetField d1, DatasetField d2) {
-                int a = d1.getDatasetFieldType().getDisplayOrder();
-                int b = d2.getDatasetFieldType().getDisplayOrder();
-                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-            }
+        Collections.sort(dsfList, (DatasetField d1, DatasetField d2) -> {
+            int a = d1.getDatasetFieldType().getDisplayOrder();
+            int b = d2.getDatasetFieldType().getDisplayOrder();
+            return Integer.valueOf(a).compareTo(b);
         });
         return dsfList;
     }    
@@ -406,7 +402,7 @@ public class DatasetVersionUI implements Serializable {
         
         List<DatasetField> filledInFields = this.datasetVersion.getDatasetFields(); 
         
-        List <MetadataBlock> actualMDB = new ArrayList();
+        List <MetadataBlock> actualMDB = new ArrayList<>();
             
         actualMDB.addAll(this.datasetVersion.getDataset().getOwner().getMetadataBlocks());
         
@@ -422,8 +418,8 @@ public class DatasetVersionUI implements Serializable {
         for (MetadataBlock mdb : actualMDB) {
             mdb.setEmpty(true);
             mdb.setHasRequired(false);
-            List<DatasetField> datasetFieldsForView = new ArrayList();
-            List<DatasetField> datasetFieldsForEdit = new ArrayList();
+            List<DatasetField> datasetFieldsForView = new ArrayList<>();
+            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
             for (DatasetField dsf : datasetVersion.getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);

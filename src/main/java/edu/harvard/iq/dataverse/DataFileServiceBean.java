@@ -552,12 +552,11 @@ public class DataFileServiceBean implements java.io.Serializable {
             Long datafile_id = (Long) result[0];
             Integer tagtype_id = (Integer) result[1];
             if (fileTagMap.get(datafile_id) == null) {
-                fileTagMap.put(datafile_id, new HashSet<Integer>());
+                fileTagMap.put(datafile_id, new HashSet<>());
             }
             fileTagMap.get(datafile_id).add(tagtype_id);
             i++; 
         }
-        dataTagsResults = null;
         
         logger.fine("Retrieved "+i+" data tags.");
         

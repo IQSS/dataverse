@@ -66,16 +66,16 @@ import java.util.Set;
  * the current node) may be queried.
  *
  */
-class DigraphNode implements Cloneable, Serializable {
+class DigraphNode<E> implements Cloneable, Serializable {
 
     /** The data associated with this node. */
-    protected Object data;
+    protected E data;
 
     /**
      * A <code>Set</code> of neighboring nodes pointed to by this
      * node.
      */
-    protected Set outNodes = new HashSet();
+    protected Set<DigraphNode<E>> outNodes = new HashSet<>();
 
     /** The in-degree of the node. */
     protected int inDegree = 0;
@@ -84,14 +84,14 @@ class DigraphNode implements Cloneable, Serializable {
      * A <code>Set</code> of neighboring nodes that point to this
      * node.
      */
-    private Set inNodes = new HashSet();
+    private final Set<DigraphNode> inNodes = new HashSet<>();
 
-    public DigraphNode(Object data) {
+    public DigraphNode(E data) {
         this.data = data;
     }
 
     /** Returns the <code>Object</code> referenced by this node. */
-    public Object getData() {
+    public E getData() {
         return data;
     }
 
@@ -99,7 +99,7 @@ class DigraphNode implements Cloneable, Serializable {
      * Returns an <code>Iterator</code> containing the nodes pointed
      * to by this node.
      */
-    public Iterator getOutNodes() {
+    public Iterator<DigraphNode<E>> getOutNodes() {
         return outNodes.iterator();
     }
 
@@ -112,7 +112,7 @@ class DigraphNode implements Cloneable, Serializable {
      * @return <code>true</code> if the node was not previously the
      * target of an edge.
      */
-    public boolean addEdge(DigraphNode node) {
+    public boolean addEdge(DigraphNode<E> node) {
         if (outNodes.contains(node)) {
             return false;
         }
@@ -159,14 +159,14 @@ class DigraphNode implements Cloneable, Serializable {
      */
     public void dispose() {
         Object[] inNodesArray = inNodes.toArray();
-        for(int i=0; i<inNodesArray.length; i++) {
-            DigraphNode node = (DigraphNode) inNodesArray[i];
+        for (Object inNodesArray1 : inNodesArray) {
+            DigraphNode node = (DigraphNode) inNodesArray1;
             node.removeEdge(this);
         }
 
         Object[] outNodesArray = outNodes.toArray();
-        for(int i=0; i<outNodesArray.length; i++) {
-            DigraphNode node = (DigraphNode) outNodesArray[i];
+        for (Object outNodesArray1 : outNodesArray) {
+            DigraphNode node = (DigraphNode) outNodesArray1;
             removeEdge(node);
         }
     }
