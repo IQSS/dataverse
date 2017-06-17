@@ -572,7 +572,7 @@ public class DTAFileReader extends TabularDataFileReader{
                     + "we cannot ingest this Stata file.");
             throw new IllegalArgumentException("given file is not stata-dta type");
         } else {
-            releaseNumber = (int) magic_number[0];
+            releaseNumber = magic_number[0];
             init();
 
             dataTable.setOriginalFileFormat(MIME_TYPE[0]);
