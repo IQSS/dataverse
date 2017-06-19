@@ -69,49 +69,35 @@ public class DTAFileReader extends TabularDataFileReader{
     // (should it all be isolated in some other class?) 
 
     private static Map<Integer, String> STATA_RELEASE_NUMBER = 
-            new HashMap<Integer, String>();
-    private static Map<String, Integer> release105type = new LinkedHashMap<String, Integer>();
-    private static Map<String, Integer> release111type = new LinkedHashMap<String, Integer>();
+            new HashMap<>();
+    private static Map<String, Integer> release105type = new LinkedHashMap<>();
+    private static Map<String, Integer> release111type = new LinkedHashMap<>();
 
-    private static Map<Integer, Map<String, Integer>> CONSTATNT_TABLE =
-            new LinkedHashMap<Integer, Map<String, Integer>>();
+    private static Map<Integer, Map<String, Integer>> CONSTATNT_TABLE = new LinkedHashMap<>();
 
-    private static Map<String, Integer> release104constant =
-                                        new LinkedHashMap<String, Integer>();
+    private static Map<String, Integer> release104constant = new LinkedHashMap<>();
                                         
-    private static Map<String, Integer> release105constant =
-                                        new LinkedHashMap<String, Integer>();
+    private static Map<String, Integer> release105constant = new LinkedHashMap<>();
                                         
-    private static Map<String, Integer> release108constant =
-                                        new LinkedHashMap<String, Integer>();
+    private static Map<String, Integer> release108constant = new LinkedHashMap<>();
                                         
-    private static Map<String, Integer> release110constant =
-                                        new LinkedHashMap<String, Integer>();
+    private static Map<String, Integer> release110constant = new LinkedHashMap<>();
                                         
-    private static Map<String, Integer> release111constant =
-                                        new LinkedHashMap<String, Integer>();
+    private static Map<String, Integer> release111constant = new LinkedHashMap<>();
                                         
-    private static Map<String, Integer> release113constant =
-                                        new LinkedHashMap<String, Integer>();
+    private static Map<String, Integer> release113constant = new LinkedHashMap<>();
                                         
-    private static Map<String, Integer> release114constant =
-                                        new LinkedHashMap<String, Integer>();
+    private static Map<String, Integer> release114constant = new LinkedHashMap<>();
       
-    private static Map<String, Integer> release115constant =
-                                        new LinkedHashMap<String, Integer>();
+    private static Map<String, Integer> release115constant = new LinkedHashMap<>();
     
-    private static Map<Byte, Integer> byteLengthTable105 = 
-                                        new HashMap<Byte, Integer>();
-    private static Map<Byte, Integer> byteLengthTable111 = 
-                                        new HashMap<Byte, Integer>();
+    private static Map<Byte, Integer> byteLengthTable105 = new HashMap<>();
+    private static Map<Byte, Integer> byteLengthTable111 = new HashMap<>();
                                         
-    private static Map<Byte, String> variableTypeTable105 = 
-                                        new LinkedHashMap<Byte, String>();
-    private static Map<Byte, String> variableTypeTable111 = 
-                                        new LinkedHashMap<Byte, String>();
+    private static Map<Byte, String> variableTypeTable105 = new LinkedHashMap<>();
+    private static Map<Byte, String> variableTypeTable111 = new LinkedHashMap<>();
     
-    private static Map<String, Integer> variableTypeMap =
-        new LinkedHashMap<String, Integer>();
+    private static Map<String, Integer> variableTypeMap = new LinkedHashMap<>();
 
     private static final int[] LENGTH_HEADER = {60, 109};
     private static final int[] LENGTH_LABEL = {32, 81};
@@ -289,8 +275,7 @@ public class DTAFileReader extends TabularDataFileReader{
         0x1.014p127f, 0x1.015p127f, 0x1.016p127f, 0x1.017p127f,
         0x1.018p127f, 0x1.019p127f, 0x1.01ap127f);
 
-    private Set<Float> FLOAT_MISSING_VALUE_SET =
-        new HashSet<Float>(FLOAT_MISSING_VALUES);
+    private Set<Float> FLOAT_MISSING_VALUE_SET = new HashSet<>(FLOAT_MISSING_VALUES);
 
     private static final List<Double> DOUBLE_MISSING_VALUE_LIST = Arrays.asList(
         0x1.000p1023, 0x1.001p1023, 0x1.002p1023, 0x1.003p1023, 0x1.004p1023,
@@ -300,8 +285,7 @@ public class DTAFileReader extends TabularDataFileReader{
         0x1.014p1023, 0x1.015p1023, 0x1.016p1023, 0x1.017p1023, 0x1.018p1023,
         0x1.019p1023, 0x1.01ap1023);
 
-    private Set<Double> DOUBLE_MISSING_VALUE_SET =
-        new HashSet<Double>(DOUBLE_MISSING_VALUE_LIST);
+    private Set<Double> DOUBLE_MISSING_VALUE_SET = new HashSet<>(DOUBLE_MISSING_VALUE_LIST);
 
     private static SimpleDateFormat sdf_ymdhmsS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); // sdf
 
@@ -328,7 +312,7 @@ public class DTAFileReader extends TabularDataFileReader{
         "time", "date", "date", "date", "date", "date", "date",
         "date", "date", "date", "date", "date", "date"
     };
-    private static Map<String, String> DATE_TIME_FORMAT_TABLE=  new LinkedHashMap<String, String>();
+    private static Map<String, String> DATE_TIME_FORMAT_TABLE=  new LinkedHashMap<>();
 
     private static long SECONDS_PER_YEAR = 24*60*60*1000L;
 
@@ -378,7 +362,7 @@ public class DTAFileReader extends TabularDataFileReader{
      * the same fixed values for every string column). 
      * -- L.A. 4.0
      */
-    private Map<Integer, Integer> StringLengthTable = new LinkedHashMap<Integer, Integer>();
+    private Map<Integer, Integer> StringLengthTable = new LinkedHashMap<>();
     
 
     private Map<String, Integer> typeOffsetTable ;
@@ -598,7 +582,7 @@ public class DTAFileReader extends TabularDataFileReader{
             /* 
              * byte order: defined in the second byte of the "magic number": 
              */
-            if ((int) magic_number[1] == 2) {
+            if (magic_number[1] == 2) {
                 isLittleEndian = true;
                 dbgLog.fine("Reversal of the bytes is necessary to decode "
                         + "multi-byte fields");
@@ -1244,7 +1228,7 @@ public class DTAFileReader extends TabularDataFileReader{
         // the full map of all the variable groups, then go through the list 
         // of variables and create the dataverse variable categories from 
         // them. -- L.A. 4.0       
-        Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<>();
         
         for (int i = 0; i < nvar; i++) {
             if (dbgLog.isLoggable(Level.FINE)) {
@@ -1359,7 +1343,7 @@ public class DTAFileReader extends TabularDataFileReader{
             // Finally, we've reached the actual value-label pairs. We'll go 
             // through them and put them on the temporary lookup map: 
             
-            tempValueLabelTable.put(labelName, new LinkedHashMap<String, String>());
+            tempValueLabelTable.put(labelName, new LinkedHashMap<>());
             
             for (int j = 0; j < no_value_label_pairs; j++) {
                 if (dbgLog.isLoggable(Level.FINE)) {
@@ -1456,7 +1440,7 @@ public class DTAFileReader extends TabularDataFileReader{
         // of variables and create the dataverse variable categories from 
         // them. -- L.A. 4.0
         
-        Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<>();
 
         
         for (int i = 0; i < nvar; i++) {
@@ -1622,7 +1606,7 @@ public class DTAFileReader extends TabularDataFileReader{
             // Finally, we've reached the actual value-label pairs. We'll go 
             // through them and put them on the temporary lookup map: 
             
-            tempValueLabelTable.put(labelName, new LinkedHashMap<String, String>());
+            tempValueLabelTable.put(labelName, new LinkedHashMap<>());
 
             for (int l = 0; l < no_value_label_pairs; l++) {
                 if (dbgLog.isLoggable(Level.FINE)) {
@@ -2067,8 +2051,8 @@ public class DTAFileReader extends TabularDataFileReader{
                 years = weekYears/52L;
             }
 
-            String yearString  = Long.valueOf(1960L + years).toString();
-            String dayInYearString = new DecimalFormat("000").format((left*7) + 1).toString();
+            String yearString  = Long.toString(1960L + years);
+            String dayInYearString = new DecimalFormat("000").format((left*7) + 1);
             String yearDayInYearString = yearString + "-" + dayInYearString;
 
             Date tempDate = null;
@@ -2100,9 +2084,9 @@ public class DTAFileReader extends TabularDataFileReader{
                 left = 0L;
             }
             Long monthdata = (left+1);
-            month = "-"+twoDigitFormatter.format(monthdata).toString()+"-01";
+            month = "-"+twoDigitFormatter.format(monthdata)+"-01";
             long year  = 1960L + years;
-            String monthYear = Long.valueOf(year).toString() + month;
+            String monthYear = Long.toString(year) + month;
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum="+rawDatum+": monthYear="+monthYear);
             
             decodedDateTime = monthYear;
@@ -2140,7 +2124,7 @@ public class DTAFileReader extends TabularDataFileReader{
             }
 
             long year  = 1960L + years;
-            String quaterYear = Long.valueOf(year).toString() + quater;
+            String quaterYear = Long.toString(year) + quater;
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum="+rawDatum+": quaterYear="+quaterYear);
 
             decodedDateTime = quaterYear;
@@ -2173,7 +2157,7 @@ public class DTAFileReader extends TabularDataFileReader{
                 half = "-01-01";
             }
             long year  = 1960L + years;
-            String halfYear = Long.valueOf(year).toString() + half;
+            String halfYear = Long.toString(year) + half;
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum="+rawDatum+": halfYear="+halfYear);
             
             decodedDateTime = halfYear;

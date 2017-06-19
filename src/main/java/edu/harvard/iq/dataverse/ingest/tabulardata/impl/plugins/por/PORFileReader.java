@@ -105,24 +105,24 @@ public class PORFileReader  extends TabularDataFileReader{
     private int caseQnty=0;
     private int varQnty=0;
 
-    private Map<String, Integer> variableTypeTable = new LinkedHashMap<String, Integer>();
-    private List<Integer> variableTypelList = new ArrayList<Integer>();
-    private List<Integer> printFormatList = new ArrayList<Integer>();
-    private Map<String, String> printFormatTable = new LinkedHashMap<String, String>();
-    private Map<String, String> printFormatNameTable = new LinkedHashMap<String, String>();
-    private Map<String, String> formatCategoryTable = new LinkedHashMap<String, String>();
-    private Map<String, Map<String, String>> valueLabelTable = new LinkedHashMap<String, Map<String, String>>();
-    private Map<String, String> valueVariableMappingTable = new LinkedHashMap<String, String>();
-    private List<String> variableNameList = new ArrayList<String>();
-    private Map<String, String> variableLabelMap = new LinkedHashMap<String, String>();
+    private Map<String, Integer> variableTypeTable = new LinkedHashMap<>();
+    private List<Integer> variableTypelList = new ArrayList<>();
+    private List<Integer> printFormatList = new ArrayList<>();
+    private Map<String, String> printFormatTable = new LinkedHashMap<>();
+    private Map<String, String> printFormatNameTable = new LinkedHashMap<>();
+    private Map<String, String> formatCategoryTable = new LinkedHashMap<>();
+    private Map<String, Map<String, String>> valueLabelTable = new LinkedHashMap<>();
+    private Map<String, String> valueVariableMappingTable = new LinkedHashMap<>();
+    private List<String> variableNameList = new ArrayList<>();
+    private Map<String, String> variableLabelMap = new LinkedHashMap<>();
     // missing value table: string/numeric data are stored  => String
     // the number of missing values are unknown beforehand => List
-    private Map<String, List<String>> missingValueTable = new LinkedHashMap<String, List<String>>();
+    private Map<String, List<String>> missingValueTable = new LinkedHashMap<>();
     // variableName=> missingValue type[field code]
-    private Map<String, List<String>> missingValueCodeTable = new LinkedHashMap<String, List<String>>();
-    private Map<String, InvalidData> invalidDataTable = new LinkedHashMap<String, InvalidData>();
-    private Set<Integer> decimalVariableSet = new HashSet<Integer>();
-    private List<Integer> formatDecimalPointPositionList= new ArrayList<Integer>();
+    private Map<String, List<String>> missingValueCodeTable = new LinkedHashMap<>();
+    private Map<String, InvalidData> invalidDataTable = new LinkedHashMap<>();
+    private Set<Integer> decimalVariableSet = new HashSet<>();
+    private List<Integer> formatDecimalPointPositionList= new ArrayList<>();
 
 
 
@@ -159,6 +159,7 @@ public class PORFileReader  extends TabularDataFileReader{
         doubleNumberFormatter.setMaximumFractionDigits(340); // TODO: 340?? -- L.A. 4.0 beta
     }
     
+    @Override
     public TabularDataIngest read(BufferedInputStream stream, File additionalData) throws IOException{
         dbgLog.fine("PORFileReader: read() start");
         
@@ -265,7 +266,7 @@ public class PORFileReader  extends TabularDataFileReader{
             
             int simpleType = 0;
             if (variableTypelList.get(indx) != null) {
-                simpleType = variableTypelList.get(indx).intValue();
+                simpleType = variableTypelList.get(indx);
             }
 
             if (simpleType <= 0) {
@@ -1028,7 +1029,7 @@ public class PORFileReader  extends TabularDataFileReader{
         }
 
         int numberOfvalueLabelSets = parseNumericField(reader);
-        boolean isStringType = variableTypeTable.get(variableNames[0]) > 0 ? true : false;
+        boolean isStringType = variableTypeTable.get(variableNames[0]) > 0;
 
         for (int i=0; i<numberOfvalueLabelSets ;i++){
             String[] tempValueLabel = new String[2];
@@ -1128,7 +1129,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
                 for (int i=0; i<varQnty; i++){
                     // check the type of this variable
-                    boolean isStringType = variableTypeTable.get(variableNameList.get(i)) > 0 ? true : false;
+                    boolean isStringType = variableTypeTable.get(variableNameList.get(i)) > 0;
 
                     if (isStringType){
                         // String case
@@ -1593,7 +1594,7 @@ public class PORFileReader  extends TabularDataFileReader{
         if ((isNegativeNumber) ||(hasPositiveSign)){
             base30StringNoSign = base30StringClean.substring(1);
         } else {
-            base30StringNoSign = new String(base30StringClean);
+            base30StringNoSign = base30StringClean;
         }
 
         // check the scientific notation
