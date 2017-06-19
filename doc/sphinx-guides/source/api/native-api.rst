@@ -304,7 +304,7 @@ Files
 
 Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
     
-    PUT http://$SERVER/api/files/{id}/restrict?key=$apiKey
+    PUT http://$SERVER/api/files/{id}/restrict
 
 A more detailed "restrict" example using curl::
 
