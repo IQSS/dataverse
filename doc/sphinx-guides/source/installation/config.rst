@@ -248,6 +248,12 @@ Download this sample: :download:`custom-homepage.html </_static/installation/fil
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
+Note that the ``custom-homepage.html`` file provided has a "Browse Data" button that assumes that your root dataverse still has an alias of "root". While you were branding your root dataverse, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the ``custom-homepage.html`` file as needed.
+
+For more background on what this curl command above is doing, see the "Database Settings" section below. If you decide you'd like to remove this setting, use the following curl command:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+
 Custom Navbar Logo
 +++++++++++++++++++
 
@@ -256,6 +262,8 @@ Dataverse allows you to replace the default Dataverse icon and name branding in 
 Create a "navbar" folder in your Glassfish "logos" directory and place your custom logo there. By Glassfish default, it'll be located at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png``. Then run this curl command:
 
 ``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
+
+Note that the logo is expected to be small enough to fit comfortably in the navbar, perhaps only 30 pixels high.
 
 Custom Header
 +++++++++++++
@@ -450,9 +458,11 @@ This JVM setting is also part of **handles** configuration. The Handle.Net insta
 Database Settings
 -----------------
 
-These settings are stored in the ``setting`` table but can be read and modified via the "admin" endpoint of the :doc:`/api/native-api` for easy scripting.
+These settings are stored in the ``setting`` database table but can be read and modified via the "admin" endpoint of the :doc:`/api/native-api` for easy scripting.
 
 The most commonly used configuration options are listed first.
+
+The pattern you will observe in curl examples below is that an HTTP ``PUT`` is used to add or modify a setting. If you go an HTTP ``GET`` (the default when using curl) the output will contain the value of the setting, if it has been set. You can also do a ``GET`` of all settings with ``curl http://localhost:8080/api/admin/settings`` which you may want to pretty-print by piping the output through a tool such as jq by appending ``| jq .``. If you want to remove a setting, use an HTTP ``DELETE`` such as ``curl -X DELETE http://localhost:8080/api/admin/settings/:GuidesBaseUrl`` .
 
 :BlockedApiPolicy
 +++++++++++++++++
