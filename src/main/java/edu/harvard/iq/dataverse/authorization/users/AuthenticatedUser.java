@@ -83,13 +83,16 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Column(nullable = true)
     private Timestamp emailConfirmed;
-    
-    @Column(nullable=false)
-    private Timestamp lastLogin;
-    
+       
     @Column(nullable=false)
     private Timestamp created;
     
+    @Column(nullable=true)
+    private Timestamp lastLogin;    // last user login timestamp
+
+    @Column(nullable=true)
+    private Timestamp lastApiUse;   // last API use with user's token
+            
     private boolean superuser;
 
     /**
@@ -282,23 +285,14 @@ public class AuthenticatedUser implements User, Serializable {
         this.lastLogin = lastLogin;
     }
     
-
     /**
      * 
-     * @param lastLogin 
      */
     public Timestamp getLastLogin(){
         
         return this.lastLogin;
     }
     
-    public void setLastLoginToCurrentTime(){
-        this.setLastLogin(new Timestamp(new Date().getTime()));
-    }
-
-    public void setCreatedToCurrentTime(){
-        this.setCreated(new Timestamp(new Date().getTime()));
-    }
     
     public void setCreated(Timestamp created){
         this.created = created;
@@ -306,6 +300,37 @@ public class AuthenticatedUser implements User, Serializable {
     
     public Timestamp getCreated(){
         return this.created;
+    }
+
+    
+    /**
+     * 
+     * @param lastApiUse 
+     */
+    public void setLastApiUse(Timestamp lastApiUse){
+        
+        this.lastApiUse = lastApiUse;
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public Timestamp getLastApiUse(){
+        
+        return this.lastApiUse;
+    }
+
+    public void setLastLoginToCurrentTime(){
+        this.setLastLogin(new Timestamp(new Date().getTime()));
+    }
+
+    public void setCreatedToCurrentTime(){
+        this.setCreated(new Timestamp(new Date().getTime()));
+    }
+
+    public void setLastApiUseToCurrentTime(){
+        this.setLastApiUse(new Timestamp(new Date().getTime()));
     }
 
 }

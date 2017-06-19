@@ -507,7 +507,6 @@ public class AuthenticationServiceBean {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         
         authenticatedUser.setCreatedToCurrentTime();    // set 1-time
-        authenticatedUser.setLastLogin(authenticatedUser.getCreated());  // set 1st login 
         
         authenticatedUser.applyDisplayInfo(userDisplayInfo);
 

@@ -33,11 +33,6 @@ public class UserServiceBean {
             logger.info("Creation time null! Setting user creation time to now");
         } 
         
-        // Make sure there is a "lastLogin" time--this should be *only* set HERE on creation
-        if (user.getLastLogin() == null){
-            user.setLastLoginToCurrentTime(); // default last login to user creation time
-        }
-
         if ( user.getId() == null ) {
             em.persist(this);
         } else {
@@ -59,4 +54,16 @@ public class UserServiceBean {
         return save(user);
     }
 
+    
+    
+    public AuthenticatedUser updateLastApiUse(AuthenticatedUser user) {
+        if (user == null){
+            logger.severe("user should not be null");
+            return null;
+        }
+        
+        user.setLastApiUseToCurrentTime();
+        
+        return save(user);
+    }
 }
