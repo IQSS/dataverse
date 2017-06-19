@@ -52,7 +52,7 @@ If more than one log in option is available, you can convert from one to another
 
 If you are converting from the Email/Username log in option you will need to have your password ready to complete the conversion process. Click Log In, select the new log in option, and go through the log in process. When you return to Dataverse, look for an option allowing you to convert and enter your password to complete the conversion. The section on Remote Authentication below has more specific information on converting to Institutional Log In, ORCID, GitHub, and Google.
 
-If you need to perform any other conversion (i.e. from Google to GitHub), use the Support link at the top of that page for assistance.
+If you need to perform any other conversion (i.e. from Google to GitHub), use the Support link at the top of the page for assistance.
 
 Reset Account Password
 ~~~~~~~~~~~~~~~~~~~~~~
