@@ -75,14 +75,14 @@ Retrieve SWORD service document
 
 The service document enumerates the dataverses ("collections" from a SWORD perspective) the user can deposit data into. The "collectionPolicy" element for each dataverse contains the Terms of Use. Any user with an API token can use this API endpoint. Institution-wide Shibboleth groups are not respected because membership in such a group can only be set via a browser.
 
-``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/service-document``
+    curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/service-document
 
 Create a dataset with an Atom entry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To create a dataset, you must have the "Dataset Creator" role (the ``AddDataset`` permission) on a dataverse. Practically speaking, you should first retrieve the service document to list the dataverses into which you are authorized to deposit data.
 
-``curl -u $API_TOKEN: --data-binary "@path/to/atom-entry-study.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
+    curl -u $API_TOKEN: --data-binary "@path/to/atom-entry-study.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS
 
 Example Atom entry (XML)
 
@@ -127,14 +127,14 @@ List datasets in a dataverse
 
 You must have permission to add datasets in a dataverse (the dataverse should appear in the service document) to list the datasets inside. Institution-wide Shibboleth groups are not respected because membership in such a group can only be set via a browser.
 
-``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
+    curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS
 
 Add files to a dataset with a zip file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You must have ``EditDataset`` permission (Contributor role or above such as Curator or Admin) on the dataset to add files.
 
-``curl -u $API_TOKEN: --data-binary @path/to/example.zip -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:TEST/12345``
+    curl -u $API_TOKEN: --data-binary @path/to/example.zip -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:TEST/12345
 
 Display a dataset atom entry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,56 +143,56 @@ You must have ``ViewUnpublishedDataset`` permission (Contributor role or above s
 
 Contains data citation (bibliographicCitation), alternate URI (persistent URI of study), edit URI, edit media URI, statement URI.
 
-``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+    curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345
 
 Display a dataset statement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Contains title, author, feed of file entries, latestVersionState, locked boolean, updated timestamp. You must have ``ViewUnpublishedDataset`` permission (Contributor role or above such as Curator or Admin) on the dataset to display the statement.
 
-``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/statement/study/doi:TEST/12345``
+    curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/statement/study/doi:TEST/12345
 
 Delete a file by database id
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You must have ``EditDataset`` permission (Contributor role or above such as Curator or Admin) on the dataset to delete files.
 
-``curl -u $API_TOKEN: -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/123``
+    curl -u $API_TOKEN: -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/123
 
 Replacing metadata for a dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Please note that **ALL** metadata (title, author, etc.) will be replaced, including fields that can not be expressed with "dcterms" fields. You must have ``EditDataset`` permission (Contributor role or above such as Curator or Admin) on the dataset to replace metadata.
 
-``curl -u $API_TOKEN: --upload-file "path/to/atom-entry-study2.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+    curl -u $API_TOKEN: --upload-file "path/to/atom-entry-study2.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345
 
 Delete a dataset
 ~~~~~~~~~~~~~~~~
 
 You must have the ``DeleteDatasetDraft`` permission (Contributor role or above such as Curator or Admin) on the dataset to delete it. Please note that if the dataset has never been published you will be able to delete it completely but if the dataset has already been published you will only be able to delete post-publication drafts, never a published version.
 
-``curl -u $API_TOKEN: -i -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+    curl -u $API_TOKEN: -i -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345
 
 Determine if a dataverse has been published
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This API endpoint is the same as the "list datasets in a dataverse" endpoint documented above and the same permissions apply but it is documented here separately to point out that you can look for a boolean called ``dataverseHasBeenReleased`` to know if a dataverse has been released, which is required for publishing a dataset.
 
-``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
+    curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS
 
 Publish a dataverse
 ~~~~~~~~~~~~~~~~~~~
 
 The ``cat /dev/null`` and ``--data-binary @-`` arguments are used to send zero-length content to the API, which is required by the upstream library to process the ``In-Progress: false`` header. You must have the ``PublishDataverse`` permission (Admin role) on the dataverse to publish it.
 
-``cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/$DATAVERSE_ALIAS``
+    cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/$DATAVERSE_ALIAS
 
 Publish a dataset
 ~~~~~~~~~~~~~~~~~
 
 The ``cat /dev/null`` and ``--data-binary @-`` arguments are used to send zero-length content to the API, which is required by the upstream library to process the ``In-Progress: false`` header. You must have the ``PublishDataset`` permission (Curator or Admin role) on the dataset to publish it.
 
-``cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+    cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345
 
 .. _known-issues:
 
@@ -227,7 +227,7 @@ Client libraries
 
 - Python: https://github.com/swordapp/python-client-sword2
 - Java: https://github.com/swordapp/JavaClient2.0
-- R: https://github.com/ropensci/dvn
+- R: https://github.com/IQSS/dataverse-client-r
 - Ruby: https://github.com/swordapp/sword2ruby
 - PHP: https://github.com/swordapp/swordappv2-php-library
 

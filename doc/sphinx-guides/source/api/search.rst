@@ -4,18 +4,19 @@ Search API
 .. contents:: |toctitle|
     :local:
 
-About
------
-
 The Search API supports the same searching, sorting, and faceting operations as the Dataverse web interface.
 
 Unlike the web interface, this new API is limited to *published* data until `issue 1299 <https://github.com/IQSS/dataverse/issues/1299>`_ is resolved.
 
 The parameters and JSON response are partly inspired by the `GitHub Search API <https://developer.github.com/v3/search/>`_.
 
+.. note:: |CORS| The search API can be used from scripts running in web browsers, as it allows cross-origin resource sharing (CORS).
+
+.. _CORS: https://www.w3.org/TR/cors/
+
+
 Please note that in Dataverse 4.3 and older the "citation" field wrapped the persistent ID URL in an ``<a>`` tag but this has been changed to plaintext. If you want the old value with HTML in it, a new field called "citationHtml" can be used.
 
-The search API can be used from scripts running in web browsers, as it allows cross-origin resource sharing (CORS).
 
 Parameters
 ----------
