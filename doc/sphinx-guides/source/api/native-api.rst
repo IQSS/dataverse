@@ -381,7 +381,7 @@ Example python code to replace a file.  This may be run by changing these parame
 Builtin Users
 ~~~~~~~~~~~~~
 
-Builtin users are known as "Username/Email and Password" users in the :doc:`/user/account` of the User Guide. Dataverse stores a password (encrypted, of course) for these users, which differs from "remote" users such as Shibboleth or OAuth users where the password is stored elsewhere. See also "Auth Modes: Local vs. Remote vs. Both" in the :doc:`/installation/config` section of the Installation Guide. It's a valid configuration of Dataverse to not use builtin users at all.
+Builtin users are also known as "Username/Email and Password" users in the :doc:`/user/account` page of the User Guide. Dataverse stores a password (encrypted, of course) for these users. This differs from "remote" users, such as Shibboleth or OAuth users, whose passwords are stored elsewhere. See also "Auth Modes: Local vs. Remote vs. Both" in the :doc:`/installation/config` section of the Installation Guide. It's a valid configuration of Dataverse to not use builtin users at all.
 
 Creating a Builtin User
 ^^^^^^^^^^^^^^^^^^^^^^^
