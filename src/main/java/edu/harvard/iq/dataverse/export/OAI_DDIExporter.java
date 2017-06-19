@@ -16,7 +16,7 @@ import javax.xml.stream.XMLStreamException;
  *
  * @author skraffmi
  */
-@AutoService(Exporter.class)
+//@AutoService(Exporter.class)
 public class OAI_DDIExporter implements Exporter {
     // TODO: move these to the export utility:
     private static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5"; 

@@ -507,6 +507,7 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
+		    <packagingExcludes>**/OAI_DDIExporter.class,**/DdiExportUtil.class,**/DDIExporter.class</packagingExcludes>
                 </configuration>
             </plugin>
             <plugin>

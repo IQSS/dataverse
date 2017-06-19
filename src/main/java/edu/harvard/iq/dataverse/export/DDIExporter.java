@@ -19,7 +19,7 @@ import javax.xml.stream.XMLStreamException;
  * @author skraffmi
  * - renamed OAI_DDIExporter)
  */
-@AutoService(Exporter.class)
+//@AutoService(Exporter.class)
 public class DDIExporter implements Exporter {
     // TODO: 
     // move these into the ddi export utility

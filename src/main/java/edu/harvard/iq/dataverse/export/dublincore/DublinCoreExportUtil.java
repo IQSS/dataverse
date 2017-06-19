@@ -12,15 +12,12 @@ import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
-import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLOutputFactory;
@@ -33,7 +30,7 @@ import javax.xml.stream.XMLStreamWriter;
  */
 public class DublinCoreExportUtil {
  
-    private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DublinCoreExportUtil.class.getCanonicalName());
     
     public static String OAI_DC_XML_NAMESPACE = "http://www.openarchives.org/OAI/2.0/oai_dc/"; 
     public static String OAI_DC_XML_SCHEMALOCATION = "http://www.openarchives.org/OAI/2.0/oai_dc.xsd";
