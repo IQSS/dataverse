@@ -1333,6 +1333,10 @@ public class DatasetPage implements java.io.Serializable {
                 workingVersion = dataset.getCreateVersion();
                 updateDatasetFieldInputLevels();
             }
+            
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.message.publicInstall"));
+            }
 
             resetVersionUI();
 

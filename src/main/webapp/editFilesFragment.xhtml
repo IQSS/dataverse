@@ -125,7 +125,7 @@
                                 <!-- Button Panels -->
                                 <div jsf:id="editFilesRestrictDeletePanel" class="button-block pull-right text-right"
                                      jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
-                                    <div class="btn-group">
+                                    <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
                                         </button>
