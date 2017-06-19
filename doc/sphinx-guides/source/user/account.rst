@@ -34,7 +34,7 @@ Create Account
 
 To create a Dataverse account with the Username/Email log in option, use the "Sign Up" page. Fill out the fields, and then click the 'Create Account' button. Please note that the Username field does not support email addresses but will allow the following characters: a-Z, 0-9, _ (underscores), - (hyphens), and . (periods).
 
-To create a Dataverse account associated with the log in option for your institution, ORCID, GitHub, or Google, use the "Log In" page and select one of those authentication providers. See the "Remote Authentication" section below for details.
+To create a Dataverse account associated with the log in option for your institution, ORCID, GitHub, or Google, use the "Log In" page and select one of the authentication providers. See the "Remote Authentication" section below for details.
 
 Edit Account 
 ~~~~~~~~~~~~
