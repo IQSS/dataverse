@@ -147,5 +147,6 @@ function IdPSelectUIParms() {
 
 function urlParam(name) {
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+    //Returns the value for the specified parameter, or 0 if the parameter is not found in the url string
     return results[1] || 0;
 }
