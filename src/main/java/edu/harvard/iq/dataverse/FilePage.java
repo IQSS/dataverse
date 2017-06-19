@@ -234,6 +234,7 @@ public class FilePage implements java.io.Serializable {
         return retList;  
     }
   
+    //TODO: remove
     public boolean isPublicInstall(){
         boolean defaultValue = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);

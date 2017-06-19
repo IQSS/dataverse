@@ -131,5 +131,10 @@ public class SettingsWrapper implements java.io.Serializable {
         return guidesBaseUrl;
     }
 
+    public boolean isPublicInstall(){
+        boolean defaultValue = false;
+        return isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
+    }
+    
 }
 

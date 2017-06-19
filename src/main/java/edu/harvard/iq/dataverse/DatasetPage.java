@@ -458,6 +458,7 @@ public class DatasetPage implements java.io.Serializable {
         return settingsWrapper.getValueForKey(SettingsServiceBean.Key.CloudEnvironmentName);
     }
     
+    //TODO: remove
     public boolean isPublicInstall(){
         boolean defaultValue = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);

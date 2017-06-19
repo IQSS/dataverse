@@ -559,8 +559,16 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (mode == FileEditMode.UPLOAD) {
             JH.addMessage(FacesMessage.SEVERITY_INFO, getBundleString("dataset.message.uploadFiles"));
         }
+        
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
+            JH.addMessage(FacesMessage.SEVERITY_INFO, getBundleString("dataset.message.publicInstall"));
+        }   
+        
         return null;
+        
     }
+    
+    
     
     
     private void msg(String s){
@@ -700,6 +708,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
      
+    //TODO: remove
     public boolean isPublicInstall(){
         boolean defaultValue = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
