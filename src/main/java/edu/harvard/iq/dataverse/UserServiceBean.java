@@ -24,22 +24,26 @@ public class UserServiceBean {
         return (AuthenticatedUser) em.find(AuthenticatedUser.class, pk);
     }    
 
+    
     public AuthenticatedUser save( AuthenticatedUser user ) {
+               
+        // Make sure there is a "created" time
+        if (user.getCreated() == null){
+            user.setCreatedToCurrentTime(); // default new creation time
+            logger.info("Creation time null! Setting user creation time to now");
+        } 
+        
+        // Make sure there is a "lastLogin" time--this should be *only* set HERE on creation
+        if (user.getLastLogin() == null){
+            user.setLastLoginToCurrentTime(); // default last login to user creation time
+        }
+
         if ( user.getId() == null ) {
             em.persist(this);
         } else {
             user = em.merge(user);
         }
         em.flush();
-        
-        if (user.getCreated() == null){
-            user.setCreatedToCurrentTime(); // default new creation time
-            logger.info("Creation time null! Setting user creation time to now");
-        } 
-        
-        if (user.getLastLogin() == null){
-            user.setLastLoginToCurrentTime(); // default last login to user creation time
-        }
 
         return user;
     }

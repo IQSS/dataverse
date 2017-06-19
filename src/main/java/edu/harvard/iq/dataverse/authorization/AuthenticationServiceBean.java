@@ -505,6 +505,10 @@ public class AuthenticationServiceBean {
             AuthenticatedUserDisplayInfo userDisplayInfo,
             boolean generateUniqueIdentifier) {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        
+        authenticatedUser.setCreatedToCurrentTime();    // set 1-time
+        authenticatedUser.setLastLogin(authenticatedUser.getCreated());  // set 1st login 
+        
         authenticatedUser.applyDisplayInfo(userDisplayInfo);
 
         // we have no desire for leading or trailing whitespace in identifiers
