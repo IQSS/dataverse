@@ -87,6 +87,9 @@ public class AuthenticatedUser implements User, Serializable {
     @Column(nullable=false)
     private Timestamp lastLogin;
     
+    @Column(nullable=false)
+    private Timestamp created;
+    
     private boolean superuser;
 
     /**
@@ -294,7 +297,15 @@ public class AuthenticatedUser implements User, Serializable {
     }
 
     public void setCreatedToCurrentTime(){
-        //this.setCreated(new Timestamp(new Date().getTime()));
+        this.setCreated(new Timestamp(new Date().getTime()));
+    }
+    
+    public void setCreated(Timestamp created){
+        this.created = created;
+    }
+    
+    public Timestamp getCreated(){
+        return this.created;
     }
 
 }

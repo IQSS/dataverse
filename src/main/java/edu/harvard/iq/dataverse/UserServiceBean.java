@@ -31,8 +31,28 @@ public class UserServiceBean {
             user = em.merge(user);
         }
         em.flush();
+        
+        if (user.getCreated() == null){
+            user.setCreatedToCurrentTime(); // default new creation time
+            logger.info("Creation time null! Setting user creation time to now");
+        } 
+        
+        if (user.getLastLogin() == null){
+            user.setLastLoginToCurrentTime(); // default last login to user creation time
+        }
 
         return user;
+    }
+
+    public AuthenticatedUser updateLastLogin(AuthenticatedUser user) {
+        if (user == null){
+            logger.severe("user should not be null");
+            return null;
+        }
+        
+        user.setLastLoginToCurrentTime();
+        
+        return save(user);
     }
 
 }
