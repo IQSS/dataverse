@@ -266,3 +266,9 @@ Output from iteration example
     start: 10  total: 12
     -  Chestnut Sparrows (dataverse)
     -  Wrens (dataverse)
+
+.. |CORS| raw:: html
+
+      <span class="label label-success pull-right">
+        CORS
+      </span>
