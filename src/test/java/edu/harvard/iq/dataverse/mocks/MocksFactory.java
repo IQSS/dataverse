@@ -98,6 +98,8 @@ public class MocksFactory {
         user.setFirstName(firstName);
         user.setPosition("In-Memory user");
         user.setUserIdentifier("unittest" + user.getId() );
+        user.setCreatedToCurrentTime();
+        user.setLastLoginToCurrentTime();
         return user;
     }
     
