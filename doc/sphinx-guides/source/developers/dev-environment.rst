@@ -177,6 +177,21 @@ All the future changes to the configuration that are Glassfish-specific and can 
 
 FIXME: Add a "dev" mode to the installer to allow REST Assured tests to be run. For now, refer to the steps in the :doc:`testing` section.
 
+Iterating on Code and Redeploying
+---------------------------------
+
+Deploy on Save
+~~~~~~~~~~~~~~
+
+Out of the box, Netbeans is configured to "Deploy on Save" which means that if you save any changes to project files such as Java classes, XHTML files, or "bundle" files (i.e. Bundle.properties), the project is recompiled and redeployed to Glassfish automatically. This behavior works well for many of us but if you don't like it, you can turn it off by right-clicking "dataverse" under the Projects tab, clicking "Run" and unchecking "Deploy on Save".
+
+Note that it's possible to deploy the war file using the ``asadmin`` command. The :doc:`/installation/installation-main` section of the Installation Guide has more information on this topic.
+
+Netbeans Connector Chrome Extension
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For faster iteration while working on JSF pages, it is highly recommended that you install the Netbeans Connector Chrome Extension listed in the :doc:`tools` section. When you save XHTML or CSS files, you will see the changes immediately.
+
 Troubleshooting
 ---------------
 
