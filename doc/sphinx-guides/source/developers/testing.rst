@@ -205,3 +205,7 @@ Load/Performance Testing
 - Marcel Duran created a command-line wrapper for the WebPagetest API that can be used to test performance in your continuous integration pipeline (TAP, Jenkins, Travis-CI, etc): https://github.com/marcelduran/webpagetest-api/wiki/Test-Specs#jenkins-integration
 - Documentation
 - Create top-down checklist, building off the spreadsheet at https://github.com/IQSS/dataverse/issues/3358#issuecomment-256400776
+
+----
+
+Previous: :doc:`version-control` | Next: :doc:`documentation`

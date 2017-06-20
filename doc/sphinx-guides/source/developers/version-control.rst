@@ -124,3 +124,7 @@ If you'd like to resolve the merge conflicts yourself, here are some steps to do
 **In GitHub Issues:**
 
 11. Leave a comment for the Dataverse team that you have resolved the merge conflicts.
+
+----
+
+Previous: :doc:`dev-environment` | Next: :doc:`testing`

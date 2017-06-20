@@ -43,3 +43,7 @@ Publish Release
 ---------------
 
 Click the "Publish release" button.
+
+----
+
+Previous: :doc:`coding-style` | Next: :doc:`tools`
