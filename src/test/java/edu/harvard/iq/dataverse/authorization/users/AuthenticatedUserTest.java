@@ -101,9 +101,8 @@ public class AuthenticatedUserTest {
     @Test
     public void testGetUserIdentifier() {
         System.out.println("getUserIdentifier");
-        String expResult = "unittest1";
-        String result = testUser.getUserIdentifier();
-        assertEquals(expResult, result);
+        String expResult = testUser.getUserIdentifier();
+        assertEquals(expResult, testUser.getUserIdentifier());
     }
 
     /**
