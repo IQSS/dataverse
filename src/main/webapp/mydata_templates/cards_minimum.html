@@ -41,7 +41,6 @@
  {% if card_info.type == "dataverse" %}       
         <div class="card-preview-icon-block text-center" style="font-size: 110%;">
             <a href="/dataverse/{{ card_info.identifier }}"><span class="icon-dataverse text-brand"></span></a>
-            {# <a href="/dataverse/{{ card_info.identifier }}"><img src="{{ card_info.image_url | replace("https://RAD-rprasad", "")  }}" alt="icon image" /></a> #}
         </div>
         <span class="text-muted">{{ card_info.date_to_display_on_card }} 
             {% if card_info.parentId %}
@@ -69,13 +68,11 @@
             <div class="card-preview-icon-block text-center">
                 <a href="/dataset.xhtml?persistentId={{ card_info.parentIdentifier }}">
                         
-                    <img src="{{ card_info.image_url | replace("https://localhost", "")  }}?pfdrid_c=true" alt="" class="file_card_img" />
-                    <span class="icon-file text-muted" style="display:none;"></span>    
-                    {#{% if card_info.image_url %}
+                    {% if card_info.image_url %}
                         <img src="{{ card_info.image_url | replace("https://localhost", "")  }}?pfdrid_c=true" alt="" />
                     {% else %}
                         <span class="icon-file text-muted"></span>
-                    {% endif %}#}
+                    {% endif %}
                 </a>
             </div>
             <span class="text-muted">{{ card_info.date_to_display_on_card }}
