@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? bundle.new : DataversePage.dataverse.name} #{bundle.dataverse}"/>
+            <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
+            <ui:define name="body">
+                <f:metadata>
+                    <f:viewParam name="showDataverseHeader" value="false"/>
+                    <f:viewAction action="#{DataversePage.init}"/>
+                </f:metadata>
+                
+                <o:resourceInclude path="/CustomizationFilesServlet?customFileType=homePage" />
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

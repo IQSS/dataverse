@@ -8,7 +8,7 @@ Development Environment
 Assumptions
 -----------
 
-This guide assumes you are using a Mac. If you are using Windows or Linux, please reach out to other developers at https://groups.google.com/forum/#!forum/dataverse-dev
+This guide assumes you are using a Mac. With some tweaks, it's not hard to get a dev environment set up on Linux. If you are using Windows, you might have the most success using Vagrant, which is listed under the :doc:`tools` section.
 
 Requirements
 ------------
@@ -27,7 +27,9 @@ Glassfish
 
 As a `Java Enterprise Edition <http://en.wikipedia.org/wiki/Java_Platform,_Enterprise_Edition>`_ 7 (Java EE 7) application, Dataverse requires an applications server to run.
 
-Glassfish 4.1 is required (not 4.1.1 until https://github.com/IQSS/dataverse/issues/2628 is resolved), which can be downloaded from http://glassfish.java.net . If you have downloaded Glassfish as part of a Netbeans bundle, you can manually add the proper version by clicking "Tools", "Servers", "Add Server".
+Glassfish 4.1 is required (not any earlier or later versions until https://github.com/IQSS/dataverse/issues/2628 is resolved), which can be downloaded from http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip . If you have downloaded Glassfish as part of a Netbeans bundle, you can manually add the proper version by clicking "Tools", "Servers", "Add Server".
+
+By default, Glassfish reports analytics information.  The administration guide suggests this can be disabled with ``asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes.
 
 PostgreSQL
 ~~~~~~~~~~
@@ -59,12 +61,12 @@ Recommendations
 Mac OS X
 ~~~~~~~~
 
-The setup of a Dataverse development environment assumes the presence of a Unix shell (i.e. bash) so an operating system with Unix underpinnings such as Mac OS X or Linux is recommended. (The `development team at IQSS <http://datascience.iq.harvard.edu/team>`_ has standardized Mac OS X.) Windows users are encouraged to install `Cygwin <http://cygwin.com>`_.
+The setup of a Dataverse development environment assumes the presence of a Unix shell (i.e. bash) so an operating system with Unix underpinnings such as Mac OS X or Linux is recommended. (The `development team at IQSS <https://dataverse.org/about>`_ has standardized Mac OS X.) Windows users are encouraged to install `Cygwin <http://cygwin.com>`_.
 
 Netbeans
 ~~~~~~~~
 
-While developers are welcome to use any editor or IDE they wish, Netbeans 8+ is recommended because it is free of cost, works cross platform, has good support for Java EE projects, and happens to be the IDE that the `development team at IQSS <http://datascience.iq.harvard.edu/team>`_ has standardized on. 
+While developers are welcome to use any editor or IDE they wish, Netbeans 8+ is recommended because it is free of cost, works cross platform, has good support for Java EE projects, and happens to be the IDE that the `development team at IQSS <https://dataverse.org/about>`_ has standardized on.
 
 NetBeans can be downloaded from http://netbeans.org. Please make sure that you use an option that contains the Jave EE features when choosing your download bundle. While using the installer you might be prompted about installing JUnit and Glassfish. There is no need to reinstall Glassfish, but it is recommended that you install JUnit.
 
@@ -92,12 +94,12 @@ From the terminal, ``ssh-keygen`` will create new ssh keys for you:
 Clone Project from GitHub
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before making commits, please read about our :doc:`/developers/branching-strategy` to make sure you commit to the right branch.
+Before cloning the repo, you are invited to read about our branching strategy in the  :doc:`version-control` section but we'll explain the basics here.
 
 Determine Which Repo To Push To
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Developers who are not part of the `development team at IQSS <http://datascience.iq.harvard.edu/team>`_ should first fork https://github.com/IQSS/dataverse per https://help.github.com/articles/fork-a-repo/
+Developers who are not part of the `development team at IQSS <https://dataverse.org/about>`_ should first fork https://github.com/IQSS/dataverse per https://help.github.com/articles/fork-a-repo/
 
 Cloning the Project from Netbeans
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -116,6 +118,25 @@ If you do not have push access to https://github.com/IQSS/dataverse clone your f
 If you do have push access to https://github.com/IQSS/dataverse clone it:
 
 ``git clone git@github.com:IQSS/dataverse.git``
+
+Building the WAR File
+~~~~~~~~~~~~~~~~~~~~~
+
+Soon, we'll be running the Dataverse installer, but before we do, we must build the Dataverse application, which is delivered as a "WAR" file. WAR stands for "Web application ARchive" and you can read more about this packaging format at https://en.wikipedia.org/wiki/WAR_(file_format)
+
+The first time you build the war file, it may take a few minutes while dependencies are downloaded from Maven Central.
+
+We'll describe below how to build the WAR file from both Netbean and the terminal, but in both cases, you'll want to see the output "BUILD SUCCESS".
+
+Building the War File from Netbeans
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+From Netbeans, click "Run" and then "Build Project (dataverse)".
+
+Building the War File from the Terminal
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+After cloning the git repo, you need to ``cd`` into ``dataverse`` and run ``mvn package``. If you don't have the ``mvn`` command available to you, you need to install Maven, which is mentioned in the :doc:`tools` section.
 
 Installing and Running Solr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -139,7 +160,12 @@ Once some dataverses, datasets, and files have been created and indexed, you can
 Run Installer
 ~~~~~~~~~~~~~
 
-Once you install Glassfish and PostgreSQL, you need to configure the environment for the Dataverse app - configure the database connection, set some options, etc. We have a new installer script that should do it all for you. Again, assuming that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects:
+Please note the following:
+
+- If you have trouble with the SMTP server, consider editing the installer script to disable the SMTP check.
+- Rather than running the installer in "interactive" mode, it's possible to put the values in a file. See "non-interactive mode" in the :doc:`/installation/installation-main` section of the Installation Guide.
+
+Now that you have all the prerequisites in place, you need to configure the environment for the Dataverse app - configure the database connection, set some options, etc. We have an installer script that should do it all for you. Again, assuming that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects:
 
 ``cd ~/NetBeansProjects/dataverse/scripts/installer``
 
@@ -150,6 +176,50 @@ The script will prompt you for some configuration values. It is recommended that
 The script is a variation of the old installer from DVN 3.x that calls another script that runs ``asadmin`` commands. A serious advantage of this approach is that you should now be able to safely run the installer on an already configured system.
 
 All the future changes to the configuration that are Glassfish-specific and can be done through ``asadmin`` should now go into ``scripts/install/glassfish-setup.sh``.
+
+FIXME: Add a "dev" mode to the installer to allow REST Assured tests to be run. For now, refer to the steps in the :doc:`testing` section.
+
+Iterating on Code and Redeploying
+---------------------------------
+
+Deploy on Save
+~~~~~~~~~~~~~~
+
+Out of the box, Netbeans is configured to "Deploy on Save" which means that if you save any changes to project files such as Java classes, XHTML files, or "bundle" files (i.e. Bundle.properties), the project is recompiled and redeployed to Glassfish automatically. This behavior works well for many of us but if you don't like it, you can turn it off by right-clicking "dataverse" under the Projects tab, clicking "Run" and unchecking "Deploy on Save".
+
+Deploying Manually
+~~~~~~~~~~~~~~~~~~
+
+For developers not using Netbeans, or deploying to a non-local system for development, code can be deployed manually.
+There are four steps to this process:
+
+1. Build the war file: ``mvn package``
+2. Undeploy the Dataverse application (if necessary): ``asadmin undeploy dataverse-VERSION``
+3. Copy the war file to the development server (if necessary)
+4. Deploy the new code: ``asadmin deploy /path/to/dataverse-VERSION.war``
+
+The :doc:`/installation/installation-main` section of the Installation Guide has more information on this topic.
+
+Netbeans Connector Chrome Extension
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For faster iteration while working on JSF pages, it is highly recommended that you install the Netbeans Connector Chrome Extension listed in the :doc:`tools` section. When you save XHTML or CSS files, you will see the changes immediately.
+
+Troubleshooting
+---------------
+
+We've described above the "happy path" of when everything goes right with setting up your Dataverse development environment. Here are some common problems and solutions for when things go wrong.
+
+context-root in glassfish-web.xml Munged by Netbeans
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For unknown reasons, Netbeans will sometimes change the following line under ``src/main/webapp/WEB-INF/glassfish-web.xml``:
+
+``<context-root>/</context-root>``
+
+Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will delete the line entirely. Either way, you will see very strange behavior when attempting to click around Dataverse in a browser. The home page will load but icons will be missing. Any other page will fail to load entirely and you'll see a Glassfish error.
+
+The solution is to put the file back to how it was before Netbeans touched it. If anyone knows of an open Netbeans bug about this, please let us know.
 
 Rebuilding Your Dev Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -194,3 +264,7 @@ Geoconnect
 Geoconnect works as a middle layer, allowing geospatial data files in Dataverse to be visualized with Harvard WorldMap. To set up a Geoconnect development environment, you can follow the steps outlined in the `local_setup.md <https://github.com/IQSS/geoconnect/blob/master/local_setup.md>`_ guide. You will need Python and a few other prerequisites.
 
 As mentioned under "Architecture and Components" in the :doc:`/installation/prep` section of the Installation Guide, Geoconnect is an optional component of Dataverse, so this section is only necessary to follow it you are working on an issue related to this feature.
+
+----
+
+Previous: :doc:`intro` | Next: :doc:`version-control`
