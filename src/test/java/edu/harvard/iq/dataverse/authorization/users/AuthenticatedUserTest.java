@@ -16,23 +16,20 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
+ * Tested class: AuthenticatedUser.java
  *
  * @author bsilverstein
  */
 public class AuthenticatedUserTest {
-    
+
     public AuthenticatedUserTest() {
     }
-    
+
     public static AuthenticatedUser testUser = MocksFactory.makeAuthenticatedUser("Homer", "Simpson");
     public static Timestamp expResult = testUser.getCreated();
     public static Timestamp loginTime = Timestamp.valueOf("2000-01-01 00:00:00.0");
     public static final String IDENTIFIER_PREFIX = "@";
 
-    
-    /**
-     * Test of getIdentifier method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetIdentifier() {
         System.out.println("getIdentifier for testUser");
@@ -40,21 +37,15 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getIdentifier(), result);
     }
 
-    /**
-     * Test of getDisplayInfo method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetDisplayInfo() {
         System.out.println("getDisplayInfo");
         AuthenticatedUserDisplayInfo expResult = new AuthenticatedUserDisplayInfo("Homer", "Simpson", "Homer.Simpson@someU.edu", "UnitTester", "In-Memory user");
         AuthenticatedUserDisplayInfo result = testUser.getDisplayInfo();
         assertEquals(expResult, result);
-        
+
     }
 
-    /**
-     * Test of applyDisplayInfo method, of class AuthenticatedUser.
-     */
     @Test
     public void testApplyDisplayInfo() {
         System.out.println("applyDisplayInfo");
@@ -63,9 +54,6 @@ public class AuthenticatedUserTest {
         assertEquals(inf, testUser.getDisplayInfo());
     }
 
-    /**
-     * Test of isAuthenticated method, of class AuthenticatedUser.
-     */
     @Test
     public void testIsAuthenticated() {
         System.out.println("isAuthenticated");
@@ -74,9 +62,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of getId method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetId() {
         System.out.println("getId");
@@ -84,9 +69,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getId());
     }
 
-    /**
-     * Test of setId method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetId() {
         System.out.println("setId");
@@ -95,9 +77,6 @@ public class AuthenticatedUserTest {
         assertEquals(id, testUser.getId());
     }
 
-    /**
-     * Test of getUserIdentifier method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetUserIdentifier() {
         System.out.println("getUserIdentifier");
@@ -105,9 +84,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getUserIdentifier());
     }
 
-    /**
-     * Test of setUserIdentifier method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetUserIdentifier() {
         System.out.println("setUserIdentifier");
@@ -116,9 +92,6 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getUserIdentifier(), userIdentifier);
     }
 
-    /**
-     * Test of getName method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetName() {
         System.out.println("getName");
@@ -127,9 +100,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of getEmail method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetEmail() {
         System.out.println("getEmail");
@@ -137,9 +107,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getEmail());
     }
 
-    /**
-     * Test of setEmail method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetEmail() {
         System.out.println("setEmail");
@@ -148,9 +115,6 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getEmail(), email);
     }
 
-    /**
-     * Test of getAffiliation method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetAffiliation() {
         System.out.println("getAffiliation");
@@ -159,9 +123,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of setAffiliation method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetAffiliation() {
         System.out.println("setAffiliation");
@@ -170,9 +131,6 @@ public class AuthenticatedUserTest {
         assertEquals(affiliation, testUser.getAffiliation());
     }
 
-    /**
-     * Test of getPosition method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetPosition() {
         System.out.println("getPosition");
@@ -180,9 +138,6 @@ public class AuthenticatedUserTest {
         assertEquals("In-Memory user", result);
     }
 
-    /**
-     * Test of setPosition method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetPosition() {
         System.out.println("setPosition");
@@ -190,9 +145,6 @@ public class AuthenticatedUserTest {
         testUser.setPosition(position);
     }
 
-    /**
-     * Test of getLastName method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetLastName() {
         System.out.println("getLastName");
@@ -201,9 +153,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of setLastName method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetLastName() {
         System.out.println("setLastName");
@@ -211,9 +160,6 @@ public class AuthenticatedUserTest {
         testUser.setLastName(lastName);
     }
 
-    /**
-     * Test of getFirstName method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetFirstName() {
         System.out.println("getFirstName");
@@ -221,9 +167,6 @@ public class AuthenticatedUserTest {
         assertEquals("Homer", result);
     }
 
-    /**
-     * Test of setFirstName method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetFirstName() {
         System.out.println("setFirstName");
@@ -231,9 +174,6 @@ public class AuthenticatedUserTest {
         testUser.setFirstName(firstName);
     }
 
-    /**
-     * Test of getEmailConfirmed method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetEmailConfirmed() {
         System.out.println("getEmailConfirmed");
@@ -242,19 +182,13 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of setEmailConfirmed method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetEmailConfirmed() {
         System.out.println("setEmailConfirmed");
         Timestamp emailConfirmed = null;
         testUser.setEmailConfirmed(emailConfirmed);
     }
-    
-        /**
-     * Test of getShibIdentityProvider method, of class AuthenticatedUser.
-     */
+
     @Test
     public void testGetShibIdentityProvider() {
         System.out.println("getShibIdentityProvider");
@@ -262,9 +196,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getShibIdentityProvider());
     }
 
-    /**
-     * Test of setShibIdentityProvider method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetShibIdentityProvider() {
         System.out.println("setShibIdentityProvider");
@@ -274,9 +205,6 @@ public class AuthenticatedUserTest {
         assertEquals("Davis", result);
     }
 
-    /**
-     * Test of toString method, of class AuthenticatedUser.
-     */
     @Test
     public void testToString() {
         System.out.println("toString");
@@ -285,9 +213,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of getSortByString method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetSortByString() {
         System.out.println("getSortByString");
@@ -296,9 +221,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of setLastLogin method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetLastLogin() {
         System.out.println("setLastLogin");
@@ -307,9 +229,6 @@ public class AuthenticatedUserTest {
         assertEquals(loginTime, lastLogin);
     }
 
-    /**
-     * Test of getLastLogin method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetLastLogin() {
         System.out.println("getLastLogin");
@@ -317,9 +236,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getLastLogin());
     }
 
-    /**
-     * Test of setLastLoginToCurrentTime method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetLastLoginToCurrentTime() {
         System.out.println("setLastLoginToCurrentTime");
@@ -328,9 +244,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getLastLogin());
     }
 
-    /**
-     * Test of setCreatedToCurrentTime method, of class AuthenticatedUser.
-     */
     @Test
     public void testSetCreatedToCurrentTime() {
         System.out.println("setCreatedToCurrentTime");
@@ -339,19 +252,13 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getCreated());
     }
 
-    /**
-     * Test of getCreated method, of class AuthenticatedUser.
-     */
     @Test
     public void testGetCreated() {
         System.out.println("getCreated");
         Timestamp result = testUser.getCreated();
         assertEquals(testUser.getCreated(), result);
     }
-    
-    /**
-     * Test of setCreated method, of class AuthenticatedUser.
-     */
+
     @Test
     public void testSetCreated() {
         System.out.println("setCreated");
@@ -364,9 +271,9 @@ public class AuthenticatedUserTest {
     public void testGetLastApiUse() {
         System.out.println("getLastApiUse");
         Timestamp result = testUser.getLastApiUse();
-        assertEquals(testUser.getLastApiUse(), result); 
+        assertEquals(testUser.getLastApiUse(), result);
     }
-    
+
     @Test
     public void testSetLastApiUse() {
         System.out.println("setLastApiUse");
@@ -374,7 +281,7 @@ public class AuthenticatedUserTest {
         testUser.setLastApiUse(lastApiUse);
         assertEquals(testUser.getLastApiUse(), lastApiUse);
     }
-    
+
     @Test
     public void testSetLastApiUseToCurrentTime() {
         System.out.println("setLastApiUseToCurrentTime");
@@ -383,89 +290,58 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getLastApiUse());
     }
     /**
-     * All commented tests below have only been generated / are not complete for AuthenticatedUser.java
-     * The tests above should all run fine, someone can finish the remaining tests whenever they see fit.
+     * All commented tests below have only been generated / are not complete for
+     * AuthenticatedUser.java The tests above should all run fine, someone can
+     * finish the remaining tests whenever they see fit.
      */
-    
-//
-//    /**
-//     * Test of isSuperuser method, of class AuthenticatedUser.
-//     */
-//    @Test
-//    public void testIsSuperuser() {
-//        System.out.println("isSuperuser");
-//        AuthenticatedUser instance = new AuthenticatedUser();
-//        boolean expResult = false;
-//        boolean result = instance.isSuperuser();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of setSuperuser method, of class AuthenticatedUser.
-//     */
-//    @Test
-//    public void testSetSuperuser() {
-//        System.out.println("setSuperuser");
-//        boolean superuser = false;
-//        AuthenticatedUser instance = new AuthenticatedUser();
-//        instance.setSuperuser(superuser);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of setModificationTime method, of class AuthenticatedUser.
-//     */
-//    @Test
-//    public void testSetModificationTime() {
-//        System.out.println("setModificationTime");
-//        Timestamp modificationTime = Timestamp.valueOf("2000-01-01 00:00:00.0");
-//        testUser.setModificationTime(modificationTime);
-//        assertEquals(modificationTime, testUser.getModificationTime());
-//    }
-//    /**
-//     * Test of getAuthenticatedUserLookup method, of class AuthenticatedUser.
-//     */
-//    @Test
-//    public void testGetAuthenticatedUserLookup() {
-//        System.out.println("getAuthenticatedUserLookup");
-//        AuthenticatedUser instance = new AuthenticatedUser();
-//        AuthenticatedUserLookup expResult = null;
-//        AuthenticatedUserLookup result = instance.getAuthenticatedUserLookup();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//    /**
-//     * Test of setAuthenticatedUserLookup method, of class AuthenticatedUser.
-//     */
-//    @Test
-//    public void testSetAuthenticatedUserLookup() {
-//        System.out.println("setAuthenticatedUserLookup");
-//        AuthenticatedUserLookup authenticatedUserLookup = null;
-//        AuthenticatedUser instance = new AuthenticatedUser();
-//        instance.setAuthenticatedUserLookup(authenticatedUserLookup);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//    /**
-//     * Test of hashCode method, of class AuthenticatedUser.
-//     */
-//    @Test
-//    public void testHashCode() {
-//        System.out.println("hashCode");
-//        AuthenticatedUser instance = new AuthenticatedUser();
-//        int expResult = 0;
-//        int result = instance.hashCode();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//    /**
-//     * Test of equals method, of class AuthenticatedUser.
-//     */
+
+    @Test
+    public void testIsSuperuser() {
+        System.out.println("isSuperuser");
+        boolean expResult = false;
+        boolean result = testUser.isSuperuser();
+        assertEquals(expResult, result);
+    }
+
+    @Test
+    public void testSetSuperuser() {
+        System.out.println("setSuperuser");
+        boolean superuser = true;
+        testUser.setSuperuser(superuser);
+        assertEquals(testUser.isSuperuser(), true);
+    }
+
+    @Test
+    public void testSetModificationTime() {
+        System.out.println("setModificationTime");
+        Timestamp modificationTime = Timestamp.valueOf("2000-01-01 00:00:00.0");
+        testUser.setModificationTime(modificationTime);
+        assertEquals(Timestamp.valueOf("2000-01-01 00:00:00.0"), modificationTime);
+    }
+
+    @Test
+    public void testGetAuthenticatedUserLookup() {
+        System.out.println("getAuthenticatedUserLookup");
+        AuthenticatedUserLookup result = testUser.getAuthenticatedUserLookup();
+        assertEquals(testUser.getAuthenticatedUserLookup(), result);
+    }
+
+    @Test
+    public void testSetAuthenticatedUserLookup() {
+        System.out.println("setAuthenticatedUserLookup");
+        AuthenticatedUserLookup authenticatedUserLookup = testUser.getAuthenticatedUserLookup();
+        testUser.setAuthenticatedUserLookup(authenticatedUserLookup);
+        assertEquals(authenticatedUserLookup, testUser.getAuthenticatedUserLookup());
+    }
+
+    @Test
+    public void testHashCode() {
+        System.out.println("hashCode");
+        AuthenticatedUser instance = new AuthenticatedUser();
+        int expResult = 0;
+        int result = instance.hashCode();
+        assertEquals(expResult, result);
+    }
 //    @Test
 //    public void testEquals() {
 //        System.out.println("equals");
@@ -474,31 +350,18 @@ public class AuthenticatedUserTest {
 //        boolean result = testUser.equals(object);
 //        assertEquals(expResult, result);
 //    }
-//    /**
-//     * Test of getDatasetLocks method, of class AuthenticatedUser.
-//     */
 //    @Test
 //    public void testGetDatasetLocks() {
 //        System.out.println("getDatasetLocks");
-//        AuthenticatedUser instance = new AuthenticatedUser();
 //        List<DatasetLock> expResult = null;
 //        List<DatasetLock> result = instance.getDatasetLocks();
 //        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
 //    }
 //
-//    /**
-//     * Test of setDatasetLocks method, of class AuthenticatedUser.
-//     */
 //    @Test
 //    public void testSetDatasetLocks() {
 //        System.out.println("setDatasetLocks");
 //        List<DatasetLock> datasetLocks = null;
-//        AuthenticatedUser instance = new AuthenticatedUser();
 //        instance.setDatasetLocks(datasetLocks);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
 //    }
-    
 }
