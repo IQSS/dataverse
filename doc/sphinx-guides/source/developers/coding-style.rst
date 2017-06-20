@@ -36,14 +36,14 @@ Use this ``logger`` field with varying levels such as ``fine`` or ``info`` like 
 
     logger.fine("will get thumbnail from dataset logo");
 
-Generally speaking you should use ``fine`` for everything that you don't want to show up in Glassfish's ``server.log`` file by default. If you use a higher level such as ``info`` for common operations, you will probably hear complaints that your code is too "chatty" in the logs. These logging levels can be controlled a runtime both on your development machine and in production as explained in the :doc:`debugging` section.
+Generally speaking you should use ``fine`` for everything that you don't want to show up in Glassfish's ``server.log`` file by default. If you use a higher level such as ``info`` for common operations, you will probably hear complaints that your code is too "chatty" in the logs. These logging levels can be controlled at runtime both on your development machine and in production as explained in the :doc:`debugging` section.
 
 When adding logging, do not simply add ``System.out.println()`` lines because the logging level cannot be controlled.
 
 Avoid Hard-Coding Strings
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Special strings should be defined as public constants. For example, ``DatasetFieldConstant.java`` contains has a field for "title" and it's used in many places in the code (try "Find Usages" in Netbeans). This is better than writing the string "title" in all those places.
+Special strings should be defined as public constants. For example, ``DatasetFieldConstant.java`` contains a field for "title" and it's used in many places in the code (try "Find Usages" in Netbeans). This is better than writing the string "title" in all those places.
 
 Type Safety
 ~~~~~~~~~~~
