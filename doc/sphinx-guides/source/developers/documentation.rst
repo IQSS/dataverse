@@ -74,3 +74,7 @@ Every non-index page should use the following code to display a table of content
 		:local:
 
 This code should be placed below any introductory text/images and directly above the first subheading, much like a Wikipedia page.
+
+----
+
+Previous: :doc:`testing` | Next: :doc:`debugging`
