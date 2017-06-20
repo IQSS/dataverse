@@ -69,7 +69,7 @@
                 <a href="/dataset.xhtml?persistentId={{ card_info.parentIdentifier }}">
                         
                     {% if card_info.image_url %}
-                        <img src="{{ card_info.image_url | replace("https://localhost", "")  }}?pfdrid_c=true" alt="" />
+                        <img src="{{ card_info.image_url | replace("https://localhost", "")  }}?pfdrid_c=true" alt="file card" class="file_card_img" /> />
                     {% else %}
                         <span class="icon-file text-muted"></span>
                     {% endif %}
