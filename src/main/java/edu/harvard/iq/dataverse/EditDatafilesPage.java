@@ -708,12 +708,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
      
-    //TODO: remove
-    public boolean isPublicInstall(){
-        boolean defaultValue = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
-    }
-    
     public void restrictFiles(boolean restricted) throws CommandException{
 
         // since we are restricted files, first set the previously restricted file list, so we can compare for
