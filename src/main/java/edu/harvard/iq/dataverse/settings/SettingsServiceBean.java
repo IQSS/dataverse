@@ -261,6 +261,26 @@ public class SettingsServiceBean {
          * Whether Export should exclude FieldType.EMAIL
          */
         ExcludeEmailFromExport,
+        /*
+         Location and name of HomePage customization file
+        */
+        HomePageCustomizationFile,
+        /*
+         Location and name of Header customization file
+        */
+        HeaderCustomizationFile,
+        /*
+         Location and name of Footer customization file
+        */
+        FooterCustomizationFile,
+        /*
+         Location and name of CSS customization file
+        */
+        StyleCustomizationFile,
+        /*
+         Location and name of installation logo customization file
+        */
+        LogoCustomizationFile,
         
         // Option to override the navbar url underlying the "About" link
         NavbarAboutUrl,

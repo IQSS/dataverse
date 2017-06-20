@@ -5,18 +5,17 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
-import java.util.Arrays;
-import java.util.Collections;
+import edu.harvard.iq.dataverse.util.MailUtil;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.mail.internet.InternetAddress;
 
 /**
  *
@@ -28,6 +27,9 @@ public class SettingsWrapper implements java.io.Serializable {
 
     @EJB
     SettingsServiceBean settingService;
+
+    @EJB
+    DataverseServiceBean dataverseService;
 
     private Map<String, String> settingsMap;
     
@@ -136,5 +138,11 @@ public class SettingsWrapper implements java.io.Serializable {
         return isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
     }
     
+    public String getSupportTeamName() {
+        String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
+        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
+        return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+    }
+
 }
 

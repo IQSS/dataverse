@@ -148,6 +148,9 @@ public class Dataverses extends AbstractApiBean {
         } catch ( WrappedResponse ww ) {
                     Throwable cause = ww.getCause();
                     StringBuilder sb = new StringBuilder();
+                    if (cause == null) {
+                        return ww.refineResponse("cause was null!");
+                    }
                     while (cause.getCause() != null) {
                         cause = cause.getCause();
                         if (cause instanceof ConstraintViolationException) {

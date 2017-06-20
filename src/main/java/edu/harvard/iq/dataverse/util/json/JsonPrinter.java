@@ -350,7 +350,7 @@ public class JsonPrinter {
         }
         String rootDataverseName = root.getName();
         if (!StringUtil.isEmpty(rootDataverseName)) {
-            return rootDataverseName + " Dataverse";
+            return rootDataverseName;
         } else {
             return "";
         }
