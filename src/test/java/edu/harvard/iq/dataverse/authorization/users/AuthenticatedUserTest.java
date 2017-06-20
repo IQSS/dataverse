@@ -382,6 +382,10 @@ public class AuthenticatedUserTest {
         Timestamp expResult = testUser.getLastApiUse();
         assertEquals(expResult, testUser.getLastApiUse());
     }
+    /**
+     * All commented tests below have only been generated / are not complete for AuthenticatedUser.java
+     * The tests above should all run fine, someone can finish the remaining tests whenever they see fit.
+     */
     
 //
 //    /**
