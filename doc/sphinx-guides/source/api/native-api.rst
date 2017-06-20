@@ -381,18 +381,27 @@ Example python code to replace a file.  This may be run by changing these parame
 Builtin Users
 ~~~~~~~~~~~~~
 
-This endpoint deals with users of the built-in authentication provider. For more background on various authentication providers, see :doc:`/user/account` and :doc:`/installation/config`.
+Builtin users are also known as "Username/Email and Password" users in the :doc:`/user/account` page of the User Guide. Dataverse stores a password (encrypted, of course) for these users. This differs from "remote" users, such as Shibboleth or OAuth users, whose passwords are stored elsewhere. See also "Auth Modes: Local vs. Remote vs. Both" in the :doc:`/installation/config` section of the Installation Guide. It's a valid configuration of Dataverse to not use builtin users at all.
 
-For this service to work, the setting ``BuiltinUsers.KEY`` has to be set, and its value passed as ``key`` to
-each of the calls.
+Creating a Builtin User
+^^^^^^^^^^^^^^^^^^^^^^^
 
-Generates a new user. Data about the user are posted via JSON. *Note that the password is passed as a parameter in the query*. ::
+For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``BuiltinUsers.KEY``, which is described under "Securing Your Installation" and "Database Settings" in the :doc:`/installation/config` section of the Installation Guide. You will need to know the value of ``BuiltinUsers.KEY`` before you can proceed.
 
-  POST http://$SERVER/api/builtin-users?password=$password&key=$key
+To create a builtin user via API, you must first construct a JSON document.  You can download :download:`user-add.json <../_static/api/user-add.json>` or copy the text below as a starting point and edit as necessary.
 
-Gets the API token of the user, given the password. ::
+.. literalinclude:: ../_static/api/user-add.json
 
-  GET http://$SERVER/api/builtin-users/$username/api-token?password=$password
+Place this ``user-add.json`` file in your current directory and run the following curl command, substituting variables as necessary. Note that both the password of the new user and the value of ``BuiltinUsers.KEY`` are passed as query parameters::
+
+  curl -d @user-add.json -H "Content-type:application/json" "$SERVER_URL/api/builtin-users?password=$NEWUSER_PASSWORD&key=$BUILTIN_USERS_KEY"
+
+Retrieving the API Token of a Builtin User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To retrieve the API token of a builtin user, given that user's password, use the curl command below::
+
+  curl "$SERVER_URL/api/builtin-users/$DV_USER_NAME/api-token?password=$DV_USER_PASSWORD"
 
 Roles
 ~~~~~
