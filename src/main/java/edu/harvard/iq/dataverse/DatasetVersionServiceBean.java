@@ -885,9 +885,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
         logger.log(Level.FINE, "query: {0}", query);
         Query nativeQuery = em.createNativeQuery(query);
-        List<String> checksumList = nativeQuery.getResultList();
 
-        return checksumList;
+        return nativeQuery.getResultList();
     }
     
         
@@ -909,13 +908,13 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 + " AND df.md5 = '" + selectedChecksum + "';";
         
         Query nativeQuery = em.createNativeQuery(query);
-        List<String> checksumList = nativeQuery.getResultList();
+        List<?> checksumList = nativeQuery.getResultList();
 
-        return checksumList.size() > 0;
+        return !checksumList.isEmpty();
     }
         
     
-    public List<HashMap> getBasicDatasetVersionInfo(Dataset dataset){
+    public List<HashMap<String, Object>> getBasicDatasetVersionInfo(Dataset dataset){
         
         if (dataset == null){
             throw new NullPointerException("dataset cannot be null");
@@ -932,11 +931,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         Query nativeQuery = em.createNativeQuery(query);
         List<Object[]> datasetVersionInfoList = nativeQuery.getResultList();
 
-        List<HashMap> hashList = new ArrayList<>();
+        List<HashMap<String, Object>> hashList = new ArrayList<>();
         
         HashMap<String, Object> mMap = new HashMap<>();
         for (Object[] dvInfo : datasetVersionInfoList) {
-            mMap.clear();
+            mMap = new HashMap<>();
             mMap.put("datasetVersionId", dvInfo[0]);
             mMap.put("datasetId", dvInfo[1]);
             mMap.put("releaseTime", dvInfo[2]);

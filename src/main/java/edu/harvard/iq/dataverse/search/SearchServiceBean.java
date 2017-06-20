@@ -479,7 +479,7 @@ public class SearchServiceBean {
                     /**
                      * @todo Could use getFieldValues (plural) here.
                      */
-                    ArrayList<String> datasetDescriptions = (ArrayList<String>) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
+                    List<String> datasetDescriptions = (List<String>) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
                     if (datasetDescriptions != null) {
                         String firstDatasetDescription = datasetDescriptions.get(0);
                         if (firstDatasetDescription != null) {
@@ -678,14 +678,14 @@ public class SearchServiceBean {
         }
 
         // for now the only range facet is citation year
-        for (RangeFacet rangeFacet : queryResponse.getFacetRanges()) {
+        for (RangeFacet<RangeFacet.Count, String> rangeFacet : queryResponse.getFacetRanges()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
-            for (Object rfObj : rangeFacet.getCounts()) {
-                RangeFacet.Count rangeFacetCount = (RangeFacet.Count) rfObj;
+            for (RangeFacet.Count rfObj : rangeFacet.getCounts()) {
+                RangeFacet.Count rangeFacetCount = rfObj;
                 String valueString = rangeFacetCount.getValue();
                 Integer start = Integer.parseInt(valueString);
-                Integer end = start + Integer.parseInt(rangeFacet.getGap().toString());
+                Integer end = start + Integer.parseInt(rangeFacet.getGap());
                 // to avoid overlapping dates
                 end = end - 1;
                 if (rangeFacetCount.getCount() > 0) {
@@ -699,9 +699,9 @@ public class SearchServiceBean {
             facetCategory.setFacetLabel(facetLabelList);
             // reverse to show the newest citation year range at the top
             List<FacetLabel> facetLabelListReversed = new ArrayList<>();
-            ListIterator li = facetLabelList.listIterator(facetLabelList.size());
+            ListIterator<FacetLabel> li = facetLabelList.listIterator(facetLabelList.size());
             while (li.hasPrevious()) {
-                facetLabelListReversed.add((FacetLabel) li.previous());
+                facetLabelListReversed.add(li.previous());
             }
             facetCategory.setFacetLabel(facetLabelListReversed);
             if (!facetLabelList.isEmpty()) {
@@ -857,7 +857,7 @@ public class SearchServiceBean {
          * @todo rename this from publicPlusUserPrivateGroup. Confusing
          */
         // safe default: public only
-        String publicPlusUserPrivateGroup;
+        String publicPlusUserPrivateGroup = publicOnly;
 //                    + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
 //                    + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
 

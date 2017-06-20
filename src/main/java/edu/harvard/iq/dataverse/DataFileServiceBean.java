@@ -529,7 +529,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             DataTable dataTable = new DataTable(); 
             Long fileId = (Long)result[1];
 
-            dataTable.setId(((Number)result[0]).longValue());
+            dataTable.setId(((Integer)result[0]).longValue());
             
             dataTable.setUnf((String)result[2]);
             
@@ -1093,18 +1093,12 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         switch (mimeType) {
             case MIME_TYPE_STATA:
-                return true;
             case MIME_TYPE_STATA13:
-                return true;
             case MIME_TYPE_RDATA:
-                return true;
             case MIME_TYPE_CSV:
             case MIME_TYPE_CSV_ALT:
-                return true;
             case MIME_TYPE_XLSX:
-                return true;
             case MIME_TYPE_SPSS_SAV:
-                return true;
             case MIME_TYPE_SPSS_POR:
                 return true;
         }
@@ -1353,7 +1347,8 @@ public class DataFileServiceBean implements java.io.Serializable {
      * 
      * @param df
      * @return 
-     * @throws java.lang.Exception 
+     * @throws java.lang.Exception if a DataFile has more than 1 replacement
+     *         or is unpublished and has a replacement.
      */
     public boolean hasReplacement(DataFile df) throws Exception{
         

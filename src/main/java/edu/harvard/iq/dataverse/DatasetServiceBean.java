@@ -160,8 +160,8 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     public Dataset findByGlobalId(String globalId) {
 
-        String protocol;
-        String authority;
+        String protocol = "";
+        String authority = "";
         String identifier = "";
         int index1 = globalId.indexOf(':');
         String nonNullDefaultIfKeyNotFound = ""; 

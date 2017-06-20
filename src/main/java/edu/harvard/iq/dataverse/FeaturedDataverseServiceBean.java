@@ -94,10 +94,10 @@ public class FeaturedDataverseServiceBean {
         
         dataverseFeaturedDataverse.setDisplayOrder(diplayOrder);
         
-        Dataverse dataverse = em.find(Dataverse.class,dataverseId);
+        Dataverse dataverse = em.find(Dataverse.class, dataverseId);
         dataverseFeaturedDataverse.setDataverse(dataverse);
         
-        Dataverse featuredDataverse = em.find(Dataverse.class,featuredDataverseId);
+        Dataverse featuredDataverse = em.find(Dataverse.class, featuredDataverseId);
         dataverseFeaturedDataverse.setFeaturedDataverse(featuredDataverse);
 
         em.persist(dataverseFeaturedDataverse);

@@ -207,7 +207,7 @@ public class FileMetadata implements Serializable {
                     // Using "try {}" to catch any null pointer exceptions,
                     // just in case:
                     fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryName);
-                }catch (Exception ex) {
+                } catch (Exception ex) {
                     fileCategory = null;
                 }
                 if (fileCategory != null) {

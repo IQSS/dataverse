@@ -314,7 +314,7 @@ public class DTAFileReader extends TabularDataFileReader{
     };
     private static Map<String, String> DATE_TIME_FORMAT_TABLE=  new LinkedHashMap<>();
 
-    private static long SECONDS_PER_YEAR = 24*60*60*1000L;
+    private static long SECONDS_PER_YEAR = 525600L;
 
     private static long STATA_BIAS_TO_EPOCH;
 
@@ -495,6 +495,7 @@ public class DTAFileReader extends TabularDataFileReader{
         */
     }
 
+    @Override
     public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
         dbgLog.info("***** DTAFileReader: read() start *****");
         
@@ -1045,7 +1046,7 @@ public class DTAFileReader extends TabularDataFileReader{
         dbgLog.fine("labelNames=\n" + StringUtils.join(labelNames, ",\n") + "\n");
 
         for (int i = 0; i < nvar; i++) {
-            if ((labelNames[i] != null) && (!labelNames[i].equals(""))) {
+            if ((labelNames[i] != null) && (!labelNames[i].isEmpty())) {
                 valueLabelsLookupTable[i] = labelNames[i];
             }
         }
@@ -1145,7 +1146,7 @@ public class DTAFileReader extends TabularDataFileReader{
             
             if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("field_length="+field_length);
             if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("firstByte[0]="+firstByte[0]);
-            if ((field_length + (int)firstByte[0]) == 0){
+            if ((field_length + firstByte[0]) == 0){
                 // reached the end of this field
                 break;
             } else {
@@ -1930,7 +1931,7 @@ public class DTAFileReader extends TabularDataFileReader{
                             dbgLog.finer(i + "-th row " + columnCounter
                                     + "=th column string =" + string_datum);
                         }
-                        if (string_datum.equals("")) {
+                        if (string_datum.isEmpty()) {
                             if (dbgLog.isLoggable(Level.FINER)) {
                                 dbgLog.finer(i + "-th row " + columnCounter
                                         + "=th column string missing value=" + string_datum);

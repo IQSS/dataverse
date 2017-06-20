@@ -462,9 +462,9 @@ public class Dataset extends DvObjectContainer {
     public DataFileCategory getCategoryByName(String categoryName) {
         if (categoryName != null && !categoryName.isEmpty()) {
             if (dataFileCategories != null) {
-                for (DataFileCategory dataFileCategorie : dataFileCategories) {
-                    if (categoryName.equals(dataFileCategorie.getName())) {
-                        return dataFileCategorie;
+                for (DataFileCategory dataFileCategory : dataFileCategories) {
+                    if (categoryName.equals(dataFileCategory.getName())) {
+                        return dataFileCategory;
                     }
                 }
             }

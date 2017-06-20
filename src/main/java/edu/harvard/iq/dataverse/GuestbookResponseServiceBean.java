@@ -298,7 +298,7 @@ public class GuestbookResponseServiceBean {
 
     private List<Object[]> convertIntegerToLong(List<Object[]> list, int index) {
         for (Object[] item : list) {
-            item[index] = new Long((long) item[index]);
+            item[index] = (long) item[index];
         }
 
         return list;
@@ -553,7 +553,7 @@ public class GuestbookResponseServiceBean {
         String response = (String) value;
 
         if (response != null && response.length() > 255) {
-            ((EditableValueHolder) toValidate).setValid(false);
+            ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.guestbookResponse.guestbook.responseTooLong"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }

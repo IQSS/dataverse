@@ -870,9 +870,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                     logger.fine("this is a brand-new (unsaved) filemetadata");
                     // ok, this is a brand-new DRAFT version. 
                     // 1. delete the filemetadata from the local display list: 
-                    Iterator fmit = fileMetadatas.iterator();
+                    Iterator<FileMetadata> fmit = fileMetadatas.iterator();
                     while (fmit.hasNext()) {
-                        FileMetadata fmd = (FileMetadata) fmit.next();
+                        FileMetadata fmd = fmit.next();
                         if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
                             fmit.remove();
                             break;
@@ -881,7 +881,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // 2. delete the filemetadata from the version: 
                     fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                     while (fmit.hasNext()) {
-                        FileMetadata fmd = (FileMetadata) fmit.next();
+                        FileMetadata fmd = fmit.next();
                         if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
                             fmit.remove();
                             break;
@@ -904,9 +904,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // fileMetadatas.remove(markedForDelete);
                     // - because the filemetadata doesn't have the id yet!)
                     
-                    Iterator fmit = fileMetadatas.iterator();
+                    Iterator<FileMetadata> fmit = fileMetadatas.iterator();
                     while (fmit.hasNext()) {
-                        FileMetadata fmd = (FileMetadata) fmit.next();
+                        FileMetadata fmd = fmit.next();
                         if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
                             fmit.remove();
                             break;
@@ -914,9 +914,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                     }
                 }
                 
-                Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
+                Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
-                    FileMetadata fmd = (FileMetadata) fmit.next();
+                    FileMetadata fmd = fmit.next();
                     if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
                         fmit.remove();
                         break;
@@ -1534,7 +1534,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // -----------------------------------------------------------
                 try {
                     dropBoxStream.close();
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     logger.log(Level.WARNING, "Failed to close the dropBoxStream for file: {0}", fileLink);
                 }
             }
@@ -1876,39 +1876,39 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
             /*
-            preserved old, pre 4.6 code - mainly as an illustration of how we used to do this. 
+             preserved old, pre 4.6 code - mainly as an illustration of how we used to do this. 
             
             if (!isDuplicate(dataFile.getFileMetadata())) {
-            newFiles.add(dataFile);        // looks good
-            fileMetadatas.add(dataFile.getFileMetadata());
+                newFiles.add(dataFile);        // looks good
+                fileMetadatas.add(dataFile.getFileMetadata());
             } else {
-            if (duplicateFileNames == null) {
-            duplicateFileNames = dataFile.getFileMetadata().getLabel();
-            } else {
-            duplicateFileNames = duplicateFileNames.concat(", " + dataFile.getFileMetadata().getLabel());
-            multipleDupes = true;
-            }
-            
-            // remove the file from the dataset (since createDataFiles has already linked
-            // it to the dataset!
-            // first, through the filemetadata list, then through tht datafiles list:
-            Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
-            while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            if (fm.getId() == null && dataFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
-            fmIt.remove();
-            break;
-            }
-            }
-            
-            Iterator<DataFile> dfIt = dataset.getFiles().iterator();
-            while (dfIt.hasNext()) {
-            DataFile dfn = dfIt.next();
-            if (dfn.getId() == null && dataFile.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
-            dfIt.remove();
-            break;
-            }
-            }
+                if (duplicateFileNames == null) {
+                    duplicateFileNames = dataFile.getFileMetadata().getLabel();
+                } else {
+                    duplicateFileNames = duplicateFileNames.concat(", " + dataFile.getFileMetadata().getLabel());
+                    multipleDupes = true;
+                }
+
+                // remove the file from the dataset (since createDataFiles has already linked
+                // it to the dataset!
+                // first, through the filemetadata list, then through tht datafiles list:
+                Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
+                while (fmIt.hasNext()) {
+                    FileMetadata fm = fmIt.next();
+                    if (fm.getId() == null && dataFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
+                        fmIt.remove();
+                        break;
+                    }
+                }
+
+                Iterator<DataFile> dfIt = dataset.getFiles().iterator();
+                while (dfIt.hasNext()) {
+                    DataFile dfn = dfIt.next();
+                    if (dfn.getId() == null && dataFile.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
+                        dfIt.remove();
+                        break;
+                    }
+                }
             } */
         }
         
@@ -2438,7 +2438,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                         tag.setTypeByLabel(selectedTabFileTag);
                         tag.setDataFile(fileMetadataSelectedForTagsPopup.getDataFile());
                         fileMetadataSelectedForTagsPopup.getDataFile().addTag(tag);
-                    }catch (IllegalArgumentException iax) {
+                    } catch (IllegalArgumentException iax) {
                         // ignore 
                     }
                 }
