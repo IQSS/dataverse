@@ -64,6 +64,17 @@ Once you've written some tests, you're probably wondering how much you've helped
 
 In addition to seeing code coverage in Netbeans, you can also see code coverage reports by opening ``target/site/jacoco/index.html`` in your browser.
 
+Testing Commands
+^^^^^^^^^^^^^^^^
+
+You might find studying the following test classes helpful in writing tests for commands:
+
+- CreatePrivateUrlCommandTest.java
+- DeletePrivateUrlCommandTest.java
+- GetPrivateUrlCommandTest.java
+
+In addition, there is a writeup on "The Testable Command" at https://github.com/IQSS/dataverse/blob/develop/doc/theTestableCommand/TheTestableCommand.md .
+
 Integration Tests
 -----------------
 
