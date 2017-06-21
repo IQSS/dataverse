@@ -77,7 +77,7 @@ public class Search extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-
+        
         if (query != null) {
 
             // sanity checking on user-supplied arguments
@@ -101,7 +101,7 @@ public class Search extends AbstractApiBean {
                     filterQueries.add(filterDownToSubtree);
                 }
             } catch (Exception ex) {
-                return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+                return badRequest(ex.getLocalizedMessage());
             }
 
             // users can't change these (yet anyway)
@@ -193,24 +193,8 @@ public class Search extends AbstractApiBean {
     }
 
     private User getUser() throws WrappedResponse {
-        /**
-         * @todo support searching as non-guest:
-         * https://github.com/IQSS/dataverse/issues/1299
-         *
-         * Note that superusers can't currently use the Search API because they
-         * see permission documents (all Solr documents, really) and we get a
-         * NPE when trying to determine the DvObject type if their query matches
-         * a permission document.
-         *
-         * @todo Check back on https://github.com/IQSS/dataverse/issues/1838 for
-         * when/if the Search API is opened up to not require a key.
-         */
-        AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
-        if (nonPublicSearchAllowed()) {
-            return authenticatedUser;
-        } else {
-            return GuestUser.get();
-        }
+        return settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiRequireToken, false) ? 
+                findAuthenticatedUserOrDie() : findUserOrDie();
     }
 
     public boolean nonPublicSearchAllowed() {
