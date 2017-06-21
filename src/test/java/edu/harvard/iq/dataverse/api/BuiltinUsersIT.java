@@ -9,7 +9,10 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,6 +28,35 @@ public class BuiltinUsersIT {
     @BeforeClass
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
+
+    @Test
+    public void testCreateTimeAndApiLastUse() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response getUserAsJson = UtilIT.getAuthenticatedUser(username, apiToken);
+        getUserAsJson.prettyPrint();
+        getUserAsJson.then().assertThat()
+                // Checking that it's 2017 or whatever. Not y3k compliant! 
+                .body("data.created", startsWith("2"))
+                .body("data.authenticationProviderId", equalTo("builtin"))
+                .statusCode(OK.getStatusCode());
+
+        Response getUserAsJsonAgain = UtilIT.getAuthenticatedUser(username, apiToken);
+        getUserAsJsonAgain.prettyPrint();
+        getUserAsJsonAgain.then().assertThat()
+                // FIXME: "apiLastUse" should be populated.
+                // Checking that it's 2017 or whatever. Not y3k compliant! 
+                .body("data.apiLastUse", startsWith("2"))
+                .statusCode(OK.getStatusCode());
+
     }
 
     @Test
