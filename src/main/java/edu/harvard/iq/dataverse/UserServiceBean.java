@@ -15,6 +15,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
 @Stateless
@@ -86,15 +87,8 @@ public class UserServiceBean {
         // GATHER GIANT HASHMAP OF ALL { user identifier : [role, role, role] }
         // -------------------------------------------------
 
-        // Iterate through results, retrieving only the assignee identifiers
-        // Note: userInfo[1], the assigneeIdentifier, cannot be null in the database
-        //
-        List<String> identifiers = userResults.stream()
-                                        .map(userInfo -> (String)userInfo[1])
-                                        .collect(Collectors.toList())
-                                       ;
-  
-        HashMap<String, List<String>> roleLookup = retrieveRolesForUsers(identifiers);
+        
+        HashMap<String, List<String>> roleLookup = retrieveRolesForUsers(userResults);
         if (roleLookup == null){
             roleLookup = new HashMap<>();
         }
@@ -153,7 +147,19 @@ public class UserServiceBean {
      * @param userIdentifierList
      * @return 
      */
-    private HashMap<String, List<String>> retrieveRolesForUsers(List<String> userIdentifierList){
+    private HashMap<String, List<String>> retrieveRolesForUsers(List<Object[]> userObjectList){
+        // Iterate through results, retrieving only the assignee identifiers
+        // Note: userInfo[1], the assigneeIdentifier, cannot be null in the database
+        //
+        List<String> userIdentifierList = userObjectList.stream()
+                                        .map(userInfo -> (String)userInfo[1])
+                                        .collect(Collectors.toList())
+                                       ;
+        
+        List<Integer> databaseIds = userObjectList.stream()
+                                        .map(userInfo -> (Integer)userInfo[0])
+                                        .collect(Collectors.toList());
+  
         
         if ((userIdentifierList==null)||(userIdentifierList.isEmpty())){
             return null;
@@ -161,12 +167,12 @@ public class UserServiceBean {
         
         // Add '@' to each identifier and delimit the list by ","
         //
-        String identifierList = userIdentifierList.stream()
+        String identifierListString = userIdentifierList.stream()
                                      .filter(x -> !Strings.isNullOrEmpty(x))
                                      .map(x -> "'@" + x + "'")
                                      .collect(Collectors.joining(", "));
 
-        //System.out.println("identifierList: " + identifierList);
+        //System.out.println("identifierListString: " + identifierListString);
 
         
         String qstr = "SELECT distinct a.assigneeidentifier,";
@@ -174,7 +180,7 @@ public class UserServiceBean {
         qstr += " FROM roleassignment a,";
         qstr += " dataverserole d";
         qstr += " WHERE d.id = a.role_id";
-        qstr += " AND a.assigneeidentifier IN (" + identifierList + ")";
+        qstr += " AND a.assigneeidentifier IN (" + identifierListString + ")";
         qstr += " ORDER by a.assigneeidentifier, d.name;";
 
         //System.out.println("qstr: " + qstr);
@@ -200,6 +206,107 @@ public class UserServiceBean {
                 if (!userRoleList.contains(userRole)){
                     userRoleList.add(userRole);
                     userRoleLookup.put(userIdentifier, userRoleList);
+                }
+            }
+        }
+        
+        // And now the roles assigned via groups: 
+        
+        
+        // 1. One query for selecting all the groups to which these users may belong: 
+        
+        HashMap<String, List<String>> groupsLookup = new HashMap<>();
+        
+        String idListString = StringUtils.join(databaseIds, ",");
+        
+        qstr = "SELECT distinct g.groupalias, ";
+        qstr += " u.useridentifier";
+        qstr += " FROM explicitgroup g,";
+        qstr += " explicitgroup_authenticateduser e, ";
+        qstr += " authenticateduser u";
+        qstr += " WHERE e.explicitgroup_id = g.id";
+        qstr += " AND e.containedauthenticatedusers_id IN (" + idListString + ")";
+        qstr += " AND u.id = e.containedauthenticatedusers_id";
+        qstr += " ORDER by g.groupalias";
+        
+        
+        //System.out.println("qstr: " + qstr);
+
+        nativeQuery = em.createNativeQuery(qstr);
+        List<Object[]> groupResults = nativeQuery.getResultList();
+        if (groupResults == null){
+            return userRoleLookup;
+        } 
+        
+        String groupIdentifiers = null;
+        
+        for (Object group[] : groupResults) {
+            String alias = UserUtil.getStringOrNull(group[0]);
+            String user = UserUtil.getStringOrNull(group[1]);
+            if (alias != null ) {
+                
+                alias = "&explicit/"+alias;
+                
+                if (groupIdentifiers == null) {
+                    groupIdentifiers = "'"+alias+"'";
+                } else {
+                    groupIdentifiers += ", '"+alias+"'";
+                }
+                
+                List<String> groupUserList = groupsLookup.getOrDefault(alias, new ArrayList<String>());
+                if (!groupUserList.contains(user)){
+                    groupUserList.add(user);
+                    groupsLookup.put(alias, groupUserList);
+                }
+             }
+        }
+        
+        // 2. And now we can make another lookup on the roleassignment table, using the list 
+        // of the explicit group aliases we have just generated: 
+        
+        if (groupIdentifiers == null) {
+            return userRoleLookup;
+        }
+        
+        qstr = "SELECT distinct a.assigneeidentifier,";
+        qstr += " d.name";
+        qstr += " FROM roleassignment a,";
+        qstr += " dataverserole d";
+        qstr += " WHERE d.id = a.role_id";
+        qstr += " AND a.assigneeidentifier IN (";
+        qstr += groupIdentifiers;
+        qstr += ") ORDER by a.assigneeidentifier, d.name;";
+
+        //System.out.println("qstr: " + qstr);
+
+        nativeQuery = em.createNativeQuery(qstr);
+
+        dbRoleResults = nativeQuery.getResultList();
+        if (dbRoleResults == null){
+            return userRoleLookup;
+        }
+        
+        
+        for (Object[] dbResultRow : dbRoleResults) {            
+            
+            String groupIdentifier = UserUtil.getStringOrNull(dbResultRow[0]);
+            String groupRole = UserUtil.getStringOrNull(dbResultRow[1]);
+            if ((groupIdentifier != null)&&(groupRole != null)){  // should never be null
+                
+                List<String> groupUserList = groupsLookup.get(groupIdentifier);
+                
+                if (groupUserList != null) {
+                
+                    for (String groupUserIdentifier : groupUserList) {
+                        groupUserIdentifier = "@" + groupUserIdentifier; 
+                        //System.out.println("Group user: "+groupUserIdentifier);
+                        List<String> userRoleList = userRoleLookup.getOrDefault(groupUserIdentifier, new ArrayList<String>());
+                        if (!userRoleList.contains(groupRole)){
+                            //System.out.println("User Role: "+groupRole);
+                            userRoleList.add(groupRole);
+                            userRoleLookup.put(groupUserIdentifier, userRoleList);
+                        }
+                    }
                 }
             }
         }
