@@ -219,15 +219,21 @@ public class UserServiceBean {
         
         String idListString = StringUtils.join(databaseIds, ",");
         
-        qstr = "SELECT distinct g.groupalias, ";
-        qstr += " u.useridentifier";
-        qstr += " FROM explicitgroup g,";
-        qstr += " explicitgroup_authenticateduser e, ";
-        qstr += " authenticateduser u";
-        qstr += " WHERE e.explicitgroup_id = g.id";
-        qstr += " AND e.containedauthenticatedusers_id IN (" + idListString + ")";
-        qstr += " AND u.id = e.containedauthenticatedusers_id";
-        qstr += " ORDER by g.groupalias";
+        // A *RECURSIVE* native query, that finds all the groups that the specified 
+        // users are part of, BOTH by direct inclusion, AND via parent groups: 
+        
+        qstr = "WITH RECURSIVE group_user AS ((" +
+            " SELECT distinct g.groupalias, g.id, u.useridentifier" + 
+            "  FROM explicitgroup g, explicitgroup_authenticateduser e, authenticateduser u" +
+            "  WHERE e.explicitgroup_id = g.id " + 
+            "   AND u.id IN (" + idListString + ")" + 
+            "   AND u.id = e.containedauthenticatedusers_id)" + 
+            "  UNION\n" +
+            "   SELECT p.groupalias, p.id, c.useridentifier" +
+            "    FROM group_user c, explicitgroup p, explicitgroup_explicitgroup e" + 
+            "    WHERE e.explicitgroup_id = p.id" + 
+            "     AND e.containedexplicitgroups_id = c.id)" + 
+            "SELECT distinct groupalias, useridentifier FROM group_user;";
         
         
         //System.out.println("qstr: " + qstr);
