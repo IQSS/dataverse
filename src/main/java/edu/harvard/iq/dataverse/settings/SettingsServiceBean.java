@@ -74,7 +74,12 @@ public class SettingsServiceBean {
          * Search API. See also https://github.com/IQSS/dataverse/issues/1299
          */
         SearchApiNonPublicAllowed,
-        
+        /**
+         * In Dataverse 4.6.2 and earlier, an API token was required to use the
+         * Search API. Tokens are no longer required but you can revert to the
+         * old behavior by setting this to false.
+         */
+        SearchApiRequiresToken,
         /**
          * Experimental: Use Solr to power the file listing on the dataset page.
          */

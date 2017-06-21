@@ -498,6 +498,13 @@ The key required to create users via API as documented at :doc:`/api/native-api`
 
 ``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
 
+:SearchApiRequiresToken
++++++++++++++++++++++++
+
+In Dataverse 4.6.2 and lower, the :doc:`/api/search` required an API token, but this is no longer the case. If you prefer the old behavior of requiring API tokens to use the Search API, set ``:SearchApiRequiresToken`` to ``true``.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SearchApiRequiresToken``
+
 :SystemEmail
 ++++++++++++
 
