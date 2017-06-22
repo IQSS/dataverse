@@ -125,4 +125,10 @@ public class MailUtilTest {
         userNotification.setType(UserNotification.Type.CHECKSUMIMPORT);
         assertEquals("LibraScholar: Your file checksum job has completed", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
     }
+
+    @Test
+    public void testSubjectConfirmEmail() {
+        userNotification.setType(UserNotification.Type.CONFIRMEMAIL);
+        assertEquals("LibraScholar: Verify your email address", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
+    }
 }
