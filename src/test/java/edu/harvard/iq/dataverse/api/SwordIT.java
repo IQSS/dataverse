@@ -239,13 +239,13 @@ public class SwordIT {
 
         Response attemptToDownloadUnpublishedFileWithoutApiToken = UtilIT.downloadFile(fileId);
         attemptToDownloadUnpublishedFileWithoutApiToken.then().assertThat()
-                .body("html.head.title", equalTo("403 Not Authorized - Root Dataverse"))
+                .body("html.head.title", equalTo("403 Not Authorized - Root"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response attemptToDownloadUnpublishedFileUnauthApiToken = UtilIT.downloadFile(fileId, apiTokenNoPrivs);
         attemptToDownloadUnpublishedFileUnauthApiToken.prettyPrint();
         attemptToDownloadUnpublishedFileUnauthApiToken.then().assertThat()
-                .body("html.head.title", equalTo("403 Not Authorized - Root Dataverse"))
+                .body("html.head.title", equalTo("403 Not Authorized - Root"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response downloadUnpublishedFileWithValidApiToken = UtilIT.downloadFile(fileId, apiToken);
