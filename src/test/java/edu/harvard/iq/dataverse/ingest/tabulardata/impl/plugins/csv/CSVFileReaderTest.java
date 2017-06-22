@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -22,8 +23,6 @@ import static org.junit.Assert.*;
 public class CSVFileReaderTest {
 
     private static final Logger logger = Logger.getLogger(CSVFileReaderTest.class.getCanonicalName());
-    private String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/InjestCSV.csv";
-    private String brokenFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/BrokenCSV.csv";
 
     /**
      * Test CSVFileReader with a hellish CSV containing everything nasty I could
@@ -32,6 +31,7 @@ public class CSVFileReaderTest {
      */
     @Test
     public void testRead() {
+        String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/InjestCSV.csv";
         String[] expResult = {"ints	Strings	Dates	Not quite Dates	Numbers	Not quite Ints	Not quite Numbers	Column that hates you and is so long that things might start breaking because we previously had a 255 character limit on length for things even when that might not be completely justified. Wow this is an increadibly long header name. Who made this? Oh, that's right, I did.",
             "-199	\"hello\"	2017-06-20	\"2017/06/20\"	0	1	\"Nan\"	\"823478788778713\"",
             "2	\"Sdfwer\"	2017-06-20	\"1100/06/20\"	Inf	2	\"2\"	\",1,2,3\"",
@@ -72,6 +72,7 @@ public class CSVFileReaderTest {
      */
     @Test
     public void testBrokenCSV() {
+        String brokenFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/BrokenCSV.csv";
         try {
             new CSVFileReader(new CSVFileReaderSpi()).read(null, null);
             fail("IOException not thrown on null csv");
@@ -88,5 +89,43 @@ public class CSVFileReaderTest {
             String expMessage = "Reading mismatch, line 5 of the Data file: 6 delimited values expected, 4 found.";
             assertEquals(expMessage, ex.getMessage());
         }
+    }
+    
+    @Test
+    public void testHardRead() throws FileNotFoundException, IOException {
+        String expFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/HardCSV.csv";
+        String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/HardCSV.tab";
+        BufferedReader result = null;
+        BufferedReader expected = null;
+        try {
+            expected = new BufferedReader(new FileReader(expFile));
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(CSVFileReaderTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try (BufferedInputStream stream = new BufferedInputStream(
+                new FileInputStream(testFile))) {
+            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
+            result = new BufferedReader(new FileReader(instance.read(stream, null).getTabDelimitedFile()));
+        }
+
+        String foundLine = null;
+        String expLine = null;
+        assertNotNull(result);
+        assertNotNull(expected);
+        while (true) {
+            try {
+                expLine = expected.readLine();
+                foundLine = result.readLine();
+            } catch (IOException ex) {
+                fail();
+            }
+            assertNotNull(expLine);
+            if(!expLine.equals(foundLine)) {
+                logger.info("expected: " + expLine);
+                logger.info("found : " + foundLine);
+            }
+            assertEquals(expLine, foundLine);
+        }
+
     }
 }

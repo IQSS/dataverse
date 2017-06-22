@@ -54,7 +54,6 @@ public class CSVFileReader extends TabularDataFileReader {
     private static final int DIGITS_OF_PRECISION_DOUBLE = 15; 
     private static final String FORMAT_IEEE754 = "%+#." + DIGITS_OF_PRECISION_DOUBLE + "e";
     private MathContext doubleMathContext;
-    private char delimiterChar = ',';
     
     // DATE FORMATS
     private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
@@ -118,8 +117,8 @@ public class CSVFileReader extends TabularDataFileReader {
     public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter finalOut) throws IOException {
         
         List<DataVariable> variableList = new ArrayList<>();
-        CSVParser parser = new CSVParser(csvReader, CSVFormat.DEFAULT.withHeader());
-        dbglog.fine("Headers: " + parser.getHeaderMap());
+        CSVParser parser = new CSVParser(csvReader, CSVFormat.DEFAULT.withHeader().withQuote('"'));
+        dbglog.info("Headers: " + parser.getHeaderMap());
         Map<String, Integer> headers = parser.getHeaderMap();
         for (String varName : headers.keySet()) {
             
@@ -178,6 +177,7 @@ public class CSVFileReader extends TabularDataFileReader {
             firstPassWriter.println(StringUtils.join(headers.keySet().toArray(new String[0]), "\t"));
             for (CSVRecord record : parser.getRecords()) {
                 // Checks if #records = #columns in header
+                dbglog.info(record.toString());
                 if (!record.isConsistent()) {
                     throw new IOException("Reading mismatch, line " + (parser.getCurrentLineNumber() + 1)
                             + " of the Data file: " + headers.size() + 
