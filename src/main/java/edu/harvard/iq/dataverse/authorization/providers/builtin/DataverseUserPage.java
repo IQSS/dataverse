@@ -204,9 +204,21 @@ public class DataverseUserPage implements java.io.Serializable {
         String userName = (String) value;
         boolean userNameFound = authenticationService.identifierExists(userName);
         
+        // SF fix for issue 3752
+        // check if username has any invalid characters 
+        String invalidCharacters = ".*[ \\/\\~?!@#$%\\^&*()\\[\\]{};:'\"<>+=|,].*";
+        
+        boolean userNameInvalid = userName.matches(invalidCharacters);
+        
         if (editMode == EditMode.CREATE && userNameFound) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+        
+        if (editMode == EditMode.CREATE && userNameInvalid) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.invalid"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
