@@ -99,7 +99,7 @@ public class DatasetFieldValue implements Serializable {
             // replace the special values in the format (note: we replace #VALUE last since we don't
             // want any issues if the value itself has #NAME in it)
             String displayValue = format
-                    .replace("#NAME", this.datasetField.getDatasetFieldType().getTitle())
+                    .replace("#NAME",  this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
                     .replace("#EMAIL", ResourceBundle.getBundle("Bundle").getString("dataset.email.hiddenMessage"))
                     .replace("#VALUE", this.getValue());
             retVal = displayValue;
