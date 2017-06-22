@@ -1,8 +1,8 @@
-ints,Strings,Dates,Numbers,Not quite Ints,Not quite Numbers,"Column that hates you and is so long that things might start breaking because we previously had a 255 character limit on length for things even when that might not be completely justified. Wow this is an increadibly long header name. Who made this? Oh, that's right, I did."
--199,hello,06/20/17,1,1,Nan,adf"\0\nadsf"
-2,Sdfwer,06/20/17,INF,2,2,",1,2,3"
-0,cjlajfo.,06/20/17,-inf,3,inf,\casdf
--1,Mywer,06/20/17,3.141592653,4,4.8,asd
-266128,Sf,06/20/17,0,5,Inf+11,
-123,werxc,03/03/17,123,6.000001,11-2,823478788778713
--2389,Dfjl,2017/03/12,nan,2,nap,asdf
+ints,Strings,Dates,Not quite Dates,Numbers,Not quite Ints,Not quite Numbers,"Column that hates you and is so long that things might start breaking because we previously had a 255 character limit on length for things even when that might not be completely justified. Wow this is an increadibly long header name. Who made this? Oh, that's right, I did."
+-199,hello,"2017-06-20",2017/06/20,null,1,Nan,823478788778713
+2,Sdfwer,2017-06-20,1100/06/20,INF,2,2,",1,2,3"
+0,cjlajfo.,2017-06-20,3000/06/20,-inf,3,inf,\casdf
+-1,Mywer,2017-06-20,06-20-2011,3.141592653,4,4.8,asd
+266128,Sf,2017-06-20,06-20-1917,0,5,Inf+11,
+123,werxc,2017-06-20,03/03/1817,123,6.000001,11-2,"adf""\0\na\tdsf"""
+-2389,Dfjl,2017-06-20,2017-03-12,nan,2,nap,💩⌛👩🏻■

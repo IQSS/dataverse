@@ -58,7 +58,10 @@ public class CSVFileReader extends TabularDataFileReader {
     
     // DATE FORMATS
     private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
-        new SimpleDateFormat("yyyy-MM-dd")
+        new SimpleDateFormat("yyyy-MM-dd"),
+        //new SimpleDateFormat("yyyy/MM/dd"),
+        //new SimpleDateFormat("MM/dd/yyyy"),
+        //new SimpleDateFormat("MM-dd-yyyy"),
     };
   
     // TIME FORMATS
@@ -89,7 +92,7 @@ public class CSVFileReader extends TabularDataFileReader {
         init();
         
         if (stream == null) {
-            throw new IOException("Stream can't be null");
+            throw new IOException("Stream can't be null.");
         }
         TabularDataIngest ingesteddata = new TabularDataIngest();
         DataTable dataTable = new DataTable();
@@ -176,8 +179,9 @@ public class CSVFileReader extends TabularDataFileReader {
             for (CSVRecord record : parser.getRecords()) {
                 // Checks if #records = #columns in header
                 if (!record.isConsistent()) {
-                    throw new IOException("Reading mismatch, line " + (headers.size() + 1) + " of the Data file: "
-                            + headers.size() + " delimited values expected, " + record.size() + " found.");
+                    throw new IOException("Reading mismatch, line " + (parser.getCurrentLineNumber() + 1)
+                            + " of the Data file: " + headers.size() + 
+                            " delimited values expected, " + record.size() + " found.");
                 }
                 
                 for (int i = 0; i < headers.size(); i++) {
@@ -361,8 +365,9 @@ public class CSVFileReader extends TabularDataFileReader {
             finalOut.println(StringUtils.join(headers.keySet().toArray(new String[0]), "\t"));
             for (CSVRecord record : parser.getRecords()) {
                 if (!record.isConsistent()) {
-                    throw new IOException("Reading mismatch, line " + (headers.size() + 1) + " of the Data file: "
-                            + headers.size() + " delimited values expected, " + record.size() + " found.");
+                    throw new IOException("Reading mismatch, line " + (parser.getCurrentLineNumber() + 1)
+                            + " of the Data file: " + headers.size() + 
+                            " delimited values expected, " + record.size() + " found.");
                 }
                 
                 // TODO:
