@@ -37,6 +37,7 @@ import java.math.RoundingMode;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
 /**
@@ -54,6 +55,8 @@ public class CSVFileReader extends TabularDataFileReader {
     private static final int DIGITS_OF_PRECISION_DOUBLE = 15; 
     private static final String FORMAT_IEEE754 = "%+#." + DIGITS_OF_PRECISION_DOUBLE + "e";
     private MathContext doubleMathContext;
+    private CSVFormat inFormat = CSVFormat.EXCEL.withHeader();
+    private CSVFormat outFormat = CSVFormat.TDF;
     
     // DATE FORMATS
     private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
@@ -117,7 +120,7 @@ public class CSVFileReader extends TabularDataFileReader {
     public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter finalOut) throws IOException {
         
         List<DataVariable> variableList = new ArrayList<>();
-        CSVParser parser = new CSVParser(csvReader, CSVFormat.EXCEL.withHeader());
+        CSVParser parser = new CSVParser(csvReader, inFormat);
         dbglog.fine("Headers: " + parser.getHeaderMap());
         Map<String, Integer> headers = parser.getHeaderMap();
         for (String varName : headers.keySet()) {
@@ -172,9 +175,10 @@ public class CSVFileReader extends TabularDataFileReader {
         
         File firstPassTempFile = File.createTempFile("firstpass-", ".tab");
         
-        try (PrintWriter firstPassWriter = new PrintWriter(firstPassTempFile.getAbsolutePath())) {
+        try (FileWriter firstPassWriter = new FileWriter(firstPassTempFile.getAbsolutePath())) {
+            CSVPrinter csvFilePrinter = new CSVPrinter(firstPassWriter, outFormat);
             // Write the header line
-            firstPassWriter.println(StringUtils.join(headers.keySet().toArray(new String[0]), "\t"));
+            csvFilePrinter.printRecord(headers.keySet());
             for (CSVRecord record : parser.getRecords()) {
                 // Checks if #records = #columns in header
                 //dbglog.info(record.toString());
@@ -326,10 +330,10 @@ public class CSVFileReader extends TabularDataFileReader {
                     }
                 }
                 
-                firstPassWriter.println(StringUtils.join(record.iterator(), "\t"));
+                csvFilePrinter.printRecord(record);
             }
         }
-        dataTable.setCaseQuantity(parser.getRecordNumber());
+        dataTable.setCaseQuantity(parser.getCurrentLineNumber());
         parser.close();
         csvReader.close();
         
@@ -358,12 +362,12 @@ public class CSVFileReader extends TabularDataFileReader {
         
         // Second, final pass.            
         try (BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile))) {
-            dbglog.fine("Tmp File: "+firstPassTempFile);
-            parser = new CSVParser(secondPassReader, CSVFormat.TDF.withHeader());
+            dbglog.info("Tmp File: "+firstPassTempFile);
+            parser = new CSVParser(secondPassReader, outFormat.withHeader());
             String[] caseRow = new String[headers.size()];
             
             finalOut.println(StringUtils.join(headers.keySet().toArray(new String[0]), "\t"));
-            for (CSVRecord record : parser.getRecords()) {
+            for (CSVRecord record : parser) {
                 if (!record.isConsistent()) {
                     throw new IOException("Reading mismatch, line " + (parser.getCurrentLineNumber() + 1)
                             + " of the Data file: " + headers.size() + 
@@ -493,15 +497,15 @@ public class CSVFileReader extends TabularDataFileReader {
             }
         }
         finalOut.close();
-        int linecount = (int) parser.getCurrentLineNumber() - 1;
+        long linecount = parser.getCurrentLineNumber();
         parser.close();
         if (dataTable.getCaseQuantity().intValue() != linecount) {
             throw new IOException("Mismatch between line counts in first and final passes!, "
                     + dataTable.getCaseQuantity().intValue() + " found on first count, but "
                     + linecount + " found on second.");
         }
-        
-        return linecount;
+        new File(firstPassTempFile.getAbsolutePath()).delete();
+        return (int) linecount;
     }
 
 }
