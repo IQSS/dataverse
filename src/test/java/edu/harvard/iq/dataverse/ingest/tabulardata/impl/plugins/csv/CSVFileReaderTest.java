@@ -57,7 +57,7 @@ public class CSVFileReaderTest {
             } catch (IOException ex) {
                 fail();
             }
-            if(!expLine.equals(foundLine)) {
+            if (!expLine.equals(foundLine)) {
                 logger.info("expected: " + expLine);
                 logger.info("found : " + foundLine);
             }
@@ -67,8 +67,8 @@ public class CSVFileReaderTest {
     }
 
     /**
-     * Tests CSVFileReader with a CSV with one more column than header.
-     * Tests CSVFileReader with a null CSV.
+     * Tests CSVFileReader with a CSV with one more column than header. Tests
+     * CSVFileReader with a null CSV.
      */
     @Test
     public void testBrokenCSV() {

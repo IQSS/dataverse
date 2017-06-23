@@ -52,22 +52,21 @@ import org.apache.commons.csv.CSVRecord;
 public class CSVFileReader extends TabularDataFileReader {
 
     private static final Logger dbglog = Logger.getLogger(CSVFileReader.class.getPackage().getName());
-    private static final int DIGITS_OF_PRECISION_DOUBLE = 15; 
+    private static final int DIGITS_OF_PRECISION_DOUBLE = 15;
     private static final String FORMAT_IEEE754 = "%+#." + DIGITS_OF_PRECISION_DOUBLE + "e";
     private MathContext doubleMathContext;
     private CSVFormat inFormat = CSVFormat.EXCEL.withHeader();
     private CSVFormat outFormat = CSVFormat.TDF;
-    
+
     // DATE FORMATS
-    private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
-        new SimpleDateFormat("yyyy-MM-dd"),
-        //new SimpleDateFormat("yyyy/MM/dd"),
-        //new SimpleDateFormat("MM/dd/yyyy"),
-        //new SimpleDateFormat("MM-dd-yyyy"),
+    private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[]{
+        new SimpleDateFormat("yyyy-MM-dd"), //new SimpleDateFormat("yyyy/MM/dd"),
+    //new SimpleDateFormat("MM/dd/yyyy"),
+    //new SimpleDateFormat("MM-dd-yyyy"),
     };
-  
+
     // TIME FORMATS
-    private static SimpleDateFormat[] TIME_FORMATS = new SimpleDateFormat[] {
+    private static SimpleDateFormat[] TIME_FORMATS = new SimpleDateFormat[]{
         // Date-time up to seconds with timezone, e.g. 2013-04-08 13:14:23 -0500
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z"),
         // Date-time up to seconds and no timezone, e.g. 2013-04-08 13:14:23
@@ -81,7 +80,7 @@ public class CSVFileReader extends TabularDataFileReader {
     private void init() throws IOException {
         doubleMathContext = new MathContext(DIGITS_OF_PRECISION_DOUBLE, RoundingMode.HALF_EVEN);
     }
-    
+
     /**
      * Reads a CSV file, converts it into a dataverse DataTable.
      *
@@ -92,7 +91,7 @@ public class CSVFileReader extends TabularDataFileReader {
     @Override
     public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
         init();
-        
+
         if (stream == null) {
             throw new IOException("Stream can't be null.");
         }
@@ -100,17 +99,17 @@ public class CSVFileReader extends TabularDataFileReader {
         DataTable dataTable = new DataTable();
 
         BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(stream));
-        
+
         File tabFileDestination = File.createTempFile("data-", ".tab");
         PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath());
 
-        int lineCount = readFile(localBufferedReader, dataTable, tabFileWriter);        
-        
-        dbglog.fine("CSV ingest: found "+lineCount+" data cases/observations.");
-        dbglog.fine("Tab file produced: "+tabFileDestination.getAbsolutePath());
-        
+        int lineCount = readFile(localBufferedReader, dataTable, tabFileWriter);
+
+        dbglog.fine("CSV ingest: found " + lineCount + " data cases/observations.");
+        dbglog.fine("Tab file produced: " + tabFileDestination.getAbsolutePath());
+
         dataTable.setUnf("UNF:6:NOTCALCULATED");
-        
+
         ingesteddata.setTabDelimitedFile(tabFileDestination);
         ingesteddata.setDataTable(dataTable);
         return ingesteddata;
@@ -118,20 +117,20 @@ public class CSVFileReader extends TabularDataFileReader {
     }
 
     public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter finalOut) throws IOException {
-        
+
         List<DataVariable> variableList = new ArrayList<>();
         CSVParser parser = new CSVParser(csvReader, inFormat);
         dbglog.fine("Headers: " + parser.getHeaderMap());
         Map<String, Integer> headers = parser.getHeaderMap();
         for (String varName : headers.keySet()) {
-            
+
             if (varName == null || varName.isEmpty()) {
                 // TODO: 
                 // Add a sensible variable name validation algorithm.
                 // -- L.A. 4.0 alpha 1
-                throw new IOException ("Invalid variable names in the first line! - First line of a CSV file must contain a comma-separated list of the names of the variables.");
+                throw new IOException("Invalid variable names in the first line! - First line of a CSV file must contain a comma-separated list of the names of the variables.");
             }
-            
+
             DataVariable dv = new DataVariable();
             dv.setName(varName);
             dv.setLabel(varName);
@@ -146,10 +145,10 @@ public class CSVFileReader extends TabularDataFileReader {
             dv.setFileOrder(headers.get(varName));
             dv.setDataTable(dataTable);
         }
-        
+
         dataTable.setVarQuantity(new Long(variableList.size()));
         dataTable.setDataVariables(variableList);
-        
+
         boolean[] isNumericVariable = new boolean[headers.size()];
         boolean[] isIntegerVariable = new boolean[headers.size()];
         boolean[] isTimeVariable = new boolean[headers.size()];
@@ -160,51 +159,48 @@ public class CSVFileReader extends TabularDataFileReader {
             // but we'll go through the file and examine every value; the 
             // moment we find a value that's not a legit numeric one, we'll 
             // assume that it is in fact a String. 
-            isNumericVariable[i] = true; 
+            isNumericVariable[i] = true;
             isIntegerVariable[i] = true;
-            isDateVariable[i] = true; 
-            isTimeVariable[i] = true; 
+            isDateVariable[i] = true;
+            isTimeVariable[i] = true;
         }
 
         // First, "learning" pass.
         // (we'll save the incoming stream in another temp file:)
-        
-        SimpleDateFormat[] selectedDateTimeFormat = new SimpleDateFormat[headers.size()]; 
+        SimpleDateFormat[] selectedDateTimeFormat = new SimpleDateFormat[headers.size()];
         SimpleDateFormat[] selectedDateFormat = new SimpleDateFormat[headers.size()];
 
-        
         File firstPassTempFile = File.createTempFile("firstpass-", ".tab");
-        
-        try (FileWriter firstPassWriter = new FileWriter(firstPassTempFile.getAbsolutePath())) {
-            CSVPrinter csvFilePrinter = new CSVPrinter(firstPassWriter, outFormat);
+
+        try (CSVPrinter csvFilePrinter = new CSVPrinter(
+                new FileWriter(firstPassTempFile.getAbsolutePath()), outFormat)) {
             // Write the header line
             csvFilePrinter.printRecord(headers.keySet());
             for (CSVRecord record : parser.getRecords()) {
                 // Checks if #records = #columns in header
-                //dbglog.info(record.toString());
                 if (!record.isConsistent()) {
                     throw new IOException("Reading mismatch, line " + (parser.getCurrentLineNumber() + 1)
-                            + " of the Data file: " + headers.size() + 
-                            " delimited values expected, " + record.size() + " found.");
+                            + " of the Data file: " + headers.size()
+                            + " delimited values expected, " + record.size() + " found.");
                 }
-                
+
                 for (int i = 0; i < headers.size(); i++) {
-                    String varString =  record.get(i);
+                    String varString = record.get(i);
                     if (isNumericVariable[i]) {
                         // If we haven't given up on the "numeric" status of this
                         // variable, let's perform some tests on it, and see if
                         // this value is still a parsable number:
                         if (varString != null && (!varString.isEmpty())) {
-                            
+
                             boolean isNumeric = false;
                             boolean isInteger = false;
-                            
+
                             if (varString.equalsIgnoreCase("NaN")
-                             || varString.equalsIgnoreCase("NA")
-                             || varString.equalsIgnoreCase("Inf")
-                             || varString.equalsIgnoreCase("+Inf")
-                             || varString.equalsIgnoreCase("-Inf")
-                             || varString.equalsIgnoreCase("null")) {
+                                    || varString.equalsIgnoreCase("NA")
+                                    || varString.equalsIgnoreCase("Inf")
+                                    || varString.equalsIgnoreCase("+Inf")
+                                    || varString.equalsIgnoreCase("-Inf")
+                                    || varString.equalsIgnoreCase("null")) {
                                 isNumeric = true;
                             } else {
                                 try {
@@ -215,42 +211,34 @@ public class CSVFileReader extends TabularDataFileReader {
                                     // so we'll have to assume it's just a string variable.
                                 }
                             }
-                            
+
                             if (!isNumeric) {
                                 isNumericVariable[i] = false;
-                            // The isNumeric check screens to prevent catching errors which is slow
-                            } else if (isIntegerVariable[i] && StringUtils.isNumeric(varString)) {
-                                try {
-                                    Integer testIntegerValue = new Integer(varString);
-                                    isInteger = true;
-                                } catch (NumberFormatException ex) {
-                                    // the token failed to parse as an integer number;
-                                    // we'll assume it's a non-integere numeric...
-                                }
-                                if (!isInteger) {
-                                    isIntegerVariable[i] = false;
-                                }
+                            } else {
+                                isInteger = isIntegerVariable[i] && StringUtils.isNumeric(varString);
+                            }
+                            if (!isInteger) {
+                                isIntegerVariable[i] = false;
                             }
                         }
                     }
-                    
+
                     // And if we have concluded that this is not a numeric column,
                     // let's see if we can parse the string token as a date or
                     // a date-time value:
-                    
                     if (!isNumericVariable[i]) {
-                        
+
                         Date dateResult = null;
-                        
+
                         if (isTimeVariable[i]) {
                             if (varString != null && (!record.get(i).isEmpty())) {
                                 boolean isTime = false;
-                                
+
                                 if (selectedDateTimeFormat[i] != null) {
                                     dbglog.fine("will try selected format " + selectedDateTimeFormat[i].toPattern());
                                     ParsePosition pos = new ParsePosition(0);
                                     dateResult = selectedDateTimeFormat[i].parse(varString, pos);
-                                    
+
                                     if (dateResult == null) {
                                         dbglog.fine(selectedDateTimeFormat[i].toPattern() + ": null result.");
                                     } else if (pos.getIndex() != varString.length()) {
@@ -293,11 +281,11 @@ public class CSVFileReader extends TabularDataFileReader {
                                 }
                             }
                         }
-                        
+
                         if (isDateVariable[i]) {
                             if (varString != null && (!varString.isEmpty())) {
                                 boolean isDate = false;
-                                
+
                                 // TODO:
                                 // Strictly speaking, we should be doing the same thing
                                 // here as with the time formats above; select the
@@ -305,7 +293,6 @@ public class CSVFileReader extends TabularDataFileReader {
                                 // other values in this column match it... but we
                                 // only have one, as of now, so it should be ok.
                                 // -- L.A. 4.0 beta
-                                
                                 for (SimpleDateFormat format : DATE_FORMATS) {
                                     // Strict parsing - it will throw an
                                     // exception if it doesn't parse!
@@ -329,16 +316,15 @@ public class CSVFileReader extends TabularDataFileReader {
                         }
                     }
                 }
-                
+
                 csvFilePrinter.printRecord(record);
             }
         }
         dataTable.setCaseQuantity(parser.getCurrentLineNumber());
         parser.close();
         csvReader.close();
-        
+
         // Re-type the variables that we've determined are numerics:
-        
         for (int i = 0; i < headers.size(); i++) {
             if (isNumericVariable[i]) {
                 dataTable.getDataVariables().get(i).setTypeNumeric();
@@ -359,30 +345,29 @@ public class CSVFileReader extends TabularDataFileReader {
                 dataTable.getDataVariables().get(i).setFormatCategory("time");
             }
         }
-        
+
         // Second, final pass.            
         try (BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile))) {
-            dbglog.info("Tmp File: "+firstPassTempFile);
+            dbglog.info("Tmp File: " + firstPassTempFile);
             parser = new CSVParser(secondPassReader, outFormat.withHeader());
             String[] caseRow = new String[headers.size()];
-            
+
             finalOut.println(StringUtils.join(headers.keySet().toArray(new String[0]), "\t"));
             for (CSVRecord record : parser) {
                 if (!record.isConsistent()) {
                     throw new IOException("Reading mismatch, line " + (parser.getCurrentLineNumber() + 1)
-                            + " of the Data file: " + headers.size() + 
-                            " delimited values expected, " + record.size() + " found.");
+                            + " of the Data file: " + headers.size()
+                            + " delimited values expected, " + record.size() + " found.");
                 }
-                
+
                 // TODO:
                 // isolate CSV parsing into its own method/class, to avoid
                 // code duplication in the 2 passes, above;
                 // do not save the result of the 1st pass - simply reopen the
                 // original file (?).
                 // -- L.A. 4.0.2/4.1
-                
                 for (int i = 0; i < headers.size(); i++) {
-                    String varString =  record.get(i);
+                    String varString = record.get(i);
                     if (isNumericVariable[i]) {
                         if (varString == null || varString.isEmpty() || varString.equalsIgnoreCase("NA")) {
                             // Missing value - represented as an empty string in
@@ -408,51 +393,51 @@ public class CSVFileReader extends TabularDataFileReader {
                             }
                         } else {
                             /* No re-formatting is done on any other numeric values.
-                            * We'll save them as they were, for archival purposes.
-                            * The alternative solution - formatting in sci. notation
-                            * is commented-out below.
-                            */
+                             * We'll save them as they were, for archival purposes.
+                             * The alternative solution - formatting in sci. notation
+                             * is commented-out below.
+                             */
                             caseRow[i] = varString;
                             /*
-                            if (isIntegerVariable[i]) {
-                                try {
-                                    Integer testIntegerValue = new Integer(valueTokens[i]);
-                                    caseRow[i] = testIntegerValue.toString();
-                                } catch (NumberFormatException ex) {
-                                    throw new IOException ("Failed to parse a value recognized as an integer in the first pass! (?)");
-                                }
-                            } else {
-                                try {
-                                    Double testDoubleValue = new Double(valueTokens[i]);
-                                    if (testDoubleValue.equals(0.0)) {
-                                        caseRow[i] = "0.0";
-                                    } else {
-                                    // One possible implementation:
-                                    //
-                                    // Round our fractional values to 15 digits
-                                    // (minimum number of digits of precision guaranteed by
-                                    // type Double) and format the resulting representations
-                                    // in a IEEE 754-like "scientific notation" - for ex.,
-                                    // 753.24 will be encoded as 7.5324e2
-                                    BigDecimal testBigDecimal = new BigDecimal(valueTokens[i], doubleMathContext);
-                                    // an experiment - what's gonna happen if we just
-                                    // use the string representation of the bigdecimal object
-                                    // above?
-                                    //caseRow[i] = testBigDecimal.toString();
-                                    =
-                                    caseRow[i] = String.format(FORMAT_IEEE754, testBigDecimal);
+                             if (isIntegerVariable[i]) {
+                             try {
+                             Integer testIntegerValue = new Integer(valueTokens[i]);
+                             caseRow[i] = testIntegerValue.toString();
+                             } catch (NumberFormatException ex) {
+                             throw new IOException ("Failed to parse a value recognized as an integer in the first pass! (?)");
+                             }
+                             } else {
+                             try {
+                             Double testDoubleValue = new Double(valueTokens[i]);
+                             if (testDoubleValue.equals(0.0)) {
+                             caseRow[i] = "0.0";
+                             } else {
+                             // One possible implementation:
+                             //
+                             // Round our fractional values to 15 digits
+                             // (minimum number of digits of precision guaranteed by
+                             // type Double) and format the resulting representations
+                             // in a IEEE 754-like "scientific notation" - for ex.,
+                             // 753.24 will be encoded as 7.5324e2
+                             BigDecimal testBigDecimal = new BigDecimal(valueTokens[i], doubleMathContext);
+                             // an experiment - what's gonna happen if we just
+                             // use the string representation of the bigdecimal object
+                             // above?
+                             //caseRow[i] = testBigDecimal.toString();
+                             =
+                             caseRow[i] = String.format(FORMAT_IEEE754, testBigDecimal);
 
-                                    // Strip meaningless zeros and extra + signs:
-                                    caseRow[i] = caseRow[i].replaceFirst("00*e", "e");
-                                    caseRow[i] = caseRow[i].replaceFirst("\\.e", ".0e");
-                                    caseRow[i] = caseRow[i].replaceFirst("e\\+00", "");
-                                    caseRow[i] = caseRow[i].replaceFirst("^\\+", "");
-                                    }
-                                } catch (NumberFormatException ex) {
-                                    throw new IOException("Failed to parse a value recognized as numeric in the first pass! (?)");
-                                } 
-                            }
-                            */
+                             // Strip meaningless zeros and extra + signs:
+                             caseRow[i] = caseRow[i].replaceFirst("00*e", "e");
+                             caseRow[i] = caseRow[i].replaceFirst("\\.e", ".0e");
+                             caseRow[i] = caseRow[i].replaceFirst("e\\+00", "");
+                             caseRow[i] = caseRow[i].replaceFirst("^\\+", "");
+                             }
+                             } catch (NumberFormatException ex) {
+                             throw new IOException("Failed to parse a value recognized as numeric in the first pass! (?)");
+                             } 
+                             }
+                             */
                         }
                     } else if (isTimeVariable[i] || isDateVariable[i]) {
                         // Time and Dates are stored NOT quoted (don't ask).
@@ -492,7 +477,7 @@ public class CSVFileReader extends TabularDataFileReader {
                         }
                     }
                 }
-                dbglog.fine("CaseRow: "+ Arrays.toString(caseRow));
+                dbglog.fine("CaseRow: " + Arrays.toString(caseRow));
                 finalOut.println(StringUtils.join(caseRow, "\t"));
             }
         }
