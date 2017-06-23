@@ -351,7 +351,7 @@ public class Admin extends AbstractApiBean {
         
         UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, null);
 
-        return ok(userListResult.asJSON());
+        return ok(userListResult.toJSON());
     }
     
     
