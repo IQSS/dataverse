@@ -319,15 +319,10 @@ public class Admin extends AbstractApiBean {
                         @QueryParam("sortKey") String sortKey
     ) { 
         
-        boolean DEBUG_MODE = false; // DANGER HERE!  Make sure it's false!
-                
-        if (DEBUG_MODE==true){      // DEBUG: use userIdentifier
-            
-            // DEBUG MODE, pass on by to the actual logic
-           
-        } else if ((session.getUser() != null)&&(session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())){            
+        if ((session.getUser() != null)&&(session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())){            
 
-            // Looks good, we have an authenticated superuser
+            // Allow in browser use of API url by an authenticated superuser
+            // Helpful for testing or is API call was used via AJAX request
        
         }else{
              
@@ -344,7 +339,7 @@ public class Admin extends AbstractApiBean {
                 return error(Response.Status.FORBIDDEN, 
                         ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
             }
-            //
+            
         }
         
         UserListMaker userListMaker = new UserListMaker(userService);      
