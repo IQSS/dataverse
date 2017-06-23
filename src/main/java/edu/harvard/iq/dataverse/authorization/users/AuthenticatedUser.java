@@ -83,15 +83,15 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Column(nullable = true)
     private Timestamp emailConfirmed;
-       
+    //TODO: add the word time after next 3 columns   
     @Column(nullable=false)
-    private Timestamp created;
+    private Timestamp createdTime;
     
     @Column(nullable=true)
-    private Timestamp lastLogin;    // last user login timestamp
+    private Timestamp lastLoginTime;    // last user login timestamp
 
     @Column(nullable=true)
-    private Timestamp lastApiUse;   // last API use with user's token
+    private Timestamp lastApiUseTime;   // last API use with user's token
             
     private boolean superuser;
 
@@ -278,59 +278,45 @@ public class AuthenticatedUser implements User, Serializable {
     
     /**
      * 
-     * @param lastLogin 
+     * @param lastLoginTime 
      */
-    public void setLastLogin(Timestamp lastLogin){
+    public void setLastLoginTime(Timestamp lastLoginTime){
         
-        this.lastLogin = lastLogin;
+        this.lastLoginTime = lastLoginTime;
+    }
+    
+    /**
+     * @param lastLoginTime
+     */
+    public Timestamp getLastLoginTime(){
+        return this.lastLoginTime;
+    }
+    
+    
+    public void setCreatedTime(Timestamp createdTime){
+        this.createdTime = createdTime;
+    }
+    
+    public Timestamp getCreatedTime(){
+        return this.createdTime;
+    }
+
+    
+    /**
+     * 
+     * @param lastApiUseTime 
+     */
+    public void setLastApiUseTime(Timestamp lastApiUseTime){        
+        this.lastApiUseTime = lastApiUseTime;
     }
     
     /**
      * 
+     * @param lastApiUseTime
      */
-    public Timestamp getLastLogin(){
+    public Timestamp getLastApiUseTime(){
         
-        return this.lastLogin;
-    }
-    
-    
-    public void setCreated(Timestamp created){
-        this.created = created;
-    }
-    
-    public Timestamp getCreated(){
-        return this.created;
-    }
-
-    
-    /**
-     * 
-     * @param lastApiUse 
-     */
-    public void setLastApiUse(Timestamp lastApiUse){
-        
-        this.lastApiUse = lastApiUse;
-    }
-    
-    /**
-     * 
-     * @return 
-     */
-    public Timestamp getLastApiUse(){
-        
-        return this.lastApiUse;
-    }
-
-    public void setLastLoginToCurrentTime(){
-        this.setLastLogin(new Timestamp(new Date().getTime()));
-    }
-
-    public void setCreatedToCurrentTime(){
-        this.setCreated(new Timestamp(new Date().getTime()));
-    }
-
-    public void setLastApiUseToCurrentTime(){
-        this.setLastApiUse(new Timestamp(new Date().getTime()));
+        return this.lastApiUseTime;
     }
 
 }

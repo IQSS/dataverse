@@ -26,7 +26,7 @@ public class AuthenticatedUserTest {
     }
 
     public static AuthenticatedUser testUser = MocksFactory.makeAuthenticatedUser("Homer", "Simpson");
-    public static Timestamp expResult = testUser.getCreated();
+    public static Timestamp expResult = testUser.getCreatedTime();
     public static Timestamp loginTime = Timestamp.valueOf("2000-01-01 00:00:00.0");
     public static final String IDENTIFIER_PREFIX = "@";
 
@@ -222,72 +222,72 @@ public class AuthenticatedUserTest {
     }
 
     @Test
-    public void testSetLastLogin() {
+    public void testSetLastLoginTime() {
         System.out.println("setLastLogin");
-        testUser.setLastLogin(loginTime);
-        Timestamp lastLogin = testUser.getLastLogin();
+        testUser.setLastLoginTime(loginTime);
+        Timestamp lastLogin = testUser.getLastLoginTime();
         assertEquals(loginTime, lastLogin);
     }
 
     @Test
-    public void testGetLastLogin() {
-        System.out.println("getLastLogin");
-        Timestamp expResult = testUser.getLastLogin();
-        assertEquals(expResult, testUser.getLastLogin());
+    public void testGetLastLoginTime() {
+        System.out.println("getLastLoginTime");
+        Timestamp expResult = testUser.getLastLoginTime();
+        assertEquals(expResult, testUser.getLastLoginTime());
+    }
+
+//    @Test
+//    public void testSetLastLoginTimeToCurrentTime() {
+//        System.out.println("setLastLoginTimeToCurrentTime");
+//        testUser.setLastLoginTimeToCurrentTime();
+//        Timestamp expResult = testUser.getLastLoginTime();
+//        assertEquals(expResult, testUser.getLastLoginTime());
+//    }
+
+//    @Test
+//    public void testSetCreatedToCurrentTime() {
+//        System.out.println("setCreatedToCurrentTime");
+//        testUser.setCreatedTimeToCurrentTime();
+//        Timestamp expResult = testUser.getCreatedTime();
+//        assertEquals(expResult, testUser.getCreatedTime());
+//    }
+
+    @Test
+    public void testGetCreatedTime() {
+        System.out.println("getCreatedTime");
+        Timestamp result = testUser.getCreatedTime();
+        assertEquals(testUser.getCreatedTime(), result);
     }
 
     @Test
-    public void testSetLastLoginToCurrentTime() {
-        System.out.println("setLastLoginToCurrentTime");
-        testUser.setLastLoginToCurrentTime();
-        Timestamp expResult = testUser.getLastLogin();
-        assertEquals(expResult, testUser.getLastLogin());
+    public void testSetCreatedTime() {
+        System.out.println("setCreatedTime");
+        Timestamp createdTime = new Timestamp(new Date().getTime());
+        testUser.setCreatedTime(createdTime);
+        assertEquals(testUser.getCreatedTime(), createdTime);
     }
 
     @Test
-    public void testSetCreatedToCurrentTime() {
-        System.out.println("setCreatedToCurrentTime");
-        testUser.setCreatedToCurrentTime();
-        Timestamp expResult = testUser.getCreated();
-        assertEquals(expResult, testUser.getCreated());
+    public void testGetLastApiUseTime() {
+        System.out.println("getLastApiUseTime");
+        Timestamp result = testUser.getLastApiUseTime();
+        assertEquals(testUser.getLastApiUseTime(), result);
     }
 
     @Test
-    public void testGetCreated() {
-        System.out.println("getCreated");
-        Timestamp result = testUser.getCreated();
-        assertEquals(testUser.getCreated(), result);
-    }
-
-    @Test
-    public void testSetCreated() {
-        System.out.println("setCreated");
-        Timestamp created = new Timestamp(new Date().getTime());
-        testUser.setCreated(created);
-        assertEquals(testUser.getCreated(), created);
-    }
-
-    @Test
-    public void testGetLastApiUse() {
-        System.out.println("getLastApiUse");
-        Timestamp result = testUser.getLastApiUse();
-        assertEquals(testUser.getLastApiUse(), result);
-    }
-
-    @Test
-    public void testSetLastApiUse() {
-        System.out.println("setLastApiUse");
-        Timestamp lastApiUse = new Timestamp(new Date().getTime());
-        testUser.setLastApiUse(lastApiUse);
-        assertEquals(testUser.getLastApiUse(), lastApiUse);
+    public void testSetLastApiUseTime() {
+        System.out.println("setLastApiUseTime");
+        Timestamp lastApiUseTime = new Timestamp(new Date().getTime());
+        testUser.setLastApiUseTime(lastApiUseTime);
+        assertEquals(testUser.getLastApiUseTime(), lastApiUseTime);
     }
 
     @Test
     public void testSetLastApiUseToCurrentTime() {
         System.out.println("setLastApiUseToCurrentTime");
-        testUser.setLastApiUseToCurrentTime();
-        Timestamp expResult = testUser.getLastApiUse();
-        assertEquals(expResult, testUser.getLastApiUse());
+        testUser.setLastApiUseTime(new Timestamp(new Date().getTime()));
+        Timestamp expResult = testUser.getLastApiUseTime();
+        assertEquals(expResult, testUser.getLastApiUseTime());
     }
     /**
      * All commented tests below have only been generated / are not complete for
