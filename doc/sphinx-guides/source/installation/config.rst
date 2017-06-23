@@ -116,6 +116,8 @@ Customizing the Root Dataverse
 
 As the person installing Dataverse you may or may not be a local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root dataverse to configure metadata fields, templates, browse/search facets, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
 
+You are also welcome to adjust the theme of the root dataverse by adding a logo or changing header colors, etc.
+
 Once this configuration is complete, your Dataverse installation should be ready for users to start playing with. That said, there are many more configuration options available, which will be explained below.
 
 Persistent Identifiers and Publishing Datasets
@@ -219,6 +221,70 @@ Second, update the JVM option ``dataverse.files.storage-driver-id`` by running t
 Then run the create command:
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
+
+.. _Branding Your Installation:
+
+Branding Your Installation
+--------------------------
+
+The name of your root dataverse is the brand of your installation of Dataverse and appears in various places such as notifications. Notifications and support links also contain the name of your support team, which will either be "[YourBrand] Support" or a name of your choosing when you configure a name for the ``:SystemEmail`` database setting described below. 
+
+Dataverse provides configurable options for easy-to-add (and maintain) custom branding for your Dataverse installation. Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
+
+You can add a custom welcome/homepage as well as other custom content, to further brand your installation and make it your own. Here are the custom branding and content options you can add:
+
+- Custom welcome/homepage
+- Logo image to navbar
+- Header
+- Footer
+- CSS stylesheet
+
+Custom Homepage
+++++++++++++++++
+
+Dataverse allows you to use a custom homepage or welcome page in place of the default root dataverse page. This allows for complete control over the look and feel of your installation's homepage.
+
+Download this sample: :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``. Then run this curl command:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+
+Note that the ``custom-homepage.html`` file provided has a "Browse Data" button that assumes that your root dataverse still has an alias of "root". While you were branding your root dataverse, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the ``custom-homepage.html`` file as needed.
+
+For more background on what this curl command above is doing, see the "Database Settings" section below. If you decide you'd like to remove this setting, use the following curl command:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+
+Custom Navbar Logo
++++++++++++++++++++
+
+Dataverse allows you to replace the default Dataverse icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
+
+Create a "navbar" folder in your Glassfish "logos" directory and place your custom logo there. By Glassfish default, it'll be located at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png``. Then run this curl command:
+
+``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
+
+Note that the logo is expected to be small enough to fit comfortably in the navbar, perhaps only 30 pixels high.
+
+Custom Header
++++++++++++++
+
+Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``. Then run this curl command:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
+
+Custom Footer
++++++++++++++
+
+Download this sample: :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``. Then run this curl command:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
+
+Custom CSS Stylesheet
++++++++++++++++++++++
+
+Download this sample: :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``. Then run this curl command:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
@@ -392,9 +458,11 @@ This JVM setting is also part of **handles** configuration. The Handle.Net insta
 Database Settings
 -----------------
 
-These settings are stored in the ``setting`` table but can be read and modified via the "admin" endpoint of the :doc:`/api/native-api` for easy scripting.
+These settings are stored in the ``setting`` database table but can be read and modified via the "admin" endpoint of the :doc:`/api/native-api` for easy scripting.
 
 The most commonly used configuration options are listed first.
+
+The pattern you will observe in curl examples below is that an HTTP ``PUT`` is used to add or modify a setting. If you perform an HTTP ``GET`` (the default when using curl), the output will contain the value of the setting, if it has been set. You can also do a ``GET`` of all settings with ``curl http://localhost:8080/api/admin/settings`` which you may want to pretty-print by piping the output through a tool such as jq by appending ``| jq .``. If you want to remove a setting, use an HTTP ``DELETE`` such as ``curl -X DELETE http://localhost:8080/api/admin/settings/:GuidesBaseUrl`` .
 
 :BlockedApiPolicy
 +++++++++++++++++
@@ -433,9 +501,31 @@ The key required to create users via API as documented at :doc:`/api/native-api`
 :SystemEmail
 ++++++++++++
 
-This is the email address that "system" emails are sent from such as password reset links.
+This is the email address that "system" emails are sent from such as password reset links. Your Dataverse installation will not send mail without this setting in place.
 
-``curl -X PUT -d "Support <support@example.edu>" http://localhost:8080/api/admin/settings/:SystemEmail``
+``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
+
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
+
+:HomePageCustomizationFile
+++++++++++++++++++++++++++
+
+See :ref:`Branding Your Installation` above.
+
+:HeaderCustomizationFile
+++++++++++++++++++++++++
+
+See :ref:`Branding Your Installation` above.
+
+:FooterCustomizationFile
+++++++++++++++++++++++++
+
+See :ref:`Branding Your Installation` above.
+
+:StyleCustomizationFile
++++++++++++++++++++++++
+
+See :ref:`Branding Your Installation` above.
 
 :FooterCopyright
 ++++++++++++++++

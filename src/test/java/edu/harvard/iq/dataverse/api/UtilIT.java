@@ -121,6 +121,10 @@ public class UtilIT {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
+    public static String getRandomDvAlias() {
+        return "dv" + getRandomIdentifier();
+    }
+
     static String getUsernameFromResponse(Response createUserResponse) {
         JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
         String username = createdUser.getString("data.user." + USERNAME_KEY);
