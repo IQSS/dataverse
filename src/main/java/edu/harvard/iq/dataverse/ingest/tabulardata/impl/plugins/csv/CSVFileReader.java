@@ -117,8 +117,8 @@ public class CSVFileReader extends TabularDataFileReader {
     public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter finalOut) throws IOException {
         
         List<DataVariable> variableList = new ArrayList<>();
-        CSVParser parser = new CSVParser(csvReader, CSVFormat.DEFAULT.withHeader().withQuote('"'));
-        dbglog.info("Headers: " + parser.getHeaderMap());
+        CSVParser parser = new CSVParser(csvReader, CSVFormat.EXCEL.withHeader());
+        dbglog.fine("Headers: " + parser.getHeaderMap());
         Map<String, Integer> headers = parser.getHeaderMap();
         for (String varName : headers.keySet()) {
             
@@ -177,7 +177,7 @@ public class CSVFileReader extends TabularDataFileReader {
             firstPassWriter.println(StringUtils.join(headers.keySet().toArray(new String[0]), "\t"));
             for (CSVRecord record : parser.getRecords()) {
                 // Checks if #records = #columns in header
-                dbglog.info(record.toString());
+                //dbglog.info(record.toString());
                 if (!record.isConsistent()) {
                     throw new IOException("Reading mismatch, line " + (parser.getCurrentLineNumber() + 1)
                             + " of the Data file: " + headers.size() + 
@@ -378,22 +378,23 @@ public class CSVFileReader extends TabularDataFileReader {
                 // -- L.A. 4.0.2/4.1
                 
                 for (int i = 0; i < headers.size(); i++) {
+                    String varString =  record.get(i);
                     if (isNumericVariable[i]) {
-                        if (record.get(i) == null || record.get(i).isEmpty() || record.get(i).equalsIgnoreCase("NA")) {
+                        if (varString == null || varString.isEmpty() || varString.equalsIgnoreCase("NA")) {
                             // Missing value - represented as an empty string in
                             // the final tab file
                             caseRow[i] = "";
-                        } else if (record.get(i).equalsIgnoreCase("NaN")) {
+                        } else if (varString.equalsIgnoreCase("NaN")) {
                             // "Not a Number" special value:
                             caseRow[i] = "NaN";
-                        } else if (record.get(i).equalsIgnoreCase("Inf")
-                                || record.get(i).equalsIgnoreCase("+Inf")) {
+                        } else if (varString.equalsIgnoreCase("Inf")
+                                || varString.equalsIgnoreCase("+Inf")) {
                             // Positive infinity:
                             caseRow[i] = "Inf";
-                        } else if (record.get(i).equalsIgnoreCase("-Inf")) {
+                        } else if (varString.equalsIgnoreCase("-Inf")) {
                             // Negative infinity:
                             caseRow[i] = "-Inf";
-                        } else if (record.get(i).equalsIgnoreCase("null")) {
+                        } else if (varString.equalsIgnoreCase("null")) {
                             // By request from Gus - "NULL" is recognized as a
                             // numeric zero:
                             if (isIntegerVariable[i]) {
@@ -407,53 +408,52 @@ public class CSVFileReader extends TabularDataFileReader {
                             * The alternative solution - formatting in sci. notation
                             * is commented-out below.
                             */
-                            caseRow[i] = record.get(i);
+                            caseRow[i] = varString;
                             /*
                             if (isIntegerVariable[i]) {
-                            try {
-                            Integer testIntegerValue = new Integer(valueTokens[i]);
-                            caseRow[i] = testIntegerValue.toString();
-                            } catch (NumberFormatException ex) {
-                            throw new IOException ("Failed to parse a value recognized as an integer in the first pass! (?)");
-                            }
+                                try {
+                                    Integer testIntegerValue = new Integer(valueTokens[i]);
+                                    caseRow[i] = testIntegerValue.toString();
+                                } catch (NumberFormatException ex) {
+                                    throw new IOException ("Failed to parse a value recognized as an integer in the first pass! (?)");
+                                }
                             } else {
-                            try {
-                            Double testDoubleValue = new Double(valueTokens[i]);
-                            if (testDoubleValue.equals(0.0)) {
-                            caseRow[i] = "0.0";
-                            } else {
-                            // One possible implementation:
-                            //
-                            // Round our fractional values to 15 digits
-                            // (minimum number of digits of precision guaranteed by
-                            // type Double) and format the resulting representations
-                            // in a IEEE 754-like "scientific notation" - for ex.,
-                            // 753.24 will be encoded as 7.5324e2
-                            BigDecimal testBigDecimal = new BigDecimal(valueTokens[i], doubleMathContext);
-                            // an experiment - what's gonna happen if we just
-                            // use the string representation of the bigdecimal object
-                            // above?
-                            //caseRow[i] = testBigDecimal.toString();
-                            =
-                            caseRow[i] = String.format(FORMAT_IEEE754, testBigDecimal);
-                            
-                            // Strip meaningless zeros and extra + signs:
-                            caseRow[i] = caseRow[i].replaceFirst("00*e", "e");
-                            caseRow[i] = caseRow[i].replaceFirst("\\.e", ".0e");
-                            caseRow[i] = caseRow[i].replaceFirst("e\\+00", "");
-                            caseRow[i] = caseRow[i].replaceFirst("^\\+", "");
-                            }
-                            
-                            } catch (NumberFormatException ex) {
-                            throw new IOException("Failed to parse a value recognized as numeric in the first pass! (?)");
-                            } 
+                                try {
+                                    Double testDoubleValue = new Double(valueTokens[i]);
+                                    if (testDoubleValue.equals(0.0)) {
+                                        caseRow[i] = "0.0";
+                                    } else {
+                                    // One possible implementation:
+                                    //
+                                    // Round our fractional values to 15 digits
+                                    // (minimum number of digits of precision guaranteed by
+                                    // type Double) and format the resulting representations
+                                    // in a IEEE 754-like "scientific notation" - for ex.,
+                                    // 753.24 will be encoded as 7.5324e2
+                                    BigDecimal testBigDecimal = new BigDecimal(valueTokens[i], doubleMathContext);
+                                    // an experiment - what's gonna happen if we just
+                                    // use the string representation of the bigdecimal object
+                                    // above?
+                                    //caseRow[i] = testBigDecimal.toString();
+                                    =
+                                    caseRow[i] = String.format(FORMAT_IEEE754, testBigDecimal);
+
+                                    // Strip meaningless zeros and extra + signs:
+                                    caseRow[i] = caseRow[i].replaceFirst("00*e", "e");
+                                    caseRow[i] = caseRow[i].replaceFirst("\\.e", ".0e");
+                                    caseRow[i] = caseRow[i].replaceFirst("e\\+00", "");
+                                    caseRow[i] = caseRow[i].replaceFirst("^\\+", "");
+                                    }
+                                } catch (NumberFormatException ex) {
+                                    throw new IOException("Failed to parse a value recognized as numeric in the first pass! (?)");
+                                } 
                             }
                             */
                         }
                     } else if (isTimeVariable[i] || isDateVariable[i]) {
                         // Time and Dates are stored NOT quoted (don't ask).
-                        if (record.get(i) != null) {
-                            String charToken = record.get(i);
+                        if (varString != null) {
+                            String charToken = varString;
                             // Dealing with quotes:
                             // remove the leading and trailing quotes, if present:
                             charToken = charToken.replaceFirst("^\"*", "");
@@ -473,7 +473,7 @@ public class CSVFileReader extends TabularDataFileReader {
                         // to assume that all the empty strings in the file are
                         // indeed empty strings, and NOT missing values:
                         if (record.get(i) != null) {
-                            String charToken = record.get(i);
+                            String charToken = varString;
                             // Dealing with quotes:
                             // remove the leading and trailing quotes, if present:
                             charToken = charToken.replaceFirst("^\"", "");

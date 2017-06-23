@@ -38,7 +38,7 @@ public class CSVFileReaderTest {
             "0	\"cjlajfo.\"	2017-06-20	\"3000/06/20\"	-Inf	3	\"inf\"	\"\\casdf\"",
             "-1	\"Mywer\"	2017-06-20	\"06-20-2011\"	3.141592653	4	\"4.8\"	\"asd\"",
             "266128	\"Sf\"	2017-06-20	\"06-20-1917\"	0	5	\"Inf+11\"	\"\"",
-            "123	\"werxc\"	2017-06-20	\"03/03/1817\"	123	6.000001	\"11-2\"	\"adf\\\"\\0\\na\\tdsf\"",
+            "123	\"werxc\"	2017-06-20	\"03/03/1817\"	123	6.000001	\"11-2\"	\"adf\\0\\na\\tdsf\"",
             "-2389	\"Dfjl\"	2017-06-20	\"2017-03-12\"	NaN	2	\"nap\"	\"💩⌛👩🏻■\""};
         BufferedReader result = null;
         try (BufferedInputStream stream = new BufferedInputStream(
@@ -89,43 +89,5 @@ public class CSVFileReaderTest {
             String expMessage = "Reading mismatch, line 5 of the Data file: 6 delimited values expected, 4 found.";
             assertEquals(expMessage, ex.getMessage());
         }
-    }
-    
-    @Test
-    public void testHardRead() throws FileNotFoundException, IOException {
-        String expFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/HardCSV.csv";
-        String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/HardCSV.tab";
-        BufferedReader result = null;
-        BufferedReader expected = null;
-        try {
-            expected = new BufferedReader(new FileReader(expFile));
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(CSVFileReaderTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try (BufferedInputStream stream = new BufferedInputStream(
-                new FileInputStream(testFile))) {
-            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
-            result = new BufferedReader(new FileReader(instance.read(stream, null).getTabDelimitedFile()));
-        }
-
-        String foundLine = null;
-        String expLine = null;
-        assertNotNull(result);
-        assertNotNull(expected);
-        while (true) {
-            try {
-                expLine = expected.readLine();
-                foundLine = result.readLine();
-            } catch (IOException ex) {
-                fail();
-            }
-            assertNotNull(expLine);
-            if(!expLine.equals(foundLine)) {
-                logger.info("expected: " + expLine);
-                logger.info("found : " + foundLine);
-            }
-            assertEquals(expLine, foundLine);
-        }
-
     }
 }
