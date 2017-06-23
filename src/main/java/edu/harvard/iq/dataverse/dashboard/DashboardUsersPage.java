@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import java.text.NumberFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -101,9 +100,8 @@ public class DashboardUsersPage implements java.io.Serializable {
      * @return 
      */
     public String getUserCount() {
-        //return userService.getTotalUserCount();
 
-        return NumberFormat.getNumberInstance(Locale.US).format(userService.getTotalUserCount());
+        return NumberFormat.getInstance().format(userService.getTotalUserCount());
     }
 
     /** 
