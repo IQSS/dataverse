@@ -45,20 +45,6 @@ public class UserServiceBean {
     }
    
     /**
-     * Return the user information as a List of Arrays--e.g. straight from the db query
-     * 
-     * @param searchTerm
-     * @param sortKey
-     * @param resultLimit
-     * @param offset
-     * @return 
-     */
-    public List<Object[]> getUserList(String searchTerm, String sortKey, Integer resultLimit, Integer offset){
-        
-        return getUserListCore(searchTerm, sortKey, resultLimit, offset);
-    }
-    
-    /**
      * Return the user information as a List of AuthenticatedUser objects -- easier to work with in the UI
      * - With Role added as a transient field
      * @param searchTerm
@@ -496,9 +482,7 @@ public class UserServiceBean {
         qstr += " AND prov_lookup.authenticationproviderid = prov.id";    
         qstr += sharedSearchClause;
         qstr += ";";
-        
-        //System.out.println("getUserCount: " + qstr);
-        
+               
         Query nativeQuery = em.createNativeQuery(qstr);
         nativeQuery.setParameter("searchTerm", searchTerm + "%");
         

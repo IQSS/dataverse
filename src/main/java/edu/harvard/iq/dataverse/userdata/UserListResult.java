@@ -154,7 +154,7 @@ public class UserListResult {
      * 
      * @return 
      */
-    public JsonObjectBuilder asJSON(){
+    public JsonObjectBuilder toJSON(){
         
         if (userList.isEmpty()){
             return getNoResultsJSON();
