@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SettingsWrapper;
+import edu.harvard.iq.dataverse.UserNameValidator;
 import edu.harvard.iq.dataverse.UserNotification;
 import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEDV;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
@@ -205,10 +206,8 @@ public class DataverseUserPage implements java.io.Serializable {
         boolean userNameFound = authenticationService.identifierExists(userName);
         
         // SF fix for issue 3752
-        // check if username has any invalid characters 
-        String invalidCharacters = ".*[ \\/\\~?!@#$%\\^&*()\\[\\]{};:'\"<>+=|,].*";
-        
-        boolean userNameInvalid = userName.matches(invalidCharacters);
+        // checks if username has any invalid characters 
+        boolean userNameValid = userName != null && UserNameValidator.isUserNameValid(userName, null);
         
         if (editMode == EditMode.CREATE && userNameFound) {
             ((UIInput) toValidate).setValid(false);
@@ -216,7 +215,7 @@ public class DataverseUserPage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);
         }
         
-        if (editMode == EditMode.CREATE && userNameInvalid) {
+        if (editMode == EditMode.CREATE && !userNameValid) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.invalid"), null);
             context.addMessage(toValidate.getClientId(context), message);

@@ -78,6 +78,25 @@ public class BuiltinUsersIT {
         createUserResponse.prettyPrint();
         assertEquals(400, createUserResponse.statusCode());
     }
+    
+    @Test 
+    public void testBadCharacterInUsername() {
+        String randomUsername = getRandomUsername() + "/";
+        String email = randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.statusCode());
+    }
+    
+    @Test
+    public void testGoodUsernameWithWeirdCharacters() {
+        String randomUsername = getRandomUsername();
+        String randomUsernameWeird = "õÂ" + randomUsername; //+ "爸好"; TODO: Fix -- somehow turn into ?? in API call
+        String email = randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsernameWeird, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(200, createUserResponse.statusCode());
+    }
 
     @Test
     public void testLogin() {
