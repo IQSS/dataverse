@@ -40,45 +40,37 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <ui:include src="dashboard-users-pager.xhtml">
                         <ui:param name="listPager" value="#{DashboardUsersPage.pager}" />
                     </ui:include>
 
-                    <p:dataTable id="userTable" value="#{DashboardUsersPage.userList}"  var="user" widgetVar="userTable">
+                    <p:dataTable id="userTable" value="#{DashboardUsersPage.userList}" var="user" widgetVar="userTable" rows="5">
                         <!--<p:column headerText="#{bundle['dashboard.list_users.tbl_header.rowNumber']}">
                             <h:outputText value="#{user.rowNum}" />
-                        </p:column>                        -->
-                        
-                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
+                        </p:column>-->
+                        <p:column style="width:60px" class="text-center" headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
                             <h:outputText value="#{user.id}" />
                         </p:column>
-
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.userIdentifier']}">
                             <h:outputText value="#{user.userIdentifier}" />
                         </p:column>
-
-                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.firstName']} #{bundle['dashboard.list_users.tbl_header.lastName']}">
+                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.name']}">
                             <h:outputText value="#{user.firstName} #{user.lastName}" />
                         </p:column>
-
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.email']}">
                             <h:outputText value="#{user.email}" />
                         </p:column>
-
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.affiliation']}">
                             <h:outputText value="#{user.affiliation}" />
                         </p:column>
-                        
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.roles']}">
                             <h:outputText value="#{user.roles}" />
                         </p:column>
-
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.authProviderFactoryAlias']}">
                             <h:outputText value="#{user.authProviderFactoryAlias}" />
-                        </p:column>                    
-
-                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
+                        </p:column>
+                        <p:column class="text-center" headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
                             <!-- A simple implementation of the superuser status toggle - via a boolean checkbox with an immediate ajax update. -->
                             <!-- Uses our standard approach, of showing a confirmation popup ("are you sure you want to toggle this? ...") first,  -->
                             <!-- before saving the toggled value. -->
@@ -87,8 +79,7 @@
                             <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"  disabled="#{user.id == 1}">
                                 <p:ajax event="change" process="@this" oncomplete="PF('toggleSuperuserConfirmation').show();"  update=":dashboardUsersForm:toggleSuperuserConfirmation"/>
                             </p:selectBooleanCheckbox>
-                        </p:column>                  
-
+                        </p:column>
                     </p:dataTable>
                     <p:dialog styleClass="smallPopUp" id="toggleSuperuserConfirmation" header="#{bundle['dashboard.list_users.toggleSuperuser']}" widgetVar="toggleSuperuserConfirmation" modal="true" closable="false">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/>

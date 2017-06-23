@@ -9,16 +9,18 @@
     
     <div class="row" jsf:rendered="#{listPager != null}">
         <!-- PAGINATOR --> 
-        <div class="col-xs-12 col-md-3">
+        <div class="col-xs-4">
             <!-- number of results -->
+            <p style="padding:7px 0;margin:0;">
             <h:outputFormat styleClass="highlightBold" value="#{bundle['dataverse.results.count.toofresults']}">
                 <f:param value="#{listPager.startCardNumber}"/>
                 <f:param value="#{listPager.endCardNumber}"/>
                 <f:param value="#{listPager.numResults}"/>
             </h:outputFormat>
+            </p>
         </div>
-        <div class="col-xs-12 col-md-9" jsf:rendered="#{listPager.pagerNecessary}">
-            <ul class="pagination">
+        <div class="col-xs-8 text-right" jsf:rendered="#{listPager.pagerNecessary}">
+            <ul class="pagination" style="margin:0;">
                 <!-- previous page controls -->
                 <ui:fragment rendered="#{listPager.hasPreviousPageNumber()}">
                     <li><p:commandLink action="#{DashboardUsersPage.runUserSearchWithPage(1)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">                       
