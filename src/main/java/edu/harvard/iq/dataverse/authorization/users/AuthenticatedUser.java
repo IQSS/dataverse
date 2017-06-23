@@ -314,7 +314,7 @@ public class AuthenticatedUser implements User, Serializable {
         NullSafeJsonBuilder authenicatedUserJson = NullSafeJsonBuilder.jsonObjectBuilder();
          
         authenicatedUserJson.add("id", this.id);
-        authenicatedUserJson.add("rowNum", this.rowNum);
+        //authenicatedUserJson.add("rowNum", this.rowNum);
         authenicatedUserJson.add("userIdentifier", this.userIdentifier);
         authenicatedUserJson.add("lastName", this.lastName);
         authenicatedUserJson.add("firstName", this.firstName);
