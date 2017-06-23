@@ -505,8 +505,9 @@ public class AuthenticationServiceBean {
             AuthenticatedUserDisplayInfo userDisplayInfo,
             boolean generateUniqueIdentifier) {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
-        
-        authenticatedUser.setCreatedToCurrentTime();    // set 1-time
+        // set account creation time & initial login time (same timestamp)
+        authenticatedUser.setCreatedTime(new Timestamp(new Date().getTime()));
+        authenticatedUser.setLastLoginTime(authenticatedUser.getCreatedTime());
         
         authenticatedUser.applyDisplayInfo(userDisplayInfo);
 

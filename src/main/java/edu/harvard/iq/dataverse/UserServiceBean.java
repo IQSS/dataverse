@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -25,17 +27,15 @@ public class UserServiceBean {
     }    
 
     
-    public AuthenticatedUser save( AuthenticatedUser user ) {
-               
-        // Make sure there is a "created" time
-        if (user.getCreated() == null){
-            user.setCreatedToCurrentTime(); // default new creation time
-            logger.info("Creation time null! Setting user creation time to now");
-        } 
-        
-        if ( user.getId() == null ) {
+    public AuthenticatedUser save(AuthenticatedUser user) {
+        if (user.getId() == null) {
             em.persist(this);
         } else {
+            if (user.getCreatedTime() == null) {
+                user.setCreatedTime(new Timestamp(new Date().getTime())); // default new creation time
+                user.setLastLoginTime(user.getCreatedTime()); // sets initial lastLoginTime to creation time
+                logger.info("Creation time null! Setting user creation time to now");
+            }
             user = em.merge(user);
         }
         em.flush();
@@ -44,26 +44,15 @@ public class UserServiceBean {
     }
 
     public AuthenticatedUser updateLastLogin(AuthenticatedUser user) {
-        if (user == null){
-            logger.severe("user should not be null");
-            return null;
-        }
-        
-        user.setLastLoginToCurrentTime();
+        //assumes that AuthenticatedUser user already exists
+        user.setLastLoginTime(new Timestamp(new Date().getTime()));
         
         return save(user);
     }
 
-    
-    
-    public AuthenticatedUser updateLastApiUse(AuthenticatedUser user) {
-        if (user == null){
-            logger.severe("user should not be null");
-            return null;
-        }
-        
-        user.setLastApiUseToCurrentTime();
-        
+    public AuthenticatedUser updateLastApiUseTime(AuthenticatedUser user) {
+        //assumes that AuthenticatedUser user already exists
+        user.setLastApiUseTime(new Timestamp(new Date().getTime()));
         return save(user);
     }
 }

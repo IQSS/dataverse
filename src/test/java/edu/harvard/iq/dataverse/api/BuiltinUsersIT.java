@@ -45,18 +45,35 @@ public class BuiltinUsersIT {
         getUserAsJson.prettyPrint();
         getUserAsJson.then().assertThat()
                 // Checking that it's 2017 or whatever. Not y3k compliant! 
-                .body("data.created", startsWith("2"))
+                .body("data.createdTime", startsWith("2"))
                 .body("data.authenticationProviderId", equalTo("builtin"))
                 .statusCode(OK.getStatusCode());
 
         Response getUserAsJsonAgain = UtilIT.getAuthenticatedUser(username, apiToken);
         getUserAsJsonAgain.prettyPrint();
         getUserAsJsonAgain.then().assertThat()
-                // FIXME: "apiLastUse" should be populated.
-                // Checking that it's 2017 or whatever. Not y3k compliant! 
-                .body("data.apiLastUse", startsWith("2"))
+                // ApiUseTime should be null, user has not used API yet here
+                .body("data.lastApiUseTime", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
+    }
+    
+    @Test
+    public void testLastApiUse() {
+        Response createApiUser = UtilIT.createRandomUser();
+        String apiUsername = UtilIT.getUsernameFromResponse(createApiUser);
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createApiUser);
+        
+        Response createDataverse = UtilIT.createRandomDataverse(secondApiToken);
+        String alias = UtilIT.getAliasFromResponse(createDataverse);
+        Response createDatasetViaApi = UtilIT.createRandomDatasetViaNativeApi(alias, secondApiToken);
+        Response getApiUserAsJson = UtilIT.getAuthenticatedUser(apiUsername, secondApiToken);
+        
+        getApiUserAsJson.prettyPrint();
+        getApiUserAsJson.then().assertThat()
+                // Checking that it's 2017 or whatever. Not y3k compliant! 
+                .body("data.lastApiUseTime", startsWith("2"))
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
