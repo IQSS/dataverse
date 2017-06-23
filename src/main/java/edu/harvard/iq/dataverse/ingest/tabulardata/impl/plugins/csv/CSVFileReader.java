@@ -57,6 +57,7 @@ public class CSVFileReader extends TabularDataFileReader {
     private MathContext doubleMathContext;
     private CSVFormat inFormat = CSVFormat.EXCEL.withHeader();
     private CSVFormat outFormat = CSVFormat.TDF;
+    private Set<Character> firstNumCharSet = new HashSet<>();
 
     // DATE FORMATS
     private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[]{
@@ -79,6 +80,7 @@ public class CSVFileReader extends TabularDataFileReader {
 
     private void init() throws IOException {
         doubleMathContext = new MathContext(DIGITS_OF_PRECISION_DOUBLE, RoundingMode.HALF_EVEN);
+        firstNumCharSet.addAll(Arrays.asList(new Character[]{'+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}));
     }
 
     /**
@@ -215,7 +217,14 @@ public class CSVFileReader extends TabularDataFileReader {
                             if (!isNumeric) {
                                 isNumericVariable[i] = false;
                             } else {
-                                isInteger = isIntegerVariable[i] && StringUtils.isNumeric(varString);
+                                if (isIntegerVariable[i]) {
+                                    if ((varString.equals("null")
+                                            || firstNumCharSet.contains(varString.charAt(0))
+                                            && StringUtils.isNumeric(varString.substring(1)))) {
+                                        isInteger = true;
+                                    }
+
+                                }
                             }
                             if (!isInteger) {
                                 isIntegerVariable[i] = false;
@@ -345,7 +354,6 @@ public class CSVFileReader extends TabularDataFileReader {
                 dataTable.getDataVariables().get(i).setFormatCategory("time");
             }
         }
-
         // Second, final pass.            
         try (BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile))) {
             dbglog.info("Tmp File: " + firstPassTempFile);
