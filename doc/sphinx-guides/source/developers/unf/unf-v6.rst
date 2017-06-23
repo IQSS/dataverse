@@ -3,6 +3,8 @@
 UNF Version 6
 ================================
 
+
+
 *(this document is a draft!)*
 
 The document is primarily intended for those who are interested in implementing their own UNF Version 6 calculator. We would like to encourage multiple parallel implementations, since that would be a great (the only, really) way to cross-validate UNF signatures calculated for specific sets of data.
@@ -11,6 +13,9 @@ The document is primarily intended for those who are interested in implementing 
 
 UNF v5, on which v6 is based, was originally described in Dr. Micah Altman's paper "A Fingerprint Method for Verification of Scientific Data", Springer Verlag, 2008. The reader is encouraged to consult it for the explanation of the theory behind UNF. However, various changes and clarifications concerning the specifics of normalization have been made to the algorithm since the publication. These crucial details were only documented in the author's unpublished edits of the article and in private correspondence. With this document, a serious effort has been made to produce a complete step-by-step description of the entire process. It should be fully sufficient for the purposes of implementing the algorithm.
 
+.. contents:: |toctitle|
+	:local:
+	
 I. UNF of a Data Vector
 -------------------------
 

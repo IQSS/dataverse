@@ -121,6 +121,10 @@ public class UtilIT {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
+    public static String getRandomDvAlias() {
+        return "dv" + getRandomIdentifier();
+    }
+
     static String getUsernameFromResponse(Response createUserResponse) {
         JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
         String username = createdUser.getString("data.user." + USERNAME_KEY);
@@ -913,6 +917,15 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/files/" + fileId + "/map?key=" + apiToken);
+    }
+
+    static Response getRsyncScript(String datasetPersistentId, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/:persistentId/dataCaptureModule/rsync?persistentId=" + datasetPersistentId);
     }
 
     @Test

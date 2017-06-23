@@ -14,12 +14,26 @@
     </h:head>
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
-            <ui:param name="showMessagePanel" value="#{true}"/>
+	    <ui:param name="showMessagePanel" value="#{true}"/>
+	    <ui:define name="dc_meta_header">
+	    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
+	    <meta name="DC.type" content="Dataset"/>
+	    <meta name="DC.title" content="#{DatasetPage.title}"/>
+	    <meta name="DC.date" content="#{DatasetPage.publicationDate}"/>
+	    <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
+            <meta name="DC.description" content="#{DatasetPage.description}" />
+	    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
+            <meta name="DC.creator" content="#{author}"/>
+	    </ui:repeat>
+            <ui:repeat var="subject" value="#{DatasetPage.datasetSubjects}">
+            <meta name="DC.subject" content="#{subject}"/>
+	    </ui:repeat>
+	    </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
@@ -361,7 +375,7 @@
                                 </span>
                             </label>
                             <div class="col-sm-10">
-                                <h:outputText styleClass="highlightBold" value="#{DatasetPage.dataset.owner.name} #{bundle.dataverse}"/>
+                                <h:outputText styleClass="highlightBold" value="#{DatasetPage.dataset.owner.name}"/>
                                 <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverse" />
                                 <ui:remove><!-- removed for beta -->
                                     <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">

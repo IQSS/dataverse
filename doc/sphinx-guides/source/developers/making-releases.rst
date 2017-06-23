@@ -2,7 +2,8 @@
 Making Releases
 ===============
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Bump Version Numbers
 --------------------
@@ -18,7 +19,7 @@ Here's an example commit where all three files were updated at once: https://git
 Merge "develop" into "master"
 -----------------------------
 
-The "develop" branch should be merged into "master" before tagging. See also :doc:`branching-strategy`.
+The "develop" branch should be merged into "master" before tagging. See also the branching strategy described in the :doc:`version-control` section.
 
 Write Release Notes
 -------------------
@@ -42,3 +43,7 @@ Publish Release
 ---------------
 
 Click the "Publish release" button.
+
+----
+
+Previous: :doc:`coding-style` | Next: :doc:`tools`

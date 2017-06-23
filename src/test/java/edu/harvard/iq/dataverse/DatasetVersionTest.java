@@ -6,6 +6,7 @@ package edu.harvard.iq.dataverse;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -18,7 +19,7 @@ import org.junit.Test;
  * @author michael
  */
 public class DatasetVersionTest {
-    
+
     public DatasetVersionTest() {
     }
     

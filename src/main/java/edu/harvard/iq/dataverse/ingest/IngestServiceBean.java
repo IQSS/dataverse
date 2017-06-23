@@ -775,7 +775,7 @@ public class IngestServiceBean {
                 if (FileUtil.MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
                     tabDataIngest.getDataTable().setOriginalFileFormat(FileUtil.MIME_TYPE_CSV);
                 } else {
-                    tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
+                    tabDataIngest.getDataTable().setOriginalFileFormat(originalContentType);
                 }
 
                 dataFile.setDataTable(tabDataIngest.getDataTable());

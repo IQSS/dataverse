@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
@@ -129,9 +130,20 @@ public class BuiltinUsers extends AbstractApiBean {
              * @todo Move this to
              * AuthenticationServiceBean.createAuthenticatedUser
              */
-            userNotificationSvc.sendNotification(au,
-                    new Timestamp(new Date().getTime()),
-                    UserNotification.Type.CREATEACC, null);
+            boolean rootDataversePresent = false;
+            try {
+                Dataverse rootDataverse = dataverseSvc.findRootDataverse();
+                if (rootDataverse != null) {
+                    rootDataversePresent = true;
+                }
+            } catch (Exception e) {
+                logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
+            }
+            if (rootDataversePresent) {
+                userNotificationSvc.sendNotification(au,
+                        new Timestamp(new Date().getTime()),
+                        UserNotification.Type.CREATEACC, null);
+            }
 
             ApiToken token = new ApiToken();
 

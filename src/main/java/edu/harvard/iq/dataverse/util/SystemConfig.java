@@ -490,11 +490,6 @@ public class SystemConfig {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);
     }
-    
-    public boolean isFileLandingPageAvailable() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShowFileLandingPage, safeDefaultIfKeyNotFound);
-    }
 
     public Long getMaxFileUploadSize(){
 
@@ -607,7 +602,7 @@ public class SystemConfig {
     }
 
     public String getNameOfInstallation() {
-        return dataverseService.findRootDataverse().getName() + " Dataverse";
+        return dataverseService.findRootDataverse().getName();
     }
 
     public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {
@@ -641,6 +636,34 @@ public class SystemConfig {
     public boolean isShibPassiveLoginEnabled() {
         boolean defaultResponse = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
+    }
+
+    public enum FileUploadMethods {
+
+        RSYNC("dcm/rsync+ssh"),
+        NATIVE("NATIVE");
+
+        private final String text;
+
+        private FileUploadMethods(final String text) {
+            this.text = text;
+        }
+
+        public static FileUploadMethods fromString(String text) {
+            if (text != null) {
+                for (FileUploadMethods fileUploadMethods : FileUploadMethods.values()) {
+                    if (text.equals(fileUploadMethods.text)) {
+                        return fileUploadMethods;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("FileUploadMethods must be one of these values: " + Arrays.asList(FileUploadMethods.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
     }
 
 }

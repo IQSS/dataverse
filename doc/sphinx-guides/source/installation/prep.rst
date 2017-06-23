@@ -8,7 +8,8 @@ Preparation
 
 We'll try to get you up and running as quickly as possible, but we thought you might like to hear about your options. :)
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Choose Your Own Installation Adventure
 --------------------------------------

@@ -1,6 +1,9 @@
 CSV
 ++++++
 
+.. contents:: |toctitle|
+	:local:
+
 Ingest of Comma-Separated Values files as tabular data. 
 -------------------------------------------------------
 
@@ -9,7 +12,7 @@ Dataverse will make an attempt to turn CSV files uploaded by the user into tabul
 Main formatting requirements: 
 -----------------------------
 
-The first line must contan a comma-separated list of the variable names; 
+The first line must contain a comma-separated list of the variable names; 
 
 All the lines that follow must contain the same number of comma-separated values as the first, variable name line. 
 

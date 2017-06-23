@@ -35,6 +35,13 @@ public class SettingsServiceBean {
     public enum Key {
         CloudEnvironmentName,
         ComputeBaseUrl,
+        /**
+         * For example, https://datacapture.example.org
+         */
+        DataCaptureModuleUrl,
+        RepositoryStorageAbstractionLayerUrl,
+        UploadMethods,
+        DownloadMethods,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
@@ -152,6 +159,7 @@ public class SettingsServiceBean {
         TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
+
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
@@ -178,9 +186,6 @@ public class SettingsServiceBean {
         StatusMessageText,
         /* return email address for system emails such as notifications */
         SystemEmail, 
-        /* whether file landing page is available
-        for 4.2 development */
-        ShowFileLandingPage,
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 
         case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
@@ -243,7 +248,34 @@ public class SettingsServiceBean {
         /**
          * Whether Export should exclude FieldType.EMAIL
          */
-        ExcludeEmailFromExport;
+        ExcludeEmailFromExport,
+        /*
+         Location and name of HomePage customization file
+        */
+        HomePageCustomizationFile,
+        /*
+         Location and name of Header customization file
+        */
+        HeaderCustomizationFile,
+        /*
+         Location and name of Footer customization file
+        */
+        FooterCustomizationFile,
+        /*
+         Location and name of CSS customization file
+        */
+        StyleCustomizationFile,
+        /*
+         Location and name of installation logo customization file
+        */
+        LogoCustomizationFile,
+        
+        // Option to override the navbar url underlying the "About" link
+        NavbarAboutUrl,
+        
+        // Option to override multiple guides with a single url
+        NavbarGuidesUrl; 
+
         
         @Override
         public String toString() {
@@ -261,7 +293,7 @@ public class SettingsServiceBean {
      * Values that are considered as "true".
      * @see #isTrue(java.lang.String, boolean) 
      */
-    private static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
+    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
             new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
     
     /**

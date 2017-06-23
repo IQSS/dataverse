@@ -53,7 +53,7 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
             authorString = ":unav";
         }
 
-        String producerString = dataverseService.findRootDataverse().getName() + " Dataverse";
+        String producerString = dataverseService.findRootDataverse().getName();
 
         if(producerString.isEmpty()) {
             producerString = ":unav";

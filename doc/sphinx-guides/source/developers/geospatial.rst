@@ -2,6 +2,9 @@
 Geospatial Data
 ===============
 
+.. contents:: |toctitle|
+	:local:
+
 How Dataverse Ingests Shapefiles
 --------------------------------
 
@@ -172,3 +175,7 @@ Saving Join Target Information to Geoconnect Database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``get_latest_jointarget_information()`` in ``utils.py`` retrieves recent JoinTarget Information from the database. (See the `utils code in GitHub <https://github.com/IQSS/geoconnect/blob/master/gc_apps/worldmap_connect/utils.py#L16>`_.)
+
+----
+
+Previous: :doc:`unf/index` | Next: :doc:`selinux`

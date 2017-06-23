@@ -145,7 +145,7 @@ public class DatasetVersion implements Serializable {
 
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
-    private List<FileMetadata> fileMetadatas = new ArrayList();
+    private List<FileMetadata> fileMetadatas = new ArrayList<>();
 
     public List<FileMetadata> getFileMetadatas() {
         return fileMetadatas;
@@ -175,7 +175,7 @@ public class DatasetVersion implements Serializable {
 
     @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     //@OrderBy("datasetField.displayOrder") 
-    private List<DatasetField> datasetFields = new ArrayList();
+    private List<DatasetField> datasetFields = new ArrayList<>();
 
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
@@ -223,6 +223,7 @@ public class DatasetVersion implements Serializable {
 
     /**
      * The only time a dataset can be in review is when it is in draft.
+     * @return if the dataset is being reviewed
      */
     public boolean isInReview() {
         if (versionState != null && versionState.equals(VersionState.DRAFT)) {
@@ -485,8 +486,8 @@ public class DatasetVersion implements Serializable {
             if (this.getFileMetadatas().size() != this.getDataset().getReleasedVersion().getFileMetadatas().size()){
                 return false;
             } else {
-                List <DataFile> current = new ArrayList();
-                List <DataFile> previous = new ArrayList();
+                List <DataFile> current = new ArrayList<>();
+                List <DataFile> previous = new ArrayList<>();
                 for (FileMetadata fmdc : this.getFileMetadatas()){
                     current.add(fmdc.getDataFile());
                 }
@@ -522,7 +523,7 @@ public class DatasetVersion implements Serializable {
     public void initDefaultValues() {
         //first clear then initialize - in case values were present 
         // from template or user entry
-        this.setDatasetFields(new ArrayList());
+        this.setDatasetFields(new ArrayList<>());
         this.setDatasetFields(this.initDatasetFields());
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         terms.setDatasetVersion(this);
@@ -611,6 +612,10 @@ public class DatasetVersion implements Serializable {
         return "Production Date";
     }
     
+    /**
+     * datasetVersion Description
+     * @return a string with the description of the dataset
+     */
     public String getDescription() {
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
@@ -690,7 +695,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public List<DatasetAuthor> getDatasetAuthors() {
-        //todo get "List of Authors" from datasetfieldvalue table
+        //TODO get "List of Authors" from datasetfieldvalue table
         List <DatasetAuthor> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addAuthor = true;
@@ -723,6 +728,30 @@ public class DatasetVersion implements Serializable {
         return retList;
     }
     
+    /**
+     * @return List of Strings containing the names of the authors.
+     */
+    public List<String> getDatasetAuthorNames() {
+        List<String> authors = new ArrayList<>();
+        for (DatasetAuthor author : this.getDatasetAuthors()) {
+            authors.add(author.getName().getValue());
+        }
+        return authors;
+    }
+
+    /**
+     * @return List of Strings containing the dataset's subjects
+     */
+    public List<String> getDatasetSubjects() {
+        List<String> subjects = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
+                subjects.addAll(dsf.getValues());
+            }
+        }
+        return subjects;
+    }
+
     public String getDatasetProducersString(){
         String retVal = "";
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -744,7 +773,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setDatasetAuthors(List<DatasetAuthor> authors) {
-        // FIXME add the authores to the relevant fields
+        // FIXME add the authors to the relevant fields
     }
 
     public String getCitation() {
@@ -768,6 +797,10 @@ public class DatasetVersion implements Serializable {
         return null;
     }
     
+    /**
+     * @param dsfType The type of DatasetField required
+     * @return the first field of type dsfType encountered.
+     */
     public DatasetField getDatasetField(DatasetFieldType dsfType) {
         if (dsfType != null) {
             for (DatasetField dsf : this.getFlatDatasetFields()) {
@@ -777,7 +810,6 @@ public class DatasetVersion implements Serializable {
             }
         }
         return null;
-
     }
 
     public String getDistributionDate() {
@@ -809,7 +841,7 @@ public class DatasetVersion implements Serializable {
         }
         String rootDataverseName = root.getName();
         if (!StringUtil.isEmpty(rootDataverseName)) {
-            return rootDataverseName + " Dataverse";
+            return rootDataverseName;
         } else {
             return "";
         }
@@ -817,7 +849,7 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetDistributor> getDatasetDistributors() {
         //todo get distributors from DatasetfieldValues
-        return new ArrayList();
+        return new ArrayList<>();
     }
 
     public void setDatasetDistributors(List<DatasetDistributor> distributors) {
@@ -887,7 +919,7 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetField> initDatasetFields() {
         //retList - Return List of values
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList<>();
         //Running into null on create new dataset
         if (this.getDatasetFields() != null) {
             for (DatasetField dsf : this.getDatasetFields()) {
@@ -969,7 +1001,7 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList<>();
 
         for (DatasetField sourceDsf : copyFromList) {
             //the copy needs to have the current version
@@ -985,7 +1017,7 @@ public class DatasetVersion implements Serializable {
     }
 
     private List<DatasetField> getFlatDatasetFields(List<DatasetField> dsfList) {
-        List<DatasetField> retList = new LinkedList();
+        List<DatasetField> retList = new LinkedList<>();
         for (DatasetField dsf : dsfList) {
             retList.add(dsf);
             if (dsf.getDatasetFieldType().isCompound()) {
@@ -1023,7 +1055,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public List<ConstraintViolation> validateRequired() {
-        List<ConstraintViolation> returnListreturnList = new ArrayList();
+        List<ConstraintViolation> returnListreturnList = new ArrayList<>();
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         for (DatasetField dsf : this.getFlatDatasetFields()) {
@@ -1040,7 +1072,7 @@ public class DatasetVersion implements Serializable {
     }
     
     public Set<ConstraintViolation> validate() {
-        Set<ConstraintViolation> returnSet = new HashSet();
+        Set<ConstraintViolation> returnSet = new HashSet<>();
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();

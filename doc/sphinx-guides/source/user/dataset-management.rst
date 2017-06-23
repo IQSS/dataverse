@@ -5,16 +5,20 @@ A dataset in Dataverse is a container for your data, documentation, code, and th
 
 |image1|
 
+.. contents:: |toctitle|
+	:local:
+
+
 Supported Metadata
 ==================
 
 A dataset contains three levels of metadata: 
 
 #. **Citation Metadata**: any metadata that would be needed for generating a data citation and other general metadata that could be applied to any dataset;
-#. **Domain specific Metadata**: with specific support currently for Social Science, Life Science, Geospatial, and Astronomy datasets; and
+#. **Domain Specific Metadata**: with specific support currently for Social Science, Life Science, Geospatial, and Astronomy datasets; and
 #. **File-level Metadata**: varies depending on the type of data file - see *File Handling and Uploading* section below for more details). 
 
-For more details about what Citation and Domain specific metadata is supported please see our :ref:`user-appendix`.
+For more details about what Citation and Domain Specific Metadata is supported please see our :ref:`user-appendix`.
 
 Note that once a dataset has been published its metadata may be exported. A button on the dataset page's metadata tab will allow a user to export the metadata of the most recently published version of the dataset. Currently supported export formats are DDI, Dublin Core and JSON.
 
@@ -26,7 +30,7 @@ Adding a New Dataset
 #. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
    Description, Contact Email and Subject) to get a Data Citation with a DOI.
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
-   You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop,
+   You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
    description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
 #. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
@@ -45,19 +49,18 @@ File Handling + Uploading
 
 To upload new files to a dataset, click the "Edit" button at the top of the dataset page and from the dropdown list select "Files (Upload)" or click the "Upload Files" button above the files table in the Files tab. From either option you will be brought to the Upload Files page for that dataset.
 
-Once you have uploaded files, you will be able to edit the file metadata, restrict, add tags. Click "Save Changes" to complete the upload. If you uploaded a file by mistake, you can delete them before saving by clicking the checkbox to select the file, and then clicking the "Delete" button above the files table.
+Once you have uploaded files, you will be able to edit file metadata, restrict access to files, and/or add tags. Click "Save Changes" to complete the upload. If you uploaded a file by mistake, you can delete it before saving by clicking the checkbox to select the file, and then clicking the "Delete" button above the Files Table.
 
 File upload limit size varies based on Dataverse installation. The file upload size limit can be found in the text above where files are uploaded in the application. If you have further questions, contact support for that installation by clicking on the Support link at the top of the application.
 
-The file types listed below are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration 
-through data visualization and analysis. 
+The file types listed below are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. 
 
 Tabular Data Files
 ------------------
 
 Files in certain formats - Stata, SPSS, R, Excel(xlsx) and CSV - may be ingested as tabular data (see "Tabular Data Ingest" section for details). Tabular data files can be further explored and manipulated with `TwoRavens <../user/data-exploration/tworavens.html>`_ - a statistical data exploration application integrated with Dataverse. It allows the user to run statistical models, view summary statistics, download subsets of variable vectors and more. To start, click on the "Explore" button, found next to each relevant tabular file (the application will be opened in a new window). To download subsets of variables click on the "Download" button found next to a relevant tabular file and select "Data Subset" in the dropdown menu. You will then be able to create your subset using the interface opened in a new window (this functionality is also provided by the `TwoRavens <../user/data-exploration/tworavens.html>`_ project). See the `TwoRavens documentation section <../user/data-exploration/tworavens.html>`_ for more information.
 
-For example, the ingest functionality for tabular files in the Harvard Dataverse, a file can only be up to 2GB in size. To use the ingest functionality for RData files, a file can only be up to 1MB in size, however, to upload a RData file without using ingest, a file can be up to 2GB in size.
+For example, for the ingest functionality for tabular files in Harvard Dataverse, a file can only be up to 2GB in size. To use the ingest functionality for RData files, a file can only be up to 1MB in size. However, to upload a RData file without using ingest, a file can be up to 2GB in size.
 
 Additional download options available for tabular data (found in the same drop-down menu under the "Download" button): 
 
@@ -143,7 +146,7 @@ Edit Files
 Edit File Metadata
 ------------------
 
-Go to the dataset you would like to edit where you will see the listing of files. Select the files you would like to edit by using either the Select All checkbox or individually selecting files. Next, click the "Edit Files" button above the file table and from the dropdown menu select if you would like to:
+Go to the dataset you would like to edit, where you will see the listing of files. Select the files you would like to edit by using either the Select All checkbox or individually selecting files. Next, click the "Edit Files" button above the file table and from the dropdown menu select if you would like to:
 
 - Delete the selected files
 - Edit the file metadata (file name, description) for the selected files
@@ -174,7 +177,7 @@ After successfully replacing a file, a new dataset draft version will be created
 Terms
 =====
 
-In the Terms tab, which can also be found by clicking on the Edit dropdown button of a Dataset, you can setup how users can use your data once they have downloaded it (CC0 waiver or custom Terms of Use), how they can access your data if you have files that are restricted (terms of access), and enable a Guestbook for your dataset so that you can track who is using your data and for what purposes. These are explained in further detail below:
+In the Terms tab, which can also be found by clicking on the Edit dropdown button of a Dataset, you can set up how users can use your data once they have downloaded it (CC0 waiver or custom Terms of Use), how they can access your data if you have files that are restricted (terms of access), and enable a Guestbook for your dataset so that you can track who is using your data and for what purposes. These are explained in further detail below:
 
 CC0 Waiver + Dataset Terms of Use 
 ---------------------------------
@@ -216,7 +219,7 @@ Dataset permissions can be found from the dataset by clicking the "Edit" button 
 
 The dataset permissions page has two sections: Users/Groups and Roles. In the top, "Users/Groups" panel, you can find all the users and groups that have access to your dataset. To give someone access to view your unpublished dataset or edit your published or unpublished dataset, click on the "Assign Roles to Users/Groups" button in the Users/Groups section.
 
-The panel below that is "Roles" where you can find all the roles set up in your dataverse, that you can assign to users and groups. These roles are set at your dataverse-level and are displayed here at the dataset-level as a reference for when you are granting permission to users and/or groups.
+The panel below that is "Roles", where you can find all the roles set up in your dataverse, which you can assign to users and groups. These roles are set at your dataverse-level and are displayed here at the dataset-level as a reference for when you are granting permission to users and/or groups.
 
 File-Level
 ----------
@@ -328,9 +331,9 @@ There is also a Versions tab on the file page. The versions table for a file dis
 Version Details
 ---------------
 
-To view what has exactly changed starting from the originally published version to any subsequent published versions: click the Versions tab on the dataset page to see all versions and changes made for that particular dataset.
+To view exactly what has changed, starting from the originally published version to any subsequent published versions: click the Versions tab on the dataset page to see all versions and changes made for that particular dataset.
 
-Once you have more than one version (can be version 1 and a draft), you can click the "View Details" link next to each summary to learn more about the metadata fields and files that were either added or edited. You can also click the checkboxes to select any two dataset versions, then click the "View Differences" button to open the Version Differences Details popup and compare the differences between them.
+Once you have more than one version (this can simply be version 1 and a draft), you can click the "View Details" link next to each summary to learn more about the metadata fields and files that were either added or edited. You can also click the checkboxes to select any two dataset versions, then click the "View Differences" button to open the Version Differences Details popup and compare the differences between them.
 
 .. _deaccession:
 
