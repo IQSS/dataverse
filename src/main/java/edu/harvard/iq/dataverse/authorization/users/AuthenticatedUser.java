@@ -149,18 +149,6 @@ public class AuthenticatedUser implements User, Serializable {
     public void setRoles(String roles) {
         this.roles = roles;
     }
-
-    //For User List Admin dashboard    
-    @Transient
-    private Integer rowNum;
-
-    public Integer getRowNum() {
-        return rowNum;
-    }
-
-    public void setRowNum(Integer rowNum) {
-        this.rowNum = rowNum;
-    }
     
     //For User List Admin dashboard - AuthenticatedProviderId
     @Transient
@@ -314,7 +302,6 @@ public class AuthenticatedUser implements User, Serializable {
         NullSafeJsonBuilder authenicatedUserJson = NullSafeJsonBuilder.jsonObjectBuilder();
          
         authenicatedUserJson.add("id", this.id);
-        //authenicatedUserJson.add("rowNum", this.rowNum);
         authenicatedUserJson.add("userIdentifier", this.userIdentifier);
         authenicatedUserJson.add("lastName", this.lastName);
         authenicatedUserJson.add("firstName", this.firstName);

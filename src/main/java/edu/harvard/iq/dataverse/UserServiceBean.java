@@ -108,8 +108,7 @@ public class UserServiceBean {
     
     private AuthenticatedUser createAuthenticatedUserForView (Object[] dbRowValues, String roles, int rowNum){
         AuthenticatedUser user = new AuthenticatedUser();
-        user.setRowNum(rowNum);
-        
+                
         user.setId(new Long((int)dbRowValues[0]));
         user.setUserIdentifier((String)dbRowValues[1]);
         user.setLastName(UserUtil.getStringOrNull(dbRowValues[2]));

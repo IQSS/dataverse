@@ -319,28 +319,20 @@ public class Admin extends AbstractApiBean {
                         @QueryParam("sortKey") String sortKey
     ) { 
         
-        if ((session.getUser() != null)&&(session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())){            
-
-            // Allow in browser use of API url by an authenticated superuser
-            // Helpful for testing or is API call was used via AJAX request
-       
-        }else{
-             
-            User authUser;
-            try {
-                authUser = this.findUserOrDie();
-            } catch (AbstractApiBean.WrappedResponse ex) {
-                return error(Response.Status.FORBIDDEN, 
-                        ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.invalid_apikey")
-                        );
-            }
-            
-            if (!authUser.isSuperuser()){
-                return error(Response.Status.FORBIDDEN, 
-                        ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
-            }
-            
+        User authUser;
+        try {
+            authUser = this.findUserOrDie();
+        } catch (AbstractApiBean.WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, 
+                    ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.invalid_apikey")
+                    );
         }
+
+        if (!authUser.isSuperuser()){
+            return error(Response.Status.FORBIDDEN, 
+                    ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
+        }
+        
         
         UserListMaker userListMaker = new UserListMaker(userService);      
         
