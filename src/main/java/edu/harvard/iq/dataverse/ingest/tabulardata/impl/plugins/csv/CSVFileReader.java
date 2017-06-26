@@ -452,10 +452,10 @@ public class CSVFileReader extends TabularDataFileReader {
                         // to assume that all the empty strings in the file are
                         // indeed empty strings, and NOT missing values:
                         if (varString != null) {
-                            // escape the quotes:
+                            // escape the quotes, newlines, and tabs:
                             varString = varString.replace("\"", "\\\"");
-                            // escape the newlines
                             varString = varString.replace("\n", "\\n");
+                            varString = varString.replace("\t", "\\t");
                             // final pair of quotes:
                             varString = "\"" + varString + "\"";
                             caseRow[i] = varString;
