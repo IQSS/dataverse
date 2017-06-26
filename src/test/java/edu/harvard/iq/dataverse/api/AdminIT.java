@@ -93,19 +93,46 @@ public class AdminIT {
          List<String> randomUsernames = new ArrayList<String>();
         for (int i = 0; i < 11; i++){
             
-            createUserResponse = UtilIT.createRandomUser();
+            createUserResponse = UtilIT.createRandomUser("rand_");
             createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
             String newUserName = UtilIT.getUsernameFromResponse(createUserResponse);
             randomUsernames.add(newUserName);
             
         }
         
+        // --------------------------------------------
+        // Create superuser
+        // --------------------------------------------
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        
+        // --------------------------------------------
+        // Get 1,000 users
+        // --------------------------------------------
+        Response filterReponse01 = UtilIT.filterAuthenticatedUsers(superuserApiToken, "rand_", null, 100);
+        //filterReponse01.then().assertThat().statusCode(OK.getStatusCode());
+        //filterReponse01.prettyPrint();
+        
+        // --------------------------------------------
+        // Delete  random users
+        // --------------------------------------------
+        Response deleteUserResponse;
         for (String aUsername : randomUsernames){
             
-            Response deleteUserResponse = UtilIT.deleteUser(aUsername);
+            deleteUserResponse = UtilIT.deleteUser(aUsername);
             assertEquals(200, deleteUserResponse.getStatusCode());
         
         }
+        
+        // Delete superuser
+        deleteUserResponse = UtilIT.deleteUser(superuserUsername);
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        
         /*
         String newSuperUsername = UtilIT.getUsernameFromResponse(nonSuperuser);
         Response newSuperUserResponse = UtilIT.makeSuperUser(newSuperUsername);

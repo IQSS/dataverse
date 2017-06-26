@@ -60,8 +60,14 @@ public class UtilIT {
         return restAssuredBaseUri;
     }
 
-    public static Response createRandomUser() {
-        String randomString = getRandomUsername();
+    /**
+     * Begin each username with a prefix
+     * 
+     * @param usernamePrefix
+     * @return 
+     */
+    public static Response createRandomUser(String usernamePrefix) {
+        String randomString = getRandomUsername(usernamePrefix);
         logger.info("Creating random test user " + randomString);
         String userAsJson = getUserAsJsonString(randomString, randomString, randomString);
         String password = getPassword(userAsJson);
@@ -70,6 +76,13 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .post("/api/builtin-users?key=" + BUILTIN_USER_KEY + "&password=" + password);
         return response;
+    }
+
+    
+    
+    public static Response createRandomUser() {
+        
+        return createRandomUser("user");
     }
 
     private static String getUserAsJsonString(String username, String firstName, String lastName) {
@@ -114,6 +127,14 @@ public class UtilIT {
     private static String getPassword(String jsonStr) {
         String password = JsonPath.from(jsonStr).get(USERNAME_KEY);
         return password;
+    }
+
+    private static String getRandomUsername(String usernamePrefix) {
+
+        if (usernamePrefix == null){
+            return getRandomUsername();
+        }
+        return usernamePrefix + getRandomIdentifier().substring(0, 8);
     }
 
     private static String getRandomUsername() {
