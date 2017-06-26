@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class CSVFileReaderTest {
             "0	\"cjlajfo.\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"3000/06/20\"	-Inf	3	\"inf\"	\"\\casdf\"",
             "-1	\"Mywer\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"06-20-2011\"	3.141592653	4	\"4.8\"	\" \\\"  \"",
             "266128	\"Sf\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"06-20-1917\"	0	5	\"Inf+11\"	\"\"",
-            "0	\"werxc\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"03/03/1817\"	123	6.000001	\"11-2\"	\"\\\"adf\\0\\na\\tdsf\\\"\"",
+            "0	\"werxc\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"03/03/1817\"	123	6.000001	\"11-2\"	\"\\\"adf\\0\\na\\td\\nsf\\\"\"",
             "-2389	\"Dfjl\"	2013-04-08 13:14:23	2013-04-08 13:14:72	2017-06-20	\"2017-03-12\"	NaN	2	\"nap\"	\"💩⌛👩🏻■\""};
         BufferedReader result = null;
         try (BufferedInputStream stream = new BufferedInputStream(
@@ -59,6 +60,44 @@ public class CSVFileReaderTest {
                 logger.info("found : " + foundLine);
             }
             assertEquals(expLine, foundLine);
+        }
+
+    }
+
+    @Test
+    public void testHardRead() {
+        String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/posts_all.csv";
+        String expFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/posts_all.tab";
+        BufferedReader result = null;
+        BufferedReader expected = null;
+        try (BufferedInputStream stream = new BufferedInputStream(
+                new FileInputStream(testFile))) {
+            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
+            result = new BufferedReader(new FileReader(instance.read(stream, null).getTabDelimitedFile()));
+            expected = new BufferedReader(new FileReader(new File(expFile)));
+        } catch (IOException ex) {
+            fail("" + ex);
+        }
+
+        String foundLine = null;
+        String expLine = null;
+        assertNotNull(result);
+        assertNotNull(expected);
+        int line = 0;
+        while (true) {
+            try {
+                expLine = expected.readLine();
+                foundLine = result.readLine();
+            } catch (IOException ex) {
+                fail();
+            }
+            if (!expLine.equals(foundLine)) {
+                logger.info("on line:" + line);
+                logger.info("expected: " + expLine);
+                logger.info("found : " + foundLine);
+            }
+            assertEquals(expLine, foundLine);
+            line++;
         }
 
     }

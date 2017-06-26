@@ -433,12 +433,11 @@ public class CSVFileReader extends TabularDataFileReader {
                     } else if (isTimeVariable[i] || isDateVariable[i]) {
                         // Time and Dates are stored NOT quoted (don't ask).
                         if (varString != null) {
-                            String charToken = varString;
                             // Dealing with quotes:
                             // remove the leading and trailing quotes, if present:
-                            charToken = charToken.replaceFirst("^\"*", "");
-                            charToken = charToken.replaceFirst("\"*$", "");
-                            caseRow[i] = charToken;
+                            varString = varString.replaceFirst("^\"*", "");
+                            varString = varString.replaceFirst("\"*$", "");
+                            caseRow[i] = varString;
                         } else {
                             caseRow[i] = "";
                         }
@@ -453,8 +452,10 @@ public class CSVFileReader extends TabularDataFileReader {
                         // to assume that all the empty strings in the file are
                         // indeed empty strings, and NOT missing values:
                         if (varString != null) {
-                            // escape the quotes ones:
+                            // escape the quotes:
                             varString = varString.replace("\"", "\\\"");
+                            // escape the newlines
+                            varString = varString.replace("\n", "\\n");
                             // final pair of quotes:
                             varString = "\"" + varString + "\"";
                             caseRow[i] = varString;
