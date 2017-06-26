@@ -134,6 +134,10 @@ public class SearchIT {
         disableNonPublicSearch.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        Response makeSureTokenlessSearchIsEnabled = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiRequiresToken);
+        makeSureTokenlessSearchIsEnabled.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         Response publishedPublicDataShouldBeVisibleToTokenless = UtilIT.search("id:dataset_" + datasetId1, nullToken);
         publishedPublicDataShouldBeVisibleToTokenless.prettyPrint();
         publishedPublicDataShouldBeVisibleToTokenless.then().assertThat()
@@ -142,13 +146,13 @@ public class SearchIT {
                 .body("data.items[0].name", CoreMatchers.is("Darwin's Finches"))
                 .statusCode(OK.getStatusCode());
 
-        Response disableTokenlessSearch = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiRequiresToken, "false");
+        Response disableTokenlessSearch = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiRequiresToken, "true");
         disableTokenlessSearch.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response dataverse462behaviorOfTokensBeingRequired = UtilIT.search("id:dataset_" + datasetId1, nullToken);
-        dataverse462behaviorOfTokensBeingRequired.prettyPrint();
-        dataverse462behaviorOfTokensBeingRequired.then().assertThat()
+        Response dataverse47behaviorOfTokensBeingRequired = UtilIT.search("id:dataset_" + datasetId1, nullToken);
+        dataverse47behaviorOfTokensBeingRequired.prettyPrint();
+        dataverse47behaviorOfTokensBeingRequired.then().assertThat()
                 .body("message", CoreMatchers.equalTo("Please provide a key query parameter (?key=XXX) or via the HTTP header X-Dataverse-key"))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 

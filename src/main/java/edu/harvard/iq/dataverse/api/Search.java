@@ -226,8 +226,10 @@ public class Search extends AbstractApiBean {
     }
 
     public boolean tokenLessSearchAllowed() {
-        boolean outOfBoxBehavior = true;
-        return settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiRequiresToken, outOfBoxBehavior);
+        boolean outOfBoxBehavior = false;
+        boolean tokenLessSearchAllowed = settingsSvc.isFalseForKey(SettingsServiceBean.Key.SearchApiRequiresToken, outOfBoxBehavior);
+        logger.fine("tokenLessSearchAllowed: " + tokenLessSearchAllowed);
+        return tokenLessSearchAllowed;
     }
 
     private boolean getDataRelatedToMe() {

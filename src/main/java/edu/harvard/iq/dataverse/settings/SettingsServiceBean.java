@@ -393,6 +393,10 @@ public class SettingsServiceBean {
     public boolean isTrueForKey( Key key, boolean defaultValue ) {
         return isTrue( key.toString(), defaultValue );
     }
+
+    public boolean isFalseForKey( Key key, boolean defaultValue ) {
+        return ! isTrue( key.toString(), defaultValue );
+    }
             
     public void deleteValueForKey( Key name ) {
         delete( name.toString() );
