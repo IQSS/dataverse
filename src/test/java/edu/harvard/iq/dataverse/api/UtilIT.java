@@ -137,6 +137,13 @@ public class UtilIT {
         return usernamePrefix + getRandomIdentifier().substring(0, 8);
     }
 
+    public static String getRandomString(int length) {
+        if (length < 0){
+            length = 3;
+        }
+        return getRandomIdentifier().substring(0, length+1);
+    }
+
     private static String getRandomUsername() {
         return "user" + getRandomIdentifier().substring(0, 8);
     }
@@ -647,7 +654,7 @@ public class UtilIT {
     static Response filterAuthenticatedUsers(String superUserApiToken,
                                              String searchTerm,
                                              Integer selectedPage,
-                                             Integer itemsPerPage
+                                             Integer numDisplay
     //                                         String sortKey
     ) {
 
@@ -659,16 +666,15 @@ public class UtilIT {
         if (selectedPage != null){
             queryParams.add("selectedPage=" + selectedPage.toString());
         }
-        if (itemsPerPage != null){
-            queryParams.add("itemsPerPage=" + itemsPerPage.toString());
+        if (numDisplay != null){
+            queryParams.add("numDisplay=" + numDisplay.toString());
         }
 
         String queryString = "";
         if (queryParams.size() > 0){
             queryString = "?" + String.join("&", queryParams);
         }
-        
-        
+               
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, superUserApiToken)
                 .get("/api/admin/list-users" + queryString);

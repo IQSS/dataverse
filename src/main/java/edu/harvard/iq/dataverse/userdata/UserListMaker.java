@@ -28,6 +28,7 @@ public class UserListMaker {
     public String errorMessage = null;
     
     public static final int ITEMS_PER_PAGE = 25;
+    public static final int MIN_ITEMS_PER_PAGE = 1;
     public static final int DEFAULT_OFFSET = 0;
     
     
@@ -76,7 +77,7 @@ public class UserListMaker {
         }
 
         // Initialize itemsPerPage
-        if ((itemsPerPage == null) || (itemsPerPage < 10)){
+        if ((itemsPerPage == null) || (itemsPerPage < MIN_ITEMS_PER_PAGE)){
             itemsPerPage = ITEMS_PER_PAGE;
         }
 

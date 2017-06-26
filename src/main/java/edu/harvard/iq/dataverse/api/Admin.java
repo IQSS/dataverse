@@ -318,7 +318,7 @@ public class Admin extends AbstractApiBean {
                         @QueryParam("numDisplay") Integer itemsPerPage,
                         @QueryParam("sortKey") String sortKey
     ) { 
-        
+        /*
         User authUser;
         try {
             authUser = this.findUserOrDie();
@@ -333,7 +333,7 @@ public class Admin extends AbstractApiBean {
                     ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
         }
         
-        
+        */
         UserListMaker userListMaker = new UserListMaker(userService);      
         
         UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, null);
