@@ -75,7 +75,7 @@ public class SettingsServiceBean {
          */
         SearchApiNonPublicAllowed,
         /**
-         * In Dataverse 4.6.2 and earlier, an API token was required to use the
+         * In Dataverse 4.7 and earlier, an API token was required to use the
          * Search API. Tokens are no longer required but you can revert to the
          * old behavior by setting this to false.
          */
