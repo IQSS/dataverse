@@ -71,9 +71,8 @@
                             <!-- A simple implementation of the superuser status toggle - via a boolean checkbox with an immediate ajax update. -->
                             <!-- Uses our standard approach, of showing a confirmation popup ("are you sure you want to toggle this? ...") first,  -->
                             <!-- before saving the toggled value. -->
-                            <!-- [to be reviewed:] I feel like toggling the superuser status for the primary, original "dataverseAdmin" superuser should not be allowed; -->
-                            <!-- Is there a better way to recognize this user, than by the id=1 and/or identifier="dataverseAdmin"? -->
-                            <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"  disabled="#{user.id == 1}">
+                            <!-- The current user, the admin user viewing the dashboard, should not be allowed to toggle the superuser status on him- or herself: -->
+                            <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"  disabled="#{user.id == dataverseSession.user.id}">
                                 <p:ajax event="change" process="@this" oncomplete="PF('toggleSuperuserConfirmation').show();"  update=":dashboardUsersForm:toggleSuperuserConfirmation"/>
                             </p:selectBooleanCheckbox>
                         </p:column>
