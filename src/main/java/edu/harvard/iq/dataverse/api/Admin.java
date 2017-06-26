@@ -89,7 +89,7 @@ public class Admin extends AbstractApiBean {
     DataverseSession session;    
 
     public static final String listUsersPartialAPIPath = "list-users";
-    public static final String listUsersFullAPIPath = "/api/v1/admin/" + listUsersPartialAPIPath;
+    public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
 
 
     @Path("settings")

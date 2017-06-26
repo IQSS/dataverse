@@ -6,6 +6,8 @@ import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import java.util.ArrayList;
+import java.util.List;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -31,6 +33,7 @@ public class AdminIT {
         anon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
         Response createNonSuperuser = UtilIT.createRandomUser();
+        
         String nonSuperuserUsername = UtilIT.getUsernameFromResponse(createNonSuperuser);
         String nonSuperuserApiToken = UtilIT.getApiTokenFromResponse(createNonSuperuser);
 
@@ -57,6 +60,65 @@ public class AdminIT {
 
     }
 
+    
+    @Test
+    public void testFilterAuthenticatedUsers() throws Exception {
+        
+        // --------------------------------------------
+        // Forbidden: Try *without* an API token
+        // --------------------------------------------
+        Response anon = UtilIT.filterAuthenticatedUsers("", null, null, null);
+        anon.prettyPrint();
+        anon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
+        // --------------------------------------------
+        // Forbidden: Try with a regular user--*not a superuser*
+        // --------------------------------------------
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        String nonSuperuserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String nonSuperUsername = UtilIT.getUsernameFromResponse(createUserResponse);
+        
+        Response filterResponseBadToken = UtilIT.filterAuthenticatedUsers(nonSuperuserApiToken, null, null, null);
+        filterResponseBadToken.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+         
+        // delete user
+        Response deleteNonSuperuser = UtilIT.deleteUser(nonSuperUsername);
+        assertEquals(200, deleteNonSuperuser.getStatusCode());
+        
+        // --------------------------------------------
+        // Make 11 random users
+        // --------------------------------------------
+         List<String> randomUsernames = new ArrayList<String>();
+        for (int i = 0; i < 11; i++){
+            
+            createUserResponse = UtilIT.createRandomUser();
+            createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+            String newUserName = UtilIT.getUsernameFromResponse(createUserResponse);
+            randomUsernames.add(newUserName);
+            
+        }
+        
+        for (String aUsername : randomUsernames){
+            
+            Response deleteUserResponse = UtilIT.deleteUser(aUsername);
+            assertEquals(200, deleteUserResponse.getStatusCode());
+        
+        }
+        /*
+        String newSuperUsername = UtilIT.getUsernameFromResponse(nonSuperuser);
+        Response newSuperUserResponse = UtilIT.makeSuperUser(newSuperUsername);
+        newSuperUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(newSuperUserResponse);
+*/
+        //nonSuperuser.prettyPrint();
+        //nonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        
+    }
+    
     @Test
     public void testConvertShibUserToBuiltin() throws Exception {
 

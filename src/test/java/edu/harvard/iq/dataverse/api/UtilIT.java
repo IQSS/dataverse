@@ -29,6 +29,9 @@ import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -611,6 +614,48 @@ public class UtilIT {
         return response;
     }
 
+    /**
+     * Used to the test the filter Authenticated Users API endpoint
+     * 
+     * Note 1 : All params are optional for endpoint to work EXCEPT superUserApiToken
+     * Note 2 : sortKey exists in API call but not currently used
+     * 
+     * @param apiToken
+     * @return 
+     */
+    static Response filterAuthenticatedUsers(String superUserApiToken,
+                                             String searchTerm,
+                                             Integer selectedPage,
+                                             Integer itemsPerPage
+    //                                         String sortKey
+    ) {
+
+       
+        List<String> queryParams = new ArrayList<String>();
+        if (searchTerm != null){
+            queryParams.add("searchTerm=" + searchTerm);
+        }
+        if (selectedPage != null){
+            queryParams.add("selectedPage=" + selectedPage.toString());
+        }
+        if (itemsPerPage != null){
+            queryParams.add("itemsPerPage=" + itemsPerPage.toString());
+        }
+
+        String queryString = "";
+        if (queryParams.size() > 0){
+            queryString = "?" + String.join("&", queryParams);
+        }
+        
+        
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, superUserApiToken)
+                .get("/api/admin/list-users" + queryString);
+        
+        return response;
+    }
+
+    
     static Response getAuthProviders(String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
