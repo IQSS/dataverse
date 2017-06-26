@@ -12,7 +12,7 @@ Developer Guide
 
    intro
    dev-environment
-   branching-strategy
+   version-control
    testing
    documentation
    debugging

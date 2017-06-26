@@ -64,6 +64,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.import.filesystem.subject", rootDvNameAsList);
             case CHECKSUMIMPORT:
                 return BundleUtil.getStringFromBundle("notification.email.import.checksum.subject", rootDvNameAsList);
+            case CONFIRMEMAIL:
+                return BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject", rootDvNameAsList);
         }
         return "";
     }

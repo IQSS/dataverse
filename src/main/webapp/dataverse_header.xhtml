@@ -9,6 +9,8 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
+    <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
+    
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
         <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
@@ -20,9 +22,21 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a href="/">
-                        <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
-                    </a>
+                    
+                    
+                    <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
+                        <a href="/">
+                            <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
+                        </a>
+                    </ui:fragment>
+
+                    <ui:fragment rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}">                       
+                        <a href="/">
+                            <h:graphicImage url="#{settingsWrapper.get(':LogoCustomizationFile')}"/>
+                        </a>
+                    </ui:fragment>
+                    
+                    
                     <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
                         <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
                     </h:outputLink>
@@ -40,9 +54,9 @@
                         <form class="navbar-form navbar-left" role="search" style="display:none;">
                             <div class="form-group">
                                 <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
-                                <input id="navbarsearch" type="text" class="search-input ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"/>
-                            </div>
-                            <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value;
+                                <input id="navbarsearch" type="text" class="search-input ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"/>            
+                            </div>                            
+                            <button type="submit" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}?q=' + document.getElementById('navbarsearch').value;
                                     return false;">
                                 <span class="glyphicon glyphicon-search"/> #{bundle.find}
                             </button>
