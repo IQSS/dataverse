@@ -96,12 +96,6 @@ public class AuthenticatedUser implements User, Serializable {
     private boolean superuser;
 
     /**
-     * @todo Remove? Check for accuracy? For Solr JOINs we used to care about
-     * the modification times of users but now we don't index users at all.
-     */
-    private Timestamp modificationTime;
-
-    /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
      * attribute key/value pairs, not just the Identity Provider (IdP).
      */
@@ -225,10 +219,6 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setSuperuser(boolean superuser) {
         this.superuser = superuser;
-    }
-
-    public void setModificationTime(Timestamp modificationTime) {
-        this.modificationTime = modificationTime;
     }
 
     @OneToOne(mappedBy = "authenticatedUser")

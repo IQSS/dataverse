@@ -312,14 +312,6 @@ public class AuthenticatedUserTest {
     }
 
     @Test
-    public void testSetModificationTime() {
-        System.out.println("setModificationTime");
-        Timestamp modificationTime = Timestamp.valueOf("2000-01-01 00:00:00.0");
-        testUser.setModificationTime(modificationTime);
-        assertEquals(Timestamp.valueOf("2000-01-01 00:00:00.0"), modificationTime);
-    }
-
-    @Test
     public void testGetAuthenticatedUserLookup() {
         System.out.println("getAuthenticatedUserLookup");
         AuthenticatedUserLookup result = testUser.getAuthenticatedUserLookup();

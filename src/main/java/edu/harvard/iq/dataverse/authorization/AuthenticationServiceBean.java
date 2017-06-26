@@ -441,14 +441,12 @@ public class AuthenticationServiceBean {
     }
     
     public AuthenticatedUser save( AuthenticatedUser user ) {
-        user.setModificationTime(getCurrentTimestamp());
         em.persist(user);
         em.flush();
         return user;
     }
     
     public AuthenticatedUser update( AuthenticatedUser user ) {
-        user.setModificationTime(getCurrentTimestamp());
         return em.merge(user);
     }
     
