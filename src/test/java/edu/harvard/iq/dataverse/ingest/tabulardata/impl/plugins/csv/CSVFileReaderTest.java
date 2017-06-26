@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -59,6 +60,44 @@ public class CSVFileReaderTest {
                 logger.info("found : " + foundLine);
             }
             assertEquals(expLine, foundLine);
+        }
+
+    }
+
+    @Test
+    public void testHardRead() {
+        String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/posts_all.csv";
+        String expFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/posts_all.tab";
+        BufferedReader result = null;
+        BufferedReader expected = null;
+        try (BufferedInputStream stream = new BufferedInputStream(
+                new FileInputStream(testFile))) {
+            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
+            result = new BufferedReader(new FileReader(instance.read(stream, null).getTabDelimitedFile()));
+            expected = new BufferedReader(new FileReader(new File(expFile)));
+        } catch (IOException ex) {
+            fail("" + ex);
+        }
+
+        String foundLine = null;
+        String expLine = null;
+        assertNotNull(result);
+        assertNotNull(expected);
+        int line = 0;
+        while (true) {
+            try {
+                expLine = expected.readLine();
+                foundLine = result.readLine();
+            } catch (IOException ex) {
+                fail();
+            }
+            if (!expLine.equals(foundLine)) {
+                logger.info("on line:" + line);
+                logger.info("expected: " + expLine);
+                logger.info("found : " + foundLine);
+            }
+            assertEquals(expLine, foundLine);
+            line++;
         }
 
     }
