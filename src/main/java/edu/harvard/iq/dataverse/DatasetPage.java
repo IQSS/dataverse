@@ -1509,6 +1509,7 @@ public class DatasetPage implements java.io.Serializable {
         return releaseDataset(false);
     }
 
+    // FIXME: No functionality should be GUI-only. Make all functionality reachable via the API. https://github.com/IQSS/dataverse/issues/3440
     public String sendBackToContributor() {
         Command<Dataset> cmd;
         workingVersion = dataset.getEditVersion();
@@ -1536,6 +1537,7 @@ public class DatasetPage implements java.io.Serializable {
         return  returnToLatestVersion();
     }
 
+    // FIXME: No functionality should be GUI-only. Make all functionality reachable via the API. https://github.com/IQSS/dataverse/issues/3440
     public String submitDataset() {
         Command<Dataset> cmd;
         workingVersion = dataset.getEditVersion();

@@ -46,6 +46,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -607,6 +608,53 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         } catch (EJBException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Something went wrong attempting to download rsync script: " + EjbUtil.ejbExceptionToString(ex));
+        }
+    }
+
+    // FIXME: This is a stub. Some logic has been copied from submitDataset in DatasetPage but not notifications! Make a Command and do lots of cleanup.
+    @POST
+    @Path("{id}/submitForReview")
+    public Response submitForReview(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            DatasetVersion datasetVersion = dataset.getLatestVersion();
+            if (!datasetVersion.getVersionState().equals(DatasetVersion.VersionState.DRAFT)) {
+                return error(Response.Status.BAD_REQUEST, "The dataset must be in draft to submit it for review. The state of the dataset is " + datasetVersion.getVersionState() + ".");
+            }
+            datasetVersion.setInReview(true);
+            Dataset updatedDataset = execCommand(new UpdateDatasetCommand(dataset, createDataverseRequest(findUserOrDie())));
+            JsonObjectBuilder result = Json.createObjectBuilder();
+            boolean inReview = updatedDataset.getLatestVersion().isInReview();
+            result.add("inReview", inReview);
+            result.add("message", "Dataset id " + updatedDataset.getId() + " has been submitted for review.");
+            return ok(result);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    // FIXME: This is a stub. Some logic has been copied from sendBackToContributor in DatasetPage but not notifications! Make a Command and do lots of cleanup.
+    @POST
+    @Path("{id}/returnToAuthor")
+    public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
+        StringReader rdr = new StringReader(jsonBody);
+        JsonObject json = Json.createReader(rdr).readObject();
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            DatasetVersion datasetVersion = dataset.getLatestVersion();
+            if (!datasetVersion.getVersionState().equals(DatasetVersion.VersionState.DRAFT)) {
+                return error(Response.Status.BAD_REQUEST, "The dataset must be in draft to return it to the author(s). The state of the dataset is " + datasetVersion.getVersionState() + ".");
+            }
+            datasetVersion.setInReview(false);
+            Dataset updatedDataset = execCommand(new UpdateDatasetCommand(dataset, createDataverseRequest(findUserOrDie())));
+            boolean inReview = updatedDataset.getLatestVersion().isInReview();
+            JsonObjectBuilder result = Json.createObjectBuilder();
+            result.add("inReview", inReview);
+            result.add("message", "Dataset id " + updatedDataset.getId() + " has been sent back to the author(s).");
+            result.add("received", json);
+            return ok(result);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 
