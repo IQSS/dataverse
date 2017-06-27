@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -42,7 +43,9 @@ public class CSVFileReaderTest {
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(testFile))) {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
-            result = new BufferedReader(new FileReader(instance.read(stream, null).getTabDelimitedFile()));
+            File outFile = instance.read(stream, null).getTabDelimitedFile();
+            result = new BufferedReader(new FileReader(outFile));
+            logger.info("Final pass: " + outFile.getPath());
         } catch (IOException ex) {
             fail("" + ex);
         }
@@ -73,7 +76,9 @@ public class CSVFileReaderTest {
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(testFile))) {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
-            result = new BufferedReader(new FileReader(instance.read(stream, null).getTabDelimitedFile()));
+            File outFile = instance.read(stream, null).getTabDelimitedFile();
+            result = new BufferedReader(new FileReader(outFile));
+            logger.info("Final pass: " + outFile.getPath());
             expected = new BufferedReader(new FileReader(new File(expFile)));
         } catch (IOException ex) {
             fail("" + ex);
@@ -84,9 +89,10 @@ public class CSVFileReaderTest {
         assertNotNull(result);
         assertNotNull(expected);
         int line = 0;
-        while (true) {
+        for (Iterator<String> iterator = expected.lines().iterator(); iterator.hasNext();) {
+            expLine = iterator.next();
+
             try {
-                expLine = expected.readLine();
                 foundLine = result.readLine();
             } catch (IOException ex) {
                 fail();

@@ -55,7 +55,7 @@ public class CSVFileReader extends TabularDataFileReader {
     private static final int DIGITS_OF_PRECISION_DOUBLE = 15;
     private static final String FORMAT_IEEE754 = "%+#." + DIGITS_OF_PRECISION_DOUBLE + "e";
     private MathContext doubleMathContext;
-    private CSVFormat inFormat = CSVFormat.EXCEL.withHeader();
+    private CSVFormat inFormat = CSVFormat.EXCEL;
     private CSVFormat outFormat = CSVFormat.TDF;
     private Set<Character> firstNumCharSet = new HashSet<>();
 
@@ -121,9 +121,10 @@ public class CSVFileReader extends TabularDataFileReader {
     public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter finalOut) throws IOException {
 
         List<DataVariable> variableList = new ArrayList<>();
-        CSVParser parser = new CSVParser(csvReader, inFormat);
-        dbglog.fine("Headers: " + parser.getHeaderMap());
+        CSVParser parser = new CSVParser(csvReader, inFormat.withHeader());
         Map<String, Integer> headers = parser.getHeaderMap();
+        dbglog.fine("Headers: " + headers.keySet());
+
         for (String varName : headers.keySet()) {
 
             if (varName == null || varName.isEmpty()) {
@@ -175,7 +176,9 @@ public class CSVFileReader extends TabularDataFileReader {
         File firstPassTempFile = File.createTempFile("firstpass-", ".tab");
 
         try (CSVPrinter csvFilePrinter = new CSVPrinter(
-                new FileWriter(firstPassTempFile.getAbsolutePath()), outFormat)) {
+                new FileWriter(firstPassTempFile.getAbsolutePath()), inFormat)) {
+            //Write  headers
+            csvFilePrinter.printRecord(headers.keySet());
             for (CSVRecord record : parser.getRecords()) {
                 // Checks if #records = #columns in header
                 if (!record.isConsistent()) {
@@ -345,7 +348,7 @@ public class CSVFileReader extends TabularDataFileReader {
         // Second, final pass.
         try (BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile))) {
             dbglog.info("Tmp File: " + firstPassTempFile);
-            parser = new CSVParser(secondPassReader, outFormat.withHeader(headers.keySet().toArray(new String[0])));
+            parser = new CSVParser(secondPassReader, inFormat.withHeader());
             String[] caseRow = new String[headers.size()];
 
             for (CSVRecord record : parser) {
@@ -464,12 +467,11 @@ public class CSVFileReader extends TabularDataFileReader {
                         }
                     }
                 }
-                dbglog.fine("CaseRow: " + Arrays.toString(caseRow));
                 finalOut.println(StringUtils.join(caseRow, "\t"));
             }
         }
         finalOut.close();
-        long linecount = parser.getCurrentLineNumber();
+        long linecount = parser.getCurrentLineNumber() - 1;
         parser.close();
         if (dataTable.getCaseQuantity().intValue() != linecount) {
             throw new IOException("Mismatch between line counts in first and final passes!, "
