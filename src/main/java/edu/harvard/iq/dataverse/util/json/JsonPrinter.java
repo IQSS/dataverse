@@ -119,6 +119,9 @@ public class JsonPrinter {
                 .add("position", authenticatedUser.getPosition())
                 .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
                 .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
+                .add("createdTime", authenticatedUser.getCreatedTime())
+                .add("lastLoginTime", authenticatedUser.getLastLoginTime())
+                .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
                 .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     

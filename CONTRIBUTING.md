@@ -28,7 +28,7 @@ An issue is a bug (a feature is no longer behaving the way it should) or a featu
 
 Before submitting an issue, please search the existing issues by using the search bar at the top of the page. If there is an existing issue that matches the issue you want to report, please add a comment to it.
 
-If there is no pre-existing issue, please click on the "New Issue" button, log in, and write in what the issue is (unless it is a security issue which should be reported privately to security@dataverse.org). Someone on the Dataverse development team will appropriately tag and assign it to a member of the Dataverse development team.
+If there is no pre-existing issue, please click on the "New Issue" button, log in, and write in what the issue is (unless it is a security issue which should be reported privately to security@dataverse.org).
 
 If you do not receive a reply to your new issue or comment in a timely manner, please email support@dataverse.org with a link to the issue.
 
@@ -53,12 +53,11 @@ The source for the documentation at http://guides.dataverse.org is in the GitHub
 
 Before you start coding, please reach out to us either on the [dataverse-community Google Group][], the [dataverse-dev Google Group][], [IRC][] (#dataverse on freenode), or via support@dataverse.org to make sure the effort is well coordinated and we avoid merge conflicts.
 
-We will encourage you to create a GitHub issue (if it doesn't exist already) to associate with your pull request.
+Please read http://guides.dataverse.org/en/latest/developers/version-control.html to understand how we use the "git flow" model of development and how we will encourage you to create a GitHub issue (if it doesn't exist already) to associate with your pull request.
 
-We hope you find the Developer Guide at http://guides.dataverse.org/en/latest/developers helpful.
-
-After making your pull request, your goal should be to help it advance through our kanban board at https://waffle.io/IQSS/dataverse . If no one has moved your pull request to the code review column in a timely manner, please reach out. Thanks!
+After making your pull request, your goal should be to help it advance through our kanban board at https://waffle.io/IQSS/dataverse . If no one has moved your pull request to the code review column in a timely manner, please reach out. We maintain a list of [community contributors][] so please let us know if you'd like to be added or removed from the list. Thanks!
 
 [dataverse-community Google Group]: https://groups.google.com/group/dataverse-community
 [dataverse-dev Google Group]: https://groups.google.com/group/dataverse-dev
 [IRC]: http://chat.dataverse.org
+[community contributors]: https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing

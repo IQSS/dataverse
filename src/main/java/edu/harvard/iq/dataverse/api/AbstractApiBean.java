@@ -328,10 +328,14 @@ public abstract class AbstractApiBean {
         return findAuthenticatedUserOrDie(getRequestApiKey());
     }
     
+    
     private AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
-        AuthenticatedUser u = authSvc.lookupUser(key);
-        if ( u != null ) {
-            return u;
+        AuthenticatedUser authUser = authSvc.lookupUser(key);
+        if ( authUser != null ) {
+            System.out.println("Updating lastApiUseTime for authenticated user via abstractapibean");
+            authUser = userSvc.updateLastApiUseTime(authUser);
+            
+            return authUser;
         }
         throw new WrappedResponse( badApiKey(key) );
     }
