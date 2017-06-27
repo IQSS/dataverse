@@ -677,6 +677,15 @@ For dynamically adding information to the top of every page. For example, "For t
 
 ``curl -X PUT -d "For testing only..." http://localhost:8080/api/admin/settings/:StatusMessageHeader``
 
+You can make the text clickable and include an additional message in a pop up by setting ``:StatusMessageText``.
+
+:StatusMessageText
+++++++++++++++++++
+
+After you've set ``:StatusMessageHeader`` you can also make it clickable to have it include text if a popup with this:
+
+``curl -X PUT -d "This appears in a popup." http://localhost:8080/api/admin/settings/:StatusMessageText``
+
 :MaxFileUploadSizeInBytes
 +++++++++++++++++++++++++
 
