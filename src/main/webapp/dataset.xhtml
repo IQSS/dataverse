@@ -155,22 +155,29 @@
                                             </p:commandLink>
                                         </li>
                                         <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
-                                            <li class="dropdown-submenu pull-left">
-                                                <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
-                                                <ul class="dropdown-menu">
-                                                    <li>
-                                                        <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                            <h:outputText value="Dataset" />
-                                                            <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                        </h:link>
-                                                    </li>
-                                                    <li>
-                                                        <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
-                                                            <h:outputText value="File" />
-                                                            <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                        </h:link>
-                                                    </li>
-                                                </ul>
+                                            <li class="#{settingsWrapper.publicInstall ? '' : 'dropdown-submenu pull-left'}">
+                                                <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+                                                    <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <h:link id="manageDatasetPermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                                <h:outputText value="Dataset" />
+                                                                <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                            </h:link>
+                                                        </li>
+                                                        <li>
+                                                            <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
+                                                                <h:outputText value="File" />
+                                                                <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                            </h:link>
+                                                        </li>
+                                                    </ul>
+                                                </ui:fragment>                                            
+                                                <h:link id="managePermissions" rendered="#{settingsWrapper.publicInstall}"
+                                                        styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.permissions']}" />
+                                                    <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                </h:link>
                                             </li>
                                             <li>
                                                 <p:commandLink id="privateUrl" oncomplete="PF('privateUrlConfirmation').show()" action="#{DatasetPage.initPrivateUrlPopUp()}" update="privateUrlPanel">
