@@ -150,16 +150,27 @@ public class UserServiceBean {
             return null;
         }
         
-        // Add '@' to each identifier and delimit the list by ","
+        // -------------------------------------------------
+        // Prepare a string to use within the SQL "a.assigneeidentifier IN (....)" clause
         //
+        // Note: This is not ideal but .setParameter was failing with attempts using:
+        //
+        //            Collection<String>, List<String>, String[]
+        //
+        // This appears to be due to the JDBC driver or Postgres.  In this case SQL
+        // injection isn't possible b/c the list of assigneeidentifier strings comes
+        // from a previous query
+        // 
+        // Add '@' to each identifier and delimit the list by ","
+        // -------------------------------------------------
         String identifierListString = userIdentifierList.stream()
                                      .filter(x -> !Strings.isNullOrEmpty(x))
                                      .map(x -> "'@" + x + "'")
                                      .collect(Collectors.joining(", "));
-
-        //System.out.println("identifierListString: " + identifierListString);
-
-        
+       
+        // -------------------------------------------------
+        // Create/Run the query to find directly assigned roles
+        // -------------------------------------------------
         String qstr = "SELECT distinct a.assigneeidentifier,";
         qstr += " d.name";
         qstr += " FROM roleassignment a,";
@@ -167,8 +178,6 @@ public class UserServiceBean {
         qstr += " WHERE d.id = a.role_id";
         qstr += " AND a.assigneeidentifier IN (" + identifierListString + ")";
         qstr += " ORDER by a.assigneeidentifier, d.name;";
-
-        //System.out.println("qstr: " + qstr);
 
         Query nativeQuery = em.createNativeQuery(qstr);
 
@@ -432,16 +441,15 @@ public class UserServiceBean {
      * @return 
      */
     public Long getSuperUserCount() {
+                
+        String qstr = "SELECT count(au)";
+        qstr += " FROM AuthenticatedUser au";
+        qstr += " WHERE au.superuser = :superuserTrue";
         
-        String qstr = "SELECT count(id)";
-        qstr += " FROM authenticateduser";
-        qstr += " WHERE superuser = true";
-        qstr += ";";
-        
-        Query nativeQuery = em.createNativeQuery(qstr);  
-
-        return (Long)nativeQuery.getSingleResult();
-
+        Query query = em.createQuery(qstr);
+        query.setParameter("superuserTrue", true);
+         
+        return (Long)query.getSingleResult();
     }
 
     /**
