@@ -115,7 +115,7 @@ public class UserServiceBean {
     
     private AuthenticatedUser createAuthenticatedUserForView (Object[] dbRowValues, String roles, int rowNum){
         AuthenticatedUser user = new AuthenticatedUser();
-                
+
         user.setId(new Long((int)dbRowValues[0]));
         user.setUserIdentifier((String)dbRowValues[1]);
         user.setLastName(UserUtil.getStringOrNull(dbRowValues[2]));
@@ -124,8 +124,8 @@ public class UserServiceBean {
         user.setAffiliation(UserUtil.getStringOrNull(dbRowValues[5]));
         user.setSuperuser((Boolean)(dbRowValues[6]));
         user.setPosition(UserUtil.getStringOrNull(dbRowValues[7]));
-        user.setAuthProviderId(UserUtil.getStringOrNull(dbRowValues[9]));
-        user.setAuthProviderFactoryAlias(UserUtil.getStringOrNull(dbRowValues[10]));
+        user.setAuthProviderId(UserUtil.getStringOrNull(dbRowValues[8]));
+        user.setAuthProviderFactoryAlias(UserUtil.getStringOrNull(dbRowValues[9]));
         
         user.setRoles(roles);
         return user;
@@ -400,7 +400,7 @@ public class UserServiceBean {
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";
         qstr += " u.affiliation, u.superuser,";
-        qstr += " u.position, u.modificationtime,";
+        qstr += " u.position,";
         qstr += " prov.id, prov.factoryalias";
         qstr += " FROM authenticateduser u,";
         qstr += " authenticateduserlookup prov_lookup,";
