@@ -1369,6 +1369,7 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
 
+                String creatorOrcidId = au.getOrcidId();
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
                     for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                         for (DatasetField subField : authorValue.getChildDatasetFields()) {
@@ -1377,6 +1378,11 @@ public class DatasetPage implements java.io.Serializable {
                             }
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
                                 subField.getDatasetFieldValues().get(0).setValue(au.getAffiliation());
+                            }
+                            if (creatorOrcidId != null) {
+                                if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {
+                                    subField.getDatasetFieldValues().get(0).setValue(creatorOrcidId);
+                                }
                             }
                         }
                     }

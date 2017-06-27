@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -261,5 +262,13 @@ public class AuthenticatedUser implements User, Serializable {
     public String getSortByString() {
         return this.getLastName() + " " + this.getFirstName() + " " + this.getUserIdentifier();
     }
-    
+
+    public String getOrcidId() {
+        String authProviderId = getAuthenticatedUserLookup().getAuthenticationProviderId();
+        if (OrcidOAuth2AP.PROVIDER_ID_PRODUCTION.equals(authProviderId)) {
+            return getAuthenticatedUserLookup().getPersistentUserId();
+        }
+        return null;
+    }
+
 }
