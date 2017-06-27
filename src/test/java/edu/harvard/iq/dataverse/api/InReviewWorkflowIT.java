@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class RequestAccessIT {
+public class InReviewWorkflowIT {
 
     private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
 
@@ -25,7 +25,7 @@ public class RequestAccessIT {
     }
 
     @Test
-    public void testRequestAccess() {
+    public void testCuratorSendsCommentsToAuthor() {
         Response createCurator = UtilIT.createRandomUser();
         createCurator.prettyPrint();
         createCurator.then().assertThat()
