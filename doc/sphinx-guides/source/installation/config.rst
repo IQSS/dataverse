@@ -315,7 +315,7 @@ If you are not fronting Glassfish with Apache you'll need to prevent Glassfish f
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Congratulations! You've gone live! It's time to announce your new data respository to the world! You are also welcome to contact support@dataverse.org to have the Dataverse team add your installation to the map at http://dataverse.org . Thank you for installing Datavese!
+Congratulations! You've gone live! It's time to announce your new data respository to the world! You are also welcome to contact support@dataverse.org to have the Dataverse team add your installation to the map at http://dataverse.org . Thank you for installing Dataverse!
 
 Administration of Your Dataverse Installation
 +++++++++++++++++++++++++++++++++++++++++++++
