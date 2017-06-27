@@ -50,7 +50,10 @@ public class UserNotification implements Serializable {
     
     @Transient 
     String roleString;
-    
+
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String text;
+
     private boolean emailed;
 
     public Long getId() {
@@ -119,6 +122,14 @@ public class UserNotification implements Serializable {
 
     public void setDisplayAsRead(boolean displayAsRead) {
         this.displayAsRead = displayAsRead;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 
     public boolean isEmailed() {

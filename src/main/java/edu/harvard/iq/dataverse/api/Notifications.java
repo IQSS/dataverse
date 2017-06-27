@@ -36,6 +36,10 @@ public class Notifications extends AbstractApiBean {
         for (UserNotification notification : notifications) {
             JsonObjectBuilder notificationObjectBuilder = Json.createObjectBuilder();
             notificationObjectBuilder.add("type", notification.getType().toString());
+            String comments = notification.getText();
+            if (comments != null) {
+                notificationObjectBuilder.add("comments", comments);
+            }
             jsonArrayBuilder.add(notificationObjectBuilder);
         }
         JsonObjectBuilder result = Json.createObjectBuilder().add("notifications", jsonArrayBuilder);

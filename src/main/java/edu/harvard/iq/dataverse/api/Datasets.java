@@ -663,7 +663,7 @@ public class Datasets extends AbstractApiBean {
                 editUsers.remove(au);
             }
             for (AuthenticatedUser au : editUsers) {
-                userNotificationSvc.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId());
+                userNotificationSvc.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId(), json.getString("comments"));
             }
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", inReview);

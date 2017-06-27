@@ -76,14 +76,20 @@ public class UserNotificationServiceBean {
     public void delete(UserNotification userNotification) {
         em.remove(em.merge(userNotification));
     }
-    
+
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
+        String noExtraTextOrComments = null;
+        sendNotification(dataverseUser, sendDate, type, objectId, noExtraTextOrComments);
+    }
+
+    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String text) {
         
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
         userNotification.setType(type);
         userNotification.setObjectId(objectId);
+        userNotification.setText(text);
         if (mailService.sendNotificationEmail(userNotification)) {
             logger.fine("email was sent");
             userNotification.setEmailed(true);

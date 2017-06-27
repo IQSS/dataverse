@@ -112,9 +112,14 @@ public class InReviewWorkflowIT {
         authorsChecksForCommentsAgain.prettyPrint();
         authorsChecksForCommentsAgain.then().assertThat()
                 .body("data.notifications[0].type", equalTo("RETURNEDDS"))
+                // The author thinks, "This why we have curators!"
+                .body("data.notifications[0].comments", equalTo("You forgot to upload your files."))
                 .body("data.notifications[1].type", equalTo("CREATEACC"))
+                .body("data.notifications[1].comments", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
+        // Author then makes corrections (uploads files, in this case), etc.
+        // These println's are here in case you want to log into the GUI to see what notifications look like.
         System.out.println("Curator username/password: " + curatorUsername);
         System.out.println("Author username/password: " + authorUsername);
 
