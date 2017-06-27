@@ -687,6 +687,13 @@ Notes:
 
 ``curl -X PUT -d 2147483648 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
 
+:ZipDownloadLimit
++++++++++++++++++
+
+For performance reasons, Dataverse will only create zip files on the fly up to 100 MB but the limit can be increased. Here's an example of raising the limit to 1 GB:
+
+``curl -X PUT -d 1000000000 http://localhost:8080/api/admin/settings/:ZipDownloadLimit``
+
 :TabularIngestSizeLimit
 +++++++++++++++++++++++
 
