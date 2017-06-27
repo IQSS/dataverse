@@ -56,7 +56,6 @@ public class CSVFileReader extends TabularDataFileReader {
     private static final String FORMAT_IEEE754 = "%+#." + DIGITS_OF_PRECISION_DOUBLE + "e";
     private MathContext doubleMathContext;
     private CSVFormat inFormat = CSVFormat.EXCEL;
-    private CSVFormat outFormat = CSVFormat.TDF;
     private Set<Character> firstNumCharSet = new HashSet<>();
 
     // DATE FORMATS
@@ -173,7 +172,7 @@ public class CSVFileReader extends TabularDataFileReader {
         SimpleDateFormat[] selectedDateTimeFormat = new SimpleDateFormat[headers.size()];
         SimpleDateFormat[] selectedDateFormat = new SimpleDateFormat[headers.size()];
 
-        File firstPassTempFile = File.createTempFile("firstpass-", ".tab");
+        File firstPassTempFile = File.createTempFile("firstpass-", ".csv");
 
         try (CSVPrinter csvFilePrinter = new CSVPrinter(
                 new FileWriter(firstPassTempFile.getAbsolutePath()), inFormat)) {
