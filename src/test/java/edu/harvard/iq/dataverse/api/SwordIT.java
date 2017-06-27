@@ -18,6 +18,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.startsWith;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -52,6 +53,7 @@ public class SwordIT {
             RestAssured.baseURI = "https://dev1.dataverse.org";
         }
         Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
         superuser = UtilIT.getUsernameFromResponse(createUser);
         apiTokenSuperuser = UtilIT.getApiTokenFromResponse(createUser);
         String apitoken = UtilIT.getApiTokenFromResponse(createUser);
@@ -106,6 +108,24 @@ public class SwordIT {
         }
         UtilIT.deleteUser(username);
 
+    }
+    
+    @Test
+    public void testSwordAuthUserLastApiUse(){
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apitoken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response serviceDocumentResponse = UtilIT.getServiceDocument(apitoken);
+        
+        Response getUserAsJsonAgain = UtilIT.getAuthenticatedUser(username, apitoken);
+        getUserAsJsonAgain.prettyPrint();
+        getUserAsJsonAgain.then().assertThat()
+                // Checking that it's 2017 or whatever. Not y3k compliant! 
+                .body("data.lastApiUseTime", startsWith("2"))
+                .statusCode(OK.getStatusCode());
+
+        UtilIT.deleteUser(username);
     }
 
     @Test
