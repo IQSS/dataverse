@@ -91,6 +91,14 @@ public class InReviewWorkflowIT {
                 .body("data.inReview", equalTo(true))
                 .statusCode(OK.getStatusCode());
 
+        Response authorsChecksForCommentsPrematurely = UtilIT.getNotifications(authorApiToken);
+        authorsChecksForCommentsPrematurely.prettyPrint();
+        authorsChecksForCommentsPrematurely.then().assertThat()
+                .body("data.notifications[0].type", equalTo("CREATEACC"))
+                // The author thinks, "What's taking the curator so long to review my data?!?"
+                .body("data.notifications[1]", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
         String comments = "You forgot to upload your files.";
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("comments", comments);
@@ -98,6 +106,13 @@ public class InReviewWorkflowIT {
         returnToAuthor.prettyPrint();
         returnToAuthor.then().assertThat()
                 .body("data.inReview", equalTo(false))
+                .statusCode(OK.getStatusCode());
+
+        Response authorsChecksForCommentsAgain = UtilIT.getNotifications(authorApiToken);
+        authorsChecksForCommentsAgain.prettyPrint();
+        authorsChecksForCommentsAgain.then().assertThat()
+                .body("data.notifications[0].type", equalTo("RETURNEDDS"))
+                .body("data.notifications[1].type", equalTo("CREATEACC"))
                 .statusCode(OK.getStatusCode());
 
         System.out.println("Curator username/password: " + curatorUsername);
