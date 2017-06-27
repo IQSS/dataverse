@@ -1,5 +1,4 @@
 package edu.harvard.iq.dataverse;
-
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
@@ -7,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -33,10 +34,16 @@ public class UserServiceBean {
         return (AuthenticatedUser) em.find(AuthenticatedUser.class, pk);
     }    
 
-    public AuthenticatedUser save( AuthenticatedUser user ) {
-        if ( user.getId() == null ) {
+    
+    public AuthenticatedUser save(AuthenticatedUser user) {
+        if (user.getId() == null) {
             em.persist(this);
         } else {
+            if (user.getCreatedTime() == null) {
+                user.setCreatedTime(new Timestamp(new Date().getTime())); // default new creation time
+                user.setLastLoginTime(user.getCreatedTime()); // sets initial lastLoginTime to creation time
+                logger.info("Creation time null! Setting user creation time to now");
+            }
             user = em.merge(user);
         }
         em.flush();
@@ -117,7 +124,6 @@ public class UserServiceBean {
         user.setAffiliation(UserUtil.getStringOrNull(dbRowValues[5]));
         user.setSuperuser((Boolean)(dbRowValues[6]));
         user.setPosition(UserUtil.getStringOrNull(dbRowValues[7]));
-        user.setModificationTime(UserUtil.getTimestampOrNull(dbRowValues[8]));
         user.setAuthProviderId(UserUtil.getStringOrNull(dbRowValues[9]));
         user.setAuthProviderFactoryAlias(UserUtil.getStringOrNull(dbRowValues[10]));
         
@@ -384,7 +390,6 @@ public class UserServiceBean {
 
         searchTerm = searchTerm.trim();
 
-
         String sharedSearchClause = "";
         
         if (!searchTerm.isEmpty()) {
@@ -498,5 +503,17 @@ public class UserServiceBean {
     }
     
     
-    
+    public AuthenticatedUser updateLastLogin(AuthenticatedUser user) {
+        //assumes that AuthenticatedUser user already exists
+        user.setLastLoginTime(new Timestamp(new Date().getTime()));
+        
+        return save(user);
+    }
+
+    public AuthenticatedUser updateLastApiUseTime(AuthenticatedUser user) {
+        //assumes that AuthenticatedUser user already exists
+        user.setLastApiUseTime(new Timestamp(new Date().getTime()));
+        return save(user);
+    }
+
 }

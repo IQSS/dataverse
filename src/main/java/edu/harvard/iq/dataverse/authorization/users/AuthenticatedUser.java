@@ -10,6 +10,7 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.json.Json;
@@ -77,19 +78,26 @@ public class AuthenticatedUser implements User, Serializable {
     private String email;
     private String affiliation;
     private String position;
+    
     @NotBlank(message = "Please enter your last name.")
     private String lastName;
+    
     @NotBlank(message = "Please enter your first name.")
     private String firstName;
+    
     @Column(nullable = true)
     private Timestamp emailConfirmed;
-    private boolean superuser;
+    //TODO: add the word time after next 3 columns   
+    @Column(nullable=false)
+    private Timestamp createdTime;
+    
+    @Column(nullable=true)
+    private Timestamp lastLoginTime;    // last user login timestamp
 
-    /**
-     * @todo Remove? Check for accuracy? For Solr JOINs we used to care about
-     * the modification times of users but now we don't index users at all.
-     */
-    private Timestamp modificationTime;
+    @Column(nullable=true)
+    private Timestamp lastApiUseTime;   // last API use with user's token
+            
+    private boolean superuser;
 
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
@@ -256,10 +264,6 @@ public class AuthenticatedUser implements User, Serializable {
         this.superuser = superuser;
     }
 
-    public void setModificationTime(Timestamp modificationTime) {
-        this.modificationTime = modificationTime;
-    }
-
     @OneToOne(mappedBy = "authenticatedUser")
     private AuthenticatedUserLookup authenticatedUserLookup;
 
@@ -326,4 +330,47 @@ public class AuthenticatedUser implements User, Serializable {
         return this.getLastName() + " " + this.getFirstName() + " " + this.getUserIdentifier();
     }
     
+    /**
+     * 
+     * @param lastLoginTime 
+     */
+    public void setLastLoginTime(Timestamp lastLoginTime){
+        
+        this.lastLoginTime = lastLoginTime;
+    }
+    
+    /**
+     * @param lastLoginTime
+     */
+    public Timestamp getLastLoginTime(){
+        return this.lastLoginTime;
+    }
+    
+    
+    public void setCreatedTime(Timestamp createdTime){
+        this.createdTime = createdTime;
+    }
+    
+    public Timestamp getCreatedTime(){
+        return this.createdTime;
+    }
+
+    
+    /**
+     * 
+     * @param lastApiUseTime 
+     */
+    public void setLastApiUseTime(Timestamp lastApiUseTime){        
+        this.lastApiUseTime = lastApiUseTime;
+    }
+    
+    /**
+     * 
+     * @param lastApiUseTime
+     */
+    public Timestamp getLastApiUseTime(){
+        
+        return this.lastApiUseTime;
+    }
+
 }
