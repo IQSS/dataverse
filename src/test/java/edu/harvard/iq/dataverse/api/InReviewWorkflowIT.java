@@ -100,6 +100,9 @@ public class InReviewWorkflowIT {
                 .body("data.inReview", equalTo(false))
                 .statusCode(OK.getStatusCode());
 
+        System.out.println("Curator username/password: " + curatorUsername);
+        System.out.println("Author username/password: " + authorUsername);
+
     }
 
 }
