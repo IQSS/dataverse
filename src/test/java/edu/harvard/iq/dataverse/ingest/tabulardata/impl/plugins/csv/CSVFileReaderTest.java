@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
+import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -67,45 +69,99 @@ public class CSVFileReaderTest {
 
     }
 
+    /*
+     * This test will read the CSV File From Hell, above, then will inspect
+     * the DataTable object produced by the plugin, and verify that the
+     * individual DataVariables have been properly typed.
+     */
     @Test
-    public void testHardRead() {
-        String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/posts_all.csv";
-        String expFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/posts_all.tab";
-        BufferedReader result = null;
-        BufferedReader expected = null;
+    public void testVariables() {
+        String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/IngestCSV.csv";
+
+        String[] expectedVariableNames = {"ints", "Strings", "Times", "Not quite Times", "Dates", "Not quite Dates", "Numbers", "Not quite Ints", "Not quite Numbers", "Column that hates you, contains many comas, and is verbose and long enough that it would cause ingest to fail if ingest failed when a header was more than 256 characters long. Really, it's just sadistic.　Also to make matters worse, the space at the begining of this sentance was a special unicode space designed to make you angry."};
+
+        DataVariable.VariableType[] expectedVariableTypes = {DataVariable.VariableType.NUMERIC, DataVariable.VariableType.CHARACTER, DataVariable.VariableType.CHARACTER, DataVariable.VariableType.CHARACTER, DataVariable.VariableType.CHARACTER,
+            DataVariable.VariableType.CHARACTER, DataVariable.VariableType.NUMERIC, DataVariable.VariableType.NUMERIC, DataVariable.VariableType.CHARACTER, DataVariable.VariableType.CHARACTER};
+
+        DataVariable.VariableInterval[] expectedVariableIntervals = {DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.DISCRETE,
+            DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.CONTINUOUS, DataVariable.VariableInterval.CONTINUOUS, DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.DISCRETE};
+
+        String[] expectedVariableFormatCategories = {null, null, "time", "time", "date", null, null, null, null, null};
+
+        String[] expectedVariableFormats = {null, null, "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", null, null, null, null, null};
+
+        Long expectedNumberOfCases = 7L; // aka the number of lines in the TAB file produced by the ingest plugin
+
+        DataTable result = null;
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(testFile))) {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
-            File outFile = instance.read(stream, null).getTabDelimitedFile();
-            result = new BufferedReader(new FileReader(outFile));
-            logger.info("Final pass: " + outFile.getPath());
-            expected = new BufferedReader(new FileReader(new File(expFile)));
+            result = instance.read(stream, null).getDataTable();
         } catch (IOException ex) {
             fail("" + ex);
         }
 
-        String foundLine = null;
-        String expLine = null;
         assertNotNull(result);
-        assertNotNull(expected);
-        int line = 0;
-        for (Iterator<String> iterator = expected.lines().iterator(); iterator.hasNext();) {
-            expLine = iterator.next();
 
-            try {
-                foundLine = result.readLine();
-            } catch (IOException ex) {
-                fail();
-            }
-            if (!expLine.equals(foundLine)) {
-                logger.info("on line:" + line);
-                logger.info("expected: " + expLine);
-                logger.info("found : " + foundLine);
-            }
-            assertEquals(expLine, foundLine);
-            line++;
+        assertNotNull(result.getDataVariables());
+
+        assertEquals(result.getVarQuantity(), new Long(result.getDataVariables().size()));
+
+        if (result.getVarQuantity() != expectedVariableTypes.length) {
+            logger.info("number of variables expected: " + expectedVariableTypes.length);
+            logger.info("number of variables produced: " + result.getVarQuantity());
         }
 
+        assertEquals(result.getVarQuantity(), new Long(expectedVariableTypes.length));
+
+        if (!expectedNumberOfCases.equals(result.getCaseQuantity())) {
+            logger.info("number of observations expected: " + expectedNumberOfCases);
+            logger.info("number of observations produced: " + result.getCaseQuantity());
+        }
+
+        assertEquals(expectedNumberOfCases, result.getCaseQuantity());
+
+        // OK, let's go through the individual variables:
+        for (int i = 0; i < result.getVarQuantity(); i++) {
+
+            if (!expectedVariableNames[i].equals(result.getDataVariables().get(i).getName())) {
+                logger.info("variable " + i + ", name expected: " + expectedVariableNames[i]);
+                logger.info("variable " + i + ", name produced: " + result.getDataVariables().get(i).getName());
+            }
+
+            assertEquals(expectedVariableNames[i], result.getDataVariables().get(i).getName());
+
+            if (!expectedVariableTypes[i].equals(result.getDataVariables().get(i).getType())) {
+                logger.info("variable " + i + ", type expected: " + expectedVariableTypes[i].toString());
+                logger.info("variable " + i + ", type produced: " + result.getDataVariables().get(i).getType().toString());
+            }
+
+            assertEquals(expectedVariableTypes[i], result.getDataVariables().get(i).getType());
+
+            if (!expectedVariableIntervals[i].equals(result.getDataVariables().get(i).getInterval())) {
+                logger.info("variable " + i + ", interval expected: " + expectedVariableIntervals[i].toString());
+                logger.info("variable " + i + ", interval produced: " + result.getDataVariables().get(i).getInterval().toString());
+            }
+
+            assertEquals(expectedVariableIntervals[i], result.getDataVariables().get(i).getInterval());
+
+            if ((expectedVariableFormatCategories[i] != null && !expectedVariableFormatCategories[i].equals(result.getDataVariables().get(i).getFormatCategory()))
+                    || (expectedVariableFormatCategories[i] == null && result.getDataVariables().get(i).getFormatCategory() != null)) {
+                logger.info("variable " + i + ", format category expected: " + expectedVariableFormatCategories[i]);
+                logger.info("variable " + i + ", format category produced: " + result.getDataVariables().get(i).getFormatCategory());
+            }
+
+            assertEquals(expectedVariableFormatCategories[i], result.getDataVariables().get(i).getFormatCategory());
+
+            if ((expectedVariableFormats[i] != null && !expectedVariableFormats[i].equals(result.getDataVariables().get(i).getFormat()))
+                    || (expectedVariableFormats[i] == null && result.getDataVariables().get(i).getFormat() != null)) {
+                logger.info("variable " + i + ", format expected: " + expectedVariableFormats[i]);
+                logger.info("variable " + i + ", format produced: " + result.getDataVariables().get(i).getFormat());
+            }
+
+            assertEquals(expectedVariableFormats[i], result.getDataVariables().get(i).getFormat());
+
+        }
     }
 
     /**

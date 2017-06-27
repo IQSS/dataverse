@@ -319,7 +319,7 @@ public class CSVFileReader extends TabularDataFileReader {
             }
         }
         // -1 because headers shouldn't count
-        dataTable.setCaseQuantity(parser.getCurrentLineNumber() - 1);
+        dataTable.setCaseQuantity(parser.getRecordNumber());
         parser.close();
         csvReader.close();
 
@@ -470,7 +470,7 @@ public class CSVFileReader extends TabularDataFileReader {
             }
         }
         finalOut.close();
-        long linecount = parser.getCurrentLineNumber() - 1;
+        long linecount = parser.getRecordNumber();
         parser.close();
         if (dataTable.getCaseQuantity().intValue() != linecount) {
             throw new IOException("Mismatch between line counts in first and final passes!, "
