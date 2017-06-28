@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -1383,6 +1382,10 @@ public class DatasetPage implements java.io.Serializable {
                                 if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {
                                     subField.getDatasetFieldValues().get(0).setValue(creatorOrcidId);
                                 }
+                                if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {  
+                                   DatasetFieldType authorIdTypeDatasetField = fieldService.findByName(DatasetFieldConstant.authorIdType);
+                                   subField.setSingleControlledVocabularyValue(fieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(authorIdTypeDatasetField, "ORCID", true));
+                                }                                
                             }
                         }
                     }
