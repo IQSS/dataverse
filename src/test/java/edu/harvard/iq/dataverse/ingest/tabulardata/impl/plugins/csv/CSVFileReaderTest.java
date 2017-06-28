@@ -18,6 +18,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.logging.Logger;
+import org.dataverse.unf.UNFUtil;
+import org.dataverse.unf.UnfException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -258,6 +260,137 @@ public class CSVFileReaderTest {
         }
     }
 
+    /*
+     * UNF test;
+     * I'd like to use a file with more interesting values - "special" numbers, freaky dates, accents, etc.
+     * for this. But checking it in with this simple file, for now.
+     * (thinking about it, the "csv file from hell" may be a better test case for the UNF test)
+     */
+    @Test
+    public void testVariableUNFs() {
+        String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/election_precincts.csv";
+        Long expectedNumberOfVariables = 13L;
+        Long expectedNumberOfCases = 24L; // aka the number of lines in the TAB file produced by the ingest plugin
+
+        String[] expectedUNFs = {
+            "UNF:6:wb7OATtNC/leh1sOP5IGDQ==",
+            "UNF:6:0V3xQ3ea56rzKwvGt9KBCA==",
+            "UNF:6:0V3xQ3ea56rzKwvGt9KBCA==",
+            "UNF:6:H9inAvq5eiIHW6lpqjjKhQ==",
+            "UNF:6:Bh0M6QvunZwW1VoTyioRCQ==",
+            "UNF:6:o5VTaEYz+0Kudf6hQEEupQ==",
+            "UNF:6:eJRvbDJkIeDPrfN2dYpRfA==",
+            "UNF:6:JD1wrtM12E7evrJJ3bRFGA==",
+            "UNF:6:xUKbK9hb5o0nL5/mYiy7Bw==",
+            "UNF:6:Mvq3BrdzoNhjndMiVr92Ww==",
+            "UNF:6:KkHM6Qlyv3QlUd+BKqqB3Q==",
+            "UNF:6:EWUVuyXKSpyllsrjHnheig==",
+            "UNF:6:ri9JsRJxM2xpWSIq17oWNw=="};
+
+        TabularDataIngest ingestResult = null;
+
+        File generatedTabFile = null;
+        DataTable generatedDataTable = null;
+
+        try (BufferedInputStream stream = new BufferedInputStream(
+                new FileInputStream(testFile))) {
+            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
+
+            ingestResult = instance.read(stream, null);
+
+            generatedTabFile = ingestResult.getTabDelimitedFile();
+            generatedDataTable = ingestResult.getDataTable();
+        } catch (IOException ex) {
+            fail("" + ex);
+        }
+
+        assertNotNull(generatedDataTable);
+
+        assertNotNull(generatedDataTable.getDataVariables());
+
+        assertEquals(generatedDataTable.getVarQuantity(), new Long(generatedDataTable.getDataVariables().size()));
+
+        assertEquals(generatedDataTable.getVarQuantity(), expectedNumberOfVariables);
+
+        assertEquals(expectedNumberOfCases, generatedDataTable.getCaseQuantity());
+
+        for (int i = 0; i < expectedNumberOfVariables; i++) {
+            String unf = null;
+
+            if (generatedDataTable.getDataVariables().get(i).isIntervalContinuous()) {
+                FileInputStream generatedTabInputStream = null;
+                try {
+                    generatedTabInputStream = new FileInputStream(generatedTabFile);
+                } catch (FileNotFoundException ioex) {
+                    fail("Failed to open generated tab-delimited file for reading" + ioex);
+                }
+
+                Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                try {
+                    unf = UNFUtil.calculateUNF(columnVector);
+                } catch (IOException | UnfException ioex) {
+                    fail("Failed to generate the UNF for variable number " + i + ", (" + generatedDataTable.getDataVariables().get(i).getName() + ", floating point)");
+                }
+
+            }
+            if (generatedDataTable.getDataVariables().get(i).isIntervalDiscrete()
+                    && generatedDataTable.getDataVariables().get(i).isTypeNumeric()) {
+
+                FileInputStream generatedTabInputStream = null;
+                try {
+                    generatedTabInputStream = new FileInputStream(generatedTabFile);
+                } catch (FileNotFoundException ioex) {
+                    fail("Failed to open generated tab-delimited file for reading" + ioex);
+                }
+
+                Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+
+                try {
+                    unf = UNFUtil.calculateUNF(columnVector);
+                } catch (IOException | UnfException ioex) {
+                    fail("Failed to generate the UNF for variable number " + i + ", (" + generatedDataTable.getDataVariables().get(i).getName() + ", integer)");
+                }
+
+            }
+            if (generatedDataTable.getDataVariables().get(i).isTypeCharacter()) {
+
+                FileInputStream generatedTabInputStream = null;
+                try {
+                    generatedTabInputStream = new FileInputStream(generatedTabFile);
+                } catch (FileNotFoundException ioex) {
+                    fail("Failed to open generated tab-delimited file for reading" + ioex);
+                }
+
+                String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+
+                String[] dateFormats = null;
+
+                // Special handling for Character strings that encode dates and times:
+                if ("time".equals(generatedDataTable.getDataVariables().get(i).getFormatCategory())
+                        || "date".equals(generatedDataTable.getDataVariables().get(i).getFormatCategory())) {
+
+                    dateFormats = new String[expectedNumberOfCases.intValue()];
+                    for (int j = 0; j < expectedNumberOfCases; j++) {
+                        dateFormats[j] = generatedDataTable.getDataVariables().get(i).getFormat();
+                    }
+                }
+
+                try {
+                    if (dateFormats == null) {
+                        unf = UNFUtil.calculateUNF(columnVector);
+                    } else {
+                        unf = UNFUtil.calculateUNF(columnVector, dateFormats);
+                    }
+                } catch (IOException | UnfException iex) {
+                    fail("Failed to generate the UNF for variable number " + i + ", (" + generatedDataTable.getDataVariables().get(i).getName() + ", " + (dateFormats == null ? "String" : "Date/Time value") + ")");
+                }
+            }
+
+            assertEquals("Variable number " + i + ":", expectedUNFs[i], unf);
+        }
+
+    }
+    
     /**
      * Tests CSVFileReader with a CSV with one more column than header. Tests
      * CSVFileReader with a null CSV.
