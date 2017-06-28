@@ -6,12 +6,15 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
 import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableInterval;
 import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableType;
+import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -124,6 +127,134 @@ public class CSVFileReaderTest {
             assertEquals("variable " + i + ":", expectedVariableFormatCategories[i], result.getDataVariables().get(i).getFormatCategory());
 
             assertEquals("variable " + i + ":", expectedVariableFormats[i], result.getDataVariables().get(i).getFormat());
+        }
+    }
+
+    /*
+     * This test will read a CSV file, then attempt to subset
+     * the resulting tab-delimited file and verify that the individual variable vectors
+     * are legit.
+     */
+    @Test
+    public void testSubset() {
+        String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/election_precincts.csv";
+        Long expectedNumberOfVariables = 13L;
+        Long expectedNumberOfCases = 24L; // aka the number of lines in the TAB file produced by the ingest plugin
+
+        TabularDataIngest ingestResult = null;
+
+        File generatedTabFile = null;
+        DataTable generatedDataTable = null;
+
+        try (BufferedInputStream stream = new BufferedInputStream(
+                new FileInputStream(testFile))) {
+            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
+
+            ingestResult = instance.read(stream, null);
+
+            generatedTabFile = ingestResult.getTabDelimitedFile();
+            generatedDataTable = ingestResult.getDataTable();
+        } catch (IOException ex) {
+            fail("" + ex);
+        }
+
+        assertNotNull(generatedDataTable);
+
+        assertNotNull(generatedDataTable.getDataVariables());
+
+        assertEquals(generatedDataTable.getVarQuantity(), new Long(generatedDataTable.getDataVariables().size()));
+
+        assertEquals(generatedDataTable.getVarQuantity(), expectedNumberOfVariables);
+
+        assertEquals(expectedNumberOfCases, generatedDataTable.getCaseQuantity());
+
+        // And now let's try and subset the individual vectors
+        // First, the "continuous" vectors (we should be able to read these as Double[]):
+        int[] floatColumns = {2};
+
+        Double[][] floatVectors = {
+            {1.0, 3.0, 4.0, 6.0, 7.0, 8.0, 11.0, 12.0, 76.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0},
+};
+
+        int vectorCount = 0;
+        for (int i : floatColumns) {
+            // We'll be subsetting the column vectors one by one, re-opening the
+            // file each time. Inefficient - but we don't care here.
+
+            if (!generatedDataTable.getDataVariables().get(i).isIntervalContinuous()) {
+                fail("Column " + i + " was not properly processed as \"continuous\"");
+            }
+            FileInputStream generatedTabInputStream = null;
+            try {
+                generatedTabInputStream = new FileInputStream(generatedTabFile);
+            } catch (FileNotFoundException ioex) {
+                fail("Failed to open generated tab-delimited file for reading" + ioex);
+            }
+
+            Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+
+            assertArrayEquals("column " + i + ":", floatVectors[vectorCount++], columnVector);
+        }
+
+        // Discrete Numerics (aka, integers):
+        int[] integerColumns = {1, 4, 6, 7, 8, 9, 10, 11, 12};
+
+        Long[][] longVectors = {
+            {1L, 3L, 4L, 6L, 7L, 8L, 11L, 12L, 76L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L},
+            {1L, 2L, 3L, 4L, 5L, 11L, 13L, 15L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L},
+            {85729227L, 85699791L, 640323976L, 85695847L, 637089796L, 637089973L, 85695001L, 85695077L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+            {205871733L, 205871735L, 205871283L, 258627915L, 257444575L, 205871930L, 260047422L, 262439738L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+            {205871673L, 205871730L, 205871733L, 205872857L, 258627915L, 257444584L, 205873413L, 262439738L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+            {25025000201L, 25025081001L, 25025000701L, 25025050901L, 25025040600L, 25025000502L, 25025040401L, 25025100900L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+            {250250502002L, 250250502003L, 250250501013L, 250250408011L, 250250503001L, 250250103001L, 250250406002L, 250250406001L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+            {250251011024001L, 250251011013003L, 250251304041007L, 250251011013006L, 250251010016000L, 250251011024002L, 250251001005004L, 250251002003002L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
+            {2109L, 2110L, 2111L, 2120L, 2121L, 2115L, 2116L, 2122L, 11111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L}
+        };
+
+        vectorCount = 0;
+
+        for (int i : integerColumns) {
+            if (!generatedDataTable.getDataVariables().get(i).isIntervalDiscrete()
+                    || !generatedDataTable.getDataVariables().get(i).isTypeNumeric()) {
+                fail("Column " + i + " was not properly processed as \"discrete numeric\"");
+            }
+            FileInputStream generatedTabInputStream = null;
+            try {
+                generatedTabInputStream = new FileInputStream(generatedTabFile);
+            } catch (FileNotFoundException ioex) {
+                fail("Failed to open generated tab-delimited file for reading" + ioex);
+            }
+
+            Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+
+            assertArrayEquals("column " + i + ":", longVectors[vectorCount++], columnVector);
+        }
+
+        // And finally, Strings:
+        int[] stringColumns = {0, 3, 5};
+
+        String[][] stringVectors = {
+            {"Dog", "Squirrel", "Antelope", "Zebra", "Lion", "Gazelle", "Cat", "Giraffe", "Cat", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey"},
+            {"East Boston", "Charlestown", "South Boston", "Bronx", "Roslindale", "Mission Hill", "Jamaica Plain", "Hyde Park", "Fenway/Kenmore", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens"},
+            {"2-06", "1-09", "1-1A", "1-1B", "2-04", "3-05", "1-1C", "1-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A",}
+        };
+
+        vectorCount = 0;
+
+        for (int i : stringColumns) {
+            if (!generatedDataTable.getDataVariables().get(i).isTypeCharacter()) {
+                fail("Column " + i + " was not properly processed as a character vector");
+            }
+            FileInputStream generatedTabInputStream = null;
+            try {
+                generatedTabInputStream = new FileInputStream(generatedTabFile);
+            } catch (FileNotFoundException ioex) {
+                fail("Failed to open generated tab-delimited file for reading" + ioex);
+            }
+
+            String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+
+            assertArrayEquals("column " + i + ":", stringVectors[vectorCount++], columnVector);
         }
     }
 
