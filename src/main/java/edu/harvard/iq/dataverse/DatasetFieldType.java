@@ -46,10 +46,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setId(Long id) {
         this.id = id;
     }
-    
-    public String getIdString(){
-        return id.toString();
-    }
+
 
     /**
      * The internal, DDI-like name, no spaces, etc.
@@ -83,6 +80,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      * A watermark to be displayed in the UI.
      */
     private String watermark;
+    
+    private String validationFormat;
 
     @OneToMany(mappedBy = "datasetFieldType")
     private Set<DataverseFacet> dataverseFacets;
@@ -164,8 +163,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.displayFormat = displayFormat;
     }
     
+    public Boolean isSanitizeHtml(){
+        if (this.fieldType.equals(FieldType.URL)){
+            return false;
+        }
+        return !this.fieldType.equals(FieldType.TEXTBOX);
+    }
     
-
+    
     public String getName() {
         return name;
     }
@@ -238,6 +243,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public void setFacetable(boolean facetable) {
         this.facetable = facetable;
+    }
+    
+    public String getValidationFormat() {
+        return validationFormat;
+    }
+
+    public void setValidationFormat(String validationFormat) {
+        this.validationFormat = validationFormat;
     }
 
     /**

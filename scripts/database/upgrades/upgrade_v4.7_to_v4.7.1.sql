@@ -5,3 +5,9 @@ ALTER TABLE authenticateduser ADD COLUMN createdtime TIMESTAMP NOT NULL DEFAULT 
 ALTER TABLE authenticateduser ADD COLUMN lastlogintime TIMESTAMP DEFAULT NULL;
 ALTER TABLE authenticateduser ADD COLUMN lastapiusetime TIMESTAMP DEFAULT NULL;
 ALTER TABLE authenticateduser DROP COLUMN modificationtime;
+
+/* 
+Add validationFormat to DatasetFieldType to 
+ */
+ALTER TABLE datasetfieldtype
+ADD COLUMN validationFormat character varying(255);

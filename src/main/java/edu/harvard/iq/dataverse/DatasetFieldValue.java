@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.ResourceBundle;
@@ -95,13 +96,13 @@ public class DatasetFieldValue implements Serializable {
             if (StringUtils.isBlank(format)) {
                 format = "#VALUE";
             }
-
+            String sanitizedValue = this.datasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.stripAllTags(this.getValue()) :  MarkupChecker.sanitizeBasicHTML(this.getValue());
             // replace the special values in the format (note: we replace #VALUE last since we don't
             // want any issues if the value itself has #NAME in it)
             String displayValue = format
                     .replace("#NAME",  this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
                     .replace("#EMAIL", ResourceBundle.getBundle("Bundle").getString("dataset.email.hiddenMessage"))
-                    .replace("#VALUE", this.getValue());
+                    .replace("#VALUE", sanitizedValue);
             retVal = displayValue;
         }
 
