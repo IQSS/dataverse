@@ -155,32 +155,47 @@ public class DashboardUsersPage implements java.io.Serializable {
        popup, then finalizing the toggled value. 
     */
        
-    AuthenticatedUser selectedUser = null; 
+    AuthenticatedUser selectedUserDetached = null; // Note: This is NOT the persisted object!!!!  Don't try to save it, etc.
+    AuthenticatedUser selectedUserPersistent = null;  // This is called on the fly and updated
     
-    public void setSelectedUser(AuthenticatedUser user) {
-        this.selectedUser = user;
+    public void setSelectedUserDetached(AuthenticatedUser user) {
+        this.selectedUserDetached = user;
     }
     
-    public AuthenticatedUser getSelectedUser() {
-        return this.selectedUser;
+    public AuthenticatedUser getSelectedUserDetached() {
+        return this.selectedUserDetached;
     }
     
     
     public void setUserToToggleSuperuserStatus(AuthenticatedUser user) {
         logger.info("selecting user "+user.getIdentifier());
-        selectedUser = user; 
+        
+        selectedUserDetached = user; 
     }
+    
     public void saveSuperuserStatus(){
-        logger.info("Toggling user's "+selectedUser.getIdentifier()+" superuser status; (current status: "+selectedUser.isSuperuser()+")");
-        logger.info("Attempting to save user "+selectedUser.getIdentifier());
-        authenticationService.update(selectedUser);
+                
+        // Retrieve the persistent version for saving to db
+        logger.info("Get persisent AuthenticatedUser for id: " + selectedUserDetached.getId());
+        selectedUserPersistent = userService.find(selectedUserDetached.getId());
+        
+        if (selectedUserPersistent != null){
+            logger.info("Toggling user's "+selectedUserDetached.getIdentifier()+" superuser status; (current status: "+selectedUserDetached.isSuperuser()+")");
+            logger.info("Attempting to save user "+selectedUserDetached.getIdentifier());
+
+            logger.info("selectedUserPersistent info: "+selectedUserPersistent.getId() + " set to: " + selectedUserDetached.isSuperuser());
+            selectedUserPersistent.setSuperuser(selectedUserDetached.isSuperuser());
+            selectedUserPersistent = authenticationService.update(selectedUserPersistent);
+        }else{
+            logger.warning("selectedUserPersistent is null.  AuthenticatedUser not found for id: " + selectedUserDetached.getId());
+        }
         
     }
     
     public void cancelSuperuserStatusChange(){
-        logger.info("unToggling user's "+selectedUser.getIdentifier()+" superuser status; (current status: "+selectedUser.isSuperuser()+")");
-        selectedUser.setSuperuser(!selectedUser.isSuperuser());
-        
+        logger.info("unToggling user's "+selectedUserDetached.getIdentifier()+" superuser status; (current status: "+selectedUserDetached.isSuperuser()+")");
+        selectedUserDetached.setSuperuser(!selectedUserDetached.isSuperuser());        
+        selectedUserPersistent = null;        
     }
     
     

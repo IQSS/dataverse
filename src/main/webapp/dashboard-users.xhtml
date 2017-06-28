@@ -79,11 +79,11 @@
                     </p:dataTable>
                     <p:dialog styleClass="smallPopUp" id="toggleSuperuserConfirmation" header="#{bundle['dashboard.list_users.toggleSuperuser']}" widgetVar="toggleSuperuserConfirmation" modal="true" closable="false">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/>
-                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.add']} " rendered="#{DashboardUsersPage.selectedUser.superuser}">
-                                <f:param value="#{DashboardUsersPage.selectedUser.userIdentifier}"/>
+                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.add']} " rendered="#{DashboardUsersPage.selectedUserDetached.superuser}">
+                                <f:param value="#{DashboardUsersPage.selectedUserDetached.userIdentifier}"/>
                             </h:outputFormat>
-                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.remove']} " rendered="#{!DashboardUsersPage.selectedUser.superuser}">
-                                <f:param value="#{DashboardUsersPage.selectedUser.userIdentifier}"/>
+                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.remove']} " rendered="#{!DashboardUsersPage.selectedUserDetached.superuser}">
+                                <f:param value="#{DashboardUsersPage.selectedUserDetached.userIdentifier}"/>
                             </h:outputFormat>
                         </p>
                         <div class="button-block">

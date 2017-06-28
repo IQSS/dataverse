@@ -124,8 +124,13 @@ public class UserServiceBean {
         user.setAffiliation(UserUtil.getStringOrNull(dbRowValues[5]));
         user.setSuperuser((Boolean)(dbRowValues[6]));
         user.setPosition(UserUtil.getStringOrNull(dbRowValues[7]));
-        user.setAuthProviderId(UserUtil.getStringOrNull(dbRowValues[8]));
-        user.setAuthProviderFactoryAlias(UserUtil.getStringOrNull(dbRowValues[9]));
+
+        user.setCreatedTime(UserUtil.getTimestampOrNull(dbRowValues[8]));
+        user.setLastLoginTime(UserUtil.getTimestampOrNull(dbRowValues[9]));
+        user.setLastApiUseTime(UserUtil.getTimestampOrNull(dbRowValues[10]));
+       
+        user.setAuthProviderId(UserUtil.getStringOrNull(dbRowValues[11]));
+        user.setAuthProviderFactoryAlias(UserUtil.getStringOrNull(dbRowValues[12]));
         
         user.setRoles(roles);
         return user;
@@ -401,6 +406,7 @@ public class UserServiceBean {
         qstr += " u.lastname, u.firstname, u.email,";
         qstr += " u.affiliation, u.superuser,";
         qstr += " u.position,";
+        qstr += " u.createdtime, u.lastlogintime, u.lastapiusetime, ";
         qstr += " prov.id, prov.factoryalias";
         qstr += " FROM authenticateduser u,";
         qstr += " authenticateduserlookup prov_lookup,";

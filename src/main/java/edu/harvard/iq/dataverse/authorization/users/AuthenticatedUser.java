@@ -4,16 +4,13 @@ import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -29,6 +26,15 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 
+/**
+ * When adding an attribute to this class, be sure to update the following:
+ * 
+ *  (1) AuthenticatedUser.toJSON() - within this class   (REQUIRED)
+ *  (2) UserServiceBean.getUserListCore() - native SQL query
+ *  (3) UserServiceBean.createAuthenticatedUserForView() - add values to a detached AuthenticatedUser object
+ * 
+ * @author rmp553
+ */
 @NamedQueries({
     @NamedQuery( name="AuthenticatedUser.findAll",
                 query="select au from AuthenticatedUser au"),
@@ -313,7 +319,12 @@ public class AuthenticatedUser implements User, Serializable {
         authenicatedUserJson.add("affiliation", UserUtil.getStringOrNull(this.affiliation));
         authenicatedUserJson.add("isSuperuser", this.superuser);
         authenicatedUserJson.add("position", UserUtil.getStringOrNull(this.position));
-        authenicatedUserJson.add("authenticationProvider", this.authProviderFactoryAlias);
+        
+        authenicatedUserJson.add("createdTime", UserUtil.getTimestampStringOrNull(this.createdTime));
+        authenicatedUserJson.add("lastLoginTime", UserUtil.getTimestampStringOrNull(this.lastLoginTime));
+        authenicatedUserJson.add("lastApiUseTime", UserUtil.getTimestampStringOrNull(this.lastApiUseTime));
+        
+        authenicatedUserJson.add("authenticationProvider", this.authProviderFactoryAlias);   
         authenicatedUserJson.add("roles", UserUtil.getStringOrNull(this.roles));
         
         return authenicatedUserJson;
