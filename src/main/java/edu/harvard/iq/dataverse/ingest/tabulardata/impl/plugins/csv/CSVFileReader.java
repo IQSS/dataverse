@@ -318,7 +318,6 @@ public class CSVFileReader extends TabularDataFileReader {
                 csvFilePrinter.printRecord(record);
             }
         }
-        // -1 because headers shouldn't count
         dataTable.setCaseQuantity(parser.getRecordNumber());
         parser.close();
         csvReader.close();

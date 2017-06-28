@@ -6,14 +6,14 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
 import edu.harvard.iq.dataverse.DataTable;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableInterval;
+import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableType;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.logging.Logger;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -54,17 +54,15 @@ public class CSVFileReaderTest {
 
         String foundLine = null;
         assertNotNull(result);
+        int line = 0;
         for (String expLine : expResult) {
             try {
                 foundLine = result.readLine();
             } catch (IOException ex) {
                 fail();
             }
-            if (!expLine.equals(foundLine)) {
-                logger.info("expected: " + expLine);
-                logger.info("found : " + foundLine);
-            }
-            assertEquals(expLine, foundLine);
+            assertEquals("Error on line " + line, expLine, foundLine);
+            line++;
         }
 
     }
@@ -78,13 +76,16 @@ public class CSVFileReaderTest {
     public void testVariables() {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/IngestCSV.csv";
 
-        String[] expectedVariableNames = {"ints", "Strings", "Times", "Not quite Times", "Dates", "Not quite Dates", "Numbers", "Not quite Ints", "Not quite Numbers", "Column that hates you, contains many comas, and is verbose and long enough that it would cause ingest to fail if ingest failed when a header was more than 256 characters long. Really, it's just sadistic.　Also to make matters worse, the space at the begining of this sentance was a special unicode space designed to make you angry."};
+        String[] expectedVariableNames = {"ints", "Strings", "Times", "Not quite Times", "Dates", "Not quite Dates",
+            "Numbers", "Not quite Ints", "Not quite Numbers", "Column that hates you, contains many comas, and is verbose and long enough that it would cause ingest to fail if ingest failed when a header was more than 256 characters long. Really, it's just sadistic.　Also to make matters worse, the space at the begining of this sentance was a special unicode space designed to make you angry."};
 
-        DataVariable.VariableType[] expectedVariableTypes = {DataVariable.VariableType.NUMERIC, DataVariable.VariableType.CHARACTER, DataVariable.VariableType.CHARACTER, DataVariable.VariableType.CHARACTER, DataVariable.VariableType.CHARACTER,
-            DataVariable.VariableType.CHARACTER, DataVariable.VariableType.NUMERIC, DataVariable.VariableType.NUMERIC, DataVariable.VariableType.CHARACTER, DataVariable.VariableType.CHARACTER};
+        VariableType[] expectedVariableTypes = {VariableType.NUMERIC, VariableType.CHARACTER,
+            VariableType.CHARACTER, VariableType.CHARACTER, VariableType.CHARACTER, VariableType.CHARACTER,
+            VariableType.NUMERIC, VariableType.NUMERIC, VariableType.CHARACTER, VariableType.CHARACTER};
 
-        DataVariable.VariableInterval[] expectedVariableIntervals = {DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.DISCRETE,
-            DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.CONTINUOUS, DataVariable.VariableInterval.CONTINUOUS, DataVariable.VariableInterval.DISCRETE, DataVariable.VariableInterval.DISCRETE};
+        VariableInterval[] expectedVariableIntervals = {VariableInterval.DISCRETE, VariableInterval.DISCRETE,
+            VariableInterval.DISCRETE, VariableInterval.DISCRETE, VariableInterval.DISCRETE, VariableInterval.DISCRETE,
+            VariableInterval.CONTINUOUS, VariableInterval.CONTINUOUS, VariableInterval.DISCRETE, VariableInterval.DISCRETE};
 
         String[] expectedVariableFormatCategories = {null, null, "time", "time", "date", null, null, null, null, null};
 
@@ -107,60 +108,22 @@ public class CSVFileReaderTest {
 
         assertEquals(result.getVarQuantity(), new Long(result.getDataVariables().size()));
 
-        if (result.getVarQuantity() != expectedVariableTypes.length) {
-            logger.info("number of variables expected: " + expectedVariableTypes.length);
-            logger.info("number of variables produced: " + result.getVarQuantity());
-        }
-
         assertEquals(result.getVarQuantity(), new Long(expectedVariableTypes.length));
-
-        if (!expectedNumberOfCases.equals(result.getCaseQuantity())) {
-            logger.info("number of observations expected: " + expectedNumberOfCases);
-            logger.info("number of observations produced: " + result.getCaseQuantity());
-        }
 
         assertEquals(expectedNumberOfCases, result.getCaseQuantity());
 
         // OK, let's go through the individual variables:
         for (int i = 0; i < result.getVarQuantity(); i++) {
 
-            if (!expectedVariableNames[i].equals(result.getDataVariables().get(i).getName())) {
-                logger.info("variable " + i + ", name expected: " + expectedVariableNames[i]);
-                logger.info("variable " + i + ", name produced: " + result.getDataVariables().get(i).getName());
-            }
+            assertEquals("variable " + i + ":", expectedVariableNames[i], result.getDataVariables().get(i).getName());
 
-            assertEquals(expectedVariableNames[i], result.getDataVariables().get(i).getName());
+            assertEquals("variable " + i + ":", expectedVariableTypes[i], result.getDataVariables().get(i).getType());
 
-            if (!expectedVariableTypes[i].equals(result.getDataVariables().get(i).getType())) {
-                logger.info("variable " + i + ", type expected: " + expectedVariableTypes[i].toString());
-                logger.info("variable " + i + ", type produced: " + result.getDataVariables().get(i).getType().toString());
-            }
+            assertEquals("variable " + i + ":", expectedVariableIntervals[i], result.getDataVariables().get(i).getInterval());
 
-            assertEquals(expectedVariableTypes[i], result.getDataVariables().get(i).getType());
+            assertEquals("variable " + i + ":", expectedVariableFormatCategories[i], result.getDataVariables().get(i).getFormatCategory());
 
-            if (!expectedVariableIntervals[i].equals(result.getDataVariables().get(i).getInterval())) {
-                logger.info("variable " + i + ", interval expected: " + expectedVariableIntervals[i].toString());
-                logger.info("variable " + i + ", interval produced: " + result.getDataVariables().get(i).getInterval().toString());
-            }
-
-            assertEquals(expectedVariableIntervals[i], result.getDataVariables().get(i).getInterval());
-
-            if ((expectedVariableFormatCategories[i] != null && !expectedVariableFormatCategories[i].equals(result.getDataVariables().get(i).getFormatCategory()))
-                    || (expectedVariableFormatCategories[i] == null && result.getDataVariables().get(i).getFormatCategory() != null)) {
-                logger.info("variable " + i + ", format category expected: " + expectedVariableFormatCategories[i]);
-                logger.info("variable " + i + ", format category produced: " + result.getDataVariables().get(i).getFormatCategory());
-            }
-
-            assertEquals(expectedVariableFormatCategories[i], result.getDataVariables().get(i).getFormatCategory());
-
-            if ((expectedVariableFormats[i] != null && !expectedVariableFormats[i].equals(result.getDataVariables().get(i).getFormat()))
-                    || (expectedVariableFormats[i] == null && result.getDataVariables().get(i).getFormat() != null)) {
-                logger.info("variable " + i + ", format expected: " + expectedVariableFormats[i]);
-                logger.info("variable " + i + ", format produced: " + result.getDataVariables().get(i).getFormat());
-            }
-
-            assertEquals(expectedVariableFormats[i], result.getDataVariables().get(i).getFormat());
-
+            assertEquals("variable " + i + ":", expectedVariableFormats[i], result.getDataVariables().get(i).getFormat());
         }
     }
 
