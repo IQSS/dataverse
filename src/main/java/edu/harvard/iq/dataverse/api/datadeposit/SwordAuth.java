@@ -42,6 +42,8 @@ public class SwordAuth extends AbstractApiBean {
             logger.fine(msg);
             throw new SwordAuthException(msg);
         } else {
+
+            authenticatedUserFromToken = userSvc.updateLastApiUseTime(authenticatedUserFromToken);
             return authenticatedUserFromToken;
         }
     }
