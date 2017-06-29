@@ -165,11 +165,20 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     public Boolean isSanitizeHtml(){
         if (this.fieldType.equals(FieldType.URL)){
-            return false;
+            return true;
         }
-        return !this.fieldType.equals(FieldType.TEXTBOX);
+        return this.fieldType.equals(FieldType.TEXTBOX);
     }
     
+    public Boolean isEscapeOutputText(){
+        if (this.fieldType.equals(FieldType.URL)){
+            return false;
+        }
+        if (this.fieldType.equals(FieldType.TEXTBOX)){
+            return false;
+        }
+        return !(this.fieldType.equals(FieldType.TEXT) &&  this.displayFormat != null &&this.displayFormat.contains("<a"));
+    }
     
     public String getName() {
         return name;

@@ -11,3 +11,15 @@ Add validationFormat to DatasetFieldType to
  */
 ALTER TABLE datasetfieldtype
 ADD COLUMN validationFormat character varying(255);
+
+/*
+for testing display format 
+This adds a display format that links out to an outside site. The format of the #VALUE is
+four characters alpha numeric (3fki works) 
+
+update datasetfieldtype 
+set displayformat = '<a target="_blank" href="http://www.rcsb.org/pdb/explore/explore.do?structureId=#VALUE">PDB (RCSB) #VALUE</a>',
+fieldType= 'TEXT'
+where id = xxx;
+
+*/

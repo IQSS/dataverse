@@ -95,8 +95,8 @@ public class DatasetFieldValue implements Serializable {
             String format = this.datasetField.getDatasetFieldType().getDisplayFormat();
             if (StringUtils.isBlank(format)) {
                 format = "#VALUE";
-            }
-            String sanitizedValue = this.datasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.stripAllTags(this.getValue()) :  MarkupChecker.sanitizeBasicHTML(this.getValue());
+            }           
+            String sanitizedValue = !this.datasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.stripAllTags(this.getValue()) :  MarkupChecker.sanitizeBasicHTML(this.getValue());            
             // replace the special values in the format (note: we replace #VALUE last since we don't
             // want any issues if the value itself has #NAME in it)
             String displayValue = format

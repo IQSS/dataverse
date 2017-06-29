@@ -59,29 +59,54 @@ public class DatasetFieldTypeTest {
     public void testIsSanitizeHtml() {
         System.out.println("isSanitizeHtml");
         DatasetFieldType instance = new DatasetFieldType();
-        Boolean expResult = true;
         instance.setFieldType(DatasetFieldType.FieldType.TEXT);
         Boolean result = instance.isSanitizeHtml();
-        assertEquals(expResult, result);
-        
-        //if text then escape
-        result = instance.isSanitizeHtml();
-        assertEquals(true, result);
-        
-        //if textbox then don't sanitize - allow tags
+        assertFalse(result);
+               
+        //if textbox then sanitize - allow tags
         instance.setFieldType(DatasetFieldType.FieldType.TEXTBOX);
         result = instance.isSanitizeHtml();
-        assertEquals(false, result);
+        assertEquals(true, result);
         
         //if textbox then don't sanitize - allow tags
         instance.setFieldType(DatasetFieldType.FieldType.EMAIL);
         result = instance.isSanitizeHtml();
-        assertEquals(true, result);
+        assertEquals(false, result);
         
         //URL, too
         instance.setFieldType(DatasetFieldType.FieldType.URL);
         result = instance.isSanitizeHtml();
+        assertEquals(true, result);
+    }
+    
+    @Test
+    public void testIsEscapeOutputText(){
+                System.out.println("testIsEscapeOutputText");
+        DatasetFieldType instance = new DatasetFieldType();
+        instance.setFieldType(DatasetFieldType.FieldType.TEXT);
+        Boolean result = instance.isEscapeOutputText();
+        assertTrue(result);
+        
+        //if Disaplay Format includes a link then don't escape
+        instance.setDisplayFormat("'<a target=\"_blank\" href=\"http://www.rcsb.org/pdb/explore/explore.do?structureId=#VALUE\">PDB (RCSB) #VALUE</a>'");
+        result = instance.isEscapeOutputText();
+        assertFalse(result);  
+        
+        //if textbox then sanitize - allow tags
+        instance.setFieldType(DatasetFieldType.FieldType.TEXTBOX);
+        result = instance.isEscapeOutputText();
+        assertFalse( result);
+        
+        //if textbox then don't sanitize - allow tags
+        instance.setFieldType(DatasetFieldType.FieldType.EMAIL);
+        result = instance.isEscapeOutputText();
+        assertTrue(result);
+        
+        //URL, too
+        instance.setFieldType(DatasetFieldType.FieldType.URL);
+        result = instance.isEscapeOutputText();
         assertEquals(false, result);
+        
     }
     
     @Test

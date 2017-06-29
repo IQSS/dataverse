@@ -49,10 +49,10 @@
                                 <!-- Primitive datasetFields -->
                                 <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">   
                                     <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
-                                                  escape="false"/>
+                                                  escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                     <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
                                         <h:outputText value="#{loop.first?'':'; '}#{ value }"
-                                                      escape="false"/>
+                                                      escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                     </ui:repeat>
                                 </div>
                                 <!-- Compound datasetFields -->
@@ -67,7 +67,7 @@
                                         <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">                                           
                                             <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
                                             <h:outputText value="#{cvPart.value}"
-                                                          escape="false"/>
+                                                          escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                         </ui:repeat>
                                         <br/>
                                     </ui:repeat>
