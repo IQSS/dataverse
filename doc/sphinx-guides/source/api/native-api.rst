@@ -306,6 +306,8 @@ Restrict or unrestrict an existing file where ``id`` is the database id of the f
     
     PUT http://$SERVER/api/files/{id}/restrict
 
+Note that some Dataverse installations do not allow the ability to restrict files.
+
 A more detailed "restrict" example using curl::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/{id}/restrict
