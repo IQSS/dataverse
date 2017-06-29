@@ -2,26 +2,38 @@
 Coding Style
 ============
 
-Like all development teams, the `Dataverse developers at IQSS <https://dataverse.org/about>`_ have their habits and styles when it comes to writing code. Let's attempt to get on the same page. :)
-
-.. contents:: |toctitle|
-	:local:
-
 Java
 ----
 
 Formatting Code
 ~~~~~~~~~~~~~~~
 
-Tabs vs. Spaces
-^^^^^^^^^^^^^^^
+NetBeans
+^^^^^^^^
 
-Don't use tabs. Use spaces.
+We highly recommend using Netbeans as a text editor. This makes it significantly easier to commit code that is well formatted and type safe. By default, NetBeans will warn you about some things, but if you want better warnings and code formatting, download this##################TODO ADD FILE######################### zip file, and import it to your nNtBeans settings by going to options, import, and selecting the file. These settings will cause NetBeans to automatically format code that you've worked on whenever you save, point out many common problems in code, and make sure that all indentation uses spaces.
 
-Format Code You Changed with Netbeans
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Alternatively, you can set the warnings yourself. To do so, go to tools-> options-> editor -> hints, and turn on the following
+    - Braces
+    - Error Fixes
+    - JDK Migration Support
+    - Probable Bugs
+    - Standard Javac Warnings
 
-As you probably gathered from the :doc:`dev-environment` section, IQSS has standardized on Netbeans. It is much appreciated when you format your code (but only the code you touched!) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
+
+Not NetBeans
+^^^^^^^^^^^^
+
+If you are not going to use NetBeans, here are code style tips in order to be consistent with the rest of the project.
+- Use 4 spaces for indentation (not tabs)
+- Make sure your code is type safe.
+- Make sure not to use raw classes
+- Use diamond interface when applicable
+- Use javadoc and comments to help explain what your code is doing
+- Try to make your code look roughly like the following sample
+
+For an example code that follows our styleguide, see this
+############TODO INSERT IMAGE################################
 
 We would like to someday automate the detection and possibly correction of code that hasn't been formatted using our house style (the default Netbeans style). We've heard that https://maven.apache.org/plugins/maven-checkstyle-plugin/ can do this but we would be happy to see a pull request in this area, especially if it also hooks up to our builds at https://travis-ci.org/IQSS/dataverse .
 
@@ -44,16 +56,6 @@ Avoid Hard-Coding Strings
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Special strings should be defined as public constants. For example, ``DatasetFieldConstant.java`` contains a field for "title" and it's used in many places in the code (try "Find Usages" in Netbeans). This is better than writing the string "title" in all those places.
-
-Type Safety
-~~~~~~~~~~~
-
-If you just downloaded Netbeans and are using the out-of-the-box settings, you should be in pretty good shape. Unfortunately, the default configuration of Netbeans doesn't warn you about type-safety problems you may be inadvertently introducing into the code. To see these warnings, click Netbeans -> Preferences -> Editor -> Hints and check the following:
-
-- "Raw Types" under "Standard Javac Warnings"
-
-If you know of a way to easily share Netbeans configuration across a team, please get in touch.
-
 
 Bike Shedding
 -------------
