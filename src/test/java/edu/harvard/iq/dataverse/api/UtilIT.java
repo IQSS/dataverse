@@ -740,6 +740,15 @@ public class UtilIT {
         return requestSpecification.get("/api/search?q=" + query);
     }
 
+    static Response searchAndShowFacets(String query, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/search?q=" + query + "&show_facets=true");
+    }
+
     static Response indexClear() {
         return given()
                 .get("/api/admin/index/clear");
