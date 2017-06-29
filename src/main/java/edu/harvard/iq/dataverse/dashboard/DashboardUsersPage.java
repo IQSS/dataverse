@@ -1,11 +1,15 @@
 package edu.harvard.iq.dataverse.dashboard;
 
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.api.Admin;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.impl.GrantSuperuserStatusCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeSuperuserStatusCommand;
 import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
@@ -30,6 +34,10 @@ public class DashboardUsersPage implements java.io.Serializable {
     DataverseSession session;
     @Inject
     PermissionsWrapper permissionsWrapper;
+    @EJB
+    EjbDataverseEngine commandEngine;
+    @EJB
+    DataverseRequestServiceBean dvRequestService;
 
     private static final Logger logger = Logger.getLogger(DashboardUsersPage.class.getCanonicalName());
 
@@ -173,23 +181,35 @@ public class DashboardUsersPage implements java.io.Serializable {
         selectedUserDetached = user; 
     }
     
-    public void saveSuperuserStatus(){
-                
+    public void saveSuperuserStatus() {
+
         // Retrieve the persistent version for saving to db
         logger.info("Get persisent AuthenticatedUser for id: " + selectedUserDetached.getId());
         selectedUserPersistent = userService.find(selectedUserDetached.getId());
-        
-        if (selectedUserPersistent != null){
-            logger.info("Toggling user's "+selectedUserDetached.getIdentifier()+" superuser status; (current status: "+selectedUserDetached.isSuperuser()+")");
-            logger.info("Attempting to save user "+selectedUserDetached.getIdentifier());
 
-            logger.info("selectedUserPersistent info: "+selectedUserPersistent.getId() + " set to: " + selectedUserDetached.isSuperuser());
+        if (selectedUserPersistent != null) {
+            logger.info("Toggling user's " + selectedUserDetached.getIdentifier() + " superuser status; (current status: " + selectedUserDetached.isSuperuser() + ")");
+            logger.info("Attempting to save user " + selectedUserDetached.getIdentifier());
+
+            logger.info("selectedUserPersistent info: " + selectedUserPersistent.getId() + " set to: " + selectedUserDetached.isSuperuser());
             selectedUserPersistent.setSuperuser(selectedUserDetached.isSuperuser());
-            selectedUserPersistent = authenticationService.update(selectedUserPersistent);
-        }else{
+
+            // Using the new commands for granting and revoking the superuser status: 
+            try {
+                if (!selectedUserPersistent.isSuperuser()) {
+                    // We are revoking the status:
+                    commandEngine.submit(new RevokeSuperuserStatusCommand(selectedUserPersistent, dvRequestService.getDataverseRequest()));
+                } else {
+                    // granting the status:
+                    commandEngine.submit(new GrantSuperuserStatusCommand(selectedUserPersistent, dvRequestService.getDataverseRequest()));
+                }
+            } catch (Exception ex) {
+                logger.warning("Failed to permanently toggle the superuser status for user " + selectedUserDetached.getIdentifier() + ": " + ex.getMessage());
+            }
+        } else {
             logger.warning("selectedUserPersistent is null.  AuthenticatedUser not found for id: " + selectedUserDetached.getId());
         }
-        
+
     }
     
     public void cancelSuperuserStatusChange(){
