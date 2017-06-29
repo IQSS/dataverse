@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.api.Admin;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mydata.Pager;
@@ -198,5 +199,8 @@ public class DashboardUsersPage implements java.io.Serializable {
         selectedUserPersistent = null;        
     }
     
-    
+    public String getAuthProviderFriendlyName(String authProviderId){
+        
+        return AuthenticationProvider.getFriendlyName(authProviderId);
+    }
 }

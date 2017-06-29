@@ -66,7 +66,7 @@
                             <h:outputText value="#{user.roles}" />
                         </p:column>
                         <p:column width="13%" headerText="#{bundle['dashboard.list_users.tbl_header.authProviderFactoryAlias']}">
-                            <h:outputText value="#{user.authProviderFactoryAlias}" />
+                            <h:outputText value="#{DashboardUsersPage.getAuthProviderFriendlyName(user.authProviderId)}" />
                         </p:column>
                         <p:column width="10%" class="text-center" headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
                             <!-- A simple implementation of the superuser status toggle - via a boolean checkbox with an immediate ajax update. -->
