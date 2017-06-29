@@ -36,7 +36,7 @@ public class DashboardUsersPage implements java.io.Serializable {
     PermissionsWrapper permissionsWrapper;
     @EJB
     EjbDataverseEngine commandEngine;
-    @EJB
+    @Inject
     DataverseRequestServiceBean dvRequestService;
 
     private static final Logger logger = Logger.getLogger(DashboardUsersPage.class.getCanonicalName());
@@ -184,14 +184,14 @@ public class DashboardUsersPage implements java.io.Serializable {
     public void saveSuperuserStatus() {
 
         // Retrieve the persistent version for saving to db
-        logger.info("Get persisent AuthenticatedUser for id: " + selectedUserDetached.getId());
+        logger.fine("Get persisent AuthenticatedUser for id: " + selectedUserDetached.getId());
         selectedUserPersistent = userService.find(selectedUserDetached.getId());
 
         if (selectedUserPersistent != null) {
-            logger.info("Toggling user's " + selectedUserDetached.getIdentifier() + " superuser status; (current status: " + selectedUserDetached.isSuperuser() + ")");
-            logger.info("Attempting to save user " + selectedUserDetached.getIdentifier());
+            logger.fine("Toggling user's " + selectedUserDetached.getIdentifier() + " superuser status; (current status: " + selectedUserDetached.isSuperuser() + ")");
+            logger.fine("Attempting to save user " + selectedUserDetached.getIdentifier());
 
-            logger.info("selectedUserPersistent info: " + selectedUserPersistent.getId() + " set to: " + selectedUserDetached.isSuperuser());
+            logger.fine("selectedUserPersistent info: " + selectedUserPersistent.getId() + " set to: " + selectedUserDetached.isSuperuser());
             selectedUserPersistent.setSuperuser(selectedUserDetached.isSuperuser());
 
             // Using the new commands for granting and revoking the superuser status: 
