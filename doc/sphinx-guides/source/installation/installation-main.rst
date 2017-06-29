@@ -157,8 +157,6 @@ mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 
 Be sure you save the changes made here and then restart your Glassfish server to test it out.
 
-For further needs specific to your institution’s mail server, your resident system administrator or IT helpdesk can provide more information / support about your org / institute's mail host.
-
 UnknownHostException While Deploying
 ++++++++++++++++++++++++++++++++++++
 

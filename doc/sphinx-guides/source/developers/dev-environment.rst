@@ -224,9 +224,15 @@ The solution is to put the file back to how it was before Netbeans touched it. I
 Configuring / Troubleshooting Mail Host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To send generated emails - an important part of user related development - Dataverse requires a mail host to be configured in Glassfish. The current default when running the Dataverse installer is mail.hmdc.harvard.edu -- though it may not be ideal for all of our development environments. There may be necessary adjustments to be made.
+Out of the box, no emails will be sent from your development environment. This is because you have set the ``:SystemEmail`` setting and make sure you've configured your SMTP correctly.
 
-If you’ve already run the installer, it’s no problem to have the default SMTP host in place. You can check what it’s currently set to via the Glassfish asadmin command:
+You can configure ``:SystemEmail`` like this:
+
+``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
+
+Unfortunately for developers not at Harvard, the installer script gives you by default an SMTP server of ``mail.hmdc.harvard.edu`` but you can specify an alternative SMTP server when you run the installer.
+
+You can check the current SMTP server with the ``asadmin`` command:
 
 ``asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
 
@@ -239,9 +245,9 @@ This command helps verify what host your domain is using to send mail. Even if i
 From this window you can modify certain fields of your Dataverse's notifyMailSession, which is the JavaMail session for outgoing system email (such as on user signup or data publication). Two of the most important fields we need are:
 
 - **Mail Host:** The DNS name of the default mail server (e.g. smtp.gmail.com)
-- **Default User:** The username provided to your Mail Host when you connect to it (e.g. johndoe@gmail.com) 
+- **Default User:** The username provided to your Mail Host when you connect to it (e.g. johndoe@gmail.com)
 
-Most of the other defaults can safely be left as is. **Default Sender Address** indicates the address that your installation's emails are sent from. 
+Most of the other defaults can safely be left as is. **Default Sender Address** indicates the address that your installation's emails are sent from.
 
 If your user credentials for the SMTP server require a password, you'll need to configure some **Additional Properties** at the bottom.
 
@@ -266,7 +272,7 @@ Save these changes at the top of the page and restart your Glassfish server to t
 
 These properties can be tailored to your own preferred mail service, but if all else fails these settings work fine with Dataverse development environments for your localhost.
 
-+ If you're seeing a "Relay access denied" error in your Glassfish logs when your app attempts to send an email, double check your user/password credentials for the Mail Host you're using. 
++ If you're seeing a "Relay access denied" error in your Glassfish logs when your app attempts to send an email, double check your user/password credentials for the Mail Host you're using.
 + If you're seeing a "Connection refused" / similar error upon email sending, try another port.
 
 Rebuilding Your Dev Environment
