@@ -177,8 +177,6 @@ public class DashboardUsersPage implements java.io.Serializable {
     
     
     public void setUserToToggleSuperuserStatus(AuthenticatedUser user) {
-        logger.info("selecting user "+user.getIdentifier());
-        
         selectedUserDetached = user; 
     }
     
@@ -214,9 +212,8 @@ public class DashboardUsersPage implements java.io.Serializable {
     }
     
     public void cancelSuperuserStatusChange(){
-        logger.info("unToggling user's "+selectedUserDetached.getIdentifier()+" superuser status; (current status: "+selectedUserDetached.isSuperuser()+")");
         selectedUserDetached.setSuperuser(!selectedUserDetached.isSuperuser());        
-        selectedUserPersistent = null;        
+        selectedUserPersistent = null;
     }
     
     public String getAuthProviderFriendlyName(String authProviderId){
