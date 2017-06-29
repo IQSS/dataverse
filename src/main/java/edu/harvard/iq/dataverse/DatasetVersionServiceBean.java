@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,27 +92,26 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             this.checkVersion();
         }
         
-        
         public String getDifferentVersionMessage(){
             
             if (this.wasSpecificVersionRequested && !this.didSpecificVersionMatch){
                 String userMsg;
                 if (DatasetVersionServiceBean.this.isVersionAskingForDraft(this.requestedVersion)){
-                    userMsg = "The \"DRAFT\" version was not found.";
+                    userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.draftNotFound");
                 }else{
-                    userMsg = "Version \"" + this.requestedVersion + "\" was not found.";
+                    userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionNotFound", Arrays.asList(this.requestedVersion));
                 }
                 
                 if (DatasetVersionServiceBean.this.isVersionAskingForDraft(this.actualVersion)){
-                    userMsg += "  This is the \"DRAFT\" version.";
+                    userMsg += BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.draftFound");
                 }else{
-                    userMsg += "  This is version \"" + this.actualVersion + "\".";                    
+                    userMsg += BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionFound", Arrays.asList(this.actualVersion));
                 }
                 
                 return userMsg;
             }
             return null;
-        }   
+        }
         
         private void checkVersion(){
             if (actualVersion==null){   // this shouldn't happen

@@ -190,7 +190,6 @@ public class MyDataFinder {
             return;
         }
         
-        msgt("runFindDataSteps: " + this.userIdentifier);
         if (!runStep1RoleAssignments()){
             return;
         }
@@ -448,7 +447,7 @@ public class MyDataFinder {
                 
         List<Object[]> results = this.roleAssigneeService.getAssigneeAndRoleIdListFor(filterParams);
         
-        System.out.println("runStep1RoleAssignments results: " + results.toString());
+        //logger.info("runStep1RoleAssignments results: " + results.toString());
 
         if (results == null){
             this.addErrorMessage("Sorry, the EntityManager isn't working (still).");
@@ -642,7 +641,7 @@ public class MyDataFinder {
     }
    
     private void msg(String s){
-        //System.out.println(s);
+        //logger.fine(s);
     }
     
     private void msgt(String s){
