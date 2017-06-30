@@ -41,7 +41,8 @@ public class UserNameValidator implements ConstraintValidator<ValidateUserName, 
         //support chinese characters
         validCharacters += "\\x{4e00}-\\x{9fa5}";
         //end
-        validCharacters += "]*";
+        validCharacters += "]";
+        validCharacters += "{2,60}"; //must be between 2 and 60 characters for user name
         Pattern p = Pattern.compile(validCharacters);
         Matcher m = p.matcher(username);
         return m.matches();

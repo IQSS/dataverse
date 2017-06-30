@@ -37,5 +37,10 @@ public class UserNameValidatorTest {
         assertEquals(false, UserNameValidator.isUserNameValid("sarah:(", null));
         assertEquals(false, UserNameValidator.isUserNameValid("💲🅰️®️🅰️🚧", null));
         
+        //length of userame
+        assertEquals(false, UserNameValidator.isUserNameValid("q", null));
+        assertEquals(true, UserNameValidator.isUserNameValid("q2", null));
+        assertEquals(false, UserNameValidator.isUserNameValid("q2jsalfhjopiwurtiosfhkdhasjkdhfgkfhkfrhnefcn4cqonroclmooi4oiqwhrfq4jrlqhaskdalwehrlwhflhklasdjfglq0kkajfelirhilwhakjgv", null));
+        
     }
 }
