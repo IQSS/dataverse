@@ -228,7 +228,7 @@ Out of the box, no emails will be sent from your development environment. This i
 
 You can configure ``:SystemEmail`` like this:
 
-``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
+``curl -X PUT -d 'Davisverse SWAT Team <davisthedog@harvard.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
 
 Unfortunately for developers not at Harvard, the installer script gives you by default an SMTP server of ``mail.hmdc.harvard.edu`` but you can specify an alternative SMTP server when you run the installer.
 
