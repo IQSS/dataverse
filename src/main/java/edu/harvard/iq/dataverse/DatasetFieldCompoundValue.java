@@ -145,6 +145,9 @@ public class DatasetFieldCompoundValue implements Serializable {
                     format = "#VALUE";
                 }
                 String sanitizedValue = childDatasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(childDatasetField.getValue()) :  childDatasetField.getValue();
+                if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()){
+                    sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
+                }
                 // replace the special values in the format (note: we replace #VALUE last since we don't
                 // want any issues if the value itself has #NAME in it)
                 String displayValue = format
