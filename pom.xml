@@ -562,7 +562,25 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.0.0</version>
-            </plugin>
+	</plugin>
+	<plugin>
+		<artifactId>exec-maven-plugin</artifactId>
+		<groupId>org.codehaus.mojo</groupId>
+		<executions>
+			<execution>
+				<id>run make clean in installer directory</id>
+				<phase>clean</phase>
+				<goals>
+					<goal>exec</goal>
+				</goals>
+				<configuration>
+					<executable>make</executable>
+					<commandlineArgs>clean</commandlineArgs>
+					<workingDirectory>scripts/installer</workingDirectory>
+				</configuration>
+			</execution>
+		</executions>
+	</plugin>
         </plugins>
     </build>
 
