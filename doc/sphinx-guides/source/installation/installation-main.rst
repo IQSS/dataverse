@@ -105,9 +105,57 @@ Check to make sure you used a fully qualified domain name when installing Datave
 Problems Sending Email
 ++++++++++++++++++++++
 
-You can confirm the SMTP server being used with this command:
+If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Glassfish asadmin command:
 
 ``asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
+
+This should return the DNS of the mail host you configured during or after installation. mail/notifyMailSession is the JavaMail Session that's used to send emails to users. 
+
+If the command returns a host you don't want to use, you can modify your notifyMailSession with the Glassfish ``asadmin set`` command with necessary options (`click here for the manual page <https://docs.oracle.com/cd/E18930_01/html/821-2433/set-1.html>`_), or via the admin console at http://localhost:4848 with your domain running. 
+
+If your mail host requires a username/password for access, continue to the next section.
+
+Mail Host Configuration & Authentication
+++++++++++++++++++++++++++++++++++++++++
+
+If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Glassfish admin console. 
+
+In a browser, with your domain online, navigate to http://localhost:4848 and on the side panel find JavaMail Sessions. By default, Dataverse uses a session named mail/notifyMailSession for routing outgoing emails. Click this mail session in the window to modify it.
+
+When fine tuning your JavaMail Session, there are a number of fields you can edit. The most important are:
+
++ **Mail Host:** Desired mail host’s DNS address (e.g. smtp.gmail.com)
++ **Default User:** Username mail host will recognize (e.g. user\@gmail.com)
++ **Default Sender Address:** Email address that your Dataverse will send mail from
+
+Depending on the SMTP server you're using, you may need to add additional properties at the bottom of the page (below "Advanced").
+
+From the "Add Properties" utility at the bottom, use the “Add Property” button for each entry you need, and include the name / corresponding value as needed. Descriptions are optional, but can be used for your own organizational needs. 
+
+**Note:** These properties are just an example. You may need different/more/fewer properties all depending on the SMTP server you’re using.
+
+==============================	==============================
+			Name 							Value
+==============================	==============================
+mail.smtp.auth					true
+mail.smtp.password				[Default User password*]
+mail.smtp.port					[Port number to route through]
+==============================	==============================
+
+**\*WARNING**: Entering a password here will *not* conceal it on-screen. It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
+
+If your installation’s mail host uses SSL (like smtp.gmail.com) you’ll need these name/value pair properties in place:
+
+======================================	==============================
+				Name 								Value
+======================================	==============================
+mail.smtp.socketFactory.port			465
+mail.smtp.port							465
+mail.smtp.socketFactory.fallback		false
+mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
+======================================	==============================
+
+Be sure you save the changes made here and then restart your Glassfish server to test it out.
 
 UnknownHostException While Deploying
 ++++++++++++++++++++++++++++++++++++
