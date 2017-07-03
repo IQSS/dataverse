@@ -514,6 +514,8 @@ This is the email address that "system" emails are sent from such as password re
 
 Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
 
+Please note that if you're having any trouble sending email, you can refer to "Troubleshooting" under :doc:`installation-main`.
+
 :HomePageCustomizationFile
 ++++++++++++++++++++++++++
 
