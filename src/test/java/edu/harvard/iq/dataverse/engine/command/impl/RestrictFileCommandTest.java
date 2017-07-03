@@ -41,7 +41,7 @@ public class RestrictFileCommandTest {
     private DataFile file;
     private Dataset dataset;
     boolean restrict = true;
-    boolean publicInstall = false;
+    static boolean publicInstall = false;
     
     
     public RestrictFileCommandTest() {
@@ -80,7 +80,7 @@ public class RestrictFileCommandTest {
     @After
     public void tearDown() {
     }
-    
+        
     @Test
     public void testRestrictUnpublishedFile() throws CommandException{
         file.setOwner(dataset);
@@ -134,6 +134,21 @@ public class RestrictFileCommandTest {
         
         assertEquals(expected, actual);
         
+    }
+    
+    @Test 
+    public void testPublicInstall() throws CommandException {
+        file.setOwner(dataset);
+        String expected = "Restricting files is not permitted on a public installation.";
+        String actual = null;
+        publicInstall = true;
+        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
+        try {
+            engine.submit(cmd);
+        } catch(Exception ex){
+            actual = ex.getMessage();
+        }
+        assertEquals(expected, actual);
     }
     
 }
