@@ -344,7 +344,32 @@ public class Pager {
     }
     
     
+    /** 
+     * Originally used for mydata. 
+     * 
+     * Variables are named using the idea of cards--as in Dataverse cards,
+     * Dataset cards, etc. on the homepage
+     * 
+     * @return 
+     */
+    public JsonObjectBuilder asJsonObjectBuilderUsingCardTerms(){
+    
+        return asJsonObjectBuilderCore(true);
+    }
+
+    /** 
+     * 
+     * Variables are named using the idea of number of results
+     * 
+     * @return 
+     */
     public JsonObjectBuilder asJsonObjectBuilder(){
+    
+        return asJsonObjectBuilderCore(false);
+    }
+
+    
+    private JsonObjectBuilder asJsonObjectBuilderCore(boolean useCardTerms){
         
         JsonObjectBuilder jsonPageInfo = Json.createObjectBuilder();
                 
@@ -358,13 +383,24 @@ public class Pager {
                     .add("hasPreviousPageNumber", this.hasPreviousPageNumber())
                     .add("previousPageNumber", this.previousPageNumber)
                     .add("hasNextPageNumber", this.hasNextPageNumber())
-                    .add("nextPageNumber", this.nextPageNumber)
-                    .add("startCardNumber", this.startCardNumber)
+                    .add("nextPageNumber", this.nextPageNumber);
+        
+        if (useCardTerms){
+            jsonPageInfo.add("startCardNumber", this.startCardNumber)
                     .add("endCardNumber", this.endCardNumber)
                     .add("startCardNumberString", this.addCommasToNumber(this.startCardNumber))
                     .add("endCardNumberString", this.addCommasToNumber(this.endCardNumber))
-                    .add("remainingCards", this.remainingCards)
-                    .add("numberNextResults", this.numberNextResults);
+                    .add("remainingCards", this.remainingCards);
+        }else{
+            jsonPageInfo.add("startResultNumber", this.startCardNumber)
+                    .add("endResultNumber", this.endCardNumber)
+                    .add("startResultNumberString", this.addCommasToNumber(this.startCardNumber))
+                    .add("endResultNumberString", this.addCommasToNumber(this.endCardNumber))
+                    .add("remainingResults", this.remainingCards);
+            
+        }
+        
+        jsonPageInfo.add("numberNextResults", this.numberNextResults);
         
         // --------------------
         // pageNumberList

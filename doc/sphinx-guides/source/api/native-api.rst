@@ -567,7 +567,11 @@ List users with the options to search and "page" through results. Only accessibl
 
     GET http://$SERVER/api/admin/list-users
 
-Sample output.  Note the ``pagination`` section.  When multiple pages of results exist, the ``selectedPage`` attribute may used.  
+
+Sample output appears below. 
+
+* When multiple pages of results exist, the ``selectedPage`` parameters may be specified. 
+* Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.          
 
 .. code-block:: json
 
@@ -587,11 +591,11 @@ Sample output.  Note the ``pagination`` section.  When multiple pages of results
                 "previousPageNumber":1,
                 "hasNextPageNumber":true,
                 "nextPageNumber":2,
-                "startCardNumber":1,
-                "endCardNumber":25,
-                "startCardNumberString":"1",
-                "endCardNumberString":"25",
-                "remainingCards":2,
+                "startResultNumber":1,
+                "endResultNumber":25,
+                "startResultNumberString":"1",
+                "endResultNumberString":"25",
+                "remainingResults":2,
                 "numberNextResults":2,
                 "pageNumberList":[
                     1,
