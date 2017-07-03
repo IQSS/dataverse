@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.List;
@@ -35,10 +37,17 @@ public class Notifications extends AbstractApiBean {
         List<UserNotification> notifications = userNotificationSvc.findByUser(authenticatedUser.getId());
         for (UserNotification notification : notifications) {
             JsonObjectBuilder notificationObjectBuilder = Json.createObjectBuilder();
-            notificationObjectBuilder.add("type", notification.getType().toString());
-            String comments = notification.getText();
-            if (comments != null) {
-                notificationObjectBuilder.add("comments", comments);
+            Type type = notification.getType();
+            notificationObjectBuilder.add("type", type.toString());
+            if (Type.RETURNEDDS.equals(type)) {
+                Long objectId = notification.getObjectId();
+                DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
+                if (datasetVersion != null) {
+                    String comments = datasetVersion.getReturnReason();
+                    if (comments != null) {
+                        notificationObjectBuilder.add("comments", comments);
+                    }
+                }
             }
             jsonArrayBuilder.add(notificationObjectBuilder);
         }

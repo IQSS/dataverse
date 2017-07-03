@@ -405,6 +405,7 @@ public class MailServiceBean implements java.io.Serializable {
                 String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
+                messageText += version.getReturnReason();
                 return messageText;
             case CREATEACC:
                 String rootDataverseName = dataverseService.findRootDataverse().getName();

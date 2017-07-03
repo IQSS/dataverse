@@ -5,4 +5,4 @@ ALTER TABLE authenticateduser ADD COLUMN createdtime TIMESTAMP NOT NULL DEFAULT 
 ALTER TABLE authenticateduser ADD COLUMN lastlogintime TIMESTAMP DEFAULT NULL;
 ALTER TABLE authenticateduser ADD COLUMN lastapiusetime TIMESTAMP DEFAULT NULL;
 ALTER TABLE authenticateduser DROP COLUMN modificationtime;
-ALTER TABLE usernotification ADD COLUMN text TEXT default NULL;
+ALTER TABLE datasetversion ADD COLUMN returnReason TEXT default NULL;

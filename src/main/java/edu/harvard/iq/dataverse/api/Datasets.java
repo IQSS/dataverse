@@ -655,15 +655,17 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "The dataset must be in draft to return it to the author(s). The state of the dataset is " + datasetVersion.getVersionState() + ".");
             }
             datasetVersion.setInReview(false);
+            datasetVersion.setReturnReason(json.getString("comments"));
             Dataset updatedDataset = execCommand(new UpdateDatasetCommand(dataset, createDataverseRequest(findUserOrDie())));
-            boolean inReview = updatedDataset.getLatestVersion().isInReview();
+            DatasetVersion latestVersion = updatedDataset.getLatestVersion();
+            boolean inReview = latestVersion.isInReview();
             List<AuthenticatedUser> authUsers = permissionSvc.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
             List<AuthenticatedUser> editUsers = permissionSvc.getUsersWithPermissionOn(Permission.EditDataset, dataset);
             for (AuthenticatedUser au : authUsers) {
                 editUsers.remove(au);
             }
             for (AuthenticatedUser au : editUsers) {
-                userNotificationSvc.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId(), json.getString("comments"));
+                userNotificationSvc.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId());
             }
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", inReview);
