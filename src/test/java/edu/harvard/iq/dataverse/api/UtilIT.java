@@ -654,7 +654,7 @@ public class UtilIT {
     static Response filterAuthenticatedUsers(String superUserApiToken,
                                              String searchTerm,
                                              Integer selectedPage,
-                                             Integer numDisplay
+                                             Integer itemsPerPage
     //                                         String sortKey
     ) {
 
@@ -666,8 +666,8 @@ public class UtilIT {
         if (selectedPage != null){
             queryParams.add("selectedPage=" + selectedPage.toString());
         }
-        if (numDisplay != null){
-            queryParams.add("numDisplay=" + numDisplay.toString());
+        if (itemsPerPage != null){
+            queryParams.add("itemsPerPage=" + itemsPerPage.toString());
         }
 
         String queryString = "";

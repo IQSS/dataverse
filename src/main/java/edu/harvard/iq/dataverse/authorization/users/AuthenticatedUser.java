@@ -6,12 +6,14 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
+import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -318,20 +320,47 @@ public class AuthenticatedUser implements User, Serializable {
         authenicatedUserJson.add("firstName", this.firstName);
         authenicatedUserJson.add("email", this.email);
         authenicatedUserJson.add("affiliation", UserUtil.getStringOrNull(this.affiliation));
-        authenicatedUserJson.add("isSuperuser", this.superuser);
         authenicatedUserJson.add("position", UserUtil.getStringOrNull(this.position));
+        authenicatedUserJson.add("isSuperuser", this.superuser);
+              
+        authenicatedUserJson.add("authenticationProvider", this.authProviderFactoryAlias);   
+        authenicatedUserJson.add("roles", UserUtil.getStringOrNull(this.roles));
         
         authenicatedUserJson.add("createdTime", UserUtil.getTimestampStringOrNull(this.createdTime));
         authenicatedUserJson.add("lastLoginTime", UserUtil.getTimestampStringOrNull(this.lastLoginTime));
         authenicatedUserJson.add("lastApiUseTime", UserUtil.getTimestampStringOrNull(this.lastApiUseTime));
-        
-        authenicatedUserJson.add("authenticationProvider", this.authProviderFactoryAlias);   
-        authenicatedUserJson.add("roles", UserUtil.getStringOrNull(this.roles));
-        
+
         return authenicatedUserJson;
     }
     
-    
+     /**
+     * May be used for translating API field names.  
+     * 
+     * Should match order of "toJson()" method
+     * 
+     * @return 
+     */
+    public static JsonObjectBuilder getBundleStrings(){
+     
+           return Json.createObjectBuilder()                   
+                .add("userId", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userId"))
+                .add("userIdentifier", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userIdentifier"))
+                .add("lastName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastName"))
+                .add("firstName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.firstName"))
+                .add("email", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.email"))
+                .add("affiliation", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.affiliation"))
+                .add("position", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.position"))
+                .add("isSuperuser", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.isSuperuser"))
+                
+                .add("authenticationProvider", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.authProviderFactoryAlias"))
+                .add("roles", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles"))
+                   
+                .add("createdTime", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.createdTime"))
+                .add("lastLoginTime", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastLoginTime"))
+                .add("lastApiUseTime", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastApiUseTime"))
+                ;
+                       
+    }
     
     @Override
     public String toString() {

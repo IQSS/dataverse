@@ -315,8 +315,7 @@ public class Admin extends AbstractApiBean {
     @Produces({"application/json"})
     public Response filterAuthenticatedUsers(@QueryParam("searchTerm") String searchTerm,
                         @QueryParam("selectedPage") Integer selectedPage,
-                        @QueryParam("numDisplay") Integer itemsPerPage,
-                        @QueryParam("sortKey") String sortKey
+                        @QueryParam("itemsPerPage") Integer itemsPerPage
     ) { 
         
         User authUser;
@@ -336,7 +335,8 @@ public class Admin extends AbstractApiBean {
         
         UserListMaker userListMaker = new UserListMaker(userService);      
         
-        UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, null);
+        String sortKey = null;
+        UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, sortKey);
 
         return ok(userListResult.toJSON());
     }

@@ -169,7 +169,7 @@ public class UserListResult {
         jsonOverallData.add("userCount", pager.getNumResults())
                        .add("selectedPage", pager.getSelectedPageNumber())
                        .add("pagination", pager.asJsonObjectBuilder())
-                       .add("bundleStrings", getBundleStrings())
+                       .add("bundleStrings", AuthenticatedUser.getBundleStrings())
                        .add("users", getUsersAsJSONArray())
                        ;
         return jsonOverallData;
@@ -203,26 +203,10 @@ public class UserListResult {
          return Json.createObjectBuilder()
                         .add("userCount", 0)
                         .add("selectedPage", 1)
-                        .add("bundleStrings", getBundleStrings())
+                        .add("bundleStrings", AuthenticatedUser.getBundleStrings())
                         .add("users", Json.createArrayBuilder()); // empty array
     }
     
-    /**
-     * May be used for table headers or translating field names
-     * 
-     * @return 
-     */
-    public JsonObjectBuilder getBundleStrings(){
-     
-           return Json.createObjectBuilder()                   
-                .add("userId", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userId"))
-                .add("userIdentifier", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userIdentifier"))
-                .add("lastName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastName"))
-                .add("firstName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.firstName"))
-                .add("email", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.email"))
-                .add("isSuperuser", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.isSuperuser"))
-                ;
-                       
-    }
+   
 
 }
