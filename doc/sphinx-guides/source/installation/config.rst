@@ -498,6 +498,13 @@ The key required to create users via API as documented at :doc:`/api/native-api`
 
 ``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
 
+:SearchApiRequiresToken
++++++++++++++++++++++++
+
+In Dataverse 4.7 and lower, the :doc:`/api/search` required an API token, but as of Dataverse 4.7.1 this is no longer the case. If you prefer the old behavior of requiring API tokens to use the Search API, set ``:SearchApiRequiresToken`` to ``true``.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SearchApiRequiresToken``
+
 :SystemEmail
 ++++++++++++
 
@@ -506,6 +513,8 @@ This is the email address that "system" emails are sent from such as password re
 ``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
 
 Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
+
+Please note that if you're having any trouble sending email, you can refer to "Troubleshooting" under :doc:`installation-main`.
 
 :HomePageCustomizationFile
 ++++++++++++++++++++++++++
