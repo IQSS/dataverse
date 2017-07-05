@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -667,4 +668,11 @@ public class DataverseUserPage implements java.io.Serializable {
         return AuthUtil.isNonLocalLoginEnabled(authenticationService.getAuthenticationProviders());
     }
 
+    public String getOptionalReasonForReturn(DatasetVersion datasetVersion) {
+        String returnReason = datasetVersion.getReturnReason();
+        if (returnReason != null) {
+            return BundleUtil.getStringFromBundle("wasReturnedReasonOptional", Arrays.asList(returnReason));
+        }
+        return ".";
+    }
 }

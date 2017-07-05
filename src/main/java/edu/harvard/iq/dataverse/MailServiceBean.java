@@ -402,10 +402,14 @@ public class MailServiceBean implements java.io.Serializable {
             case RETURNEDDS:
                 version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasReturnedByReviewer");
+                String optionalReturnReason = ".";
+                String returnReason = version.getReturnReason();
+                if (returnReason != null) {
+                    optionalReturnReason = " " + BundleUtil.getStringFromBundle("wasReturnedReasonOptional", Arrays.asList(returnReason));
+                }
                 String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
-                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), optionalReturnReason};
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
-                messageText += version.getReturnReason();
                 return messageText;
             case CREATEACC:
                 String rootDataverseName = dataverseService.findRootDataverse().getName();
