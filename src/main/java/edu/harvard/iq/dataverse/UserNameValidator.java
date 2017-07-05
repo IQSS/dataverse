@@ -34,6 +34,9 @@ public class UserNameValidator implements ConstraintValidator<ValidateUserName, 
      * @return boolean 
      */
     public static boolean isUserNameValid(final String username, ConstraintValidatorContext context) {
+        if (username == null) {
+            return false;
+        }
         //TODO: What other characters do we need to support?
         String validCharacters = "[a-zA-ZÀ-ÿ0-9\\_\\-\\.";
         //support accents
