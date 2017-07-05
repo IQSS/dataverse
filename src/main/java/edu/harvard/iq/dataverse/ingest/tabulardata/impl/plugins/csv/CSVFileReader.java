@@ -189,11 +189,11 @@ public class CSVFileReader extends TabularDataFileReader {
                 for (int i = 0; i < headers.size(); i++) {
                     String varString = record.get(i);
                     isIntegerVariable[i] = isIntegerVariable[i]
-                            && varString != null
-                            && !varString.isEmpty()
-                            && (varString.equals("null")
-                            || firstNumCharSet.contains(varString.charAt(0))
-                            && StringUtils.isNumeric(varString.substring(1)));
+                                           && varString != null
+                                           && (varString.isEmpty()
+                                               || varString.equals("null")
+                                               || (firstNumCharSet.contains(varString.charAt(0))
+                                                   && StringUtils.isNumeric(varString.substring(1))));
                     if (isNumericVariable[i]) {
                         // If we haven't given up on the "numeric" status of this
                         // variable, let's perform some tests on it, and see if
