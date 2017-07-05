@@ -142,6 +142,7 @@ public class RestrictFileCommandTest {
         String expected = "Restricting files is not permitted on a public installation.";
         String actual = null;
         publicInstall = true;
+
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
         try {
             engine.submit(cmd);
