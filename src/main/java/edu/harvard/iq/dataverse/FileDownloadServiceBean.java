@@ -143,6 +143,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                     swiftIO.open();
                     fileDownloadUrl = swiftIO.getTemporarySwiftUrl();
                     FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+                    //TODO: don't redirect if "access denied"
+                    //if we figure out the proper duration, we wont have to worry about
+                    //ever getting access denied
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
@@ -163,11 +166,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
            writeGuestbookResponseRecord(guestbookResponse);
             recordsWritten = true;
         }
-        if (fileMetadata.getDataFile().getStorageIdentifier().startsWith(("swift://"))){
-            callSwiftDownloadServlet(fileMetadata);
-        } else {
-            callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
-        }
+//        if (fileMetadata.getDataFile().getStorageIdentifier().startsWith(("swift://"))){
+//            callSwiftDownloadServlet(fileMetadata);
+//        } else {
+        callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
+//        }
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
     

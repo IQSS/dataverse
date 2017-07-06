@@ -26,6 +26,7 @@ import org.javaswift.joss.model.StoredObject;
 /**
  *
  * @author leonid andreev
+ * @author sarahferry
  */
 /* 
     Experimental Swift driver, implemented as part of the Dataverse - Mass Open Cloud
@@ -512,7 +513,7 @@ public class SwiftAccessIO extends DataFileIO {
         }
 
         StoredObject fileObject = this.swiftContainer.getObject(swiftFileName);
-
+        
         // If this is the main, primary datafile object (i.e., not an auxiliary 
         // object for a primary file), we also set the file download url here: 
         // and generate a temporary URL
@@ -686,7 +687,5 @@ public class SwiftAccessIO extends DataFileIO {
 
         return temporaryUrl;
     }
-
-
 
 }
