@@ -28,6 +28,9 @@
                         <div class="button-block margin-bottom">
                             <p:commandButton value="#{bundle.find}" action="#{AdvancedSearchPage.find()}"/>
                         </div>
+                        
+                        <!-- QDRCustom: remove Dataverses block from Advanced Search form -->
+                        <!--
                         <div class="panel panel-default">
                             <div data-toggle="collapse" data-target="#panelCollapseDataversesFieldList" class="panel-heading">
                                 <h:outputText value="#{bundle['advanced.search.header.dataverses']}"/> &#160;<span class="glyphicon glyphicon-chevron-up"/>
@@ -80,6 +83,7 @@
                                 </div>
                             </div>
                         </div>
+                        -->
 
                         <ui:repeat value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">
                             <div class="panel panel-default" jsf:rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">
