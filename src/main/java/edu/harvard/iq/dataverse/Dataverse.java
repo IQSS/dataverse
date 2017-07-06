@@ -105,25 +105,22 @@ public class Dataverse extends DvObjectContainer {
     @Transient
     private final String uncategorizedString = "Uncategorized";
 
-    /**
-     * @todo Don't hard code these as English. Use bundleUtils
-     */
-    public String getFriendlyCategoryName(){
+        public String getFriendlyCategoryName(){
        switch (this.dataverseType) {
             case RESEARCHERS:
-                return "Researcher";
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchers");
             case RESEARCH_PROJECTS:
-                return "Research Project";
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchProjects");
             case JOURNALS:
-                return "Journal";            
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.journals");           
             case ORGANIZATIONS_INSTITUTIONS:
-                return "Organization or Institution";            
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.organizationsAndInsitutions");           
             case TEACHING_COURSES:
-                return "Teaching Course";
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.teachingCourses");
             case LABORATORY:
-               return "Laboratory";
+               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.laboratory");
             case RESEARCH_GROUP:
-               return "Research Group";
+               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchGroup");
             case DEPARTMENT:
                 return BundleUtil.getStringFromBundle("dataverse.type.selectTab.department");
             case UNCATEGORIZED:
