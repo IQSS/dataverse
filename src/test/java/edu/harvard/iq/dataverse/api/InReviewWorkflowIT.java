@@ -99,7 +99,7 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[1]", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
-        String comments = "You forgot to upload your files.";
+        String comments = "You forgot to upload any files.";
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("comments", comments);
         Response returnToAuthor = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
@@ -113,12 +113,39 @@ public class InReviewWorkflowIT {
         authorsChecksForCommentsAgain.then().assertThat()
                 .body("data.notifications[0].type", equalTo("RETURNEDDS"))
                 // The author thinks, "This why we have curators!"
-                .body("data.notifications[0].comments", equalTo("You forgot to upload your files."))
+                .body("data.notifications[0].comments", equalTo("You forgot to upload any files."))
                 .body("data.notifications[1].type", equalTo("CREATEACC"))
                 .body("data.notifications[1].comments", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
-        // Author then makes corrections (uploads files, in this case), etc.
+        // The author upload the file she forgot.
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response authorAddsFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, authorApiToken);
+        authorAddsFile.prettyPrint();
+        authorAddsFile.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
+                .statusCode(OK.getStatusCode());
+
+        // The author re-submits.
+        Response resubmitForReview = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
+        resubmitForReview.prettyPrint();
+        resubmitForReview.then().assertThat()
+                .body("data.inReview", equalTo(true))
+                .statusCode(OK.getStatusCode());
+
+        // The curator publishes the dataverse.
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, curatorApiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // The curator publishes the dataset.
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", curatorApiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         // These println's are here in case you want to log into the GUI to see what notifications look like.
         System.out.println("Curator username/password: " + curatorUsername);
         System.out.println("Author username/password: " + authorUsername);
