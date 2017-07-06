@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -59,7 +60,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class Dataverse extends DvObjectContainer {
 
     public enum DataverseType {
-        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP
+        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP, DEPARTMENT
     };
     
     private static final long serialVersionUID = 1L;
@@ -105,7 +106,7 @@ public class Dataverse extends DvObjectContainer {
     private final String uncategorizedString = "Uncategorized";
 
     /**
-     * @todo Don't hard code these as English.
+     * @todo Don't hard code these as English. Use bundleUtils
      */
     public String getFriendlyCategoryName(){
        switch (this.dataverseType) {
@@ -123,6 +124,8 @@ public class Dataverse extends DvObjectContainer {
                return "Laboratory";
             case RESEARCH_GROUP:
                return "Research Group";
+            case DEPARTMENT:
+                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.department");
             case UNCATEGORIZED:
                 return uncategorizedString;
             default:
