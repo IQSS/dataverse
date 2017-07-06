@@ -36,7 +36,6 @@ public class CSVFileReaderTest {
     /**
      * Test CSVFileReader with a hellish CSV containing everything nasty I could
      * think of to throw at it.
-     *
      */
     @Test
     public void testRead() {
