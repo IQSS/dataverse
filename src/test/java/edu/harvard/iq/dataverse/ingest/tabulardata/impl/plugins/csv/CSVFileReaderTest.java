@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableInterval;
 import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableType;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Logger;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
@@ -390,7 +392,7 @@ public class CSVFileReaderTest {
         }
 
     }
-    
+
     /**
      * Tests CSVFileReader with a CSV with one more column than header. Tests
      * CSVFileReader with a null CSV.
@@ -405,7 +407,7 @@ public class CSVFileReaderTest {
             String expMessage = null;
             assertEquals(expMessage, ex.getMessage());
         } catch (IOException ex) {
-            String expMessage = "Stream can't be null.";
+            String expMessage = BundleUtil.getStringFromBundle("ingest.csv.nullStream");
             assertEquals(expMessage, ex.getMessage());
         }
         try (BufferedInputStream stream = new BufferedInputStream(
@@ -413,7 +415,8 @@ public class CSVFileReaderTest {
             new CSVFileReader(new CSVFileReaderSpi()).read(stream, null);
             fail("IOException was not thrown when collumns do not align.");
         } catch (IOException ex) {
-            String expMessage = "Reading mismatch, line 3 of the Data file: 6 delimited values expected, 4 found.";
+            String expMessage = BundleUtil.getStringFromBundle("ingest.csv.recordMismatch",
+                                                               Arrays.asList(new String[]{"3", "6", "4"}));
             assertEquals(expMessage, ex.getMessage());
         }
     }
