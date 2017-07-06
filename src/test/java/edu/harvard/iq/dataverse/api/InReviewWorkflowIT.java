@@ -134,6 +134,19 @@ public class InReviewWorkflowIT {
                 .body("data.inReview", equalTo(true))
                 .statusCode(OK.getStatusCode());
 
+        // The author checks to see if the author has resubmitted yet.
+        Response curatorChecksNotifications = UtilIT.getNotifications(curatorApiToken);
+        curatorChecksNotifications.prettyPrint();
+        curatorChecksNotifications.then().assertThat()
+                // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
+                .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[0].comments", equalTo(null))
+                .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[1].comments", equalTo(null))
+                .body("data.notifications[2].type", equalTo("CREATEACC"))
+                .body("data.notifications[2].comments", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
         // The curator publishes the dataverse.
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, curatorApiToken);
         publishDataverse.prettyPrint();
