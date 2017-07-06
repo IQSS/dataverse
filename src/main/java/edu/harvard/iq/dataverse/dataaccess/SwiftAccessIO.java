@@ -453,11 +453,8 @@ public class SwiftAccessIO extends DataFileIO {
             swiftEndPoint = p.getProperty("swift.default.endpoint");
 
             //swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
-            String swiftFolderPathSeparator = "-";
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-            swiftFolderPath = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator
-                    + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-                    + swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
+            swiftFolderPath = getSwiftContainerName();
+            setSwiftContainerName(swiftFolderPath);
 
             swiftFileName = storageIdentifier;
             //setSwiftContainerName(swiftFolderPath);
@@ -520,6 +517,10 @@ public class SwiftAccessIO extends DataFileIO {
         if (auxItemTag == null) {
             setRemoteUrl(getSwiftFileURI(fileObject));
             setTemporarySwiftUrl(generateTemporarySwiftUrl(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));
+            setTempUrlSignature(generateTempUrlSignature(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));
+            setTempUrlExpiry(generateTempUrlExpiry(TEMP_URL_EXPIRES));
+            setSwiftFileName(swiftFileName);
+
             logger.fine(getRemoteUrl() + " success; write mode: " + writeAccess);
         } else {
             logger.fine("sucessfully opened AUX object " + auxItemTag + " , write mode: " + writeAccess);
@@ -660,16 +661,23 @@ public class SwiftAccessIO extends DataFileIO {
         }
         return fileUri;
     }
-
-
-    private String generateTemporarySwiftUrl(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
+    
+    
+    public String getSwiftContainerName() {
+        String swiftFolderPathSeparator = System.getProperty("dataverse.files.swift-folder-path-separator");
+        String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+        String containerName = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
+            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+            swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
+        
+        return containerName;
+     }
+    
+    public String generateTempUrlSignature(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
         Properties p = getSwiftProperties();
-        String baseUrl = p.getProperty("swift.swift_endpoint." + swiftEndPoint);
         String secretKey = p.getProperty("swift.hash_key." + swiftEndPoint);
-
-        String temporaryUrl;
         String path = "/v1/" + containerName + "/" + objectName;
-        Long expires = (System.currentTimeMillis() / 1000) + duration;
+        Long expires = generateTempUrlExpiry(duration);
         String hmacBody = "GET\n" + expires + "\n" + path;
         String hmac = null;
         try {
@@ -677,8 +685,20 @@ public class SwiftAccessIO extends DataFileIO {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        return hmac;
+    }
+    
+    public Long generateTempUrlExpiry(int duration) {
+        return (System.currentTimeMillis() / 1000) + duration;
+    }
 
-        temporaryUrl = baseUrl + path + "?temp_url_sig=" + hmac + "&temp_url_expires=" + expires;
+    private String generateTemporarySwiftUrl(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
+        Properties p = getSwiftProperties();
+        String baseUrl = p.getProperty("swift.swift_endpoint." + swiftEndPoint);
+        String path = "/v1/" + containerName + "/" + objectName;
+        String temporaryUrl;
+
+        temporaryUrl = baseUrl + path + "?temp_url_sig=" + generateTempUrlSignature(swiftEndPoint, containerName, objectName, duration) + "&temp_url_expires=" + generateTempUrlExpiry(duration);
 
         logger.info("temporary url: " + temporaryUrl);
         if (temporaryUrl == null) {

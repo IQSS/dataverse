@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -558,21 +559,30 @@ public class FilePage implements java.io.Serializable {
         }
         return swiftBool;
     }
+    
+    public SwiftAccessIO getSwiftObject() {
+        try {
+            DataFileIO dataFileIO = getFile().getDataFileIO();
+            try {
+                SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+                //swiftIO.open();
+                return swiftIO;
 
-    public String getSwiftContainerName(){
-        String swiftContainerName = null;
-        String swiftFolderPathSeparator = "-";
-        
-        String authorityNoSlashes = file.getOwner().getAuthority().replace(file.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-        swiftContainerName = file.getOwner().getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-            + swiftFolderPathSeparator + file.getOwner().getIdentifier();
-        logger.info("Swift container name: " + swiftContainerName);
-
-        return swiftContainerName;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public String getComputeUrl() {
-        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+    public String getComputeUrl() throws IOException {
+        SwiftAccessIO swiftObject = getSwiftObject();
+        swiftObject.open();
+        //generate a temp url for a file
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
     }
 
     private List<DataFile> allRelatedFiles() {

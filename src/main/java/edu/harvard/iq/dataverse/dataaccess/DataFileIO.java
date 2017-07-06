@@ -153,6 +153,8 @@ public abstract class DataFileIO {
     private String errorMessage;
 
     private String temporarySwiftUrl;
+    private String tempUrlExpiry;
+    private String tempUrlSignature;
 
     private Boolean isLocalFile = false;
     private Boolean isRemoteAccess = false;
@@ -166,6 +168,8 @@ public abstract class DataFileIO {
     
     //for hash
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
+    private String swiftContainerName;
+    private String swiftFileName;
 
 
     
@@ -240,9 +244,25 @@ public abstract class DataFileIO {
         return remoteUrl;
     }
 
-     public String getTemporarySwiftUrl(){
-         return temporarySwiftUrl;
-     }
+    public String getTemporarySwiftUrl(){
+        return temporarySwiftUrl;
+    }
+    
+    public String getTempUrlExpiry() {
+        return tempUrlExpiry;
+    }
+    
+    public String getTempUrlSignature() {
+        return tempUrlSignature;
+    }
+    
+    public String getSwiftFileName() {
+        return swiftFileName;
+    }
+    
+    public String getSwiftContainerName(){
+        return swiftContainerName;
+    }
 
     public GetMethod getHTTPMethod() {
         return method;
@@ -329,9 +349,25 @@ public abstract class DataFileIO {
         remoteUrl = u;
     }
 
-     public void setTemporarySwiftUrl(String u){
+    public void setTemporarySwiftUrl(String u){
         temporarySwiftUrl = u;
-     }
+    }
+    
+    public void setTempUrlExpiry(Long u){
+        tempUrlExpiry = String.valueOf(u);
+    }
+    
+    public void setSwiftFileName(String u) {
+        swiftFileName = u;
+    }
+    
+    public void setTempUrlSignature(String u){
+        tempUrlSignature = u;
+    }
+    
+    public void setSwiftContainerName(String u){
+        swiftContainerName = u;
+    }
 
     public void setHTTPMethod(GetMethod hm) {
         method = hm;
