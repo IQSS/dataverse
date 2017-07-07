@@ -224,6 +224,8 @@ public class ReturnDatasetToAuthorCommandTest {
                
     }
     
+    /*
+    Removing test because comments not required in UI Version
         @Test
     public void testEmptyComments(){
                
@@ -244,6 +246,9 @@ public class ReturnDatasetToAuthorCommandTest {
         
         
     }
+    
+    */
+
     
     @Test
     public void testAllGood(){
