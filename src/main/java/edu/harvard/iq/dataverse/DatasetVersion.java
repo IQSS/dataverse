@@ -212,7 +212,8 @@ public class DatasetVersion implements Serializable {
     private String archiveNote;
     private String deaccessionLink;
     // FIXME: When we build the UI we want the return reason to be required so it would be nice to revisit this and make nullable = false.
-    @Column(columnDefinition = "TEXT", nullable = true)
+    public static final int RETURN_REASON_MAX_LENGTH = 200;
+    @Column(length = RETURN_REASON_MAX_LENGTH, nullable = true)
     private String returnReason;
     
 

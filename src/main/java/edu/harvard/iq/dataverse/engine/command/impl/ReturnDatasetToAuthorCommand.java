@@ -35,8 +35,10 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
             throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is not In Review. Only such versions may be returned to author.", this);
         }
 
-        // TODO: once there is box to type into in the GUI, make the "reason for return" required.
-        // throw new IllegalCommandException("You must enter a reason for returning a dataset to the author(s).", this);
+        if(theDataset.getLatestVersion().getReturnReason() == null || theDataset.getLatestVersion().getReturnReason().isEmpty()){
+             throw new IllegalCommandException("You must enter a reason for returning a dataset to the author(s).", this);
+        }
+
         return save(ctxt);
     }
 

@@ -224,16 +224,15 @@ public class ReturnDatasetToAuthorCommandTest {
                
     }
     
-    /*
-    Removing test because comments not required in UI Version
-        @Test
+
+    @Test
     public void testEmptyComments(){
                
         dataset.setIdentifier("DUMMY");
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
         dataset.getLatestVersion().setInReview(true);
         dataset.getLatestVersion().setReturnReason(null);
-        String expected = "You must enter a reason for returning a dataset to its author.";
+        String expected = "You must enter a reason for returning a dataset to the author(s).";
         String actual = null;
         Dataset updatedDataset = null;
         try {
@@ -246,10 +245,7 @@ public class ReturnDatasetToAuthorCommandTest {
         
         
     }
-    
-    */
-
-    
+        
     @Test
     public void testAllGood(){
                
