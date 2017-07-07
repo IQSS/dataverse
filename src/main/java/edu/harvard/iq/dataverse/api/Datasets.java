@@ -48,7 +48,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
@@ -627,7 +629,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "The dataset must be in draft to submit it for review. The state of the dataset is " + datasetVersion.getVersionState() + ".");
             }
             datasetVersion.setInReview(true);
-            Dataset updatedDataset = execCommand(new UpdateDatasetCommand(dataset, createDataverseRequest(findUserOrDie())));
+            Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand( createDataverseRequest(findUserOrDie()), dataset));
             List<AuthenticatedUser> authUsers = permissionSvc.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
             for (AuthenticatedUser au : authUsers) {
                 userNotificationSvc.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
@@ -656,7 +658,7 @@ public class Datasets extends AbstractApiBean {
             }
             datasetVersion.setInReview(false);
             datasetVersion.setReturnReason(json.getString("comments"));
-            Dataset updatedDataset = execCommand(new UpdateDatasetCommand(dataset, createDataverseRequest(findUserOrDie())));
+            Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(findUserOrDie()), dataset));
             DatasetVersion latestVersion = updatedDataset.getLatestVersion();
             boolean inReview = latestVersion.isInReview();
             List<AuthenticatedUser> authUsers = permissionSvc.getUsersWithPermissionOn(Permission.PublishDataset, dataset);

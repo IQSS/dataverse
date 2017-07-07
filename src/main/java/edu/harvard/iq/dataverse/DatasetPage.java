@@ -76,6 +76,8 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
@@ -1524,7 +1526,7 @@ public class DatasetPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         workingVersion.setInReview(false);
         try {
-            cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
+            cmd = new ReturnDatasetToAuthorCommand( dvRequestService.getDataverseRequest(), dataset);
             ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
@@ -1552,8 +1554,7 @@ public class DatasetPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         workingVersion.setInReview(true);
         try {
-            cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
-            ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
+            cmd = new SubmitDatasetForReviewCommand( dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
