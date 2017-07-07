@@ -671,7 +671,7 @@ public class DataverseUserPage implements java.io.Serializable {
     public String getOptionalReasonForReturn(DatasetVersion datasetVersion) {
         String returnReason = datasetVersion.getReturnReason();
         if (returnReason != null) {
-            return BundleUtil.getStringFromBundle("wasReturnedReasonOptional", Arrays.asList(returnReason));
+            return BundleUtil.getStringFromBundle("wasReturnedReasonOptional") + " " + returnReason;
         }
         return ".";
     }

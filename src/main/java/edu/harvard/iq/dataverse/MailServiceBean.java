@@ -405,7 +405,7 @@ public class MailServiceBean implements java.io.Serializable {
                 String optionalReturnReason = ".";
                 String returnReason = version.getReturnReason();
                 if (returnReason != null) {
-                    optionalReturnReason = " " + BundleUtil.getStringFromBundle("wasReturnedReasonOptional", Arrays.asList(returnReason));
+                    optionalReturnReason = "./n/n" + BundleUtil.getStringFromBundle("wasReturnedReasonOptional") + returnReason;
                 }
                 String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), optionalReturnReason};
