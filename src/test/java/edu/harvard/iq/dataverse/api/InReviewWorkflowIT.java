@@ -159,6 +159,17 @@ public class InReviewWorkflowIT {
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        Response authorsChecksForCommentsPostPublication = UtilIT.getNotifications(authorApiToken);
+        authorsChecksForCommentsPostPublication.prettyPrint();
+        authorsChecksForCommentsPostPublication.then().assertThat()
+                .body("data.notifications[0].type", equalTo("ASSIGNROLE"))
+                .body("data.notifications[1].type", equalTo("RETURNEDDS"))
+                // The reason for return is deleted on publish. It's water under the bridge.
+                .body("data.notifications[1].comments", equalTo(null))
+                .body("data.notifications[2].type", equalTo("CREATEACC"))
+                .body("data.notifications[2].comments", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
         // These println's are here in case you want to log into the GUI to see what notifications look like.
         System.out.println("Curator username/password: " + curatorUsername);
         System.out.println("Author username/password: " + authorUsername);

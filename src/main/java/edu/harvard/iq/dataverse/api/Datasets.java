@@ -618,21 +618,16 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    // FIXME: This is a stub. Some logic has been copied from submitDataset in DatasetPage. Make a Command and do lots of cleanup.
+    // FIXME: Consolidate with duplicate logic in the "submitForReview" method in DatasetPage.java.
     @POST
     @Path("{id}/submitForReview")
     public Response submitForReview(@PathParam("id") String idSupplied) {
         try {
-            Dataset dataset = findDatasetOrDie(idSupplied);
-            DatasetVersion datasetVersion = dataset.getLatestVersion();
-            if (!datasetVersion.getVersionState().equals(DatasetVersion.VersionState.DRAFT)) {
-                return error(Response.Status.BAD_REQUEST, "The dataset must be in draft to submit it for review. The state of the dataset is " + datasetVersion.getVersionState() + ".");
-            }
-            datasetVersion.setInReview(true);
-            Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand( createDataverseRequest(findUserOrDie()), dataset));
-            List<AuthenticatedUser> authUsers = permissionSvc.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
+            Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
+            List<AuthenticatedUser> authUsers = permissionSvc.getUsersWithPermissionOn(Permission.PublishDataset, updatedDataset);
+            // FIXME: move sending of notifications to SubmitDatasetForReviewCommand
             for (AuthenticatedUser au : authUsers) {
-                userNotificationSvc.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
+                userNotificationSvc.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, updatedDataset.getLatestVersion().getId());
             }
             JsonObjectBuilder result = Json.createObjectBuilder();
             boolean inReview = updatedDataset.getLatestVersion().isInReview();
@@ -644,7 +639,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    // FIXME: This is a stub. Some logic has been copied from sendBackToContributor in DatasetPage. Make a Command and do lots of cleanup.
+    // FIXME: Some logic has been copied from sendBackToContributor in DatasetPage.
     @POST
     @Path("{id}/returnToAuthor")
     public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
@@ -652,15 +647,18 @@ public class Datasets extends AbstractApiBean {
         JsonObject json = Json.createReader(rdr).readObject();
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            DatasetVersion datasetVersion = dataset.getLatestVersion();
-            if (!datasetVersion.getVersionState().equals(DatasetVersion.VersionState.DRAFT)) {
-                return error(Response.Status.BAD_REQUEST, "The dataset must be in draft to return it to the author(s). The state of the dataset is " + datasetVersion.getVersionState() + ".");
+            // FIXME: Consider changing this from "comments" to "reasonForReturn" or similar.
+            String returnReason = json.getString("comments");
+            // TODO: Once we add a box for the curator to type into, pass the reason for return to the ReturnDatasetToAuthorCommand and delete this check and call to setReturnReason on the API side.
+            if (returnReason == null || returnReason.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
             }
-            datasetVersion.setInReview(false);
-            datasetVersion.setReturnReason(json.getString("comments"));
+            DatasetVersion datasetVersion = dataset.getLatestVersion();
+            datasetVersion.setReturnReason(returnReason);
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(findUserOrDie()), dataset));
             DatasetVersion latestVersion = updatedDataset.getLatestVersion();
             boolean inReview = latestVersion.isInReview();
+            // FIXME: Move sending of notifications to ReturnDatasetToAuthorCommand.
             List<AuthenticatedUser> authUsers = permissionSvc.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
             List<AuthenticatedUser> editUsers = permissionSvc.getUsersWithPermissionOn(Permission.EditDataset, dataset);
             for (AuthenticatedUser au : authUsers) {

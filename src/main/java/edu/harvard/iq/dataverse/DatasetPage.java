@@ -1520,20 +1520,16 @@ public class DatasetPage implements java.io.Serializable {
         return releaseDataset(false);
     }
 
-    // FIXME: No functionality should be GUI-only. Make all functionality reachable via the API. https://github.com/IQSS/dataverse/issues/3440
     public String sendBackToContributor() {
-        Command<Dataset> cmd;
-        workingVersion = dataset.getEditVersion();
-        workingVersion.setInReview(false);
         try {
-            cmd = new ReturnDatasetToAuthorCommand( dvRequestService.getDataverseRequest(), dataset);
-            ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
+            Command<Dataset> cmd = new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
             return "";
         }
+        // FIXME: Move sending of notifications to ReturnDatasetToAuthorCommand.
         List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
         List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
         for (AuthenticatedUser au : authUsers) {
@@ -1542,30 +1538,25 @@ public class DatasetPage implements java.io.Serializable {
         for (AuthenticatedUser au : editUsers) {
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId());
         }
-
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        return  returnToLatestVersion();
+        return returnToLatestVersion();
     }
 
-    // FIXME: No functionality should be GUI-only. Make all functionality reachable via the API. https://github.com/IQSS/dataverse/issues/3440
     public String submitDataset() {
-        Command<Dataset> cmd;
-        workingVersion = dataset.getEditVersion();
-        workingVersion.setInReview(true);
         try {
-            cmd = new SubmitDatasetForReviewCommand( dvRequestService.getDataverseRequest(), dataset);
+           Command<Dataset> cmd = new SubmitDatasetForReviewCommand( dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
             return "";
         }
+        // FIXME: Consolidate with duplicate logic in the "submitForReview" API endpoint in Datasets.java.
         List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
         for (AuthenticatedUser au : authUsers) {
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
         }
-
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "Your dataset has been submitted for review.");
         FacesContext.getCurrentInstance().addMessage(null, message);
         return  returnToLatestVersion();
