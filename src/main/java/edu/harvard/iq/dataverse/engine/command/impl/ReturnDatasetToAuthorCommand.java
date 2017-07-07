@@ -34,11 +34,11 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
         if (!theDataset.getLatestVersion().isInReview()) {
             throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is not In Review. Only such versions may be returned to author.", this);
         }
-
+        /*
         if(theDataset.getLatestVersion().getReturnReason() == null || theDataset.getLatestVersion().getReturnReason().isEmpty()){
              throw new IllegalCommandException("You must enter a reason for returning a dataset to the author(s).", this);
         }
-
+        */
         return save(ctxt);
     }
 
