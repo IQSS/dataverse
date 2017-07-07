@@ -49,6 +49,16 @@ public class Notifications extends AbstractApiBean {
                     }
                 }
             }
+            if (Type.SUBMITTEDDS.equals(type)) {
+                Long objectId = notification.getObjectId();
+                DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
+                if (datasetVersion != null) {
+                    String comments = datasetVersion.getReturnReason();
+                    if (comments != null) {
+                        notificationObjectBuilder.add("comments", comments);
+                    }
+                }
+            }
             jsonArrayBuilder.add(notificationObjectBuilder);
         }
         JsonObjectBuilder result = Json.createObjectBuilder().add("notifications", jsonArrayBuilder);

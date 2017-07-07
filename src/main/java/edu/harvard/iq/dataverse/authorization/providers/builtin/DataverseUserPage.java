@@ -668,11 +668,11 @@ public class DataverseUserPage implements java.io.Serializable {
         return AuthUtil.isNonLocalLoginEnabled(authenticationService.getAuthenticationProviders());
     }
 
-    public String getOptionalReasonForReturn(DatasetVersion datasetVersion) {
+    public String getReasonForReturn(DatasetVersion datasetVersion) {
         String returnReason = datasetVersion.getReturnReason();
         if (returnReason != null) {
-            return BundleUtil.getStringFromBundle("wasReturnedReasonOptional") + " " + returnReason;
+            return BundleUtil.getStringFromBundle("wasReturnedReason") + " " + returnReason;
         }
-        return ".";
+        return "";
     }
 }

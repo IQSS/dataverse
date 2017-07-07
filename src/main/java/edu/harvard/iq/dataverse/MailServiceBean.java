@@ -387,9 +387,14 @@ public class MailServiceBean implements java.io.Serializable {
                 return messageText;                   
             case SUBMITTEDDS:
                 version =  (DatasetVersion) targetObject;
+                String mightHaveReturnReason = ".";
+                String returnReasonSubmitted = version.getReturnReason();
+                if (returnReasonSubmitted != null) {
+                    mightHaveReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + returnReasonSubmitted;
+                }
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasSubmittedForReview");
                 String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
-                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), mightHaveReturnReason};
                 messageText += MessageFormat.format(pattern, paramArraySubmittedDataset);
                 return messageText;
             case PUBLISHEDDS:
@@ -405,7 +410,7 @@ public class MailServiceBean implements java.io.Serializable {
                 String optionalReturnReason = ".";
                 String returnReason = version.getReturnReason();
                 if (returnReason != null) {
-                    optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReasonOptional") + "\n\n" + returnReason;
+                    optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + returnReason;
                 }
                 String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), optionalReturnReason};
