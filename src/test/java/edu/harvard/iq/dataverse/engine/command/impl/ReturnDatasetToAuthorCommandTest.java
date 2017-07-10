@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
@@ -10,100 +5,69 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.TestEntityManager;
-import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
-import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.FlushModeType;
-import javax.persistence.LockModeType;
-import javax.persistence.Query;
-import javax.persistence.StoredProcedureQuery;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaDelete;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.CriteriaUpdate;
-import javax.persistence.metamodel.Metamodel;
 import javax.servlet.http.HttpServletRequest;
-import org.junit.After;
-import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-/**
- *
- * @author skraffmi
- */
 public class ReturnDatasetToAuthorCommandTest {
-    
-    public ReturnDatasetToAuthorCommandTest() {
-    }
-    
+
     private Dataset dataset;
     private DataverseRequest dataverseRequest;
     private TestDataverseEngine testEngine;
-    
 
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-        
-
-    
     @Before
     public void setUp() {
         dataset = new Dataset();
-        
+
         HttpServletRequest aHttpServletRequest = null;
         dataverseRequest = new DataverseRequest(MocksFactory.makeAuthenticatedUser("First", "Last"), aHttpServletRequest);
-        
+
         testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override
-            public AuthenticationServiceBean authentication(){
-                return new AuthenticationServiceBean(){
+            public AuthenticationServiceBean authentication() {
+                return new AuthenticationServiceBean() {
                     @Override
-                    public AuthenticatedUser getAuthenticatedUser(String id){
+                    public AuthenticatedUser getAuthenticatedUser(String id) {
                         return MocksFactory.makeAuthenticatedUser("First", "Last");
                     }
                 };
             }
-            
-            
-            @Override 
-            public IndexServiceBean index(){
-                return new IndexServiceBean(){
-                    @Override     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-                     return null;
-                    }                   
-                };
-            } 
+
             @Override
-            public EntityManager em(){
-                return new TestEntityManager(){
+            public IndexServiceBean index() {
+                return new IndexServiceBean() {
+                    @Override
+                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+                        return null;
+                    }
+                };
+            }
+
+            @Override
+            public EntityManager em() {
+                return new TestEntityManager() {
 
                     @Override
                     public <T> T merge(T entity) {
@@ -114,21 +78,19 @@ public class ReturnDatasetToAuthorCommandTest {
                     public void flush() {
                         //nothing to do here
                     }
-                    
+
                 };
             }
-            
-            @Override 
+
+            @Override
             public DatasetServiceBean datasets() {
-                return new DatasetServiceBean(){
+                return new DatasetServiceBean() {
                     @Override
-                    public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user){
+                    public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
                         return null;
                     }
                 };
             }
-            
-            
 
             @Override
             public DataverseRoleServiceBean roles() {
@@ -148,15 +110,22 @@ public class ReturnDatasetToAuthorCommandTest {
                 };
             }
 
+            @Override
+            public PermissionServiceBean permissions() {
+                return new PermissionServiceBean() {
+                    @Override
+                    public List<AuthenticatedUser> getUsersWithPermissionOn(Permission permission, DvObject dvo) {
+                        // We only need permissions for notifications, which we are testing in InReviewWorkflowIT.
+                        return Collections.emptyList();
+                    }
+                };
+            }
 
         }
         );
     }
-    
-    @After
-    public void tearDown() {
-    }
-    
+
+
     /*
             if (theDataset == null) {
             throw new IllegalCommandException("Can't return to author. Dataset is null.", this);
@@ -169,7 +138,7 @@ public class ReturnDatasetToAuthorCommandTest {
         if (theDataset.getLatestVersion().getReturnReason() == null || theDataset.getLatestVersion().getReturnReason().isEmpty()){
             throw new IllegalCommandException("You must enter a reason for returning a dataset to its author.", this);
         }
-    */
+     */
     @Test
     public void testDatasetNull() {
         dataset = null;
@@ -185,10 +154,9 @@ public class ReturnDatasetToAuthorCommandTest {
         assertEquals(expected, actual);
         assertNull(updatedDataset);
     }
-    
+
     @Test
-    public void testReleasedDataset(){
-               
+    public void testReleasedDataset() {
         dataset.setIdentifier("DUMMY");
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         dataset.getLatestVersion().setInReview(true);
@@ -196,18 +164,16 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            
-             updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        assertEquals(expected, actual);      
-               
+        assertEquals(expected, actual);
+
     }
-    
+
     @Test
-    public void testNotInReviewDataset(){
-               
+    public void testNotInReviewDataset() {
         dataset.setIdentifier("DUMMY");
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
         dataset.getLatestVersion().setInReview(false);
@@ -215,16 +181,14 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            
-             updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        assertEquals(expected, actual);      
-               
+        assertEquals(expected, actual);
     }
-    
-/*
+
+    /*
     @Test
     public void testEmptyComments(){
                
@@ -245,10 +209,9 @@ public class ReturnDatasetToAuthorCommandTest {
         
         
     }
-*/        
+     */
     @Test
-    public void testAllGood(){
-               
+    public void testAllGood() {
         dataset.setIdentifier("DUMMY");
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
         dataset.getLatestVersion().setReturnReason("update your files, Dummy!");
@@ -256,16 +219,11 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            
-             updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        assertNotNull(updatedDataset);      
-        
-        
+        assertNotNull(updatedDataset);
     }
-    
 
-    
 }
