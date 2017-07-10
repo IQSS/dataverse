@@ -89,9 +89,24 @@ public class GlobalIdTest {
      * from Harvard Dataverse
      */
     @Test
-    public void testRegisteredDOI()
+    public void testPublicDOI()
     {
+	    System.out.println("testPublicDOI");
 	    String existingDOI = "doi:10.7910/DVN1/22641"; // hdl:1902.1/10379 is oldest handle, looks older - should anyone have interest in extending this
+	    String nonexistantDOI = "doi:10.5072/FK2/notthere"; //hopefully nobody registers this, check with curl if this test fails
+	    GlobalId instance0 = new GlobalId( existingDOI );
+	    try
+	    {
+		    boolean r_existing = instance0.isPublic();
+		    assertTrue( r_existing );
+		    GlobalId instance1 = new GlobalId( nonexistantDOI );
+		    boolean r_nonexistant = instance1.isPublic();
+		    assertFalse( r_nonexistant );
+	    }
+	    catch( Exception e)
+	    {
+		    assertTrue( false );
+	    }
     }
     
     

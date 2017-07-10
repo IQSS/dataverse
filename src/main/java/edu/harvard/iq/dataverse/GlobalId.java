@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.net.MalformedURLException;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
@@ -185,6 +187,38 @@ public class GlobalId implements java.io.Serializable {
         }
         
         return true;
+    }
+
+    /**
+     * check if the identifier is publicly available.
+     * will throw an exception if it's a handle; deferring until code review what the correct
+     * exception type is for "this operation isn't supported (yet) on this type of identifier"
+     */
+    public boolean isPublic() throws Exception
+    {
+	    if ( ! protocol.equals( DOI_PROTOCOL ) )
+	    {
+		    throw new Exception("unsupported protocol in GlobalId.isPublic");
+	    }
+	    try
+	    {
+		    HttpURLConnection conn = (HttpURLConnection) toURL().openConnection();
+		    int r = conn.getResponseCode();
+		    if ( 200 == r ) // clarity over concisness
+		    {
+			    return true;
+		    }
+		    return false;
+	    }
+	    //arguably these exceptions should log and/or trigger propagate up the stack
+	    catch( MalformedURLException ue)
+	    {
+		    return false;
+	    }
+	    catch( IOException ie)
+	    {
+		    return false;
+	    }
     }
     
     
