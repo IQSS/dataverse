@@ -1525,7 +1525,7 @@ public class DatasetPage implements java.io.Serializable {
             Command<Dataset> cmd = new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
+            JsfHelper.addErrorMessage("dataset.reject.failure" + Arrays.asList(ex.toString()));
             logger.severe(ex.getMessage());
             return "";
         }
@@ -1538,7 +1538,7 @@ public class DatasetPage implements java.io.Serializable {
            Command<Dataset> cmd = new SubmitDatasetForReviewCommand( dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
+            JsfHelper.addErrorMessage("dataset.submit.failure" + Arrays.asList(ex.toString()));
             logger.severe(ex.getMessage());
             return "";
         }

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DvObject;
@@ -12,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -31,13 +33,17 @@ public class SubmitDatasetForReviewCommand extends AbstractCommand<Dataset> {
     public Dataset execute(CommandContext ctxt) throws CommandException {
 
         if (theDataset == null) {
-            throw new IllegalCommandException("Can't submit for review. Dataset is null.", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.null"), this);
         }
 
         if (theDataset.getLatestVersion().isReleased()) {
-            throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is already released. Only draft versions can be submitted for review.", this);
+            throw new IllegalCommandException("dataset.submit.failure.isReleased", this);
         }
 
+        if (theDataset.getLatestVersion().isInReview()) {
+            throw new IllegalCommandException("dataset.submit.failure.inReview", this);
+        }
+        
         return save(ctxt);
     }
 
