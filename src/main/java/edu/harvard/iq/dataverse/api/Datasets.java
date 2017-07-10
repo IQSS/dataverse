@@ -630,25 +630,31 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/returnToAuthor")
     public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
+        if (jsonBody == null || jsonBody.isEmpty()) {
+            return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset.");
+        }
         StringReader rdr = new StringReader(jsonBody);
         JsonObject json = Json.createReader(rdr).readObject();
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            // FIXME: Consider changing this from "comments" to "reasonForReturn" or similar.
-            String returnReason = json.getString("comments");
+            String reasonForReturn = null;
+            try {
+                reasonForReturn = json.getString("reasonForReturn");
+            } catch (NullPointerException ex) {
+                return error(Response.Status.BAD_REQUEST, "The JSON you supplied does not contain a reason for returning the dataset to the author(s).");
+            }
             // TODO: Once we add a box for the curator to type into, pass the reason for return to the ReturnDatasetToAuthorCommand and delete this check and call to setReturnReason on the API side.
-            if (returnReason == null || returnReason.isEmpty()) {
+            if (reasonForReturn == null || reasonForReturn.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
             }
             DatasetVersion datasetVersion = dataset.getLatestVersion();
-            datasetVersion.setReturnReason(returnReason);
+            datasetVersion.setReturnReason(reasonForReturn);
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(findUserOrDie()), dataset));
             DatasetVersion latestVersion = updatedDataset.getLatestVersion();
             boolean inReview = latestVersion.isInReview();
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", inReview);
             result.add("message", "Dataset id " + updatedDataset.getId() + " has been sent back to the author(s).");
-            result.add("received", json);
             return ok(result);
         } catch (WrappedResponse wr) {
             return wr.getResponse();

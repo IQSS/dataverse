@@ -99,12 +99,25 @@ public class InReviewWorkflowIT {
                 .body("message", equalTo("User @" + joeRandomUsername + " is not permitted to perform requested action."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
+//        boolean returnEarlyToTest = true;
+//        if (returnEarlyToTest) {
+//            System.out.println("Curator username/password and API token: " + curatorUsername + " and " + curatorApiToken);
+//            System.out.println("Author username/password and API token: " + authorUsername + " and " + authorApiToken);
+//            return;
+//        }
+        // The author submits the dataset for review.
         Response submitForReview = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
         submitForReview.prettyPrint();
         submitForReview.then().assertThat()
                 .body("data.inReview", equalTo(true))
                 .statusCode(OK.getStatusCode());
 
+        // TODO: enable this assertion after rule has been added to command.
+//        Response submitForReviewAlreadySubmitted = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
+//        submitForReviewAlreadySubmitted.prettyPrint();
+//        submitForReviewAlreadySubmitted.then().assertThat()
+//                .body("message", equalTo("You cannot submit this dataset for review because it is already in review."))
+//                .statusCode(BAD_REQUEST.getStatusCode());
         Response authorsChecksForCommentsPrematurely = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPrematurely.prettyPrint();
         authorsChecksForCommentsPrematurely.then().assertThat()
@@ -115,7 +128,16 @@ public class InReviewWorkflowIT {
 
         String joeRandomComments = "Joe Random says you'll never graduate.";
         JsonObjectBuilder joeRandObj = Json.createObjectBuilder();
-        joeRandObj.add("comments", joeRandomComments);
+        joeRandObj.add("reasonForReturn", joeRandomComments);
+
+        Response curatorChecksNotificationsAndFindsWorkToDo = UtilIT.getNotifications(curatorApiToken);
+        curatorChecksNotificationsAndFindsWorkToDo.prettyPrint();
+        curatorChecksNotificationsAndFindsWorkToDo.then().assertThat()
+                .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[0].reasonForReturn", equalTo(null))
+                .body("data.notifications[1].type", equalTo("CREATEACC"))
+                .body("data.notifications[1].reasonForReturn", equalTo(null))
+                .statusCode(OK.getStatusCode());
 
         // Joe Random - a real jerk - tries returning a dataset unrightfully with some mean comments.
         // Despite being somewhere he already shouldn't be, he is not authorized to return it, thankfully.
@@ -128,7 +150,7 @@ public class InReviewWorkflowIT {
         // TODO: test where curator neglecting to leave a comment. Should fail with "reason for return" required.
         String noComments = "";
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        jsonObjectBuilder.add("comments", noComments);
+        jsonObjectBuilder.add("reasonForReturn", noComments);
         Response returnToAuthorNoComment = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
         returnToAuthorNoComment.prettyPrint();
         returnToAuthorNoComment.then().assertThat()
@@ -137,7 +159,7 @@ public class InReviewWorkflowIT {
 
         // TODO: For now, show that a "reason for return" of over 200 characters is saved. Once the limit is in place, change the test to fail.
         String longComment = "Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed foo.";
-        jsonObjectBuilder.add("comments", longComment);
+        jsonObjectBuilder.add("reasonForReturn", longComment);
         Response returnToAuthorWithLongComment = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
         returnToAuthorWithLongComment.prettyPrint();
         returnToAuthorWithLongComment.then().assertThat()
@@ -151,10 +173,10 @@ public class InReviewWorkflowIT {
         submitForReviewAgain.then().assertThat()
                 .body("data.inReview", equalTo(true))
                 .statusCode(OK.getStatusCode());
-        
+
         // Successfully return dataset to author for reason: "You forgot to upload any files."
         String comments = "You forgot to upload any files.";
-        jsonObjectBuilder.add("comments", comments);
+        jsonObjectBuilder.add("reasonForReturn", comments);
         Response returnToAuthor = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
         returnToAuthor.prettyPrint();
         returnToAuthor.then().assertThat()
@@ -167,9 +189,9 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[0].type", equalTo("RETURNEDDS"))
                 // The author thinks, "This why we have curators!"
                 // FIXME: change to expect curator to also see the reason for return
-                .body("data.notifications[0].comments", equalTo("You forgot to upload any files."))
+                .body("data.notifications[0].reasonForReturn", equalTo("You forgot to upload any files."))
                 .body("data.notifications[1].type", equalTo("RETURNEDDS"))
-                .body("data.notifications[1].comments", equalTo("You forgot to upload any files."))
+                .body("data.notifications[1].reasonForReturn", equalTo("You forgot to upload any files."))
                 .statusCode(OK.getStatusCode());
 
         // The author upload the file she forgot.
@@ -194,13 +216,13 @@ public class InReviewWorkflowIT {
         curatorChecksNotifications.then().assertThat()
                 // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
                 .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
-                .body("data.notifications[0].comments", equalTo("You forgot to upload any files."))
+                .body("data.notifications[0].reasonForReturn", equalTo("You forgot to upload any files."))
                 .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
-                .body("data.notifications[1].comments", equalTo("You forgot to upload any files."))
+                .body("data.notifications[1].reasonForReturn", equalTo("You forgot to upload any files."))
                 .body("data.notifications[2].type", equalTo("SUBMITTEDDS"))
-                .body("data.notifications[2].comments", equalTo("You forgot to upload any files."))
+                .body("data.notifications[2].reasonForReturn", equalTo("You forgot to upload any files."))
                 .body("data.notifications[3].type", equalTo("CREATEACC"))
-                .body("data.notifications[3].comments", equalTo(null))
+                .body("data.notifications[3].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // The curator publishes the dataverse.
@@ -221,11 +243,11 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[0].type", equalTo("ASSIGNROLE"))
                 .body("data.notifications[1].type", equalTo("RETURNEDDS"))
                 // The reason for return is deleted on publish. It's water under the bridge.
-                .body("data.notifications[1].comments", equalTo(null))
+                .body("data.notifications[1].reasonForReturn", equalTo(null))
                 .body("data.notifications[2].type", equalTo("RETURNEDDS"))
-                .body("data.notifications[2].comments", equalTo(null))
+                .body("data.notifications[2].reasonForReturn", equalTo(null))
                 .body("data.notifications[3].type", equalTo("CREATEACC"))
-                .body("data.notifications[3].comments", equalTo(null))
+                .body("data.notifications[3].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // These println's are here in case you want to log into the GUI to see what notifications look like.

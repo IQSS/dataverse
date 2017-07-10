@@ -297,6 +297,30 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     print r.json()
     print r.status_code
 
+Submit for Review
+^^^^^^^^^^^^^^^^^
+
+When dataset authors do not have permisson to publish, they can click "Submit for Review" button in the web interface or perform the equivalent operation via API::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/submitForReview?persistentId=$DOI_OR_HANDLE_OF_DATASET"
+
+Note that the person who needs to do the review (often a curator or journal editor) can check their notifications periodically via API. See the "Notifications" section below for details.
+
+Return to Author
+^^^^^^^^^^^^^^^^
+
+After the curators or journal editors have reviewed a dataset that an author submitted (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to the author with a "reason for return".
+
+First create a JSON file that contains the reason for return:
+
+.. literalinclude:: ../_static/api/reason-for-return.json
+
+In the example below, we have saved the JSON file as ``reason-for-return.json`` in our current working directory. Then, we send this JSON file to the ``returnToAuthor`` API endpoint::
+
+    curl -H "Content-type:application/json" -d @reason-for-return.json -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/returnToAuthor?persistentId=$DOI_OR_HANDLE_OF_DATASET"
+
+Note that authors can check their notifications periodically via API to see when the curator or journal editor has published the dataset or returned the dataset for further modifications. See the "Notifications" section below for details.
+
 Files
 ~~~~~~~~~~~
 
@@ -496,6 +520,17 @@ Metadata Blocks
 
   GET http://$SERVER/api/metadatablocks/$identifier
 
+Notifications
+~~~~~~~~~~~~~
+
+Get All Notifications by User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each user can get a dump of their notifications by passing in their API token::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" https://example.dataverse.edu/api/notifications/all
+
+The notifications endpoint is somewhat experimental and was added to help support the "Submit for Review" and "Return to Author" workflow. The idea is that a curator or author could write a script to poll periodically for notifications to know when action is now required on their part.
 
 Admin
 ~~~~~~~~~~~~~~~~

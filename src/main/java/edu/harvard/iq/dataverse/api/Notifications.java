@@ -45,7 +45,7 @@ public class Notifications extends AbstractApiBean {
                 if (datasetVersion != null) {
                     String comments = datasetVersion.getReturnReason();
                     if (comments != null) {
-                        notificationObjectBuilder.add("comments", comments);
+                        notificationObjectBuilder.add("reasonForReturn", comments);
                     }
                 }
             }
@@ -55,7 +55,7 @@ public class Notifications extends AbstractApiBean {
                 if (datasetVersion != null) {
                     String comments = datasetVersion.getReturnReason();
                     if (comments != null) {
-                        notificationObjectBuilder.add("comments", comments);
+                        notificationObjectBuilder.add("reasonForReturn", comments);
                     }
                 }
             }
