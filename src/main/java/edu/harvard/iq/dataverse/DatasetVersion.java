@@ -211,6 +211,10 @@ public class DatasetVersion implements Serializable {
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     private String archiveNote;
     private String deaccessionLink;
+    // FIXME: When we build the UI we want the return reason to be required so it would be nice to revisit this and make nullable = false.
+    public static final int RETURN_REASON_MAX_LENGTH = 200;
+    @Column(length = RETURN_REASON_MAX_LENGTH, nullable = true)
+    private String returnReason;
     
 
     
@@ -518,6 +522,14 @@ public class DatasetVersion implements Serializable {
             terms.setDatasetVersion(this);
             this.setTermsOfUseAndAccess(terms);
         }
+    }
+
+    public String getReturnReason() {
+        return returnReason;
+    }
+
+    public void setReturnReason(String returnReason) {
+        this.returnReason = returnReason;
     }
 
     public void initDefaultValues() {
