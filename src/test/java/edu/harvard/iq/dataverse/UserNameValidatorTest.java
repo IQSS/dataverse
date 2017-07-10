@@ -19,10 +19,10 @@ public class UserNameValidatorTest {
         //good usernames
         assertEquals(true, UserNameValidator.isUserNameValid("sarah", null));
         assertEquals(true, UserNameValidator.isUserNameValid(".-_5Arah_-.", null));
-        //allow accents
-        assertEquals(true, UserNameValidator.isUserNameValid("àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ", null));
-        //allow chinese characters
-        assertEquals(true, UserNameValidator.isUserNameValid("谁日吧爸好", null));
+        //dont allow accents
+        assertEquals(false, UserNameValidator.isUserNameValid("àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ", null));
+        //dont allow chinese characters
+        assertEquals(false, UserNameValidator.isUserNameValid("谁日吧爸好", null));
         
         //middle white space
         assertEquals(false, UserNameValidator.isUserNameValid("sarah f", null));

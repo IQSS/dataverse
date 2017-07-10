@@ -39,10 +39,15 @@ public class UserNameValidator implements ConstraintValidator<ValidateUserName, 
         }
         //TODO: What other characters do we need to support?
         String validCharacters = "[a-zA-ZÀ-ÿ0-9\\_\\-\\.";
+        /*
+         * if you would like to support accents or chinese characters, uncomment this
+         *
         //support accents
         validCharacters += "\\u00C0-\\u017F";
         //support chinese characters
         validCharacters += "\\x{4e00}-\\x{9fa5}";
+        *
+        */
         //end
         validCharacters += "]";
         validCharacters += "{2,60}"; //must be between 2 and 60 characters for user name
