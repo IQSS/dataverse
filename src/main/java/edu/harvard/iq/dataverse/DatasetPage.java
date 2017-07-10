@@ -1524,25 +1524,27 @@ public class DatasetPage implements java.io.Serializable {
         try {
             Command<Dataset> cmd = new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success"));
         } catch (CommandException ex) {
-            JsfHelper.addErrorMessage("dataset.reject.failure" + Arrays.asList(ex.toString()));
-            logger.severe(ex.getMessage());
+            String message = ex.getMessage();
+            logger.severe("sendBackToContributor: " + message);
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure"));
             return "";
         }
-        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success"));
         return returnToLatestVersion();
     }
 
     public String submitDataset() {
         try {
-           Command<Dataset> cmd = new SubmitDatasetForReviewCommand( dvRequestService.getDataverseRequest(), dataset);
+            Command<Dataset> cmd = new SubmitDatasetForReviewCommand( dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success"));
         } catch (CommandException ex) {
-            JsfHelper.addErrorMessage("dataset.submit.failure" + Arrays.asList(ex.toString()));
-            logger.severe(ex.getMessage());
+            String message = ex.getMessage();
+            logger.severe("submitDataset: " + message);
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure"));
             return "";
         }
-        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success"));
         return returnToLatestVersion();
     }
     
