@@ -461,7 +461,7 @@ public class DatasetPage implements java.io.Serializable {
         SwiftAccessIO swiftObject = getSwiftObject();
         swiftObject.open();
         //assuming we are able to get a temp url for a dataset
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
     }
     
     public String getCloudEnvironmentName() {

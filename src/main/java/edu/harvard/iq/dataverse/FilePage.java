@@ -582,7 +582,7 @@ public class FilePage implements java.io.Serializable {
         SwiftAccessIO swiftObject = getSwiftObject();
         swiftObject.open();
         //generate a temp url for a file
-        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
     }
 
     private List<DataFile> allRelatedFiles() {
