@@ -245,8 +245,13 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     private String generateIdentifierAsSequentialNumber(Dataset dataset, IdServiceBean idServiceBean) {
-        
+        //FIXME(PM) - add retry logic (query if the identifer has been already publicly registered?)
         String identifier; 
+	String protocol, authority;
+	protocol = dataset.getProtocol();
+	authority = dataset.getAuthority();
+	GlobalId gid;
+	boolean gid_public;
         do {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
             query.execute();
@@ -257,7 +262,16 @@ public class DatasetServiceBean implements java.io.Serializable {
                 return null; 
             }
             identifier = identifierNumeric.toString();
-        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
+	    try
+	    {
+	    	gid = new GlobalId( protocol, authority, identifier ); //oh my, the gc thrashing we'll do
+		gid_public = gid.isPublic();
+	    }
+	    catch( Exception e) // again, waiting on CR for appropriate "not supported on this identifier type" exception
+	    {
+		    gid_public = false; // continue with previous behavior for handles (should identifierSequence and handles ever co-incide in production)
+	    }
+        } while ( !gid_public && !isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean) );
         
         return identifier;
     }
