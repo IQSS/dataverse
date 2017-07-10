@@ -15,7 +15,6 @@ Installation Guide
    prerequisites
    installation-main
    config
-   administration
    upgrading
    r-rapache-tworavens
    geoconnect

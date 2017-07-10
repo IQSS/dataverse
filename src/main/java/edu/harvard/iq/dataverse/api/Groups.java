@@ -22,6 +22,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
+import static org.apache.commons.lang.StringUtils.isNumeric;
 
 /**
  *
@@ -31,22 +32,22 @@ import javax.ws.rs.PathParam;
 @Stateless
 public class Groups extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Groups.class.getName());
-    
+
     private IpGroupProvider ipGroupPrv;
     private ShibGroupProvider shibGroupPrv;
-    
+
     Pattern legalGroupName = Pattern.compile("^[-_a-zA-Z0-9]+$");
-    
+
     @PostConstruct
     void postConstruct() {
         ipGroupPrv = groupSvc.getIpGroupProvider();
         shibGroupPrv = groupSvc.getShibGroupProvider();
     }
-    
+
     /**
-     * Creates a new {@link IpGroup}. The name of the group is based on the 
+     * Creates a new {@link IpGroup}. The name of the group is based on the
      * {@code alias:} field, but might be changed to ensure uniqueness.
-     * @param dto 
+     * @param dto
      * @return Response describing the created group or the error that prevented
      *         that group from being created.
      */
@@ -57,19 +58,19 @@ public class Groups extends AbstractApiBean {
            IpGroup grp = new JsonParser().parseIpGroup(dto);
             grp.setGroupProvider( ipGroupPrv );
             grp.setPersistedGroupAlias(
-                    ipGroupPrv.findAvailableName( 
+                    ipGroupPrv.findAvailableName(
                             grp.getPersistedGroupAlias()==null ? "ipGroup" : grp.getPersistedGroupAlias()));
-            
+
             grp = ipGroupPrv.store(grp);
             return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
-        
+
         } catch ( Exception e ) {
             logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
-            
+
         }
     }
-    
+
     /**
      * Creates or updates the {@link IpGroup} named {@code groupName}.
      * @param groupName Name of the group.
@@ -92,21 +93,21 @@ public class Groups extends AbstractApiBean {
             grp.setPersistedGroupAlias( groupName );
             grp = ipGroupPrv.store(grp);
             return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
-        
+
         } catch ( Exception e ) {
             logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
-            
+
         }
     }
-    
+
     @GET
     @Path("ip")
     public Response listIpGroups() {
         return ok( ipGroupPrv.findGlobalGroups()
                              .stream().map(g->json(g)).collect(toJsonArray()) );
     }
-    
+
     @GET
     @Path("ip/{groupIdtf}")
     public Response getIpGroup( @PathParam("groupIdtf") String groupIdtf ) {
@@ -116,10 +117,10 @@ public class Groups extends AbstractApiBean {
         } else {
             grp = ipGroupPrv.get(groupIdtf);
         }
-        
+
         return (grp == null) ? notFound( "Group " + groupIdtf + " not found") : ok(json(grp));
     }
-    
+
     @DELETE
     @Path("ip/{groupIdtf}")
     public Response deleteIpGroup( @PathParam("groupIdtf") String groupIdtf ) {
@@ -129,9 +130,9 @@ public class Groups extends AbstractApiBean {
         } else {
             grp = ipGroupPrv.get(groupIdtf);
         }
-        
+
         if (grp == null) return notFound( "Group " + groupIdtf + " not found");
-        
+
         try {
             ipGroupPrv.deleteGroup(grp);
             return ok("Group " + grp.getAlias() + " deleted.");
@@ -141,7 +142,7 @@ public class Groups extends AbstractApiBean {
             while ( e.getCause() != null ) {
                 e = e.getCause();
             }
-            
+
             if ( e instanceof IllegalArgumentException ) {
                 return error(Response.Status.BAD_REQUEST, e.getMessage());
             } else {
@@ -149,7 +150,7 @@ public class Groups extends AbstractApiBean {
             }
         }
     }
-    
+
     @GET
     @Path("shib")
     public Response listShibGroups() {
@@ -207,5 +208,5 @@ public class Groups extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with an id of " + id);
         }
     }
-    
+
 }

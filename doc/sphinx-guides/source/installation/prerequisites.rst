@@ -78,6 +78,8 @@ Adjust this :download:`Glassfish init script <../_static/installation/files/etc/
 
 It is not necessary to have Glassfish running before you execute the Dataverse installation script because it will start Glassfish for you.
 
+Please note that you must run Glassfish in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
+
 PostgreSQL
 ----------
 

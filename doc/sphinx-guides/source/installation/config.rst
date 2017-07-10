@@ -6,7 +6,7 @@ Now that you've successfully logged into Dataverse with a superuser account afte
 
 Settings within Dataverse itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls. Configuring Solr requires manipulating XML files.
 
-Once you have finished securing and configuring your Dataverse installation, proceed to the :doc:`administration` section. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
+Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
 
 .. contents:: |toctitle|
   :local:
@@ -315,12 +315,12 @@ If you are not fronting Glassfish with Apache you'll need to prevent Glassfish f
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Congratulations! You've gone live! It's time to announce your new data respository to the world! You are also welcome to contact support@dataverse.org to have the Dataverse team add your installation to the map at http://dataverse.org . Thank you for installing Datavese!
+Congratulations! You've gone live! It's time to announce your new data respository to the world! You are also welcome to contact support@dataverse.org to have the Dataverse team add your installation to the map at http://dataverse.org . Thank you for installing Dataverse!
 
 Administration of Your Dataverse Installation
 +++++++++++++++++++++++++++++++++++++++++++++
 
-Now that you're live you'll want to review the :doc:`/admin/index`. Please note that there is also an :doc:`administration` section of this Installation Guide that will be moved to the newer Admin Guide in the future.
+Now that you're live you'll want to review the :doc:`/admin/index` for more information about the ongoing administration of a Dataverse installation.
 
 JVM Options
 -----------
@@ -498,6 +498,13 @@ The key required to create users via API as documented at :doc:`/api/native-api`
 
 ``curl -X PUT -d builtInS3kretKey http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
 
+:SearchApiRequiresToken
++++++++++++++++++++++++
+
+In Dataverse 4.7 and lower, the :doc:`/api/search` required an API token, but as of Dataverse 4.7.1 this is no longer the case. If you prefer the old behavior of requiring API tokens to use the Search API, set ``:SearchApiRequiresToken`` to ``true``.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SearchApiRequiresToken``
+
 :SystemEmail
 ++++++++++++
 
@@ -506,6 +513,8 @@ This is the email address that "system" emails are sent from such as password re
 ``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
 
 Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
+
+Please note that if you're having any trouble sending email, you can refer to "Troubleshooting" under :doc:`installation-main`.
 
 :HomePageCustomizationFile
 ++++++++++++++++++++++++++
@@ -670,6 +679,15 @@ For dynamically adding information to the top of every page. For example, "For t
 
 ``curl -X PUT -d "For testing only..." http://localhost:8080/api/admin/settings/:StatusMessageHeader``
 
+You can make the text clickable and include an additional message in a pop up by setting ``:StatusMessageText``.
+
+:StatusMessageText
+++++++++++++++++++
+
+After you've set ``:StatusMessageHeader`` you can also make it clickable to have it include text if a popup with this:
+
+``curl -X PUT -d "This appears in a popup." http://localhost:8080/api/admin/settings/:StatusMessageText``
+
 :MaxFileUploadSizeInBytes
 +++++++++++++++++++++++++
 
@@ -679,6 +697,13 @@ Notes:
 - If the MaxFileUploadSizeInBytes is NOT set, uploads, including SWORD may be of unlimited size.
 
 ``curl -X PUT -d 2147483648 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
+
+:ZipDownloadLimit
++++++++++++++++++
+
+For performance reasons, Dataverse will only create zip files on the fly up to 100 MB but the limit can be increased. Here's an example of raising the limit to 1 GB:
+
+``curl -X PUT -d 1000000000 http://localhost:8080/api/admin/settings/:ZipDownloadLimit``
 
 :TabularIngestSizeLimit
 +++++++++++++++++++++++
@@ -790,7 +815,7 @@ Allow for migration of non-conformant data (especially dates) from DVN 3.x to Da
 :MinutesUntilConfirmEmailTokenExpires
 +++++++++++++++++++++++++++++++++++++
 
-The duration in minutes before "Confirm Email" URLs expire. The default is 1440 minutes (24 hours).  See also :doc:`/installation/administration`.
+The duration in minutes before "Confirm Email" URLs expire. The default is 1440 minutes (24 hours).  See also the :doc:`/admin/user-administration` section of our Admin Guide.
 
 :DefaultAuthProvider
 ++++++++++++++++++++
@@ -862,7 +887,7 @@ Set the base URL for the "Compute" button for a dataset.
 :CloudEnvironmentName
 +++++++++++++++++++++
 
-Set the base URL for the "Compute" button for a dataset.
+Set the name of the cloud environment you've integrated with your Dataverse installation.
 
 ``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
 
