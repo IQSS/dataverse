@@ -54,6 +54,45 @@ public class GlobalIdTest {
         assertEquals("BYM3IW", instance.getIdentifier());
         // TODO review the generated test code and remove the default call to fail.
     }
+
+    /**
+     * test string -> doi -> string round trip
+     */
+    @Test
+    public void testRoundTripDOI()
+    {
+	    System.out.println("testRountTripDOI");
+	    String doi0 = "doi:10.7910/DVN1/22641";
+	    GlobalId instance = new GlobalId( doi0 );
+	    String doi1 = instance.toString();
+	    assertTrue( doi0.equals( doi1 ) );
+    }
+    /**
+     * test DOI URL generation
+     */
+    @Test
+    public void testDOIURL()
+    {
+	    System.out.println("testDOIURL");
+	    String doi0 = "doi:10.7910/DVN1/22641";
+	    GlobalId instance = new GlobalId( doi0 );
+	    String url_e = "https://dx.doi.org/10.7910/DVN1/22641";
+	    URL url = instance.toURL();
+	    String url_r = url.toString();
+	    System.out.format("url_e : %s \n", url_e);
+	    System.out.format("url_r : %s \n", url_r);
+	    assertTrue( url_e.equals( url_r ) );
+    }
+
+    /**
+     * test if a DOI has been publicly registered; using the oldest DOI dataset
+     * from Harvard Dataverse
+     */
+    @Test
+    public void testRegisteredDOI()
+    {
+	    String existingDOI = "doi:10.7910/DVN1/22641"; // hdl:1902.1/10379 is oldest handle, looks older - should anyone have interest in extending this
+    }
     
     
     @Test
@@ -136,6 +175,7 @@ public class GlobalIdTest {
     /**
      * Test of toURL method, of class GlobalId.
      */
+    //TODO(PM) - why was this commented out / not testing the toURL call?
     /*
     @Test
     public void testToURL() {
