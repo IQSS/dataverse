@@ -31,6 +31,14 @@ my ($rez) = GetOptions(
 
 my @CONFIG_VARIABLES;
 
+unless ( $< != 0 ) {
+print "It is recommended that this script not be run as root.\n";
+print "Consider creating a glassfish service account, and giving it ownership\n";
+print "on the glassfish/domains/domain1/ and glassfish/lib/ directories.\n";
+print "Don't forget your JVM-specified files.dir location!\n";
+exit (0);
+}
+
 my $postgresonly = 0;
 
 if ($pg_only) 
@@ -71,6 +79,7 @@ else
 my %CONFIG_DEFAULTS = (
     'HOST_DNS_ADDRESS',    'localhost',
     'GLASSFISH_DIRECTORY', '/usr/local/glassfish4',
+    'GLASSFISH_USER',	   'glassfish',
     'ADMIN_EMAIL',         '',
     'MAIL_SERVER',         'mail.hmdc.harvard.edu',
 
@@ -358,6 +367,15 @@ for my $ENTRY (@CONFIG_VARIABLES)
 		# TODO: 
 		# verify that we can write in the Glassfish directory 
 		# (now that we are no longer requiring to run the installer as root)
+
+		my $g_testdir = $g_dir . "/glassfish/domains/domain1";
+		my $g_libdir = $g_dir . "/glassfish/lib";
+		if (!(-w $g_testdir)) {
+		   die("$g_testdir not writable. Have you created a glassfish user, and given it write permission on $g_testdir?\n");
+		} elsif (!(-w $g_libdir)) {
+		   die("$g_libdir not writable. Have you created a glassfish user, and given it write permission on $g_libdir?\n");
+		}
+
 	    }
 
 	    print "OK!\n";
