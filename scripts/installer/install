@@ -36,7 +36,6 @@ print "It is recommended that this script not be run as root.\n";
 print "Consider creating a glassfish service account, and giving it ownership\n";
 print "on the glassfish/domains/domain1/ and glassfish/lib/ directories.\n";
 print "Don't forget your JVM-specified files.dir location!\n";
-exit (0);
 }
 
 my $postgresonly = 0;
@@ -1029,7 +1028,7 @@ my $DOMAIN_DOWN =
 print STDERR $DOMAIN_DOWN . "\n";
 if ($DOMAIN_DOWN) {
     print "Trying to start domain up...\n";
-    system( $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
+    system( "sudo -u $CONFIG_DEFAULTS{'GLASSFISH_USER'} " . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
 
     # TODO: (?) - retest that the domain is running now? 
 }
@@ -1230,7 +1229,8 @@ for my $script ( "setup-all.sh" ) {
     $run_script = $script;
     #}
 
-    unless ( my $exit_code = system( "./" . $run_script . " > $run_script.$$.log 2>&1") == 0 ) 
+    # write output to /tmp until we see if this fixes running as glassfish
+    unless ( my $exit_code = system( "./" . $run_script . " > /tmp/$run_script.$$.log 2>&1") == 0 ) 
     {
         print "\nERROR executing script " . $script . "!\n";
         exit 1;
