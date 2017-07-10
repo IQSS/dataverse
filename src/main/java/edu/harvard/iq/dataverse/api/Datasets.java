@@ -618,17 +618,11 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    // FIXME: Consolidate with duplicate logic in the "submitForReview" method in DatasetPage.java.
     @POST
     @Path("{id}/submitForReview")
     public Response submitForReview(@PathParam("id") String idSupplied) {
         try {
             Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
-            List<AuthenticatedUser> authUsers = permissionSvc.getUsersWithPermissionOn(Permission.PublishDataset, updatedDataset);
-            // FIXME: move sending of notifications to SubmitDatasetForReviewCommand
-            for (AuthenticatedUser au : authUsers) {
-                userNotificationSvc.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, updatedDataset.getLatestVersion().getId());
-            }
             JsonObjectBuilder result = Json.createObjectBuilder();
             boolean inReview = updatedDataset.getLatestVersion().isInReview();
             result.add("inReview", inReview);

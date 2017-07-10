@@ -1552,14 +1552,9 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
             return "";
         }
-        // FIXME: Consolidate with duplicate logic in the "submitForReview" API endpoint in Datasets.java.
-        List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
-        for (AuthenticatedUser au : authUsers) {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
-        }
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "Your dataset has been submitted for review.");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        return  returnToLatestVersion();
+        return returnToLatestVersion();
     }
     
     public String releaseParentDVAndDataset(){

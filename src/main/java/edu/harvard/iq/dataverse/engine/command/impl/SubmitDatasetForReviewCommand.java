@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -13,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Future;
 
 @RequiredPermissions(Permission.EditDataset)
@@ -55,6 +57,7 @@ public class SubmitDatasetForReviewCommand extends AbstractCommand<Dataset> {
             ddu.setLastUpdateDate(updateTime);
             ctxt.em().merge(ddu);
         } else {
+            // TODO: This logic to update the DatasetVersionUser was copied from UpdateDatasetCommand and also appears in CreateDatasetCommand, PublishDatasetCommand UpdateDatasetCommand, and ReturnDatasetToAuthorCommand. Consider consolidating.
             DatasetVersionUser datasetDataverseUser = new DatasetVersionUser();
             datasetDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
             datasetDataverseUser.setLastUpdateDate((Timestamp) updateTime);
@@ -64,10 +67,11 @@ public class SubmitDatasetForReviewCommand extends AbstractCommand<Dataset> {
             datasetDataverseUser.setAuthenticatedUser(au);
             ctxt.em().merge(datasetDataverseUser);
         }
-        /**
-         * @todo What should we do with the indexing result? Print it to the
-         * log?
-         */
+        List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
+        for (AuthenticatedUser au : authUsers) {
+            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, savedDataset.getLatestVersion().getId());
+        }
+        //  TODO: What should we do with the indexing result? Print it to the log?
         boolean doNormalSolrDocCleanUp = true;
         Future<String> indexingResult = ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
         return savedDataset;
