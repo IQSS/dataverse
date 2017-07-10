@@ -196,8 +196,6 @@ By default, a Dataverse installation stores data files (files uploaded by end us
 
 Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
 
-**Note:** At present, any file restrictions that users apply in Dataverse will not be honored in Swift. This means that a user without proper permissions **could bypass intended restrictions** by accessing the restricted file through Swift. 
-
 In order to configure a Swift installation, there are two steps you need to complete:
 
 First, create a file named ``swift.properties`` as follows in the ``config`` directory for your installation of Glassfish (by default, this would be ``/usr/local/glassfish4/glassfish/domains/domain1/config/swift.properties``):
@@ -221,6 +219,18 @@ Second, update the JVM option ``dataverse.files.storage-driver-id`` by running t
 Then run the create command:
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
+
+Setting up Compute
++++++++++++++++++++
+
+Once you have configured a Swift Object Storage backend, you also have the option of enabling a connection to a computing environment. To do so, you need to configure the database settings for :ref:`:ComputeBaseUrl` and  :ref:`:CloudEnvironmentName`.
+
+Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your cloud environment, the compute button on dataset and file pages will link validated users to your computing environment. The compute button will redirect to: 
+
+``:ComputeBaseUrl?containerName=yourContainer&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
+
+which you can configure properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
+
 
 .. _Branding Your Installation:
 
@@ -861,12 +871,16 @@ You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
 
+.. _:ComputeBaseUrl:
+
 :ComputeBaseUrl
 +++++++++++++++
 
 Set the base URL for the "Compute" button for a dataset.
 
 ``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
+
+.. _:CloudEnvironmentName:
 
 :CloudEnvironmentName
 +++++++++++++++++++++
