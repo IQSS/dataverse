@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DvObject;
@@ -37,13 +36,13 @@ public class SubmitDatasetForReviewCommand extends AbstractCommand<Dataset> {
         }
 
         if (theDataset.getLatestVersion().isReleased()) {
-            throw new IllegalCommandException("dataset.submit.failure.isReleased", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.isReleased"), this);
         }
 
         if (theDataset.getLatestVersion().isInReview()) {
-            throw new IllegalCommandException("dataset.submit.failure.inReview", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.inReview"), this);
         }
-        
+
         return save(ctxt);
     }
 

@@ -9,6 +9,7 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -112,12 +113,12 @@ public class InReviewWorkflowIT {
                 .body("data.inReview", equalTo(true))
                 .statusCode(OK.getStatusCode());
 
-        // TODO: enable this assertion after rule has been added to command.
-//        Response submitForReviewAlreadySubmitted = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
-//        submitForReviewAlreadySubmitted.prettyPrint();
-//        submitForReviewAlreadySubmitted.then().assertThat()
-//                .body("message", equalTo("You cannot submit this dataset for review because it is already in review."))
-//                .statusCode(BAD_REQUEST.getStatusCode());
+        Response submitForReviewAlreadySubmitted = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
+        submitForReviewAlreadySubmitted.prettyPrint();
+        submitForReviewAlreadySubmitted.then().assertThat()
+                .body("message", equalTo("You cannot submit this dataset for review because it is already in review."))
+                .statusCode(FORBIDDEN.getStatusCode());
+
         Response authorsChecksForCommentsPrematurely = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPrematurely.prettyPrint();
         authorsChecksForCommentsPrematurely.then().assertThat()
@@ -173,6 +174,13 @@ public class InReviewWorkflowIT {
         returnToAuthor.then().assertThat()
                 .body("data.inReview", equalTo(false))
                 .statusCode(OK.getStatusCode());
+
+        jsonObjectBuilder.add("reasonForReturn", comments);
+        Response returnToAuthorAlreadyReturned = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
+        returnToAuthorAlreadyReturned.prettyPrint();
+        returnToAuthorAlreadyReturned.then().assertThat()
+                .body("message", equalTo("Latest version of dataset " + identifier + " is not In Review. Only such versions may be returned to author."))
+                .statusCode(FORBIDDEN.getStatusCode());
 
         Response authorChecksForCommentsAgain = UtilIT.getNotifications(authorApiToken);
         authorChecksForCommentsAgain.prettyPrint();
