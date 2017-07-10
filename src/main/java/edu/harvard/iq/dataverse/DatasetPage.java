@@ -1529,8 +1529,10 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
             return "";
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
-        FacesContext.getCurrentInstance().addMessage(null, message);
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success"));
+          // TODO: Get FacesMessage working in the UI in place of JsfHelper success msg
+//        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
+//        FacesContext.getCurrentInstance().addMessage(null, message);
         return returnToLatestVersion();
     }
 
@@ -1543,8 +1545,10 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
             return "";
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "Your dataset has been submitted for review.");
-        FacesContext.getCurrentInstance().addMessage(null, message);
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success"));
+//        TODO: Get FacesMessage working in the UI in place of JsfHelper success msg
+//        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "Your dataset has been submitted for review.");
+//        FacesContext.getCurrentInstance().addMessage(null, message);
         return returnToLatestVersion();
     }
     
