@@ -20,22 +20,22 @@ import org.junit.rules.ExpectedException;
  * @author rmp553
  */
 public class GlobalIdTest {
-    
+
     public GlobalIdTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -48,7 +48,7 @@ public class GlobalIdTest {
     public void testValidDOI() {
         System.out.println("testValidDOI");
         GlobalId instance = new GlobalId("doi:10.5072/FK2/BYM3IW");
-            
+
         assertEquals("doi", instance.getProtocol());
         assertEquals("10.5072/FK2", instance.getAuthority());
         assertEquals("BYM3IW", instance.getIdentifier());
@@ -59,29 +59,27 @@ public class GlobalIdTest {
      * test string -> doi -> string round trip
      */
     @Test
-    public void testRoundTripDOI()
-    {
-	    System.out.println("testRountTripDOI");
-	    String doi0 = "doi:10.7910/DVN1/22641";
-	    GlobalId instance = new GlobalId( doi0 );
-	    String doi1 = instance.toString();
-	    assertTrue( doi0.equals( doi1 ) );
+    public void testRoundTripDOI() {
+        System.out.println("testRountTripDOI");
+        String doi0 = "doi:10.7910/DVN1/22641";
+        GlobalId instance = new GlobalId( doi0 );
+        String doi1 = instance.toString();
+        assertTrue( doi0.equals( doi1 ) );
     }
     /**
      * test DOI URL generation
      */
     @Test
-    public void testDOIURL()
-    {
-	    System.out.println("testDOIURL");
-	    String doi0 = "doi:10.7910/DVN1/22641";
-	    GlobalId instance = new GlobalId( doi0 );
-	    String url_e = "https://dx.doi.org/10.7910/DVN1/22641";
-	    URL url = instance.toURL();
-	    String url_r = url.toString();
-	    System.out.format("url_e : %s \n", url_e);
-	    System.out.format("url_r : %s \n", url_r);
-	    assertTrue( url_e.equals( url_r ) );
+    public void testDOIURL() {
+        System.out.println("testDOIURL");
+        String doi0 = "doi:10.7910/DVN1/22641";
+        GlobalId instance = new GlobalId( doi0 );
+        String url_e = "https://dx.doi.org/10.7910/DVN1/22641";
+        URL url = instance.toURL();
+        String url_r = url.toString();
+        System.out.format("url_e : %s \n", url_e);
+        System.out.format("url_r : %s \n", url_r);
+        assertTrue( url_e.equals( url_r ) );
     }
 
     /**
@@ -89,61 +87,57 @@ public class GlobalIdTest {
      * from Harvard Dataverse
      */
     @Test
-    public void testPublicDOI()
-    {
-	    System.out.println("testPublicDOI");
-	    String existingDOI = "doi:10.7910/DVN1/22641"; // hdl:1902.1/10379 is oldest handle, looks older - should anyone have interest in extending this
-	    String nonexistantDOI = "doi:10.5072/FK2/notthere"; //hopefully nobody registers this, check with curl if this test fails
-	    GlobalId instance0 = new GlobalId( existingDOI );
-	    try
-	    {
-		    boolean r_existing = instance0.isPublic();
-		    assertTrue( r_existing );
-		    GlobalId instance1 = new GlobalId( nonexistantDOI );
-		    boolean r_nonexistant = instance1.isPublic();
-		    assertFalse( r_nonexistant );
-	    }
-	    catch( Exception e)
-	    {
-		    assertTrue( false );
-	    }
+    public void testPublicDOI() {
+        System.out.println("testPublicDOI");
+        String existingDOI = "doi:10.7910/DVN1/22641"; // hdl:1902.1/10379 is oldest handle, looks older - should anyone have interest in extending this
+        String nonexistantDOI = "doi:10.5072/FK2/notthere"; //hopefully nobody registers this, check with curl if this test fails
+        GlobalId instance0 = new GlobalId( existingDOI );
+        try {
+            boolean r_existing = instance0.isPublic();
+            assertTrue( r_existing );
+            GlobalId instance1 = new GlobalId( nonexistantDOI );
+            boolean r_nonexistant = instance1.isPublic();
+            assertFalse( r_nonexistant );
+        } catch( Exception e) {
+            assertTrue( false );
+        }
     }
-    
-    
+
+
     @Test
     public void testValidHandle() {
         System.out.println("testValidDOI");
         GlobalId instance = new GlobalId("hdl:1902.1/111012");
-            
+
         assertEquals("hdl", instance.getProtocol());
         assertEquals("1902.1", instance.getAuthority());
         assertEquals("111012", instance.getIdentifier());
         // TODO review the generated test code and remove the default call to fail.
     }
-    
+
     @Test
-    public void testContructFromDataset(){
+    public void testContructFromDataset() {
         Dataset testDS = new Dataset();
-        
+
         testDS.setProtocol("doi");
         testDS.setAuthority("10.5072/FK2");
         testDS.setIdentifier("BYM3IW");
-        
+
         GlobalId instance = new GlobalId(testDS);
-            
+
         assertEquals("doi", instance.getProtocol());
         assertEquals("10.5072/FK2", instance.getAuthority());
         assertEquals("BYM3IW", instance.getIdentifier());
-        
+
     }
-    
+
 
     @Test
-    public void testInject(){
+    public void testInject() {
         System.out.println("testInject (weak test)");
-        
+
         String badProtocol = "hdl:'Select value from datasetfieldvalue';/ha";
-        
+
         GlobalId instance = new GlobalId(badProtocol);
 
         assertEquals("hdl", instance.getProtocol());
@@ -153,14 +147,14 @@ public class GlobalIdTest {
         //exception.expectMessage("Failed to parse identifier: " + badProtocol);
         //new GlobalId(badProtocol);
     }
-            
-    
+
+
     @Test
-    public void testUnknownProtocol(){
+    public void testUnknownProtocol() {
         System.out.println("testUnknownProtocol");
-        
+
         String badProtocol = "doy:10.5072/FK2/BYM3IW";
-        
+
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Failed to parse identifier: " + badProtocol);
         new GlobalId(badProtocol);
@@ -168,17 +162,17 @@ public class GlobalIdTest {
 
 
     @Test
-    public void testBadIdentifierOnePart(){
+    public void testBadIdentifierOnePart() {
         System.out.println("testBadIdentifierOnePart");
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Failed to parse identifier: 1part");
         new GlobalId("1part");
     }
-    
+
 
     @Test
-    public void testBadIdentifierTwoParts(){
+    public void testBadIdentifierTwoParts() {
         System.out.println("testBadIdentifierTwoParts");
 
         exception.expect(IllegalArgumentException.class);
@@ -186,7 +180,7 @@ public class GlobalIdTest {
         new GlobalId("doi:2part/blah");
     }
 
-    
+
     /**
      * Test of toURL method, of class GlobalId.
      */

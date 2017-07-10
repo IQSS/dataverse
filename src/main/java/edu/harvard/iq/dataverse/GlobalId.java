@@ -21,19 +21,19 @@ import javax.ejb.EJB;
  */
 public class GlobalId implements java.io.Serializable {
 
-    
+
     public static final String DOI_PROTOCOL = "doi";
     public static final String HDL_PROTOCOL = "hdl";
     public static final String HDL_RESOLVER_URL = "http://hdl.handle.net/";
     public static final String DOI_RESOLVER_URL = "https://dx.doi.org/";
-    
+
     @EJB
     SettingsServiceBean settingsService;
 
     public GlobalId(String identifier) {
-        
-        // set the protocol, authority, and identifier via parsePersistentId        
-        if (!this.parsePersistentId(identifier)){
+
+        // set the protocol, authority, and identifier via parsePersistentId
+        if (!this.parsePersistentId(identifier)) {
             throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
         }
     }
@@ -44,12 +44,12 @@ public class GlobalId implements java.io.Serializable {
         this.identifier = identifier;
     }
 
-    public GlobalId(Dataset dataset){
+    public GlobalId(Dataset dataset) {
         this.authority = dataset.getAuthority();
         this.protocol = dataset.getProtocol();
         this.identifier = dataset.getIdentifier();
     }
-        
+
     private String protocol;
     private String authority;
     private String identifier;
@@ -81,66 +81,66 @@ public class GlobalId implements java.io.Serializable {
     public String toString() {
         return protocol + ":" + authority + "/" + identifier;
     }
-    
+
     public URL toURL() {
         URL url = null;
         try {
-            if (protocol.equals(DOI_PROTOCOL)){
-               url = new URL(DOI_RESOLVER_URL + authority + "/" + identifier); 
-            } else if (protocol.equals(HDL_PROTOCOL)){
-               url = new URL(HDL_RESOLVER_URL + authority + "/" + identifier);  
-            }           
+            if (protocol.equals(DOI_PROTOCOL)) {
+                url = new URL(DOI_RESOLVER_URL + authority + "/" + identifier);
+            } else if (protocol.equals(HDL_PROTOCOL)) {
+                url = new URL(HDL_RESOLVER_URL + authority + "/" + identifier);
+            }
         } catch (MalformedURLException ex) {
             Logger.getLogger(GlobalId.class.getName()).log(Level.SEVERE, null, ex);
-        }       
+        }
         return url;
-    }    
+    }
 
-    
-    /** 
+
+    /**
      *   Parse a Persistent Id and set the protocol, authority, and identifier
-     * 
+     *
      *   Example 1: doi:10.5072/FK2/BYM3IW
      *       protocol: doi
      *       authority: 10.5072/FK2
      *       identifier: BYM3IW
-     * 
+     *
      *   Example 2: hdl:1902.1/111012
      *       protocol: hdl
      *       authority: 1902.1
      *       identifier: 111012
      *
      * @param identifierString
-     * 
+     *
      */
-    
-    private boolean parsePersistentId(String identifierString){
 
-        if (identifierString == null){
+    private boolean parsePersistentId(String identifierString) {
+
+        if (identifierString == null) {
             return false;
-        } 
-        
+        }
+
         int index1 = identifierString.indexOf(':');
         int index2 = identifierString.lastIndexOf('/');
         if (index1==-1) {
-            return false; 
-        }  
-       
+            return false;
+        }
+
         String protocol = identifierString.substring(0, index1);
-        
+
         if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
             return false;
         }
-        
-        
+
+
         if (index2 == -1) {
             return false;
-        } 
-        
+        }
+
         this.protocol = protocol;
         this.authority = formatIdentifierString(identifierString.substring(index1+1, index2));
         this.identifier = formatIdentifierString(identifierString.substring(index2+1));
-        
+
         if (this.protocol.equals(DOI_PROTOCOL)) {
             if (!this.checkDOIAuthority(this.authority)) {
                 return false;
@@ -150,42 +150,42 @@ public class GlobalId implements java.io.Serializable {
 
     }
 
-    
-    private String formatIdentifierString(String str){
-        
-        if (str == null){
+
+    private String formatIdentifierString(String str) {
+
+        if (str == null) {
             return null;
         }
         // remove whitespace, single quotes, and semicolons
-        return str.replaceAll("\\s+|'|;","");  
-        
+        return str.replaceAll("\\s+|'|;","");
+
         /*
         < 	(%3C)
-> 	(%3E)
-{ 	(%7B)
-} 	(%7D)
-^ 	(%5E)
-[ 	(%5B)
-] 	(%5D)
-` 	(%60)
-| 	(%7C)
-\ 	(%5C)
-+
+        > 	(%3E)
+        { 	(%7B)
+        } 	(%7D)
+        ^ 	(%5E)
+        [ 	(%5B)
+        ] 	(%5D)
+        ` 	(%60)
+        | 	(%7C)
+        \ 	(%5C)
+        +
         */
         // http://www.doi.org/doi_handbook/2_Numbering.html
     }
-    
-    
-    private boolean checkDOIAuthority(String doiAuthority){
-        
-        if (doiAuthority==null){
+
+
+    private boolean checkDOIAuthority(String doiAuthority) {
+
+        if (doiAuthority==null) {
             return false;
         }
-        
-        if (!(doiAuthority.startsWith("10."))){
+
+        if (!(doiAuthority.startsWith("10."))) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -194,32 +194,25 @@ public class GlobalId implements java.io.Serializable {
      * will throw an exception if it's a handle; deferring until code review what the correct
      * exception type is for "this operation isn't supported (yet) on this type of identifier"
      */
-    public boolean isPublic() throws Exception
-    {
-	    if ( ! protocol.equals( DOI_PROTOCOL ) )
-	    {
-		    throw new Exception("unsupported protocol in GlobalId.isPublic");
-	    }
-	    try
-	    {
-		    HttpURLConnection conn = (HttpURLConnection) toURL().openConnection();
-		    int r = conn.getResponseCode();
-		    if ( 200 == r ) // clarity over concisness
-		    {
-			    return true;
-		    }
-		    return false;
-	    }
-	    //arguably these exceptions should log and/or trigger propagate up the stack
-	    catch( MalformedURLException ue)
-	    {
-		    return false;
-	    }
-	    catch( IOException ie)
-	    {
-		    return false;
-	    }
+    public boolean isPublic() throws Exception {
+        if ( ! protocol.equals( DOI_PROTOCOL ) ) {
+            throw new Exception("unsupported protocol in GlobalId.isPublic");
+        }
+        try {
+            HttpURLConnection conn = (HttpURLConnection) toURL().openConnection();
+            int r = conn.getResponseCode();
+            if ( 200 == r ) { // clarity over concisness
+                return true;
+            }
+            return false;
+        }
+        //arguably these exceptions should log and/or trigger propagate up the stack
+        catch( MalformedURLException ue) {
+            return false;
+        } catch( IOException ie) {
+            return false;
+        }
     }
-    
-    
+
+
 }
