@@ -157,22 +157,13 @@ public class InReviewWorkflowIT {
                 .body("comments", equalTo(null))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
-        // TODO: For now, show that a "reason for return" of over 200 characters is saved. Once the limit is in place, change the test to fail.
         String longComment = "Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed foo.";
         jsonObjectBuilder.add("reasonForReturn", longComment);
         Response returnToAuthorWithLongComment = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
         returnToAuthorWithLongComment.prettyPrint();
         returnToAuthorWithLongComment.then().assertThat()
-                // With no char limit in place, the long comment can be used when returning a dataset. Change this assertion once limit exists.
-                .body("data.inReview", equalTo(false))
-                .statusCode(OK.getStatusCode());
-
-        // The author submits once again (no real changes made)
-        Response submitForReviewAgain = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
-        submitForReviewAgain.prettyPrint();
-        submitForReviewAgain.then().assertThat()
-                .body("data.inReview", equalTo(true))
-                .statusCode(OK.getStatusCode());
+                .body("message", equalTo("You supplied 294 in the reason for return but only 200 characters are allowed."))
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         // Successfully return dataset to author for reason: "You forgot to upload any files."
         String comments = "You forgot to upload any files.";
@@ -190,8 +181,8 @@ public class InReviewWorkflowIT {
                 // The author thinks, "This why we have curators!"
                 // FIXME: change to expect curator to also see the reason for return
                 .body("data.notifications[0].reasonForReturn", equalTo("You forgot to upload any files."))
-                .body("data.notifications[1].type", equalTo("RETURNEDDS"))
-                .body("data.notifications[1].reasonForReturn", equalTo("You forgot to upload any files."))
+                .body("data.notifications[1].type", equalTo("CREATEACC"))
+                .body("data.notifications[1].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // The author upload the file she forgot.
@@ -219,10 +210,8 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[0].reasonForReturn", equalTo("You forgot to upload any files."))
                 .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
                 .body("data.notifications[1].reasonForReturn", equalTo("You forgot to upload any files."))
-                .body("data.notifications[2].type", equalTo("SUBMITTEDDS"))
-                .body("data.notifications[2].reasonForReturn", equalTo("You forgot to upload any files."))
-                .body("data.notifications[3].type", equalTo("CREATEACC"))
-                .body("data.notifications[3].reasonForReturn", equalTo(null))
+                .body("data.notifications[2].type", equalTo("CREATEACC"))
+                .body("data.notifications[2].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // The curator publishes the dataverse.
@@ -244,10 +233,8 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[1].type", equalTo("RETURNEDDS"))
                 // The reason for return is deleted on publish. It's water under the bridge.
                 .body("data.notifications[1].reasonForReturn", equalTo(null))
-                .body("data.notifications[2].type", equalTo("RETURNEDDS"))
+                .body("data.notifications[2].type", equalTo("CREATEACC"))
                 .body("data.notifications[2].reasonForReturn", equalTo(null))
-                .body("data.notifications[3].type", equalTo("CREATEACC"))
-                .body("data.notifications[3].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // These println's are here in case you want to log into the GUI to see what notifications look like.
