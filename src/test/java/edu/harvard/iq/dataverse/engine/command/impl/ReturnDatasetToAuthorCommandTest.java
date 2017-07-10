@@ -142,7 +142,7 @@ public class ReturnDatasetToAuthorCommandTest {
     @Test
     public void testDatasetNull() {
         dataset = null;
-        String expected = "Can't return to author. Dataset is null.";
+        String expected = "Cannot return the dataset to the author(s) because it is null.";
         String actual = null;
         Dataset updatedDataset = null;
 
@@ -157,10 +157,9 @@ public class ReturnDatasetToAuthorCommandTest {
 
     @Test
     public void testReleasedDataset() {
-        dataset.setIdentifier("DUMMY");
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         dataset.getLatestVersion().setInReview(true);
-        String expected = "Latest version of dataset DUMMY is not In Review. Only such versions may be returned to author.";
+        String expected = "This dataset cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first.";
         String actual = null;
         Dataset updatedDataset = null;
         try {
@@ -174,10 +173,9 @@ public class ReturnDatasetToAuthorCommandTest {
 
     @Test
     public void testNotInReviewDataset() {
-        dataset.setIdentifier("DUMMY");
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
         dataset.getLatestVersion().setInReview(false);
-        String expected = "Latest version of dataset DUMMY is not In Review. Only such versions may be returned to author.";
+        String expected = "This dataset cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first.";
         String actual = null;
         Dataset updatedDataset = null;
         try {
@@ -212,7 +210,6 @@ public class ReturnDatasetToAuthorCommandTest {
      */
     @Test
     public void testAllGood() {
-        dataset.setIdentifier("DUMMY");
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
         dataset.getLatestVersion().setReturnReason("update your files, Dummy!");
         dataset.getLatestVersion().setInReview(true);

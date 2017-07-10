@@ -147,9 +147,8 @@ public class SubmitDatasetForReviewCommandTest {
 
     @Test
     public void testReleasedDataset() {
-        dataset.setIdentifier("DUMMY");
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
-        String expected = "Latest version of dataset DUMMY is already released. Only draft versions can be submitted for review.";
+        String expected = "Latest version of dataset is already released. Only draft versions can be submitted for review.";
         String actual = null;
         Dataset updatedDataset = null;
         try {
@@ -162,7 +161,6 @@ public class SubmitDatasetForReviewCommandTest {
 
     @Test
     public void testDraftDataset() {
-        dataset.setIdentifier("DUMMY");
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
         String actual = null;
         Dataset updatedDataset = null;
