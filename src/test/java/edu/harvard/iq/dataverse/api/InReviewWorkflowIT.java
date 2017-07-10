@@ -179,7 +179,7 @@ public class InReviewWorkflowIT {
         Response returnToAuthorAlreadyReturned = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
         returnToAuthorAlreadyReturned.prettyPrint();
         returnToAuthorAlreadyReturned.then().assertThat()
-                .body("message", equalTo("Latest version of dataset " + identifier + " is not In Review. Only such versions may be returned to author."))
+                .body("message", equalTo("This dataset cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first."))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response authorChecksForCommentsAgain = UtilIT.getNotifications(authorApiToken);

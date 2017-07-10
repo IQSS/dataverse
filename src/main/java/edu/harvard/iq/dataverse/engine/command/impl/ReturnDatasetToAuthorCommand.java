@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -30,11 +31,11 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         if (theDataset == null) {
-            throw new IllegalCommandException("Can't return to author. Dataset is null.", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.reject.datasetNull"), this);
         }
 
         if (!theDataset.getLatestVersion().isInReview()) {
-            throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is not In Review. Only such versions may be returned to author.", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.reject.datasetNotInReview"), this);
         }
         /*
         if(theDataset.getLatestVersion().getReturnReason() == null || theDataset.getLatestVersion().getReturnReason().isEmpty()){
