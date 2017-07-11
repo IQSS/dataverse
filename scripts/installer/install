@@ -1229,8 +1229,7 @@ for my $script ( "setup-all.sh" ) {
     $run_script = $script;
     #}
 
-    # write output to /tmp until we see if this fixes running as glassfish
-    unless ( my $exit_code = system( "./" . $run_script . " > /tmp/$run_script.$$.log 2>&1") == 0 ) 
+    unless ( my $exit_code = system( "./" . $run_script . " > $run_script.$$.log 2>&1") == 0 ) 
     {
         print "\nERROR executing script " . $script . "!\n";
         exit 1;
