@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.workflows.review.Comment;
+import edu.harvard.iq.dataverse.workflows.review.PublicationAuditEntry;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -391,11 +391,12 @@ public class MailServiceBean implements java.io.Serializable {
             case SUBMITTEDDS:
                 version =  (DatasetVersion) targetObject;
                 String mightHaveReturnReason = ".";
-                List<Comment> comments = version.getComments();
-                if (comments != null && !comments.isEmpty()) {
-                    Comment comment = comments.get(0);
-                    if (comment != null) {
-                        String returnReasonSubmitted = comment.getText();
+                List<PublicationAuditEntry> publicationAuditEntriesSubmitted = version.getPublicationAuditEntries();
+                if (publicationAuditEntriesSubmitted != null && !publicationAuditEntriesSubmitted.isEmpty()) {
+                    // FIXME get the right EntryType
+                    PublicationAuditEntry publicationAuditEntry = publicationAuditEntriesSubmitted.get(0);
+                    if (publicationAuditEntry != null) {
+                        String returnReasonSubmitted = publicationAuditEntry.getMessage();
                         if (returnReasonSubmitted != null) {
                             mightHaveReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + returnReasonSubmitted;
                         }
@@ -417,11 +418,12 @@ public class MailServiceBean implements java.io.Serializable {
                 version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasReturnedByReviewer");
                 String optionalReturnReason = ".";
-                List<Comment> comments2 = version.getComments();
-                if (comments2 != null && !comments2.isEmpty()) {
-                    Comment comment = comments2.get(0);
-                    if (comment != null) {
-                        String returnReason = comment.getText();
+                List<PublicationAuditEntry> publicationAuditEntriesReturned = version.getPublicationAuditEntries();
+                if (publicationAuditEntriesReturned != null && !publicationAuditEntriesReturned.isEmpty()) {
+                    // FIXME: get the right EntryType
+                    PublicationAuditEntry publicationAuditEntry = publicationAuditEntriesReturned.get(0);
+                    if (publicationAuditEntry != null) {
+                        String returnReason = publicationAuditEntry.getMessage();
                         if (returnReason != null) {
                             optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + returnReason;
                         }

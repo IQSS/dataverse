@@ -44,9 +44,9 @@ public class Notifications extends AbstractApiBean {
                 DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
                 if (datasetVersion != null) {
                     try {
-                        String comments = datasetVersion.getComments().get(0).getText();
-                        if (comments != null) {
-                            notificationObjectBuilder.add("reasonForReturn", comments);
+                        String message = datasetVersion.getPublicationAuditEntries().get(0).getMessage();
+                        if (message != null) {
+                            notificationObjectBuilder.add("reasonForReturn", message);
                         }
                     } catch (Exception e) {
                     }
@@ -57,9 +57,9 @@ public class Notifications extends AbstractApiBean {
                     Long objectId = notification.getObjectId();
                     DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
                     if (datasetVersion != null) {
-                        String comments = datasetVersion.getComments().get(0).getText();
-                        if (comments != null) {
-                            notificationObjectBuilder.add("reasonForReturn", comments);
+                        String message = datasetVersion.getPublicationAuditEntries().get(0).getMessage();
+                        if (message != null) {
+                            notificationObjectBuilder.add("reasonForReturn", message);
                         }
                     }
                 } catch (Exception e) {

@@ -14,7 +14,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.workflows.review.Comment;
+import edu.harvard.iq.dataverse.workflows.review.PublicationAuditEntry;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -868,16 +868,16 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
-    public Comment saveComment(Comment comment) {
-        if (comment.getId() == null) {
-            em.persist(comment);
-            return comment;
+    public PublicationAuditEntry savePublicationAuditEntry(PublicationAuditEntry publicationAuditEntry) {
+        if (publicationAuditEntry.getId() == null) {
+            em.persist(publicationAuditEntry);
+            return publicationAuditEntry;
         } else {
-            return em.merge(comment);
+            return em.merge(publicationAuditEntry);
         }
     }
 
-    public List<Comment> getComments(DatasetVersion datasetVersion) {
-        return datasetVersion.getComments();
-    }
+//    public List<PublicationAuditEntry> getPublicationAuditEntries(DatasetVersion datasetVersion) {
+//        return datasetVersion.getComments();
+//    }
 }

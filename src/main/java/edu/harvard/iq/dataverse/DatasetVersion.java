@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.workflows.review.Comment;
+import edu.harvard.iq.dataverse.workflows.review.PublicationAuditEntry;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -219,7 +219,7 @@ public class DatasetVersion implements Serializable {
     }
 
     @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<Comment> comments;
+    private List<PublicationAuditEntry> publicationAuditEntries;
 
     /**
      * The only time a dataset can be in review is when it is in draft.
@@ -1117,8 +1117,8 @@ public class DatasetVersion implements Serializable {
         return returnSet;
     }
 
-    public List<Comment> getComments() {
-        return comments;
+    public List<PublicationAuditEntry> getPublicationAuditEntries() {
+        return publicationAuditEntries;
     }
 
 }
