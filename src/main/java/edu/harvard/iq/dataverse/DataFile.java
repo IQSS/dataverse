@@ -831,12 +831,12 @@ public class DataFile extends DvObject implements Comparable {
         return this.previousDataFileId;
     }
 
-    public String asPrettyJSON(){
+    public String toPrettyJSON(){
         
         return serializeAsJSON(true);
     }
 
-    public String asJSON(){
+    public String toJSON(){
         
         return serializeAsJSON(false);
     }
