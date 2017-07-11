@@ -82,11 +82,11 @@ public class DataversesIT {
                 .statusCode(Status.CREATED.getStatusCode());
 
         String alias1 = UtilIT.getRandomDvAlias();
-        String category1 = Dataverse.DataverseType.LABORATORY.toString();
+        String category1 = Dataverse.DataverseType.DEPARTMENT.toString();
         Response createDataverseWithCategory = UtilIT.createDataverse(alias1, category1, apiToken);
         createDataverseWithCategory.prettyPrint();
         createDataverseWithCategory.then().assertThat()
-                .body("data.dataverseType", equalTo("LABORATORY"))
+                .body("data.dataverseType", equalTo("DEPARTMENT"))
                 .statusCode(Status.CREATED.getStatusCode());
 
         String alias2 = UtilIT.getRandomDvAlias();
