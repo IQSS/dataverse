@@ -61,6 +61,7 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import edu.harvard.iq.dataverse.workflows.review.Comment;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Collections;
@@ -648,15 +649,16 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
             }
             // TODO: Move this to ReturnDatasetToAuthorCommand
-            int numCharsAllowed = DatasetVersion.RETURN_REASON_MAX_LENGTH;
+            int numCharsAllowed = 200;
             int numCharsProvided = reasonForReturn.length();
             if (numCharsProvided > numCharsAllowed) {
                 return error(Response.Status.BAD_REQUEST, "You supplied " + numCharsProvided + " in the reason for return but only " + numCharsAllowed + " characters are allowed.");
             }
             DatasetVersion datasetVersion = dataset.getLatestVersion();
-            datasetVersion.setReturnReason(reasonForReturn);
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(findUserOrDie()), dataset));
             DatasetVersion latestVersion = updatedDataset.getLatestVersion();
+            Comment comment = new Comment(reasonForReturn, latestVersion);
+            datasetSvc.saveComment(comment);
             boolean inReview = latestVersion.isInReview();
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", inReview);

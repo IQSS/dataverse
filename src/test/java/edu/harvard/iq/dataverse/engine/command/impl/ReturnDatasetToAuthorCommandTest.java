@@ -208,19 +208,19 @@ public class ReturnDatasetToAuthorCommandTest {
         
     }
      */
-    @Test
-    public void testAllGood() {
-        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-        dataset.getLatestVersion().setReturnReason("update your files, Dummy!");
-        dataset.getLatestVersion().setInReview(true);
-        String actual = null;
-        Dataset updatedDataset = null;
-        try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
-        } catch (CommandException ex) {
-            actual = ex.getMessage();
-        }
-        assertNotNull(updatedDataset);
-    }
+//    @Test
+//    public void testAllGood() {
+//        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
+//        dataset.getLatestVersion().setReturnReason("update your files, Dummy!");
+//        dataset.getLatestVersion().setInReview(true);
+//        String actual = null;
+//        Dataset updatedDataset = null;
+//        try {
+//            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
+//        } catch (CommandException ex) {
+//            actual = ex.getMessage();
+//        }
+//        assertNotNull(updatedDataset);
+//    }
 
 }

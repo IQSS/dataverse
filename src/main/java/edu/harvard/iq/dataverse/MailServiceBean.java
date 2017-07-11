@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflows.review.Comment;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -390,9 +391,15 @@ public class MailServiceBean implements java.io.Serializable {
             case SUBMITTEDDS:
                 version =  (DatasetVersion) targetObject;
                 String mightHaveReturnReason = ".";
-                String returnReasonSubmitted = version.getReturnReason();
-                if (returnReasonSubmitted != null) {
-                    mightHaveReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + returnReasonSubmitted;
+                List<Comment> comments = version.getComments();
+                if (comments != null && !comments.isEmpty()) {
+                    Comment comment = comments.get(0);
+                    if (comment != null) {
+                        String returnReasonSubmitted = comment.getText();
+                        if (returnReasonSubmitted != null) {
+                            mightHaveReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + returnReasonSubmitted;
+                        }
+                    }
                 }
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasSubmittedForReview");
                 String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
@@ -410,9 +417,15 @@ public class MailServiceBean implements java.io.Serializable {
                 version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasReturnedByReviewer");
                 String optionalReturnReason = ".";
-                String returnReason = version.getReturnReason();
-                if (returnReason != null) {
-                    optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + returnReason;
+                List<Comment> comments2 = version.getComments();
+                if (comments2 != null && !comments2.isEmpty()) {
+                    Comment comment = comments2.get(0);
+                    if (comment != null) {
+                        String returnReason = comment.getText();
+                        if (returnReason != null) {
+                            optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + returnReason;
+                        }
+                    }
                 }
                 String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), optionalReturnReason};

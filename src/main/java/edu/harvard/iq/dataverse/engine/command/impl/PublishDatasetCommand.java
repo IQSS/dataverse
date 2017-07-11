@@ -155,8 +155,6 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         theDataset.setModificationTime(updateTime);
         //set inReview to False because it is now published
         theDataset.getEditVersion().setInReview(false);
-        // The reason for return is water under the bridge. Null it out.
-        theDataset.getEditVersion().setReturnReason(null);
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
 
         for (DataFile dataFile : theDataset.getFiles()) {

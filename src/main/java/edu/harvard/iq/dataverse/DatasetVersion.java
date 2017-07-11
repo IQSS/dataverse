@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.workflows.review.Comment;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -211,19 +212,14 @@ public class DatasetVersion implements Serializable {
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     private String archiveNote;
     private String deaccessionLink;
-    // FIXME: When we build the UI we want the return reason to be required so it would be nice to revisit this and make nullable = false.
-    public static final int RETURN_REASON_MAX_LENGTH = 200;
-    @Column(length = RETURN_REASON_MAX_LENGTH, nullable = true)
-    private String returnReason;
-    
 
-    
-
-    
     private boolean inReview;
     public void setInReview(boolean inReview){
         this.inReview = inReview;
     }
+
+    @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<Comment> comments;
 
     /**
      * The only time a dataset can be in review is when it is in draft.
@@ -522,14 +518,6 @@ public class DatasetVersion implements Serializable {
             terms.setDatasetVersion(this);
             this.setTermsOfUseAndAccess(terms);
         }
-    }
-
-    public String getReturnReason() {
-        return returnReason;
-    }
-
-    public void setReturnReason(String returnReason) {
-        this.returnReason = returnReason;
     }
 
     public void initDefaultValues() {
@@ -1128,4 +1116,9 @@ public class DatasetVersion implements Serializable {
         }
         return returnSet;
     }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
 }

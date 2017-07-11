@@ -239,8 +239,7 @@ public class InReviewWorkflowIT {
         authorsChecksForCommentsPostPublication.then().assertThat()
                 .body("data.notifications[0].type", equalTo("ASSIGNROLE"))
                 .body("data.notifications[1].type", equalTo("RETURNEDDS"))
-                // The reason for return is deleted on publish. It's water under the bridge.
-                .body("data.notifications[1].reasonForReturn", equalTo(null))
+                .body("data.notifications[1].reasonForReturn", equalTo("You forgot to upload any files."))
                 .body("data.notifications[2].type", equalTo("CREATEACC"))
                 .body("data.notifications[2].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());

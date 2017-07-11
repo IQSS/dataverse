@@ -43,20 +43,26 @@ public class Notifications extends AbstractApiBean {
                 Long objectId = notification.getObjectId();
                 DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
                 if (datasetVersion != null) {
-                    String comments = datasetVersion.getReturnReason();
-                    if (comments != null) {
-                        notificationObjectBuilder.add("reasonForReturn", comments);
+                    try {
+                        String comments = datasetVersion.getComments().get(0).getText();
+                        if (comments != null) {
+                            notificationObjectBuilder.add("reasonForReturn", comments);
+                        }
+                    } catch (Exception e) {
                     }
                 }
             }
             if (Type.SUBMITTEDDS.equals(type)) {
-                Long objectId = notification.getObjectId();
-                DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
-                if (datasetVersion != null) {
-                    String comments = datasetVersion.getReturnReason();
-                    if (comments != null) {
-                        notificationObjectBuilder.add("reasonForReturn", comments);
+                try {
+                    Long objectId = notification.getObjectId();
+                    DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
+                    if (datasetVersion != null) {
+                        String comments = datasetVersion.getComments().get(0).getText();
+                        if (comments != null) {
+                            notificationObjectBuilder.add("reasonForReturn", comments);
+                        }
                     }
+                } catch (Exception e) {
                 }
             }
             jsonArrayBuilder.add(notificationObjectBuilder);
