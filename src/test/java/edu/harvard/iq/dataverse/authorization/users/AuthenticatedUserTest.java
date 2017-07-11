@@ -86,14 +86,6 @@ public class AuthenticatedUserTest {
     }
 
     @Test
-    public void testGetName() {
-        System.out.println("getName");
-        String expResult = "Homer Simpson";
-        String result = testUser.getName();
-        assertEquals(expResult, result);
-    }
-
-    @Test
     public void testGetEmail() {
         System.out.println("getEmail");
         String expResult = testUser.getEmail();;
