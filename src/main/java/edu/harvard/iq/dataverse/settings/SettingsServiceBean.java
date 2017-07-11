@@ -244,6 +244,10 @@ public class SettingsServiceBean {
          * URL for Shibboleth Single Logout
          */
         ShibLogoutUrl,
+        /**
+         * Latest version of Terms and Conditions document
+         */
+        ShibAuthTermsVer,
       
          /**
          * Whether Export should exclude FieldType.EMAIL
