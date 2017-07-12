@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 
 /**
  * Tested class: AuthenticatedUser.java
@@ -25,10 +26,16 @@ public class AuthenticatedUserTest {
     public AuthenticatedUserTest() {
     }
 
-    public static AuthenticatedUser testUser = MocksFactory.makeAuthenticatedUser("Homer", "Simpson");
-    public static Timestamp expResult = testUser.getCreatedTime();
+    public static AuthenticatedUser testUser;
+    public static Timestamp expResult;
     public static Timestamp loginTime = Timestamp.valueOf("2000-01-01 00:00:00.0");
     public static final String IDENTIFIER_PREFIX = "@";
+
+    @Before
+    public void setUp() {
+        testUser = MocksFactory.makeAuthenticatedUser("Homer", "Simpson");
+        expResult = testUser.getCreatedTime();
+    }
 
     @Test
     public void testGetIdentifier() {
@@ -36,8 +43,6 @@ public class AuthenticatedUserTest {
         String result = testUser.getIdentifier();
         assertEquals(testUser.getIdentifier(), result);
     }
-
-    
 
     @Test
     public void testApplyDisplayInfo() {
@@ -83,6 +88,14 @@ public class AuthenticatedUserTest {
         String userIdentifier = "Davis";
         testUser.setUserIdentifier(userIdentifier);
         assertEquals(testUser.getUserIdentifier(), userIdentifier);
+    }
+
+    @Test
+    public void testGetName() {
+        System.out.println("getName");
+        String expResult = "Homer Simpson";
+        String result = testUser.getName();
+        assertEquals(expResult, result);
     }
 
     @Test
@@ -228,7 +241,6 @@ public class AuthenticatedUserTest {
 //        Timestamp expResult = testUser.getLastLoginTime();
 //        assertEquals(expResult, testUser.getLastLoginTime());
 //    }
-
 //    @Test
 //    public void testSetCreatedToCurrentTime() {
 //        System.out.println("setCreatedToCurrentTime");
@@ -236,7 +248,6 @@ public class AuthenticatedUserTest {
 //        Timestamp expResult = testUser.getCreatedTime();
 //        assertEquals(expResult, testUser.getCreatedTime());
 //    }
-
     @Test
     public void testGetCreatedTime() {
         System.out.println("getCreatedTime");
@@ -274,7 +285,7 @@ public class AuthenticatedUserTest {
         Timestamp expResult = testUser.getLastApiUseTime();
         assertEquals(expResult, testUser.getLastApiUseTime());
     }
-    
+
     @Test
     public void testIsSuperuser() {
         System.out.println("isSuperuser");
