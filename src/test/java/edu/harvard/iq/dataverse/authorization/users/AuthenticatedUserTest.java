@@ -53,6 +53,15 @@ public class AuthenticatedUserTest {
     }
 
     @Test
+    public void testGetDisplayInfo() {
+        System.out.println("getDisplayInfo");
+        AuthenticatedUserDisplayInfo expResult = new AuthenticatedUserDisplayInfo("Homer", "Simpson", "Homer.Simpson@someU.edu", "UnitTester", "In-Memory user");
+        AuthenticatedUserDisplayInfo result = testUser.getDisplayInfo();
+        assertEquals(expResult, result);
+
+    }
+    
+    @Test
     public void testIsAuthenticated() {
         System.out.println("isAuthenticated");
         boolean expResult = true;
@@ -234,20 +243,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getLastLoginTime());
     }
 
-//    @Test
-//    public void testSetLastLoginTimeToCurrentTime() {
-//        System.out.println("setLastLoginTimeToCurrentTime");
-//        testUser.setLastLoginTimeToCurrentTime();
-//        Timestamp expResult = testUser.getLastLoginTime();
-//        assertEquals(expResult, testUser.getLastLoginTime());
-//    }
-//    @Test
-//    public void testSetCreatedToCurrentTime() {
-//        System.out.println("setCreatedToCurrentTime");
-//        testUser.setCreatedTimeToCurrentTime();
-//        Timestamp expResult = testUser.getCreatedTime();
-//        assertEquals(expResult, testUser.getCreatedTime());
-//    }
     @Test
     public void testGetCreatedTime() {
         System.out.println("getCreatedTime");
@@ -331,14 +326,6 @@ public class AuthenticatedUserTest {
      * constraints on this issue these 1+1=2 type tests weren't all done.
      */
 
-//    @Test
-//    public void testGetDisplayInfo() {
-//        System.out.println("getDisplayInfo");
-//        AuthenticatedUserDisplayInfo expResult = new AuthenticatedUserDisplayInfo("Homer", "Simpson", "Homer.Simpson@someU.edu", "UnitTester", "In-Memory user");
-//        AuthenticatedUserDisplayInfo result = testUser.getDisplayInfo();
-//        assertEquals(expResult, result);
-//
-//    }
 //    @Test
 //    public void testEquals() {
 //        System.out.println("equals");
