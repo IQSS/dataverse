@@ -274,7 +274,7 @@ public class DatasetField implements Serializable {
         List returnList = new ArrayList();
         if (!datasetFieldValues.isEmpty()) {
             for (DatasetFieldValue dsfv : datasetFieldValues) {
-                returnList.add(dsfv.getValue());
+                returnList.add(dsfv.getDisplayValue());
             }
         } else {
             for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
