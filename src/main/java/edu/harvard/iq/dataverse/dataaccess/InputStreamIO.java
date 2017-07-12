@@ -138,4 +138,9 @@ public class InputStreamIO extends DataFileIO {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: there is no output stream associated with this object.");
     }
 
+    @Override
+    public void openDvObject(DataAccessOption... option) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

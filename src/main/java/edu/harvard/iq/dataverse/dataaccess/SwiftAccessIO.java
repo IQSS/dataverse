@@ -71,11 +71,22 @@ public class SwiftAccessIO extends DataFileIO {
     public boolean canWrite() {
         return isWriteAccess;
     }
+    
+    @Override 
+    public void openDvObject(DataAccessOption... options) throws IOException{
+        if (this.getDvObject().isInstanceofDataFile()) {
+            this.open(options);
+            //TODO: create openDataFile method
+        }
+        else if (this.getDvObject().isInstanceofDataset()){
+            //TODO create openDataset method
+        }
+    }
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
 
-        DataFile dataFile = this.getDataFile();
+        DataFile dataFile = (DataFile)this.getDvObject();
         DataAccessRequest req = this.getRequest();
 
         if (req != null && req.getParameter("noVarHeader") != null) {
@@ -90,7 +101,7 @@ public class SwiftAccessIO extends DataFileIO {
             isReadAccess = true;
         }
 
-        if (this.getDataFile().getStorageIdentifier() == null || "".equals(this.getDataFile().getStorageIdentifier())) {
+        if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
         }
 
@@ -416,7 +427,8 @@ public class SwiftAccessIO extends DataFileIO {
     }
     
     private StoredObject initializeSwiftFileObject(boolean writeAccess, String auxItemTag) throws IOException {
-        String storageIdentifier = this.getDataFile().getStorageIdentifier();
+        DataFile dataFile = (DataFile)this.getDvObject();
+        String storageIdentifier = dataFile.getStorageIdentifier();
 
         String swiftEndPoint = null;
         String swiftContainerName = null;
@@ -454,18 +466,18 @@ public class SwiftAccessIO extends DataFileIO {
             Properties p = getSwiftProperties();
             swiftEndPoint = p.getProperty("swift.default.endpoint");
 
-            //swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
+            //swiftFolderPath = dataFile.getOwner().getDisplayName();
             String swiftFolderPathSeparator = "-";
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-            swiftFolderPath = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
+            String authorityNoSlashes = dataFile.getOwner().getAuthority().replace(dataFile.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+            swiftFolderPath = dataFile.getOwner().getProtocol() + swiftFolderPathSeparator +
                 authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
+                swiftFolderPathSeparator + dataFile.getOwner().getIdentifier();
 
             swiftFileName = storageIdentifier;
             //setSwiftContainerName(swiftFolderPath);
-            //swiftFileName = this.getDataFile().getDisplayName();
+            //swiftFileName = dataFile.getDisplayName();
             //Storage Identifier is now updated after the object is uploaded on Swift.
-            this.getDataFile().setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath+":"+swiftFileName);
+            dataFile.setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath+":"+swiftFileName);
         } else {
             throw new IOException("SwiftAccessIO: unknown access mode.");
         }
@@ -528,7 +540,7 @@ public class SwiftAccessIO extends DataFileIO {
         }
         
         if (!writeAccess && !fileObject.exists()) {
-            throw new FileNotFoundException("SwiftAccessIO: File object " + swiftFileName + " does not exist (Dataverse datafile id: " + this.getDataFile().getId());
+            throw new FileNotFoundException("SwiftAccessIO: File object " + swiftFileName + " does not exist (Dataverse datafile id: " + dataFile.getId());
         }
 
         List<String> auxFiles = null; 
