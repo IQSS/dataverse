@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 
 /**
  * Base class for OAuth2 identity providers, such as GitHub and ORCiD.
- * 
+ *
  * @author michael
  */
 public abstract class AbstractOAuth2AuthenticationProvider implements AuthenticationProvider {
@@ -80,7 +80,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
             return "ParsedUserResponse{" + "displayInfo=" + displayInfo + ", userIdInProvider=" + userIdInProvider + ", username=" + username + ", emails=" + emails + '}';
         }
     }
-    
+
     protected String id;
     protected String title;
     protected String subTitle;
@@ -89,43 +89,43 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String baseUserEndpoint;
     protected String redirectUrl;
     protected String scope;
-    
+
     public AbstractOAuth2AuthenticationProvider(){}
-    
-    public abstract BaseApi<?> getApiInstance();
-    
+
+    public abstract BaseApi<OAuth20Service> getApiInstance();
+
     protected abstract ParsedUserResponse parseUserResponse( String responseBody );
-    
+
     public OAuth20Service getService(String state, String redirectUrl) {
         ServiceBuilder svcBuilder = new ServiceBuilder()
                 .apiKey(getClientId())
                 .apiSecret(getClientSecret())
                 .state(state)
                 .callback(redirectUrl);
-        if ( scope != null ) {        
+        if ( scope != null ) {
             svcBuilder.scope(scope);
         }
-        return (OAuth20Service) svcBuilder.build( getApiInstance() );
+        return svcBuilder.build( getApiInstance() );
     }
-    
+
     public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
         OAuth20Service service = getService(state, redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
         final String userEndpoint = getUserEndpoint(accessToken);
-        
+
         final OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint, service);
         request.addHeader("Authorization", "Bearer " + accessToken.getAccessToken());
         request.setCharset("UTF-8");
-        
+
         final Response response = request.send();
         int responseCode = response.getCode();
-        final String body = response.getBody();        
+        final String body = response.getBody();
         logger.fine("In getUserRecord. Body: " + body);
 
         if ( responseCode == 200 ) {
             final ParsedUserResponse parsed = parseUserResponse(body);
             return new OAuth2UserRecord(getId(), parsed.userIdInProvider,
-                                        parsed.username, 
+                                        parsed.username,
                                         accessToken.getAccessToken(),
                                         parsed.displayInfo,
                                         parsed.emails);
@@ -150,7 +150,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public AuthenticationProviderDisplayInfo getInfo() {
         return new AuthenticationProviderDisplayInfo(getId(), getTitle(), getSubTitle());
     }
-    
+
     @Override
     public String getId() {
         return id;
@@ -159,7 +159,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public String getTitle() {
         return title;
     }
-    
+
     public String getClientId() {
         return clientId;
     }
@@ -171,7 +171,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public String getUserEndpoint( OAuth2AccessToken token ) {
         return baseUserEndpoint;
     }
-    
+
     public String getRedirectUrl() {
         return redirectUrl;
     }

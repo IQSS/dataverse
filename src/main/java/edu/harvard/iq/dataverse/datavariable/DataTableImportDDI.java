@@ -25,7 +25,7 @@ public class DataTableImportDDI {
     public static final String VAR_INTERVAL_CONTIN = "contin";
     public static final String VAR_INTERVAL_NOMINAL = "nominal";
     public static final String VAR_INTERVAL_DICHOTOMOUS = "dichotomous";
-    
+
     public static final String VAR_TYPE_NUMERIC = "numeric";
     public static final String VAR_TYPE_CHARACTER = "character";
 
@@ -37,18 +37,18 @@ public class DataTableImportDDI {
     public static final String CAT_STAT_TYPE_FREQUENCY = "freq";
 
 
-    
+
     public static final String NOTE_TYPE_UNF = "VDC:UNF";
 
-    // Method processDataDscr takes XMLStreamReader xmlr that has just 
-    // encountered the DDI tag <dataDscr>, processes all the variables and 
-    // returns a Map of DataTables mapped by the strings found in the 
-    // "location" attributes of the variables. The DataTables from the 
-    // Map will need to be linked to the corresponding DataFiles by these 
-    // file ids. The DataVariable objects found in this dataDscr section 
-    // have already been linked to the corresponding DataTables in the Map. 
+    // Method processDataDscr takes XMLStreamReader xmlr that has just
+    // encountered the DDI tag <dataDscr>, processes all the variables and
+    // returns a Map of DataTables mapped by the strings found in the
+    // "location" attributes of the variables. The DataTables from the
+    // Map will need to be linked to the corresponding DataFiles by these
+    // file ids. The DataVariable objects found in this dataDscr section
+    // have already been linked to the corresponding DataTables in the Map.
     // -- L.A. 4.0 beta 9
-    
+
     private Map<String, DataTable> processDataDscr(XMLStreamReader xmlr) throws XMLStreamException {
         Map<String, DataTable> dataTablesMap = new HashMap<>();
         Map<String, Integer> varsPerFileMap = new HashMap<>();
@@ -77,7 +77,7 @@ public class DataTableImportDDI {
                             //  Roper puts some of their files into the <fileDscr>
                             //  section, even though there's no <dataDscr>
                             //  provided for them.
-                            //      -- L.A. 
+                            //      -- L.A.
                             // TODO: confirm that this works under 4.0 as is
                             // -- L.A. 4.0 beta 9
                         }
@@ -93,8 +93,8 @@ public class DataTableImportDDI {
     private void processVar(XMLStreamReader xmlr, Map<String, DataTable> dataTablesMap, Map<String, Integer> varsPerFileMap) throws XMLStreamException {
         DataVariable dv = new DataVariable();
         dv.setInvalidRanges(new ArrayList<>());
-        dv.setSummaryStatistics( new ArrayList<>() );
-        dv.setCategories( new ArrayList<>() );
+        dv.setSummaryStatistics(new ArrayList<>());
+        dv.setCategories(new ArrayList<>());
         dv.setName( xmlr.getAttributeValue(null, "name") );
 
         try {
@@ -103,23 +103,16 @@ public class DataTableImportDDI {
 
         // interval type (DB value may be different than DDI value)
         String _interval = xmlr.getAttributeValue(null, "intrvl");
-        
-        if (null != _interval) {
-            switch (_interval) {
-                case VAR_INTERVAL_CONTIN:
-                    dv.setIntervalContinuous();
-                    break;
-                case VAR_INTERVAL_NOMINAL:
-                    dv.setIntervalNominal();
-                    break;
-                case VAR_INTERVAL_DICHOTOMOUS:
-                    dv.setIntervalDichotomous();
-                    break;
-                default:
-                    // default is discrete
-                    dv.setIntervalDiscrete();
-                    break;
-            }
+
+        if (VAR_INTERVAL_CONTIN.equals(_interval)) {
+            dv.setIntervalContinuous();
+        } else if (VAR_INTERVAL_NOMINAL.equals(_interval)) {
+            dv.setIntervalNominal();
+        } else if (VAR_INTERVAL_DICHOTOMOUS.equals(_interval)) {
+            dv.setIntervalDichotomous();
+        } else {
+            // default is discrete
+            dv.setIntervalDiscrete();
         }
 
         dv.setWeighted( VAR_WEIGHTED.equals( xmlr.getAttributeValue(null, "wgt") ) );
@@ -128,41 +121,33 @@ public class DataTableImportDDI {
 
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
-                switch (xmlr.getLocalName()) {
-                    case "location":
-                        processLocation(xmlr, dv, dataTablesMap, varsPerFileMap);
-                        break;
-                    case "labl":
-                        String _labl = processLabl( xmlr, LEVEL_VARIABLE );
-                        if (_labl != null && !_labl.isEmpty() ) {
-                            dv.setLabel( _labl );
-                        }   break;
-                    case "universe":
-                        dv.setUniverse( parseText(xmlr) );
-                        break;
-                    case "invalrng":
-                        processInvalrng( xmlr, dv );
-                        break;
-                    case "varFormat":
-                        processVarFormat( xmlr, dv );
-                        break;
-                    case "sumStat":
-                        processSumStat( xmlr, dv );
-                        break;
-                    case "catgry":
-                        processCatgry( xmlr, dv );
-                        break;
-                    case "notes":
-                        String _note = parseNoteByType( xmlr, NOTE_TYPE_UNF );
-                        if (_note != null && !_note.isEmpty() ) {
-                            dv.setUnf( parseUNF( _note ) );
-                        }   break;
+                if (xmlr.getLocalName().equals("location")) {
+                    processLocation(xmlr, dv, dataTablesMap, varsPerFileMap);
+                }
+                else if (xmlr.getLocalName().equals("labl")) {
+                    String _labl = processLabl( xmlr, LEVEL_VARIABLE );
+                    if (_labl != null && !_labl.isEmpty()) {
+                        dv.setLabel( _labl );
+                    }
+                } else if (xmlr.getLocalName().equals("universe")) {
+                    dv.setUniverse( parseText(xmlr) );
+                } else if (xmlr.getLocalName().equals("invalrng")) {
+                    processInvalrng( xmlr, dv );
+                } else if (xmlr.getLocalName().equals("varFormat")) {
+                    processVarFormat( xmlr, dv );
+                } else if (xmlr.getLocalName().equals("sumStat")) {
+                    processSumStat( xmlr, dv );
+                } else if (xmlr.getLocalName().equals("catgry")) {
+                    processCatgry( xmlr, dv );
+                } else if (xmlr.getLocalName().equals("notes")) {
+                    String _note = parseNoteByType( xmlr, NOTE_TYPE_UNF );
+                    if (_note != null && !_note.isEmpty()) {
+                        dv.setUnf( parseUNF( _note ) );
+                    }
                 }
 
             } else if (event == XMLStreamConstants.END_ELEMENT) {
-                if (xmlr.getLocalName().equals("var")) {
-                    return;
-                }
+                if (xmlr.getLocalName().equals("var")) return;
             }
         }
     }
@@ -186,9 +171,9 @@ public class DataTableImportDDI {
         if (dv.getDataTable() == null) {
             String fileId = xmlr.getAttributeValue(null, "fileid");
 
-            if (fileId != null && !fileId.equals("")) {
+            if (fileId != null && !fileId.isEmpty()) {
 
-                DataTable datatable;
+                DataTable datatable = null;
 
                 if (dataTablesMap.get(fileId) != null) {
                     datatable = dataTablesMap.get(fileId);
@@ -206,7 +191,7 @@ public class DataTableImportDDI {
 
                 int filePosition = varsPerFileMap.get(fileId);
                 dv.setFileOrder(filePosition++);
-                varsPerFileMap.put(fileId, filePosition);                
+                varsPerFileMap.put(fileId, filePosition);
             }
         } else {
             throw new XMLStreamException("Empty or NULL location attribute in a variable section.");
@@ -217,39 +202,38 @@ public class DataTableImportDDI {
     private void processInvalrng(XMLStreamReader xmlr, DataVariable dv) throws XMLStreamException {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
-                switch (xmlr.getLocalName()) {
-                    case "item":
-                        {
-                            VariableRange range = new VariableRange();
-                            dv.getInvalidRanges().add(range);
-                            range.setDataVariable(dv);
-                            range.setBeginValue( xmlr.getAttributeValue(null, "VALUE") );
-                            range.setBeginValueTypePoint();
-                            break;
-                        }
-                    case "range":
-                        {
-                            VariableRange range = new VariableRange();
-                            dv.getInvalidRanges().add(range);
-                            range.setDataVariable(dv);
-                            String min = xmlr.getAttributeValue(null, "min");
-                            String minExclsuive = xmlr.getAttributeValue(null, "minExclusive");
-                            String max = xmlr.getAttributeValue(null, "max");
-                            String maxExclusive = xmlr.getAttributeValue(null, "maxExclusive");
-                            if ( !StringUtil.isEmpty(min) ) {
-                                range.setBeginValue( min );
-                                range.setBeginValueTypeMin( );
-                            } else if ( !StringUtil.isEmpty(minExclsuive) ) {
-                                range.setBeginValue( minExclsuive );
-                                range.setBeginValueTypeMinExcl();
-                            }       if ( !StringUtil.isEmpty(max) ) {
-                                range.setEndValue( max );
-                                range.setEndValueTypeMax();
-                            } else if ( !StringUtil.isEmpty(maxExclusive) ) {
-                                range.setEndValue( maxExclusive );
-                                range.setEndValueTypeMaxExcl();
-                    }       break;
-                        }
+                if (xmlr.getLocalName().equals("item")) {
+                    VariableRange range = new VariableRange();
+                    dv.getInvalidRanges().add(range);
+                    range.setDataVariable(dv);
+
+                    range.setBeginValue( xmlr.getAttributeValue(null, "VALUE") );
+                    range.setBeginValueTypePoint();
+                } else if (xmlr.getLocalName().equals("range")) {
+                    VariableRange range = new VariableRange();
+                    dv.getInvalidRanges().add(range);
+                    range.setDataVariable(dv);
+
+                    String min = xmlr.getAttributeValue(null, "min");
+                    String minExclsuive = xmlr.getAttributeValue(null, "minExclusive");
+                    String max = xmlr.getAttributeValue(null, "max");
+                    String maxExclusive = xmlr.getAttributeValue(null, "maxExclusive");
+
+                    if ( !StringUtil.isEmpty(min) ) {
+                        range.setBeginValue( min );
+                        range.setBeginValueTypeMin( );
+                    } else if ( !StringUtil.isEmpty(minExclsuive) ) {
+                        range.setBeginValue( minExclsuive );
+                        range.setBeginValueTypeMinExcl();
+                    }
+
+                    if ( !StringUtil.isEmpty(max) ) {
+                        range.setEndValue( max );
+                        range.setEndValueTypeMax();
+                    } else if ( !StringUtil.isEmpty(maxExclusive) ) {
+                        range.setEndValue( maxExclusive );
+                        range.setEndValueTypeMaxExcl();
+                    }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("invalrng")) return;
@@ -259,38 +243,38 @@ public class DataTableImportDDI {
 
     private void processVarFormat(XMLStreamReader xmlr, DataVariable dv) throws XMLStreamException {
         String type = xmlr.getAttributeValue(null, "type");
-        type = (type == null ? VAR_TYPE_NUMERIC : type); 
+        type = (type == null ? VAR_TYPE_NUMERIC : type);
 
         if (VAR_TYPE_CHARACTER.equals(type)) {
             dv.setTypeCharacter();
         } else {
             dv.setTypeNumeric(); // default is numeric
         }
-        
-        dv.setFormat( xmlr.getAttributeValue(null, "formatname") );
-        
-        String varFormatCategoryAtt = xmlr.getAttributeValue(null, "category");
-        String varFormatText = parseText(xmlr); 
 
-        
-        
-        /* 
-         * A somewhat hackish way of recognizing "boolean" variables; 
+        dv.setFormat( xmlr.getAttributeValue(null, "formatname") );
+
+        String varFormatCategoryAtt = xmlr.getAttributeValue(null, "category");
+        String varFormatText = parseText(xmlr);
+
+
+
+        /*
+         * A somewhat hackish way of recognizing "boolean" variables;
          * This is not a universally accepted convention - we (the DVN team)
-         * simply decided to handle it this way. Booleans are treated simply 
-         * as categorical variables with integers 0 and 1 for the values, and 
+         * simply decided to handle it this way. Booleans are treated simply
+         * as categorical variables with integers 0 and 1 for the values, and
          * "FALSE" and "TRUE" for the labels. On top of that, we make a note
          * of the variable's "booleanness", in the DDI, like this:
          *      <varFormat ...>Boolean</varFormat>
-         * and in the database, by setting the value of dv.formatCategory to 
-         * "Boolean". 
-         * This information isn't used much in the application (as of May, 2013), 
+         * and in the database, by setting the value of dv.formatCategory to
+         * "Boolean".
+         * This information isn't used much in the application (as of May, 2013),
          * except in the subsetting: when the column is subset and re-imported
          * into an R data frame, we'll convert it into a logical vector.
-         * TODO: 
-         * Add this to the export end! --L.A. 
+         * TODO:
+         * Add this to the export end! --L.A.
          */
-        
+
         if ("Boolean".equalsIgnoreCase(varFormatText)) {
             dv.setFormatCategory( "Boolean" );
         } else {
@@ -310,32 +294,32 @@ public class DataTableImportDDI {
         VariableCategory cat = new VariableCategory();
         cat.setMissing( "Y".equals( xmlr.getAttributeValue(null, "missing") ) ); // default is N, so null sets missing to false
         cat.setDataVariable(dv);
-                
+
         if (dv.getCategories() == null || dv.getCategories().isEmpty()) {
             // if this is the first category we encounter, we'll assume that this
-            // categorical data/"factor" variable is ordered. 
+            // categorical data/"factor" variable is ordered.
             // But we'll switch it back to unordered later, if we encounter
-            // *any* categories with no order attribute defined. 
-            
+            // *any* categories with no order attribute defined.
+
             dv.setOrderedCategorical(true);
-        } 
-        
-        
-        // Process extra level order values, if available; 
+        }
+
+
+        // Process extra level order values, if available;
         // Currently (as of 3.6) only available in R Data ingests.
-        // TODO: 
+        // TODO:
         // revisit this (for 4.0) - we've discussed encoding this order
-        // simply by the order in which the categories appear in the 
+        // simply by the order in which the categories appear in the
         // DDI. (-- L.A. 4.0 beta 9)
-        
-        String order; 
+
+        String order = null;
         order = xmlr.getAttributeValue(null, "order");
-        Integer orderValue = null; 
+        Integer orderValue = null;
         if (order != null) {
             try {
                 orderValue = new Integer (order);
             } catch (NumberFormatException ex) {
-                orderValue = null; 
+                orderValue = null;
             }
         }
 
@@ -343,9 +327,9 @@ public class DataTableImportDDI {
             cat.setOrder(orderValue);
         } else if (!cat.isMissing()) {
             // Everey category of an ordered categorical ("factor") variable
-            // must have the order rank defined. Which means that if we 
+            // must have the order rank defined. Which means that if we
             // encounter a single NON-MISSING category with no ordered attribute, it
-            // will be processed as un-ordered. 
+            // will be processed as un-ordered.
 
             dv.setOrderedCategorical(false);
         }
@@ -355,23 +339,22 @@ public class DataTableImportDDI {
 
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
-                switch (xmlr.getLocalName()) {
-                    case "labl":
-                        String _labl = processLabl( xmlr, LEVEL_CATEGORY );
-                        if (_labl != null && !_labl.equals("") ) {
-                            cat.setLabel( _labl );
-                        }   break;
-                    case "catValu":
-                        cat.setValue( parseText(xmlr, false) );
-                        break;
-                    case "catStat":
-                        String type = xmlr.getAttributeValue(null, "type");
-                        if (type == null || CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase( type ) ) {
-                            String _freq = parseText(xmlr);
-                            if (_freq != null && !_freq.equals("") ) {
-                                cat.setFrequency( new Double( _freq ) );
-                            }
-                        }   break;
+                if (xmlr.getLocalName().equals("labl")) {
+                    String _labl = processLabl( xmlr, LEVEL_CATEGORY );
+                    if (_labl != null && !_labl.isEmpty()) {
+                        cat.setLabel( _labl );
+                    }
+                } else if (xmlr.getLocalName().equals("catValu")) {
+                    cat.setValue( parseText(xmlr, false) );
+                }
+                else if (xmlr.getLocalName().equals("catStat")) {
+                    String type = xmlr.getAttributeValue(null, "type");
+                    if (type == null || CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase( type ) ) {
+                        String _freq = parseText(xmlr);
+                        if (_freq != null && !_freq.isEmpty()) {
+                            cat.setFrequency( new Double( _freq ) );
+                        }
+                    }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("catgry")) return;
@@ -387,7 +370,7 @@ public class DataTableImportDDI {
         }
     }
 
-        
+
     private String parseNoteByType (XMLStreamReader xmlr, String type) throws XMLStreamException {
         if (type.equalsIgnoreCase( xmlr.getAttributeValue(null, "type") ) ) {
             return parseText(xmlr);
@@ -415,13 +398,13 @@ public class DataTableImportDDI {
         }
         return tempString;
      }
-    
+
      /* We had to add this method because the ref getElementText has a bug where it
      * would append a null before the text, if there was an escaped apostrophe; it appears
      * that the code finds an null ENTITY_REFERENCE in this case which seems like a bug;
      * the workaround for the moment is to comment or handling ENTITY_REFERENCE in this case
      */
-     /* 
+     /*
       * TODO: do we still need this method? ( -- L.A. 4.0 beta 9)
       */
     private String getElementText(XMLStreamReader xmlr) throws XMLStreamException {

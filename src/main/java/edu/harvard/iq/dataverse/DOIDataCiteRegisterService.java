@@ -19,6 +19,7 @@ import javax.annotation.PreDestroy;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -58,57 +59,50 @@ public class DOIDataCiteRegisterService {
         String status = metadata.get("_status").trim();
         String target = metadata.get("_target");
         String retString = "";
-        switch (status) {
-            case "reserved":
-                {
-                    DOIDataCiteRegisterCache rc = findByDOI(identifier);
-                    if (rc == null) {
-                        rc = new DOIDataCiteRegisterCache();
-                        rc.setDoi(identifier);
-                        rc.setXml(xmlMetadata);
-                        rc.setStatus("reserved");
-                        rc.setUrl(target);
-                        em.persist(rc);
-                    } else {
-                        rc.setDoi(identifier);
-                        rc.setXml(xmlMetadata);
-                        rc.setStatus("reserved");
-                        rc.setUrl(target);
-                    }       retString = "success to reserved " + identifier;
-                    break;
-                }
-            case "public":
-            {
-                DOIDataCiteRegisterCache rc = findByDOI(identifier);
-                if (rc != null) {
-                    rc.setDoi(identifier);
-                    rc.setXml(xmlMetadata);
-                    rc.setStatus("public");
-                    if (target == null || target.trim().length() == 0) {
-                        target = rc.getUrl();
-                    } else {
-                        rc.setUrl(target);
-                    }
-                    try (DataCiteRESTfullClient client = openClient()) {
-                        retString = client.postMetadata(xmlMetadata);
-                        client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
-                    } catch (UnsupportedEncodingException ex) {
-                        Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }       break;
+        if (status.equals("reserved")) {
+            DOIDataCiteRegisterCache rc = findByDOI(identifier);
+            if (rc == null) {
+                rc = new DOIDataCiteRegisterCache();
+                rc.setDoi(identifier);
+                rc.setXml(xmlMetadata);
+                rc.setStatus("reserved");
+                rc.setUrl(target);
+                em.persist(rc);
+            } else {
+                rc.setDoi(identifier);
+                rc.setXml(xmlMetadata);
+                rc.setStatus("reserved");
+                rc.setUrl(target);
             }
-            case "unavailable":
-            {
-                DOIDataCiteRegisterCache rc = findByDOI(identifier);
+            retString = "success to reserved " + identifier;
+        } else if (status.equals("public")) {
+            DOIDataCiteRegisterCache rc = findByDOI(identifier);
+            if (rc != null) {
+                rc.setDoi(identifier);
+                rc.setXml(xmlMetadata);
+                rc.setStatus("public");
+                if (target == null || target.trim().length() == 0) {
+                    target = rc.getUrl();
+                } else {
+                    rc.setUrl(target);
+                }
                 try (DataCiteRESTfullClient client = openClient()) {
-                    if (rc != null) {
-                        rc.setStatus("unavailable");
-                        retString = client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
+                    retString = client.postMetadata(xmlMetadata);
+                    client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        } else if (status.equals("unavailable")) {
+            DOIDataCiteRegisterCache rc = findByDOI(identifier);
+            try (DataCiteRESTfullClient client = openClient()) {
+                if (rc != null) {
+                    rc.setStatus("unavailable");
+                    retString = client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
                 }
             } catch (IOException io) {
 
-            }       break;
-                }
+            }
         }
         return retString;
     }
@@ -145,7 +139,7 @@ public class DOIDataCiteRegisterService {
 
     public DOIDataCiteRegisterCache findByDOI(String doi) {
         TypedQuery<DOIDataCiteRegisterCache> query = em.createNamedQuery("DOIDataCiteRegisterCache.findByDoi",
-                DOIDataCiteRegisterCache.class);
+                                                                         DOIDataCiteRegisterCache.class);
         query.setParameter("doi", doi);
         List<DOIDataCiteRegisterCache> rc = query.getResultList();
         if (rc.size() == 1) {

@@ -85,10 +85,10 @@ class PartiallyOrderedSet<E> extends AbstractSet<E> {
     // p. 315.
 
     // Maps Objects to DigraphNodes that contain them
-    private final Map<E,DigraphNode<E>> poNodes = new HashMap<>();
+    private Map<E, DigraphNode<E>> poNodes = new HashMap<>();
 
     // The set of Objects
-    private final Set<E> nodes = poNodes.keySet();
+    private Set<E> nodes = poNodes.keySet();
 
     /**
      * Constructs a <code>PartiallyOrderedSet</code>.
@@ -140,7 +140,6 @@ class PartiallyOrderedSet<E> extends AbstractSet<E> {
         if (node == null) {
             return false;
         }
-
         poNodes.remove(o);
         node.dispose();
         return true;
@@ -174,8 +173,8 @@ class PartiallyOrderedSet<E> extends AbstractSet<E> {
      * @return true if a prior prefence existed between the nodes.
      */
     public boolean unsetOrdering(E first, E second) {
-        DigraphNode firstPONode = poNodes.get(first);
-        DigraphNode secondPONode = poNodes.get(second);
+        DigraphNode<E> firstPONode = poNodes.get(first);
+        DigraphNode<E> secondPONode = poNodes.get(second);
 
         return firstPONode.removeEdge(secondPONode) ||
             secondPONode.removeEdge(firstPONode);
@@ -186,8 +185,8 @@ class PartiallyOrderedSet<E> extends AbstractSet<E> {
      * nodes.
      */
     public boolean hasOrdering(E preferred, E other) {
-        DigraphNode preferredPONode = poNodes.get(preferred);
-        DigraphNode otherPONode = poNodes.get(other);
+        DigraphNode<E> preferredPONode = poNodes.get(preferred);
+        DigraphNode<E> otherPONode = poNodes.get(other);
 
         return preferredPONode.hasEdge(otherPONode);
     }
@@ -196,7 +195,7 @@ class PartiallyOrderedSet<E> extends AbstractSet<E> {
 class PartialOrderIterator<E> implements Iterator<E> {
 
     LinkedList<DigraphNode<E>> zeroList = new LinkedList<>();
-    Map<DigraphNode<E>, Integer> inDegrees = new HashMap<>();
+    Map<DigraphNode<E>, Integer> inDegrees = new HashMap<>(); // DigraphNode -> Integer
 
     public PartialOrderIterator(Iterator<DigraphNode<E>> iter) {
         // Initialize scratch in-degree values, zero list
