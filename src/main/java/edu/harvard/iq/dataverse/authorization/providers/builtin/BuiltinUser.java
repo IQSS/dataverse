@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.ValidateUserName;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
@@ -43,7 +44,7 @@ public class BuiltinUser implements Serializable {
 
     @NotBlank(message = "Please enter a username.")
     @Size(min=2, max=60, message ="Username must be between 2 and 60 characters.")
-    @Pattern(regexp = "[a-zA-Z0-9\\_\\-\\.]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', '-', and '.'.")
+    @ValidateUserName(message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', '-', and '.'.")
     @Column(nullable = false, unique=true)  
     private String userName;
 
