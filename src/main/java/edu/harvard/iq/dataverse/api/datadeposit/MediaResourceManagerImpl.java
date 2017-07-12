@@ -323,7 +323,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     sb.append(cause + " ");
                     if (cause instanceof ConstraintViolationException) {
                         ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                        for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                        for (ConstraintViolation violation : constraintViolationException.getConstraintViolations()) {
                             sb.append(" Invalid value \"").append(violation.getInvalidValue()).append("\" for ")
                                     .append(violation.getPropertyPath()).append(" at ")
                                     .append(violation.getLeafBean()).append(" - ")

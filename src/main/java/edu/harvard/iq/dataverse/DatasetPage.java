@@ -2319,7 +2319,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String save() {
         // Validate
-        Set<ConstraintViolation<?>> constraintViolations = workingVersion.validate();
+        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
              //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
              JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));

@@ -582,10 +582,7 @@ public class DatasetVersion implements Serializable {
             return false;
         }
         DatasetVersion other = (DatasetVersion) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
     @Override
@@ -1071,8 +1068,8 @@ public class DatasetVersion implements Serializable {
         return returnListreturnList;
     }
 
-    public Set<ConstraintViolation<?>> validate() {
-        Set<ConstraintViolation<?>> returnSet = new HashSet<>();
+    public Set<ConstraintViolation> validate() {
+        Set<ConstraintViolation> returnSet = new HashSet<>();
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();

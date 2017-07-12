@@ -24,8 +24,6 @@ import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
@@ -139,7 +137,7 @@ public class ImportServiceBean {
                 cause = cause.getCause();
                 if (cause instanceof ConstraintViolationException) {
                     ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                    for (ConstraintViolation violation : constraintViolationException.getConstraintViolations()) {
                         sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
                     }
                 }
@@ -147,7 +145,7 @@ public class ImportServiceBean {
             logger.log(Level.SEVERE, sb.toString());
             System.out.println("Error creating dataverse: " + sb.toString());
             throw new ImportException(sb.toString());
-        } catch (Exception e) {
+        } catch (CommandException e) {
             throw new ImportException(e.getMessage());
         }
         return d;
@@ -172,7 +170,7 @@ public class ImportServiceBean {
                 validationLog.println(msg);
             }
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
-        } catch (Exception e) {
+        } catch (IOException e) {
             Throwable causedBy =e.getCause();
             while (causedBy != null && causedBy.getCause()!=null) {
                 causedBy = causedBy.getCause();
@@ -232,7 +230,7 @@ public class ImportServiceBean {
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
                 logger.fine("importing DDI "+metadataFile.getAbsolutePath());
                 dsDTO = importDDIService.doImport(ImportType.HARVEST_WITH_FILES, xmlToParse);
-            } catch (Exception e) {
+            } catch (ImportException | IOException | XMLStreamException e) {
                 throw new ImportException("Failed to process DDI XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
@@ -240,7 +238,7 @@ public class ImportServiceBean {
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 dsDTO = importGenericService.processOAIDCxml(xmlToParse);
-            } catch (Exception e) {
+            } catch (IOException | XMLStreamException e) {
                 throw new ImportException("Failed to process Dublin Core XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if ("dataverse_json".equals(metadataFormat)) {
@@ -281,7 +279,7 @@ public class ImportServiceBean {
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
             // Check data against required contraints
-            List<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
+            List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
             if (!violations.isEmpty()) {
                 // For migration and harvest, add NA for missing required values
                 for (ConstraintViolation v : violations) {
@@ -373,7 +371,7 @@ public class ImportServiceBean {
                 importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, ImportType.HARVEST));
             }
 
-        } catch (Exception ex) {
+        } catch (ImportException | CommandException | JsonParseException ex) {
             logger.fine("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());
             FileOutputStream savedJsonFileStream = new FileOutputStream(new File(metadataFile.getAbsolutePath() + ".json"));
             byte[] jsonBytes = json.getBytes();
@@ -425,7 +423,7 @@ public class ImportServiceBean {
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
             // Check data against required contraints
-            List<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
+            List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
             if (!violations.isEmpty()) {
                 if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {
                     // For migration and harvest, add NA for missing required values
@@ -685,7 +683,7 @@ public class ImportServiceBean {
 
         public String format(LogRecord record) {
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             sb.append("Prefixn");
 
