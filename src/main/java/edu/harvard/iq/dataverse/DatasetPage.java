@@ -78,6 +78,7 @@ import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
+import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
@@ -1528,8 +1529,7 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             String message = ex.getMessage();
             logger.severe("sendBackToContributor: " + message);
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure"));
-            return "";
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", Collections.singletonList(message)));
         }
         return returnToLatestVersion();
     }
@@ -1542,8 +1542,7 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             String message = ex.getMessage();
             logger.severe("submitDataset: " + message);
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure"));
-            return "";
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", Collections.singletonList(message)));
         }
         return returnToLatestVersion();
     }
