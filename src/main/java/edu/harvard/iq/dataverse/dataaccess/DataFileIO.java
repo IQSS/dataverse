@@ -22,6 +22,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileInputStream;
 
@@ -54,12 +55,12 @@ public abstract class DataFileIO {
 
     }
 
-    public DataFileIO(DataFile dataFile) {
-        this(dataFile, null);
+    public DataFileIO(DvObject dvObject) {
+        this(dvObject, null);
     }
 
-    public DataFileIO(DataFile dataFile, DataAccessRequest req) {
-        this.dataFile = dataFile;
+    public DataFileIO(DvObject dvObject, DataAccessRequest req) {
+        this.dvObject = dvObject;
         this.req = req;
 
         if (this.req == null) {
@@ -130,6 +131,9 @@ public abstract class DataFileIO {
     
     public abstract void deleteAllAuxObjects() throws IOException;
     
+    //check for datafile or dataset and redirect to appropriate open function
+    public abstract void openDvObject(DataAccessOption... option) throws IOException;
+    
 
     private DataFile dataFile;
     private DataAccessRequest req;
@@ -137,6 +141,7 @@ public abstract class DataFileIO {
     private InputStream in;
     private OutputStream out; 
     protected Channel channel;
+    private DvObject dvObject;
 
     private int status;
     private long size;
@@ -186,6 +191,10 @@ public abstract class DataFileIO {
         return (ReadableByteChannel) channel;
     }
     
+    public DvObject getDvObject()
+    {
+        return dvObject;
+    }
     public DataFile getDataFile() {
         return dataFile;
     }

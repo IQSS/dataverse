@@ -37,6 +37,7 @@ import java.util.Iterator;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DvObject;
 import java.io.FileNotFoundException;
 import java.nio.channels.Channel;
 import java.nio.file.DirectoryStream;
@@ -50,14 +51,14 @@ public class FileAccessIO extends DataFileIO {
         this(null);
     }
 
-    public FileAccessIO(DataFile dataFile) throws IOException {
-        this (dataFile, null);
+    public FileAccessIO(DvObject dvObject) throws IOException {
+        this (dvObject, null);
         
     }
 
-    public FileAccessIO(DataFile dataFile, DataAccessRequest req) throws IOException {
+    public FileAccessIO(DvObject dvObject, DataAccessRequest req) throws IOException {
 
-        super(dataFile, req);
+        super(dvObject, req);
 
         this.setIsLocalFile(true);
     }
@@ -79,8 +80,10 @@ public class FileAccessIO extends DataFileIO {
 
     @Override
     public void open (DataAccessOption... options) throws IOException {
-
+           
+//        if(this.getDvObject().isInstanceofDataFile())
         DataFile dataFile = this.getDataFile();
+        
         DataAccessRequest req = this.getRequest(); 
 
 
