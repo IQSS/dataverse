@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.workflows.review.PublicationAuditEntry;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -391,14 +391,14 @@ public class MailServiceBean implements java.io.Serializable {
             case SUBMITTEDDS:
                 version =  (DatasetVersion) targetObject;
                 String mightHaveReturnReason = ".";
-                List<PublicationAuditEntry> publicationAuditEntriesSubmitted = version.getPublicationAuditEntries();
-                if (publicationAuditEntriesSubmitted != null && !publicationAuditEntriesSubmitted.isEmpty()) {
-                    // FIXME get the right EntryType
-                    PublicationAuditEntry publicationAuditEntry = publicationAuditEntriesSubmitted.get(0);
-                    if (publicationAuditEntry != null) {
-                        String returnReasonSubmitted = publicationAuditEntry.getMessage();
-                        if (returnReasonSubmitted != null) {
-                            mightHaveReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + returnReasonSubmitted;
+                List<WorkflowComment> workflowCommentsSubmitted = version.getWorkflowComments();
+                if (workflowCommentsSubmitted != null && !workflowCommentsSubmitted.isEmpty()) {
+                    WorkflowComment workflowComment = workflowCommentsSubmitted.get(0);
+                    if (workflowComment != null) {
+                        // FIXME: Don't assume this message came from the "Return to Author" action.
+                        String reasonForReturn = workflowComment.getMessage();
+                        if (reasonForReturn != null) {
+                            mightHaveReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + reasonForReturn;
                         }
                     }
                 }
@@ -418,14 +418,14 @@ public class MailServiceBean implements java.io.Serializable {
                 version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasReturnedByReviewer");
                 String optionalReturnReason = ".";
-                List<PublicationAuditEntry> publicationAuditEntriesReturned = version.getPublicationAuditEntries();
-                if (publicationAuditEntriesReturned != null && !publicationAuditEntriesReturned.isEmpty()) {
-                    // FIXME: get the right EntryType
-                    PublicationAuditEntry publicationAuditEntry = publicationAuditEntriesReturned.get(0);
-                    if (publicationAuditEntry != null) {
-                        String returnReason = publicationAuditEntry.getMessage();
-                        if (returnReason != null) {
-                            optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + returnReason;
+                List<WorkflowComment> workflowCommentsReturned = version.getWorkflowComments();
+                if (workflowCommentsReturned != null && !workflowCommentsReturned.isEmpty()) {
+                    WorkflowComment workflowComment = workflowCommentsReturned.get(0);
+                    if (workflowComment != null) {
+                        // FIXME: Don't assume this message came from the "Return to Author" action.
+                        String reasonForReturn = workflowComment.getMessage();
+                        if (reasonForReturn != null) {
+                            optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + reasonForReturn;
                         }
                     }
                 }

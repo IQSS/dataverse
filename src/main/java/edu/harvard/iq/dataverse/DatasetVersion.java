@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.workflows.review.PublicationAuditEntry;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -218,8 +218,9 @@ public class DatasetVersion implements Serializable {
         this.inReview = inReview;
     }
 
+    // Is this the right mapping and cascading for when the workflowcomments table is being used for objects other than DatasetVersion?
     @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<PublicationAuditEntry> publicationAuditEntries;
+    private List<WorkflowComment> workflowComments;
 
     /**
      * The only time a dataset can be in review is when it is in draft.
@@ -1117,8 +1118,8 @@ public class DatasetVersion implements Serializable {
         return returnSet;
     }
 
-    public List<PublicationAuditEntry> getPublicationAuditEntries() {
-        return publicationAuditEntries;
+    public List<WorkflowComment> getWorkflowComments() {
+        return workflowComments;
     }
 
 }

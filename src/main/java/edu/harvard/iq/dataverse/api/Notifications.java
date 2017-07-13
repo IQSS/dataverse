@@ -44,7 +44,7 @@ public class Notifications extends AbstractApiBean {
                 DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
                 if (datasetVersion != null) {
                     try {
-                        String message = datasetVersion.getPublicationAuditEntries().get(0).getMessage();
+                        String message = datasetVersion.getWorkflowComments().get(0).getMessage();
                         if (message != null) {
                             notificationObjectBuilder.add("reasonForReturn", message);
                         }
@@ -57,7 +57,7 @@ public class Notifications extends AbstractApiBean {
                     Long objectId = notification.getObjectId();
                     DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
                     if (datasetVersion != null) {
-                        String message = datasetVersion.getPublicationAuditEntries().get(0).getMessage();
+                        String message = datasetVersion.getWorkflowComments().get(0).getMessage();
                         if (message != null) {
                             notificationObjectBuilder.add("reasonForReturn", message);
                         }

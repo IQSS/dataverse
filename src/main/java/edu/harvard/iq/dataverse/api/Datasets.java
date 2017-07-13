@@ -61,8 +61,8 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import edu.harvard.iq.dataverse.workflows.review.PublicationAuditEntry;
-import static edu.harvard.iq.dataverse.workflows.review.PublicationAuditEntry.EntryType.RETURN;
+import edu.harvard.iq.dataverse.workflows.WorkflowAction;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Collections;
@@ -92,6 +92,7 @@ import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import static edu.harvard.iq.dataverse.workflows.WorkflowAction.Type.RETURN_TO_AUTHOR;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -658,8 +659,8 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion datasetVersion = dataset.getLatestVersion();
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(findUserOrDie()), dataset));
             DatasetVersion latestVersion = updatedDataset.getLatestVersion();
-            PublicationAuditEntry publicationAuditEntry = new PublicationAuditEntry(latestVersion, RETURN, reasonForReturn);
-            datasetSvc.savePublicationAuditEntry(publicationAuditEntry);
+            WorkflowComment workflowComment = new WorkflowComment(new WorkflowAction(latestVersion, RETURN_TO_AUTHOR), reasonForReturn);
+            datasetSvc.saveWorkflowComment(workflowComment);
             boolean inReview = latestVersion.isInReview();
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", inReview);
