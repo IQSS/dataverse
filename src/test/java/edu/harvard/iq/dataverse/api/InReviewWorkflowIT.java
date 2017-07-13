@@ -158,14 +158,6 @@ public class InReviewWorkflowIT {
                 .body("comments", equalTo(null))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
-        String longComment = "Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed foo.";
-        jsonObjectBuilder.add("reasonForReturn", longComment);
-        Response returnToAuthorWithLongComment = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
-        returnToAuthorWithLongComment.prettyPrint();
-        returnToAuthorWithLongComment.then().assertThat()
-                .body("message", equalTo("You supplied 294 in the reason for return but only 200 characters are allowed."))
-                .statusCode(BAD_REQUEST.getStatusCode());
-
         // Successfully return dataset to author for reason: "You forgot to upload any files."
         String comments = "You forgot to upload any files.";
         jsonObjectBuilder.add("reasonForReturn", comments);

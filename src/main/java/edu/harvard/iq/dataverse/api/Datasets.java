@@ -651,12 +651,6 @@ public class Datasets extends AbstractApiBean {
             if (reasonForReturn == null || reasonForReturn.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
             }
-            // TODO: Move this to ReturnDatasetToAuthorCommand
-            int numCharsAllowed = 200;
-            int numCharsProvided = reasonForReturn.length();
-            if (numCharsProvided > numCharsAllowed) {
-                return error(Response.Status.BAD_REQUEST, "You supplied " + numCharsProvided + " in the reason for return but only " + numCharsAllowed + " characters are allowed.");
-            }
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset));
             DatasetVersion latestVersion = updatedDataset.getLatestVersion();
