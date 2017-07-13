@@ -62,6 +62,16 @@ public abstract class DataFileIO {
     public DataFileIO(DvObject dvObject, DataAccessRequest req) {
         this.dvObject = dvObject;
         this.req = req;
+           
+        //For now, we are converting a dvobject into datafile as soon as a DataFileIO
+        //object is initialised to avoid a null datafile to be passed anywhere
+        
+        
+        /**
+         * TODO: Find a way to make this casting work better, and add the casting of
+         * DvObjects into datasets
+         */
+        this.dataFile=(DataFile)dvObject;
 
         if (this.req == null) {
             this.req = new DataAccessRequest();
@@ -195,6 +205,7 @@ public abstract class DataFileIO {
     {
         return dvObject;
     }
+    
     public DataFile getDataFile() {
         return dataFile;
     }
