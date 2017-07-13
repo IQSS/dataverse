@@ -1436,7 +1436,7 @@ public class PORFileReader  extends TabularDataFileReader{
                     invalidDataInfo.setInvalidValues(valueList.subList(2, 3));
                     invalidDataInfo.setInvalidRange(valueList.subList(0, 2));
                 } else {
-                    dbgLog.severe("unkown missing-value combination(3 values)");
+                   dbgLog.severe("unkown missing-value combination(3 values)");
                 }
                 
             } else if (valueList.size() == 2){
@@ -1488,7 +1488,7 @@ public class PORFileReader  extends TabularDataFileReader{
             List<String> temp = new ArrayList<>();
             for (int j=0; j<codeList.size(); j++){
                 if (codeList.get(j).equals("8")){
-                    temp.add(valueList.get(j));
+                  temp.add(valueList.get(j));
                 }
             }
             missingValueTable.put(variable, temp);

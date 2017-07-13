@@ -31,6 +31,8 @@ import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.util.ArrayList;
+import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static junit.framework.Assert.assertEquals;
@@ -166,16 +168,16 @@ public class DatasetsIT {
         RestAssured.unregisterParser("text/plain");
 
         // FIXME: It would be awesome if we could just get a JSON object back instead. :(
-        Map<String, List<Map<String, Object>>> datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
+        Map<String, Object> datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("datasetVersion.metadataBlocks.citation.fields.find { fields -> fields.typeName == datasetContact }");
         System.out.println("datasetContactFromExport: " + datasetContactFromExport);
 
         assertEquals("datasetContact", datasetContactFromExport.get("typeName"));
-        List<Map<String, Object>> valuesArray = datasetContactFromExport.get("value");
+        List valuesArray = (ArrayList) datasetContactFromExport.get("value");
         // FIXME: it's brittle to rely on the first value but what else can we do, given our API?
-        Map<String, Object> firstValue = valuesArray.get(0);
+        Map<String, Object> firstValue = (Map<String, Object>) valuesArray.get(0);
 //        System.out.println("firstValue: " + firstValue);
-        Map firstValueMap = (Map) firstValue.get("datasetContactEmail");
+        Map firstValueMap = (HashMap) firstValue.get("datasetContactEmail");
 //        System.out.println("firstValueMap: " + firstValueMap);
         assertEquals("finch@mailinator.com", firstValueMap.get("value"));
         assertTrue(datasetContactFromExport.toString().contains("finch@mailinator.com"));
@@ -296,16 +298,16 @@ public class DatasetsIT {
         RestAssured.unregisterParser("text/plain");
 
         // FIXME: It would be awesome if we could just get a JSON object back instead. :(
-        Map<String, List<Map<String, Object>> > datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
+        Map<String, Object> datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("datasetVersion.metadataBlocks.citation.fields.find { fields -> fields.typeName == datasetContact }");
         System.out.println("datasetContactFromExport: " + datasetContactFromExport);
 
         assertEquals("datasetContact", datasetContactFromExport.get("typeName"));
-        List<Map<String, Object>> valuesArray = datasetContactFromExport.get("value");
+        List valuesArray = (ArrayList) datasetContactFromExport.get("value");
         // FIXME: it's brittle to rely on the first value but what else can we do, given our API?
-        Map<String, Object> firstValue = valuesArray.get(0);
+        Map<String, Object> firstValue = (Map<String, Object>) valuesArray.get(0);
 //        System.out.println("firstValue: " + firstValue);
-        Map firstValueMap = (Map) firstValue.get("datasetContactEmail");
+        Map firstValueMap = (HashMap) firstValue.get("datasetContactEmail");
 //        System.out.println("firstValueMap: " + firstValueMap);
         assertEquals("sammi@sample.com", firstValueMap.get("value"));
         assertTrue(datasetContactFromExport.toString().contains("sammi@sample.com"));
@@ -534,7 +536,7 @@ public class DatasetsIT {
         String contributorUsername = UtilIT.getUsernameFromResponse(createContributorResponse);
         String contributorApiToken = UtilIT.getApiTokenFromResponse(createContributorResponse);
         UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, apiToken).prettyPrint();
-        Response grantRoleShouldFail = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.EDITOR, "doesNotExist", apiToken);
+        Response grantRoleShouldFail = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.EDITOR.toString(), "doesNotExist", apiToken);
         grantRoleShouldFail.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Assignee not found"));
@@ -543,7 +545,7 @@ public class DatasetsIT {
          * "EditDataset", "DownloadFile", and "DeleteDatasetDraft" per
          * scripts/api/data/role-editor.json
          */
-        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.EDITOR, "@" + contributorUsername, apiToken);
+        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.EDITOR.toString(), "@" + contributorUsername, apiToken);
         grantRole.prettyPrint();
         assertEquals(OK.getStatusCode(), grantRole.getStatusCode());
         UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, apiToken).prettyPrint();

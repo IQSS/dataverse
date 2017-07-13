@@ -40,7 +40,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-
+    
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
     @EJB
@@ -55,28 +55,28 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     DataverseServiceBean dataverseService;
     @EJB
     UserNotificationServiceBean userNotificationService;
-
+    
     @Inject
     DataverseSession session;
-
+    
     @EJB
     EjbDataverseEngine commandEngine;
-
+    
     @Inject
     DataverseRequestServiceBean dvRequestService;
-
+    
     @Inject TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());
-
-
+    
+    
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
             writeGuestbookResponseRecord(guestbookResponse);
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), guestbookResponse.isWriteResponse());
         }
-
+        
         if (guestbookResponse != null && guestbookResponse.getSelectedFileIds() != null     ){
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
 
@@ -87,13 +87,13 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                     writeGuestbookResponseRecord(guestbookResponse);
                 }
             }
-
+            
             callDownloadServlet(guestbookResponse.getSelectedFileIds(), true);
         }
-
-
+        
+        
     }
-
+    
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
 
         try {
@@ -130,7 +130,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
         }
     }
-
+    
         //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;
@@ -142,28 +142,28 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
-
+    
     public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
 
-        if (guestbookResponse != null && guestbookResponse.isWriteResponse()
+        if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
                 && (( fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
-            if(guestbookResponse.getDataFile() == null  && fmd != null){
+            if(guestbookResponse.getDataFile() == null  && fmd != null){                
                 guestbookResponse.setDataFile(fmd.getDataFile());
             }
             if (fmd == null || !fmd.getDatasetVersion().isDraft()){
                 writeGuestbookResponseRecord(guestbookResponse);
             }
         }
-
+        
         Long datafileId;
-
+        
         if (fmd == null && guestbookResponse != null && guestbookResponse.getDataFile() != null){
             datafileId = guestbookResponse.getDataFile().getId();
         } else {
             datafileId = fmd.getDataFile().getId();
         }
         String retVal = twoRavensHelper.getDataExploreURLComplete(datafileId);
-
+        
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
             return retVal;
@@ -172,9 +172,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
         return retVal;
     }
-
+    
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-
+                
         if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
             if(guestbookResponse.getDataFile() == null && fmd != null){
                 guestbookResponse.setDataFile(fmd.getDataFile());
@@ -190,10 +190,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null && file == null){
             file  = guestbookResponse.getDataFile();
         }
-
+        
 
         String retVal = worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink();
-
+        
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
             return retVal;
@@ -206,12 +206,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public Boolean canSeeTwoRavensExploreButton(){
         return false;
     }
-
-
+    
+    
     public Boolean canUserSeeExploreWorldMapButton(){
         return false;
     }
-
+    
     public void downloadDatasetCitationXML(Dataset dataset) {
         downloadCitationXML(null, dataset);
     }
@@ -233,7 +233,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         response.setContentType("text/xml");
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
-            // Dataset-level citation:
+            // Dataset-level citation: 
             fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".xml";
         } else {
             // Datafile-level citation:
@@ -249,7 +249,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         }
     }
-
+    
     public void downloadDatasetCitationRIS(Dataset dataset) {
 
         downloadCitationRIS(null, dataset);
@@ -274,7 +274,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
-            // Dataset-level citation:
+            // Dataset-level citation: 
             fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".ris";
         } else {
             // Datafile-level citation:
@@ -291,7 +291,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         }
     }
-
+    
     private String getFileNameDOI(DatasetVersion workingVersion) {
         Dataset ds = workingVersion.getDataset();
         return "DOI:" + ds.getAuthority() + "_" + ds.getIdentifier();
@@ -339,29 +339,29 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-
-
-    public boolean requestAccess(Long fileId) {
+    
+       
+    public boolean requestAccess(Long fileId) {     
         DataFile file = datafileService.find(fileId);
         if (!file.getFileAccessRequesters().contains(session.getUser())) {
             try {
-                commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));
+                commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));                        
                 return true;
             } catch (CommandException ex) {
                 logger.info("Unable to request access for file id " + fileId + ". Exception: " + ex);
-            }
+            }             
         }
-
+        
         return false;
-    }
-
+    }    
+    
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId) {
         permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId);
         });
 
-    }
+    }    
 
 
-
+    
 }

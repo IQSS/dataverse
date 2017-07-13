@@ -1,21 +1,21 @@
 /*
- Copyright (C) 2005-2012, by the President and Fellows of Harvard College.
+   Copyright (C) 2005-2012, by the President and Fellows of Harvard College.
 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
- http://www.apache.org/licenses/LICENSE-2.0
+         http://www.apache.org/licenses/LICENSE-2.0
 
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 
- Dataverse Network - A web application to share, preserve and analyze research data.
- Developed at the Institute for Quantitative Social Science, Harvard University.
- Version 3.0.
+   Dataverse Network - A web application to share, preserve and analyze research data.
+   Developed at the Institute for Quantitative Social Science, Harvard University.
+   Version 3.0.
  */
 package edu.harvard.iq.dataverse.ingest.plugin.spi;
 
@@ -277,7 +277,7 @@ public class ServiceRegistry<T> {
      * <code>Class</code> defined by <code>category</code>.
      */
     public boolean registerServiceProvider(T provider,
-            Class<T> category) {
+                                               Class<T> category) {
         if (provider == null) {
             throw new IllegalArgumentException("provider == null!");
         }
@@ -375,7 +375,7 @@ public class ServiceRegistry<T> {
      * defined by <code>category</code>.
      */
     public boolean deregisterServiceProvider(T provider,
-            Class<T> category) {
+                                                 Class<T> category) {
         if (provider == null) {
             throw new IllegalArgumentException("provider == null!");
         }
@@ -454,7 +454,7 @@ public class ServiceRegistry<T> {
      * to <code>category</code>.
      */
     public Iterator<T> getServiceProviders(Class<T> category,
-            boolean useOrdering) {
+                                               boolean useOrdering) {
         SubRegistry<T> reg = categoryMap.get(category);
         if (reg == null) {
             throw new IllegalArgumentException("category unknown!");
@@ -509,8 +509,8 @@ public class ServiceRegistry<T> {
      * to <code>category</code>.
      */
     public Iterator<T> getServiceProviders(Class<T> category,
-            Filter filter,
-            boolean useOrdering) {
+                                               Filter filter,
+                                               boolean useOrdering) {
         SubRegistry<T> reg = categoryMap.get(category);
         if (reg == null) {
             throw new IllegalArgumentException("category unknown!");
@@ -576,8 +576,8 @@ public class ServiceRegistry<T> {
      * to <code>category</code>.
      */
     public boolean setOrdering(Class<T> category,
-            T firstProvider,
-            T secondProvider) {
+                                   T firstProvider,
+                                   T secondProvider) {
         if (firstProvider == null || secondProvider == null) {
             throw new IllegalArgumentException("provider is null!");
         }
@@ -620,8 +620,8 @@ public class ServiceRegistry<T> {
      * to <code>category</code>.
      */
     public boolean unsetOrdering(Class<T> category,
-            T firstProvider,
-            T secondProvider) {
+                                     T firstProvider,
+                                     T secondProvider) {
         if (firstProvider == null || secondProvider == null) {
             throw new IllegalArgumentException("provider is null!");
         }
@@ -667,7 +667,7 @@ public class ServiceRegistry<T> {
     }
 
     /**
-     * Finalizes this object prior to garbage collection. The
+     * Finalizes this object prior to garbage collection.  The
      * <code>deregisterAll</code> method is called to deregister all currently
      * registered service providers. This method should not be called from
      * application code.
@@ -703,7 +703,7 @@ class SubRegistry<T> {
 
     public boolean registerServiceProvider(T provider) {
         T oprovider = map.get(provider.getClass());
-        boolean present = oprovider != null;
+        boolean present =  oprovider != null;
 
         if (present) {
             deregisterServiceProvider(oprovider);
@@ -797,7 +797,7 @@ class FilterIterator<T> implements Iterator<T> {
     private T next = null;
 
     public FilterIterator(Iterator<T> iter,
-            ServiceRegistry.Filter filter) {
+                          ServiceRegistry.Filter filter) {
         this.iter = iter;
         this.filter = filter;
         advance();

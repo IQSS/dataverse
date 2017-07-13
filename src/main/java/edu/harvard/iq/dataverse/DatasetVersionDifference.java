@@ -138,18 +138,18 @@ public final class DatasetVersionDifference {
         //sort via metadatablock order - citation first...
         for (List<DatasetField[]> blockList : detailDataByBlock) {
             Collections.sort(blockList, (DatasetField[] l1, DatasetField[] l2) -> {
-                DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
-                DatasetField dsfb = l2[0];
-                int a = dsfa.getDatasetFieldType().getDisplayOrder();
-                int b = dsfb.getDatasetFieldType().getDisplayOrder();
+                    DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
+                    DatasetField dsfb = l2[0];
+                    int a = dsfa.getDatasetFieldType().getDisplayOrder();
+                    int b = dsfb.getDatasetFieldType().getDisplayOrder();
                 return Integer.valueOf(a).compareTo(b);
             });
         }
         Collections.sort(detailDataByBlock, (List l1, List l2) -> {
-            DatasetField dsfa[] = (DatasetField[]) l1.get(0);
-            DatasetField dsfb[] = (DatasetField[]) l2.get(0);
-            int a = dsfa[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
-            int b = dsfb[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
+                DatasetField dsfa[] = (DatasetField[]) l1.get(0);
+                DatasetField dsfb[] = (DatasetField[]) l2.get(0);
+                int a = dsfa[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
+                int b = dsfb[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
             return Integer.valueOf(a).compareTo(b);
         });
         getTermsDifferences();
@@ -817,14 +817,14 @@ public final class DatasetVersionDifference {
             FileMetadata fm4 = l2;
             Long a = fm3.getDataFile().getId();
             Long b = fm4.getDataFile().getId();
-            if (a == null && b == null) {
-                return 0;
-            } else if (a == null) {
-                return 1;
-            } else if (b == null) {
-                return -1;
-            }
-            return a.compareTo(b);
+                if (a == null && b == null) {
+                    return 0;
+                } else if (a == null) {
+                    return 1;
+                } else if (b == null) {
+                    return -1;
+                }
+                return a.compareTo(b);
         });
 
         while (i < fileMetadatasOriginal.size()
@@ -1017,11 +1017,11 @@ public final class DatasetVersionDifference {
 
         if (fm2 == null) {
             if (fm1 == null) {
-                // this should never happen; but if it does,
-                // we return an empty diff object.
+            // this should never happen; but if it does,
+            // we return an empty diff object.
 
-                return fdi;
-            }
+            return fdi;
+        }
             fdi.setFileName1(fm1.getLabel());
             fdi.setFileType1(fm1.getDataFile().getFriendlyType());
             //fdi.setFileSize1(FileUtil. (new File(fm1.getDataFile().getFileSystemLocation()).length()));

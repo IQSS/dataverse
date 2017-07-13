@@ -25,7 +25,7 @@ public class DataTableImportDDI {
     public static final String VAR_INTERVAL_CONTIN = "contin";
     public static final String VAR_INTERVAL_NOMINAL = "nominal";
     public static final String VAR_INTERVAL_DICHOTOMOUS = "dichotomous";
-
+    
     public static final String VAR_TYPE_NUMERIC = "numeric";
     public static final String VAR_TYPE_CHARACTER = "character";
 
@@ -37,18 +37,18 @@ public class DataTableImportDDI {
     public static final String CAT_STAT_TYPE_FREQUENCY = "freq";
 
 
-
+    
     public static final String NOTE_TYPE_UNF = "VDC:UNF";
 
-    // Method processDataDscr takes XMLStreamReader xmlr that has just
-    // encountered the DDI tag <dataDscr>, processes all the variables and
-    // returns a Map of DataTables mapped by the strings found in the
-    // "location" attributes of the variables. The DataTables from the
-    // Map will need to be linked to the corresponding DataFiles by these
-    // file ids. The DataVariable objects found in this dataDscr section
-    // have already been linked to the corresponding DataTables in the Map.
+    // Method processDataDscr takes XMLStreamReader xmlr that has just 
+    // encountered the DDI tag <dataDscr>, processes all the variables and 
+    // returns a Map of DataTables mapped by the strings found in the 
+    // "location" attributes of the variables. The DataTables from the 
+    // Map will need to be linked to the corresponding DataFiles by these 
+    // file ids. The DataVariable objects found in this dataDscr section 
+    // have already been linked to the corresponding DataTables in the Map. 
     // -- L.A. 4.0 beta 9
-
+    
     private Map<String, DataTable> processDataDscr(XMLStreamReader xmlr) throws XMLStreamException {
         Map<String, DataTable> dataTablesMap = new HashMap<>();
         Map<String, Integer> varsPerFileMap = new HashMap<>();
@@ -77,7 +77,7 @@ public class DataTableImportDDI {
                             //  Roper puts some of their files into the <fileDscr>
                             //  section, even though there's no <dataDscr>
                             //  provided for them.
-                            //      -- L.A.
+                            //      -- L.A. 
                             // TODO: confirm that this works under 4.0 as is
                             // -- L.A. 4.0 beta 9
                         }
@@ -103,7 +103,7 @@ public class DataTableImportDDI {
 
         // interval type (DB value may be different than DDI value)
         String _interval = xmlr.getAttributeValue(null, "intrvl");
-
+        
         if (VAR_INTERVAL_CONTIN.equals(_interval)) {
             dv.setIntervalContinuous();
         } else if (VAR_INTERVAL_NOMINAL.equals(_interval)) {
@@ -243,38 +243,38 @@ public class DataTableImportDDI {
 
     private void processVarFormat(XMLStreamReader xmlr, DataVariable dv) throws XMLStreamException {
         String type = xmlr.getAttributeValue(null, "type");
-        type = (type == null ? VAR_TYPE_NUMERIC : type);
+        type = (type == null ? VAR_TYPE_NUMERIC : type); 
 
         if (VAR_TYPE_CHARACTER.equals(type)) {
             dv.setTypeCharacter();
         } else {
             dv.setTypeNumeric(); // default is numeric
         }
-
+        
         dv.setFormat( xmlr.getAttributeValue(null, "formatname") );
-
+        
         String varFormatCategoryAtt = xmlr.getAttributeValue(null, "category");
-        String varFormatText = parseText(xmlr);
+        String varFormatText = parseText(xmlr); 
 
-
-
-        /*
-         * A somewhat hackish way of recognizing "boolean" variables;
+        
+        
+        /* 
+         * A somewhat hackish way of recognizing "boolean" variables; 
          * This is not a universally accepted convention - we (the DVN team)
-         * simply decided to handle it this way. Booleans are treated simply
-         * as categorical variables with integers 0 and 1 for the values, and
+         * simply decided to handle it this way. Booleans are treated simply 
+         * as categorical variables with integers 0 and 1 for the values, and 
          * "FALSE" and "TRUE" for the labels. On top of that, we make a note
          * of the variable's "booleanness", in the DDI, like this:
          *      <varFormat ...>Boolean</varFormat>
-         * and in the database, by setting the value of dv.formatCategory to
-         * "Boolean".
-         * This information isn't used much in the application (as of May, 2013),
+         * and in the database, by setting the value of dv.formatCategory to 
+         * "Boolean". 
+         * This information isn't used much in the application (as of May, 2013), 
          * except in the subsetting: when the column is subset and re-imported
          * into an R data frame, we'll convert it into a logical vector.
-         * TODO:
-         * Add this to the export end! --L.A.
+         * TODO: 
+         * Add this to the export end! --L.A. 
          */
-
+        
         if ("Boolean".equalsIgnoreCase(varFormatText)) {
             dv.setFormatCategory( "Boolean" );
         } else {
@@ -294,32 +294,32 @@ public class DataTableImportDDI {
         VariableCategory cat = new VariableCategory();
         cat.setMissing( "Y".equals( xmlr.getAttributeValue(null, "missing") ) ); // default is N, so null sets missing to false
         cat.setDataVariable(dv);
-
+                
         if (dv.getCategories() == null || dv.getCategories().isEmpty()) {
             // if this is the first category we encounter, we'll assume that this
-            // categorical data/"factor" variable is ordered.
+            // categorical data/"factor" variable is ordered. 
             // But we'll switch it back to unordered later, if we encounter
-            // *any* categories with no order attribute defined.
-
+            // *any* categories with no order attribute defined. 
+            
             dv.setOrderedCategorical(true);
-        }
-
-
-        // Process extra level order values, if available;
+        } 
+        
+        
+        // Process extra level order values, if available; 
         // Currently (as of 3.6) only available in R Data ingests.
-        // TODO:
+        // TODO: 
         // revisit this (for 4.0) - we've discussed encoding this order
-        // simply by the order in which the categories appear in the
+        // simply by the order in which the categories appear in the 
         // DDI. (-- L.A. 4.0 beta 9)
-
-        String order = null;
+        
+        String order = null; 
         order = xmlr.getAttributeValue(null, "order");
-        Integer orderValue = null;
+        Integer orderValue = null; 
         if (order != null) {
             try {
                 orderValue = new Integer (order);
             } catch (NumberFormatException ex) {
-                orderValue = null;
+                orderValue = null; 
             }
         }
 
@@ -327,9 +327,9 @@ public class DataTableImportDDI {
             cat.setOrder(orderValue);
         } else if (!cat.isMissing()) {
             // Everey category of an ordered categorical ("factor") variable
-            // must have the order rank defined. Which means that if we
+            // must have the order rank defined. Which means that if we 
             // encounter a single NON-MISSING category with no ordered attribute, it
-            // will be processed as un-ordered.
+            // will be processed as un-ordered. 
 
             dv.setOrderedCategorical(false);
         }
@@ -370,7 +370,7 @@ public class DataTableImportDDI {
         }
     }
 
-
+        
     private String parseNoteByType (XMLStreamReader xmlr, String type) throws XMLStreamException {
         if (type.equalsIgnoreCase( xmlr.getAttributeValue(null, "type") ) ) {
             return parseText(xmlr);
@@ -398,13 +398,13 @@ public class DataTableImportDDI {
         }
         return tempString;
      }
-
+    
      /* We had to add this method because the ref getElementText has a bug where it
      * would append a null before the text, if there was an escaped apostrophe; it appears
      * that the code finds an null ENTITY_REFERENCE in this case which seems like a bug;
      * the workaround for the moment is to comment or handling ENTITY_REFERENCE in this case
      */
-     /*
+     /* 
       * TODO: do we still need this method? ( -- L.A. 4.0 beta 9)
       */
     private String getElementText(XMLStreamReader xmlr) throws XMLStreamException {

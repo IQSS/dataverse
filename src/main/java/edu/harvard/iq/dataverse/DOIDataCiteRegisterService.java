@@ -139,7 +139,7 @@ public class DOIDataCiteRegisterService {
 
     public DOIDataCiteRegisterCache findByDOI(String doi) {
         TypedQuery<DOIDataCiteRegisterCache> query = em.createNamedQuery("DOIDataCiteRegisterCache.findByDoi",
-                                                                         DOIDataCiteRegisterCache.class);
+                DOIDataCiteRegisterCache.class);
         query.setParameter("doi", doi);
         List<DOIDataCiteRegisterCache> rc = query.getResultList();
         if (rc.size() == 1) {

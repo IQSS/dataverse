@@ -501,7 +501,11 @@ public class AddReplaceFileHelper{
         }
         
         msgt("step_055_loadOptionalFileParams");
-        return this.step_055_loadOptionalFileParams(optionalFileParams);
+        if (!this.step_055_loadOptionalFileParams(optionalFileParams)){
+            return false;            
+        }
+        
+        return true;
     }
     
     
@@ -562,7 +566,7 @@ public class AddReplaceFileHelper{
             return false;
         }
         
-        if ((finalFileList==null)||(finalFileList.isEmpty())){
+        if ((finalFileList==null)||(finalFileList.size()==0)){
             throw new NullPointerException("finalFileList needs at least 1 file!!");
         }
         
@@ -633,7 +637,11 @@ public class AddReplaceFileHelper{
         }
 
         msgt("step_100_startIngestJobs");
-        return this.step_100_startIngestJobs();
+        if (!this.step_100_startIngestJobs()){
+            return false;            
+        }
+
+        return true;
     }
     
     
@@ -966,7 +974,7 @@ public class AddReplaceFileHelper{
         //
         if (!step_015_auto_check_permissions(existingFile.getOwner())){
             return false;
-        }
+        };
 
         
         
@@ -1694,7 +1702,7 @@ public class AddReplaceFileHelper{
      */
     public DataFile getFirstNewlyAddedFile(){
         
-        if ((newlyAddedFiles == null)||(newlyAddedFiles.isEmpty())){
+        if ((newlyAddedFiles == null)||(newlyAddedFiles.size() == 0)){
             return null;
         }
         return newlyAddedFiles.get(0);
@@ -1748,11 +1756,15 @@ public class AddReplaceFileHelper{
      * 
      */
     private boolean step_090_notifyUser(){
+        if (this.hasError()){
+            return false;
+        }
+       
         // Create a notification!
+       
         // skip for now, may be part of dataset update listening
         //
-
-        return !this.hasError();
+        return true;
     }
     
 
@@ -1822,7 +1834,7 @@ public class AddReplaceFileHelper{
      */
     public List<FileMetadata> getNewFileMetadatasBeforeSave(){
         
-        if (this.finalFileList.isEmpty()){
+        if (this.finalFileList.size() == 0){
             return null;
         }
         

@@ -69,7 +69,7 @@ public enum Permission implements java.io.Serializable {
      * Can this permission be applied only to {@link AuthenticatedUser}s, or to any user?
      */
     private final boolean requiresAuthenticatedUser;
-    
+
     @SafeVarargs
     Permission(String aHumanName, boolean authenticatedUserRequired, Class<? extends DvObject>... appliesToList) {
         humanName = aHumanName;

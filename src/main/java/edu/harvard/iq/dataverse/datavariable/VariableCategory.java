@@ -153,7 +153,7 @@ public class VariableCategory  implements Comparable, Serializable {
     // helper for html display  
     // [TODO: double-check if we still need this method in 4.0; -- L.A., jan. 2014] 
     private transient List charList;
-    
+
     /* 
      * Custom overrides for hashCode(), equals() and toString() methods:
      */

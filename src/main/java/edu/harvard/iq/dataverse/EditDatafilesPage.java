@@ -1435,7 +1435,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         JsonArray dbArray;
         try ( // -----------------------------------------------------------
-        // Read JSON object from the output of the DropBox Chooser:
+        // Read JSON object from the output of the DropBox Chooser: 
         // -----------------------------------------------------------
                 JsonReader dbJsonReader = Json.createReader(new StringReader(dropBoxSelection))) {
             dbArray = dbJsonReader.readArray();
@@ -1840,7 +1840,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 dataFile.setIngestDone();
             }
             // -----------------------------------------------------------
-            // Check for duplicates -- e.g. file is already in the dataset,
+            // Check for duplicates -- e.g. file is already in the dataset, 
             // or if another file with the same checksum has already been 
             // uploaded.
             // -----------------------------------------------------------
@@ -1861,7 +1861,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
                 // skip
             } else {
-                // OK, this one is not a duplicate, we want it.
+                // OK, this one is not a duplicate, we want it. 
                 // But let's check if its filename is a duplicate of another 
                 // file already uploaded, or already in the dataset:
                 dataFile.getFileMetadata().setLabel(duplicateFilenameCheck(dataFile.getFileMetadata()));

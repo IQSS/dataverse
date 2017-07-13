@@ -44,7 +44,7 @@ public class MocksFactory {
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
     
     public static Long nextId() {
-        return (long) NEXT_ID.incrementAndGet();
+        return Long.valueOf( NEXT_ID.incrementAndGet() );
     }
     
     public static Date date(int year, int month, int day ) {
@@ -83,7 +83,7 @@ public class MocksFactory {
         if ( df.getFileMetadatas() != null ) {
             df.getFileMetadatas().add( fmd );
         } else {
-            df.setFileMetadatas( new LinkedList<>(Arrays.asList(fmd)) );
+            df.setFileMetadatas( new LinkedList(Arrays.asList(fmd)) );
         }
         
         return fmd;

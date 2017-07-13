@@ -385,7 +385,7 @@ public class SearchIT {
                 .statusCode(200);
 
         File dataverseProjectLogo = new File(pathToFile);
-        String dataverseProjectLogoAsBase64;
+        String dataverseProjectLogoAsBase64 = null;
         dataverseProjectLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(dataverseProjectLogo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         if (dataverseProjectLogoAsBase64 == null) {

@@ -141,7 +141,7 @@ public class GuestbookResponseServiceBean {
             }*/
             
             retVal.add(singleResult);
-        } 
+        }
         
         return retVal;
         

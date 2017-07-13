@@ -1385,7 +1385,7 @@ public class ImportDDIServiceBean {
      }
      
     // #FIXME We should really type stabalize this.
-    private Object parseTextNew(XMLStreamReader xmlr, String endTag) throws XMLStreamException {
+     private Object parseTextNew(XMLStreamReader xmlr, String endTag) throws XMLStreamException {
         String returnString = "";
         Map<String, Object> returnMap = null;
 

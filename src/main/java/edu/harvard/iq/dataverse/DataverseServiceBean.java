@@ -386,10 +386,10 @@ public class DataverseServiceBean implements java.io.Serializable {
             String format = (String) result[1];
             switch (format) {
                 case "RECTANGLE":
-                    theme.setLogoFormat(DataverseTheme.ImageFormat.RECTANGLE);
+                theme.setLogoFormat(DataverseTheme.ImageFormat.RECTANGLE);
                     break;
                 case "SQUARE":
-                    theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
+                theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
                     break;
             }
         }

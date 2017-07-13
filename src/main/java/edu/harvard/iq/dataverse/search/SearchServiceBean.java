@@ -81,12 +81,12 @@ public class SearchServiceBean {
 
     public static final JsfHelper JH = new JsfHelper();
     private SolrServer solrServer;
-
+    
     @PostConstruct
     public void init(){
         solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
     }
-
+    
     @PreDestroy
     public void close(){
         if(solrServer != null){
@@ -118,7 +118,7 @@ public class SearchServiceBean {
     public SolrQueryResponse search(DataverseRequest dataverseRequest, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
         return search(dataverseRequest, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
     }
-
+    
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
@@ -136,7 +136,7 @@ public class SearchServiceBean {
      * @param paginationStart
      * @param onlyDatatRelatedToMe
      * @param numResultsPerPage
-     * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!)
+     * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!) 
      * @return
      * @throws SearchException
      */
@@ -296,7 +296,7 @@ public class SearchServiceBean {
         solrQuery.setRows(numResultsPerPage);
         logger.fine("Solr query:" + solrQuery);
 
-        // -----------------------------------
+        // -----------------------------------  
         // Make the solr query
         // -----------------------------------
         QueryResponse queryResponse;
@@ -442,12 +442,12 @@ public class SearchServiceBean {
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
             solrSearchResult.setDvTree(dvTree);
-
+            
             String originSource = (String) solrDocument.getFieldValue(SearchFields.METADATA_SOURCE);
             if (IndexServiceBean.HARVESTED.equals(originSource)) {
                 solrSearchResult.setHarvested(true);
             }
-
+            
             /**
              * @todo start using SearchConstants class here
              */
@@ -456,7 +456,7 @@ public class SearchServiceBean {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
                 // Do not set the ImageUrl, let the search include fragment fill in
                 // the thumbnail, similarly to how the dataset and datafile cards
-                // are handled.
+                // are handled. 
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
                 /**
                  * @todo Expose this API URL after "dvs" is changed to
@@ -469,11 +469,11 @@ public class SearchServiceBean {
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 //Image url now set via thumbnail api
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
-                // No, we don't want to set the base64 thumbnails here.
-                // We want to do it inside SearchIncludeFragment, AND ONLY once the rest of the
+                // No, we don't want to set the base64 thumbnails here. 
+                // We want to do it inside SearchIncludeFragment, AND ONLY once the rest of the 
                 // page has already loaded.
                 //DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
-                //if (datasetVersion != null){
+                //if (datasetVersion != null){                    
                 //    solrSearchResult.setDatasetThumbnail(datasetVersion.getDataset().getDatasetThumbnail(datasetVersion));
                 //}
                 /**
@@ -785,7 +785,7 @@ public class SearchServiceBean {
         }
 
         // ----------------------------------------------------
-        // (1) Is this a GuestUser?
+        // (1) Is this a GuestUser?  
         // Yes, see if GuestUser is part of any groups such as IP Groups.
         // ----------------------------------------------------
         if (user instanceof GuestUser) {
@@ -823,9 +823,9 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
 
         // ----------------------------------------------------
-        // (3) Is this a Super User?
+        // (3) Is this a Super User?  
         //      Yes, give back everything
-        // ----------------------------------------------------
+        // ----------------------------------------------------        
         if (au.isSuperuser()) {
             // dangerous because this user will be able to see
             // EVERYTHING in Solr with no regard to permissions!
@@ -837,7 +837,7 @@ public class SearchServiceBean {
         // (4) User is logged in AND onlyDatatRelatedToMe == true
         // Yes, give back everything -> the settings will be in
         //          the filterqueries given to search
-        // ----------------------------------------------------
+        // ----------------------------------------------------    
         if (onlyDatatRelatedToMe == true) {
             if (systemConfig.myDataDoesNotUsePermissionDocs()) {
                 logger.fine("old 4.2 behavior: MyData is not using Solr permission docs");

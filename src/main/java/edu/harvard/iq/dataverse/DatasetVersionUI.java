@@ -373,8 +373,8 @@ public class DatasetVersionUI implements Serializable {
 
         //sort via display order on dataset field
         Collections.sort(retList, (DatasetField d1, DatasetField d2) -> {
-            int a = d1.getDatasetFieldType().getDisplayOrder();
-            int b = d2.getDatasetFieldType().getDisplayOrder();
+                int a = d1.getDatasetFieldType().getDisplayOrder();
+                int b = d2.getDatasetFieldType().getDisplayOrder();
             return Integer.valueOf(a).compareTo(b);
         });
 
@@ -383,8 +383,8 @@ public class DatasetVersionUI implements Serializable {
     
     private List<DatasetField> sortDatasetFields (List<DatasetField> dsfList) {
         Collections.sort(dsfList, (DatasetField d1, DatasetField d2) -> {
-            int a = d1.getDatasetFieldType().getDisplayOrder();
-            int b = d2.getDatasetFieldType().getDisplayOrder();
+                int a = d1.getDatasetFieldType().getDisplayOrder();
+                int b = d2.getDatasetFieldType().getDisplayOrder();
             return Integer.valueOf(a).compareTo(b);
         });
         return dsfList;

@@ -1100,7 +1100,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             case MIME_TYPE_XLSX:
             case MIME_TYPE_SPSS_SAV:
             case MIME_TYPE_SPSS_POR:
-                return true;
+            return true;
         }
 
         return false;
@@ -1404,7 +1404,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * 
      * @param df
      * @return
-      */
+     */
     public boolean isReplacementFile(DataFile df) {
 
         if (df.getPreviousDataFileId() == null){

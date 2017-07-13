@@ -64,7 +64,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
         if (dataverseId == null){                    
             return null;
         }
-   
+       
         try{
             return em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList", DataverseFieldTypeInputLevel.class)
                     .setParameter("datasetFieldIdList", datasetFieldIdList)
