@@ -187,9 +187,9 @@ public class InReviewWorkflowIT {
         authorChecksForCommentsAgain.then().assertThat()
                 .body("data.notifications[0].type", equalTo("RETURNEDDS"))
                 // The author thinks, "This why we have curators!"
-                .body("data.notifications[0].reasonForReturn", equalTo("You forgot to upload any files."))
+                .body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 .body("data.notifications[1].type", equalTo("CREATEACC"))
-                .body("data.notifications[1].reasonForReturn", equalTo(null))
+                .body("data.notifications[1].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // The author upload the file she forgot.
@@ -214,12 +214,12 @@ public class InReviewWorkflowIT {
         curatorChecksNotifications.then().assertThat()
                 // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
                 .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
-                .body("data.notifications[0].reasonForReturn", equalTo("You forgot to upload any files."))
+                .body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
-                // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. For now we are simply always showing the latest reason for return.
-                .body("data.notifications[1].reasonForReturn", equalTo("You forgot to upload any files."))
+                // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. For now we are simply always showing all the reasons for return. They start to stack up. That way you can see the history.
+                .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 .body("data.notifications[2].type", equalTo("CREATEACC"))
-                .body("data.notifications[2].reasonForReturn", equalTo(null))
+                .body("data.notifications[2].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         String reasonForReturn2 = "A README is required.";
@@ -234,12 +234,14 @@ public class InReviewWorkflowIT {
         authorChecksForComments3.prettyPrint();
         authorChecksForComments3.then().assertThat()
                 .body("data.notifications[0].type", equalTo("RETURNEDDS"))
-                .body("data.notifications[0].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
+                .body("data.notifications[0].reasonsForReturn[1].message", equalTo("A README is required."))
                 .body("data.notifications[1].type", equalTo("RETURNEDDS"))
-                // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. For now we are always showing the most recent reason for return.
-                .body("data.notifications[1].reasonForReturn", equalTo("A README is required."))
+                // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. We're showing the history.
+                .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
+                .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
                 .body("data.notifications[2].type", equalTo("CREATEACC"))
-                .body("data.notifications[2].reasonForReturn", equalTo(null))
+                .body("data.notifications[2].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         String pathToReadme = "README.md";
@@ -263,14 +265,17 @@ public class InReviewWorkflowIT {
         curatorHopesTheReadmeIsThereNow.then().assertThat()
                 // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
                 .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
-                .body("data.notifications[0].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
+                .body("data.notifications[0].reasonsForReturn[1].message", equalTo("A README is required."))
                 .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
-                .body("data.notifications[1].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
+                .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
                 .body("data.notifications[2].type", equalTo("SUBMITTEDDS"))
-                // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. For now we are simply always showing the latest reason for return.
-                .body("data.notifications[2].reasonForReturn", equalTo("A README is required."))
+                // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. We're showing the history.
+                .body("data.notifications[2].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
+                .body("data.notifications[2].reasonsForReturn[1].message", equalTo("A README is required."))
                 .body("data.notifications[3].type", equalTo("CREATEACC"))
-                .body("data.notifications[3].reasonForReturn", equalTo(null))
+                .body("data.notifications[3].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // The curator publishes the dataverse.
@@ -291,12 +296,14 @@ public class InReviewWorkflowIT {
                 // FIXME: Why is this ASSIGNROLE and not "your dataset has been published"?
                 .body("data.notifications[0].type", equalTo("ASSIGNROLE"))
                 .body("data.notifications[1].type", equalTo("RETURNEDDS"))
-                .body("data.notifications[1].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
+                .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
                 .body("data.notifications[2].type", equalTo("RETURNEDDS"))
                 // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. For now we are always showing the most recent reason for return.
-                .body("data.notifications[2].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[2].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
+                .body("data.notifications[2].reasonsForReturn[1].message", equalTo("A README is required."))
                 .body("data.notifications[3].type", equalTo("CREATEACC"))
-                .body("data.notifications[3].reasonForReturn", equalTo(null))
+                .body("data.notifications[3].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // These println's are here in case you want to log into the GUI to see what notifications look like.

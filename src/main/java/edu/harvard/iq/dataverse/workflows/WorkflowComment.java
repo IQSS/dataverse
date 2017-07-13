@@ -59,13 +59,14 @@ public class WorkflowComment implements Serializable {
     // TODO: How should we best associate these entries to notifications, which can go to multiple authors and curators?
 //    @Transient
 //    private List<UserNotification> notifications;
-    public WorkflowComment(WorkflowAction workflowAction, String message) {
+    public WorkflowComment(WorkflowAction workflowAction, String message, AuthenticatedUser authenticatedUser) {
         this.type = workflowAction.getType();
         if (this.type.equals(WorkflowAction.Type.RETURN_TO_AUTHOR)) {
             DatasetVersion datasetVersionFromAction = (DatasetVersion) workflowAction.getTarget();
             this.datasetVersion = datasetVersionFromAction;
         }
         this.message = message;
+        this.authenticatedUser = authenticatedUser;
         this.created = new Timestamp(new Date().getTime());
     }
 

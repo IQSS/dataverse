@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
@@ -656,10 +657,10 @@ public class Datasets extends AbstractApiBean {
             if (numCharsProvided > numCharsAllowed) {
                 return error(Response.Status.BAD_REQUEST, "You supplied " + numCharsProvided + " in the reason for return but only " + numCharsAllowed + " characters are allowed.");
             }
-            DatasetVersion datasetVersion = dataset.getLatestVersion();
-            Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(findUserOrDie()), dataset));
+            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset));
             DatasetVersion latestVersion = updatedDataset.getLatestVersion();
-            WorkflowComment workflowComment = new WorkflowComment(new WorkflowAction(latestVersion, RETURN_TO_AUTHOR), reasonForReturn);
+            WorkflowComment workflowComment = new WorkflowComment(new WorkflowAction(latestVersion, RETURN_TO_AUTHOR), reasonForReturn, authenticatedUser);
             datasetSvc.saveWorkflowComment(workflowComment);
             boolean inReview = latestVersion.isInReview();
             JsonObjectBuilder result = Json.createObjectBuilder();

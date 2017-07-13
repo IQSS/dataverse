@@ -14,6 +14,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import javax.json.JsonValue;
 
 @Path("notifications")
 public class Notifications extends AbstractApiBean {
@@ -39,11 +40,15 @@ public class Notifications extends AbstractApiBean {
         List<UserNotification> notifications = userNotificationSvc.findByUser(authenticatedUser.getId());
         for (UserNotification notification : notifications) {
             NullSafeJsonBuilder notificationObjectBuilder = jsonObjectBuilder();
+            JsonArrayBuilder reasonsForReturn = Json.createArrayBuilder();
             Type type = notification.getType();
             notificationObjectBuilder.add("type", type.toString());
             if (Type.RETURNEDDS.equals(type) || Type.SUBMITTEDDS.equals(type)) {
-                // TODO: consider returning all reasons instead, so you can see the history.
-                notificationObjectBuilder.add("reasonForReturn", getReasonForReturn(notification));
+                JsonArrayBuilder reasons = getReasonsForReturn(notification);
+                for (JsonValue reason : reasons.build()) {
+                    reasonsForReturn.add(reason);
+                }
+                notificationObjectBuilder.add("reasonsForReturn", reasonsForReturn);
             }
             jsonArrayBuilder.add(notificationObjectBuilder);
         }
@@ -51,9 +56,9 @@ public class Notifications extends AbstractApiBean {
         return ok(result);
     }
 
-    private String getReasonForReturn(UserNotification notification) {
+    private JsonArrayBuilder getReasonsForReturn(UserNotification notification) {
         Long objectId = notification.getObjectId();
-        return WorkflowUtil.getMostRecentWorkflowComment(datasetVersionSvc.find(objectId));
+        return WorkflowUtil.getAllWorkflowComments(datasetVersionSvc.find(objectId));
     }
 
 }
