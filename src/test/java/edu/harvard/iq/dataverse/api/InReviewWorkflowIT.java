@@ -187,7 +187,6 @@ public class InReviewWorkflowIT {
         authorChecksForCommentsAgain.then().assertThat()
                 .body("data.notifications[0].type", equalTo("RETURNEDDS"))
                 // The author thinks, "This why we have curators!"
-                // FIXME: change to expect curator to also see the reason for return
                 .body("data.notifications[0].reasonForReturn", equalTo("You forgot to upload any files."))
                 .body("data.notifications[1].type", equalTo("CREATEACC"))
                 .body("data.notifications[1].reasonForReturn", equalTo(null))
@@ -217,9 +216,61 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
                 .body("data.notifications[0].reasonForReturn", equalTo("You forgot to upload any files."))
                 .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
+                // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. For now we are simply always showing the latest reason for return.
                 .body("data.notifications[1].reasonForReturn", equalTo("You forgot to upload any files."))
                 .body("data.notifications[2].type", equalTo("CREATEACC"))
                 .body("data.notifications[2].reasonForReturn", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+        String reasonForReturn2 = "A README is required.";
+        jsonObjectBuilder.add("reasonForReturn", reasonForReturn2);
+        Response returntoAuthor2 = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
+        returntoAuthor2.prettyPrint();
+        returntoAuthor2.then().assertThat()
+                .body("data.inReview", equalTo(false))
+                .statusCode(OK.getStatusCode());
+
+        Response authorChecksForComments3 = UtilIT.getNotifications(authorApiToken);
+        authorChecksForComments3.prettyPrint();
+        authorChecksForComments3.then().assertThat()
+                .body("data.notifications[0].type", equalTo("RETURNEDDS"))
+                .body("data.notifications[0].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[1].type", equalTo("RETURNEDDS"))
+                // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. For now we are always showing the most recent reason for return.
+                .body("data.notifications[1].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[2].type", equalTo("CREATEACC"))
+                .body("data.notifications[2].reasonForReturn", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+        String pathToReadme = "README.md";
+        Response authorUploadsReadme = UtilIT.uploadFileViaNative(datasetId.toString(), pathToReadme, authorApiToken);
+        authorUploadsReadme.prettyPrint();
+        authorUploadsReadme.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data.files[0].label", equalTo("README.md"))
+                .statusCode(OK.getStatusCode());
+
+        // The author re-submits.
+        Response submit3 = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
+        submit3.prettyPrint();
+        submit3.then().assertThat()
+                .body("data.inReview", equalTo(true))
+                .statusCode(OK.getStatusCode());
+
+        // The curator checks to see if the author has resubmitted yet.
+        Response curatorHopesTheReadmeIsThereNow = UtilIT.getNotifications(curatorApiToken);
+        curatorHopesTheReadmeIsThereNow.prettyPrint();
+        curatorHopesTheReadmeIsThereNow.then().assertThat()
+                // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
+                .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[0].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[1].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[2].type", equalTo("SUBMITTEDDS"))
+                // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. For now we are simply always showing the latest reason for return.
+                .body("data.notifications[2].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[3].type", equalTo("CREATEACC"))
+                .body("data.notifications[3].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // The curator publishes the dataverse.
@@ -237,11 +288,15 @@ public class InReviewWorkflowIT {
         Response authorsChecksForCommentsPostPublication = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPostPublication.prettyPrint();
         authorsChecksForCommentsPostPublication.then().assertThat()
+                // FIXME: Why is this ASSIGNROLE and not "your dataset has been published"?
                 .body("data.notifications[0].type", equalTo("ASSIGNROLE"))
                 .body("data.notifications[1].type", equalTo("RETURNEDDS"))
-                .body("data.notifications[1].reasonForReturn", equalTo("You forgot to upload any files."))
-                .body("data.notifications[2].type", equalTo("CREATEACC"))
-                .body("data.notifications[2].reasonForReturn", equalTo(null))
+                .body("data.notifications[1].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[2].type", equalTo("RETURNEDDS"))
+                // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. For now we are always showing the most recent reason for return.
+                .body("data.notifications[2].reasonForReturn", equalTo("A README is required."))
+                .body("data.notifications[3].type", equalTo("CREATEACC"))
+                .body("data.notifications[3].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
         // These println's are here in case you want to log into the GUI to see what notifications look like.

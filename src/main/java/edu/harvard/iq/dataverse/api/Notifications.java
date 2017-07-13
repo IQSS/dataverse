@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -12,6 +12,8 @@ import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 @Path("notifications")
 public class Notifications extends AbstractApiBean {
@@ -36,39 +38,22 @@ public class Notifications extends AbstractApiBean {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         List<UserNotification> notifications = userNotificationSvc.findByUser(authenticatedUser.getId());
         for (UserNotification notification : notifications) {
-            JsonObjectBuilder notificationObjectBuilder = Json.createObjectBuilder();
+            NullSafeJsonBuilder notificationObjectBuilder = jsonObjectBuilder();
             Type type = notification.getType();
             notificationObjectBuilder.add("type", type.toString());
-            if (Type.RETURNEDDS.equals(type)) {
-                Long objectId = notification.getObjectId();
-                DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
-                if (datasetVersion != null) {
-                    try {
-                        String message = datasetVersion.getWorkflowComments().get(0).getMessage();
-                        if (message != null) {
-                            notificationObjectBuilder.add("reasonForReturn", message);
-                        }
-                    } catch (Exception e) {
-                    }
-                }
-            }
-            if (Type.SUBMITTEDDS.equals(type)) {
-                try {
-                    Long objectId = notification.getObjectId();
-                    DatasetVersion datasetVersion = datasetVersionSvc.find(objectId);
-                    if (datasetVersion != null) {
-                        String message = datasetVersion.getWorkflowComments().get(0).getMessage();
-                        if (message != null) {
-                            notificationObjectBuilder.add("reasonForReturn", message);
-                        }
-                    }
-                } catch (Exception e) {
-                }
+            if (Type.RETURNEDDS.equals(type) || Type.SUBMITTEDDS.equals(type)) {
+                // TODO: consider returning all reasons instead, so you can see the history.
+                notificationObjectBuilder.add("reasonForReturn", getReasonForReturn(notification));
             }
             jsonArrayBuilder.add(notificationObjectBuilder);
         }
         JsonObjectBuilder result = Json.createObjectBuilder().add("notifications", jsonArrayBuilder);
         return ok(result);
+    }
+
+    private String getReasonForReturn(UserNotification notification) {
+        Long objectId = notification.getObjectId();
+        return WorkflowUtil.getMostRecentWorkflowComment(datasetVersionSvc.find(objectId));
     }
 
 }
