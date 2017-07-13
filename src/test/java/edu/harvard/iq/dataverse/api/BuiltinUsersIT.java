@@ -138,13 +138,13 @@ public class BuiltinUsersIT {
     }
     
     @Test
-    public void testGoodUsernameWithWeirdCharacters() {
+    public void testAccentInUsername() {
         String randomUsername = getRandomUsername();
-        String randomUsernameWeird = "õÂ" + randomUsername; //+ "爸好"; TODO: Fix -- somehow turn into ?? in API call
+        String randomUsernameWeird = "õÂ" + randomUsername;
         String email = randomUsername + "@mailinator.com";
         Response createUserResponse = createUser(randomUsernameWeird, "firstName", "lastName", email);
         createUserResponse.prettyPrint();
-        assertEquals(200, createUserResponse.statusCode());
+        assertEquals(400, createUserResponse.statusCode());
     }
 
     @Test
