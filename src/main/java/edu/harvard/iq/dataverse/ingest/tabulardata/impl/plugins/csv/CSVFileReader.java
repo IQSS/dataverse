@@ -19,12 +19,8 @@
  */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
-import java.io.*;
 import java.io.FileReader;
 import java.io.InputStreamReader;
-import java.text.*;
-import java.util.logging.*;
-import java.util.*;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -33,9 +29,26 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.csv.CSVParser;
@@ -47,9 +60,9 @@ import org.apache.commons.csv.CSVRecord;
  * plain CSV file with a variable name header.
  *
  *
- * @author Leonid Andreev
+ * @author Oscar Smith
  *
- * This implementation uses external R-Scripts to do the bulk of the processing.
+ * This implementation uses the Apache CSV Parser
  */
 public class CSVFileReader extends TabularDataFileReader {
 
@@ -175,6 +188,7 @@ public class CSVFileReader extends TabularDataFileReader {
         File firstPassTempFile = File.createTempFile("firstpass-", ".csv");
 
         try (CSVPrinter csvFilePrinter = new CSVPrinter(
+                // TODO allow other parsers of tabular data to use this parser by changin inFormat
                 new FileWriter(firstPassTempFile.getAbsolutePath()), inFormat)) {
             //Write  headers
             csvFilePrinter.printRecord(headers.keySet());
@@ -196,9 +210,7 @@ public class CSVFileReader extends TabularDataFileReader {
                                                || (firstNumCharSet.contains(varString.charAt(0))
                                                    && StringUtils.isNumeric(varString.substring(1))));
                     if (isNumericVariable[i]) {
-                        // If we haven't given up on the "numeric" status of this
-                        // variable, let's perform some tests on it, and see if
-                        // this value is still a parsable number:
+                        // If variable might be "numeric" test to see if this value is a parsable number:
                         if (varString != null && !varString.isEmpty()) {
 
                             boolean isNumeric = false;
@@ -216,17 +228,16 @@ public class CSVFileReader extends TabularDataFileReader {
                                     Double testDoubleValue = new Double(varString);
                                     continue;
                                 } catch (NumberFormatException ex) {
-                                    // the token failed to parse as a double number;
-                                    // so we'll have to assume it's just a string variable.
+                                    // the token failed to parse as a double
+                                    // so the column is a string variable.
                                 }
                             }
                             isNumericVariable[i] = false;
                         }
                     }
 
-                    // And if we have concluded that this is not a numeric column,
-                    // let's see if we can parse the string token as a date or
-                    // a date-time value:
+                    // If this is not a numeric column, see if it is a date collumn
+                    // by parsing the cell as a date or date-time value:
                     if (!isNumericVariable[i]) {
 
                         Date dateResult = null;
@@ -339,12 +350,6 @@ public class CSVFileReader extends TabularDataFileReader {
                     throw new IOException(BundleUtil.getStringFromBundle("ingest.csv.recordMismatch", args));
                 }
 
-                // TODO:
-                // isolate CSV parsing into its own method/class, to avoid
-                // code duplication in the 2 passes, above;
-                // do not save the result of the 1st pass - simply reopen the
-                // original file (?).
-                // -- L.A. 4.0.2/4.1
                 for (int i = 0; i < headers.size(); i++) {
                     String varString = record.get(i);
                     if (isNumericVariable[i]) {
@@ -449,7 +454,7 @@ public class CSVFileReader extends TabularDataFileReader {
         finalOut.close();
         parser.close();
         dbglog.fine("Tmp File: " + firstPassTempFile);
-        // For debugging, you should remove this line.
+        // Firstpass file is deleted to prevent tmp from filling up.
         firstPassTempFile.delete();
         if (dataTable.getCaseQuantity().intValue() != linecount) {
             List<String> args = Arrays.asList(new String[]{"" + dataTable.getCaseQuantity().intValue(),
