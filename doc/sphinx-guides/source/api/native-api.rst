@@ -301,7 +301,7 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
 Submit for Review
 ^^^^^^^^^^^^^^^^^
 
-When dataset authors do not have permisson to publish directly, they can click the "Submit for Review" button in the web interface (see :doc:`/user/dataset-management`), or perform the equivalent operation via API::
+When dataset authors do not have permission to publish directly, they can click the "Submit for Review" button in the web interface (see :doc:`/user/dataset-management`), or perform the equivalent operation via API::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/submitForReview?persistentId=$DOI_OR_HANDLE_OF_DATASET"
 
