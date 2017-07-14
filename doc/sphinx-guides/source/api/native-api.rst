@@ -301,26 +301,28 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
 Submit for Review
 ^^^^^^^^^^^^^^^^^
 
-When dataset authors do not have permisson to publish directly, they can click the "Submit for Review" button in the web interface, or perform the equivalent operation via API::
+When dataset authors do not have permisson to publish directly, they can click the "Submit for Review" button in the web interface (see the :doc:`/user/dataset-management` section of the User Guide), or perform the equivalent operation via API::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/submitForReview?persistentId=$DOI_OR_HANDLE_OF_DATASET"
 
-Note that the person who needs to do the review (often a curator or journal editor) can check their notifications periodically via API. See the :ref:`Notifications` section for details.
+The people who need to review the dataset (often curators or journal editors) can check their notifications periodically via API to see if any new datasets have been submitted for review and need their attention. See the :ref:`Notifications` section for details. Alternatively, these curators can simply check their email or notifications to know when datasets have been submitted (or resubmitted) for review.
 
 Return to Author
 ^^^^^^^^^^^^^^^^
 
-After the curators or journal editors have reviewed a submitted dataset (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to the author with a "reason for return".
+After the curators or journal editors have reviewed a dataset that has been submitted for review (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to the authors. In the web interface there is a "Return to Author" button to click (see the :doc:`/user/dataset-management` section of the User Guide) but there is no box to type into to tell they authors **why** the dataset is being returned. For now, instead of clicking the "Return to Author" button, a curator can write a "reason for return" into the database via API (described below) that the authors can read via the :ref:`Notifications` API.
 
-First create a JSON file that contains the reason for return:
+Here's how curators can send a "reason for return" to the dataset authors. First, the curator creates a JSON file that contains the reason for return:
 
 .. literalinclude:: ../_static/api/reason-for-return.json
 
-In the example below, we have saved the JSON file as ``reason-for-return.json`` in our current working directory. Then, we send this JSON file to the ``returnToAuthor`` API endpoint::
+In the example below, the curators has saved the JSON file as :download:`reason-for-return.json <../_static/api/reason-for-return.json>` in their current working directory. Then, the curators sends this JSON file to the ``returnToAuthor`` API endpoint like this::
 
     curl -H "Content-type:application/json" -d @reason-for-return.json -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/returnToAuthor?persistentId=$DOI_OR_HANDLE_OF_DATASET"
 
-Note that authors can check their notifications periodically via API to see when the curator or journal editor has published the dataset or returned the dataset for further modifications. See the :ref:`Notifications` section for details.
+The review process can sometimes resemble a tennis match with the authors submitting and resubmiting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
+
+The authors of the datasets and all curators on the dataset will receive emails and in-app notifications that the dataset has been returned but they will not contain the "reason for return". The reason for return can be read by both authors and curators using the :ref:`Notifications` API.
 
 Files
 ~~~~~~~~~~~
@@ -531,7 +533,7 @@ Get All Notifications by User
 
 Each user can get a dump of their notifications by passing in their API token::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" https://example.dataverse.edu/api/notifications/all
+    curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
 
 The notifications endpoint is somewhat experimental and was added to help support the "Submit for Review" and "Return to Author" workflow. The idea is that a curator or author could write a script to poll periodically for notifications to find out when action is required on their part.
 
@@ -601,7 +603,9 @@ List users with the options to search and "page" through results. Only accessibl
 
 * ``searchTerm`` A string that matches the beginning of a user identifier, first name, last name or email address.
 * ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
-* ``selectedPage`` The page of results to return.  The default is 1. 
+* ``selectedPage`` The page of results to return.  The default is 1.
+
+::
 
     GET http://$SERVER/api/admin/list-users
 
@@ -611,7 +615,7 @@ Sample output appears below.
 * When multiple pages of results exist, the ``selectedPage`` parameters may be specified. 
 * Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.          
 
-.. code-block:: json
+.. code-block:: text
 
     {
         "status":"OK",
