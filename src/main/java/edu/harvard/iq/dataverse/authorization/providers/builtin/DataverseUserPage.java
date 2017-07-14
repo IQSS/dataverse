@@ -669,11 +669,7 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public String getReasonForReturn(DatasetVersion datasetVersion) {
-        // FIXME: get from Comment object.
-        String returnReason = null;
-        if (returnReason != null) {
-            return BundleUtil.getStringFromBundle("wasReturnedReason") + " " + returnReason;
-        }
+        // TODO: implement me! See getReasonsForReturn in api/Notifications.java
         return "";
     }
 }
