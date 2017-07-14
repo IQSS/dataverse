@@ -50,7 +50,7 @@ public class DataAccess {
         
         // TODO: add a provision to check storage identifiers for datasets
        
-        DataFile df= (DataFile)dvObject;
+        DataFile df = (DataFile)dvObject;
         if (dvObject == null
                 || df.getStorageIdentifier() == null
                 || df.getStorageIdentifier().equals("")) {

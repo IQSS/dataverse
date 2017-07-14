@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,7 +63,15 @@ public class SwiftAccessIO extends DataFileIO {
     private StoredObject swiftFileObject = null;
     private Container swiftContainer = null;
     
+    
     private static int LIST_PAGE_LIMIT = 100;  
+    private DvObjectType dvObjectType;
+    
+    public enum DvObjectType {
+        dataset,
+        datafile,
+        dataverse
+    };
 
     @Override
     public boolean canRead() {
@@ -72,27 +83,32 @@ public class SwiftAccessIO extends DataFileIO {
         return isWriteAccess;
     }
     
-    @Override 
-    public void openDvObject(DataAccessOption... options) throws IOException{
-        if (this.getDvObject().isInstanceofDataFile()) {
-            this.open(options);
-            //TODO: create openDataFile method
+    @Override
+    public DvObjectType getDvObjectType() {
+        if (getDvObject().isInstanceofDataFile()) {
+            dvObjectType = DvObjectType.datafile;
+            
         }
-        else if (this.getDvObject().isInstanceofDataset()){
-            //TODO create openDataset method
+        else if (getDvObject().isInstanceofDataset()){
+            dvObjectType = DvObjectType.dataset;
         }
+        else if (getDvObject().isInstanceofDataverse()){
+            dvObjectType = DvObjectType.dataverse;
+        }
+        logger.info("dvObjectType: " + dvObjectType.toString());
+        return dvObjectType; 
     }
+    
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
-
-        DataFile dataFile = (DataFile)this.getDvObject();
+        DataFile dataFile = null;
+        Dataset dataset = null;
+        Dataverse dataverse = null;
         DataAccessRequest req = this.getRequest();
-
-        if (req != null && req.getParameter("noVarHeader") != null) {
-            this.setNoVarHeader(true);
-        }
-
+        
+        dvObjectType = this.getDvObjectType();
+        
         if (isWriteAccessRequested(options)) {
             isWriteAccess = true;
             isReadAccess = false;
@@ -101,42 +117,77 @@ public class SwiftAccessIO extends DataFileIO {
             isReadAccess = true;
         }
 
-        if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
-            throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+        switch(dvObjectType){
+            case datafile:
+                dataFile = (DataFile)this.getDvObject();
+
+                if (req != null && req.getParameter("noVarHeader") != null) {
+                    this.setNoVarHeader(true);
+                }
+
+                if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
+                    throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+                }
+
+                if (isReadAccess) {
+                    InputStream fin = openSwiftFileAsInputStream();
+
+                    if (fin == null) {
+                        throw new IOException("Failed to open Swift file " + getStorageLocation());
+                    }
+
+                    this.setInputStream(fin);
+                    setChannel(Channels.newChannel(fin));
+
+                    if (dataFile.getContentType() != null
+                            && dataFile.getContentType().equals("text/tab-separated-values")
+                            && dataFile.isTabularData()
+                            && dataFile.getDataTable() != null
+                            && (!this.noVarHeader())) {
+
+                        List datavariables = dataFile.getDataTable().getDataVariables();
+                        String varHeaderLine = generateVariableHeader(datavariables);
+                        this.setVarHeader(varHeaderLine);
+                    }
+
+                } else if (isWriteAccess) {
+                    swiftFileObject = initializeSwiftFileObject(true);
+                }
+
+                this.setMimeType(dataFile.getContentType());
+
+                try {
+                    this.setFileName(dataFile.getFileMetadata().getLabel());
+                } catch (Exception ex) {
+                    this.setFileName("unknown");
+                }
+                break;
+            case dataset:
+                //we are uploading a dataset related auxilary file
+                //such as a dataset thumbnail or a metadata export
+                dataset = (Dataset)this.getDvObject();
+                if (isReadAccess) {
+                    //TODO: fix this
+                    InputStream fin = openSwiftFileAsInputStream();
+
+                    if (fin == null) {
+                        throw new IOException("Failed to open Swift file " + getStorageLocation());
+                    }
+
+                    this.setInputStream(fin);
+                    setChannel(Channels.newChannel(fin));
+                } else if (isWriteAccess) {
+                    swiftFileObject = initializeSwiftFileObject(true);
+                }
+                break;
+            case dataverse:
+                dataverse = (Dataverse)this.getDvObject();
+                break;
+            default:
+                throw new IOException("Data Access: Invalid DvObject type");
         }
-
-        if (isReadAccess) {
-            InputStream fin = openSwiftFileAsInputStream();
-
-            if (fin == null) {
-                throw new IOException("Failed to open Swift file " + getStorageLocation());
-            }
-
-            this.setInputStream(fin);
-            setChannel(Channels.newChannel(fin));
-            
-            if (dataFile.getContentType() != null
-                    && dataFile.getContentType().equals("text/tab-separated-values")
-                    && dataFile.isTabularData()
-                    && dataFile.getDataTable() != null
-                    && (!this.noVarHeader())) {
-
-                List datavariables = dataFile.getDataTable().getDataVariables();
-                String varHeaderLine = generateVariableHeader(datavariables);
-                this.setVarHeader(varHeaderLine);
-            }
-
-        } else if (isWriteAccess) {
-            swiftFileObject = initializeSwiftFileObject(true);
-        }
-
-        this.setMimeType(dataFile.getContentType());
         
-        try {
-            this.setFileName(dataFile.getFileMetadata().getLabel());
-        } catch (Exception ex) {
-            this.setFileName("unknown");
-        }
+        
     }
 
     // DataFileIO method for copying a local Path (for ex., a temp file), into this DataAccess location:
@@ -421,131 +472,267 @@ public class SwiftAccessIO extends DataFileIO {
     
     // Auxilary helper methods, Swift-specific:
     
+    //TODO: rename initializeSwiftObject 
     
     private StoredObject initializeSwiftFileObject(boolean writeAccess) throws IOException {
         return initializeSwiftFileObject(writeAccess, null);
     }
     
     private StoredObject initializeSwiftFileObject(boolean writeAccess, String auxItemTag) throws IOException {
-        DataFile dataFile = (DataFile)this.getDvObject();
-        String storageIdentifier = dataFile.getStorageIdentifier();
-
+        dvObjectType = this.getDvObjectType();
         String swiftEndPoint = null;
         String swiftContainerName = null;
         String swiftFileName = null;
-
-        
-        if (storageIdentifier.startsWith("swift://")) {
-            // This is a call on an already existing swift object. 
- 
-            String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
-            
-            if (swiftStorageTokens.length != 3) {
-                // bad storage identifier
-                throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
-            }
-
-            swiftEndPoint = swiftStorageTokens[0];
-            swiftContainerName = swiftStorageTokens[1];
-            swiftFileName = swiftStorageTokens[2];
-
-            if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName)) {
-                // all of these things need to be specified, for this to be a valid Swift location
-                // identifier.
-                throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
-            }
-            
-            if (auxItemTag != null) {
-                swiftFileName = swiftFileName.concat("."+auxItemTag);
-            }
-        } else if (this.isReadAccess) {
-            // An attempt to call Swift driver,  in a Read mode on a non-swift stored datafile
-            // object!
-            throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object.");
-        } else if (this.isWriteAccess) {
-            Properties p = getSwiftProperties();
-            swiftEndPoint = p.getProperty("swift.default.endpoint");
-
-            //swiftFolderPath = dataFile.getOwner().getDisplayName();
-            String swiftFolderPathSeparator = "-";
-            String authorityNoSlashes = dataFile.getOwner().getAuthority().replace(dataFile.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-            swiftFolderPath = dataFile.getOwner().getProtocol() + swiftFolderPathSeparator +
-                authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + dataFile.getOwner().getIdentifier();
-
-            swiftFileName = storageIdentifier;
-            //setSwiftContainerName(swiftFolderPath);
-            //swiftFileName = dataFile.getDisplayName();
-            //Storage Identifier is now updated after the object is uploaded on Swift.
-            dataFile.setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath+":"+swiftFileName);
-        } else {
-            throw new IOException("SwiftAccessIO: unknown access mode.");
-        }
-        // Authenticate with Swift: 
-
-        // should we only authenticate when account == null? 
-        
-        if (this.account == null) {
-            account = authenticateWithSwift(swiftEndPoint);
-        }
-
-        /*
-        The containers created is swiftEndPoint concatenated with the swiftContainerName
-        property. Creating container with certain names throws 'Unable to create
-        container' error on Openstack. 
-        Any datafile with http://rdgw storage identifier i.e present on Object 
-        store service endpoint already only needs to look-up for container using
-        just swiftContainerName which is the concatenated name.
-        In future, a container for the endpoint can be created and for every
-        other swiftContainerName Object Store pseudo-folder can be created, which is
-        not provide by the joss Java swift library as of yet.
-         */
-
-        if (storageIdentifier.startsWith("swift://")) {
-            // An existing swift object; the container must already exist as well.
-            this.swiftContainer = account.getContainer(swiftContainerName);
-        } else {
-            // This is a new object being created.
-            this.swiftContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
-        }
-
-        if (!this.swiftContainer.exists()) {
-            if (writeAccess) {
-                // dataContainer.create();
-                 try {
-                     //creates a public data container
-                     this.swiftContainer.makePublic();
-                 }
-                 catch (Exception e){
-                     //e.printStackTrace();
-                     logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
-                 }
-            } else {
-                // This is a fatal condition - it has to exist, if we were to 
-                // read an existing object!
-                throw new IOException("SwiftAccessIO: container " + swiftContainerName + " does not exist.");
-            }
-        }
-
-        StoredObject fileObject = this.swiftContainer.getObject(swiftFileName);
-        
-        
-        // If this is the main, primary datafile object (i.e., not an auxiliary 
-        // object for a primary file), we also set the file download url here: 
-        if (auxItemTag == null) {
-            setRemoteUrl(getSwiftFileURI(fileObject));
-            logger.fine(getRemoteUrl() + " success; write mode: "+writeAccess);
-        } else {
-            logger.fine("sucessfully opened AUX object "+auxItemTag+" , write mode: "+writeAccess);
-        }
-        
-        if (!writeAccess && !fileObject.exists()) {
-            throw new FileNotFoundException("SwiftAccessIO: File object " + swiftFileName + " does not exist (Dataverse datafile id: " + dataFile.getId());
-        }
-
+        StoredObject fileObject = null;
         List<String> auxFiles = null; 
         
-        return fileObject;
+        switch (dvObjectType) {
+            case datafile:
+                DataFile dataFile = (DataFile)this.getDvObject();
+                String storageIdentifier = dataFile.getStorageIdentifier();
+
+                if (storageIdentifier.startsWith("swift://")) {
+                    // This is a call on an already existing swift object. 
+
+                    String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
+
+                    if (swiftStorageTokens.length != 3) {
+                        // bad storage identifier
+                        throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+                    }
+
+                    swiftEndPoint = swiftStorageTokens[0];
+                    swiftContainerName = swiftStorageTokens[1];
+                    swiftFileName = swiftStorageTokens[2];
+
+                    if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName)) {
+                        // all of these things need to be specified, for this to be a valid Swift location
+                        // identifier.
+                        throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+                    }
+
+                    if (auxItemTag != null) {
+                        swiftFileName = swiftFileName.concat("."+auxItemTag);
+                    }
+                } else if (this.isReadAccess) {
+                    // An attempt to call Swift driver,  in a Read mode on a non-swift stored datafile
+                    // object!
+                    throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object.");
+                } else if (this.isWriteAccess) {
+                    Properties p = getSwiftProperties();
+                    swiftEndPoint = p.getProperty("swift.default.endpoint");
+
+                    //swiftFolderPath = dataFile.getOwner().getDisplayName();
+                    String swiftFolderPathSeparator = "-";
+                    String authorityNoSlashes = dataFile.getOwner().getAuthority().replace(dataFile.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+                    swiftFolderPath = dataFile.getOwner().getProtocol() + swiftFolderPathSeparator +
+                        authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+                        swiftFolderPathSeparator + dataFile.getOwner().getIdentifier();
+
+                    swiftFileName = storageIdentifier;
+                    //setSwiftContainerName(swiftFolderPath);
+                    //swiftFileName = dataFile.getDisplayName();
+                    //Storage Identifier is now updated after the object is uploaded on Swift.
+                    dataFile.setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath+":"+swiftFileName);
+                } else {
+                    throw new IOException("SwiftAccessIO: unknown access mode.");
+                }
+                // Authenticate with Swift: 
+
+                // should we only authenticate when account == null? 
+
+                if (this.account == null) {
+                    account = authenticateWithSwift(swiftEndPoint);
+                }
+
+                /*
+                The containers created is swiftEndPoint concatenated with the swiftContainerName
+                property. Creating container with certain names throws 'Unable to create
+                container' error on Openstack. 
+                Any datafile with http://rdgw storage identifier i.e present on Object 
+                store service endpoint already only needs to look-up for container using
+                just swiftContainerName which is the concatenated name.
+                In future, a container for the endpoint can be created and for every
+                other swiftContainerName Object Store pseudo-folder can be created, which is
+                not provide by the joss Java swift library as of yet.
+                 */
+
+                if (storageIdentifier.startsWith("swift://")) {
+                    // An existing swift object; the container must already exist as well.
+                    this.swiftContainer = account.getContainer(swiftContainerName);
+                } else {
+                    // This is a new object being created.
+                    this.swiftContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
+                }
+
+                if (!this.swiftContainer.exists()) {
+                    if (writeAccess) {
+                        // dataContainer.create();
+                         try {
+                             //creates a public data container
+                             this.swiftContainer.makePublic();
+                         }
+                         catch (Exception e){
+                             //e.printStackTrace();
+                             logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
+                         }
+                    } else {
+                        // This is a fatal condition - it has to exist, if we were to 
+                        // read an existing object!
+                        throw new IOException("SwiftAccessIO: container " + swiftContainerName + " does not exist.");
+                    }
+                }
+
+                fileObject = this.swiftContainer.getObject(swiftFileName);
+
+
+                // If this is the main, primary datafile object (i.e., not an auxiliary 
+                // object for a primary file), we also set the file download url here: 
+                if (auxItemTag == null) {
+                    setRemoteUrl(getSwiftFileURI(fileObject));
+                    logger.fine(getRemoteUrl() + " success; write mode: "+writeAccess);
+                } else {
+                    logger.fine("sucessfully opened AUX object "+auxItemTag+" , write mode: "+writeAccess);
+                }
+
+                if (!writeAccess && !fileObject.exists()) {
+                    throw new FileNotFoundException("SwiftAccessIO: File object " + swiftFileName + " does not exist (Dataverse datafile id: " + dataFile.getId());
+                }
+
+                auxFiles = null; 
+
+                return fileObject;
+            case dataset:
+                Dataset dataset = (Dataset)this.getDvObject();
+                //TODO: add storage identifier
+                storageIdentifier = dataset.getStorageIdentifier();
+
+                swiftEndPoint = null;
+                swiftContainerName = null;
+                swiftFileName = null;
+
+
+                if (storageIdentifier.startsWith("swift://")) {
+                    // This is a call on an already existing swift object. 
+
+                    //TODO: determine how storage identifer will give us info
+                    String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
+
+                    if (swiftStorageTokens.length != 3) {
+                        // bad storage identifier
+                        throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+                    }
+
+                    swiftEndPoint = swiftStorageTokens[0];
+                    swiftContainerName = swiftStorageTokens[1];
+                    //We will not have a file name, just an aux tag
+                    swiftFileName = "";
+
+                    if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName)) {
+                        // all of these things need to be specified, for this to be a valid Swift location
+                        // identifier.
+                        throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+                    }
+
+                    if (auxItemTag != null) {
+                        swiftFileName = swiftFileName.concat(auxItemTag);
+                    } else {
+                        throw new IOException("Dataset related auxillary files require an auxItemTag");
+                    }       
+                } else if (this.isReadAccess) {
+                    // An attempt to call Swift driver,  in a Read mode on a non-swift stored datafile
+                    // object!
+                    throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object.");
+                } else if (this.isWriteAccess) {
+                    Properties p = getSwiftProperties();
+                    swiftEndPoint = p.getProperty("swift.default.endpoint");
+
+                    //swiftFolderPath = dataFile.getOwner().getDisplayName();
+                    String swiftFolderPathSeparator = "-";
+                    String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
+                    swiftFolderPath = dataset.getProtocol() + swiftFolderPathSeparator +
+                        authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+                        swiftFolderPathSeparator + dataset.getIdentifier();
+
+                    swiftFileName = auxItemTag;
+                    //setSwiftContainerName(swiftFolderPath);
+                    //swiftFileName = dataFile.getDisplayName();
+                    //Storage Identifier is now updated after the object is uploaded on Swift.
+                    //TODO: figure out what this needs to be and alter above code
+                    dataset.setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath+":"+swiftFileName);
+                } else {
+                    throw new IOException("SwiftAccessIO: unknown access mode.");
+                }
+                // Authenticate with Swift: 
+
+                // should we only authenticate when account == null? 
+
+                if (this.account == null) {
+                    account = authenticateWithSwift(swiftEndPoint);
+                }
+
+                /*
+                The containers created is swiftEndPoint concatenated with the swiftContainerName
+                property. Creating container with certain names throws 'Unable to create
+                container' error on Openstack. 
+                Any datafile with http://rdgw storage identifier i.e present on Object 
+                store service endpoint already only needs to look-up for container using
+                just swiftContainerName which is the concatenated name.
+                In future, a container for the endpoint can be created and for every
+                other swiftContainerName Object Store pseudo-folder can be created, which is
+                not provide by the joss Java swift library as of yet.
+                 */
+
+                if (storageIdentifier.startsWith("swift://")) {
+                    // An existing swift object; the container must already exist as well.
+                    this.swiftContainer = account.getContainer(swiftContainerName);
+                } else {
+                    // This is a new object being created.
+                    this.swiftContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
+                }
+
+                if (!this.swiftContainer.exists()) {
+                    if (writeAccess) {
+                        // dataContainer.create();
+                         try {
+                             //creates a public data container
+                             this.swiftContainer.makePublic();
+                         }
+                         catch (Exception e){
+                             //e.printStackTrace();
+                             logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
+                         }
+                    } else {
+                        // This is a fatal condition - it has to exist, if we were to 
+                        // read an existing object!
+                        throw new IOException("SwiftAccessIO: container " + swiftContainerName + " does not exist.");
+                    }
+                }
+
+                fileObject = this.swiftContainer.getObject(swiftFileName);
+
+
+                // If this is the main, primary datafile object (i.e., not an auxiliary 
+                // object for a primary file), we also set the file download url here: 
+//                if (auxItemTag == null) {
+//                    setRemoteUrl(getSwiftFileURI(fileObject));
+//                    logger.fine(getRemoteUrl() + " success; write mode: "+writeAccess);
+//                } else {
+                logger.fine("sucessfully opened AUX object "+auxItemTag+" , write mode: "+writeAccess);
+//                }
+
+                if (!writeAccess && !fileObject.exists()) {
+                    throw new FileNotFoundException("SwiftAccessIO: File object " + swiftFileName + " does not exist (Dataverse dataset id: " + dataset.getId());
+                }
+
+                auxFiles = null; 
+
+                return fileObject;
+            case dataverse:
+            default:
+                throw new FileNotFoundException("Error initializing swift object");
+        }
+        
     }
 
     private InputStream openSwiftFileAsInputStream() throws IOException {

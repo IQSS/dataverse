@@ -76,12 +76,7 @@ public class FileAccessIO extends DataFileIO {
     public boolean canWrite () {
         return isWriteAccess; 
     }
-
-    @Override
-    public void openDvObject(DataAccessOption... option) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+    
     @Override
     public void open (DataAccessOption... options) throws IOException {
            
@@ -552,6 +547,11 @@ public class FileAccessIO extends DataFileIO {
         }   
 
         return auxItems;
+    }
+
+    @Override
+    public SwiftAccessIO.DvObjectType getDvObjectType() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

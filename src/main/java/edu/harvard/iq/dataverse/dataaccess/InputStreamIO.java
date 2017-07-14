@@ -139,7 +139,7 @@ public class InputStreamIO extends DataFileIO {
     }
 
     @Override
-    public void openDvObject(DataAccessOption... option) throws IOException {
+    public SwiftAccessIO.DvObjectType getDvObjectType() throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

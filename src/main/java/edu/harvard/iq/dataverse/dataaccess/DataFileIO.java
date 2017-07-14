@@ -23,6 +23,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO.DvObjectType;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileInputStream;
 
@@ -141,9 +142,7 @@ public abstract class DataFileIO {
     
     public abstract void deleteAllAuxObjects() throws IOException;
     
-    //check for datafile or dataset and redirect to appropriate open function
-    public abstract void openDvObject(DataAccessOption... option) throws IOException;
-    
+    public abstract DvObjectType getDvObjectType() throws IOException;
 
     private DataFile dataFile;
     private DataAccessRequest req;
