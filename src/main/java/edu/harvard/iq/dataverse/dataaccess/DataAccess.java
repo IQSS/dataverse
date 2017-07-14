@@ -50,19 +50,19 @@ public class DataAccess {
         
         // TODO: add a provision to check storage identifiers for datasets
        
-        DataFile df = (DataFile)dvObject;
+//        DataFile df = (DataFile)dvObject;
         if (dvObject == null
-                || df.getStorageIdentifier() == null
-                || df.getStorageIdentifier().equals("")) {
+                || dvObject.getStorageIdentifier() == null
+                || dvObject.getStorageIdentifier().equals("")) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
 
-        if (df.getStorageIdentifier().startsWith("file://")
-                || (!df.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
-            return new FileAccessIO (df, req);
-        } else if (df.getStorageIdentifier().startsWith("swift://")){
-            return new SwiftAccessIO(df, req);
-        } else if (df.getStorageIdentifier().startsWith("tmp://")) {
+        if (dvObject.getStorageIdentifier().startsWith("file://")
+                || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
+            return new FileAccessIO (dvObject, req);
+        } else if (dvObject.getStorageIdentifier().startsWith("swift://")){
+            return new SwiftAccessIO(dvObject, req);
+        } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
         
@@ -83,8 +83,8 @@ public class DataAccess {
         return createNewDataFileIO(df, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
 
-    public static DataFileIO createNewDataFileIO(DataFile df, String storageTag, String driverIdentifier) throws IOException {
-        if (df == null
+    public static DataFileIO createNewDataFileIO(DvObject dvObject, String storageTag, String driverIdentifier) throws IOException {
+        if (dvObject == null
                 || storageTag == null
                 || storageTag.equals("")) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
@@ -92,16 +92,16 @@ public class DataAccess {
 
         DataFileIO dataFileIO = null;
 
-        df.setStorageIdentifier(storageTag);
+        dvObject.setStorageIdentifier(storageTag);
 
         if (driverIdentifier == null) {
             driverIdentifier = "file";
         }
 
         if (driverIdentifier.equals("file")) {
-            dataFileIO = new FileAccessIO(df, null);
+            dataFileIO = new FileAccessIO(dvObject, null);
         } else if (driverIdentifier.equals("swift")) {
-            dataFileIO = new SwiftAccessIO(df, null);
+            dataFileIO = new SwiftAccessIO(dvObject, null);
         } else {
             throw new IOException("createDataAccessObject: Unsupported storage method " + driverIdentifier);
         }

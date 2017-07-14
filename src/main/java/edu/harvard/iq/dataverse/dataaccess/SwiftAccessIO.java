@@ -44,14 +44,14 @@ public class SwiftAccessIO extends DataFileIO {
         this(null);
     }
 
-    public SwiftAccessIO(DataFile dataFile) throws IOException {
-        this(dataFile, null);
+    public SwiftAccessIO(DvObject dvObject) throws IOException {
+        this(dvObject, null);
 
     }
 
-    public SwiftAccessIO(DataFile dataFile, DataAccessRequest req) throws IOException {
+    public SwiftAccessIO(DvObject dvObject, DataAccessRequest req) throws IOException {
 
-        super(dataFile, req);
+        super(dvObject, req);
 
         this.setIsLocalFile(false);
     }
