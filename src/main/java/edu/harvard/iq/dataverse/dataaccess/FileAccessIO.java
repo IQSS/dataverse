@@ -37,6 +37,8 @@ import java.util.Iterator;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import java.io.FileNotFoundException;
 import java.nio.channels.Channel;
@@ -66,6 +68,7 @@ public class FileAccessIO extends DataFileIO {
     private boolean isReadAccess = false;
     private boolean isWriteAccess = false; 
     private Path physicalPath = null; 
+    private DvObjectType dvObjectType;
     
     @Override
     public boolean canRead () {
@@ -79,16 +82,13 @@ public class FileAccessIO extends DataFileIO {
     
     @Override
     public void open (DataAccessOption... options) throws IOException {
-           
-//        if(this.getDvObject().isInstanceofDataFile())
-        DataFile dataFile = this.getDataFile();
+        DataFile dataFile = null;
+        Dataset dataset = null;
+        Dataverse dataverse = null;
+        DataAccessRequest req = this.getRequest();
         
-        DataAccessRequest req = this.getRequest(); 
-
-
-        if (req != null && req.getParameter("noVarHeader") != null) {
-            this.setNoVarHeader(true);
-        }
+        dvObjectType = this.getDvObjectType();
+        //if(this.getDvObject().isInstanceofDataFile())
         
         if (isWriteAccessRequested(options)) {
             isWriteAccess = true;
@@ -98,46 +98,90 @@ public class FileAccessIO extends DataFileIO {
             isReadAccess = true;
         }
         
-        
-        if (isReadAccess) {
-            FileInputStream fin = openLocalFileAsInputStream();
+        switch(dvObjectType){
+            case datafile:
+                dataFile = (DataFile)this.getDvObject();
+                
+                if (req != null && req.getParameter("noVarHeader") != null) {
+                    this.setNoVarHeader(true);
+                }
 
-            if (fin == null) {
-                throw new IOException ("Failed to open local file "+getStorageLocation());
-            }
+                if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
+                    throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+                }
+                
+                if (isReadAccess) {
+                    FileInputStream fin = openLocalFileAsInputStream();
 
-            this.setInputStream(fin);
-            setChannel(fin.getChannel());
-            this.setSize(getLocalFileSize());
-            
-            if (dataFile.getContentType() != null
-                    && dataFile.getContentType().equals("text/tab-separated-values")
-                    && dataFile.isTabularData()
-                    && dataFile.getDataTable() != null
-                    && (!this.noVarHeader())) {
+                    if (fin == null) {
+                        throw new IOException ("Failed to open local file "+getStorageLocation());
+                    }
 
-                List datavariables = dataFile.getDataTable().getDataVariables();
-                String varHeaderLine = generateVariableHeader(datavariables);
-                this.setVarHeader(varHeaderLine);
-            }
-        } else if (isWriteAccess) {
-            FileOutputStream fout = openLocalFileAsOutputStream();
+                    this.setInputStream(fin);
+                    setChannel(fin.getChannel());
+                    this.setSize(getLocalFileSize());
 
-            if (fout == null) {
-                throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
-            }
+                    if (dataFile.getContentType() != null
+                            && dataFile.getContentType().equals("text/tab-separated-values")
+                            && dataFile.isTabularData()
+                            && dataFile.getDataTable() != null
+                            && (!this.noVarHeader())) {
 
-            this.setOutputStream(fout);
-            setChannel(fout.getChannel());
+                        List datavariables = dataFile.getDataTable().getDataVariables();
+                        String varHeaderLine = generateVariableHeader(datavariables);
+                        this.setVarHeader(varHeaderLine);
+                    }
+                } else if (isWriteAccess) {
+                    FileOutputStream fout = openLocalFileAsOutputStream();
+
+                    if (fout == null) {
+                        throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
+                    }
+
+                    this.setOutputStream(fout);
+                    setChannel(fout.getChannel());
+                }
+
+                this.setMimeType(dataFile.getContentType());
+                
+                try {
+                    this.setFileName(dataFile.getFileMetadata().getLabel());
+                } catch (Exception ex) {
+                    this.setFileName("unknown");
+                }
+                break;
+                
+            case dataset:
+                //This case is for uploading a dataset related auxiliary file 
+                //e.g. image thumbnails/metadata exports
+                dataset = (Dataset)this.getDvObject();
+                if (isReadAccess) {
+                    FileInputStream fin = openLocalFileAsInputStream();
+
+                    if (fin == null) {
+                        throw new IOException("Failed to open local file " + getStorageLocation());
+                    }
+
+                    this.setInputStream(fin);
+                    setChannel(fin.getChannel());
+                    this.setSize(getLocalFileSize());
+                } else if (isWriteAccess) {
+                    FileOutputStream fout = openLocalFileAsOutputStream();
+
+                    if (fout == null) {
+                        throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
+                    }
+
+                    this.setOutputStream(fout);
+                    setChannel(fout.getChannel());
+                }
+                break;
+            case dataverse:
+                dataverse = (Dataverse)this.getDvObject();
+                break;
+            default:
+                throw new IOException("Data Access: Invalid DvObject type");
         }
-
-        this.setMimeType(dataFile.getContentType());
-        try {
-            this.setFileName(dataFile.getFileMetadata().getLabel());
-        } catch (Exception ex) {
-            this.setFileName("unknown");
-        }
-
         // This "status" is a leftover from 3.6; we don't have a use for it 
         // in 4.0 yet; and we may not need it at all. 
         // -- L.A. 4.0.2
