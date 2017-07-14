@@ -20,7 +20,6 @@ public class EMailValidatorTest {
         assertEquals(true, EMailValidator.isEmailValid("trailingWhitespace@mailinator.com ", null));
         assertEquals(false, EMailValidator.isEmailValid("elisah.da mota@example.com", null));
         assertEquals(false, EMailValidator.isEmailValid("pete1@mailinator.com;pete2@mailinator.com", null));
-        boolean issue2998resolved = false;
         /**
          * @todo Evaluate if we should upgrade to commons-validator 1.5 or
          * newer, which seems to allow these non-ASCII email addresses to pass
@@ -38,10 +37,11 @@ public class EMailValidatorTest {
          *
          * See https://github.com/IQSS/dataverse/issues/2998
          */
-        assertEquals(issue2998resolved, EMailValidator.isEmailValid("michélle.pereboom@example.com", null));
-        assertEquals(issue2998resolved, EMailValidator.isEmailValid("begüm.vriezen@example.com", null));
-        assertEquals(issue2998resolved, EMailValidator.isEmailValid("lótus.gonçalves@example.com", null));
-        assertEquals(issue2998resolved, EMailValidator.isEmailValid("رونیکا.محمدخان@example.com", null));
+        assertEquals(true, EMailValidator.isEmailValid("michélle.pereboom@example.com", null));
+        assertEquals(true, EMailValidator.isEmailValid("begüm.vriezen@example.com", null));
+        assertEquals(true, EMailValidator.isEmailValid("lótus.gonçalves@example.com", null));
+        assertEquals(true, EMailValidator.isEmailValid("رونیکا.محمدخان@example.com", null));
+        assertEquals(false, EMailValidator.isEmailValid("dora@.com", null));
         assertEquals(false, EMailValidator.isEmailValid("", null));
         /**
          * @todo How can null as an email address be valid?!?
