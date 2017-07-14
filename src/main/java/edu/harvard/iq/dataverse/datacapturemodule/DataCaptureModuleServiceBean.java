@@ -42,19 +42,22 @@ public class DataCaptureModuleServiceBean implements Serializable {
             throw new DataCaptureModuleException(error, ex);
         }
     }
-
-    public ScriptRequestResponse retreiveRequestedRsyncScript(long datasetId, String scriptRequestUrl) throws DataCaptureModuleException {
-        logger.fine("retreiveRequestedRsyncScript using dataset id + " + datasetId + " to " + scriptRequestUrl);
-        try {
+    public ScriptRequestResponse retreiveRequestedRsyncScript(String datasetIdentifier, String scriptRequestUrl) throws DataCaptureModuleException
+    {
+        logger.fine("retreiveRequestedRsyncScript using dataset identifier + " + datasetIdentifier + " to " + scriptRequestUrl);
+	try
+	{
             HttpResponse<JsonNode> scriptRequest = Unirest.post(scriptRequestUrl)
-                    .field("datasetIdentifier", datasetId)
+                    .field("datasetIdentifier", datasetIdentifier)
                     .asJson();
             return DataCaptureModuleUtil.getScriptFromRequest(scriptRequest);
-        } catch (UnirestException ex) {
+	}
+	catch( UnirestException ex)
+	{
             String error = "Error calling " + scriptRequestUrl + ": " + ex;
             logger.info(error);
             throw new DataCaptureModuleException(error, ex);
-        }
+	}
     }
 
 }
