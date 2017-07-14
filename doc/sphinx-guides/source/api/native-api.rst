@@ -310,9 +310,9 @@ The people who need to review the dataset (often curators or journal editors) ca
 Return to Author
 ^^^^^^^^^^^^^^^^
 
-After the curators or journal editors have reviewed a dataset that has been submitted for review (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to the author. In the web interface there is a "Return to Author" button (see :doc:`/user/dataset-management`), but the interface does not provide a way to explain **why** the dataset is being returned. There is a way to do this outside of this interface, however. Instead of clicking the "Return to Author" button in the UI, a curator can write a "reason for return" into the database via API (described below) that the author can read via the :ref:`Notifications` API.
+After the curators or journal editors have reviewed a dataset that has been submitted for review (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to its authors. In the web interface there is a "Return to Author" button (see :doc:`/user/dataset-management`), but the interface does not provide a way to explain **why** the dataset is being returned. There is a way to do this outside of this interface, however. Instead of clicking the "Return to Author" button in the UI, a curator can write a "reason for return" into the database via API (described below) that the authors can read via the :ref:`Notifications` API.
 
-Here's how curators can send a "reason for return" to the dataset author. First, the curator creates a JSON file that contains the reason for return:
+Here's how curators can send a "reason for return" to the dataset authors. First, the curator creates a JSON file that contains the reason for return:
 
 .. literalinclude:: ../_static/api/reason-for-return.json
 
@@ -320,9 +320,9 @@ In the example below, the curator has saved the JSON file as :download:`reason-f
 
     curl -H "Content-type:application/json" -d @reason-for-return.json -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/returnToAuthor?persistentId=$DOI_OR_HANDLE_OF_DATASET"
 
-The review process can sometimes resemble a tennis match, with the author submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
+The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
 
-The author of the datasets and all curators on the dataset will receive emails and in-app notifications that the dataset has been returned, but the these emails and notifications will not contain the "reason for return". The reason for return can be read by both authors and curators using the :ref:`Notifications` API.
+The authors of the datasets and all curators on the dataset will receive emails and in-app notifications that the dataset has been returned, but the these emails and notifications will not contain the "reason for return". The reason for return can be read by both authors and curators using the :ref:`Notifications` API.
 
 Files
 ~~~~~~~~~~~
