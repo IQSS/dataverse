@@ -549,9 +549,5 @@ public class FileAccessIO extends DataFileIO {
         return auxItems;
     }
 
-    @Override
-    public SwiftAccessIO.DvObjectType getDvObjectType() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
 }

@@ -22,8 +22,9 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO.DvObjectType;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileInputStream;
 
@@ -63,22 +64,30 @@ public abstract class DataFileIO {
     public DataFileIO(DvObject dvObject, DataAccessRequest req) {
         this.dvObject = dvObject;
         this.req = req;
-           
-        //For now, we are converting a dvobject into datafile as soon as a DataFileIO
-        //object is initialised to avoid a null datafile to be passed anywhere
+        DvObjectType type= getDvObjectType();
+          
         
         
-        /**
-         * TODO: Find a way to make this casting work better, and add the casting of
-         * DvObjects into datasets
-         */
-        this.dataFile=(DataFile)dvObject;
-
+        switch(type){
+            case datafile:
+                this.dataFile=(DataFile)dvObject;
+                break;
+            case dataset:
+                this.dataset=(Dataset)dvObject;
+                break;
+            case dataverse:
+                this.dataverse=(Dataverse)dvObject;
+                break;
+            default:
+                throw new ClassCastException("Cannot Cast DvObject");
+        }
         if (this.req == null) {
             this.req = new DataAccessRequest();
         }
     }
 
+    
+    
     // Abstract methods to be implemented by the storage drivers:
 
     public abstract void open(DataAccessOption... option) throws IOException;
@@ -142,15 +151,30 @@ public abstract class DataFileIO {
     
     public abstract void deleteAllAuxObjects() throws IOException;
     
-    public abstract DvObjectType getDvObjectType() throws IOException;
+    public DvObjectType getDvObjectType() {
+           if (getDvObject().isInstanceofDataFile()) {
+            dvObjectType = DvObjectType.datafile;
+            
+        }
+        else if (getDvObject().isInstanceofDataset()){
+            dvObjectType = DvObjectType.dataset;
+        }
+        else if (getDvObject().isInstanceofDataverse()){
+            dvObjectType = DvObjectType.dataverse;
+        }
+        
+        return dvObjectType; 
+    }
 
     private DataFile dataFile;
     private DataAccessRequest req;
-
+    private DvObjectType dvObjectType;
     private InputStream in;
     private OutputStream out; 
     protected Channel channel;
     private DvObject dvObject;
+    private Dataset dataset;
+    private Dataverse dataverse;
 
     private int status;
     private long size;
@@ -177,6 +201,12 @@ public abstract class DataFileIO {
     private String remoteUrl;
     private GetMethod method = null;
     private Header[] responseHeaders;
+    
+      public enum DvObjectType {
+        dataset,
+        datafile,
+        dataverse
+    };
 
     // getters:
     
@@ -207,6 +237,10 @@ public abstract class DataFileIO {
     
     public DataFile getDataFile() {
         return dataFile;
+    }
+    
+    public Dataset getDataset() {
+        return dataset;
     }
 
     public DataAccessRequest getRequest() {

@@ -67,11 +67,7 @@ public class SwiftAccessIO extends DataFileIO {
     private static int LIST_PAGE_LIMIT = 100;  
     private DvObjectType dvObjectType;
     
-    public enum DvObjectType {
-        dataset,
-        datafile,
-        dataverse
-    };
+  
 
     @Override
     public boolean canRead() {
@@ -82,22 +78,11 @@ public class SwiftAccessIO extends DataFileIO {
     public boolean canWrite() {
         return isWriteAccess;
     }
-    
-    @Override
-    public DvObjectType getDvObjectType() {
-        if (getDvObject().isInstanceofDataFile()) {
-            dvObjectType = DvObjectType.datafile;
-            
-        }
-        else if (getDvObject().isInstanceofDataset()){
-            dvObjectType = DvObjectType.dataset;
-        }
-        else if (getDvObject().isInstanceofDataverse()){
-            dvObjectType = DvObjectType.dataverse;
-        }
-        logger.info("dvObjectType: " + dvObjectType.toString());
-        return dvObjectType; 
-    }
+//    
+//    @Override
+//    public DvObjectType getDvObjectType() {
+//     
+//    }
     
 
     @Override
@@ -488,7 +473,7 @@ public class SwiftAccessIO extends DataFileIO {
         
         switch (dvObjectType) {
             case datafile:
-                DataFile dataFile = (DataFile)this.getDvObject();
+                DataFile dataFile = this.getDataFile();
                 String storageIdentifier = dataFile.getStorageIdentifier();
 
                 if (storageIdentifier.startsWith("swift://")) {
@@ -603,8 +588,7 @@ public class SwiftAccessIO extends DataFileIO {
 
                 return fileObject;
             case dataset:
-                Dataset dataset = (Dataset)this.getDvObject();
-                //TODO: add storage identifier
+                Dataset dataset = this.getDataset();
                 storageIdentifier = dataset.getStorageIdentifier();
 
                 swiftEndPoint = null;
@@ -626,19 +610,18 @@ public class SwiftAccessIO extends DataFileIO {
                     swiftEndPoint = swiftStorageTokens[0];
                     swiftContainerName = swiftStorageTokens[1];
                     //We will not have a file name, just an aux tag
-                    swiftFileName = "";
-
-                    if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName)) {
-                        // all of these things need to be specified, for this to be a valid Swift location
-                        // identifier.
-                        throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
-                    }
-
                     if (auxItemTag != null) {
-                        swiftFileName = swiftFileName.concat(auxItemTag);
+                        swiftFileName = auxItemTag;
                     } else {
                         throw new IOException("Dataset related auxillary files require an auxItemTag");
                     }       
+                    
+                    if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName) ) {
+                        // all of these things need to be specified, for this to be a valid Swift location
+                        // identifier.1
+                        throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+                    }
+
                 } else if (this.isReadAccess) {
                     // An attempt to call Swift driver,  in a Read mode on a non-swift stored datafile
                     // object!
@@ -659,7 +642,7 @@ public class SwiftAccessIO extends DataFileIO {
                     //swiftFileName = dataFile.getDisplayName();
                     //Storage Identifier is now updated after the object is uploaded on Swift.
                     //TODO: figure out what this needs to be and alter above code
-                    dataset.setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath+":"+swiftFileName);
+                    dataset.setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath);
                 } else {
                     throw new IOException("SwiftAccessIO: unknown access mode.");
                 }
@@ -728,6 +711,7 @@ public class SwiftAccessIO extends DataFileIO {
                 auxFiles = null; 
 
                 return fileObject;
+                
             case dataverse:
             default:
                 throw new FileNotFoundException("Error initializing swift object");
