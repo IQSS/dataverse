@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
@@ -206,9 +208,22 @@ public class DatasetUtil {
                 return null;
             }
         }
+        DataFileIO dataAccess=null;
+                
+        try{
+             dataAccess = DataAccess.createNewDataFileIO(dataset,"swift");
+        }
+        catch(IOException ioex){
+            //TODO: Add a suitable waing message
+            logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+        }
+        
         File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
         try {
+            //original code for saving dataset thumbnails into local file storage
             Files.copy(tmpFile.toPath(), originalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            //this goes through Swift API/local storage to write the dataset thumbnail into a container
+            dataAccess.savePathAsAux(tmpFile.toPath(), datasetLogoThumbnail);
         } catch (IOException ex) {
             logger.severe("Failed to original file from " + tmpFile.getAbsolutePath() + " to " + originalFile.getAbsolutePath() + ": " + ex);
         }

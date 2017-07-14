@@ -78,9 +78,9 @@ public class DataAccess {
 
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
     // for saving new, not yet saved datafiles.
-    public static DataFileIO createNewDataFileIO(DataFile df, String storageTag) throws IOException {
+    public static DataFileIO createNewDataFileIO(DvObject dvObject, String storageTag) throws IOException {
 
-        return createNewDataFileIO(df, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        return createNewDataFileIO(dvObject, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
 
     public static DataFileIO createNewDataFileIO(DvObject dvObject, String storageTag, String driverIdentifier) throws IOException {

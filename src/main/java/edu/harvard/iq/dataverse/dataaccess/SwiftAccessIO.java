@@ -601,8 +601,8 @@ public class SwiftAccessIO extends DataFileIO {
 
                     //TODO: determine how storage identifer will give us info
                     String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
-
-                    if (swiftStorageTokens.length != 3) {
+                    //number of tokens should be two because there is not main file
+                    if (swiftStorageTokens.length != 2) {
                         // bad storage identifier
                         throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
                     }
