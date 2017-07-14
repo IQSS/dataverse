@@ -500,12 +500,12 @@ public class FileMetadata implements Serializable {
     
     
     
-    public String asPrettyJSON(){
+    public String toPrettyJSON(){
         
         return serializeAsJSON(true);
     }
 
-    public String asJSON(){
+    public String toJSON(){
         
         return serializeAsJSON(false);
     }

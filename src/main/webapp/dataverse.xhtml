@@ -116,12 +116,13 @@
                                     <div class="col-sm-9 form-col-container">
                                         <h:selectOneMenu id="dataverseCategory" tabindex="5" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
                                             <f:selectItem id="dvSelect" itemLabel="#{bundle['dataverse.type.selectTab.top']}" itemValue="" />
-                                            <f:selectItem id="dvResearch" itemLabel="#{bundle['dataverse.type.selectTab.researchers']}" itemValue="RESEARCHERS" />
-                                            <f:selectItem id="dvResearchProj" itemLabel="#{bundle['dataverse.type.selectTab.researchProjects']}" itemValue="RESEARCH_PROJECTS" />
-                                            <f:selectItem id="dvResearchGrp" itemLabel="#{bundle['dataverse.type.selectTab.researchGroup']}" itemValue="RESEARCH_GROUP" />
-                                            <f:selectItem id="dvLab" itemLabel="#{bundle['dataverse.type.selectTab.laboratory']}" itemValue="LABORATORY" />
+                                            <f:selectItem id="dvDepartment" itemLabel="#{bundle['dataverse.type.selectTab.department']}" itemValue="DEPARTMENT" />
                                             <f:selectItem id="dvJournals" itemLabel="#{bundle['dataverse.type.selectTab.journals']}" itemValue="JOURNALS" />
+                                            <f:selectItem id="dvLab" itemLabel="#{bundle['dataverse.type.selectTab.laboratory']}" itemValue="LABORATORY" />
                                             <f:selectItem id="dvOrgInst" itemLabel="#{bundle['dataverse.type.selectTab.organizationsAndInsitutions']}" itemValue="ORGANIZATIONS_INSTITUTIONS" />
+                                            <f:selectItem id="dvResearch" itemLabel="#{bundle['dataverse.type.selectTab.researchers']}" itemValue="RESEARCHERS" />
+                                            <f:selectItem id="dvResearchGrp" itemLabel="#{bundle['dataverse.type.selectTab.researchGroup']}" itemValue="RESEARCH_GROUP" />
+                                            <f:selectItem id="dvResearchProj" itemLabel="#{bundle['dataverse.type.selectTab.researchProjects']}" itemValue="RESEARCH_PROJECTS" />                                           
                                             <f:selectItem id="dvTeaching" itemLabel="#{bundle['dataverse.type.selectTab.teachingCourses']}" itemValue="TEACHING_COURSES" />
                                             <f:selectItem id="dvUncategorized" itemLabel="#{bundle['dataverse.type.selectTab.uncategorized']}" itemValue="UNCATEGORIZED" />
                                         </h:selectOneMenu>

@@ -452,7 +452,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true)
                 .add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,        
                         Json.createObjectBuilder()
-                                .add("pagination", pager.asJsonObjectBuilder())
+                                .add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
                                 //.add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, filterParams, this.myDataFinder))
                                 .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever))
                                 .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())

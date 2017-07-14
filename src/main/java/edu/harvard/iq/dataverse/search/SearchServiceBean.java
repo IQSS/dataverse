@@ -734,7 +734,7 @@ public class SearchServiceBean {
             solrQueryResponse.setFilterQueriesActual(actualFilterQueries);
         } else {
             // how often is this null?
-            logger.info("solrQuery.getFilterQueries() was null");
+            logger.fine("solrQuery.getFilterQueries() was null");
         }
 
         solrQueryResponse.setDvObjectCounts(queryResponse.getFacetField("dvObjectType"));

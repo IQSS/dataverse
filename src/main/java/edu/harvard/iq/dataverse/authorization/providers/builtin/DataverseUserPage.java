@@ -14,9 +14,11 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SettingsWrapper;
+import edu.harvard.iq.dataverse.UserNameValidator;
 import edu.harvard.iq.dataverse.UserNotification;
 import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEDV;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -81,6 +83,8 @@ public class DataverseUserPage implements java.io.Serializable {
     DataverseServiceBean dataverseService;
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    UserServiceBean userService;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -204,9 +208,19 @@ public class DataverseUserPage implements java.io.Serializable {
         String userName = (String) value;
         boolean userNameFound = authenticationService.identifierExists(userName);
         
+        // SF fix for issue 3752
+        // checks if username has any invalid characters 
+        boolean userNameValid = userName != null && UserNameValidator.isUserNameValid(userName, null);
+        
         if (editMode == EditMode.CREATE && userNameFound) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+        
+        if (editMode == EditMode.CREATE && !userNameValid) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.invalid"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -307,13 +321,16 @@ public class DataverseUserPage implements java.io.Serializable {
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
                     builtinUser.getUserName(), builtinUser.getDisplayInfo(), false);
             if ( au == null ) {
-                // username exists
+                // Username already exists, show an error message
                 getUsernameField().setValid(false);
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
                 FacesContext context = FacesContext.getCurrentInstance();
                 context.addMessage(getUsernameField().getClientId(context), message);
                 return null;
             }
+            
+            // The Authenticated User was just created via the UI, add an initial login timestamp
+            au = userService.updateLastLogin(au);
             
             // Authenticated user registered. Save the new bulitin, and log in.
             builtinUserService.save(builtinUser);
