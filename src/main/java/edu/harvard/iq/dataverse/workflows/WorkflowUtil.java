@@ -9,16 +9,18 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 public class WorkflowUtil {
-    
+
     public static JsonArrayBuilder getAllWorkflowComments(DatasetVersion datasetVersion) {
         JsonArrayBuilder workflowCommentsAsJson = Json.createArrayBuilder();
         List<WorkflowComment> workflowComments = datasetVersion.getWorkflowComments();
         for (WorkflowComment workflowComment : workflowComments) {
             NullSafeJsonBuilder workflowCommentAsJson = jsonObjectBuilder();
-            workflowCommentAsJson.add("id", workflowComment.getId());
+            workflowCommentAsJson.add("workflowCommentId", workflowComment.getId());
             workflowCommentAsJson.add("message", workflowComment.getMessage());
             workflowCommentAsJson.add("createTime", Util.getDateTimeFormat().format(workflowComment.getCreated()));
             workflowCommentAsJson.add("commentBy", workflowComment.getAuthenticatedUser().getIdentifier());
+            workflowCommentAsJson.add("datasetId", datasetVersion.getDataset().getId());
+            workflowCommentAsJson.add("datasetVersionId", datasetVersion.getId());
             workflowCommentAsJson.add("datasetTitle", datasetVersion.getTitle());
             workflowCommentsAsJson.add(workflowCommentAsJson);
         }
