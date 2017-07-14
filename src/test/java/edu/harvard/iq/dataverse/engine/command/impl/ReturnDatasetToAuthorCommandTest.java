@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -73,6 +74,11 @@ public class ReturnDatasetToAuthorCommandTest {
                     public <T> T merge(T entity) {
                         return entity;
                     }
+                    
+                    @Override
+                    public void persist(Object entity) {
+                        //
+                    }
 
                     @Override
                     public void flush() {
@@ -87,6 +93,10 @@ public class ReturnDatasetToAuthorCommandTest {
                 return new DatasetServiceBean() {
                     @Override
                     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
+                        return null;
+                    }
+                    @Override 
+                    public WorkflowComment saveWorkflowComment(WorkflowComment comment){
                         return null;
                     }
                 };
@@ -147,7 +157,7 @@ public class ReturnDatasetToAuthorCommandTest {
         Dataset updatedDataset = null;
 
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -163,7 +173,7 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -179,7 +189,7 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -187,6 +197,7 @@ public class ReturnDatasetToAuthorCommandTest {
     }
 
     /*
+    FIXME - Empty Comments won't be allowed in future
     @Test
     public void testEmptyComments(){
                
@@ -208,19 +219,19 @@ public class ReturnDatasetToAuthorCommandTest {
         
     }
      */
-//    @Test
-//    public void testAllGood() {
-//        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-//        dataset.getLatestVersion().setReturnReason("update your files, Dummy!");
-//        dataset.getLatestVersion().setInReview(true);
-//        String actual = null;
-//        Dataset updatedDataset = null;
-//        try {
-//            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
-//        } catch (CommandException ex) {
-//            actual = ex.getMessage();
-//        }
-//        assertNotNull(updatedDataset);
-//    }
+    
+   @Test
+    public void testAllGood() {
+       dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
+        dataset.getLatestVersion().setInReview(true);
+        String actual = null;
+       Dataset updatedDataset = null;
+        try {
+           updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
+       } catch (CommandException ex) {
+            actual = ex.getMessage();
+       }
+        assertNotNull(updatedDataset);
+    }
 
 }

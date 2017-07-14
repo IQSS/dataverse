@@ -652,10 +652,8 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
             }
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
-            Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset));
+            Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
             DatasetVersion latestVersion = updatedDataset.getLatestVersion();
-            WorkflowComment workflowComment = new WorkflowComment(new WorkflowAction(latestVersion, RETURN_TO_AUTHOR), reasonForReturn, authenticatedUser);
-            datasetSvc.saveWorkflowComment(workflowComment);
             boolean inReview = latestVersion.isInReview();
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", inReview);

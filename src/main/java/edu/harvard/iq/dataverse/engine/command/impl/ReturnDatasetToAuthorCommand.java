@@ -13,6 +13,9 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.workflows.WorkflowAction;
+import static edu.harvard.iq.dataverse.workflows.WorkflowAction.Type.RETURN_TO_AUTHOR;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -22,10 +25,12 @@ import java.util.concurrent.Future;
 public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
 
     private final Dataset theDataset;
+    private final String comment;
 
-    public ReturnDatasetToAuthorCommand(DataverseRequest aRequest, DvObject anAffectedDvObject) {
+    public ReturnDatasetToAuthorCommand(DataverseRequest aRequest, DvObject anAffectedDvObject, String comment) {
         super(aRequest, anAffectedDvObject);
         this.theDataset = (Dataset) anAffectedDvObject;
+        this.comment = comment;
     }
 
     @Override
@@ -52,11 +57,14 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
         // We set "in review" to false because now the ball is back in the author's court.
         theDataset.getEditVersion().setInReview(false);
         theDataset.setModificationTime(updateTime);
-
+        
         Dataset savedDataset = ctxt.em().merge(theDataset);
         ctxt.em().flush();
 
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), this.getUser());
+        
+        WorkflowComment workflowComment = new WorkflowComment(new WorkflowAction(theDataset.getEditVersion(), RETURN_TO_AUTHOR), comment, (AuthenticatedUser) this.getUser());
+        ctxt.datasets().saveWorkflowComment(workflowComment);
 
         if (ddu != null) {
             ddu.setLastUpdateDate(updateTime);
@@ -78,7 +86,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
             editUsers.remove(au);
         }
         for (AuthenticatedUser au : editUsers) {
-            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, savedDataset.getLatestVersion().getId());
+            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, savedDataset.getLatestVersion().getId(), comment);
         }
         // TODO: What should we do with the indexing result? Print it to the log?
         boolean doNormalSolrDocCleanUp = true;

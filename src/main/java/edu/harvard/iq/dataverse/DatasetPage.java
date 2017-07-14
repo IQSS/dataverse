@@ -1523,7 +1523,8 @@ public class DatasetPage implements java.io.Serializable {
 
     public String sendBackToContributor() {
         try {
-            Command<Dataset> cmd = new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset);
+            //FIXME - Get Return Comment from sendBackToContributor popup
+            Command<Dataset> cmd = new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset, "");
             dataset = commandEngine.submit(cmd);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success"));
         } catch (CommandException ex) {

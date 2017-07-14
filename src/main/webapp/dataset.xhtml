@@ -1328,6 +1328,7 @@
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']}
                         </p>
                         <ui:remove>
+                        <!--FIXME update for new comments table -->
                         <p:inputTextarea id="returnReason" rows="3"  value="#{DatasetPage.workingVersion.returnReason}" maxlength="200" widgetVar="returnReason"
                                          cols="70" counter="display"  counterTemplate="{0} characters remaining." autoResize="false"/>
                         <p>
@@ -1335,6 +1336,7 @@
                         </p>
                         <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonwatermark" />
                         </ui:remove>
+
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('sendBackToContributor').hide()" action="#{DatasetPage.sendBackToContributor}" />
                             <ui:remove>
