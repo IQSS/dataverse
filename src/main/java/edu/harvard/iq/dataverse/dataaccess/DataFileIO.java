@@ -89,6 +89,8 @@ public abstract class DataFileIO {
     
     
     // Abstract methods to be implemented by the storage drivers:
+    
+    public abstract boolean fileExists(Path path) throws IOException;
 
     public abstract void open(DataAccessOption... option) throws IOException;
     
