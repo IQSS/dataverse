@@ -43,6 +43,7 @@ public class Notifications extends AbstractApiBean {
             JsonArrayBuilder reasonsForReturn = Json.createArrayBuilder();
             Type type = notification.getType();
             notificationObjectBuilder.add("type", type.toString());
+            notificationObjectBuilder.add("id", notification.getId());
             if (Type.RETURNEDDS.equals(type) || Type.SUBMITTEDDS.equals(type)) {
                 JsonArrayBuilder reasons = getReasonsForReturn(notification);
                 for (JsonValue reason : reasons.build()) {
