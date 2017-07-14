@@ -93,7 +93,6 @@ import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import static edu.harvard.iq.dataverse.workflows.WorkflowAction.Type.RETURN_TO_AUTHOR;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {

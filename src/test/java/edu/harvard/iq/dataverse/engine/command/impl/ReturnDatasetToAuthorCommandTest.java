@@ -96,8 +96,8 @@ public class ReturnDatasetToAuthorCommandTest {
                         return null;
                     }
                     @Override 
-                    public WorkflowComment saveWorkflowComment(WorkflowComment comment){
-                        return null;
+                    public WorkflowComment addWorkflowComment(WorkflowComment comment){
+                        return comment;
                     }
                 };
             }

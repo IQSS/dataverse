@@ -868,14 +868,9 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
-    // FIXME: Change this to addWorkflowComment because we don't allow editing.
-    public WorkflowComment saveWorkflowComment(WorkflowComment workflowComment) {
-        if (workflowComment.getId() == null) {
-            em.persist(workflowComment);
-            return workflowComment;
-        } else {
-            return em.merge(workflowComment);
-        }
+    public WorkflowComment addWorkflowComment(WorkflowComment workflowComment) {
+        em.persist(workflowComment);
+        return workflowComment;
     }
 
 }

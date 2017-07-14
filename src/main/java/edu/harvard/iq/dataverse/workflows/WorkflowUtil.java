@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 public class WorkflowUtil {
-
+    
     public static JsonArrayBuilder getAllWorkflowComments(DatasetVersion datasetVersion) {
         JsonArrayBuilder workflowCommentsAsJson = Json.createArrayBuilder();
         List<WorkflowComment> workflowComments = datasetVersion.getWorkflowComments();
@@ -19,9 +19,9 @@ public class WorkflowUtil {
             workflowCommentAsJson.add("message", workflowComment.getMessage());
             workflowCommentAsJson.add("createTime", Util.getDateTimeFormat().format(workflowComment.getCreated()));
             workflowCommentAsJson.add("commentBy", workflowComment.getAuthenticatedUser().getIdentifier());
+            workflowCommentAsJson.add("datasetTitle", datasetVersion.getTitle());
             workflowCommentsAsJson.add(workflowCommentAsJson);
         }
         return workflowCommentsAsJson;
     }
-
 }

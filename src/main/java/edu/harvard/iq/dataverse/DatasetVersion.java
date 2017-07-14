@@ -976,7 +976,7 @@ public class DatasetVersion implements Serializable {
                 return null;
             }
         }
-        return serverName + "/dataset.xhtml?id=" + dset.getId() + "&versionId" + this.getId();
+        return serverName + "/dataset.xhtml?id=" + dset.getId() + "&versionId=" + this.getId();
     } 
     
     /*

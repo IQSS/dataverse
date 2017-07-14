@@ -64,7 +64,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), this.getUser());
         
         WorkflowComment workflowComment = new WorkflowComment(new WorkflowAction(theDataset.getEditVersion(), RETURN_TO_AUTHOR), comment, (AuthenticatedUser) this.getUser());
-        ctxt.datasets().saveWorkflowComment(workflowComment);
+        ctxt.datasets().addWorkflowComment(workflowComment);
 
         if (ddu != null) {
             ddu.setLastUpdateDate(updateTime);
