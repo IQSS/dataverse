@@ -40,11 +40,14 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.FileNotFoundException;
 import java.nio.channels.Channel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Base64;
 
 
 public class FileAccessIO extends DataFileIO {
@@ -593,5 +596,12 @@ public class FileAccessIO extends DataFileIO {
         return auxItems;
     }
 
+    // TODO: add logic to check for existing metadata exports as well
+    @Override
+    public boolean fileExists(Path path) throws IOException {
+        if (Files.exists(path)) {
+            return true;
+            } else return false;
+    }
 
 }
