@@ -13,15 +13,15 @@ public class ScriptRequestResponse {
         this.datasetId = -1;
         this.userId = -1;
         this.script = null;
-	this.datasetIdentifier = null;
+        this.datasetIdentifier = null;
     }
     public ScriptRequestResponse(int httpStatusCode, String datasetIdentifier, long userId, String script)
     {
-	    this.httpStatusCode = httpStatusCode;
-	    this.datasetIdentifier = datasetIdentifier;
-	    this.userId = userId;
-	    this.script = script;
-	    this.datasetId = -1;
+        this.httpStatusCode = httpStatusCode;
+        this.datasetIdentifier = datasetIdentifier;
+        this.userId = userId;
+        this.script = script;
+        this.datasetId = -1;
     }
 
     public int getHttpStatusCode() {
@@ -42,7 +42,7 @@ public class ScriptRequestResponse {
 
     public String getDatasetIdentifier()
     {
-	    return datasetIdentifier;
+        return datasetIdentifier;
     }
 
 }
