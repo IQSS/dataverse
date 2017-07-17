@@ -15,15 +15,6 @@ public class ScriptRequestResponse {
         this.script = null;
 	this.datasetIdentifier = null;
     }
-
-    public ScriptRequestResponse(int httpStatusCode, long datasetId, long userId, String script) {//TODO[pm] - depreciate
-        this.httpStatusCode = httpStatusCode;
-        this.datasetId = datasetId;
-        this.userId = userId;
-        this.script = script;
-	this.datasetIdentifier = null;
-    }
-
     public ScriptRequestResponse(int httpStatusCode, String datasetIdentifier, long userId, String script)
     {
 	    this.httpStatusCode = httpStatusCode;
