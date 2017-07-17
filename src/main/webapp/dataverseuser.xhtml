@@ -465,7 +465,10 @@
                                             #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         </span>
                                     </label>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-9">
+                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['user.username.valid']}</p>
+                                    </div>
+                                    <div class="col-sm-4 col-sm-offset-3">
                                         <p:inputText id="userName" styleClass="form-control" tabindex="1"
                                                         validator="#{DataverseUserPage.validateUserName}"
                                                         value="#{DataverseUserPage.username}"
