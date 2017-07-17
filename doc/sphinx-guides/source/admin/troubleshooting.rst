@@ -5,8 +5,18 @@ Troubleshooting
 
 This new (as of v.4.6) section of the Admin guide is for tips on how to diagnose and fix system problems. 
 
-.. contents:: |toctitle|
+.. contents:: Contents:
 	:local:
+
+Glassfish
+---------
+
+``server.log`` is the main place to look when you encounter problems. Hopefully an error message has been logged. If there's a stack trace, it may be of interest to developers, especially they can trace line numbers back to a tagged version.
+
+For debugging purposes, you may find it helpful to increase logging levels as mentioned in the :doc:`/developers/debugging` section of the Developer Guide.
+
+Our guides focus on using the command line to manage Glassfish but you might be interested in an admin GUI at http://localhost:4848
+
 
 Deployment fails, "EJB Timer Service not available"
 ---------------------------------------------------

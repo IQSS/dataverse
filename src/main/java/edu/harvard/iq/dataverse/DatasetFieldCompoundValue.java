@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -143,7 +144,10 @@ public class DatasetFieldCompoundValue implements Serializable {
                 if (StringUtils.isBlank(format)) {
                     format = "#VALUE";
                 }
-
+                String sanitizedValue = childDatasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(childDatasetField.getValue()) :  childDatasetField.getValue();
+                if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()){
+                    sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
+                }
                 // replace the special values in the format (note: we replace #VALUE last since we don't
                 // want any issues if the value itself has #NAME in it)
                 String displayValue = format
@@ -151,7 +155,7 @@ public class DatasetFieldCompoundValue implements Serializable {
                         //todo: this should be handled in more generic way for any other text that can then be internationalized
                         // if we need to use replaceAll for regexp, then make sure to use: java.util.regex.Matcher.quoteReplacement(<target string>)
                         .replace("#EMAIL", ResourceBundle.getBundle("Bundle").getString("dataset.email.hiddenMessage"))
-                        .replace("#VALUE", childDatasetField.getValue());
+                        .replace("#VALUE",  sanitizedValue );
 
                 fieldMap.put(childDatasetField,displayValue);
             }
