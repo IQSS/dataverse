@@ -32,8 +32,8 @@ public class DataCaptureModuleServiceBean implements Serializable {
         logger.fine("requestRsyncScriptCreation using JSON string: " + jsonString + " and sending to " + uploadRequestUrl);
         try {
             HttpResponse<String> uploadRequest = Unirest.post(uploadRequestUrl)
-                    .body(jsonString)
-                    .asString();
+                                                 .body(jsonString)
+                                                 .asString();
             UploadRequestResponse uploadRequestResponse = DataCaptureModuleUtil.makeUploadRequest(uploadRequest);
             return uploadRequestResponse;
         } catch (UnirestException ex) {
@@ -45,19 +45,19 @@ public class DataCaptureModuleServiceBean implements Serializable {
     public ScriptRequestResponse retreiveRequestedRsyncScript(String datasetIdentifier, String scriptRequestUrl) throws DataCaptureModuleException
     {
         logger.fine("retreiveRequestedRsyncScript using dataset identifier + " + datasetIdentifier + " to " + scriptRequestUrl);
-	try
-	{
+        try
+        {
             HttpResponse<JsonNode> scriptRequest = Unirest.post(scriptRequestUrl)
-                    .field("datasetIdentifier", datasetIdentifier)
-                    .asJson();
+                                                   .field("datasetIdentifier", datasetIdentifier)
+                                                   .asJson();
             return DataCaptureModuleUtil.getScriptFromRequest(scriptRequest);
-	}
-	catch( UnirestException ex)
-	{
+        }
+        catch( UnirestException ex)
+        {
             String error = "Error calling " + scriptRequestUrl + ": " + ex;
             logger.info(error);
             throw new DataCaptureModuleException(error, ex);
-	}
+        }
     }
 
 }

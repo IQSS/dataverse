@@ -28,7 +28,7 @@ public class DataCaptureModuleUtil {
      */
     public static JsonObject generateJsonForUploadRequest(AuthenticatedUser user, Dataset dataset) {
         JsonObjectBuilder jab = Json.createObjectBuilder();
-//        // The general rule should be to always pass the user id and dataset identifier to the DCM.
+        // The general rule should be to always pass the user id and dataset identifier to the DCM.
         jab.add("userId", user.getId());
         jab.add("datasetIdentifier", dataset.getIdentifier());
         return jab.build();
@@ -46,10 +46,8 @@ public class DataCaptureModuleUtil {
         }
         int httpStatusCode = uploadRequest.getStatus();
         String script = body.getObject().getString("script");
-        //long datasetId = body.getObject().getLong("datasetIdentifier"); 
 	String datasetIdentifier = body.getObject().getString("datasetIdentifier");
         long userId = body.getObject().getLong("userId");
-        //ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetId, userId, script);
         ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetIdentifier, userId, script);
         return scriptRequestResponse;
     }

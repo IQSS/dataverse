@@ -35,7 +35,7 @@ public class DataCaptureModuleServiceBeanIT {
         Dataset dataset = new Dataset();
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         long timeInMillis = calendar.getTimeInMillis();
-	String ident = Long.toString( timeInMillis );
+        String ident = Long.toString( timeInMillis );
         dataset.setIdentifier( ident );
         String jsonString = DataCaptureModuleUtil.generateJsonForUploadRequest(authenticatedUser, dataset).toString();
         logger.info("jsonString: " + jsonString);

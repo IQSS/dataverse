@@ -38,9 +38,9 @@ public class DataCaptureModuleUtilTest {
         System.out.println("generateJsonForUploadRequest");
         AuthenticatedUser user = makeAuthenticatedUser("Ralph", "Rsync");
         Dataset dataset = new Dataset();
-	dataset.setIdentifier("42");
+        dataset.setIdentifier("42");
         JsonObject result = DataCaptureModuleUtil.generateJsonForUploadRequest(user, dataset);
-	assertEquals("42", result.getString("datasetIdentifier") );
+        assertEquals("42", result.getString("datasetIdentifier") );
         int userId = result.getInt("userId");
         assertTrue(Integer.MIN_VALUE <= userId && userId <= Integer.MAX_VALUE);
     }

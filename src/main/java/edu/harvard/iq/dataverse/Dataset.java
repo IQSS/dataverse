@@ -170,7 +170,7 @@ public class Dataset extends DvObjectContainer {
 
     /**
      * returns dataset identifier.
-     * For example, a dataset with database id (primary key) 3, persistent ID 
+     * For example, a dataset with database id (primary key) 3, persistent ID
      * doi:10.5072/FK2/abcde, this should return "abcde".
      */
     public String getIdentifier() {
