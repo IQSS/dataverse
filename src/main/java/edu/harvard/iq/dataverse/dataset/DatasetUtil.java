@@ -88,9 +88,22 @@ public class DatasetUtil {
         if (dataset == null) {
             return null;
         }
-
+        
+        DataFileIO dataAccess=null;
+                
+        try{
+            dataAccess=DataAccess.getDataFileIO(dataset);
+            
+        }
+        catch(IOException ioex){
+            logger.warning("Failed initialize dataset " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+        }
+        
+        
         Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-        if (Files.exists(path)) {
+       
+        
+        if (dataAccess.fileExists(path)) {
             try {
                 byte[] bytes = Files.readAllBytes(path);
                 String base64image = Base64.getEncoder().encodeToString(bytes);
@@ -223,7 +236,7 @@ public class DatasetUtil {
             //original code for saving dataset thumbnails into local file storage
             Files.copy(tmpFile.toPath(), originalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             //this goes through Swift API/local storage to write the dataset thumbnail into a container
-            dataAccess.savePathAsAux(tmpFile.toPath(), datasetLogoThumbnail);
+            dataAccess.savePathAsAux(tmpFile.toPath(), datasetLogoThumbnail+thumb48addedByImageThumbConverter);
         } catch (IOException ex) {
             logger.severe("Failed to original file from " + tmpFile.getAbsolutePath() + " to " + originalFile.getAbsolutePath() + ": " + ex);
         }
