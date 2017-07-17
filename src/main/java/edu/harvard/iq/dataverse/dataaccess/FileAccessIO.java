@@ -245,7 +245,7 @@ public class FileAccessIO extends DataFileIO {
             FileOutputStream auxOut = new FileOutputStream(auxPath.toFile());
 
             if (auxOut == null) {
-                throw new IOException("Failed to open Auxiliary File " + this.getDataFile().getStorageIdentifier() + "." + auxItemTag + " for writing.");
+                throw new IOException("Failed to open Auxiliary File " + this.getDvObject().getStorageIdentifier() + "." + auxItemTag + " for writing.");
             }
 
             return auxOut.getChannel();
@@ -255,13 +255,13 @@ public class FileAccessIO extends DataFileIO {
         // Check if this Aux object is cached; and if so, open for reading:
 
         if (!auxPath.toFile().exists()) {
-            throw new FileNotFoundException("Auxiliary File " + this.getDataFile().getStorageIdentifier() + "." + auxItemTag + " does not exist.");
+            throw new FileNotFoundException("Auxiliary File " + this.getDvObject().getStorageIdentifier() + "." + auxItemTag + " does not exist.");
         }
 
         FileInputStream auxIn = new FileInputStream(auxPath.toFile());
 
         if (auxIn == null) {
-            throw new IOException("Failed to open Auxiliary File " + this.getDataFile().getStorageIdentifier() + "." + auxItemTag + " for reading");
+            throw new IOException("Failed to open Auxiliary File " + this.getDvObject().getStorageIdentifier() + "." + auxItemTag + " for reading");
         }
 
         return auxIn.getChannel();
@@ -301,14 +301,14 @@ public class FileAccessIO extends DataFileIO {
 
         String datasetDirectory = getDatasetDirectory();
 
-        if (this.getDataFile().getStorageIdentifier() == null || "".equals(this.getDataFile().getStorageIdentifier())) {
+        if (this.getDvObject().getStorageIdentifier() == null || "".equals(this.getDvObject().getStorageIdentifier())) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
         }
 
-        Path auxPath = Paths.get(datasetDirectory, this.getDataFile().getStorageIdentifier() + "." + auxItemTag);
+        Path auxPath = Paths.get(datasetDirectory, this.getDvObject().getStorageIdentifier() + "." + auxItemTag);
         
         if (auxPath == null) {
-            throw new IOException("Invalid Path location for the auxiliary file " + this.getDataFile().getStorageIdentifier() + "." + auxItemTag);
+            throw new IOException("Invalid Path location for the auxiliary file " + this.getDvObject().getStorageIdentifier() + "." + auxItemTag);
         }
         
         return auxPath;
@@ -427,11 +427,11 @@ public class FileAccessIO extends DataFileIO {
         
         String datasetDirectory = getDatasetDirectory(); 
         
-        if (this.getDataFile().getStorageIdentifier() == null || "".equals(this.getDataFile().getStorageIdentifier())) {
+        if (this.getDvObject().getStorageIdentifier() == null || "".equals(this.getDvObject().getStorageIdentifier())) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
         }
 
-        physicalPath = Paths.get(datasetDirectory, this.getDataFile().getStorageIdentifier());
+        physicalPath = Paths.get(datasetDirectory, this.getDvObject().getStorageIdentifier());
         return physicalPath;
 
     }
@@ -515,22 +515,28 @@ public class FileAccessIO extends DataFileIO {
     }
     
     private String getDatasetDirectory() throws IOException {
-        if (this.getDataFile() == null) {
-            throw new IOException("No datafile defined in the Data Access Object");
+        if (this.getDvObject()== null) {
+            throw new IOException("No DvObject defined in the Data Access Object");
         }
 
-        if (this.getDataFile().getOwner() == null) {
-            throw new IOException("Data Access: no parent dataset defined for this datafile");
+        if (this.getDvObject().getOwner() == null) {
+            throw new IOException("Data Access: no parent defined this Object");
         }
-
-        Path datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
-
+        Path datasetDirectoryPath=null;
+        
+        if(this.dvObjectType.equals(DvObjectType.dataset)){
+            datasetDirectoryPath = ((Dataset)this.getDvObject()).getFileSystemDirectory();
+        }
+        else if(this.dvObjectType.equals(DvObjectType.datafile)){
+            datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+        }
+        
         if (datasetDirectoryPath == null) {
             throw new IOException("Could not determine the filesystem directory of the parent dataset.");
         }
         String datasetDirectory = datasetDirectoryPath.toString();
 
-        if (this.getDataFile().getStorageIdentifier() == null || "".equals(this.getDataFile().getStorageIdentifier())) {
+        if (this.getDvObject().getStorageIdentifier() == null || "".equals(this.getDvObject().getStorageIdentifier())) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
         }
 

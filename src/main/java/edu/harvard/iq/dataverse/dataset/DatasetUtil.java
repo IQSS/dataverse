@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Base64;
 import javax.imageio.ImageIO;
+import org.apache.commons.io.IOUtils;
 
 public class DatasetUtil {
 
@@ -103,9 +104,10 @@ public class DatasetUtil {
         Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
        
         
-        if (dataAccess.fileExists(path)) {
+        if (ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE)!=null) {
             try {
-                byte[] bytes = Files.readAllBytes(path);
+//                byte[] bytes = Files.readAllBytes(path);
+                byte[] bytes=IOUtils.toByteArray(ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE).getInputStream());
                 String base64image = Base64.getEncoder().encodeToString(bytes);
                 DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
                 logger.fine("will get thumbnail from dataset logo");
@@ -224,7 +226,7 @@ public class DatasetUtil {
         DataFileIO dataAccess=null;
                 
         try{
-             dataAccess = DataAccess.createNewDataFileIO(dataset,"swift");
+             dataAccess = DataAccess.createNewDataFileIO(dataset,"file");
         }
         catch(IOException ioex){
             //TODO: Add a suitable waing message

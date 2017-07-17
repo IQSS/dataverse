@@ -35,6 +35,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -86,12 +87,17 @@ public class ImageThumbConverter {
     
     private static boolean isThumbnailAvailable(DataFileIO dataFileIO, int size) {
 
-        if (dataFileIO == null || dataFileIO.getDataFile() == null) {
+        if (dataFileIO == null || dataFileIO.getDvObject()== null) {
             return false;
         }
 
-        DataFile file = dataFileIO.getDataFile();
-
+//        DataFile file = dataFileIO.getDataFile();
+          DvObject dvObject = dataFileIO.getDvObject();
+          if(dvObject.isInstanceofDataset()){
+              return generateImageThumbnail(dataFileIO, size);
+          }
+          
+           DataFile file = (DataFile)dvObject;
         // if thumbnails are not even supported on this file type, no need
         // to check anything else:
         if (!FileUtil.isThumbnailSupported(file)) {
