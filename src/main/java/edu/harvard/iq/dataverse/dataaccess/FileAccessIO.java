@@ -159,26 +159,26 @@ public class FileAccessIO extends DataFileIO {
                 //e.g. image thumbnails/metadata exports
                 //TODO: do we really need to do anything here? should we return the dataset directory?
                 dataset = (Dataset)this.getDvObject();
-//                if (isReadAccess) {
-//                    FileInputStream fin = openLocalFileAsInputStream();
-//
-//                    if (fin == null) {
-//                        throw new IOException("Failed to open local file " + getStorageLocation());
-//                    }
-//
-//                    this.setInputStream(fin);
-//                    setChannel(fin.getChannel());
-//                    this.setSize(getLocalFileSize());
-//                } else if (isWriteAccess) {
-//                    FileOutputStream fout = openLocalFileAsOutputStream();
-//
-//                    if (fout == null) {
-//                        throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
-//                    }
-//
-//                    this.setOutputStream(fout);
-//                    setChannel(fout.getChannel());
-//                }
+                if (isReadAccess) {
+                    FileInputStream fin = openLocalFileAsInputStream();
+
+                    if (fin == null) {
+                        throw new IOException("Failed to open local file " + getStorageLocation());
+                    }
+
+                    this.setInputStream(fin);
+                    setChannel(fin.getChannel());
+                    this.setSize(getLocalFileSize());
+                } else if (isWriteAccess) {
+                    FileOutputStream fout = openLocalFileAsOutputStream();
+
+                    if (fout == null) {
+                        throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
+                    }
+
+                    this.setOutputStream(fout);
+                    setChannel(fout.getChannel());
+                }
                 break;
             case dataverse:
                 dataverse = (Dataverse)this.getDvObject();
