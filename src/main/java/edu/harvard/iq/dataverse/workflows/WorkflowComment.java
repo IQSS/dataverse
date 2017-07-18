@@ -17,6 +17,14 @@ import javax.persistence.JoinColumn;
 @Entity
 public class WorkflowComment implements Serializable {
 
+    /*
+    This release only supports Return to Author as a comment type
+    More may be added in future releases,
+    */
+    public enum Type {
+        RETURN_TO_AUTHOR //, SUBMIT_FOR_REVIEW not available in this release but may be added in the future
+    };
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,7 +48,7 @@ public class WorkflowComment implements Serializable {
      */
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private WorkflowAction.Type type;
+    private Type type;
 
     // This is nullable because when you submit for review, especially the first time, you don't have to enter a message.
     @Column(nullable = true, columnDefinition = "TEXT")
@@ -59,11 +67,10 @@ public class WorkflowComment implements Serializable {
     // TODO: How should we best associate these entries to notifications, which can go to multiple authors and curators?
 //    @Transient
 //    private List<UserNotification> notifications;
-    public WorkflowComment(WorkflowAction workflowAction, String message, AuthenticatedUser authenticatedUser) {
-        this.type = workflowAction.getType();
-        if (this.type.equals(WorkflowAction.Type.RETURN_TO_AUTHOR)) {
-            DatasetVersion datasetVersionFromAction = (DatasetVersion) workflowAction.getTarget();
-            this.datasetVersion = datasetVersionFromAction;
+    public WorkflowComment(DatasetVersion version, WorkflowComment.Type type, String message, AuthenticatedUser authenticatedUser) {
+        this.type = type;
+        if (this.type.equals(WorkflowComment.Type.RETURN_TO_AUTHOR)) {
+            this.datasetVersion = version;
         }
         this.message = message;
         this.authenticatedUser = authenticatedUser;
@@ -92,7 +99,7 @@ public class WorkflowComment implements Serializable {
         return datasetVersion;
     }
 
-    public WorkflowAction.Type getType() {
+    public Type getType() {
         return type;
     }
 

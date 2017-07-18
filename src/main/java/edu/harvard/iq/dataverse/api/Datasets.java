@@ -62,8 +62,6 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import edu.harvard.iq.dataverse.workflows.WorkflowAction;
-import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Collections;

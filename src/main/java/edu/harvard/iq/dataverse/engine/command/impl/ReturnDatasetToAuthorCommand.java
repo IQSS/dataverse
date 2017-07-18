@@ -12,8 +12,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.workflows.WorkflowAction;
-import static edu.harvard.iq.dataverse.workflows.WorkflowAction.Type.RETURN_TO_AUTHOR;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -62,7 +60,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
 
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), this.getUser());
         
-        WorkflowComment workflowComment = new WorkflowComment(new WorkflowAction(theDataset.getEditVersion(), RETURN_TO_AUTHOR), comment, (AuthenticatedUser) this.getUser());
+        WorkflowComment workflowComment = new WorkflowComment(theDataset.getEditVersion(), WorkflowComment.Type.RETURN_TO_AUTHOR, comment, (AuthenticatedUser) this.getUser());
         ctxt.datasets().addWorkflowComment(workflowComment);
 
         if (ddu != null) {
