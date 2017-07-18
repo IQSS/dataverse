@@ -524,12 +524,20 @@ public class FileAccessIO extends DataFileIO {
         }
         Path datasetDirectoryPath=null;
         
-        if(this.dvObjectType.equals(DvObjectType.dataset)){
+//        try{
+        if(this.getDvObjectType().equals(DvObjectType.dataset)){
             datasetDirectoryPath = ((Dataset)this.getDvObject()).getFileSystemDirectory();
         }
-        else if(this.dvObjectType.equals(DvObjectType.datafile)){
+        else if(this.getDvObjectType().equals(DvObjectType.datafile)){
             datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+//        }
         }
+//        catch(Exception e){
+//                System.out.println("Rohit Bhattacharjee EXCEPTION");
+//               e.printStackTrace();
+//                }
+//        
+        
         
         if (datasetDirectoryPath == null) {
             throw new IOException("Could not determine the filesystem directory of the parent dataset.");
@@ -602,12 +610,27 @@ public class FileAccessIO extends DataFileIO {
         return auxItems;
     }
 
-    // TODO: add logic to check for existing metadata exports as well
+//    // TODO: add logic to check for existing metadata exports as well
+//    @Override
+//    public boolean fileExists(Path path) throws IOException {
+//        if (Files.exists(path)) {
+//            return true;
+//            } else return false;
+//    }
+
     @Override
-    public boolean fileExists(Path path) throws IOException {
-        if (Files.exists(path)) {
-            return true;
-            } else return false;
+    public InputStream getAuxFile(String auxItemTag) throws IOException {
+        InputStream in = null;
+//        Path path
+        if(this.isAuxObjectCached(auxItemTag))
+        {
+            Path path=getAuxObjectAsPath(auxItemTag);
+            in=Files.newInputStream(path);
+        }
+       
+       
+        
+        return in;
     }
 
 }

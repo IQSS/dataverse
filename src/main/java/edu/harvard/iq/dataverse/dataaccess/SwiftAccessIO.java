@@ -850,9 +850,15 @@ public class SwiftAccessIO extends DataFileIO {
     }
 
     @Override
-    public boolean fileExists(Path path) throws IOException {
-        return false;
+    public InputStream getAuxFile(String auxItemTag) throws IOException {
+        StoredObject swiftAuxFile=null;
+        InputStream in=null;
+        
+        if(this.isAuxObjectCached(auxItemTag))
+        {
+            swiftAuxFile=openSwiftAuxFile(auxItemTag);
+        }
+        return swiftAuxFile.downloadObjectAsInputStream();
     }
-
 
 }
