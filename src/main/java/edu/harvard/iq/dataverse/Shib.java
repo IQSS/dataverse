@@ -117,7 +117,33 @@ public class Shib implements java.io.Serializable {
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         request = (HttpServletRequest) context.getRequest();
         ShibUtil.printAttributes(request);
-
+        
+        /* 
+        * QDRCustom
+        * Direct the user to the Drupal Terms & Conditions page if the user has not 
+        * accepted the latest version of the T&C
+        */
+        Integer acceptedTermsDocVer;
+        try {
+            String acceptedTermsDocVerStr = getRequiredValueFromAssertion(ShibUtil.acceptedTermsDocVerAttribute);
+            acceptedTermsDocVer = new Integer(acceptedTermsDocVerStr);
+        } catch (Exception ex) {
+            return;
+        }
+        
+        int latestTermsDocVer = systemConfig.getShibAuthTermsVer();        
+        if (acceptedTermsDocVer < latestTermsDocVer) {
+            // Direct user to Drupal T&C page
+            String termsConditionsPageURL = "https://dev-aws.qdr.org/shib_auth/get_custom_data?returnToDataverse=true";
+            try {
+                context.redirect(termsConditionsPageURL);
+                return;
+            } catch (IOException ex) {
+                logger.info("Unable to redirect user to Terms & Conditions Page " + termsConditionsPageURL);
+                return;
+            }
+        }
+        
         /**
          * @todo Investigate why JkEnvVar is null since it may be useful for
          * debugging per https://github.com/IQSS/dataverse/issues/2916 . See
@@ -212,31 +238,7 @@ public class Shib implements java.io.Serializable {
         }
 //        emailAddress = "willFailBeanValidation"; // for testing createAuthenticatedUser exceptions
         displayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, null);
-        
-        /* 
-        * QDRCustom
-        * Direct the user to the Drupal Terms & Conditions page if the user has not 
-        * accepted the latest version of the T&C
-        */
-        Integer acceptedTermsDocVer;
-        try {
-            String acceptedTermsDocVerStr = getRequiredValueFromAssertion(ShibUtil.acceptedTermsDocVerAttribute);
-            acceptedTermsDocVer = new Integer(acceptedTermsDocVerStr);
-        } catch (Exception ex) {
-            return;
-        }
-        
-        int latestTermsDocVer = systemConfig.getShibAuthTermsVer();        
-        if (acceptedTermsDocVer < latestTermsDocVer) {
-            // Direct user to Drupal T&C page
-            String termsConditionsPageURL = "https://dev-aws.qdr.org";
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect(termsConditionsPageURL);
-            } catch (IOException ex) {
-                logger.info("Unable to redirect user to Terms & Conditions Page " + termsConditionsPageURL);
-            }
-        }
-                
+                        
         userPersistentId = shibIdp + persistentUserIdSeparator + shibUserIdentifier;
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         AuthenticatedUser au = authSvc.lookupUser(shibAuthProvider.getId(), userPersistentId);
