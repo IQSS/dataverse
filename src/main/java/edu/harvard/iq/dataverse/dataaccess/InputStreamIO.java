@@ -138,8 +138,10 @@ public class InputStreamIO extends DataFileIO {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: there is no output stream associated with this object.");
     }
 
+   
+
     @Override
-    public boolean fileExists(Path path) throws IOException {
+    public InputStream getAuxFile(String auxItemTag) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

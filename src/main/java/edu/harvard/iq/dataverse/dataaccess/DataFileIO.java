@@ -91,7 +91,7 @@ public abstract class DataFileIO {
     // Abstract methods to be implemented by the storage drivers:
     
     //Unsure if we currently need this.
-    public abstract boolean fileExists(Path path) throws IOException;
+//    public abstract boolean fileExists(Path path) throws IOException;
 
     public abstract void open(DataAccessOption... option) throws IOException;
     
@@ -131,6 +131,7 @@ public abstract class DataFileIO {
     // such as "saved original" and cached format conversions for tabular files, 
     // thumbnails for images, etc. - in physical files with the same file 
     // name but various reserved extensions. 
+    public abstract InputStream getAuxFile(String auxItemTag) throws IOException ;
     
     public abstract Channel openAuxChannel(String auxItemTag, DataAccessOption... option) throws IOException;
     
@@ -205,7 +206,7 @@ public abstract class DataFileIO {
     private GetMethod method = null;
     private Header[] responseHeaders;
     
-      public enum DvObjectType {
+      public static enum DvObjectType {
         dataset,
         datafile,
         dataverse
