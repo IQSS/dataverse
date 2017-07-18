@@ -111,16 +111,16 @@ public class DatasetUtilTest {
     }
 
     /**
-     * Test of persistDatasetLogoToDiskAndCreateThumbnail method, of class
+     * Test of persistDatasetLogoToStorageAndCreateThumbnail method, of class
      * DatasetUtil.
      */
     @Test
-    public void testPersistDatasetLogoToDiskAndCreateThumbnail() {
-        System.out.println("persistDatasetLogoToDiskAndCreateThumbnail");
+    public void testPersistDatasetLogoToStorageAndCreateThumbnail() {
+        System.out.println("persistDatasetLogoToStorageAndCreateThumbnail");
         Dataset dataset = null;
         InputStream inputStream = null;
         Dataset expResult = null;
-        Dataset result = DatasetUtil.persistDatasetLogoToDiskAndCreateThumbnail(dataset, inputStream);
+        Dataset result = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnail(dataset, inputStream);
         assertEquals(expResult, result);
     }
 
