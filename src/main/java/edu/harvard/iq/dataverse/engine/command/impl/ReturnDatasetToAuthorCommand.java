@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -27,9 +26,9 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
     private final Dataset theDataset;
     private final String comment;
 
-    public ReturnDatasetToAuthorCommand(DataverseRequest aRequest, DvObject anAffectedDvObject, String comment) {
+    public ReturnDatasetToAuthorCommand(DataverseRequest aRequest, Dataset anAffectedDvObject, String comment) {
         super(aRequest, anAffectedDvObject);
-        this.theDataset = (Dataset) anAffectedDvObject;
+        this.theDataset =  anAffectedDvObject;
         this.comment = comment;
     }
 
@@ -73,19 +72,26 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
             // TODO: This logic to update the DatasetVersionUser was copied from UpdateDatasetCommand and also appears in CreateDatasetCommand, PublishDatasetCommand UpdateDatasetCommand, and SubmitDatasetForReviewCommand. Consider consolidating.
             DatasetVersionUser datasetDataverseUser = new DatasetVersionUser();
             datasetDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
-            datasetDataverseUser.setLastUpdateDate((Timestamp) updateTime);
+            datasetDataverseUser.setLastUpdateDate(updateTime);
             String id = getUser().getIdentifier();
             id = id.startsWith("@") ? id.substring(1) : id;
             AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
             datasetDataverseUser.setAuthenticatedUser(au);
             ctxt.em().merge(datasetDataverseUser);
         }
-        List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
-        List<AuthenticatedUser> editUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.EditDataset, savedDataset);
-        for (AuthenticatedUser au : authUsers) {
-            editUsers.remove(au);
+        /*
+            So what we're doing here is sending notifications to the authors who do not have publish permissions
+            First get users who can publish - or in this case review
+            Then get authors.
+            Then remove reviewers from the autors list
+            Finally send a notification to the remaining (non-reviewing) authors - Hey! your dataset was rejected.
+        */
+        List<AuthenticatedUser> reviewers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
+        List<AuthenticatedUser> authors = ctxt.permissions().getUsersWithPermissionOn(Permission.EditDataset, savedDataset);
+        for (AuthenticatedUser au : reviewers) {
+            authors.remove(au);
         }
-        for (AuthenticatedUser au : editUsers) {
+        for (AuthenticatedUser au : authors) {
             ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, savedDataset.getLatestVersion().getId(), comment);
         }
         // TODO: What should we do with the indexing result? Print it to the log?

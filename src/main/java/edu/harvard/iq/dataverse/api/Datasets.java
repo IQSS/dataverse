@@ -640,12 +640,8 @@ public class Datasets extends AbstractApiBean {
         JsonObject json = Json.createReader(rdr).readObject();
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            String reasonForReturn = null;
-            try {
-                reasonForReturn = json.getString("reasonForReturn");
-            } catch (NullPointerException ex) {
-                return error(Response.Status.BAD_REQUEST, "The JSON you supplied does not contain a reason for returning the dataset to the author(s).");
-            }
+            String reasonForReturn = null;           
+            reasonForReturn = json.getString("reasonForReturn");
             // TODO: Once we add a box for the curator to type into, pass the reason for return to the ReturnDatasetToAuthorCommand and delete this check and call to setReturnReason on the API side.
             if (reasonForReturn == null || reasonForReturn.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
