@@ -518,7 +518,7 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
     }
-
+    
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
@@ -721,6 +721,14 @@ public class UtilIT {
                 .put("/api/admin/authenticatedUsers/convert/builtin2oauth");
         return response;
     }
+    
+    static Response restrictFile(Long datafileId, boolean restrict, String apiToken){
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(restrict)
+                .put("/api/files/" + datafileId + "/restrict");
+        return response;
+    }
 
     static Response nativeGet(Integer datasetId, String apiToken) {
         Response response = given()
@@ -802,6 +810,15 @@ public class UtilIT {
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
         return requestSpecification.get("/api/search?q=" + query);
+    }
+
+    static Response searchAndShowFacets(String query, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/search?q=" + query + "&show_facets=true");
     }
 
     static Response indexClear() {

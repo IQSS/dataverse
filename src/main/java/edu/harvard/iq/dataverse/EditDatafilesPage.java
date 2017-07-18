@@ -10,7 +10,9 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -557,8 +559,16 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (mode == FileEditMode.UPLOAD) {
             JH.addMessage(FacesMessage.SEVERITY_INFO, getBundleString("dataset.message.uploadFiles"));
         }
+        
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
+            JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
+        }   
+        
         return null;
+        
     }
+    
+    
     
     
     private void msg(String s){
@@ -697,10 +707,11 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
-    
-    public void restrictFiles(boolean restricted) {
+     
+    public void restrictFiles(boolean restricted) throws CommandException{
+
         // since we are restricted files, first set the previously restricted file list, so we can compare for
-        // determinin whether to show the access popup
+        // determining whether to show the access popup
         previouslyRestrictedFiles = new ArrayList();
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (fmd.isRestricted()) {
@@ -720,13 +731,17 @@ public class EditDatafilesPage implements java.io.Serializable {
                     fileNames = fileNames.concat(", " + fmd.getLabel());
                 }
             }
-            fmd.setRestricted(restricted);
-            if (workingVersion.isDraft() && !fmd.getDataFile().isReleased()) {
-                // We do not really need to check that the working version is 
-                // a draft here - it must be a draft, if we've gotten this
-                // far. But just in case. -- L.A. 4.2.1
-                fmd.getDataFile().setRestricted(restricted);
-            }
+            //fmd.setRestricted(restricted);
+            Command cmd;
+            cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
+            commandEngine.submit(cmd);
+                       
+//            if (workingVersion.isDraft() && !fmd.getDataFile().isReleased()) {
+//                // We do not really need to check that the working version is 
+//                // a draft here - it must be a draft, if we've gotten this
+//                // far. But just in case. -- L.A. 4.2.1
+//                  fmd.getDataFile().setRestricted(restricted);              
+//            }
         }
         if (fileNames != null) {
             String successMessage = getBundleString("file.restricted.success");
@@ -1165,7 +1180,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             StringBuilder saveError = new StringBuilder();
         
             for (FileMetadata fileMetadata : fileMetadatas) {
-
+          
                 if (fileMetadata.getDataFile().getCreateDate() == null) {
                     fileMetadata.getDataFile().setCreateDate(updateTime);
                     fileMetadata.getDataFile().setCreator((AuthenticatedUser) session.getUser());
