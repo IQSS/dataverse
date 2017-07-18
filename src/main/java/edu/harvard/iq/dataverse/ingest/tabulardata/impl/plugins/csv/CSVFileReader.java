@@ -137,8 +137,8 @@ public class CSVFileReader extends TabularDataFileReader {
         CSVParser parser = new CSVParser(csvReader, inFormat.withHeader());
         Map<String, Integer> headers = parser.getHeaderMap();
 
-        for (Map.Entry<String, Integer> header : headers.entrySet()) {
-            String varName = header.getKey();
+        int i = 0;
+        for (String varName : headers.keySet()) {
             if (varName == null || varName.isEmpty()) {
                 // TODO:
                 // Add a sensible variable name validation algorithm.
@@ -157,8 +157,9 @@ public class CSVFileReader extends TabularDataFileReader {
 
             dv.setTypeCharacter();
             dv.setIntervalDiscrete();
-            dv.setFileOrder(header.getValue());
+            dv.setFileOrder(i);
             dv.setDataTable(dataTable);
+            i++;
         }
 
         dataTable.setVarQuantity((long) variableList.size());
@@ -169,7 +170,7 @@ public class CSVFileReader extends TabularDataFileReader {
         boolean[] isTimeVariable = new boolean[headers.size()];
         boolean[] isDateVariable = new boolean[headers.size()];
 
-        for (int i = 0; i < headers.size(); i++) {
+        for (i = 0; i < headers.size(); i++) {
             // OK, let's assume that every variable is numeric;
             // but we'll go through the file and examine every value; the
             // moment we find a value that's not a legit numeric one, we'll
@@ -201,7 +202,7 @@ public class CSVFileReader extends TabularDataFileReader {
                     throw new IOException(BundleUtil.getStringFromBundle("ingest.csv.recordMismatch", args));
                 }
 
-                for (int i = 0; i < headers.size(); i++) {
+                for (i = 0; i < headers.size(); i++) {
                     String varString = record.get(i);
                     isIntegerVariable[i] = isIntegerVariable[i]
                                            && varString != null
@@ -317,7 +318,7 @@ public class CSVFileReader extends TabularDataFileReader {
         csvReader.close();
 
         // Re-type the variables that we've determined are numerics:
-        for (int i = 0; i < headers.size(); i++) {
+        for (i = 0; i < headers.size(); i++) {
             if (isNumericVariable[i]) {
                 dataTable.getDataVariables().get(i).setTypeNumeric();
 
@@ -350,7 +351,7 @@ public class CSVFileReader extends TabularDataFileReader {
                     throw new IOException(BundleUtil.getStringFromBundle("ingest.csv.recordMismatch", args));
                 }
 
-                for (int i = 0; i < headers.size(); i++) {
+                for (i = 0; i < headers.size(); i++) {
                     String varString = record.get(i);
                     if (isNumericVariable[i]) {
                         if (varString == null || varString.isEmpty() || varString.equalsIgnoreCase("NA")) {
