@@ -195,11 +195,10 @@
             <artifactId>commons-math</artifactId>
             <version>2.2</version>
         </dependency>
-	<!-- commons-validator 1.5.1 & 1.6.0 gave errors and did not provide needed functionality, so 1.5.0 was used -->
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.5.0</version>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>

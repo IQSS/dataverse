@@ -31,6 +31,7 @@ public class EMailValidatorTest {
         assertEquals(true, EMailValidator.isEmailValid("begüm.vriezen@example.com", null));
         assertEquals(true, EMailValidator.isEmailValid("lótus.gonçalves@example.com", null));
         assertEquals(true, EMailValidator.isEmailValid("lótus.gonçalves@éxample.com", null));
+        assertEquals(true, EMailValidator.isEmailValid("begüm.vriezen@example.cologne", null));
         assertEquals(true, EMailValidator.isEmailValid("رونیکا.محمدخان@example.com", null));
         assertEquals(false, EMailValidator.isEmailValid("lótus.gonçalves@example.cóm", null));
         assertEquals(false, EMailValidator.isEmailValid("dora@.com", null));
