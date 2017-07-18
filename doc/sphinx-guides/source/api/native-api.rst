@@ -535,7 +535,6 @@ Each user can get a dump of their notifications by passing in their API token::
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
 
-The notifications endpoint is somewhat experimental and was added to help support the "Submit for Review" and "Return to Author" workflow. The idea is that a curator or author could write a script to poll periodically for notifications to find out when action is required on their part.
 
 Admin
 ~~~~~~~~~~~~~~~~
