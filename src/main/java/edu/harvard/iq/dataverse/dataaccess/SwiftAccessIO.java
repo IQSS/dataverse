@@ -666,6 +666,9 @@ public class SwiftAccessIO extends DataFileIO {
 
      public String getSwiftContainerName() {
         String swiftFolderPathSeparator = System.getProperty("dataverse.files.swift-folder-path-separator");
+        if (swiftFolderPathSeparator == null) {
+            swiftFolderPathSeparator = "_";
+        }
         String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
         String containerName = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
             authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
