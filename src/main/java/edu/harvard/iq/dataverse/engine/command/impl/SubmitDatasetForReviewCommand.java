@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -23,9 +22,9 @@ public class SubmitDatasetForReviewCommand extends AbstractCommand<Dataset> {
 
     private final Dataset theDataset;
 
-    public SubmitDatasetForReviewCommand(DataverseRequest aRequest, DvObject anAffectedDvObject) {
-        super(aRequest, anAffectedDvObject);
-        this.theDataset = (Dataset) anAffectedDvObject;
+    public SubmitDatasetForReviewCommand(DataverseRequest aRequest, Dataset dataset) {
+        super(aRequest, dataset);
+        this.theDataset = dataset;
     }
 
     @Override
