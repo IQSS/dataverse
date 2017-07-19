@@ -14,7 +14,9 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.javaswift.joss.client.factory.AccountFactory;
@@ -62,6 +64,7 @@ public class SwiftAccessIO extends DataFileIO {
     private Container swiftContainer = null;
     
     //TODO: should this be dynamically generated based on size of file?
+    //Also, this is in seconds
     private static int TEMP_URL_EXPIRES = 60;
 
     private static int LIST_PAGE_LIMIT = 100;
@@ -663,39 +666,55 @@ public class SwiftAccessIO extends DataFileIO {
         return fileUri;
     }
     
+    //these all get called a lot (20+ times) to load a page
+    //lets cache them if the expiry is not expired
+    private String hmac = null;
     public String generateTempUrlSignature(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
-        Properties p = getSwiftProperties();
-        String secretKey = p.getProperty("swift.hash_key." + swiftEndPoint);
-        String path = "/v1/" + containerName + "/" + objectName;
-        Long expires = generateTempUrlExpiry(duration);
-        String hmacBody = "GET\n" + expires + "\n" + path;
-        String hmac = null;
-        try {
-            hmac = calculateRFC2104HMAC(hmacBody, secretKey);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        if (hmac == null || isExpiryExpired(generateTempUrlExpiry(duration), duration)) {
+            Properties p = getSwiftProperties();
+            String secretKey = p.getProperty("swift.hash_key." + swiftEndPoint);
+            String path = "/v1/" + containerName + "/" + objectName;
+            Long expires = generateTempUrlExpiry(duration);
+            String hmacBody = "GET\n" + expires + "\n" + path;
+            try {
+                hmac = calculateRFC2104HMAC(hmacBody, secretKey);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            logger.info("signature:" + hmac);
         }
         return hmac;
+
     }
     
+    private Long expiry = null;
     public Long generateTempUrlExpiry(int duration) {
-        return (System.currentTimeMillis() / 1000) + duration;
+        if (expiry == null || isExpiryExpired(expiry, duration)) {
+            expiry = (System.currentTimeMillis() / 1000) + duration;
+            logger.info("expiry:  " + expiry);
+        }
+        return expiry;
     }
 
+    private String temporaryUrl = null;
     private String generateTemporarySwiftUrl(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
         Properties p = getSwiftProperties();
         String baseUrl = p.getProperty("swift.swift_endpoint." + swiftEndPoint);
         String path = "/v1/" + containerName + "/" + objectName;
-        String temporaryUrl;
-
-        temporaryUrl = baseUrl + path + "?temp_url_sig=" + generateTempUrlSignature(swiftEndPoint, containerName, objectName, duration) + "&temp_url_expires=" + generateTempUrlExpiry(duration);
-
+        
+        if (temporaryUrl == null || isExpiryExpired(generateTempUrlExpiry(duration), duration)) {
+            temporaryUrl = baseUrl + path + "?temp_url_sig=" + generateTempUrlSignature(swiftEndPoint, containerName, objectName, duration) + "&temp_url_expires=" + generateTempUrlExpiry(duration);
+        }
         logger.info("temporary url: " + temporaryUrl);
         if (temporaryUrl == null) {
             throw new IOException("Failed to generate the temporary Url");
         }
 
         return temporaryUrl;
+    }
+    
+    private boolean isExpiryExpired(Long expiry, int duration) {
+        return ((expiry - duration) * 1000) > System.currentTimeMillis();
     }
 
      public String getSwiftContainerName() {
