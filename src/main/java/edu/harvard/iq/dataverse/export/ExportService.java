@@ -3,15 +3,24 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.channels.Channel;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -224,11 +233,50 @@ public class ExportService {
                 Files.createDirectories(version.getDataset().getFileSystemDirectory());
             }
 
-            Path cachedMetadataFilePath = Paths.get(version.getDataset().getFileSystemDirectory().toString(), "export_" + format + ".cached");
-            FileOutputStream cachedExportOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
-            exporter.exportDataset(version, datasetAsJson, cachedExportOutputStream);
-            cachedExportOutputStream.flush();
-            cachedExportOutputStream.close();
+            // With some storage drivers, we can open a WritableChannel, or OutputStream 
+            // to directly write the generated metadata export that we want to cache; 
+            // Some drivers (like Swift) do not support that, and will give us an
+            // "operation not supported" exception. If that's the case, we'll have 
+            // to save the output into a temp file, and then copy it over to the 
+            // permanent storage using the DataAccess IO "save" command: 
+            
+            boolean tempFileRequired = false;
+            File tempFile = null;
+            OutputStream outputStream = null;
+            Dataset dataset = version.getDataset();
+            DataFileIO dataFileIO = DataAccess.getDataFileIO(dataset);
+            
+            try {
+                Channel outputChannel = dataFileIO.openAuxChannel(format, DataAccessOption.WRITE_ACCESS);
+                outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
+            } catch (IOException ioex) {
+                tempFileRequired = true;
+            }
+            
+            //todo: move if statement etc into catch above
+            if (tempFileRequired) {
+                try {
+                    tempFile = File.createTempFile("tempFileToExport", ".tmp");
+                    outputStream = new FileOutputStream(tempFile);
+                } catch (IOException ioex) {
+                    throw new ExportException("IO Exception thrown exporting as " + format);
+                }
+            }
+
+            try {
+                Path cachedMetadataFilePath = Paths.get(version.getDataset().getFileSystemDirectory().toString(), "export_" + format + ".cached");
+                FileOutputStream cachedExportOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
+                exporter.exportDataset(version, datasetAsJson, cachedExportOutputStream);
+                cachedExportOutputStream.flush();
+                cachedExportOutputStream.close();
+
+                if (tempFileRequired) {
+                    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
+                    dataFileIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), format);
+                }
+            } catch (IOException ioex) {
+                throw new ExportException("IO Exception thrown exporting as " + format);
+            }
 
         } catch (IOException ioex) {
             throw new ExportException("IO Exception thrown exporting as " + format);

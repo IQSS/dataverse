@@ -93,9 +93,6 @@ public class ImageThumbConverter {
 
 //        DataFile file = dataFileIO.getDataFile();
           DvObject dvObject = dataFileIO.getDvObject();
-          if(dvObject.isInstanceofDataset()){
-              return generateImageThumbnail(dataFileIO, size);
-          }
           
            DataFile file = (DataFile)dvObject;
         // if thumbnails are not even supported on this file type, no need
