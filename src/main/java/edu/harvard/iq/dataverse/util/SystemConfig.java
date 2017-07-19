@@ -666,4 +666,9 @@ public class SystemConfig {
         }
     }
 
+    public boolean isPublicInstall(){
+        boolean saneDefault = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
+    }
+
 }

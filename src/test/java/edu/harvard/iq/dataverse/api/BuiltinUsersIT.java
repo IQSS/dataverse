@@ -127,6 +127,25 @@ public class BuiltinUsersIT {
         createUserResponse.prettyPrint();
         assertEquals(400, createUserResponse.statusCode());
     }
+    
+    @Test 
+    public void testBadCharacterInUsername() {
+        String randomUsername = getRandomUsername() + "/";
+        String email = randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.statusCode());
+    }
+    
+    @Test
+    public void testAccentInUsername() {
+        String randomUsername = getRandomUsername();
+        String randomUsernameWeird = "õÂ" + randomUsername;
+        String email = randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsernameWeird, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.statusCode());
+    }
 
     @Test
     public void testLogin() {

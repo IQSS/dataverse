@@ -47,12 +47,12 @@
                                     </span>
                                 </label>
                                 <!-- Primitive datasetFields -->
-                                <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">
-                                    <h:outputText value="#{dsf.datasetFieldType.fieldType ne 'TEXTBOX' ? dsf.value : MarkupChecker:sanitizeBasicHTML(dsf.value) }" rendered="#{!dsf.datasetFieldType.allowMultiples}"
-                                                  escape="#{dsf.datasetFieldType.fieldType ne 'TEXTBOX'}"/>
+                                <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">   
+                                    <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
+                                                  escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                     <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                        <h:outputText value="#{loop.first?'':'; '}#{dsf.datasetFieldType.fieldType ne 'TEXTBOX' ? value : MarkupChecker:sanitizeBasicHTML(value)}"
-                                                      escape="#{dsf.datasetFieldType.fieldType ne 'TEXTBOX'}"/>
+                                        <h:outputText value="#{loop.first?'':'; '}#{ value }"
+                                                      escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                     </ui:repeat>
                                 </div>
                                 <!-- Compound datasetFields -->
@@ -64,12 +64,10 @@
                                         </p>
                                     </ui:fragment>
                                     <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
-                                        <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
+                                        <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">                                           
                                             <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
-                                            <h:outputText value="#{cvPart.key.datasetFieldType.fieldType ne 'URL' and
-                                                                   cvPart.key.datasetFieldType.fieldType ne 'TEXTBOX' ? cvPart.value : MarkupChecker:sanitizeBasicHTML(cvPart.value)}"
-                                                          escape="#{cvPart.key.datasetFieldType.fieldType ne 'URL' and
-                                                                    cvPart.key.datasetFieldType.fieldType ne 'TEXTBOX'}"/>
+                                            <h:outputText value="#{cvPart.value}"
+                                                          escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
                                         </ui:repeat>
                                         <br/>
                                     </ui:repeat>

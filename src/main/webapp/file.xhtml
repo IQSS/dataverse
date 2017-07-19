@@ -102,7 +102,7 @@
                                                     <h:outputText id="editFile-Multi-Link" value="Metadata"/>
                                                 </h:outputLink>
                                             </li>
-                                            <li>
+                                            <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
                                                 <ui:fragment rendered="#{!FilePage.fileMetadata.restricted}">
                                                     <li>
                                                         <p:commandLink onclick="PF('accessPopup').show()">
@@ -117,7 +117,7 @@
                                                         </p:commandLink>
                                                     </li>
                                                 </ui:fragment>     
-                                            </li>
+                                            </ui:fragment>
                                             <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == false}">                                        
                                             <li><!-- start: replace file link -->
                                                 <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}&#38;version=#{FilePage.version}">

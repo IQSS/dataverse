@@ -156,6 +156,8 @@ public abstract class DataFileIO {
     private String tempUrlExpiry;
     private String tempUrlSignature;
 
+    private String swiftContainerName;
+
     private Boolean isLocalFile = false;
     private Boolean isRemoteAccess = false;
     private Boolean isHttpAccess = false;
@@ -168,7 +170,6 @@ public abstract class DataFileIO {
     
     //for hash
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
-    private String swiftContainerName;
     private String swiftFileName;
 
 
@@ -259,7 +260,7 @@ public abstract class DataFileIO {
     public String getSwiftFileName() {
         return swiftFileName;
     }
-    
+
     public String getSwiftContainerName(){
         return swiftContainerName;
     }
@@ -364,7 +365,7 @@ public abstract class DataFileIO {
     public void setTempUrlSignature(String u){
         tempUrlSignature = u;
     }
-    
+
     public void setSwiftContainerName(String u){
         swiftContainerName = u;
     }

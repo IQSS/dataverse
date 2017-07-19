@@ -36,7 +36,7 @@ public class DataAccess {
 
     // set by the user in glassfish-setup.sh if DEFFAULT_STORAGE_DRIVER_IDENTIFIER = swift
     public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
-
+    
     // The getDataFileIO() methods initialize DataFileIO objects for
     // datafiles that are already saved using one of the supported Dataverse
     // DataAccess IO drivers.
@@ -104,6 +104,6 @@ public class DataAccess {
         dataFileIO.open(DataAccessOption.WRITE_ACCESS);
         return dataFileIO;
     }
-
+    
 
 }
