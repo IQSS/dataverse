@@ -228,7 +228,7 @@ public class InReviewWorkflowIT {
         authorChecksForComments3.then().assertThat()
                 .body("data.notifications[0].type", equalTo("RETURNEDDS"))
                 // .body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
-                .body("data.notifications[0].reasonsForReturn[1].message", equalTo("A README is required."))
+                //.body("data.notifications[0].reasonsForReturn[1].message", equalTo("A README is required."))
                 .body("data.notifications[1].type", equalTo("RETURNEDDS"))
                 // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. We're showing the history.
                 // .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
@@ -294,8 +294,8 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[2].type", equalTo("RETURNEDDS"))
                 // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. For now we are always showing the most recent reason for return.
                 //  .body("data.notifications[2].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
-                .body("data.notifications[2].reasonsForReturn[1].message", equalTo("A README is required."))
-                //    .body("data.notifications[3].type", equalTo("CREATEACC"))
+                //.body("data.notifications[2].reasonsForReturn[1].message", equalTo("A README is required."))
+                    .body("data.notifications[3].type", equalTo("CREATEACC"))
                 //   .body("data.notifications[3].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
