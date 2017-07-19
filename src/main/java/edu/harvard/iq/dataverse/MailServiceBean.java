@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +39,8 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import org.apache.commons.lang.StringUtils;
+import java.net.IDN;
+import java.util.logging.Level;
 
 /**
  *
@@ -45,7 +48,6 @@ import org.apache.commons.lang.StringUtils;
  */
 @Stateless
 public class MailServiceBean implements java.io.Serializable {
-
     @EJB
     UserNotificationServiceBean userNotificationService;
     @EJB
@@ -84,12 +86,20 @@ public class MailServiceBean implements java.io.Serializable {
         Session session = Session.getDefaultInstance(props, null);
 
         try {
-            Message msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(from));
-            msg.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(to, false));
-            msg.setSubject(subject);
-            msg.setText(messageText);
+            MimeMessage msg = new MimeMessage(session);
+            String[] recipientStrings = to.split(",");
+            InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
+            try {
+                msg.setFrom(new InternetAddress(from, "UTF-8"));
+                for (int i = 0; i < recipients.length; i++) {
+                    recipients[i] = new InternetAddress(recipientStrings[i], "", "UTF-8");
+                }
+            } catch (UnsupportedEncodingException ex) {
+                logger.severe(ex.getMessage());
+            }
+            msg.setRecipients(Message.RecipientType.TO, recipients);
+            msg.setSubject(subject, "UTF-8");
+            msg.setText(messageText, "UTF-8");
             Transport.send(msg);
         } catch (AddressException ae) {
             ae.printStackTrace(System.out);
@@ -108,18 +118,25 @@ public class MailServiceBean implements java.io.Serializable {
         String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName)));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
-             Message msg = new MimeMessage(session);
-
+            MimeMessage msg = new MimeMessage(session);
             InternetAddress systemAddress = getSystemAddress();
             if (systemAddress != null) {
                 msg.setFrom(systemAddress);
                 msg.setSentDate(new Date());
-                msg.setRecipients(Message.RecipientType.TO,
-                        InternetAddress.parse(to, false));
-                msg.setSubject(subject);
-                msg.setText(body);
+                String[] recipientStrings = to.split(",");
+                InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
+                for (int i = 0; i < recipients.length; i++) {
+                    try {
+                        recipients[i] = new InternetAddress('"' + recipientStrings[i] + '"', "", "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        logger.severe(ex.getMessage());
+                    }
+                }
+                msg.setRecipients(Message.RecipientType.TO, recipients);
+                msg.setSubject(subject, "UTF-8");
+                msg.setText(body, "UTF-8");
                 try {
-                    Transport.send(msg);
+                    Transport.send(msg, recipients);
                     sent = true;
                 } catch (SMTPSendFailedException ssfe) {
                     logger.warning("Failed to send mail to " + to + " (SMTPSendFailedException)");
@@ -144,12 +161,12 @@ public class MailServiceBean implements java.io.Serializable {
 
     //@Resource(name="mail/notifyMailSession")
     public void sendMail(String from, String to, String subject, String messageText) {
-        sendMail(from, to, subject, messageText, new HashMap());
+        sendMail(from, to, subject, messageText, new HashMap<>());
     }
 
-    public void sendMail(String from, String to, String subject, String messageText, Map extraHeaders) {
+    public void sendMail(String from, String to, String subject, String messageText, Map<Object, Object> extraHeaders) {
         try {
-            Message msg = new MimeMessage(session);
+            MimeMessage msg = new MimeMessage(session);
             if (from.matches(EMAIL_PATTERN)) {
                 msg.setFrom(new InternetAddress(from));
             } else {
@@ -161,8 +178,8 @@ public class MailServiceBean implements java.io.Serializable {
             msg.setSentDate(new Date());
             msg.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(to, false));
-            msg.setSubject(subject);
-            msg.setText(messageText);
+            msg.setSubject(subject, "UTF-8");
+            msg.setText(messageText, "UTF-8");
 
             if (extraHeaders != null) {
                 for (Object key : extraHeaders.keySet()) {
@@ -232,7 +249,7 @@ public class MailServiceBean implements java.io.Serializable {
     private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
         // Find user's role(s) for given dataverse/dataset
         Set<RoleAssignment> roles = permissionService.assignmentsFor(au, dvObj);
-        List<String> roleNames = new ArrayList();
+        List<String> roleNames = new ArrayList<>();
 
         // Include roles derived from a user's groups
         Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
