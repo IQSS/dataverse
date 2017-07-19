@@ -146,7 +146,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
-        // THIS LOGIC DOESN"T WORK
+        //FIXME: this logic doesn't work
         Long majorVersionNumber = null;
         Long minorVersionNumber = null;
 
