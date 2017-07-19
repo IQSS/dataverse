@@ -329,6 +329,16 @@ Files
 
 .. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
 
+Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
+    
+    PUT http://$SERVER/api/files/{id}/restrict
+
+Note that some Dataverse installations do not allow the ability to restrict files.
+
+A more detailed "restrict" example using curl::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/{id}/restrict
+
 Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
 
     POST http://$SERVER/api/files/{id}/replace?key=$apiKey
