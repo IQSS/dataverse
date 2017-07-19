@@ -3,7 +3,7 @@ Native API
 
 Dataverse 4 exposes most of its GUI functionality via a REST-based API. This section describes that functionality. Most API endpoints require an API token that can be passed as the ``X-Dataverse-key`` HTTP header or in the URL as the ``key`` query parameter.
 
-.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge. 
+.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge.
 
 .. _CORS: https://www.w3.org/TR/cors/
 
@@ -212,7 +212,7 @@ Add a file to an existing Dataset. Description and tags are optional::
 
 A more detailed "add" example using curl::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"]}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"], "restrict":"true"}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
 
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
@@ -336,6 +336,16 @@ Replace an existing file where ``id`` is the database id of the file to replace.
 A more detailed "replace" example using curl (note that ``forceReplace`` is for replacing one file type with another)::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://example.dataverse.edu/api/files/$FILE_ID/replace"
+
+Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
+    
+    PUT http://$SERVER/api/files/{id}/restrict
+
+Note that some Dataverse installations do not allow the ability to restrict files.
+
+A more detailed "restrict" example using curl::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/{id}/restrict
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
 
@@ -611,9 +621,8 @@ List users with the options to search and "page" through results. Only accessibl
 
 Sample output appears below. 
 
-* When multiple pages of results exist, the ``selectedPage`` parameters may be specified. 
-* Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.          
-
+* When multiple pages of results exist, the ``selectedPage`` parameters may be specified.
+* Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.
 .. code-block:: text
 
     {
@@ -697,7 +706,7 @@ Sample output appears below.
                     "lastLoginTime":"2017-07-03 12:22:35.926",
                     "lastApiUseTime":"2017-07-03 12:55:57.186"
                 },
-                **... 22 more user documents ...**      
+                **... 22 more user documents ...**
             ]
         }
     }
@@ -814,7 +823,7 @@ Recalculate the UNF value of a dataset version, if it's missing, by supplying th
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
 
-.. |CORS| raw:: html 
+.. |CORS| raw:: html
       
       <span class="label label-success pull-right">
         CORS
