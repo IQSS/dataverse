@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
@@ -232,18 +233,20 @@ public class FilePage implements java.io.Serializable {
         }
         return retList;  
     }
-  
     
-    public String restrictFile(boolean restricted) {
+    public String restrictFile(boolean restricted) throws CommandException{
         String fileNames = null;
         String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
         Boolean allowRequest = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
         editDataset = this.file.getOwner();
-
+        
+        Command cmd;
         for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
             if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
                 fileNames += fmw.getLabel();
-                fmw.setRestricted(restricted);
+                //fmw.setRestricted(restricted);
+                cmd = new RestrictFileCommand(fmw.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
+                commandEngine.submit(cmd);
             }
         }
         
@@ -560,15 +563,33 @@ public class FilePage implements java.io.Serializable {
     }
 
     public String getSwiftContainerName(){
-        String swiftContainerName = null;
-        String swiftFolderPathSeparator = "-";
-        
-        String authorityNoSlashes = file.getOwner().getAuthority().replace(file.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-        swiftContainerName = file.getOwner().getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-            + swiftFolderPathSeparator + file.getOwner().getIdentifier();
-        logger.info("Swift container name: " + swiftContainerName);
+        String swiftContainerName;
+        try {
+            DataFileIO dataFileIO = getFile().getDataFileIO();
+            try {
+                SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+                swiftIO.open();
+                swiftContainerName = swiftIO.getSwiftContainerName();
+                logger.info("Swift container name: " + swiftContainerName);
+                return swiftContainerName;
 
-        return swiftContainerName;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+//        String swiftContainerName = null;
+//        String swiftFolderPathSeparator = "-";
+//        
+//        String authorityNoSlashes = file.getOwner().getAuthority().replace(file.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+//        swiftContainerName = file.getOwner().getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
+//            + swiftFolderPathSeparator + file.getOwner().getIdentifier();
+//        logger.info("Swift container name: " + swiftContainerName);
+//
+//        return swiftContainerName;
+        return "";
     }
 
     public String getComputeUrl() {

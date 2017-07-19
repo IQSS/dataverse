@@ -513,6 +513,7 @@ public class JsonPrinter {
                 // categories - and we probably need to export them too!) -- L.A. 4.5
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
+                .add("restricted", fmd.isRestricted()) 
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())

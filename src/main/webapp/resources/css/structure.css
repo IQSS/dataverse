@@ -775,6 +775,7 @@ div.ui-selectcheckboxmenu-panel, div.ui-selectonemenu-panel, div.ui-autocomplete
 .ui-selectonemenu-list, .ui-selectcheckboxmenu-list, div.tooltip {z-index:100002 !important;}
 
 /* Overwrite Primefaces */
+.ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #555555;}
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
 div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-confirm-dialog-severity {margin-top:3px;}

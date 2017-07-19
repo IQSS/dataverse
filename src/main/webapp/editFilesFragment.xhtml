@@ -15,7 +15,7 @@
     <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
         <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
             <li aria-expanded="true" role="tab" class="ui-state-default ui-tabs-selected ui-state-active ui-corner-top">
-                <a href="#datasetForm:tabView:dataFilesTab">Files</a>
+                <a href="#datasetForm:tabView:dataFilesTab">#{bundle['files']}</a>
             </li>
         </ul>
         <div class="ui-tabs-panels">
@@ -125,7 +125,7 @@
                                 <!-- Button Panels -->
                                 <div jsf:id="editFilesRestrictDeletePanel" class="button-block pull-right text-right"
                                      jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
-                                    <div class="btn-group">
+                                    <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
                                         </button>
