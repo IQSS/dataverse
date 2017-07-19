@@ -310,7 +310,7 @@ The people who need to review the dataset (often curators or journal editors) ca
 Return to Author
 ^^^^^^^^^^^^^^^^
 
-After the curators or journal editors have reviewed a dataset that has been submitted for review (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to its authors. In the web interface there is a "Return to Author" button (see :doc:`/user/dataset-management`), but the interface does not provide a way to explain **why** the dataset is being returned. There is a way to do this outside of this interface, however. Instead of clicking the "Return to Author" button in the UI, a curator can write a "reason for return" into the database via API (described below) that the authors can read via the :ref:`Notifications` API.
+After the curators or journal editors have reviewed a dataset that has been submitted for review (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to its authors. In the web interface there is a "Return to Author" button (see :doc:`/user/dataset-management`), but the interface does not provide a way to explain **why** the dataset is being returned. There is a way to do this outside of this interface, however. Instead of clicking the "Return to Author" button in the UI, a curator can write a "reason for return" into the database via API.
 
 Here's how curators can send a "reason for return" to the dataset authors. First, the curator creates a JSON file that contains the reason for return:
 
@@ -322,7 +322,6 @@ In the example below, the curator has saved the JSON file as :download:`reason-f
 
 The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
 
-The authors of the datasets and all curators on the dataset will receive emails and in-app notifications that the dataset has been returned, but the these emails and notifications will not contain the "reason for return". The reason for return can be read by both authors and curators using the :ref:`Notifications` API.
 
 Files
 ~~~~~~~~~~~
@@ -346,16 +345,6 @@ Replace an existing file where ``id`` is the database id of the file to replace.
 A more detailed "replace" example using curl (note that ``forceReplace`` is for replacing one file type with another)::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://example.dataverse.edu/api/files/$FILE_ID/replace"
-
-Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
-    
-    PUT http://$SERVER/api/files/{id}/restrict
-
-Note that some Dataverse installations do not allow the ability to restrict files.
-
-A more detailed "restrict" example using curl::
-
-    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/{id}/restrict
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
 
