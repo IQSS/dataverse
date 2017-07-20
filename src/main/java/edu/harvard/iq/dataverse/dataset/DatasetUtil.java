@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getDataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -170,16 +171,34 @@ public class DatasetUtil {
         if (dataset == null) {
             return false;
         }
-        File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
-        boolean originalFileDeleted = originalFile.delete();
-        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-        boolean thumb48Deleted = thumb48.delete();
-        if (originalFileDeleted && thumb48Deleted) {
-            return true;
-        } else {
-            logger.info("One of the files wasn't deleted. Original deleted: " + originalFileDeleted + ". thumb48 deleted: " + thumb48Deleted + ".");
+        try {
+            DataFileIO dataFileIO = getDataFileIO(dataset);
+
+            if (dataFileIO == null) {
+                logger.warning("Null DataFileIO in deleteDatasetLogo()");
+                return false;
+            }
+
+            dataFileIO.deleteAuxObject(datasetLogoFilenameFinal);
+            dataFileIO.deleteAuxObject(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+
+        } catch (IOException ex) {
+            logger.info("Failed to delete dataset logo: " + ex.getMessage());
             return false;
         }
+        return true;
+                
+        
+//        File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
+//        boolean originalFileDeleted = originalFile.delete();
+//        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+//        boolean thumb48Deleted = thumb48.delete();
+//        if (originalFileDeleted && thumb48Deleted) {
+//            return true;
+//        } else {
+//            logger.info("One of the files wasn't deleted. Original deleted: " + originalFileDeleted + ". thumb48 deleted: " + thumb48Deleted + ".");
+//            return false;
+//        }
     }
 
     /**
