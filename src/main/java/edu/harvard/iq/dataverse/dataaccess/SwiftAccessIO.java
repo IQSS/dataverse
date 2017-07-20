@@ -455,11 +455,9 @@ public class SwiftAccessIO extends DataFileIO {
             swiftEndPoint = p.getProperty("swift.default.endpoint");
 
             //swiftFolderPath = this.getDataFile().getOwner().getDisplayName();
-            String swiftFolderPathSeparator = "-";
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-            swiftFolderPath = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
-                authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
+            
+            swiftFolderPath = getSwiftContainerName();
+            setSwiftContainerName(swiftFolderPath);
 
             swiftFileName = storageIdentifier;
             //setSwiftContainerName(swiftFolderPath);
@@ -665,6 +663,20 @@ public class SwiftAccessIO extends DataFileIO {
         }
         return fileUri;
     }
+
+     public String getSwiftContainerName() {
+        String swiftFolderPathSeparator = System.getProperty("dataverse.files.swift-folder-path-separator");
+        if (swiftFolderPathSeparator == null) {
+            swiftFolderPathSeparator = "_";
+        }
+        String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+        String containerName = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
+            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+            swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
+        
+        return containerName;
+     }
+     
 
 
 }

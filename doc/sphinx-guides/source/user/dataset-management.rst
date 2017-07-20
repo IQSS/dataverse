@@ -49,11 +49,13 @@ File Handling + Uploading
 
 To upload new files to a dataset, click the "Edit" button at the top of the dataset page and from the dropdown list select "Files (Upload)" or click the "Upload Files" button above the files table in the Files tab. From either option you will be brought to the Upload Files page for that dataset.
 
-Once you have uploaded files, you will be able to edit file metadata, restrict access to files, and/or add tags. Click "Save Changes" to complete the upload. If you uploaded a file by mistake, you can delete it before saving by clicking the checkbox to select the file, and then clicking the "Delete" button above the Files Table.
+Once you have uploaded files, you will be able to edit file metadata, restrict access to files [#f1]_ , and/or add tags. Click "Save Changes" to complete the upload. If you uploaded a file by mistake, you can delete it before saving by clicking the checkbox to select the file, and then clicking the "Delete" button above the Files Table.
 
 File upload limit size varies based on Dataverse installation. The file upload size limit can be found in the text above where files are uploaded in the application. If you have further questions, contact support for that installation by clicking on the Support link at the top of the application.
 
-The file types listed below are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. 
+The file types listed in the following sections are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. 
+
+.. [#f1] Some Dataverse installations do not allow this feature.
 
 Tabular Data Files
 ------------------
@@ -156,7 +158,7 @@ Go to the dataset you would like to edit, where you will see the listing of file
 
 You will not have to leave the dataset page to complete these action, except for editing file metadata, which will bring you to the Edit Files page. There you will have to click the "Save Changes" button to apply your edits and return to the dataset page.
 
-If you restrict files, you will also prompted with a popup asking you to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them.
+If you restrict files, you will also prompted with a popup asking you to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them. Note that some Dataverse installations do not allow for file restrictions.
 
 File Tags
 ---------
@@ -202,6 +204,8 @@ Restricted Files + Terms of Access
 
 If you restrict any files in your dataset, you will be prompted by a pop-up to enter Terms of Access for the data. This can also be edited in the Terms tab or selecting Terms in the "Edit" dropdown button in the dataset. You may also allow users to request access for your restricted files by enabling "Request Access". To add more information about the Terms of Access, click on "Additional Information \[+]".
 
+**Note:** Some Dataverse installations do not allow for file restriction.
+
 Guestbook
 ---------
 
@@ -224,7 +228,7 @@ The panel below that is "Roles", where you can find all the roles set up in your
 File-Level
 ----------
 
-If you have restricted specific files the file-level permissions is where you will need to go to grant users/groups access to
+If you have restricted specific files, the file-level permissions is where you will need to go to grant users/groups access to
 specific restricted files. Dataset file permissions are located under Permissions in the Edit button on a dataset page. 
 The file permissions page has two sections: Users/Groups and Files.
 

@@ -530,6 +530,7 @@ public class DataFile extends DvObject implements Comparable {
         return restricted;
     }
 
+    
     public void setRestricted(boolean restricted) {
         this.restricted = restricted;
     }
