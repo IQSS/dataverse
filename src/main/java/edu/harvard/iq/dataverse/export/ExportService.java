@@ -244,9 +244,10 @@ public class ExportService {
             File tempFile = null;
             OutputStream outputStream = null;
             Dataset dataset = version.getDataset();
-            DataFileIO dataFileIO = DataAccess.getDataFileIO(dataset);
+            DataFileIO dataFileIO = null;
             
             try {
+                dataFileIO = DataAccess.createNewDataFileIO(dataset, "file");
                 Channel outputChannel = dataFileIO.openAuxChannel(format, DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {
@@ -272,14 +273,21 @@ public class ExportService {
 
                 if (tempFileRequired) {
                     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
-                    dataFileIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), format);
+                    exporter.exportDataset(version, datasetAsJson, outputStream);
+                    cachedExportOutputStream.flush();
+                    cachedExportOutputStream.close();
+
+                    System.out.println("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
+                    System.out.println("Temp file to path:" + tempFile.toPath());
+                    dataFileIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), format + ".cached");
                 }
+                
             } catch (IOException ioex) {
-                throw new ExportException("IO Exception thrown exporting as " + format);
+                throw new ExportException("IO Exception thrown exporting as " + format + ".cached");
             }
 
         } catch (IOException ioex) {
-            throw new ExportException("IO Exception thrown exporting as " + format);
+            throw new ExportException("IO Exception thrown exporting as " + format + ".cached");
         }
 
     }
