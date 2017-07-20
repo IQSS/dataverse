@@ -108,7 +108,7 @@
                     </div>
                     <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
-                        <div class="btn-group">
+                        <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                 <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
                             </button>
@@ -281,18 +281,20 @@
                                 <h:outputText value="#{bundle['file.metadata']}"/>
                             </p:commandLink>
                         </li>
-                        <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
-                            <p:commandLink oncomplete="toggle_dropdown();" 
-                                           onclick="testFilesSelectedForRestriction()">
-                                <h:outputText value="#{bundle['file.restrict']}"/>
-                            </p:commandLink>
-                        </li>
-                        <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
-                            <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
-                                           action="#{DatasetPage.restrictSelectedFiles(false)}">
-                                <h:outputText value="#{bundle['file.unrestrict']}"/>
-                            </p:commandLink>
-                        </li>
+                        <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+                            <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
+                                <p:commandLink oncomplete="toggle_dropdown();" 
+                                               onclick="testFilesSelectedForRestriction()">
+                                    <h:outputText value="#{bundle['file.restrict']}"/>
+                                </p:commandLink>
+                            </li>
+                            <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
+                                <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
+                                               action="#{DatasetPage.restrictSelectedFiles(false)}">
+                                    <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                </p:commandLink>
+                            </li>
+                        </ui:fragment>
                         <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
                             <p:commandLink id="fileCategoriesLinkTwo"    
                                            onclick="testFilesSelectedForTags()">

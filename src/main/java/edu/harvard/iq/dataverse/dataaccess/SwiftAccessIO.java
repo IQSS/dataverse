@@ -470,7 +470,7 @@ public class SwiftAccessIO extends DataFileIO {
         String swiftFileName = null;
         StoredObject fileObject = null;
         List<String> auxFiles = null; 
-        
+       
         switch (dvObjectType) {
             case datafile:
                 DataFile dataFile = this.getDataFile();
@@ -851,14 +851,26 @@ public class SwiftAccessIO extends DataFileIO {
 
     @Override
     public InputStream getAuxFile(String auxItemTag) throws IOException {
-        StoredObject swiftAuxFile=null;
-        InputStream in=null;
+        StoredObject swiftAuxFile = null;
+        InputStream in = null;
         
-        if(this.isAuxObjectCached(auxItemTag))
-        {
-            swiftAuxFile=openSwiftAuxFile(auxItemTag);
+        if(this.isAuxObjectCached(auxItemTag)) {
+            swiftAuxFile = openSwiftAuxFile(auxItemTag);
         }
         return swiftAuxFile.downloadObjectAsInputStream();
     }
 
+    public String getSwiftContainerName() {
+        String swiftFolderPathSeparator = System.getProperty("dataverse.files.swift-folder-path-separator");
+        if (swiftFolderPathSeparator == null) {
+            swiftFolderPathSeparator = "_";
+        }
+        String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+        String containerName = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
+            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+            swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
+        
+        return containerName;
+     }
+     
 }

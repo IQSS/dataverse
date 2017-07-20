@@ -222,6 +222,10 @@ Then run the create command:
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
 
+You also have the option to set a custom container name separator. It is initialized to ``_``, but you can change it by running the create command:
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-folder-path-separator=-"``
+
 .. _Branding Your Installation:
 
 Branding Your Installation
@@ -890,6 +894,15 @@ Set the base URL for the "Compute" button for a dataset.
 Set the name of the cloud environment you've integrated with your Dataverse installation.
 
 ``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
+
+:PublicInstall
++++++++++++++++++++++
+
+Setting an installation to public will remove the ability to restrict data files or datasets. This functionality of Dataverse will be disabled from your installation.
+
+This is useful for specific cases where an installation's files are stored in public access. Because files stored this way do not obey Dataverse's file restrictions, users would still be able to access the files even when they're restricted. In these cases it's best to use :PublicInstall to disable the feature altogether.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:PublicInstall``
 
 :DataCaptureModuleUrl
 +++++++++++++++++++++
