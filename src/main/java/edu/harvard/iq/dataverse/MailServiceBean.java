@@ -39,8 +39,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import org.apache.commons.lang.StringUtils;
-import java.net.IDN;
-import java.util.logging.Level;
 
 /**
  *
@@ -70,7 +68,8 @@ public class MailServiceBean implements java.io.Serializable {
     ConfirmEmailServiceBean confirmEmailService;
     
     private static final Logger logger = Logger.getLogger(MailServiceBean.class.getCanonicalName());
-    
+
+    private static final String charset = "UTF-8";
     private static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
     + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     
@@ -90,17 +89,17 @@ public class MailServiceBean implements java.io.Serializable {
             String[] recipientStrings = to.split(",");
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
-                msg.setFrom(new InternetAddress(from, "UTF-8"));
+                msg.setFrom(new InternetAddress(from, charset));
                 for (int i = 0; i < recipients.length; i++) {
-                    recipients[i] = new InternetAddress(recipientStrings[i], "", "UTF-8");
+                    recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
                 }
             } catch (UnsupportedEncodingException ex) {
                 logger.severe(ex.getMessage());
             }
             msg.setRecipients(Message.RecipientType.TO, recipients);
-            msg.setSubject(subject, "UTF-8");
-            msg.setText(messageText, "UTF-8");
-            Transport.send(msg);
+            msg.setSubject(subject, charset);
+            msg.setText(messageText, charset);
+            Transport.send(msg, recipients);
         } catch (AddressException ae) {
             ae.printStackTrace(System.out);
         } catch (MessagingException me) {
@@ -127,14 +126,14 @@ public class MailServiceBean implements java.io.Serializable {
                 InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
                 for (int i = 0; i < recipients.length; i++) {
                     try {
-                        recipients[i] = new InternetAddress('"' + recipientStrings[i] + '"', "", "UTF-8");
+                        recipients[i] = new InternetAddress('"' + recipientStrings[i] + '"', "", charset);
                     } catch (UnsupportedEncodingException ex) {
                         logger.severe(ex.getMessage());
                     }
                 }
                 msg.setRecipients(Message.RecipientType.TO, recipients);
-                msg.setSubject(subject, "UTF-8");
-                msg.setText(body, "UTF-8");
+                msg.setSubject(subject, charset);
+                msg.setText(body, charset);
                 try {
                     Transport.send(msg, recipients);
                     sent = true;
@@ -178,8 +177,8 @@ public class MailServiceBean implements java.io.Serializable {
             msg.setSentDate(new Date());
             msg.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(to, false));
-            msg.setSubject(subject, "UTF-8");
-            msg.setText(messageText, "UTF-8");
+            msg.setSubject(subject, charset);
+            msg.setText(messageText, charset);
 
             if (extraHeaders != null) {
                 for (Object key : extraHeaders.keySet()) {
