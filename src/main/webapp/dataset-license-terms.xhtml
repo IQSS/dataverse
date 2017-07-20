@@ -236,13 +236,13 @@
                                         or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
                                         or !empty termsOfUseAndAccess.studyCompletion)}" >
            <div data-toggle="collapse" data-target="#panelCollapseTOA" class="panel-heading text-info">
-               #{bundle['file.dataFilesTab.terms.list.termsOfAccess.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
+               <h:outputText value="#{settingsWrapper.publicInstall ? bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.header']}"/>
+               &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
            <div id="panelCollapseTOA" class="collapse in">
                <div class="panel-body">
                    <ui:fragment rendered="#{empty editMode}">
-                       <ui:fragment rendered="#{empty editMode and datasetPage}">
-                       <div class="form-group">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                            <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
@@ -256,7 +256,6 @@
                                </p>
                            </div>
                        </div>
-                       </ui:fragment>
                        <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.termsOfAccess}">
                            <label for="metadata_TermsAccess" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
@@ -267,8 +266,7 @@
                                <p><h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfAccess)}" escape="false"/></p>
                            </div>
                        </div>
-                       <ui:fragment rendered="#{empty editMode and datasetPage}">
-                       <div class="form-group" jsf:rendered="#{DatasetPage.restrictedFileCount > 0}">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall and (DatasetPage.restrictedFileCount > 0)}">
                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
@@ -281,7 +279,6 @@
                                </p>
                            </div>
                        </div>
-                       </ui:fragment>
                    </ui:fragment>
                    <ui:fragment rendered="#{!empty editMode}">
                        <div class="form-group">
@@ -294,7 +291,7 @@
                                <p:inputTextarea value="#{termsOfUseAndAccess.termsOfAccess}" rows="5" styleClass="form-control" />
                        </div>
                        </div>
-                       <div class="form-group">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}

@@ -33,7 +33,19 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /**
+         * Defines a public installation -- all datafiles are unrestricted
+         */
+        PublicInstall,
+        /**
+         * Sets the name of your cloud computing environment.
+         * For example, "Massachusetts Open Cloud"
+         */
         CloudEnvironmentName,
+        /**
+         * Defines the base for a computing environment URL.
+         * The container name will be appended to this on the "Compute" button 
+         */
         ComputeBaseUrl,
         /**
          * For example, https://datacapture.example.org
