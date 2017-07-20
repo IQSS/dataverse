@@ -208,21 +208,20 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             return null;
         }
         
-        InputStream in=null;
-                try{
-            if (dataAccess.getAuxFile(datasetLogoThumbnail+thumb48addedByImageThumbConverter)!=null){     
-                in=dataAccess.getAuxFile(datasetLogoThumbnail+thumb48addedByImageThumbConverter);
+        InputStream in = null;
+        try {
+            if (dataAccess.getAuxFile(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
+                in = dataAccess.getAuxFile(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
-        }catch(Exception ioex)
-        {
+        } catch (Exception ioex) {
             return null;
 //            Logger.fine("Cannot retrieve thumbnail file");
 //            System.out.println("Rohit Bhattacharjee: Error");
 //            ioex.printStackTrace();
         }
-        
+
 //        Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoThumbnail + DatasetUtil.thumb48addedByImageThumbConverter);
-        if (in!=null) {
+        if (in != null) {
             try {
                 byte[] bytes = IOUtils.toByteArray(in);
                 String base64image = Base64.getEncoder().encodeToString(bytes);

@@ -26,7 +26,7 @@ public class AddRoleAssigneesToExplicitGroupCommand extends AbstractCommand<Expl
     
     private final Set<String> roleAssigneeIdentifiers;
     private final ExplicitGroup explicitGroup;
-    
+     
     public AddRoleAssigneesToExplicitGroupCommand(DataverseRequest aRequest, ExplicitGroup anExplicitGroup, Set<String> someRoleAssigneeIdentifiers) {
         super(aRequest, anExplicitGroup.getOwner());
         roleAssigneeIdentifiers = someRoleAssigneeIdentifiers;

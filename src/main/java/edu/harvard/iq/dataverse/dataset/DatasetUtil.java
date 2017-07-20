@@ -103,23 +103,22 @@ public class DatasetUtil {
         
 //        Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         
-        InputStream in=null;
-                try{
-            if (dataAccess.getAuxFile(datasetLogoThumbnail+thumb48addedByImageThumbConverter)!=null){     
-                in=dataAccess.getAuxFile(datasetLogoThumbnail+thumb48addedByImageThumbConverter);
+        InputStream in = null;
+        try {
+            if (dataAccess.getAuxFile(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
+                in = dataAccess.getAuxFile(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
-        }catch(Exception ioex)
-        {
+        } catch (Exception ioex) {
             logger.fine("Cannot retrieve thumnail file");
 //            System.out.println("Rohit Bhattacharjee: Error");
 //            ioex.printStackTrace();
         }
+
         
-        
-        if (in!=null) {
+        if (in != null) {
             try {
 //                byte[] bytes = Files.readAllBytes(path);
-                byte[] bytes=IOUtils.toByteArray(in);
+                byte[] bytes = IOUtils.toByteArray(in);
                 String base64image = Base64.getEncoder().encodeToString(bytes);
                 DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
                 logger.fine("will get thumbnail from dataset logo");
