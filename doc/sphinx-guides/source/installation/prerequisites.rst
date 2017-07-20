@@ -91,6 +91,8 @@ The Dataverse installation script will start Glassfish if necessary, but you may
 
 It is not necessary for Glassfish to be running before you execute the Dataverse installation script; it will start Glassfish for you.
 
+Please note that you must run Glassfish in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
+
 PostgreSQL
 ----------
 

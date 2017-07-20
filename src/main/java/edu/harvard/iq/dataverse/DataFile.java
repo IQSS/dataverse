@@ -534,6 +534,7 @@ public class DataFile extends DvObject implements Comparable {
         return restricted;
     }
 
+    
     public void setRestricted(boolean restricted) {
         this.restricted = restricted;
     }
@@ -831,12 +832,12 @@ public class DataFile extends DvObject implements Comparable {
         return this.previousDataFileId;
     }
 
-    public String asPrettyJSON(){
+    public String toPrettyJSON(){
         
         return serializeAsJSON(true);
     }
 
-    public String asJSON(){
+    public String toJSON(){
         
         return serializeAsJSON(false);
     }

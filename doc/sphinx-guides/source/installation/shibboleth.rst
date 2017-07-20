@@ -349,7 +349,7 @@ If you have more than one Glassfish server, you should use the same ``sp-cert.pe
 Debugging
 ---------
 
-The :doc:`administration` section explains how to increase Glassfish logging levels. The relevant classes and packages are:
+The :doc:`/admin/troubleshooting` section of the Admin Guide explains how to increase Glassfish logging levels. The relevant classes and packages are:
 
 - edu.harvard.iq.dataverse.Shib
 - edu.harvard.iq.dataverse.authorization.providers.shib
