@@ -78,29 +78,27 @@ import java.util.Set;
  * supplied by a trusted vendor over those supplied by another.
  *
  */
-class PartiallyOrderedSet<E> extends AbstractSet<E> {
+class PartiallyOrderedSet extends AbstractSet {
 
     // The topological sort (roughly) follows the algorithm described in
     // Horowitz and Sahni, _Fundamentals of Data Structures_ (1976),
     // p. 315.
 
     // Maps Objects to DigraphNodes that contain them
-    private Map<E, DigraphNode<E>> poNodes = new HashMap<>();
+    private Map poNodes = new HashMap();
 
     // The set of Objects
-    private Set<E> nodes = poNodes.keySet();
+    private Set nodes = poNodes.keySet();
 
     /**
      * Constructs a <code>PartiallyOrderedSet</code>.
      */
     public PartiallyOrderedSet() {}
 
-    @Override
     public int size() {
         return nodes.size();
     }
 
-    @Override
     public boolean contains(Object o) {
         return nodes.contains(o);
     }
@@ -110,22 +108,20 @@ class PartiallyOrderedSet<E> extends AbstractSet<E> {
      * collection, with an ordering that respects the orderings set
      * by the <code>setOrdering</code> method.
      */
-    @Override
-    public Iterator<E> iterator() {
-        return new PartialOrderIterator<>(poNodes.values().iterator());
+    public Iterator iterator() {
+        return new PartialOrderIterator(poNodes.values().iterator());
     }
 
     /**
      * Adds an <code>Object</code> to this
      * <code>PartiallyOrderedSet</code>.
      */
-    @Override
-    public boolean add(E o) {
+    public boolean add(Object o) {
         if (nodes.contains(o)) {
             return false;
         }
 
-        DigraphNode<E> node = new DigraphNode<>(o);
+        DigraphNode node = new DigraphNode(o);
         poNodes.put(o, node);
         return true;
     }
@@ -134,18 +130,17 @@ class PartiallyOrderedSet<E> extends AbstractSet<E> {
      * Removes an <code>Object</code> from this
      * <code>PartiallyOrderedSet</code>.
      */
-    @Override
     public boolean remove(Object o) {
-        DigraphNode<E> node = poNodes.get(o);
+        DigraphNode node = (DigraphNode)poNodes.get(o);
         if (node == null) {
             return false;
         }
+
         poNodes.remove(o);
         node.dispose();
         return true;
     }
 
-    @Override
     public void clear() {
         poNodes.clear();
     }
@@ -159,9 +154,11 @@ class PartiallyOrderedSet<E> extends AbstractSet<E> {
      * @return <code>true</code> if no prior ordering existed
      * between the nodes, <code>false</code>otherwise.
      */
-    public boolean setOrdering(E first, E second) {
-        DigraphNode<E> firstPONode = poNodes.get(first);
-        DigraphNode<E> secondPONode = poNodes.get(second);
+    public boolean setOrdering(Object first, Object second) {
+        DigraphNode firstPONode =
+            (DigraphNode)poNodes.get(first);
+        DigraphNode secondPONode =
+            (DigraphNode)poNodes.get(second);
 
         secondPONode.removeEdge(firstPONode);
         return firstPONode.addEdge(secondPONode);
@@ -172,9 +169,11 @@ class PartiallyOrderedSet<E> extends AbstractSet<E> {
      *
      * @return true if a prior prefence existed between the nodes.
      */
-    public boolean unsetOrdering(E first, E second) {
-        DigraphNode<E> firstPONode = poNodes.get(first);
-        DigraphNode<E> secondPONode = poNodes.get(second);
+    public boolean unsetOrdering(Object first, Object second) {
+        DigraphNode firstPONode =
+            (DigraphNode)poNodes.get(first);
+        DigraphNode secondPONode =
+            (DigraphNode)poNodes.get(second);
 
         return firstPONode.removeEdge(secondPONode) ||
             secondPONode.removeEdge(firstPONode);
@@ -184,25 +183,27 @@ class PartiallyOrderedSet<E> extends AbstractSet<E> {
      * Returns <code>true</code> if an ordering exists between two
      * nodes.
      */
-    public boolean hasOrdering(E preferred, E other) {
-        DigraphNode<E> preferredPONode = poNodes.get(preferred);
-        DigraphNode<E> otherPONode = poNodes.get(other);
+    public boolean hasOrdering(Object preferred, Object other) {
+        DigraphNode preferredPONode =
+            (DigraphNode)poNodes.get(preferred);
+        DigraphNode otherPONode =
+            (DigraphNode)poNodes.get(other);
 
         return preferredPONode.hasEdge(otherPONode);
     }
 }
 
-class PartialOrderIterator<E> implements Iterator<E> {
+class PartialOrderIterator implements Iterator {
 
-    LinkedList<DigraphNode<E>> zeroList = new LinkedList<>();
-    Map<DigraphNode<E>, Integer> inDegrees = new HashMap<>(); // DigraphNode -> Integer
+    LinkedList zeroList = new LinkedList();
+    Map inDegrees = new HashMap(); // DigraphNode -> Integer
 
-    public PartialOrderIterator(Iterator<DigraphNode<E>> iter) {
+    public PartialOrderIterator(Iterator iter) {
         // Initialize scratch in-degree values, zero list
         while (iter.hasNext()) {
-            DigraphNode<E> node = iter.next();
+            DigraphNode node = (DigraphNode)iter.next();
             int inDegree = node.getInDegree();
-            inDegrees.put(node, inDegree);
+            inDegrees.put(node, new Integer(inDegree));
 
             // Add nodes with zero in-degree to the zero list
             if (inDegree == 0) {
@@ -211,21 +212,19 @@ class PartialOrderIterator<E> implements Iterator<E> {
         }
     }
 
-    @Override
     public boolean hasNext() {
         return !zeroList.isEmpty();
     }
 
-    @Override
-    public E next() {
-        DigraphNode<E> first = zeroList.removeFirst();
+    public Object next() {
+        DigraphNode first = (DigraphNode)zeroList.removeFirst();
 
         // For each out node of the output node, decrement its in-degree
-        Iterator<DigraphNode<E>> outNodes = first.getOutNodes();
+        Iterator outNodes = first.getOutNodes();
         while (outNodes.hasNext()) {
-            DigraphNode<E> node = outNodes.next();
-            int inDegree = inDegrees.get(node) - 1;
-            inDegrees.put(node, inDegree);
+            DigraphNode node = (DigraphNode)outNodes.next();
+            int inDegree = ((Integer)inDegrees.get(node)).intValue() - 1;
+            inDegrees.put(node, new Integer(inDegree));
 
             // If the in-degree has fallen to 0, place the node on the list
             if (inDegree == 0) {
@@ -236,7 +235,6 @@ class PartialOrderIterator<E> implements Iterator<E> {
         return first.getData();
     }
 
-    @Override
     public void remove() {
         throw new UnsupportedOperationException();
     }
