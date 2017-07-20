@@ -160,24 +160,35 @@ public class FileAccessIO extends DataFileIO {
                 //TODO: do we really need to do anything here? should we return the dataset directory?
                 dataset = (Dataset)this.getDvObject();
                 if (isReadAccess) {
+                    
                     FileInputStream fin = openLocalFileAsInputStream();
-
-                    if (fin == null) {
-                        throw new IOException("Failed to open local file " + getStorageLocation());
+                    Path path= dataset.getFileSystemDirectory();                    
+                    if (path == null) {
+                        throw new IOException("Failed to locate Dataset"+dataset.getIdentifier());
                     }
 
                     this.setInputStream(fin);
                     setChannel(fin.getChannel());
                     this.setSize(getLocalFileSize());
                 } else if (isWriteAccess) {
-                    FileOutputStream fout = openLocalFileAsOutputStream();
+                    //this checks whether a directory for a dataset 
+                    if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
+                    /* Note that "createDirectories()" must be used - not 
+                     * "createDirectory()", to make sure all the parent 
+                     * directories that may not yet exist are created as well. 
+                     */
+                    Files.createDirectories(dataset.getFileSystemDirectory());
+                    dataset.setStorageIdentifier("file://"+dataset.getAuthority()+dataset.getDoiSeparator()+dataset.getIdentifier());
+                    
+                    //FileOutputStream fout = openLocalFileAsOutputStream();
 
-                    if (fout == null) {
-                        throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
+                    //if (fout == null) {
+                      //  throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
+                    //}
+
+                    //this.setOutputStream(fout);
+                    //setChannel(fout.getChannel());
                     }
-
-                    this.setOutputStream(fout);
-                    setChannel(fout.getChannel());
                 }
                 break;
             case dataverse:
@@ -306,7 +317,7 @@ public class FileAccessIO extends DataFileIO {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
         }
         Path auxPath = null;
-        switch(dvObjectType) {
+        switch(this.getDvObjectType()) {
             case datafile:
                 auxPath = Paths.get(datasetDirectory, this.getDvObject().getStorageIdentifier() + "." + auxItemTag);
                 break;
