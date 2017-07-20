@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-GLASSFISH_USER=glassfish
-
 if [ ! -z "$1" ]; then
   MAILSERVER=$1
   MAILSERVER_ARG="--mailserver $MAILSERVER"
