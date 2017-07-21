@@ -848,7 +848,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             datasetEntity.setProtocol(globalId.getProtocol());
             datasetEntity.setAuthority(globalId.getAuthority());
             datasetEntity.setIdentifier(globalId.getIdentifier());
-            datasetEntity.setStorageIdentifier(searchResult[4].toString());
+            if (searchResult[4] != null) {
+                datasetEntity.setStorageIdentifier(searchResult[4].toString());
+            }
             solrSearchResult.setEntity(datasetEntity);
             if (searchResult[2] != null) {
                 // This is the image file specifically assigned as the "icon" for
