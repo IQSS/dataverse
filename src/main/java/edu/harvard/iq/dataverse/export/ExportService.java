@@ -344,8 +344,8 @@ public class ExportService {
         InputStream cachedExportInputStream = null;
 
         try {
-            if (dataAccess.getAuxFile("export_" + formatName + ".cached") != null) {
-                cachedExportInputStream = dataAccess.getAuxFile("export_" + formatName + ".cached");
+            if (dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached") != null) {
+                cachedExportInputStream = dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached");
                 return cachedExportInputStream;
             }
         } catch (IOException ioex) {

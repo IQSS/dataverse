@@ -106,8 +106,8 @@ public class DatasetUtil {
         
         InputStream in = null;
         try {
-            if (dataAccess.getAuxFile(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
-                in = dataAccess.getAuxFile(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
+                in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
         } catch (Exception ioex) {
             logger.fine("Cannot retrieve thumnail file");
