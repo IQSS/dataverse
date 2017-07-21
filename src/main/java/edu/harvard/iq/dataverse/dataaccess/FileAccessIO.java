@@ -543,9 +543,9 @@ public class FileAccessIO extends DataFileIO {
             throw new IOException("No DvObject defined in the Data Access Object");
         }
 
-        if (this.getDvObject().getOwner() == null) {
-            throw new IOException("Data Access: no parent defined this Object");
-        }
+//        if (this.getDvObject().getOwner() == null) {
+//            throw new IOException("Data Access: no parent defined this Object");
+//        }
         Path datasetDirectoryPath=null;
         
 //        try{
