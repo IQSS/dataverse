@@ -198,7 +198,7 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.4.0</version>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -319,10 +319,10 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>0.7.5.201505241946</version>
         </dependency>
-        <!-- Added specific versionf of SLF4J jars; otherwise we end up with 
+        <!-- Added specific versionf of SLF4J jars; otherwise we end up with
         conflicting versions of slf4j-api and slf4j-log4j12, loaded as
         dependencies for different packages; which was causing some incompatibility
-        issues -L.A. 4.3 -->  
+        issues -L.A. 4.3 -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -435,7 +435,7 @@
            <groupId>org.glassfish.jersey.containers</groupId>
            <artifactId>jersey-container-servlet</artifactId>
            <version>2.23.2</version>
-       </dependency>                
+       </dependency>
         <!-- For API File Upload: 2 of 2 -->
        <dependency>
            <groupId>org.glassfish.jersey.media</groupId>
