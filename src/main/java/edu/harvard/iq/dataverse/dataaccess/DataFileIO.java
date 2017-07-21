@@ -26,18 +26,14 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import java.io.FileInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channel;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
 import java.util.List;
 
@@ -66,8 +62,6 @@ public abstract class DataFileIO {
         this.req = req;
         DvObjectType type= getDvObjectType();
           
-        
-        
         switch(type){
             case datafile:
                 this.dataFile=(DataFile)dvObject;
@@ -89,9 +83,6 @@ public abstract class DataFileIO {
     
     
     // Abstract methods to be implemented by the storage drivers:
-    
-    //Unsure if we currently need this.
-//    public abstract boolean fileExists(Path path) throws IOException;
 
     public abstract void open(DataAccessOption... option) throws IOException;
     
@@ -131,7 +122,7 @@ public abstract class DataFileIO {
     // such as "saved original" and cached format conversions for tabular files, 
     // thumbnails for images, etc. - in physical files with the same file 
     // name but various reserved extensions. 
-    public abstract InputStream getAuxFile(String auxItemTag) throws IOException ;
+    public abstract InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException ;
     
     public abstract Channel openAuxChannel(String auxItemTag, DataAccessOption... option) throws IOException;
     

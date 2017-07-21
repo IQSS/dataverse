@@ -167,27 +167,12 @@ public class FileAccessIO extends DataFileIO {
                         throw new IOException("Failed to locate Dataset"+dataset.getIdentifier());
                     }
 
-                    this.setInputStream(fin);
-                    setChannel(fin.getChannel());
-                    this.setSize(getLocalFileSize());
-                } else if (isWriteAccess) {
-                    //this checks whether a directory for a dataset 
+                    this.setInputStream(fin);  
+                  } else if (isWriteAccess) {
+                    //this checks whether a directory for a dataset exists 
                     if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
-                    /* Note that "createDirectories()" must be used - not 
-                     * "createDirectory()", to make sure all the parent 
-                     * directories that may not yet exist are created as well. 
-                     */
                     Files.createDirectories(dataset.getFileSystemDirectory());
                     dataset.setStorageIdentifier("file://"+dataset.getAuthority()+dataset.getDoiSeparator()+dataset.getIdentifier());
-                    
-                    //FileOutputStream fout = openLocalFileAsOutputStream();
-
-                    //if (fout == null) {
-                      //  throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
-                    //}
-
-                    //this.setOutputStream(fout);
-                    //setChannel(fout.getChannel());
                     }
                 }
                 break;
@@ -643,7 +628,7 @@ public class FileAccessIO extends DataFileIO {
 //    }
 
     @Override
-    public InputStream getAuxFile(String auxItemTag) throws IOException {
+    public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
         InputStream in = null;
 //        Path path
         if(this.isAuxObjectCached(auxItemTag))

@@ -20,11 +20,8 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DvObject;
 import java.io.IOException;
-import org.javaswift.joss.model.StoredObject;
-
 /**
  *
  * @author Leonid Andreev
@@ -48,9 +45,6 @@ public class DataAccess {
     //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
     public static DataFileIO getDataFileIO(DvObject dvObject, DataAccessRequest req) throws IOException {
         
-        // TODO: add a provision to check storage identifiers for datasets
-       
-//        DataFile df = (DataFile)dvObject;
         if (dvObject == null
                 || dvObject.getStorageIdentifier() == null
                 || dvObject.getStorageIdentifier().equals("")) {

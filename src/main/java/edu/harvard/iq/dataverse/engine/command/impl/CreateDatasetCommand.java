@@ -136,10 +136,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (theDataset.getAuthority()==null) theDataset.setAuthority(authority);
         if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(doiSeparator);
         if(theDataset.getStorageIdentifier()==null) {
-            
             theDataset.setStorageIdentifier(System.getProperty("dataverse.files.storage-driver-id")+"://"+theDataset.getAuthority()+theDataset.getDoiSeparator()+theDataset.getIdentifier());
-        
-        
         }
         if (theDataset.getIdentifier()==null) {
             /* 

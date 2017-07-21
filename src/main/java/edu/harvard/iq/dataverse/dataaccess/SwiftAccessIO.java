@@ -160,7 +160,6 @@ public class SwiftAccessIO extends DataFileIO {
                     }
 
                     this.setInputStream(fin);
-                    setChannel(Channels.newChannel(fin));
                 } else if (isWriteAccess) {
                     swiftFileObject = initializeSwiftFileObject(true);
                 }
@@ -629,8 +628,6 @@ public class SwiftAccessIO extends DataFileIO {
                 } else if (this.isWriteAccess) {
                     Properties p = getSwiftProperties();
                     swiftEndPoint = p.getProperty("swift.default.endpoint");
-
-                    //swiftFolderPath = dataFile.getOwner().getDisplayName();
                     String swiftFolderPathSeparator = "-";
                     String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
                     swiftFolderPath = dataset.getProtocol() + swiftFolderPathSeparator +
@@ -638,10 +635,6 @@ public class SwiftAccessIO extends DataFileIO {
                         swiftFolderPathSeparator + dataset.getIdentifier();
 
                     swiftFileName = auxItemTag;
-                    //setSwiftContainerName(swiftFolderPath);
-                    //swiftFileName = dataFile.getDisplayName();
-                    //Storage Identifier is now updated after the object is uploaded on Swift.
-                    //TODO: figure out what this needs to be and alter above code
                     dataset.setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath);
                 } else {
                     throw new IOException("SwiftAccessIO: unknown access mode.");
@@ -711,7 +704,7 @@ public class SwiftAccessIO extends DataFileIO {
                 auxFiles = null; 
 
                 return fileObject;
-                
+            //for future scope, if dataverse is decided to be stored in swift storage containersopen    
             case dataverse:
             default:
                 throw new FileNotFoundException("Error initializing swift object");
@@ -850,7 +843,7 @@ public class SwiftAccessIO extends DataFileIO {
     }
 
     @Override
-    public InputStream getAuxFile(String auxItemTag) throws IOException {
+    public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
         StoredObject swiftAuxFile = null;
         InputStream in = null;
         
