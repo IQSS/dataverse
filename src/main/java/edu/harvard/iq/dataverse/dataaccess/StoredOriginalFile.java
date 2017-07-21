@@ -39,8 +39,8 @@ public class StoredOriginalFile {
     
     private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
     
-    public static DataFileIO retreive(DataFileIO dataFileIO) {
-        String originalMimeType = null;
+    public static DataFileIO<DataFile> retreive(DataFileIO<DataFile> dataFileIO) {
+        String originalMimeType;
 
         DataFile dataFile = dataFileIO.getDataFile();
 
@@ -54,14 +54,14 @@ public class StoredOriginalFile {
             return null;
         }
 
-        long storedOriginalSize = 0; 
-        InputStreamIO inputStreamIO = null; 
+        long storedOriginalSize; 
+        InputStreamIO<DataFile> inputStreamIO;
         
         try {
             dataFileIO.open();
             Channel storedOriginalChannel = dataFileIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
             storedOriginalSize = dataFileIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
-            inputStreamIO = new InputStreamIO(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
+            inputStreamIO = new InputStreamIO<>(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
             logger.fine("Opened stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioEx) {
             // The original file not saved, or could not be opened.
@@ -69,7 +69,7 @@ public class StoredOriginalFile {
             return null;
         }
 
-        if (originalMimeType != null && !originalMimeType.equals("")) {
+        if (originalMimeType != null && !originalMimeType.isEmpty()) {
             if (originalMimeType.matches("application/x-dvn-.*-zip")) {
                 inputStreamIO.setMimeType("application/zip");
             } else {

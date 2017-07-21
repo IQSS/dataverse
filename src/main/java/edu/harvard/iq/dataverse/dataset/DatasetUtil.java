@@ -91,7 +91,7 @@ public class DatasetUtil {
             return null;
         }
         
-        DataFileIO dataAccess = null;
+        DataFileIO<Dataset> dataAccess = null;
                 
         try{
             dataAccess = DataAccess.getDataFileIO(dataset);
@@ -109,7 +109,7 @@ public class DatasetUtil {
             if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
-        } catch (Exception ioex) {
+        } catch (IOException ioex) {
             logger.fine("Cannot retrieve thumnail file");
 //            System.out.println("Rohit Bhattacharjee: Error");
 //            ioex.printStackTrace();
@@ -172,7 +172,7 @@ public class DatasetUtil {
             return false;
         }
         try {
-            DataFileIO dataFileIO = getDataFileIO(dataset);
+            DataFileIO<Dataset> dataFileIO = getDataFileIO(dataset);
 
             if (dataFileIO == null) {
                 logger.warning("Null DataFileIO in deleteDatasetLogo()");
@@ -253,7 +253,7 @@ public class DatasetUtil {
 //                return null;
 //            }
 //        }
-        DataFileIO dataAccess=null;
+        DataFileIO<Dataset> dataAccess = null;
                 
         try{
              dataAccess = DataAccess.createNewDataFileIO(dataset,"file");

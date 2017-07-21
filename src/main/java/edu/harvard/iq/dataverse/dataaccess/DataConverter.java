@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.rserve.*;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.channels.Channel;
@@ -70,7 +71,7 @@ public class DataConverter {
     public static String SERVICE_REQUEST_CONVERT = "convert";
     
     
-    public static DataFileIO performFormatConversion(DataFile file, DataFileIO dataFileIO, String formatRequested, String formatType) {
+    public static DataFileIO<DataFile> performFormatConversion(DataFile file, DataFileIO<DataFile> dataFileIO, String formatRequested, String formatType) {
         if (!file.isTabularData()) {
             return null;
         }
@@ -154,7 +155,7 @@ public class DataConverter {
                     try {
                         convertedFileStream = new FileInputStream(formatConvertedFile);
                         convertedFileSize = formatConvertedFile.length();
-                    } catch (IOException ioex) {
+                    } catch (FileNotFoundException ioex) {
                         logger.warning("Failed to open generated format " + formatRequested + " for " + file.getStorageIdentifier());
                         return null;
                     }
@@ -167,9 +168,9 @@ public class DataConverter {
         // download API instance writer:
         if (convertedFileStream != null && convertedFileSize > 0) {
 
-            InputStreamIO inputStreamIO = null;
+            InputStreamIO<DataFile> inputStreamIO = null;
             try {
-                inputStreamIO = new InputStreamIO(convertedFileStream, convertedFileSize);
+                inputStreamIO = new InputStreamIO<>(convertedFileStream, convertedFileSize);
             } catch (IOException ioex) {
                 return null;
             }
@@ -177,7 +178,7 @@ public class DataConverter {
             inputStreamIO.setMimeType(formatType);
 
             String fileName = dataFileIO.getFileName();
-            if (fileName == null || fileName.equals("")) {
+            if (fileName == null || fileName.isEmpty()) {
                 fileName = "f" + file.getId().toString();
             }
             inputStreamIO.setFileName(generateAltFileName(formatRequested, fileName));
@@ -275,11 +276,11 @@ public class DataConverter {
     }
 
     private static Map<String, Map<String, String>> getValueTableForRequestedVariables(List<DataVariable> dvs){
-        Map<String, Map<String, String>> vls = new LinkedHashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> vls = new LinkedHashMap<>();
         for (DataVariable dv : dvs){
-            List<VariableCategory> varCat = new ArrayList<VariableCategory>();
+            List<VariableCategory> varCat = new ArrayList<>();
             varCat.addAll(dv.getCategories());
-            Map<String, String> vl = new HashMap<String, String>();
+            Map<String, String> vl = new HashMap<>();
             for (VariableCategory vc : varCat){
                 if (vc.getLabel() != null){
                     vl.put(vc.getValue(), vc.getLabel());
@@ -295,7 +296,7 @@ public class DataConverter {
     private static String generateAltFileName(String formatRequested, String xfileId) {
         String altFileName = xfileId;
 
-        if ( altFileName == null || altFileName.equals("")) {
+        if (altFileName == null || altFileName.isEmpty()) {
             altFileName = "Converted";
         }
 

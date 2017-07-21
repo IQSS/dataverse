@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
+import edu.harvard.iq.dataverse.DvObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,8 +19,9 @@ import java.util.logging.Logger;
 /**
  *
  * @author Leonid Andreev
+ * @param <T> what it reads
  */
-public class InputStreamIO extends DataFileIO {
+public class InputStreamIO<T extends DvObject> extends DataFileIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.InputStreamIO");
 

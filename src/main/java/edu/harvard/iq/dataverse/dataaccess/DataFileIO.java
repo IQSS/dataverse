@@ -45,36 +45,22 @@ import org.apache.commons.httpclient.methods.GetMethod;
 /**
  *
  * @author Leonid Andreev
+ * @param <T> what it writes
  */
 
-public abstract class DataFileIO {
+public abstract class DataFileIO<T extends DvObject> {
 
     public DataFileIO() {
 
     }
 
-    public DataFileIO(DvObject dvObject) {
+    public DataFileIO(T dvObject) {
         this(dvObject, null);
     }
 
-    public DataFileIO(DvObject dvObject, DataAccessRequest req) {
+    public DataFileIO(T dvObject, DataAccessRequest req) {
         this.dvObject = dvObject;
         this.req = req;
-        DvObjectType type= getDvObjectType();
-          
-        switch(type){
-            case datafile:
-                this.dataFile=(DataFile)dvObject;
-                break;
-            case dataset:
-                this.dataset=(Dataset)dvObject;
-                break;
-            case dataverse:
-                this.dataverse=(Dataverse)dvObject;
-                break;
-            default:
-                throw new ClassCastException("Cannot Cast DvObject");
-        }
         if (this.req == null) {
             this.req = new DataAccessRequest();
         }
@@ -145,31 +131,12 @@ public abstract class DataFileIO {
     public abstract void deleteAuxObject(String auxItemTag) throws IOException; 
     
     public abstract void deleteAllAuxObjects() throws IOException;
-    
-    public DvObjectType getDvObjectType() {
-           if (getDvObject().isInstanceofDataFile()) {
-            dvObjectType = DvObjectType.datafile;
-            
-        }
-        else if (getDvObject().isInstanceofDataset()){
-            dvObjectType = DvObjectType.dataset;
-        }
-        else if (getDvObject().isInstanceofDataverse()){
-            dvObjectType = DvObjectType.dataverse;
-        }
-        
-        return dvObjectType; 
-    }
 
-    private DataFile dataFile;
     private DataAccessRequest req;
-    private DvObjectType dvObjectType;
     private InputStream in;
     private OutputStream out; 
     protected Channel channel;
-    private DvObject dvObject;
-    private Dataset dataset;
-    private Dataverse dataverse;
+    protected DvObject dvObject;
 
     private int status;
     private long size;
@@ -196,12 +163,6 @@ public abstract class DataFileIO {
     private String remoteUrl;
     private GetMethod method = null;
     private Header[] responseHeaders;
-    
-      public static enum DvObjectType {
-        dataset,
-        datafile,
-        dataverse
-    };
 
     // getters:
     
@@ -231,11 +192,15 @@ public abstract class DataFileIO {
     }
     
     public DataFile getDataFile() {
-        return dataFile;
+        return (DataFile) dvObject;
     }
     
     public Dataset getDataset() {
-        return dataset;
+        return (Dataset) dvObject;
+    }
+
+    public Dataverse getDataverse() {
+        return (Dataverse) dvObject;
     }
 
     public DataAccessRequest getRequest() {
@@ -320,7 +285,7 @@ public abstract class DataFileIO {
 
         // setters:
     public void setDataFile(DataFile f) {
-        dataFile = f;
+        dvObject = f;
     }
 
     public void setRequest(DataAccessRequest dar) {
@@ -430,20 +395,20 @@ public abstract class DataFileIO {
         }
     }
     
-    public String generateVariableHeader(List dvs) {
+    public String generateVariableHeader(List<DataVariable> dvs) {
         String varHeader = null;
 
         if (dvs != null) {
-            Iterator iter = dvs.iterator();
+            Iterator<DataVariable> iter = dvs.iterator();
             DataVariable dv;
 
             if (iter.hasNext()) {
-                dv = (DataVariable) iter.next();
+                dv = iter.next();
                 varHeader = dv.getName();
             }
 
             while (iter.hasNext()) {
-                dv = (DataVariable) iter.next();
+                dv = iter.next();
                 varHeader = varHeader + "\t" + dv.getName();
             }
 
