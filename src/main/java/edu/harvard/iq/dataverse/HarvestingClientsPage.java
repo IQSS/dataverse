@@ -443,6 +443,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
             }
             harvestingClient.setScheduleHourOfDay(getHourOfDay());
         }
+        else {
+            harvestingClient.setScheduled(false);
+        }
         
         // will try to save it now:
         
