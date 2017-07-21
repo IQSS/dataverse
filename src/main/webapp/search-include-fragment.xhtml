@@ -74,7 +74,6 @@
     <!-- Search Results / SOLR IS UP -->
     <div id="search-row-panel" class="row row-offcanvas row-offcanvas-left" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
         <div id="dv-sidebar" class="col-sm-4 col-md-3 sidebar-offcanvas">
-            *********** #{dataversePage}
             <!--TYPE FACET (DATAVERSES, DATASETS, FILES)-->
             <h:form id="facetType">
                 <!--DATAVERSE TOGGLE-->
@@ -449,7 +448,6 @@
                                 <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                 <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
                             </h:outputLink>
-                           @@@ #{dataversePage}@@@
                             <h:outputText value="(#{result.dataverseAffiliation})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}"/>
                             <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
                             <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
