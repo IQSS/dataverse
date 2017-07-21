@@ -5,8 +5,11 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getDataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoThumbnail;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.thumb48addedByImageThumbConverter;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -31,6 +34,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -79,7 +84,7 @@ public class ExportService {
         return retList;
     }
 
-    public InputStream getExport(Dataset dataset, String formatName) throws ExportException {
+    public InputStream getExport(Dataset dataset, String formatName) throws ExportException, IOException {
         // first we will try to locate an already existing, cached export 
         // for this format: 
         InputStream exportInputStream = getCachedExportFormat(dataset, formatName);
@@ -135,7 +140,11 @@ public class ExportService {
     // in a file in the dataset directory, on each Exporter available. 
     
     public void exportAllFormats (Dataset dataset) throws ExportException {
-        clearAllCachedFormats(dataset);
+        try {
+            clearAllCachedFormats(dataset);
+        } catch (IOException ex) {
+            Logger.getLogger(ExportService.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         try {
             DatasetVersion releasedVersion = dataset.getReleasedVersion();
@@ -164,7 +173,8 @@ public class ExportService {
         
     }
     
-    public void clearAllCachedFormats(Dataset dataset) {
+    public void clearAllCachedFormats(Dataset dataset) throws IOException {
+        try {
         Iterator<Exporter> exporters = loader.iterator();
         while (exporters.hasNext()) {
             Exporter e = exporters.next();
@@ -174,6 +184,9 @@ public class ExportService {
         }
         
         dataset.setLastExportTime(null);
+        } catch (IOException ex) {
+            //not fatal
+        }
     }
     
     // This method finds the exporter for the format requested, 
@@ -279,66 +292,100 @@ public class ExportService {
 
                     System.out.println("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
                     System.out.println("Temp file to path:" + tempFile.toPath());
-                    dataFileIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), format + ".cached");
+                    dataFileIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
                 }
                 
             } catch (IOException ioex) {
-                throw new ExportException("IO Exception thrown exporting as " + format + ".cached");
+                throw new ExportException("IO Exception thrown exporting as "  + "export_" + format + ".cached");
             }
 
         } catch (IOException ioex) {
-            throw new ExportException("IO Exception thrown exporting as " + format + ".cached");
+            throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
         }
 
     }
     
-    private void clearCachedExport(Dataset dataset, String format) {
-        if (dataset != null && dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
-
-            Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + format + ".cached");
-            try {
-                Files.delete(cachedMetadataFilePath);
-            } catch (IOException ioex) {
-            }
+    private void clearCachedExport(Dataset dataset, String format) throws IOException {
+        try {
+            DataFileIO dataFileIO = getDataFileIO(dataset);
+            
+            dataFileIO.deleteAuxObject("export_" + format + ".cached");
+        
+        } catch (IOException ex) {
+            throw new IOException("IO Exception thrown exporting as " + "export_" + format + ".cached");
         }
+        
+            
+//        [original Leonid written code below:]
+//        if (dataset != null && dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
+//
+//            Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + format + ".cached");
+//            try {
+//                Files.delete(cachedMetadataFilePath);
+//            } catch (IOException ioex) {
+//            }
+//        }
     }
     
     // This method checks if the metadata has already been exported in this 
     // format and cached on disk. If it has, it'll open the file and retun 
     // the file input stream. If not, it'll return null. 
     
-    private InputStream getCachedExportFormat(Dataset dataset, String formatName) {
+    private InputStream getCachedExportFormat(Dataset dataset, String formatName) throws ExportException, IOException {
+
+        DataFileIO dataAccess = null;
 
         try {
-            if (dataset.getFileSystemDirectory() != null) {
-                Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + formatName + ".cached");
-                if (Files.exists(cachedMetadataFilePath)) {
-                    FileInputStream cachedExportInputStream = new FileInputStream(cachedMetadataFilePath.toFile());
-                    return cachedExportInputStream;
-                }
-            }
+            dataAccess = DataAccess.getDataFileIO(dataset);
         } catch (IOException ioex) {
-            // don't do anything - we'll just return null
+            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached");
         }
 
+        InputStream cachedExportInputStream = null;
+
+        try {
+            if (dataAccess.getAuxFile("export_" + formatName + ".cached") != null) {
+                cachedExportInputStream = dataAccess.getAuxFile("export_" + formatName + ".cached");
+                return cachedExportInputStream;
+            }
+        } catch (IOException ioex) {
+            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached");
+        }
+
+//        try {
+//            if (dataset.getFileSystemDirectory() != null) {
+//                Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + formatName + ".cached");
+//                if (Files.exists(cachedMetadataFilePath)) {
+//                    FileInputStream cachedExportInputStream = new FileInputStream(cachedMetadataFilePath.toFile());
+//                    return cachedExportInputStream;
+//                }
+//            }
+//        } catch (IOException ioex) {
+//            // don't do anything - we'll just return null
+//        }
         return null;
 
     }
     
-    public Long getCachedExportSize(Dataset dataset, String formatName) {
-        try {
-            if (dataset.getFileSystemDirectory() != null) {
-                Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + formatName + ".cached");
-                if (Files.exists(cachedMetadataFilePath)) {
-                    return cachedMetadataFilePath.toFile().length();
-                }
-            }
-        } catch (Exception ioex) {
-            // don't do anything - we'll just return null
-        }
-
-        return null;
-    }
+    /*The below method, getCachedExportSize(), is not currently used.
+     *An exercise for the reader could be to refactor it if it's needed
+     *to be compatible with storage drivers other than local filesystem.
+     * -- L.A. 4.8 */
+    
+//    public Long getCachedExportSize(Dataset dataset, String formatName) {
+//        try {
+//            if (dataset.getFileSystemDirectory() != null) {
+//                Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + formatName + ".cached");
+//                if (Files.exists(cachedMetadataFilePath)) {
+//                    return cachedMetadataFilePath.toFile().length();
+//                }
+//            }
+//        } catch (Exception ioex) {
+//            // don't do anything - we'll just return null
+//        }
+//
+//        return null;
+//    }
     
     
     public Boolean isXMLFormat(String provider){
