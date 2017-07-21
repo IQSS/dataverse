@@ -32,16 +32,11 @@ import java.math.RoundingMode;
 
 import org.apache.commons.lang.*;
 import org.apache.commons.codec.binary.Hex;
-import javax.inject.Inject;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
@@ -1660,7 +1655,7 @@ public class PORFileReader  extends TabularDataFileReader{
             
             String varName = dataTable.getDataVariables().get(i).getName();
             
-            Map<String, String> valueLabelPairs = valueLabelTable.get(varName);
+            Map<String, String> valueLabelPairs = valueLabelTable.get(valueVariableMappingTable.get(varName));
             if (valueLabelPairs != null && !valueLabelPairs.isEmpty()) {
                 for (String value : valueLabelPairs.keySet()) {
                     
