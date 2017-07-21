@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -865,6 +866,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         } catch (Exception ex) {
             // it's ok to just ignore... 
         }
+    }
+
+    public WorkflowComment addWorkflowComment(WorkflowComment workflowComment) {
+        em.persist(workflowComment);
+        return workflowComment;
     }
 
 }
