@@ -125,6 +125,9 @@
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getReasonForReturn(item.theObject)}
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
@@ -136,6 +139,12 @@
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
+                                                        <!-- Reason for Return - This needs some work in the DataverseUserPage method to get it to work -->
+                                                        <ui:remove>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getReasonForReturn(item.theObject)}
+                                                        </o:param>
+                                                        </ui:remove>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'PUBLISHEDDS'}">

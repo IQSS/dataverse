@@ -198,6 +198,11 @@ public class MailServiceBean implements java.io.Serializable {
     }
     
     public Boolean sendNotificationEmail(UserNotification notification){  
+        return sendNotificationEmail(notification, "");
+    }
+    
+    
+    public Boolean sendNotificationEmail(UserNotification notification, String comment){  
 
         boolean retval = false;
         String emailAddress = getUserEmailAddress(notification);
@@ -294,8 +299,14 @@ public class MailServiceBean implements java.io.Serializable {
         }
         return "";
     }
-
-    private String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject){       
+    
+    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject){
+        
+        return getMessageTextBasedOnNotification(userNotification, targetObject, "");
+            
+    }
+    
+    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment){       
         
         String messageText = ResourceBundle.getBundle("Bundle").getString("notification.email.greeting");
         DatasetVersion version = null;
@@ -405,9 +416,19 @@ public class MailServiceBean implements java.io.Serializable {
                 return messageText;                   
             case SUBMITTEDDS:
                 version =  (DatasetVersion) targetObject;
+                String mightHaveSubmissionComment = "";              
+                /*
+                FIXME
+                Setting up to add single comment when design completed
+                "submissionComment" needs to be added to Bundle
+                mightHaveSubmissionComment = ".";
+                if (comment != null && !comment.isEmpty()) {
+                    mightHaveSubmissionComment = ".\n\n" + BundleUtil.getStringFromBundle("submissionComment") + "\n\n" + comment;
+                }
+                */
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasSubmittedForReview");
                 String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
-                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), mightHaveSubmissionComment};
                 messageText += MessageFormat.format(pattern, paramArraySubmittedDataset);
                 return messageText;
             case PUBLISHEDDS:
@@ -420,8 +441,18 @@ public class MailServiceBean implements java.io.Serializable {
             case RETURNEDDS:
                 version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasReturnedByReviewer");
+                
+                String optionalReturnReason = "";
+                /*
+                FIXME
+                Setting up to add single comment when design completed
+                optionalReturnReason = ".";
+                if (comment != null && !comment.isEmpty()) {
+                    optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + comment;
+                }
+                */
                 String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
-                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), optionalReturnReason};
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
                 return messageText;
             case CREATEACC:
