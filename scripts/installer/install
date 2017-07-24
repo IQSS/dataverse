@@ -225,13 +225,13 @@ if ($gfuser) {
 
 # prefer that we not install as root.
 unless ( $< != 0 ) {
-print "######################################################################\n";
-print "      It is recommended that this script not be run as root.\n";
-print "Consider creating a glassfish service account, giving it ownership\n";
-print "   on the glassfish/domains/domain1/ and glassfish/lib/ directories,\n";
-print "      along with the JVM-specified files.dir location, and running\n";
-print "         this installer as the user who will launch Glassfish.\n";
-print "######################################################################\n";
+print "####################################################################\n";
+print "     It is recommended that this script not be run as root.\n";
+print " Consider creating a glassfish service account, giving it ownership\n";
+print "  on the glassfish/domains/domain1/ and glassfish/lib/ directories,\n";
+print "    along with the JVM-specified files.dir location, and running\n";
+print "       this installer as the user who will launch Glassfish.\n";
+print "####################################################################\n";
 }
 
 # ensure $gfuser exists or bail
