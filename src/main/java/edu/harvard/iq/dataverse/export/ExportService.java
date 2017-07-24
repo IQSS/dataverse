@@ -257,7 +257,7 @@ public class ExportService {
             File tempFile = null;
             OutputStream outputStream = null;
             Dataset dataset = version.getDataset();
-            DataFileIO dataFileIO = null;
+            DataFileIO<Dataset> dataFileIO = null;
             
             try {
                 dataFileIO = DataAccess.createNewDataFileIO(dataset, "file");
@@ -307,7 +307,7 @@ public class ExportService {
     
     private void clearCachedExport(Dataset dataset, String format) throws IOException {
         try {
-            DataFileIO dataFileIO = getDataFileIO(dataset);
+            DataFileIO<Dataset> dataFileIO = getDataFileIO(dataset);
             
             dataFileIO.deleteAuxObject("export_" + format + ".cached");
         
@@ -333,7 +333,7 @@ public class ExportService {
     
     private InputStream getCachedExportFormat(Dataset dataset, String formatName) throws ExportException, IOException {
 
-        DataFileIO dataAccess = null;
+        DataFileIO<Dataset> dataAccess = null;
 
         try {
             dataAccess = DataAccess.getDataFileIO(dataset);

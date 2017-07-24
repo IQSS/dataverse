@@ -269,7 +269,7 @@ public class IngestServiceBean {
                     
                     boolean localFile = false;
                     boolean savedSuccess = false; 
-                    DataFileIO dataAccess = null;
+                    DataFileIO<DataFile> dataAccess = null;
                     
                     try {
 
@@ -544,7 +544,7 @@ public class IngestServiceBean {
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
                 logger.fine("subsetting continuous vector");
-                DataFileIO dataFileIO = dataFile.getDataFileIO();
+                DataFileIO<DataFile> dataFileIO = dataFile.getDataFileIO();
                 dataFileIO.open();
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
                     Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
@@ -576,7 +576,7 @@ public class IngestServiceBean {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalDiscrete()
                     && dataFile.getDataTable().getDataVariables().get(i).isTypeNumeric()) {
                 logger.fine("subsetting discrete-numeric vector");
-                DataFileIO dataFileIO = dataFile.getDataFileIO();
+                DataFileIO<DataFile> dataFileIO = dataFile.getDataFileIO();
                 dataFileIO.open();
                 Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 // We are discussing calculating the same summary stats for 
@@ -610,7 +610,7 @@ public class IngestServiceBean {
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isTypeCharacter()) {
-                DataFileIO dataFileIO = dataFile.getDataFileIO();
+                DataFileIO<DataFile> dataFileIO = dataFile.getDataFileIO();
                 dataFileIO.open();
                 logger.fine("subsetting character vector");
                 String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
@@ -680,7 +680,7 @@ public class IngestServiceBean {
 
         BufferedInputStream inputStream = null; 
         File additionalData = null; 
-        DataFileIO dataFileIO = null;
+        DataFileIO<DataFile> dataFileIO = null;
                 
         try {
             dataFileIO = dataFile.getDataFileIO();
@@ -849,7 +849,7 @@ public class IngestServiceBean {
                 try {
                     /* Start of save as backup */
 
-                    DataFileIO dataAccess = dataFile.getDataFileIO();
+                    DataFileIO<DataFile> dataAccess = dataFile.getDataFileIO();
                     dataAccess.open();
 
                     // and we want to save the original of the ingested file: 
@@ -1335,7 +1335,7 @@ public class IngestServiceBean {
          */
         if (dataFile != null && dataFile.isImage()) {
             try {
-                DataFileIO dataAccess = dataFile.getDataFileIO();
+                DataFileIO<DataFile> dataAccess = dataFile.getDataFileIO();
                 if (dataAccess != null) { // && dataFileIO.isLocalFile()) {
 
                     if (ImageThumbConverter.isThumbnailAvailable(dataFile, ImageThumbConverter.DEFAULT_PREVIEW_SIZE)) {

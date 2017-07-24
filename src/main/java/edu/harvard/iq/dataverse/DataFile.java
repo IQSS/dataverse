@@ -258,7 +258,7 @@ public class DataFile extends DvObject implements Comparable {
 
     public void setDataTable(DataTable dt) {
         if (this.getDataTables() == null) {
-            this.setDataTables( new ArrayList() );
+            this.setDataTables(new ArrayList<>());
         } else {
             this.getDataTables().clear();
         }
@@ -277,11 +277,9 @@ public class DataFile extends DvObject implements Comparable {
         
         if (( currentDataTags != null)||(!currentDataTags.isEmpty())){
                        
-            Iterator itr = currentDataTags.iterator();
-            while (itr.hasNext()){
-                DataFileTag element = (DataFileTag)itr.next();
+            for (DataFileTag element : currentDataTags) {
                 tagStrings.add(element.getTypeLabel());
-             }
+            }
         }
         return tagStrings;
     }
@@ -297,9 +295,7 @@ public class DataFile extends DvObject implements Comparable {
         }
         
         
-        Iterator itr = currentDataTags.iterator();
-        while (itr.hasNext()){
-            DataFileTag element = (DataFileTag)itr.next();
+        for (DataFileTag element : currentDataTags) {
             builder.add(element.getTypeLabel());            
         }
         return builder;
@@ -358,7 +354,7 @@ public class DataFile extends DvObject implements Comparable {
 
     public void setIngestReport(IngestReport report) {
         if (ingestReports == null) {
-            ingestReports = new ArrayList();
+            ingestReports = new ArrayList<>();
         } else {
             ingestReports.clear();
         }
@@ -559,8 +555,8 @@ public class DataFile extends DvObject implements Comparable {
         return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
     }
 
-    public DataFileIO getDataFileIO() throws IOException {
-        DataFileIO dataFileIO =  DataAccess.getDataFileIO(this);
+    public DataFileIO<DataFile> getDataFileIO() throws IOException {
+        DataFileIO<DataFile> dataFileIO = DataAccess.getDataFileIO(this);
         
         if (dataFileIO == null) {
             throw new IOException("Failed to create DataFileIO for datafile.");

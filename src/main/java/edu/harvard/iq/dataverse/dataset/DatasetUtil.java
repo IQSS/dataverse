@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Base64;
 import javax.imageio.ImageIO;
@@ -241,7 +240,7 @@ public class DatasetUtil {
         try {
             tmpFile = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
-            Logger.getLogger(DatasetUtil.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
         }
 //        Path datasetDirectory = dataset.getFileSystemDirectory();
 //        if (datasetDirectory != null && !Files.exists(datasetDirectory)) {
@@ -277,7 +276,7 @@ public class DatasetUtil {
         try {
             fullSizeImage = ImageIO.read(tmpFile);
         } catch (IOException ex) {
-            Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
             return null;
         }
         if (fullSizeImage == null) {
@@ -290,27 +289,27 @@ public class DatasetUtil {
         try {
             src = new FileInputStream(tmpFile).getChannel();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
             return null;
         }
         FileChannel dest = null;
         try {
             dest = new FileOutputStream(tmpFile).getChannel();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
             return null;
         }
         try {
             dest.transferFrom(src, 0, src.size());
         } catch (IOException ex) {
-            Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
             return null;
         }
         File tmpFileForResize = null;
         try {
             tmpFileForResize = FileUtil.inputStreamToFile(inputStream);
-        } catch(IOException ex){
-            Logger.getLogger(DatasetUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            logger.severe(ex.getMessage());
             return null;
         }
         String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());

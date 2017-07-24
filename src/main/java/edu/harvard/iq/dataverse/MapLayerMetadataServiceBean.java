@@ -182,7 +182,7 @@ public class MapLayerMetadataServiceBean {
 
         
         try {
-            DataFileIO dataFileIO = dataFile.getDataFileIO();
+            DataFileIO<DataFile> dataFileIO = dataFile.getDataFileIO();
 
             if (dataFileIO == null) {
                 logger.warning("Null DataFileIO in deleteOlderMapThumbnails()");
@@ -289,7 +289,7 @@ public class MapLayerMetadataServiceBean {
         imageUrl = imageUrl.replace("https:", "http:");
         logger.info("Attempt to retrieve map image: " + imageUrl);
         
-        DataFileIO dataAccess = null;
+        DataFileIO<DataFile> dataAccess = null;
         try {
             dataAccess = mapLayerMetadata.getDataFile().getDataFileIO();
         } catch (IOException ioEx) {

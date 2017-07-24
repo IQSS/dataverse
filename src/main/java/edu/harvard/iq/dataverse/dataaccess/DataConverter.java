@@ -168,9 +168,9 @@ public class DataConverter {
         // download API instance writer:
         if (convertedFileStream != null && convertedFileSize > 0) {
 
-            InputStreamIO<DataFile> inputStreamIO = null;
+            InputStreamIO inputStreamIO = null;
             try {
-                inputStreamIO = new InputStreamIO<>(convertedFileStream, convertedFileSize);
+                inputStreamIO = new InputStreamIO(convertedFileStream, convertedFileSize);
             } catch (IOException ioex) {
                 return null;
             }
