@@ -12,13 +12,19 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import org.javaswift.joss.client.factory.AccountFactory;
 import static org.javaswift.joss.client.factory.AuthenticationMethod.BASIC;
 import org.javaswift.joss.model.Account;
@@ -62,10 +68,13 @@ public class SwiftAccessIO extends DataFileIO {
     private Account account = null;
     private StoredObject swiftFileObject = null;
     private Container swiftContainer = null;
+        
+    //for hash
+    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     
     //TODO: should this be dynamically generated based on size of file?
     //Also, this is in seconds
-    private static int TEMP_URL_EXPIRES = 60;
+    private static int TEMP_URL_EXPIRES = System.getProperty("dataverse.files.temp_url_expire") != null ? Integer.parseInt(System.getProperty("dataverse.files.temp_url_expire")) : 60;
 
     private static int LIST_PAGE_LIMIT = 100;
 
@@ -519,10 +528,15 @@ public class SwiftAccessIO extends DataFileIO {
         // object for a primary file), we also set the file download url here: 
         // and generate a temporary URL
         if (auxItemTag == null) {
+            logger.info("lets see how many times this is called");
             setRemoteUrl(getSwiftFileURI(fileObject));
-            setTemporarySwiftUrl(generateTemporarySwiftUrl(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));
-            setTempUrlSignature(generateTempUrlSignature(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));
-            setTempUrlExpiry(generateTempUrlExpiry(TEMP_URL_EXPIRES));
+            if (!this.isWriteAccess) {
+                //otherwise this gets called a bunch on upload
+                //TODO: also called a lot during ingesting
+                setTemporarySwiftUrl(generateTemporarySwiftUrl(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));
+                setTempUrlSignature(generateTempUrlSignature(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));
+                setTempUrlExpiry(generateTempUrlExpiry(TEMP_URL_EXPIRES));
+            }
             setSwiftFileName(swiftFileName);
 
             logger.fine(getRemoteUrl() + " success; write mode: " + writeAccess);
@@ -673,6 +687,9 @@ public class SwiftAccessIO extends DataFileIO {
         if (hmac == null || isExpiryExpired(generateTempUrlExpiry(duration), duration)) {
             Properties p = getSwiftProperties();
             String secretKey = p.getProperty("swift.hash_key." + swiftEndPoint);
+            if (secretKey == null) {
+                throw new IOException("Please input a hash key in swift.properties");
+            }
             String path = "/v1/" + containerName + "/" + objectName;
             Long expires = generateTempUrlExpiry(duration);
             String hmacBody = "GET\n" + expires + "\n" + path;
@@ -729,5 +746,24 @@ public class SwiftAccessIO extends DataFileIO {
         
         return containerName;
      }
+     
+         //https://gist.github.com/ishikawa/88599
+    private static String toHexString(byte[] bytes) {
+        Formatter formatter = new Formatter();
+
+        for (byte b : bytes) {
+            formatter.format("%02x", b);
+        }
+
+        return formatter.toString();
+    }
+
+    public static String calculateRFC2104HMAC(String data, String key)
+            throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
+        SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), HMAC_SHA1_ALGORITHM);
+        Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
+        mac.init(signingKey);
+        return toHexString(mac.doFinal(data.getBytes()));
+    }
      
 }

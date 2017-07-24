@@ -235,6 +235,12 @@ Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your clo
 
 which you can configure properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
 
+You also have the option to set a custom expiration length for a generated temporary URL. It is initalized to 60 seconds, but you can change it by running the create command:
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.temp_url_expire=3600"``
+
+In this example, you would be setting the expiration length for one hour.
+
 
 .. _Branding Your Installation:
 

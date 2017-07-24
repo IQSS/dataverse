@@ -35,14 +35,9 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.List;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 
 import org.apache.commons.httpclient.Header;
@@ -167,9 +162,7 @@ public abstract class DataFileIO {
     private Boolean isZippedStream = false;
     private Boolean isDownloadSupported = true;
     private Boolean isSubsetSupported = false;
-    
-    //for hash
-    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
+
     private String swiftFileName;
 
 
@@ -452,22 +445,5 @@ public abstract class DataFileIO {
         return varHeader;
     }
     
-    //https://gist.github.com/ishikawa/88599
-    private static String toHexString(byte[] bytes) {
-        Formatter formatter = new Formatter();
 
-        for (byte b : bytes) {
-            formatter.format("%02x", b);
-        }
-
-        return formatter.toString();
-    }
-
-    public static String calculateRFC2104HMAC(String data, String key)
-            throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-        SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), HMAC_SHA1_ALGORITHM);
-        Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
-        mac.init(signingKey);
-        return toHexString(mac.doFinal(data.getBytes()));
-    }
 }

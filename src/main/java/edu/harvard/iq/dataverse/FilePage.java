@@ -697,7 +697,14 @@ public class FilePage implements java.io.Serializable {
                 try {
                     SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
                     swiftIO.open();
-                    fileDownloadUrl = swiftIO.getRemoteUrl();
+                    //if its a public install, lets just give users the permanent URL!
+                    if (systemConfig.isPublicInstall()){                        
+                        fileDownloadUrl = swiftIO.getRemoteUrl();
+                    } else {
+                        //TODO: if a user has access to this file, they should be given the swift url
+                        // perhaps even we could use this as the "private url"
+                        fileDownloadUrl = swiftIO.getTemporarySwiftUrl();
+                    }
                     logger.info("Swift url: " + fileDownloadUrl);
                     return fileDownloadUrl;
 
