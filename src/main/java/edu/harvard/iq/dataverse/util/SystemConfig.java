@@ -673,7 +673,7 @@ public class SystemConfig {
     
     public boolean isRsyncWorkflow(){
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        return uploadMethods != null &&  uploadMethods.toLowerCase().equals("dcm/rsync+ssh");
+        return uploadMethods != null &&  uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
     }
 
 }
