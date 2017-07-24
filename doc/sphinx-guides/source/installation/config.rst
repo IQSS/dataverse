@@ -224,6 +224,15 @@ You also have the option to set a custom container name separator. It is initial
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-folder-path-separator=-"``
 
+To enable the usage of temporary URLs, you must also set a hash key both on your swift endpoint and in your swift.properties file. You should enable it by adding 
+
+.. code-block:: none
+
+    swift.hash_key.endpoint1=your-hash-key
+
+to your swift.properties file.
+
+
 Setting up Compute
 +++++++++++++++++++
 

@@ -451,6 +451,20 @@ public class DatasetPage implements java.io.Serializable {
         
         return swiftBool;
     }
+    
+    public boolean showComputeButton () {
+        boolean flag = false;
+        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
+            if (session.getUser().isAuthenticated() && fileDownloadHelper.canDownloadFile(getInitialDataFile().getFileMetadata())) {
+                // TODO: We should really get all the file metadata and check
+                // not just the initial file because a user will need access to all files
+                // in an entire dataset, not just the initial one
+                flag = true;
+            }
+        }
+        
+        return flag;
+    }
 
     public String getComputeUrl() throws IOException {
         SwiftAccessIO swiftObject = getSwiftObject();

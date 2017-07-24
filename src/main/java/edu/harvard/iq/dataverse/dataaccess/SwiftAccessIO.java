@@ -530,7 +530,7 @@ public class SwiftAccessIO extends DataFileIO {
         if (auxItemTag == null) {
             logger.info("lets see how many times this is called");
             setRemoteUrl(getSwiftFileURI(fileObject));
-            if (!this.isWriteAccess) {
+            if (!this.isWriteAccess && !this.getDataFile().isIngestInProgress()) {
                 //otherwise this gets called a bunch on upload
                 //TODO: also called a lot during ingesting
                 setTemporarySwiftUrl(generateTemporarySwiftUrl(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));

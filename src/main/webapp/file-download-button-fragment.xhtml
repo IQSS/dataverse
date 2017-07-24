@@ -114,7 +114,7 @@
         </p:commandLink>
     </ui:fragment>
     
-    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{isFilePg and FilePage.isSwiftStorage()}">
+    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{isFilePg and FilePage.showComputeButton()}">
         <!-- Compute Button *File pg only* -->
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>

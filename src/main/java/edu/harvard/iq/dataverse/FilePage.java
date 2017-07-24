@@ -555,12 +555,23 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
-    public Boolean isSwiftStorage () {
+    public boolean isSwiftStorage () {
         Boolean swiftBool = false;
         if (file.getStorageIdentifier().startsWith("swift://")){
             swiftBool = true;
         }
         return swiftBool;
+    }
+    
+    public boolean showComputeButton () {
+        boolean flag = false;
+        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
+            if (session.getUser().isAuthenticated() && fileDownloadHelper.canDownloadFile(fileMetadata)) {
+                flag = true;
+            }
+        }
+        
+        return flag;
     }
     
     public SwiftAccessIO getSwiftObject() {
