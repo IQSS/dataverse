@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,6 +34,8 @@ public class FileAccessIOTest {
     private Dataset dataset;
     private DataFile dataFile;
 
+    private Path fileSystemPath = new File("/tmp/files/tmp/dataset/Dataset").toPath();
+
     public FileAccessIOTest() {
     }
 
@@ -41,11 +44,17 @@ public class FileAccessIOTest {
         dataverse = MocksFactory.makeDataverse();
         dataset = MocksFactory.makeDataset();
         dataset.setOwner(dataverse);
+        dataset.setAuthority("tmp");
+        dataset.setIdentifier("dataset");
+        dataset.setStorageIdentifier("dataSet");
+
         dataFile = MocksFactory.makeDataFile();
         dataFile.setOwner(dataset);
+        dataFile.setStorageIdentifier("dataFile");
+
         datasetAccess = new FileAccessIO<>(dataset);
         dataFileAccess = new FileAccessIO<>(dataFile);
-        //dataverseAccess = new FileAccessIO<>(new Dataverse());
+        dataverseAccess = new FileAccessIO<>(dataverse);
     }
 
     /**
@@ -70,241 +79,195 @@ public class FileAccessIOTest {
 
     /**
      * Test of open method, of class FileAccessIO.
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testOpen() {
-        DataAccessOption[] options = null;
-        try {
-            datasetAccess.open(options);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+    public void testOpen() throws IOException {
+        DataAccessOption options = DataAccessOption.READ_ACCESS;
+        datasetAccess.open(options);
     }
 
     /**
      * Test of savePath method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testSavePath() {
-        Path fileSystemPath = null;
-        try {
-            datasetAccess.savePath(fileSystemPath);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+    public void testSavePath() throws IOException {
+        datasetAccess.savePath(fileSystemPath);
     }
 
     /**
      * Test of saveInputStream method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testSaveInputStream() {
+    public void testSaveInputStream() throws IOException {
         InputStream inputStream = null;
-        try {
-            datasetAccess.saveInputStream(inputStream);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+        datasetAccess.saveInputStream(inputStream);
     }
 
     /**
      * Test of openAuxChannel method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testOpenAuxChannel() {
-        String auxItemTag = "";
-        DataAccessOption[] options = null;
+    public void testOpenAuxChannel() throws IOException {
+        DataAccessOption options = DataAccessOption.READ_ACCESS;
         Channel expResult = null;
-        Channel result;
-        try {
-            result = datasetAccess.openAuxChannel(auxItemTag, options);
-            assertEquals(expResult, result);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+        Channel result = datasetAccess.openAuxChannel("Dataset", options);
+        assertEquals(expResult, result);
     }
 
     /**
      * Test of isAuxObjectCached method, of class FileAccessIO.
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testIsAuxObjectCached() {
-        String auxItemTag = "";
+    public void testIsAuxObjectCached() throws IOException {
         boolean expResult = false;
-        boolean result;
-        try {
-            result = datasetAccess.isAuxObjectCached(auxItemTag);
-            assertEquals(expResult, result);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+        boolean result = datasetAccess.isAuxObjectCached("Dataset");
+        assertEquals(expResult, result);
     }
 
     /**
      * Test of getAuxObjectSize method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testGetAuxObjectSize() {
-        String auxItemTag = "";
+    public void testGetAuxObjectSize() throws IOException {
         long expResult = 0L;
         long result;
-        try {
-            result = datasetAccess.getAuxObjectSize(auxItemTag);
-            assertEquals(expResult, result);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+        result = datasetAccess.getAuxObjectSize("Dataset");
+        assertEquals(expResult, result);
+        
     }
 
     /**
      * Test of getAuxObjectAsPath method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testGetAuxObjectAsPath() {
-        String auxItemTag = "";
-        Path expResult = null;
-        Path result;
-        try {
-            result = datasetAccess.getAuxObjectAsPath(auxItemTag);
-            assertEquals(expResult, result);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+    public void testGetAuxObjectAsPath() throws IOException {
+        Path result = datasetAccess.getAuxObjectAsPath("Dataset");
+        assertEquals(fileSystemPath, result);
     }
 
     /**
      * Test of backupAsAux method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testBackupAsAux() {
-        String auxItemTag = "";
-        try {
-            datasetAccess.backupAsAux(auxItemTag);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+    public void testBackupAsAux() throws IOException {
+        datasetAccess.backupAsAux("Dataset");
     }
 
     /**
      * Test of savePathAsAux method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testSavePathAsAux() {
-        Path fileSystemPath = null;
-        String auxItemTag = "";
-        try {
-            datasetAccess.savePathAsAux(fileSystemPath, auxItemTag);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+    public void testSavePathAsAux() throws IOException {
+        datasetAccess.savePathAsAux(fileSystemPath, "Dataset");
     }
 
     /**
      * Test of saveInputStreamAsAux method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testSaveInputStreamAsAux() {
+    public void testSaveInputStreamAsAux() throws IOException {
         InputStream inputStream = null;
-        String auxItemTag = "";
-        try {
-            datasetAccess.saveInputStreamAsAux(inputStream, auxItemTag);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+        datasetAccess.saveInputStreamAsAux(inputStream, "Dataset");
     }
 
     /**
      * Test of listAuxObjects method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testListAuxObjects() {
+    public void testListAuxObjects() throws IOException {
         List<String> expResult = null;
         List<String> result;
-        try {
-            result = dataFileAccess.listAuxObjects();
-            assertEquals(expResult, result);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+        result = dataFileAccess.listAuxObjects();
+        assertEquals(expResult, result);
     }
 
     /**
      * Test of deleteAuxObject method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testDeleteAuxObject() {
-        String auxItemTag = "";
-        try {
-            datasetAccess.deleteAuxObject(auxItemTag);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+    public void testDeleteAuxObject() throws IOException {
+        datasetAccess.deleteAuxObject("Dataset");
     }
 
     /**
      * Test of deleteAllAuxObjects method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testDeleteAllAuxObjects() {
-        try {
-            datasetAccess.deleteAllAuxObjects();
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+    public void testDeleteAllAuxObjects() throws IOException {
+        dataFileAccess.deleteAllAuxObjects();
     }
 
     /**
      * Test of getStorageLocation method, of class FileAccessIO.
+     *
      */
     @Test
     public void testGetStorageLocation() {
-        String expResult = null;
+        String expResult = "file:///tmp/files/tmp/dataset/dataSet";
         String result = datasetAccess.getStorageLocation();
         assertEquals(expResult, result);
     }
 
     /**
      * Test of getFileSystemPath method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testGetFileSystemPath() {
-        try {
-            Path expResult = null;
-            Path result = datasetAccess.getFileSystemPath();
-            assertEquals(expResult, result);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+    public void testGetFileSystemPath() throws IOException {
+        Path result = datasetAccess.getFileSystemPath();
+        assertEquals(fileSystemPath, result);
     }
 
     /**
      * Test of exists method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testExists() {
-        try {
-            boolean expResult = false;
-            boolean result = datasetAccess.exists();
-            assertEquals(expResult, result);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+    public void testExists() throws IOException {
+        boolean expResult = false;
+        boolean result = datasetAccess.exists();
+        assertEquals(expResult, result);
     }
 
     /**
      * Test of delete method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testDelete() {
-        try {
-            datasetAccess.delete();
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        }
+    public void testDelete() throws IOException {
+        datasetAccess.delete();
     }
 
     /**
      * Test of openLocalFileAsInputStream method, of class FileAccessIO.
+     *
      */
     @Test
     public void testOpenLocalFileAsInputStream() {
@@ -315,6 +278,7 @@ public class FileAccessIOTest {
 
     /**
      * Test of openLocalFileAsOutputStream method, of class FileAccessIO.
+     *
      */
     @Test
     public void testOpenLocalFileAsOutputStream() {
@@ -323,23 +287,13 @@ public class FileAccessIOTest {
 
     /**
      * Test of getAuxFileAsInputStream method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testGetAuxFileAsInputStream() {
-        InputStream result = null;
-        try {
-            String auxItemTag = "";
-            InputStream expResult = null;
-            result = datasetAccess.getAuxFileAsInputStream(auxItemTag);
-            assertEquals(expResult, result);
-        } catch (IOException ex) {
-            fail(ex.getMessage());
-        } finally {
-            try {
-                result.close();
-            } catch (IOException ex) {
-                fail(ex.getMessage());
-            }
-        }
+    public void testGetAuxFileAsInputStream() throws IOException {
+        InputStream expResult = null;
+        InputStream result = datasetAccess.getAuxFileAsInputStream("Dataset");
+        assertEquals(expResult, result);
     }
 }

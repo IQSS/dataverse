@@ -42,15 +42,15 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO");
 
-    public SwiftAccessIO() throws IOException {
+    public SwiftAccessIO() {
         this(null);
     }
 
-    public SwiftAccessIO(T dvObject) throws IOException {
+    public SwiftAccessIO(T dvObject) {
         this(dvObject, null);
     }
 
-    public SwiftAccessIO(T dvObject, DataAccessRequest req) throws IOException {
+    public SwiftAccessIO(T dvObject, DataAccessRequest req) {
         super(dvObject, req);
 
         this.setIsLocalFile(false);

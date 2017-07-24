@@ -49,16 +49,16 @@ import java.util.ArrayList;
 
 public class FileAccessIO<T extends DvObject> extends DataFileIO<T> {
 
-    public FileAccessIO () throws IOException {
+    public FileAccessIO () {
         this(null);
     }
 
-    public FileAccessIO(T dvObject) throws IOException {
+    public FileAccessIO(T dvObject) {
         this (dvObject, null);
         
     }
 
-    public FileAccessIO(T dvObject, DataAccessRequest req) throws IOException {
+    public FileAccessIO(T dvObject, DataAccessRequest req) {
 
         super(dvObject, req);
 
@@ -506,10 +506,9 @@ public class FileAccessIO<T extends DvObject> extends DataFileIO<T> {
         Path datasetDirectoryPath=null;
         
         if (dvObject instanceof Dataset) {
-            datasetDirectoryPath = ((Dataset) dvObject).getFileSystemDirectory();
+            datasetDirectoryPath = this.getDataset().getFileSystemDirectory();
         } else if (dvObject instanceof DataFile) {
             datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
-
         }
             
         if (datasetDirectoryPath == null) {
@@ -517,7 +516,7 @@ public class FileAccessIO<T extends DvObject> extends DataFileIO<T> {
         }
         String datasetDirectory = datasetDirectoryPath.toString();
 
-        if (dvObject.getStorageIdentifier() == null || "".equals(dvObject.getStorageIdentifier())) {
+        if (dvObject.getStorageIdentifier() == null || dvObject.getStorageIdentifier().isEmpty()) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
         }
 
