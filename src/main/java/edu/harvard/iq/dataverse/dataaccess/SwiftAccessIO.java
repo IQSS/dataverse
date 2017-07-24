@@ -670,15 +670,7 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
 
             fileObject = this.swiftContainer.getObject(swiftFileName);
 
-
-            // If this is the main, primary datafile object (i.e., not an auxiliary 
-            // object for a primary file), we also set the file download url here: 
-//                if (auxItemTag == null) {
-//                    setRemoteUrl(getSwiftFileURI(fileObject));
-//                    logger.fine(getRemoteUrl() + " success; write mode: "+writeAccess);
-//                } else {
             logger.fine("sucessfully opened AUX object "+auxItemTag+" , write mode: "+writeAccess);
-//                }
 
             if (!writeAccess && !fileObject.exists()) {
                 throw new FileNotFoundException("SwiftAccessIO: File object " + swiftFileName + " does not exist (Dataverse dataset id: " + dataset.getId());
@@ -811,7 +803,6 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
         try {
             fileUri = fileObject.getPublicURL();
         } catch (Exception ex) {
-            //ex.printStackTrace();
             throw new IOException("SwiftAccessIO: failed to get public URL of the stored object");
         }
         return fileUri;

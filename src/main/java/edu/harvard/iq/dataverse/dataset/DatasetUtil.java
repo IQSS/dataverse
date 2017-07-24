@@ -101,9 +101,6 @@ public class DatasetUtil {
             logger.warning("Failed to initialize dataset for thumbnail " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
         
-        
-//        Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-        
         InputStream in = null;
         try {
             if (dataAccess == null) {
@@ -118,7 +115,6 @@ public class DatasetUtil {
         
         if (in != null) {
             try {
-//                byte[] bytes = Files.readAllBytes(path);
                 byte[] bytes = IOUtils.toByteArray(in);
                 String base64image = Base64.getEncoder().encodeToString(bytes);
                 DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
@@ -188,7 +184,7 @@ public class DatasetUtil {
         }
         return true;
                 
-        
+        //TODO: Is this required? 
 //        File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
 //        boolean originalFileDeleted = originalFile.delete();
 //        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
@@ -243,16 +239,7 @@ public class DatasetUtil {
         } catch (IOException ex) {
             Logger.getLogger(DatasetUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
-//        Path datasetDirectory = dataset.getFileSystemDirectory();
-//        if (datasetDirectory != null && !Files.exists(datasetDirectory)) {
-//            try {
-//                Files.createDirectories(datasetDirectory);
-//            } catch (IOException ex) {
-//                Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
-//                logger.info("Dataset directory " + datasetDirectory + " does not exist but couldn't create it. Exception: " + ex);
-//                return null;
-//            }
-//        }
+
         DataFileIO<Dataset> dataAccess = null;
                 
         try{
@@ -265,14 +252,12 @@ public class DatasetUtil {
         
         //File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
         try {
-            //original code for saving dataset thumbnails into local file storage
-            //Files.copy(tmpFile.toPath(), originalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             //this goes through Swift API/local storage to write the dataset thumbnail into a container
             dataAccess.savePathAsAux(tmpFile.toPath(), datasetLogoFilenameFinal);
         } catch (IOException ex) {
             logger.severe("Failed to move original file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
         }
-        //String fileLocation = dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail;
+
         BufferedImage fullSizeImage = null;
         try {
             fullSizeImage = ImageIO.read(tmpFile);

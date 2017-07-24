@@ -108,6 +108,7 @@ public abstract class DataFileIO<T extends DvObject> {
     // such as "saved original" and cached format conversions for tabular files, 
     // thumbnails for images, etc. - in physical files with the same file 
     // name but various reserved extensions. 
+   
     public abstract InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException ;
     
     public abstract Channel openAuxChannel(String auxItemTag, DataAccessOption... option) throws IOException;

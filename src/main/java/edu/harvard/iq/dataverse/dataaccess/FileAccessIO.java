@@ -499,25 +499,19 @@ public class FileAccessIO<T extends DvObject> extends DataFileIO<T> {
             throw new IOException("No DvObject defined in the Data Access Object");
         }
 
+          //TODO: Is this Important? 
 //        if (dvObject.getOwner() == null) {
 //            throw new IOException("Data Access: no parent defined this Object");
 //        }
         Path datasetDirectoryPath=null;
         
-//        try{
         if (dvObject instanceof Dataset) {
             datasetDirectoryPath = ((Dataset) dvObject).getFileSystemDirectory();
         } else if (dvObject instanceof DataFile) {
             datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
-//        }
+
         }
-//        catch(Exception e){
-//                System.out.println("Rohit Bhattacharjee EXCEPTION");
-//               e.printStackTrace();
-//                }
-//        
-        
-        
+            
         if (datasetDirectoryPath == null) {
             throw new IOException("Could not determine the filesystem directory of the parent dataset.");
         }
@@ -589,26 +583,15 @@ public class FileAccessIO<T extends DvObject> extends DataFileIO<T> {
         return auxItems;
     }
 
-//    // TODO: add logic to check for existing metadata exports as well
-//    @Override
-//    public boolean fileExists(Path path) throws IOException {
-//        if (Files.exists(path)) {
-//            return true;
-//            } else return false;
-//    }
-
     @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
         InputStream in = null;
-//        Path path
+
         if(this.isAuxObjectCached(auxItemTag))
         {
             Path path=getAuxObjectAsPath(auxItemTag);
             in=Files.newInputStream(path);
         }
-       
-       
-        
         return in;
     }
 
