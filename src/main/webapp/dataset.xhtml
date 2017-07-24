@@ -137,11 +137,13 @@
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
-                                        <li>
+                                        <ui:fragment rendered="#{!settingsWrapper.rsyncWorkflow}">
+                                        <li>                                           
                                             <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD">
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}"/>
                                             </h:outputLink>
                                         </li>
+                                        </ui:fragment>
                                         <li>
                                             <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_metadata()">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -502,12 +504,20 @@
 
                         <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                                              (DatasetPage.editMode == 'CREATE')}">
+                            <ui:fragment rendered="#{!settingsWrapper.rsyncWorkflow}">
                             <ui:include src="editFilesFragment.xhtml">
                                 <ui:param name="datasetPage" value="true"/>
                                 <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
                                 <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
                                 <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
                             </ui:include>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{settingsWrapper.rsyncWorkflow}">
+                            <p:tab id="dataFilesTabRSyncCreate" title="#{bundle.files}" >
+                                <h:outputText value="#{bundle.files} Verbiage on other upload modes"/>
+                            </p:tab>
+                                
+                            </ui:fragment>   
                         </ui:fragment>
 
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"

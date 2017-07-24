@@ -670,5 +670,10 @@ public class SystemConfig {
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
     }
+    
+    public boolean isRsyncWorkflow(){
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        return uploadMethods != null &&  uploadMethods.toLowerCase().equals("dcm/rsync+ssh");
+    }
 
 }

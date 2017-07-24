@@ -197,7 +197,6 @@ public class DatasetPage implements java.io.Serializable {
     private List<Template> dataverseTemplates = new ArrayList<>();
     private Template defaultTemplate;
     private Template selectedTemplate;
-    private String globalId;
     private String persistentId;
     private String version;
     private String protocol = "";

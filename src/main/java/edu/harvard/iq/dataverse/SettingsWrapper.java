@@ -141,6 +141,10 @@ public class SettingsWrapper implements java.io.Serializable {
         return systemConfig.isPublicInstall();
     }
     
+    public boolean isRsyncWorkflow() {
+        return systemConfig.isRsyncWorkflow();
+    }
+    
     public String getSupportTeamName() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
