@@ -442,7 +442,7 @@
                             <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataverse text-brand pull-right" title="#{bundle.dataverse}"/>
-                            <c:set var="dvUrl" value="#{dataversePage}?alias=#{result.dataverseAlias}"/>
+                            <c:set var="dvUrl" value="/dataverse/#{result.dataverseAlias}"/>
                             <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
                                 <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
@@ -463,7 +463,7 @@
 
                         <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
 
-                        <c:set var="dvParentUrl" value="#{dataversePage}?alias=#{result.dataverseParentAlias}"/>
+                        <c:set var="dvParentUrl" value="/dataverse/#{result.dataverseParentAlias}"/>
                         <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                             <h:outputText value="#{result.parent.get('name')}"/>
                         </h:outputLink>
