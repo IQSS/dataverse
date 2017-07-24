@@ -314,7 +314,7 @@ public class DTAFileReader extends TabularDataFileReader{
     };
     private static Map<String, String> DATE_TIME_FORMAT_TABLE=  new LinkedHashMap<>();
 
-    private static long SECONDS_PER_YEAR = 525600L;
+    private static long MILLISECONDS_PER_DAY = 24L * 60 * 60 * 1000;
 
     private static long STATA_BIAS_TO_EPOCH;
 
@@ -2028,7 +2028,7 @@ public class DTAFileReader extends TabularDataFileReader{
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tc: result="+decodedDateTime+", format = "+format);
             
         } else if (FormatType.matches("^%t?d.*")){
-            milliSeconds = Long.parseLong(rawDatum)*SECONDS_PER_YEAR + STATA_BIAS_TO_EPOCH;
+            milliSeconds = Long.parseLong(rawDatum) * MILLISECONDS_PER_DAY + STATA_BIAS_TO_EPOCH;
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("milliSeconds="+milliSeconds);
             
             decodedDateTime = sdf_ymd.format(new Date(milliSeconds));
