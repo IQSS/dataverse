@@ -109,8 +109,8 @@ public class DatasetUtil {
             if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
-        } catch (IOException ioex) {
-            logger.fine("Cannot retrieve thumnail file");
+        } catch (Exception ioex) {
+            logger.info("Cannot retrieve thumnail file");
 //            System.out.println("Rohit Bhattacharjee: Error");
 //            ioex.printStackTrace();
         }
