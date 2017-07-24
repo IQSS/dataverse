@@ -54,7 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.component.EditableValueHolder;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
@@ -215,7 +214,7 @@ public class DataverseUserPage implements java.io.Serializable {
         boolean userNameValid = userName != null && UserNameValidator.isUserNameValid(userName, null);
         
         if (editMode == EditMode.CREATE && userNameFound) {
-            ((EditableValueHolder) toValidate).setValid(false);
+            ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
@@ -231,7 +230,7 @@ public class DataverseUserPage implements java.io.Serializable {
         String userEmail = (String) value;
         boolean emailValid = EMailValidator.isEmailValid(userEmail, null);
         if (!emailValid) {
-            ((EditableValueHolder) toValidate).setValid(false);
+            ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);
             context.addMessage(toValidate.getClientId(context), message);
             logger.info("Email is not valid: " + userEmail);
@@ -253,7 +252,7 @@ public class DataverseUserPage implements java.io.Serializable {
             }
         }
         if (userEmailFound) {
-            ((EditableValueHolder) toValidate).setValid(false);
+            ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.email.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
@@ -265,7 +264,7 @@ public class DataverseUserPage implements java.io.Serializable {
         if (StringUtils.isBlank(password)){
             logger.log(Level.WARNING, "new password is blank");
 
-            ((EditableValueHolder) toValidate).setValid(false);
+            ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Password Error", "The new password is blank: re-type it again");
@@ -283,7 +282,7 @@ public class DataverseUserPage implements java.io.Serializable {
         PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
         boolean passwordIsComplexEnough = password!= null && validator.validatePassword(password);
         if (!passwordIsComplexEnough) {
-            ((EditableValueHolder) toValidate).setValid(false);
+            ((UIInput) toValidate).setValid(false);
             String messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", messageDetail);
             context.addMessage(toValidate.getClientId(context), message);

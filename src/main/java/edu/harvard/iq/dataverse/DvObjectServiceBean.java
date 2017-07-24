@@ -222,7 +222,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             Long ownerId;
             if (result[0] != null) {
                 try {
-                    objectId = ((Number)result[0]).longValue();
+                    objectId = ((Integer) result[0]).longValue();
                 } catch (Exception ex) {
                     logger.warning("OBJECT PATH: could not cast result[0] (dvobject id) to Integer!");
                     objectId = null;

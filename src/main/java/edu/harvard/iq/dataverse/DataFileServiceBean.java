@@ -166,11 +166,10 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     
     public DataFile findPreviousFile(DataFile df){
-        TypedQuery query = em.createQuery("select o from DataFile o" +
-                    " WHERE o.id = :dataFileId", DataFile.class);
+        TypedQuery<DataFile> query = em.createQuery("select o from DataFile o" + " WHERE o.id = :dataFileId", DataFile.class);
         query.setParameter("dataFileId", df.getPreviousDataFileId());
         try {
-            DataFile retVal = (DataFile)query.getSingleResult();
+            DataFile retVal = query.getSingleResult();
             return retVal;
         } catch(Exception ex) {
             return null;
@@ -455,7 +454,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             if (dtResult != null) {
                 DataTable dataTable = new DataTable(); 
 
-                dataTable.setId(((Number)dtResult[0]).longValue());
+                dataTable.setId(((Integer) dtResult[0]).longValue());
             
                 dataTable.setUnf((String)dtResult[1]);
             
@@ -529,7 +528,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             DataTable dataTable = new DataTable(); 
             Long fileId = (Long)result[1];
 
-            dataTable.setId(((Integer)result[0]).longValue());
+            dataTable.setId(((Long) result[0]));
             
             dataTable.setUnf((String)result[2]);
             
@@ -557,6 +556,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             fileTagMap.get(datafile_id).add(tagtype_id);
             i++; 
         }
+        dataTagsResults = null;
         
         logger.fine("Retrieved "+i+" data tags.");
         
@@ -694,7 +694,8 @@ public class DataFileServiceBean implements java.io.Serializable {
             dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));              
             dataFiles.add(dataFile);
             filesMap.put(dataFile.getId(), i++);
-        } 
+        }
+        fileResults = null;
         
         logger.fine("Retrieved and cached "+i+" datafiles.");
 
@@ -908,7 +909,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     public Boolean isPreviouslyPublished(Long fileId){
         Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId");
         query.setParameter("fileId", fileId);
-        List retList = query.getResultList();
+        List<?> retList = query.getResultList();
         return (retList.size() > 1);
     }
     
