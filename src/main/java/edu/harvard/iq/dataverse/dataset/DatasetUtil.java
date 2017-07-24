@@ -106,10 +106,12 @@ public class DatasetUtil {
         
         InputStream in = null;
         try {
-            if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
+            if (dataAccess == null) {
+                logger.info("Cannot retrieve thumnail file");
+            } else if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.info("Cannot retrieve thumnail file");
         }
 
