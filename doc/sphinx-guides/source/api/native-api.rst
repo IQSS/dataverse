@@ -3,7 +3,7 @@ Native API
 
 Dataverse 4 exposes most of its GUI functionality via a REST-based API. This section describes that functionality. Most API endpoints require an API token that can be passed as the ``X-Dataverse-key`` HTTP header or in the URL as the ``key`` query parameter.
 
-.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge. 
+.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge.
 
 .. _CORS: https://www.w3.org/TR/cors/
 
@@ -298,6 +298,31 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     print r.json()
     print r.status_code
 
+Submit for Review
+^^^^^^^^^^^^^^^^^
+
+When dataset authors do not have permission to publish directly, they can click the "Submit for Review" button in the web interface (see :doc:`/user/dataset-management`), or perform the equivalent operation via API::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/submitForReview?persistentId=$DOI_OR_HANDLE_OF_DATASET"
+
+The people who need to review the dataset (often curators or journal editors) can check their notifications periodically via API to see if any new datasets have been submitted for review and need their attention. See the :ref:`Notifications` section for details. Alternatively, these curators can simply check their email or notifications to know when datasets have been submitted (or resubmitted) for review.
+
+Return to Author
+^^^^^^^^^^^^^^^^
+
+After the curators or journal editors have reviewed a dataset that has been submitted for review (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to its authors. In the web interface there is a "Return to Author" button (see :doc:`/user/dataset-management`), but the interface does not provide a way to explain **why** the dataset is being returned. There is a way to do this outside of this interface, however. Instead of clicking the "Return to Author" button in the UI, a curator can write a "reason for return" into the database via API.
+
+Here's how curators can send a "reason for return" to the dataset authors. First, the curator creates a JSON file that contains the reason for return:
+
+.. literalinclude:: ../_static/api/reason-for-return.json
+
+In the example below, the curator has saved the JSON file as :download:`reason-for-return.json <../_static/api/reason-for-return.json>` in their current working directory. Then, the curator sends this JSON file to the ``returnToAuthor`` API endpoint like this::
+
+    curl -H "Content-type:application/json" -d @reason-for-return.json -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/returnToAuthor?persistentId=$DOI_OR_HANDLE_OF_DATASET"
+
+The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
+
+
 Files
 ~~~~~~~~~~~
 
@@ -507,6 +532,18 @@ Metadata Blocks
 
   GET http://$SERVER/api/metadatablocks/$identifier
 
+.. _Notifications:
+
+Notifications
+~~~~~~~~~~~~~
+
+Get All Notifications by User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each user can get a dump of their notifications by passing in their API token::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
+
 
 Admin
 ~~~~~~~~~~~~~~~~
@@ -574,17 +611,18 @@ List users with the options to search and "page" through results. Only accessibl
 
 * ``searchTerm`` A string that matches the beginning of a user identifier, first name, last name or email address.
 * ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
-* ``selectedPage`` The page of results to return.  The default is 1. 
+* ``selectedPage`` The page of results to return.  The default is 1.
+
+::
 
     GET http://$SERVER/api/admin/list-users
 
 
 Sample output appears below. 
 
-* When multiple pages of results exist, the ``selectedPage`` parameters may be specified. 
-* Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.          
-
-.. code-block:: json
+* When multiple pages of results exist, the ``selectedPage`` parameters may be specified.
+* Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.
+.. code-block:: text
 
     {
         "status":"OK",
@@ -667,7 +705,7 @@ Sample output appears below.
                     "lastLoginTime":"2017-07-03 12:22:35.926",
                     "lastApiUseTime":"2017-07-03 12:55:57.186"
                 },
-                **... 22 more user documents ...**      
+                **... 22 more user documents ...**
             ]
         }
     }
@@ -784,7 +822,7 @@ Recalculate the UNF value of a dataset version, if it's missing, by supplying th
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
 
-.. |CORS| raw:: html 
+.. |CORS| raw:: html
       
       <span class="label label-success pull-right">
         CORS

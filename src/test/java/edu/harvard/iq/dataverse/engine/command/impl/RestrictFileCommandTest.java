@@ -6,21 +6,16 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataFile;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -128,7 +123,7 @@ public class RestrictFileCommandTest {
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
         try {
             engine.submit(cmd);
-        } catch(Exception ex) {
+        } catch (CommandException ex) {
             actual = ex.getMessage();
         }
         
@@ -146,10 +141,11 @@ public class RestrictFileCommandTest {
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
         try {
             engine.submit(cmd);
-        } catch(Exception ex){
+        } catch (CommandException ex) {
             actual = ex.getMessage();
         }
         assertEquals(expected, actual);
+        publicInstall = false;
     }
     
 }

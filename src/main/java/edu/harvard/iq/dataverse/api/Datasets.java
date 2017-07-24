@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
@@ -45,7 +46,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -607,6 +610,50 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         } catch (EJBException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Something went wrong attempting to download rsync script: " + EjbUtil.ejbExceptionToString(ex));
+        }
+    }
+
+    @POST
+    @Path("{id}/submitForReview")
+    public Response submitForReview(@PathParam("id") String idSupplied) {
+        try {
+            Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
+            JsonObjectBuilder result = Json.createObjectBuilder();
+            boolean inReview = updatedDataset.getLatestVersion().isInReview();
+            result.add("inReview", inReview);
+            result.add("message", "Dataset id " + updatedDataset.getId() + " has been submitted for review.");
+            return ok(result);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @POST
+    @Path("{id}/returnToAuthor")
+    public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
+        if (jsonBody == null || jsonBody.isEmpty()) {
+            return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset.");
+        }
+        StringReader rdr = new StringReader(jsonBody);
+        JsonObject json = Json.createReader(rdr).readObject();
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            String reasonForReturn = null;           
+            reasonForReturn = json.getString("reasonForReturn");
+            // TODO: Once we add a box for the curator to type into, pass the reason for return to the ReturnDatasetToAuthorCommand and delete this check and call to setReturnReason on the API side.
+            if (reasonForReturn == null || reasonForReturn.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
+            }
+            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
+            DatasetVersion latestVersion = updatedDataset.getLatestVersion();
+            boolean inReview = latestVersion.isInReview();
+            JsonObjectBuilder result = Json.createObjectBuilder();
+            result.add("inReview", inReview);
+            result.add("message", "Dataset id " + updatedDataset.getId() + " has been sent back to the author(s).");
+            return ok(result);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 
