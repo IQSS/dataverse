@@ -64,7 +64,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             
             
             DataFile dataFile = di.getDownloadInfo().getDataFile();
-            DataFileIO dataFileIO = DataAccess.getDataFileIO(dataFile, daReq);
+            DataFileIO<DataFile> dataFileIO = DataAccess.getDataFileIO(dataFile, daReq);
                         
             if (dataFileIO != null) {
                 dataFileIO.open();
@@ -321,7 +321,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         return downloadInstance.getConversionParam().equals("format") && downloadInstance.getConversionParamValue().equals("prep");
     }
     
-    private long getContentSize(DataFileIO accessObject) {
+    private long getContentSize(DataFileIO<?> accessObject) {
         long contentSize = 0; 
         
         if (accessObject.getSize() > -1) {

@@ -199,7 +199,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         }
         
         String cardImageUrl = null;
-        DataFileIO dataAccess = null;
+        DataFileIO<Dataset> dataAccess = null;
                 
         try{
             dataAccess = DataAccess.getDataFileIO(dataset);

@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.BibtexCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -575,10 +576,10 @@ public class Access extends AbstractApiBean {
             return null; 
         }
         
-        DataFileIO thumbnailDataAccess = null; 
+        DataFileIO<DataFile> thumbnailDataAccess = null;
         
         try {
-            DataFileIO dataAccess = df.getDataFileIO();
+            DataFileIO<DataFile> dataAccess = df.getDataFileIO();
             if (dataAccess != null) { // && dataAccess.isLocalFile()) {
                 dataAccess.open();
 
@@ -626,7 +627,7 @@ public class Access extends AbstractApiBean {
             if (logoDataFile != null) {
         
                 try {
-                    DataFileIO dataAccess = logoDataFile.getDataFileIO();
+                    DataFileIO<DataFile> dataAccess = logoDataFile.getDataFileIO();
                     if (dataAccess != null) { // && dataAccess.isLocalFile()) {
                         dataAccess.open();
                         thumbnailDataAccess = ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
@@ -933,7 +934,7 @@ public class Access extends AbstractApiBean {
         if (session != null) {
             if (session.getUser() != null) {
                 if (session.getUser().isAuthenticated()) {
-                    user = (AuthenticatedUser) session.getUser();
+                    user = session.getUser();
                 } else {
                     logger.fine("User associated with the session is not an authenticated user.");
                     if (session.getUser() instanceof PrivateUrlUser) {

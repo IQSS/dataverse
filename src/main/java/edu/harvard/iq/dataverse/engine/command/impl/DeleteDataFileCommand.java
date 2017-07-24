@@ -72,7 +72,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         if (!doomed.isHarvested() && !StringUtil.isEmpty(doomed.getStorageIdentifier())) {
 
             logger.log(Level.FINE, "Storage identifier for the file: {0}", doomed.getStorageIdentifier());
-            DataFileIO dataFileIO = null;
+            DataFileIO<DataFile> dataFileIO = null;
 
             try {
                 dataFileIO = doomed.getDataFileIO();

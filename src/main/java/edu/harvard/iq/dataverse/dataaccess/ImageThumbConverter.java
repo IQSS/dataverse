@@ -35,7 +35,6 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -77,7 +76,7 @@ public class ImageThumbConverter {
 
         try {
 
-            DataFileIO dataFileIO = file.getDataFileIO();
+            DataFileIO<DataFile> dataFileIO = file.getDataFileIO();
             return isThumbnailAvailable(dataFileIO, size);
         } catch (IOException ioEx) {
             return false;
@@ -85,16 +84,14 @@ public class ImageThumbConverter {
 
     }
     
-    private static boolean isThumbnailAvailable(DataFileIO dataFileIO, int size) {
+    private static boolean isThumbnailAvailable(DataFileIO<DataFile> dataFileIO, int size) {
 
         if (dataFileIO == null || dataFileIO.getDvObject()== null) {
             return false;
         }
 
-//        DataFile file = dataFileIO.getDataFile();
-          DvObject dvObject = dataFileIO.getDvObject();
-          
-           DataFile file = (DataFile)dvObject;
+        DataFile file = dataFileIO.getDataFile();
+
         // if thumbnails are not even supported on this file type, no need
         // to check anything else:
         if (!FileUtil.isThumbnailSupported(file)) {
@@ -136,7 +133,7 @@ public class ImageThumbConverter {
     // Note that this method is mainly used by the data access API methods. 
     // Whenever a page needs a thumbnail, we prefer to rely on the Base64
     // string version.
-    public static InputStreamIO getImageThumbnailAsInputStream(DataFileIO dataFileIO, int size) {
+    public static InputStreamIO getImageThumbnailAsInputStream(DataFileIO<DataFile> dataFileIO, int size) {
         logger.fine("entering getImageThumb, size " + size);
 
         if (!isThumbnailAvailable(dataFileIO, size)) {
@@ -178,7 +175,7 @@ public class ImageThumbConverter {
         }
     }
     
-    private static boolean generatePDFThumbnail(DataFileIO dataFileIO, int size) {
+    private static boolean generatePDFThumbnail(DataFileIO<DataFile> dataFileIO, int size) {
         if (isPdfFileOverSizeLimit(dataFileIO.getDataFile().getFilesize())) {
             logger.fine("Image file too large (" + dataFileIO.getDataFile().getFilesize() + " bytes) - skipping");
             return false;
@@ -267,7 +264,7 @@ public class ImageThumbConverter {
         return true;
     }
     
-    private static boolean generateImageThumbnail(DataFileIO dataFileIO, int size) {
+    private static boolean generateImageThumbnail(DataFileIO<DataFile> dataFileIO, int size) {
 
         if (isImageOverSizeLimit(dataFileIO.getDataFile().getFilesize())) {
             logger.fine("Image file too large - skipping");
@@ -298,7 +295,7 @@ public class ImageThumbConverter {
      * Also note that it works the exact same way for tabular-mapped-as-worldmap
      * files as well. 
     */
-    private static boolean generateWorldMapThumbnail(DataFileIO dataFileIO, int size) {
+    private static boolean generateWorldMapThumbnail(DataFileIO<DataFile> dataFileIO, int size) {
 
         InputStream worldMapImageInputStream = null;
 
@@ -335,7 +332,7 @@ public class ImageThumbConverter {
      * This is the actual workhorse method that does the rescaling of the full 
      * size image: 
     */
-    private static boolean generateImageThumbnailFromInputStream(DataFileIO dataFileIO, int size, InputStream inputStream) {
+    private static boolean generateImageThumbnailFromInputStream(DataFileIO<DataFile> dataFileIO, int size, InputStream inputStream) {
 
         BufferedImage fullSizeImage;
 
@@ -413,7 +410,7 @@ public class ImageThumbConverter {
 
     }
     
-    private static boolean isThumbnailCached(DataFileIO dataFileIO, int size) {
+    private static boolean isThumbnailCached(DataFileIO<DataFile> dataFileIO, int size) {
         boolean cached;
         try {
             cached = dataFileIO.isAuxObjectCached(THUMBNAIL_SUFFIX + size);
@@ -442,7 +439,7 @@ public class ImageThumbConverter {
 
         logger.fine("entering getImageThumbnailAsBase64, size " + size+", for "+file.getStorageIdentifier());
          try {
-            DataFileIO dataFileIO = file.getDataFileIO();
+             DataFileIO<DataFile> dataFileIO = file.getDataFileIO();
         
             if (!isThumbnailAvailable(dataFileIO, size)) {
                 logger.info("no thumbnail available for "+file.getStorageIdentifier());
