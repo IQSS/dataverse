@@ -285,7 +285,7 @@ public abstract class DataFileIO<T extends DvObject> {
     }
 
         // setters:
-    public void setDataFile(DataFile f) {
+    public void setDvObject(T f) {
         dvObject = f;
     }
 

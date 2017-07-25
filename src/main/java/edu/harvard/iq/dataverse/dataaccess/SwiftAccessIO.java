@@ -452,11 +452,10 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
         String swiftFileName = null;
         StoredObject fileObject;
         List<String> auxFiles = null; 
-        String storageIdentifier;
+        String storageIdentifier = dvObject.getStorageIdentifier();
 
         if (dvObject instanceof DataFile) {
-            DataFile dataFile = this.getDataFile();
-            storageIdentifier = dataFile.getStorageIdentifier();
+            Dataset owner = this.getDataFile().getOwner();
 
             if (storageIdentifier.startsWith("swift://")) {
                 // This is a call on an already existing swift object. 
@@ -491,16 +490,16 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
 
                 //swiftFolderPath = dataFile.getOwner().getDisplayName();
                 String swiftFolderPathSeparator = "-";
-                String authorityNoSlashes = dataFile.getOwner().getAuthority().replace(dataFile.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-                swiftFolderPath = dataFile.getOwner().getProtocol() + swiftFolderPathSeparator +
-                    authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                    swiftFolderPathSeparator + dataFile.getOwner().getIdentifier();
+                String authorityNoSlashes = owner.getAuthority().replace(owner.getDoiSeparator(), swiftFolderPathSeparator);
+                swiftFolderPath = owner.getProtocol() + swiftFolderPathSeparator
+                                  + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
+                                  + swiftFolderPathSeparator + owner.getIdentifier();
 
                 swiftFileName = storageIdentifier;
                 //setSwiftContainerName(swiftFolderPath);
                 //swiftFileName = dataFile.getDisplayName();
                 //Storage Identifier is now updated after the object is uploaded on Swift.
-                dataFile.setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath+":"+swiftFileName);
+                dvObject.setStorageIdentifier("swift://" + swiftEndPoint + ":" + swiftFolderPath + ":" + swiftFileName);
             } else {
                 throw new IOException("SwiftAccessIO: unknown access mode.");
             }
@@ -563,7 +562,7 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
             }
 
             if (!writeAccess && !fileObject.exists()) {
-                throw new FileNotFoundException("SwiftAccessIO: File object " + swiftFileName + " does not exist (Dataverse datafile id: " + dataFile.getId());
+                throw new FileNotFoundException("SwiftAccessIO: File object " + swiftFileName + " does not exist (Dataverse datafile id: " + dvObject.getId());
             }
 
             auxFiles = null; 
@@ -571,12 +570,6 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
             return fileObject;
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = this.getDataset();
-            storageIdentifier = dataset.getStorageIdentifier();
-
-            swiftEndPoint = null;
-            swiftContainerName = null;
-            swiftFileName = null;
-
 
             if (storageIdentifier.startsWith("swift://")) {
                 // This is a call on an already existing swift object. 
@@ -618,7 +611,7 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
                     swiftFolderPathSeparator + dataset.getIdentifier();
 
                 swiftFileName = auxItemTag;
-                dataset.setStorageIdentifier("swift://"+swiftEndPoint+":"+swiftFolderPath);
+                dvObject.setStorageIdentifier("swift://" + swiftEndPoint + ":" + swiftFolderPath);
             } else {
                 throw new IOException("SwiftAccessIO: unknown access mode.");
             }
