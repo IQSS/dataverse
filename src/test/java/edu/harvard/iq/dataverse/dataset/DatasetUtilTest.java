@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.dataset;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -142,10 +143,8 @@ public class DatasetUtilTest {
     @Test
     public void testIsDatasetLogoPresent() {
         System.out.println("isDatasetLogoPresent");
-        Dataset dataset = null;
-        boolean expResult = false;
-        boolean result = DatasetUtil.isDatasetLogoPresent(dataset);
-        assertEquals(expResult, result);
+        Dataset dataset = MocksFactory.makeDataset();
+        assertEquals(false, DatasetUtil.isDatasetLogoPresent(dataset));
     }
 
 }
