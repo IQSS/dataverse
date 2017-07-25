@@ -52,7 +52,18 @@
         </repository>
 
     </repositories>
-
+    
+    <dependencyManagement> 
+        <dependencies> 
+            <dependency> 
+                <groupId>com.amazonaws</groupId> 
+                <artifactId>aws-java-sdk-bom</artifactId> 
+                <version>1.11.166</version> 
+                <type>pom</type> 
+                <scope>import</scope> 
+            </dependency> 
+        </dependencies> 
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -374,6 +385,27 @@
             <groupId>org.javaswift</groupId>
             <artifactId>joss</artifactId>
             <version>0.9.10</version>
+        </dependency>
+        <!-- AWS S3 cloud storage -->
+<!--        <dependency> 
+            <groupId>com.amazonaws</groupId> 
+            <artifactId>aws-java-sdk-bom</artifactId> 
+            <version>1.11.166</version> 
+            <type>pom</type> 
+            <scope>import</scope> 
+        </dependency> -->
+        <!--FIXME: Even with the aws block in DependencyManagement, maven complains about version? -->
+        <dependency> 
+            <groupId>com.amazonaws</groupId> 
+            <artifactId>aws-java-sdk-ec2</artifactId> 
+        </dependency> 
+        <dependency> 
+            <groupId>com.amazonaws</groupId> 
+            <artifactId>aws-java-sdk-s3</artifactId> 
+        </dependency> 
+        <dependency> 
+            <groupId>com.amazonaws</groupId> 
+            <artifactId>aws-java-sdk-dynamodb</artifactId> 
         </dependency>
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
