@@ -9,17 +9,22 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.Channel;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
-import org.junit.Before;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 
 /**
  *
@@ -40,51 +45,51 @@ public class FileAccessIOTest {
     }
 
     @Before
-    public void setUpClass() {
+    public void setUpClass() throws IOException {
         dataverse = MocksFactory.makeDataverse();
         dataset = MocksFactory.makeDataset();
         dataset.setOwner(dataverse);
         dataset.setAuthority("tmp");
         dataset.setIdentifier("dataset");
-        dataset.setStorageIdentifier("dataSet");
+        dataset.setStorageIdentifier("Dataset");
 
         dataFile = MocksFactory.makeDataFile();
         dataFile.setOwner(dataset);
-        dataFile.setStorageIdentifier("dataFile");
+        dataFile.setStorageIdentifier("DataFile");
 
         datasetAccess = new FileAccessIO<>(dataset);
         dataFileAccess = new FileAccessIO<>(dataFile);
         dataverseAccess = new FileAccessIO<>(dataverse);
+
+        File file = new File("/tmp/files/tmp/dataset/Dataset");
+        file.getParentFile().mkdirs();
+        file.createNewFile();
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+            bw.write("This is a test string");
+        }
+    }
+
+    @After
+    public void tearDownClass() throws IOException {
+        FileUtils.deleteDirectory(new File("/tmp/files/"));
     }
 
     /**
-     * Test of canRead method, of class FileAccessIO.
-     */
-    @Test
-    public void testCanRead() {
-        boolean expResult = false;
-        boolean result = datasetAccess.canRead();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of canWrite method, of class FileAccessIO.
-     */
-    @Test
-    public void testCanWrite() {
-        boolean expResult = false;
-        boolean result = datasetAccess.canWrite();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of open method, of class FileAccessIO.
+     * Test of canRead, canWrite, and open method, of class FileAccessIO.
+     *
      * @throws java.io.IOException if test is broken
      */
     @Test
     public void testOpen() throws IOException {
-        DataAccessOption options = DataAccessOption.READ_ACCESS;
-        datasetAccess.open(options);
+        assertEquals(false, datasetAccess.canRead());
+        assertEquals(false, datasetAccess.canWrite());
+        datasetAccess.open(DataAccessOption.READ_ACCESS);
+        assertEquals(true, datasetAccess.canRead());
+        assertEquals(false, datasetAccess.canWrite());
+
+        datasetAccess.open(DataAccessOption.WRITE_ACCESS);
+        assertEquals(false, datasetAccess.canRead());
+        assertEquals(true, datasetAccess.canWrite());
     }
 
     /**
@@ -95,16 +100,7 @@ public class FileAccessIOTest {
     @Test
     public void testSavePath() throws IOException {
         datasetAccess.savePath(fileSystemPath);
-    }
-
-    /**
-     * Test of saveInputStream method, of class FileAccessIO.
-     *
-     * @throws java.io.IOException if test is broken
-     */
-    @Test
-    public void testSaveInputStream() throws IOException {
-        InputStream inputStream = null;
+        InputStream inputStream = new ByteArrayInputStream("Hello".getBytes());
         datasetAccess.saveInputStream(inputStream);
     }
 
@@ -115,10 +111,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testOpenAuxChannel() throws IOException {
-        DataAccessOption options = DataAccessOption.READ_ACCESS;
-        Channel expResult = null;
-        Channel result = datasetAccess.openAuxChannel("Dataset", options);
-        assertEquals(expResult, result);
+        assertNotNull(datasetAccess.openAuxChannel("Dataset", DataAccessOption.READ_ACCESS));
     }
 
     /**
@@ -127,9 +120,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testIsAuxObjectCached() throws IOException {
-        boolean expResult = false;
-        boolean result = datasetAccess.isAuxObjectCached("Dataset");
-        assertEquals(expResult, result);
+        assertEquals(true, datasetAccess.isAuxObjectCached("Dataset"));
     }
 
     /**
@@ -139,10 +130,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testGetAuxObjectSize() throws IOException {
-        long expResult = 0L;
-        long result;
-        result = datasetAccess.getAuxObjectSize("Dataset");
-        assertEquals(expResult, result);
+        assertEquals(21, datasetAccess.getAuxObjectSize("Dataset"));
         
     }
 
@@ -153,8 +141,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testGetAuxObjectAsPath() throws IOException {
-        Path result = datasetAccess.getAuxObjectAsPath("Dataset");
-        assertEquals(fileSystemPath, result);
+        assertEquals(fileSystemPath, datasetAccess.getAuxObjectAsPath("Dataset"));
     }
 
     /**
@@ -184,7 +171,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testSaveInputStreamAsAux() throws IOException {
-        InputStream inputStream = null;
+        InputStream inputStream = new ByteArrayInputStream("Hello".getBytes());;
         datasetAccess.saveInputStreamAsAux(inputStream, "Dataset");
     }
 
@@ -195,29 +182,18 @@ public class FileAccessIOTest {
      */
     @Test
     public void testListAuxObjects() throws IOException {
-        List<String> expResult = null;
-        List<String> result;
-        result = dataFileAccess.listAuxObjects();
-        assertEquals(expResult, result);
+        List<String> result = dataFileAccess.listAuxObjects();
+        assertEquals(new ArrayList<>(), result);
     }
 
     /**
-     * Test of deleteAuxObject method, of class FileAccessIO.
+     * Test of delete and deleteAllAuxObject method, of class FileAccessIO.
      *
      * @throws java.io.IOException if test is broken
      */
     @Test
     public void testDeleteAuxObject() throws IOException {
         datasetAccess.deleteAuxObject("Dataset");
-    }
-
-    /**
-     * Test of deleteAllAuxObjects method, of class FileAccessIO.
-     *
-     * @throws java.io.IOException if test is broken
-     */
-    @Test
-    public void testDeleteAllAuxObjects() throws IOException {
         dataFileAccess.deleteAllAuxObjects();
     }
 
@@ -227,7 +203,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testGetStorageLocation() {
-        String expResult = "file:///tmp/files/tmp/dataset/dataSet";
+        String expResult = "file:///tmp/files/tmp/dataset/Dataset";
         String result = datasetAccess.getStorageLocation();
         assertEquals(expResult, result);
     }
@@ -250,7 +226,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testExists() throws IOException {
-        boolean expResult = false;
+        boolean expResult = true;
         boolean result = datasetAccess.exists();
         assertEquals(expResult, result);
     }
@@ -266,23 +242,22 @@ public class FileAccessIOTest {
     }
 
     /**
-     * Test of openLocalFileAsInputStream method, of class FileAccessIO.
+     * Test of openLocalFileAsInputStream and openLocalFileAsOutputStream method, of class
+     * FileAccessIO.
      *
+     * @throws java.io.IOException if test is broken
      */
     @Test
-    public void testOpenLocalFileAsInputStream() {
-        FileInputStream expResult = null;
-        FileInputStream result = datasetAccess.openLocalFileAsInputStream();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of openLocalFileAsOutputStream method, of class FileAccessIO.
-     *
-     */
-    @Test
-    public void testOpenLocalFileAsOutputStream() {
-        FileOutputStream expResult = null;
+    public void testOpenLocalFileAsInputStream() throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(datasetAccess.openLocalFileAsInputStream()));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            sb.append(line);
+            sb.append('\n');
+        }
+        assertEquals("This is a test string\n", sb.toString());
+        assertNotNull(datasetAccess.openLocalFileAsOutputStream());
     }
 
     /**
@@ -292,8 +267,13 @@ public class FileAccessIOTest {
      */
     @Test
     public void testGetAuxFileAsInputStream() throws IOException {
-        InputStream expResult = null;
-        InputStream result = datasetAccess.getAuxFileAsInputStream("Dataset");
-        assertEquals(expResult, result);
+        BufferedReader br = new BufferedReader(new InputStreamReader(datasetAccess.getAuxFileAsInputStream("Dataset")));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            sb.append(line);
+            sb.append('\n');
+        }
+        assertEquals("This is a test string\n", sb.toString());
     }
 }
