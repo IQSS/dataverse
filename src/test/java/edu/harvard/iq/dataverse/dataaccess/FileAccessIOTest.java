@@ -64,6 +64,7 @@ public class FileAccessIOTest {
         File file = new File("/tmp/files/tmp/dataset/Dataset");
         file.getParentFile().mkdirs();
         file.createNewFile();
+        new File("/tmp/files/tmp/dataset/DataFile").createNewFile();
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
             bw.write("This is a test string");
         }
@@ -83,6 +84,7 @@ public class FileAccessIOTest {
     public void testOpen() throws IOException {
         assertEquals(false, datasetAccess.canRead());
         assertEquals(false, datasetAccess.canWrite());
+
         datasetAccess.open(DataAccessOption.READ_ACCESS);
         assertEquals(true, datasetAccess.canRead());
         assertEquals(false, datasetAccess.canWrite());
@@ -90,6 +92,10 @@ public class FileAccessIOTest {
         datasetAccess.open(DataAccessOption.WRITE_ACCESS);
         assertEquals(false, datasetAccess.canRead());
         assertEquals(true, datasetAccess.canWrite());
+
+        dataFileAccess.open(DataAccessOption.READ_ACCESS);
+        assertEquals(true, dataFileAccess.canRead());
+        assertEquals(false, dataFileAccess.canWrite());
     }
 
     /**
