@@ -214,7 +214,8 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
         } catch (Exception ioex) {
-            return null;
+//            return null;
+              //ignore
         }
         
         if (in != null) {

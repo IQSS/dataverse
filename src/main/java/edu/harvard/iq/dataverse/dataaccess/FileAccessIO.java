@@ -65,19 +65,7 @@ public class FileAccessIO<T extends DvObject> extends DataFileIO<T> {
         this.setIsLocalFile(true);
     }
     
-    private boolean isReadAccess = false;
-    private boolean isWriteAccess = false; 
     private Path physicalPath = null; 
-    
-    @Override
-    public boolean canRead () {
-        return isReadAccess;
-    }
-    
-    @Override
-    public boolean canWrite () {
-        return isWriteAccess; 
-    }
     
     @Override
     public void open (DataAccessOption... options) throws IOException {

@@ -56,8 +56,6 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
         this.setIsLocalFile(false);
     }
 
-    private boolean isReadAccess = false;
-    private boolean isWriteAccess = false;
     private Properties swiftProperties = null;
     private Account account = null;
     private StoredObject swiftFileObject = null;
@@ -65,22 +63,6 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
     
     
     private static int LIST_PAGE_LIMIT = 100;  
-
-    @Override
-    public boolean canRead() {
-        return isReadAccess;
-    }
-
-    @Override
-    public boolean canWrite() {
-        return isWriteAccess;
-    }
-//    
-//    @Override
-//    public DvObjectType getDvObjectType() {
-//     
-//    }
-    
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
@@ -802,14 +784,12 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
     }
 
     @Override
-    public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
-        StoredObject swiftAuxFile = null;
-        InputStream in = null;
-        
-        if(this.isAuxObjectCached(auxItemTag)) {
-            swiftAuxFile = openSwiftAuxFile(auxItemTag);
+    public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {        
+        if (this.isAuxObjectCached(auxItemTag)) {
+            return openSwiftAuxFile(auxItemTag).downloadObjectAsInputStream();
+        } else {
+            throw new IOException("SwiftAccessIO: Failed to get aux file as input stream");
         }
-        return swiftAuxFile.downloadObjectAsInputStream();
     }
 
     @Override
