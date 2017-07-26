@@ -71,10 +71,17 @@ public abstract class DataFileIO<T extends DvObject> {
     // Abstract methods to be implemented by the storage drivers:
 
     public abstract void open(DataAccessOption... option) throws IOException;
-    
-    public abstract boolean canRead();
 
-    public abstract boolean canWrite();
+    protected boolean isReadAccess = false;
+    protected boolean isWriteAccess = false;
+
+    public boolean canRead() {
+        return isReadAccess;
+    }
+
+    public boolean canWrite() {
+        return isWriteAccess;
+    }
 
     public abstract String getStorageLocation() throws IOException;
     // do we need this method?
