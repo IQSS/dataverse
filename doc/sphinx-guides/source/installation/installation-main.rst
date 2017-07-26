@@ -44,6 +44,7 @@ The script will prompt you for some configuration values. If this is a test/eval
 
 - Internet Address of your host: localhost
 - Glassfish Directory: /usr/local/glassfish4
+- Glassfish User: current user running the installer script
 - Administrator email address for this Dataverse: (none)
 - SMTP (mail) server to relay notification messages: localhost
 - Postgres Server Address: [127.0.0.1]
