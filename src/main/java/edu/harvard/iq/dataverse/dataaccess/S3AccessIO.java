@@ -35,19 +35,21 @@ public class S3AccessIO<T extends DvObject> extends DataFileIO<T> {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
 
     //FIXME: Empty
-    public S3AccessIO() throws IOException {
+    public S3AccessIO() {
+        this(null);
     }
 
     //FIXME: Empty
-    public S3AccessIO(T dvObject) throws IOException {
+    public S3AccessIO(T dvObject) {
+        this(dvObject, null);
     }
     
     //FIXME: Empty
-    public S3AccessIO(T dvObject, DataAccessRequest req) throws IOException {
+    public S3AccessIO(T dvObject, DataAccessRequest req) {
+        super(dvObject, req);
+        this.setIsLocalFile(false);
     }
 
-    
-    
     //FIXME: Delete vars? 
     private boolean isReadAccess = false;
     private boolean isWriteAccess = false;
