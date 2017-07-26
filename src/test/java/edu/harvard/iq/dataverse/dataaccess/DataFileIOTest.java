@@ -183,47 +183,47 @@ public class DataFileIOTest {
     @Test
     public void testFileLocation() {
         assertEquals(true, instance.isLocalFile());
-        instance.setIsLocalFile(null);
-        assertEquals(null, instance.isLocalFile());
+        instance.setIsLocalFile(false);
+        assertEquals(false, instance.isLocalFile());
 
         assertEquals(false, instance.isRemoteAccess());
-        instance.setIsRemoteAccess(null);
-        assertEquals(null, instance.isRemoteAccess());
+        instance.setIsRemoteAccess(true);
+        assertEquals(true, instance.isRemoteAccess());
     }
 
     @Test
     public void testHttpAccess() {
         assertEquals(false, instance.isHttpAccess());
-        instance.setIsHttpAccess(null);
-        assertEquals(null, instance.isHttpAccess());
+        instance.setIsHttpAccess(true);
+        assertEquals(false, instance.isHttpAccess());
     }
 
     @Test
     public void testDownloadSupported() {
         assertEquals(true, instance.isDownloadSupported());
-        instance.setIsDownloadSupported(null);
-        assertEquals(null, instance.isDownloadSupported());
+        instance.setIsDownloadSupported(false);
+        assertEquals(false, instance.isDownloadSupported());
     }
 
     @Test
     public void testSubsetSupported() {
         assertEquals(false, instance.isSubsetSupported());
-        instance.setIsSubsetSupported(null);
-        assertEquals(null, instance.isSubsetSupported());
+        instance.setIsSubsetSupported(true);
+        assertEquals(true, instance.isSubsetSupported());
     }
 
     @Test
     public void testZippedStream() {
         assertEquals(false, instance.isZippedStream());
-        instance.setIsZippedStream(null);
-        assertEquals(null, instance.isZippedStream());
+        instance.setIsZippedStream(true);
+        assertEquals(true, instance.isZippedStream());
     }
 
     @Test
     public void testNoVarHeader() {
         assertEquals(false, instance.noVarHeader());
-        instance.setNoVarHeader(null);
-        assertEquals(null, instance.noVarHeader());
+        instance.setNoVarHeader(true);
+        assertEquals(true, instance.noVarHeader());
     }
 
     @Test

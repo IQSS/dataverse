@@ -156,15 +156,15 @@ public abstract class DataFileIO<T extends DvObject> {
 
     private String swiftContainerName;
 
-    private Boolean isLocalFile = false;
-    private Boolean isRemoteAccess = false;
-    private Boolean isHttpAccess = false;
-    private Boolean noVarHeader = false;
+    private boolean isLocalFile = false;
+    private boolean isRemoteAccess = false;
+    private boolean isHttpAccess = false;
+    private boolean noVarHeader = false;
 
     // For remote downloads:
-    private Boolean isZippedStream = false;
-    private Boolean isDownloadSupported = true;
-    private Boolean isSubsetSupported = false;
+    private boolean isZippedStream = false;
+    private boolean isDownloadSupported = true;
+    private boolean isSubsetSupported = false;
 
     
     // For HTTP-based downloads:
@@ -263,31 +263,31 @@ public abstract class DataFileIO<T extends DvObject> {
         return responseHeaders;
     }
 
-    public Boolean isLocalFile() {
+    public boolean isLocalFile() {
         return isLocalFile;
     }
 
-    public Boolean isRemoteAccess() {
+    public boolean isRemoteAccess() {
         return isRemoteAccess;
     }
 
-    public Boolean isHttpAccess() {
+    public boolean isHttpAccess() {
         return isHttpAccess;
     }
 
-    public Boolean isDownloadSupported() {
+    public boolean isDownloadSupported() {
         return isDownloadSupported;
     }
 
-    public Boolean isSubsetSupported() {
+    public boolean isSubsetSupported() {
         return isSubsetSupported;
     }
 
-    public Boolean isZippedStream() {
+    public boolean isZippedStream() {
         return isZippedStream;
     }
 
-    public Boolean noVarHeader() {
+    public boolean noVarHeader() {
         return noVarHeader;
     }
 
@@ -352,31 +352,31 @@ public abstract class DataFileIO<T extends DvObject> {
         responseHeaders = headers;
     }
 
-    public void setIsLocalFile(Boolean f) {
+    public void setIsLocalFile(boolean f) {
         isLocalFile = f;
     }
 
-    public void setIsRemoteAccess(Boolean r) {
+    public void setIsRemoteAccess(boolean r) {
         isRemoteAccess = r;
     }
 
-    public void setIsHttpAccess(Boolean h) {
+    public void setIsHttpAccess(boolean h) {
         isHttpAccess = h;
     }
 
-    public void setIsDownloadSupported(Boolean d) {
+    public void setIsDownloadSupported(boolean d) {
         isDownloadSupported = d;
     }
 
-    public void setIsSubsetSupported(Boolean s) {
+    public void setIsSubsetSupported(boolean s) {
         isSubsetSupported = s;
     }
 
-    public void setIsZippedStream(Boolean zs) {
+    public void setIsZippedStream(boolean zs) {
         isZippedStream = zs;
     }
 
-    public void setNoVarHeader(Boolean nvh) {
+    public void setNoVarHeader(boolean nvh) {
         noVarHeader = nvh;
     }
 
