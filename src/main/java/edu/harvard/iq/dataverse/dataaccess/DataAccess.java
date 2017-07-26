@@ -52,7 +52,7 @@ public class DataAccess {
         }
 
         if (dvObject.getStorageIdentifier().startsWith("file://")
-                || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
+                || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z0-9]*://.*"))) {
             return new FileAccessIO<>(dvObject, req);
         } else if (dvObject.getStorageIdentifier().startsWith("swift://")){
             return new SwiftAccessIO<>(dvObject, req);

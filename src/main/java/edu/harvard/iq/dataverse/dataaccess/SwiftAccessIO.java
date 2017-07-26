@@ -786,7 +786,7 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
     @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {        
         if (this.isAuxObjectCached(auxItemTag)) {
-            return openSwiftAuxFile(auxItemTag).downloadObjectAsInputStream();
+            return openSwiftAuxFileAsInputStream(auxItemTag);
         } else {
             throw new IOException("SwiftAccessIO: Failed to get aux file as input stream");
         }

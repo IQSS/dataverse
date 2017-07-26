@@ -205,7 +205,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             dataAccess = DataAccess.getDataFileIO(dataset);
         }
         catch(IOException ioex){
-            return null;
+          //  return null;
         }
         
         InputStream in = null;

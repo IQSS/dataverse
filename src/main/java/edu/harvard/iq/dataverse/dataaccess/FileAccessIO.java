@@ -138,14 +138,14 @@ public class FileAccessIO<T extends DvObject> extends DataFileIO<T> {
             //TODO: do we really need to do anything here? should we return the dataset directory?
             dataset = this.getDataset();
             if (isReadAccess) {
-
-                FileInputStream fin = openLocalFileAsInputStream();
-                Path path= dataset.getFileSystemDirectory();                    
-                if (path == null) {
-                    throw new IOException("Failed to locate Dataset"+dataset.getIdentifier());
-                }
-
-                this.setInputStream(fin);  
+                //TODO: Not necessary for dataset as there is no files associated with this
+              //  FileInputStream fin = openLocalFileAsInputStream();
+//                Path path= dataset.getFileSystemDirectory();                    
+//                if (path == null) {
+//                    throw new IOException("Failed to locate Dataset"+dataset.getIdentifier());
+//                }
+//
+//                this.setInputStream(fin);  
               } else if (isWriteAccess) {
                 //this checks whether a directory for a dataset exists 
                 if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
@@ -487,10 +487,6 @@ public class FileAccessIO<T extends DvObject> extends DataFileIO<T> {
             throw new IOException("No DvObject defined in the Data Access Object");
         }
 
-          //TODO: Is this Important? 
-//        if (dvObject.getOwner() == null) {
-//            throw new IOException("Data Access: no parent defined this Object");
-//        }
         Path datasetDirectoryPath=null;
         
         if (dvObject instanceof Dataset) {
