@@ -195,7 +195,7 @@ public class DataFileIOTest {
     public void testHttpAccess() {
         assertEquals(false, instance.isHttpAccess());
         instance.setIsHttpAccess(true);
-        assertEquals(false, instance.isHttpAccess());
+        assertEquals(true, instance.isHttpAccess());
     }
 
     @Test
