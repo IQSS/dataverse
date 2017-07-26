@@ -743,6 +743,7 @@
                     $(document).ready(function () {
                         initPopover();
                         initCarousel();
+                        popoverHTML('#{bundle.htmlAllowedTitle}');
                     });
 
                     function initCarousel() {
@@ -812,8 +813,7 @@
                      function uncheck() {
                          $('input:checkbox[id$="metadataRoot"]').prop('checked', false);                                                   
                     }
-                    
-                    //]]>
+                    //]]>                                     
                 </script>
 
             </ui:define>
