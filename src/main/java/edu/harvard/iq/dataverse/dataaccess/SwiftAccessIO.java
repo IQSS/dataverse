@@ -802,14 +802,12 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
     }
 
     @Override
-    public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
-        StoredObject swiftAuxFile = null;
-        InputStream in = null;
-        
-        if(this.isAuxObjectCached(auxItemTag)) {
-            swiftAuxFile = openSwiftAuxFile(auxItemTag);
+    public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {        
+        if (this.isAuxObjectCached(auxItemTag)) {
+            return openSwiftAuxFile(auxItemTag).downloadObjectAsInputStream();
+        } else {
+            throw new IOException("SwiftAccessIO: Failed to get aux file as input stream");
         }
-        return swiftAuxFile.downloadObjectAsInputStream();
     }
 
     @Override
