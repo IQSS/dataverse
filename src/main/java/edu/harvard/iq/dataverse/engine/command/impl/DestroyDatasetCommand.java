@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.deleteDatasetLogo;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -75,6 +76,9 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             ctxt.engine().submit(new DeleteDataFileCommand(df, getRequest(), true));
             dfIt.remove();
         }
+        
+        //also, lets delete the uploaded thumbnails!
+        deleteDatasetLogo(doomed);
         
         
         // ASSIGNMENTS
