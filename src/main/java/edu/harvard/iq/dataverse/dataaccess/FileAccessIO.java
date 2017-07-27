@@ -493,6 +493,8 @@ public class FileAccessIO<T extends DvObject> extends DataFileIO<T> {
             datasetDirectoryPath = this.getDataset().getFileSystemDirectory();
         } else if (dvObject instanceof DataFile) {
             datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+        } else if (dvObject instanceof Dataverse) {
+            throw new IOException("FileAccessIO: Dataverses are not a supported dvObject");
         }
             
         if (datasetDirectoryPath == null) {

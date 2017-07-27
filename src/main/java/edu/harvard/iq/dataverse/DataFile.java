@@ -82,10 +82,10 @@ public class DataFile extends DvObject implements Comparable {
     private String contentType;
     
 
-    @Expose    
-    @SerializedName("storageIdentifier")
-    @Column( nullable = false )
-    private String fileSystemName;
+//    @Expose    
+//    @SerializedName("storageIdentifier")
+//    @Column( nullable = false )
+//    private String fileSystemName;
 
     /**
      * End users will see "SHA-1" (with a hyphen) rather than "SHA1" in the GUI
@@ -438,13 +438,13 @@ public class DataFile extends DvObject implements Comparable {
         super.setOwner(dataset);
     }
     
-    public String getStorageIdentifier() {
-        return this.fileSystemName;
-    }
-
-    public void setStorageIdentifier(String storageIdentifier) {
-        this.fileSystemName = storageIdentifier;
-    }
+//    public String getStorageIdentifier() {
+//        return this.fileSystemName;
+//    }
+//
+//    public void setStorageIdentifier(String storageIdentifier) {
+//        this.fileSystemName = storageIdentifier;
+//    }
     
     public String getDescription() {
         FileMetadata fmd = getLatestFileMetadata();

@@ -11,3 +11,8 @@ SET storageidentifier=(select concat('file://',authority::text,ds.doiseparator::
 FROM dataset ds 
 WHERE dvobject.id=ds.id) 
 WHERE storageidentifier IS NULL;
+
+ALTER TABLE datafile ALTER COLUMN filesystemname DROP NOT NULL;
+
+--TODO: should we delete this column after merging the data?
+--ALTER TABLE datafile DROP COLUMN filesystemname;
