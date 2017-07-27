@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  *
  * @author oscardssmith
  */
-public class DataFileIOTest {
+public class StorageIOTest {
     StorageIO<Dataset> instance = new FileAccessIO<>();
 
     @Test
