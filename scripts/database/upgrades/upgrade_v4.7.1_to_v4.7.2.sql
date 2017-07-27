@@ -4,7 +4,7 @@ ALTER TABLE dvobject ADD COLUMN storageidentifier character varying(255);
 UPDATE dvobject
 SET storageidentifier=(SELECT datafile.filesystemname
 FROM datafile
-WHERE datafile.id=dvobject.id AND dvobject.dtype='DataFile');
+WHERE datafile.id=dvobject.id AND dvobject.dtype='DataFile') where dvobject.dtype='DataFile';
 
 UPDATE dvobject 
 SET storageidentifier=(select concat('file://',authority::text,ds.doiseparator::text,ds.identifier::text) 
