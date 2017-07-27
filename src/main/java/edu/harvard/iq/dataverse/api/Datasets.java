@@ -71,6 +71,7 @@ import java.io.StringReader;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -657,23 +658,15 @@ public class Datasets extends AbstractApiBean {
                  */
                 
                 List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
-                for (AuthenticatedUser au : editUsers) {
-                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getLatestVersion().getId());
-                }
+                Map<String, Object> distinctAuthors = new HashMap<>();
+                System.out.print("editUsers count: " +  editUsers.size());
+                editUsers.forEach((au) -> {
+                    distinctAuthors.put(au.getIdentifier(), au);
+                });                
+                distinctAuthors.values().forEach((value) -> {
+                    userNotificationService.sendNotification((AuthenticatedUser) value, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
+                });
                 
-                /*
-                AuthenticatedUser au;
-                try {
-                    au = userSvc.find(userIdWhoMadeUploadRequest);
-                } catch (Exception ex) {
-                    return error(Response.Status.BAD_REQUEST, "Unable to notify user about checksum validation failure. Could not find user based on id " + userIdWhoMadeUploadRequest + ".");
-                }               
-                
-                userNotificationSvc.sendNotification(au,
-                        new Timestamp(new Date().getTime()),
-                        UserNotification.Type.CHECKSUMFAIL, dataset.getId());
-                        System.out.print("Send Notification: CHECKSUMFAIL ");
-                */
                 return ok("User notified about checksum validation failure.");
             } else {
                 return error(Response.Status.BAD_REQUEST, "Unexpected status cannot be processed: " + status);

@@ -1201,6 +1201,14 @@ public class DatasetsIT {
                  */
                 .statusCode(200)
                 .body("data.message", equalTo("User notified about checksum validation failure."));
+               
+        Response authorsGetsBadNews = UtilIT.getNotifications(apiToken);
+        authorsGetsBadNews.prettyPrint();
+        authorsGetsBadNews.then().assertThat()
+                .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
+                .statusCode(OK.getStatusCode());
+        
+        
         /**
          * @todo How can we test what the checksum validation notification looks
          * like in the GUI? There is no API for retrieving notifications.
@@ -1222,17 +1230,6 @@ public class DatasetsIT {
                 .statusCode(200)
                 .body("data.message", startsWith("Next we will write code to kick off crawling and importing of files"));
 
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
-        deleteDatasetResponse.prettyPrint();
-        assertEquals(200, deleteDatasetResponse.getStatusCode());
-
-        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
-        deleteDataverseResponse.prettyPrint();
-        assertEquals(200, deleteDataverseResponse.getStatusCode());
-
-        Response deleteUserResponse = UtilIT.deleteUser(username);
-        deleteUserResponse.prettyPrint();
-        assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
 
