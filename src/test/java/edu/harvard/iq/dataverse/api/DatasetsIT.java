@@ -1082,6 +1082,157 @@ public class DatasetsIT {
         assertEquals(200, deleteUserResponse.getStatusCode());
 
         UtilIT.deleteUser(noPermsUsername);
+        
+    }
+
+    /**
+     * This test is just a test of notifications
+     * so a fully implemented dcm is not necessary
+     */
+    @Test
+    public void testDcmNotifications() {
+        
+        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
+        setDcmUrl.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response setUploadMethods = UtilIT.setSetting(SettingsServiceBean.Key.UploadMethods, SystemConfig.FileUploadMethods.RSYNC.toString());
+        setUploadMethods.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response urlConfigured = given()
+                .get("/api/admin/settings/" + SettingsServiceBean.Key.DataCaptureModuleUrl.toString());
+        if (urlConfigured.getStatusCode() != 200) {
+            fail(SettingsServiceBean.Key.DataCaptureModuleUrl + " has not been not configured. This test cannot run without it.");
+        }
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        long userId = JsonPath.from(createUser.body().asString()).getLong("data.authenticatedUser.id");
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(201);
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        Response getDatasetResponse = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId);
+        getDatasetResponse.prettyPrint();
+        getDatasetResponse.then().assertThat()
+                .statusCode(200);
+
+        boolean stopEarlyToVerifyTheScriptWasCreated = false;
+        if (stopEarlyToVerifyTheScriptWasCreated) {
+            logger.info("On the DCM, does /deposit/gen/upload-" + datasetId + ".bash exist? It should! Creating the dataset should be enough to create it.");
+            return;
+        }
+
+        Response createUser2 = UtilIT.createRandomUser();
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken2);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+
+        Response createDatasetResponse2 = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, apiToken2);
+        createDatasetResponse2.prettyPrint();
+        Integer datasetId2 = JsonPath.from(createDatasetResponse2.body().asString()).getInt("data.id");
+
+        /**
+         * Here we are pretending to be the Data Capture Module reporting on if
+         * checksum validation success or failure. Don't notify the user on
+         * success (too chatty) but do notify on failure.
+         *
+         * @todo On success a process should be kicked off to crawl the files so
+         * they are imported into Dataverse. Once the crawling and importing is
+         * complete, notify the user.
+         *
+         * @todo What authentication should be used here? The API token of the
+         * user? (If so, pass the token in the initial upload request payload.)
+         * This is suboptimal because of the security risk of having the Data
+         * Capture Module store the API token. Or should Dataverse be able to be
+         * configured so that it only will receive these messages from trusted
+         * IP addresses? Should there be a shared secret that's used for *all*
+         * requests from the Data Capture Module to Dataverse?
+         */
+        /*
+        Can't find dataset - give bad dataset ID
+        */
+        JsonObjectBuilder wrongDataset = Json.createObjectBuilder();
+        wrongDataset.add("userId", userId);
+        wrongDataset.add("datasetId", "78921457982457921");
+        wrongDataset.add("status", "validation passed");
+        Response datasetNotFound = given()
+                .body(wrongDataset.build().toString())
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/" + "78921457982457921" + "/dataCaptureModule/checksumValidation");
+        datasetNotFound.prettyPrint();
+
+        datasetNotFound.then().assertThat()
+                .statusCode(404)
+                .body("message", equalTo("Dataset with ID 78921457982457921 not found."));
+
+        JsonObjectBuilder badNews = Json.createObjectBuilder();
+        badNews.add("userId", userId);
+        badNews.add("datasetId", datasetId2);
+        // Status options are documented at https://github.com/sbgrid/data-capture-module/blob/master/doc/api.md#post-upload
+        badNews.add("status", "validation failed");
+        Response uploadFailed = given()
+                .body(badNews.build().toString())
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/" + datasetId + "/dataCaptureModule/checksumValidation");
+        uploadFailed.prettyPrint();
+
+        uploadFailed.then().assertThat()
+                /**
+                 * @todo Double check that we're ok with 200 here. We're saying
+                 * "Ok, the bad news was delivered." We had a success of
+                 * informing the user of bad news.
+                 */
+                .statusCode(200)
+                .body("data.message", equalTo("User notified about checksum validation failure."));
+        /**
+         * @todo How can we test what the checksum validation notification looks
+         * like in the GUI? There is no API for retrieving notifications.
+         *
+         * @todo How can we test that the email notification looks ok?
+         */
+        // Meanwhile, the user trys uploading again...
+        JsonObjectBuilder goodNews = Json.createObjectBuilder();
+        goodNews.add("userId", userId);
+        goodNews.add("datasetId", datasetId);
+        goodNews.add("status", "validation passed");
+        Response uploadSuccessful = given()
+                .body(goodNews.build().toString())
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/" + datasetId + "/dataCaptureModule/checksumValidation");
+        uploadSuccessful.prettyPrint();
+
+        uploadSuccessful.then().assertThat()
+                .statusCode(200)
+                .body("data.message", startsWith("Next we will write code to kick off crawling and importing of files"));
+
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
 

@@ -14,8 +14,12 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -64,7 +68,9 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.sql.Timestamp;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -75,6 +81,7 @@ import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Consumes;
@@ -106,8 +113,13 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DataverseServiceBean dataverseService;
-
-
+    
+    @EJB
+    UserNotificationServiceBean userNotificationService;
+    
+    @EJB
+    PermissionServiceBean permissionService;
+    
     @EJB
     DDIExportServiceBean ddiExportService;
     
@@ -612,6 +624,65 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Something went wrong attempting to download rsync script: " + EjbUtil.ejbExceptionToString(ex));
         }
     }
+    
+    /**
+     * @todo How will authentication be handled for this method?
+     * SEK FIXME - Why is there an identifier in the path and a datasetId in the json?
+     * Also do we need to have a userId attached to it?
+     * Are there any permissions issues?
+     */
+    @POST
+    @Path("{identifier}/dataCaptureModule/checksumValidation")
+    public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject result) {
+        JsonNumber userIdWhoMadeUploadRequest = result.getJsonNumber("userId");
+        /*
+        SEK - Do we need to include the upload requester?
+        We are going to send notifications to all editors of the dataset.
+        */
+        String status = result.getString("status");
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+            if ("validation passed".equals(status)) {
+                /**
+                 * @todo Actually kick off the crawling and importing code at
+                 * https://github.com/bmckinney/bio-dataverse/tree/feature/file-system-import
+                 */
+                return ok("Next we will write code to kick off crawling and importing of files");// ( https://github.com/bmckinney/bio-dataverse/tree/feature/file-system-import ) and which will notify the user if the crawling and importing was successful or not.");
+            } else if ("validation failed".equals(status)) {
+                /**
+                 * @todo We've talked about notifying all users who have edit
+                 * access to the dataset rather than just the user who made the
+                 * upload request.
+                 * SEK - Per Pete we will notify all those who have edit privileges 
+                 */
+                
+                List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
+                for (AuthenticatedUser au : editUsers) {
+                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getLatestVersion().getId());
+                }
+                
+                /*
+                AuthenticatedUser au;
+                try {
+                    au = userSvc.find(userIdWhoMadeUploadRequest);
+                } catch (Exception ex) {
+                    return error(Response.Status.BAD_REQUEST, "Unable to notify user about checksum validation failure. Could not find user based on id " + userIdWhoMadeUploadRequest + ".");
+                }               
+                
+                userNotificationSvc.sendNotification(au,
+                        new Timestamp(new Date().getTime()),
+                        UserNotification.Type.CHECKSUMFAIL, dataset.getId());
+                        System.out.print("Send Notification: CHECKSUMFAIL ");
+                */
+                return ok("User notified about checksum validation failure.");
+            } else {
+                return error(Response.Status.BAD_REQUEST, "Unexpected status cannot be processed: " + status);
+            }
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
 
     @POST
     @Path("{id}/submitForReview")

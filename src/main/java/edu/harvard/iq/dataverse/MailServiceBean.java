@@ -471,7 +471,7 @@ public class MailServiceBean implements java.io.Serializable {
                 return messageText += accountCreatedMessage;
 
             case CHECKSUMFAIL:
-                version =  (DatasetVersion) targetObject;
+                dataset =  (Dataset) targetObject;
                 String checksumFailMsg = BundleUtil.getStringFromBundle("notification.checksumfail", Arrays.asList(
                         version.getDataset().getGlobalId()
                 ));
