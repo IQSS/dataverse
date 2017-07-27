@@ -27,7 +27,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -576,10 +576,10 @@ public class Access extends AbstractApiBean {
             return null; 
         }
         
-        DataFileIO<DataFile> thumbnailDataAccess = null;
+        StorageIO<DataFile> thumbnailDataAccess = null;
         
         try {
-            DataFileIO<DataFile> dataAccess = df.getDataFileIO();
+            StorageIO<DataFile> dataAccess = df.getDataFileIO();
             if (dataAccess != null) { // && dataAccess.isLocalFile()) {
                 dataAccess.open();
 
@@ -617,7 +617,7 @@ public class Access extends AbstractApiBean {
         }
         
         //String imageThumbFileName = null; 
-        DataFileIO thumbnailDataAccess = null;
+        StorageIO thumbnailDataAccess = null;
         
         // First, check if this dataset has a designated thumbnail image: 
         
@@ -627,7 +627,7 @@ public class Access extends AbstractApiBean {
             if (logoDataFile != null) {
         
                 try {
-                    DataFileIO<DataFile> dataAccess = logoDataFile.getDataFileIO();
+                    StorageIO<DataFile> dataAccess = logoDataFile.getDataFileIO();
                     if (dataAccess != null) { // && dataAccess.isLocalFile()) {
                         dataAccess.open();
                         thumbnailDataAccess = ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
@@ -706,7 +706,7 @@ public class Access extends AbstractApiBean {
         // And we definitely don't want to be doing this for harvested 
         // dataverses:
         /*
-        DataFileIO thumbnailDataAccess = null; 
+        StorageIO thumbnailDataAccess = null; 
         
         if (!dataverse.isHarvested()) {
             for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverseId)) {
@@ -736,9 +736,9 @@ public class Access extends AbstractApiBean {
     // is too expensive! Instead we are now selecting an available thumbnail and
     // giving the dataset card a direct link to that file thumbnail. -- L.A., 4.2.2
     /*
-    private DataFileIO getThumbnailForDatasetVersion(DatasetVersion datasetVersion) {
+    private StorageIO getThumbnailForDatasetVersion(DatasetVersion datasetVersion) {
         logger.info("entering getThumbnailForDatasetVersion()");
-        DataFileIO thumbnailDataAccess = null;
+        StorageIO thumbnailDataAccess = null;
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
 
@@ -749,7 +749,7 @@ public class Access extends AbstractApiBean {
                 if (dataFile != null && dataFile.isImage()) {
 
                     try {
-                        DataFileIO dataAccess = dataFile.getDataFileIO();
+                        StorageIO dataAccess = dataFile.getDataFileIO();
                         if (dataAccess != null && dataAccess.isLocalFile()) {
                             dataAccess.open();
 

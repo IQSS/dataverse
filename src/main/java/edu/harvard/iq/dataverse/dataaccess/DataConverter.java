@@ -71,7 +71,7 @@ public class DataConverter {
     public static String SERVICE_REQUEST_CONVERT = "convert";
     
     
-    public static DataFileIO<DataFile> performFormatConversion(DataFile file, DataFileIO<DataFile> dataFileIO, String formatRequested, String formatType) {
+    public static StorageIO<DataFile> performFormatConversion(DataFile file, StorageIO<DataFile> dataFileIO, String formatRequested, String formatType) {
         if (!file.isTabularData()) {
             return null;
         }

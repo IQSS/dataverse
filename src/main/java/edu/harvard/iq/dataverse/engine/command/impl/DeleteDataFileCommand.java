@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -60,7 +60,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
         // We need to delete a bunch of physical files, either from the file system,
         // or from some other storage medium where the datafile is stored, 
-        // via its DataFileIO driver.
+        // via its StorageIO driver.
         // First we delete the derivative files, then try to delete the data 
         // file itself; if that 
         // fails, we throw an exception and abort the command without
@@ -72,7 +72,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         if (!doomed.isHarvested() && !StringUtil.isEmpty(doomed.getStorageIdentifier())) {
 
             logger.log(Level.FINE, "Storage identifier for the file: {0}", doomed.getStorageIdentifier());
-            DataFileIO<DataFile> dataFileIO = null;
+            StorageIO<DataFile> dataFileIO = null;
 
             try {
                 dataFileIO = doomed.getDataFileIO();
@@ -99,7 +99,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
                 // We only want to attempt to delete the main physical file
                 // if it actually exists, on the filesystem or whereever it 
-                // is actually stored by its DataFileIO:
+                // is actually stored by its StorageIO:
                 boolean physicalFileExists = false;
 
                 try {

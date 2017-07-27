@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getDataFileIO;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
@@ -43,12 +43,32 @@ public class DatasetUtil {
             return thumbnails;
         }
         if (considerDatasetLogoAsCandidate) {
-            Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-            if (Files.exists(path)) {
+//            Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+//            if (Files.exists(path)) {
+//                logger.fine("Thumbnail created from dataset logo exists!");
+//                File file = path.toFile();
+//                try {
+//                    byte[] bytes = Files.readAllBytes(file.toPath());
+            StorageIO<Dataset> dataAccess = null;
+
+            try{
+                dataAccess = DataAccess.getDataFileIO(dataset);
+            }
+            catch(IOException ioex){
+            }
+
+            InputStream in = null;
+            try {
+                if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
+                    in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+                }
+            } catch (Exception ioex) {
+            }
+
+            if (in != null) {
                 logger.fine("Thumbnail created from dataset logo exists!");
-                File file = path.toFile();
                 try {
-                    byte[] bytes = Files.readAllBytes(file.toPath());
+                    byte[] bytes = IOUtils.toByteArray(in);
                     String base64image = Base64.getEncoder().encodeToString(bytes);
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
                     thumbnails.add(datasetThumbnail);
@@ -90,7 +110,7 @@ public class DatasetUtil {
             return null;
         }
         
-        DataFileIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> dataAccess = null;
                 
         try{
             dataAccess = DataAccess.getDataFileIO(dataset);
@@ -167,7 +187,7 @@ public class DatasetUtil {
             return false;
         }
         try {
-            DataFileIO<Dataset> dataFileIO = getDataFileIO(dataset);
+            StorageIO<Dataset> dataFileIO = getDataFileIO(dataset);
 
             if (dataFileIO == null) {
                 logger.warning("Null DataFileIO in deleteDatasetLogo()");
@@ -239,7 +259,7 @@ public class DatasetUtil {
             logger.severe(ex.getMessage());
         }
 
-        DataFileIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> dataAccess = null;
                 
         try{
              dataAccess = DataAccess.createNewDataFileIO(dataset,"file");
@@ -340,13 +360,21 @@ public class DatasetUtil {
      * The dataset logo is the file that a user uploads which is *not* one of
      * the data files. Compare to the datavese logo. We do not save the original
      * file that is uploaded. Rather, we delete it after first creating at least
-     * one thumbnail from it.
+     * one thumbnail from it. Update after #3919: We now keep the original one as well.
      */
     public static boolean isDatasetLogoPresent(Dataset dataset) {
         if (dataset == null) {
             return false;
         }
-        return Files.exists(Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoFilenameFinal));
+
+        StorageIO<Dataset> dataAccess = null;
+
+        try {
+            dataAccess = DataAccess.getDataFileIO(dataset);
+            return dataAccess.isAuxObjectCached(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+        } catch (IOException ioex) {
+        }
+        return false;
     }
 
 }

@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -555,8 +555,8 @@ public class DataFile extends DvObject implements Comparable {
         return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
     }
 
-    public DataFileIO<DataFile> getDataFileIO() throws IOException {
-        DataFileIO<DataFile> dataFileIO = DataAccess.getDataFileIO(this);
+    public StorageIO<DataFile> getDataFileIO() throws IOException {
+        StorageIO<DataFile> dataFileIO = DataAccess.getDataFileIO(this);
         
         if (dataFileIO == null) {
             throw new IOException("Failed to create DataFileIO for datafile.");

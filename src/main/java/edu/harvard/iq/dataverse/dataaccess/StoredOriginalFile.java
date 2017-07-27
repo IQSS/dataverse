@@ -39,7 +39,7 @@ public class StoredOriginalFile {
     
     private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
     
-    public static DataFileIO<DataFile> retreive(DataFileIO<DataFile> dataFileIO) {
+    public static StorageIO<DataFile> retreive(StorageIO<DataFile> dataFileIO) {
         String originalMimeType;
 
         DataFile dataFile = dataFileIO.getDataFile();

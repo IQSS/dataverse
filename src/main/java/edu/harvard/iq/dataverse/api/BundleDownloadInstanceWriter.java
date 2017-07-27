@@ -56,7 +56,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
             if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
                 DataAccessRequest daReq = new DataAccessRequest();
                 DataFile sf = di.getDownloadInfo().getDataFile();
-                DataFileIO<DataFile> accessObject = DataAccess.getDataFileIO(sf, daReq);
+                StorageIO<DataFile> accessObject = DataAccess.getDataFileIO(sf, daReq);
 
                 if (accessObject != null) {
                     accessObject.open();
@@ -94,7 +94,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     // Now, the original format: 
                     String origFormat = null; 
                     try {
-                        DataFileIO<DataFile> accessObjectOrig = StoredOriginalFile.retreive(accessObject); //.retrieve(sf, (FileAccessIO) accessObject);
+                        StorageIO<DataFile> accessObjectOrig = StoredOriginalFile.retreive(accessObject); //.retrieve(sf, (FileAccessIO) accessObject);
                         if (accessObjectOrig != null) {
                             instream = accessObjectOrig.getInputStream();
                             if (instream != null) {
@@ -127,7 +127,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     // add an RData version: 
                     if (!"application/x-rlang-transport".equals(origFormat)) {
                         try {
-                            DataFileIO<DataFile> accessObjectRdata = DataConverter.performFormatConversion(sf, accessObject,
+                            StorageIO<DataFile> accessObjectRdata = DataConverter.performFormatConversion(sf, accessObject,
                                                                                                            "RData", "application/x-rlang-transport");
 
                             if (accessObjectRdata != null) {
