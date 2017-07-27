@@ -103,14 +103,14 @@
                         </ui:fragment>
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
-                                <span id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false" tabindex="0">
+                                <a href="javascript:void(0)" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false" tabindex="0">
                                     <ui:fragment rendered="#{dataverseSession.user.superuser}">
                                         <span class="glyphicon glyphicon-user text-danger"></span>
                                     </ui:fragment>
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
                                     <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
                                                   value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />                                    <b class="caret"></b>
-                                </span>
+                                </a>
                                 <ul class="dropdown-menu">
                                     <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
