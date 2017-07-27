@@ -124,7 +124,7 @@ my %CONFIG_PROMPTS = (
 
 my %CONFIG_COMMENTS = (
     'HOST_DNS_ADDRESS',    ":\n(enter numeric IP address, if FQDN is unavailable) ",
-    'GLASSFISH_USER',      ":\n - We suggest \"glassfish\" or another unprivileged user\n: ",
+    'GLASSFISH_USER',      ":\nThis user will be running Glassfish service on your system.\n - If this is a dev. environment, this should be your own username; \n - In production, we suggest \"glassfish\" or another unprivileged user\n: ",
     'GLASSFISH_DIRECTORY', '',
     'ADMIN_EMAIL',         ":\n(please enter a valid email address!) ",
     'MAIL_SERVER',         '',
