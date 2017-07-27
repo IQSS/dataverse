@@ -1561,11 +1561,12 @@ public class IngestServiceBean {
     // This method fixes a datatable object that's missing the format type of 
     // the ingested original. It will check the saved original file to 
     // determine the type. 
-    private void fixMissingOriginalType(Long fileId) {
+    private void fixMissingOriginalType(long fileId) {
         DataFile dataFile = fileService.find(fileId);
 
         if (dataFile != null && dataFile.isTabularData()) {
             String originalFormat = dataFile.getDataTable().getOriginalFileFormat();
+            Long datatableId = dataFile.getDataTable().getId();
             if (StringUtil.isEmpty(originalFormat) || originalFormat.equals(FileUtil.MIME_TYPE_TAB)) {
 
                 // We need to determine the mime type of the saved original
@@ -1608,11 +1609,12 @@ public class IngestServiceBean {
 
                     }
                 } catch (Exception ex) {
+                    logger.warning("Exception "+ex.getClass()+" caught trying to open DataFileIO channel for the saved original (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
                     savedOriginalFile = null;
                 }
 
                 if (savedOriginalFile == null) {
-                    logger.warning("Could not obtain the saved original file as a java.io.File! (datafile id=" + fileId + ")");
+                    logger.warning("Could not obtain the saved original file as a java.io.File! (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
                     return;
                 }
 
@@ -1621,7 +1623,7 @@ public class IngestServiceBean {
                 try {
                     fileTypeDetermined = FileUtil.determineFileType(savedOriginalFile, "");
                 } catch (IOException ioex) {
-                    logger.warning("Caught exception trying to determine original file type (datafile id=" + fileId + "): " + ioex.getMessage());
+                    logger.warning("Caught exception trying to determine original file type (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ioex.getMessage());
                 }
                 
                 // If we had to create a temp file, delete it now: 
@@ -1630,7 +1632,7 @@ public class IngestServiceBean {
                 }
 
                 if (fileTypeDetermined == null) {
-                    logger.warning("Failed to determine preserved original file type. (datafile id=" + fileId + ")");
+                    logger.warning("Failed to determine preserved original file type. (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
                     return;
                 }
                 // adjust the final result:
@@ -1644,7 +1646,7 @@ public class IngestServiceBean {
                 if (FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT.equals(fileTypeDetermined)) {
                     fileTypeDetermined = FileUtil.MIME_TYPE_XLSX;
                 }
-                logger.info("Original file type determined: " + fileTypeDetermined + " (file id=" + fileId + "; file path: " + savedOriginalFile.getAbsolutePath() + ")");
+                logger.info("Original file type determined: " + fileTypeDetermined + " (file id=" + fileId + ", datatable id=" + datatableId + "; file path: " + savedOriginalFile.getAbsolutePath() + ")");
 
                 // save permanently in the database:
                 dataFile.getDataTable().setOriginalFileFormat(fileTypeDetermined);
