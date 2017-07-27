@@ -36,7 +36,7 @@ import org.javaswift.joss.model.StoredObject;
     Experimental Swift driver, implemented as part of the Dataverse - Mass Open Cloud
     collaboration. 
  */
-public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
+public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private String swiftFolderPath;
 
@@ -142,7 +142,7 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
         
     }
 
-    // DataFileIO method for copying a local Path (for ex., a temp file), into this DataAccess location:
+    // StorageIO method for copying a local Path (for ex., a temp file), into this DataAccess location:
 
     @Override
     public void savePath(Path fileSystemPath) throws IOException {

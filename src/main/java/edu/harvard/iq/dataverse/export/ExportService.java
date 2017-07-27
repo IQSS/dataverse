@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getDataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoThumbnail;
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.thumb48addedByImageThumbConverter;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
@@ -257,7 +257,7 @@ public class ExportService {
             File tempFile = null;
             OutputStream outputStream = null;
             Dataset dataset = version.getDataset();
-            DataFileIO<Dataset> dataFileIO = null;
+            StorageIO<Dataset> dataFileIO = null;
             
             try {
                 dataFileIO = DataAccess.createNewDataFileIO(dataset, "file");
@@ -307,7 +307,7 @@ public class ExportService {
     
     private void clearCachedExport(Dataset dataset, String format) throws IOException {
         try {
-            DataFileIO<Dataset> dataFileIO = getDataFileIO(dataset);
+            StorageIO<Dataset> dataFileIO = getDataFileIO(dataset);
             
             dataFileIO.deleteAuxObject("export_" + format + ".cached");
         
@@ -333,7 +333,7 @@ public class ExportService {
     
     private InputStream getCachedExportFormat(Dataset dataset, String formatName) throws ExportException, IOException {
 
-        DataFileIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> dataAccess = null;
 
         try {
             dataAccess = DataAccess.getDataFileIO(dataset);

@@ -35,15 +35,15 @@ public class DataAccess {
     // set by the user in glassfish-setup.sh if DEFFAULT_STORAGE_DRIVER_IDENTIFIER = swift
     public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
     
-    // The getDataFileIO() methods initialize DataFileIO objects for
+    // The getDataFileIO() methods initialize StorageIO objects for
     // datafiles that are already saved using one of the supported Dataverse
     // DataAccess IO drivers.
-    public static <T extends DvObject> DataFileIO<T> getDataFileIO(T dvObject) throws IOException {
+    public static <T extends DvObject> StorageIO<T> getDataFileIO(T dvObject) throws IOException {
         return getDataFileIO(dvObject, null);
     }
 
     //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
-    public static <T extends DvObject> DataFileIO<T> getDataFileIO(T dvObject, DataAccessRequest req) throws IOException {
+    public static <T extends DvObject> StorageIO<T> getDataFileIO(T dvObject, DataAccessRequest req) throws IOException {
         
         if (dvObject == null
                 || dvObject.getStorageIdentifier() == null
@@ -72,19 +72,19 @@ public class DataAccess {
 
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
     // for saving new, not yet saved datafiles.
-    public static <T extends DvObject> DataFileIO<T> createNewDataFileIO(T dvObject, String storageTag) throws IOException {
+    public static <T extends DvObject> StorageIO<T> createNewDataFileIO(T dvObject, String storageTag) throws IOException {
 
         return createNewDataFileIO(dvObject, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
 
-    public static <T extends DvObject> DataFileIO<T> createNewDataFileIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
+    public static <T extends DvObject> StorageIO<T> createNewDataFileIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
         if (dvObject == null
                 || storageTag == null
             || storageTag.isEmpty()) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
 
-        DataFileIO<T> dataFileIO = null;
+        StorageIO<T> dataFileIO = null;
 
         dvObject.setStorageIdentifier(storageTag);
 

@@ -47,7 +47,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
 
-public class FileAccessIO<T extends DvObject> extends DataFileIO<T> {
+public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
     public FileAccessIO () {
         this(null);

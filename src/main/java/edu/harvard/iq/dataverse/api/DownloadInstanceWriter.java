@@ -64,7 +64,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             
             
             DataFile dataFile = di.getDownloadInfo().getDataFile();
-            DataFileIO<DataFile> dataFileIO = DataAccess.getDataFileIO(dataFile, daReq);
+            StorageIO<DataFile> dataFileIO = DataAccess.getDataFileIO(dataFile, daReq);
                         
             if (dataFileIO != null) {
                 dataFileIO.open();
@@ -72,7 +72,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                 if (di.getConversionParam() != null) {
                     // Image Thumbnail and Tabular data conversion: 
                     // NOTE: only supported on local files, as of 4.0.2!
-                    // NOTE: should be supported on all files for which DataFileIO drivers
+                    // NOTE: should be supported on all files for which StorageIO drivers
                     // are available (but not on harvested files1) -- L.A. 4.6.2
                     
                     if (di.getConversionParam().equals("imageThumb") && !dataFile.isHarvested()) { 
@@ -108,7 +108,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             dataFileIO.setVarHeader(null);
                         } else if (di.getConversionParam().equals("format")) {
                             // Conversions, and downloads of "stored originals" are 
-                            // now supported on all DataFiles for which DataFileIO 
+                            // now supported on all DataFiles for which StorageIO 
                             // access drivers are available.
                             
                             if ("original".equals(di.getConversionParamValue())) {
@@ -321,7 +321,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         return downloadInstance.getConversionParam().equals("format") && downloadInstance.getConversionParamValue().equals("prep");
     }
     
-    private long getContentSize(DataFileIO<?> accessObject) {
+    private long getContentSize(StorageIO<?> accessObject) {
         long contentSize = 0; 
         
         if (accessObject.getSize() > -1) {

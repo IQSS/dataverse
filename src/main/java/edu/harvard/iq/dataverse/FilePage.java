@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -565,7 +565,7 @@ public class FilePage implements java.io.Serializable {
     public String getSwiftContainerName(){
         String swiftContainerName;
         try {
-            DataFileIO<DataFile> dataFileIO = getFile().getDataFileIO();
+            StorageIO<DataFile> dataFileIO = getFile().getDataFileIO();
             try {
                 SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) dataFileIO;
                 swiftIO.open();
@@ -672,7 +672,7 @@ public class FilePage implements java.io.Serializable {
 
     public String getPublicDownloadUrl() {
             try {
-                DataFileIO<DataFile> dataFileIO = getFile().getDataFileIO();
+                StorageIO<DataFile> dataFileIO = getFile().getDataFileIO();
             if (dataFileIO instanceof SwiftAccessIO) {
                 String fileDownloadUrl = null;
                 try {

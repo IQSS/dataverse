@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoThumbnail;
@@ -199,7 +199,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         }
         
         String cardImageUrl = null;
-        DataFileIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> dataAccess = null;
                 
         try{
             dataAccess = DataAccess.getDataFileIO(dataset);

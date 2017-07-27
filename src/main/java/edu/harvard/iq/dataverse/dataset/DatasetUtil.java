@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getDataFileIO;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
@@ -49,7 +49,7 @@ public class DatasetUtil {
 //                File file = path.toFile();
 //                try {
 //                    byte[] bytes = Files.readAllBytes(file.toPath());
-            DataFileIO<Dataset> dataAccess = null;
+            StorageIO<Dataset> dataAccess = null;
 
             try{
                 dataAccess = DataAccess.getDataFileIO(dataset);
@@ -110,7 +110,7 @@ public class DatasetUtil {
             return null;
         }
         
-        DataFileIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> dataAccess = null;
                 
         try{
             dataAccess = DataAccess.getDataFileIO(dataset);
@@ -187,7 +187,7 @@ public class DatasetUtil {
             return false;
         }
         try {
-            DataFileIO<Dataset> dataFileIO = getDataFileIO(dataset);
+            StorageIO<Dataset> dataFileIO = getDataFileIO(dataset);
 
             if (dataFileIO == null) {
                 logger.warning("Null DataFileIO in deleteDatasetLogo()");
@@ -259,7 +259,7 @@ public class DatasetUtil {
             logger.severe(ex.getMessage());
         }
 
-        DataFileIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> dataAccess = null;
                 
         try{
              dataAccess = DataAccess.createNewDataFileIO(dataset,"file");
@@ -367,7 +367,7 @@ public class DatasetUtil {
             return false;
         }
 
-        DataFileIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> dataAccess = null;
 
         try {
             dataAccess = DataAccess.getDataFileIO(dataset);

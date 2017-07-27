@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
@@ -182,7 +182,7 @@ public class MapLayerMetadataServiceBean {
 
         
         try {
-            DataFileIO<DataFile> dataFileIO = dataFile.getDataFileIO();
+            StorageIO<DataFile> dataFileIO = dataFile.getDataFileIO();
 
             if (dataFileIO == null) {
                 logger.warning("Null DataFileIO in deleteOlderMapThumbnails()");
@@ -204,7 +204,7 @@ public class MapLayerMetadataServiceBean {
             }
             /*
              * Below is the old-style code that was assuming that all the files are 
-             * stored on a local filesystem. The DataFileIO code, above, should 
+             * stored on a local filesystem. The StorageIO code, above, should 
              * be used instead for all the operations on the physical files associated
              * with DataFiles. 
             // Get the parent directory
@@ -289,7 +289,7 @@ public class MapLayerMetadataServiceBean {
         imageUrl = imageUrl.replace("https:", "http:");
         logger.info("Attempt to retrieve map image: " + imageUrl);
         
-        DataFileIO<DataFile> dataAccess = null;
+        StorageIO<DataFile> dataAccess = null;
         try {
             dataAccess = mapLayerMetadata.getDataFile().getDataFileIO();
         } catch (IOException ioEx) {
