@@ -270,18 +270,15 @@ public class ImageThumbConverter {
             logger.fine("Image file too large - skipping");
             return false;
         }
-        
-        InputStream inputStream;
 
         try {
             dataFileIO.open();
-            inputStream = dataFileIO.getInputStream();
         } catch (IOException ioex) {
-            logger.warning("caught IOException trying to open an input stream for " + dataFileIO.getDataFile().getStorageIdentifier());
+            logger.warning("caught IOException trying to open an input stream for " + dataFileIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
         }
 
-        return generateImageThumbnailFromInputStream(dataFileIO, size, inputStream);
+        return generateImageThumbnailFromInputStream(dataFileIO, size, dataFileIO.getInputStream());
     }
     
     /*

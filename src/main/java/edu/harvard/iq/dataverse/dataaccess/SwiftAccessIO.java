@@ -122,7 +122,6 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
         } else if (dvObject instanceof Dataset) {
             //we are uploading a dataset related auxilary file
             //such as a dataset thumbnail or a metadata export
-            Dataset dataset = this.getDataset();
             if (isReadAccess) {
                 //TODO: fix this
                 InputStream fin = openSwiftFileAsInputStream();
@@ -136,7 +135,6 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
                 swiftFileObject = initializeSwiftFileObject(true);
             }
         } else if (dvObject instanceof Dataverse) {
-            Dataverse dataverse = this.getDataverse();
         } else {
             throw new IOException("Data Access: Invalid DvObject type");
         }
@@ -185,7 +183,6 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
         }
 
         try {
-
             swiftFileObject.uploadObject(inputStream);
 
         } catch (Exception ioex) {
@@ -259,7 +256,8 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
         return swiftAuxObject.getContentLength();
     }
     
-    @Override public Path getAuxObjectAsPath(String auxItemTag) throws IOException {
+    @Override
+    public Path getAuxObjectAsPath(String auxItemTag) throws IOException {
         throw new UnsupportedDataAccessOperationException("SwiftAccessIO: this is a remote DataAccess IO object, its Aux objects have no local filesystem Paths associated with it.");
     }
 
@@ -333,7 +331,7 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
     }
     
     @Override
-    public List<String>listAuxObjects() throws IOException {
+    public List<String> listAuxObjects() throws IOException {
         if (this.swiftContainer == null || this.swiftFileObject == null) {
             throw new IOException("This SwiftAccessIO() hasn't been properly initialized yet.");
         }
@@ -536,85 +534,82 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
             //for future scope, if dataverse is decided to be stored in swift storage containersopen    
             throw new FileNotFoundException("Error initializing swift object");  
         }
-            // Authenticate with Swift: 
+        // Authenticate with Swift: 
 
-            // should we only authenticate when account == null? 
+        // should we only authenticate when account == null? 
 
-            if (this.account == null) {
-                account = authenticateWithSwift(swiftEndPoint);
-            }
+        if (this.account == null) {
+            account = authenticateWithSwift(swiftEndPoint);
+        }
 
-            /*
-            The containers created is swiftEndPoint concatenated with the swiftContainerName
-            property. Creating container with certain names throws 'Unable to create
-            container' error on Openstack. 
-            Any datafile with http://rdgw storage identifier i.e present on Object 
-            store service endpoint already only needs to look-up for container using
-            just swiftContainerName which is the concatenated name.
-            In future, a container for the endpoint can be created and for every
-            other swiftContainerName Object Store pseudo-folder can be created, which is
-            not provide by the joss Java swift library as of yet.
-             */
+        /*
+        The containers created is swiftEndPoint concatenated with the swiftContainerName
+        property. Creating container with certain names throws 'Unable to create
+        container' error on Openstack. 
+        Any datafile with http://rdgw storage identifier i.e present on Object 
+        store service endpoint already only needs to look-up for container using
+        just swiftContainerName which is the concatenated name.
+        In future, a container for the endpoint can be created and for every
+        other swiftContainerName Object Store pseudo-folder can be created, which is
+        not provide by the joss Java swift library as of yet.
+         */
 
-            if (storageIdentifier.startsWith("swift://")) {
-                // An existing swift object; the container must already exist as well.
-                this.swiftContainer = account.getContainer(swiftContainerName);
+        if (storageIdentifier.startsWith("swift://")) {
+            // An existing swift object; the container must already exist as well.
+            this.swiftContainer = account.getContainer(swiftContainerName);
+        } else {
+            // This is a new object being created.
+            this.swiftContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
+        }
+
+        if (!this.swiftContainer.exists()) {
+            if (writeAccess) {
+                // dataContainer.create();
+                 try {
+                     //creates a public data container
+                     this.swiftContainer.makePublic();
+                 }
+                 catch (Exception e){
+                     //e.printStackTrace();
+                     logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
+                 }
             } else {
-                // This is a new object being created.
-                this.swiftContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
+                // This is a fatal condition - it has to exist, if we were to 
+                // read an existing object!
+                throw new IOException("SwiftAccessIO: container " + swiftContainerName + " does not exist.");
             }
+        }
 
-            if (!this.swiftContainer.exists()) {
-                if (writeAccess) {
-                    // dataContainer.create();
-                     try {
-                         //creates a public data container
-                         this.swiftContainer.makePublic();
-                     }
-                     catch (Exception e){
-                         //e.printStackTrace();
-                         logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
-                     }
-                } else {
-                    // This is a fatal condition - it has to exist, if we were to 
-                    // read an existing object!
-                    throw new IOException("SwiftAccessIO: container " + swiftContainerName + " does not exist.");
-                }
-            }
+        fileObject = this.swiftContainer.getObject(swiftFileName);
 
-            fileObject = this.swiftContainer.getObject(swiftFileName);
-            
-            // If this is the main, primary datafile object (i.e., not an auxiliary 
-            // object for a primary file), we also set the file download url here: 
-            if (auxItemTag == null && dvObject instanceof DataFile) {
-                setRemoteUrl(getSwiftFileURI(fileObject));
-                logger.fine(getRemoteUrl() + " success; write mode: "+writeAccess);
-            } else {
-                logger.fine("sucessfully opened AUX object "+auxItemTag+" , write mode: "+writeAccess);
-            }
-            
-            if (!writeAccess && !fileObject.exists()) {
-                throw new FileNotFoundException("SwiftAccessIO: DvObject " + swiftFileName + " does not exist (Dataverse dvObject id: " + dvObject.getId());
-            }
+        // If this is the main, primary datafile object (i.e., not an auxiliary 
+        // object for a primary file), we also set the file download url here: 
+        if (auxItemTag == null && dvObject instanceof DataFile) {
+            setRemoteUrl(getSwiftFileURI(fileObject));
+            logger.fine(getRemoteUrl() + " success; write mode: "+writeAccess);
+        } else {
+            logger.fine("sucessfully opened AUX object "+auxItemTag+" , write mode: "+writeAccess);
+        }
 
-            auxFiles = null; 
+        if (!writeAccess && !fileObject.exists()) {
+            throw new FileNotFoundException("SwiftAccessIO: DvObject " + swiftFileName + " does not exist (Dataverse dvObject id: " + dvObject.getId());
+        }
 
-            return fileObject;
+        auxFiles = null; 
+
+        return fileObject;
  
     }
 
     private InputStream openSwiftFileAsInputStream() throws IOException {
         swiftFileObject = initializeSwiftFileObject(false);
-
-        InputStream in = swiftFileObject.downloadObjectAsInputStream();
         this.setSize(swiftFileObject.getContentLength());
 
-        return in;
+        return swiftFileObject.downloadObjectAsInputStream();
     }
 
     private InputStream openSwiftAuxFileAsInputStream(String auxItemTag) throws IOException {
-        StoredObject swiftAuxFileObject = initializeSwiftFileObject(false, auxItemTag);
-        return swiftAuxFileObject.downloadObjectAsInputStream();
+        return initializeSwiftFileObject(false, auxItemTag).downloadObjectAsInputStream();
     }
     
     private StoredObject openSwiftAuxFile(String auxItemTag) throws IOException {
@@ -622,9 +617,7 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
     }
     
     private StoredObject openSwiftAuxFile(boolean writeAccess, String auxItemTag) throws IOException {
-        StoredObject swiftAuxFileObject = initializeSwiftFileObject(writeAccess, auxItemTag);
-        
-        return swiftAuxFileObject; 
+        return initializeSwiftFileObject(writeAccess, auxItemTag);
     }
     
     
@@ -716,13 +709,11 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
     }
     
     private String getSwiftFileURI(StoredObject fileObject) throws IOException {
-        String fileUri;
         try {
-            fileUri = fileObject.getPublicURL();
+            return fileObject.getPublicURL();
         } catch (Exception ex) {
             throw new IOException("SwiftAccessIO: failed to get public URL of the stored object");
         }
-        return fileUri;
     }
 
     @Override
@@ -741,11 +732,10 @@ public class SwiftAccessIO<T extends DvObject> extends DataFileIO<T> {
             swiftFolderPathSeparator = "_";
         }
         String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-        String containerName = this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator +
-            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+        return this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator
+               +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
             swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
         
-        return containerName;
      }
      
 }
