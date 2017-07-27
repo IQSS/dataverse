@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getDataFileIO;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -52,7 +52,7 @@ public class DatasetUtil {
             StorageIO<Dataset> dataAccess = null;
 
             try{
-                dataAccess = DataAccess.getDataFileIO(dataset);
+                dataAccess = DataAccess.getStorageIO(dataset);
             }
             catch(IOException ioex){
             }
@@ -113,7 +113,7 @@ public class DatasetUtil {
         StorageIO<Dataset> dataAccess = null;
                 
         try{
-            dataAccess = DataAccess.getDataFileIO(dataset);
+            dataAccess = DataAccess.getStorageIO(dataset);
             
         }
         catch(IOException ioex){
@@ -187,7 +187,7 @@ public class DatasetUtil {
             return false;
         }
         try {
-            StorageIO<Dataset> dataFileIO = getDataFileIO(dataset);
+            StorageIO<Dataset> dataFileIO = getStorageIO(dataset);
 
             if (dataFileIO == null) {
                 logger.warning("Null DataFileIO in deleteDatasetLogo()");
@@ -262,7 +262,7 @@ public class DatasetUtil {
         StorageIO<Dataset> dataAccess = null;
                 
         try{
-             dataAccess = DataAccess.createNewDataFileIO(dataset,"file");
+             dataAccess = DataAccess.createNewStorageIO(dataset,"file");
         }
         catch(IOException ioex){
             //TODO: Add a suitable waing message
@@ -370,7 +370,7 @@ public class DatasetUtil {
         StorageIO<Dataset> dataAccess = null;
 
         try {
-            dataAccess = DataAccess.getDataFileIO(dataset);
+            dataAccess = DataAccess.getStorageIO(dataset);
             return dataAccess.isAuxObjectCached(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
         } catch (IOException ioex) {
         }

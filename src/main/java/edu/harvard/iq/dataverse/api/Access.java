@@ -579,7 +579,7 @@ public class Access extends AbstractApiBean {
         StorageIO<DataFile> thumbnailDataAccess = null;
         
         try {
-            StorageIO<DataFile> dataAccess = df.getDataFileIO();
+            StorageIO<DataFile> dataAccess = df.getStorageIO();
             if (dataAccess != null) { // && dataAccess.isLocalFile()) {
                 dataAccess.open();
 
@@ -627,7 +627,7 @@ public class Access extends AbstractApiBean {
             if (logoDataFile != null) {
         
                 try {
-                    StorageIO<DataFile> dataAccess = logoDataFile.getDataFileIO();
+                    StorageIO<DataFile> dataAccess = logoDataFile.getStorageIO();
                     if (dataAccess != null) { // && dataAccess.isLocalFile()) {
                         dataAccess.open();
                         thumbnailDataAccess = ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
@@ -749,7 +749,7 @@ public class Access extends AbstractApiBean {
                 if (dataFile != null && dataFile.isImage()) {
 
                     try {
-                        StorageIO dataAccess = dataFile.getDataFileIO();
+                        StorageIO dataAccess = dataFile.getStorageIO();
                         if (dataAccess != null && dataAccess.isLocalFile()) {
                             dataAccess.open();
 

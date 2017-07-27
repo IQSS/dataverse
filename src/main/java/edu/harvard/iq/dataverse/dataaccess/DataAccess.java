@@ -35,15 +35,15 @@ public class DataAccess {
     // set by the user in glassfish-setup.sh if DEFFAULT_STORAGE_DRIVER_IDENTIFIER = swift
     public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
     
-    // The getDataFileIO() methods initialize StorageIO objects for
+    // The getStorageIO() methods initialize StorageIO objects for
     // datafiles that are already saved using one of the supported Dataverse
     // DataAccess IO drivers.
-    public static <T extends DvObject> StorageIO<T> getDataFileIO(T dvObject) throws IOException {
-        return getDataFileIO(dvObject, null);
+    public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject) throws IOException {
+        return getStorageIO(dvObject, null);
     }
 
     //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
-    public static <T extends DvObject> StorageIO<T> getDataFileIO(T dvObject, DataAccessRequest req) throws IOException {
+    public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
         
         if (dvObject == null
                 || dvObject.getStorageIdentifier() == null
@@ -72,19 +72,19 @@ public class DataAccess {
 
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
     // for saving new, not yet saved datafiles.
-    public static <T extends DvObject> StorageIO<T> createNewDataFileIO(T dvObject, String storageTag) throws IOException {
+    public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
 
-        return createNewDataFileIO(dvObject, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        return createNewStorageIO(dvObject, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
 
-    public static <T extends DvObject> StorageIO<T> createNewDataFileIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
+    public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
         if (dvObject == null
                 || storageTag == null
             || storageTag.isEmpty()) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
 
-        StorageIO<T> dataFileIO = null;
+        StorageIO<T> storageIO = null;
 
         dvObject.setStorageIdentifier(storageTag);
 
@@ -93,15 +93,15 @@ public class DataAccess {
         }
 
         if (driverIdentifier.equals("file")) {
-            dataFileIO = new FileAccessIO<>(dvObject, null);
+            storageIO = new FileAccessIO<>(dvObject, null);
         } else if (driverIdentifier.equals("swift")) {
-            dataFileIO = new SwiftAccessIO<>(dvObject, null);
+            storageIO = new SwiftAccessIO<>(dvObject, null);
         } else {
             throw new IOException("createDataAccessObject: Unsupported storage method " + driverIdentifier);
         }
 
-        dataFileIO.open(DataAccessOption.WRITE_ACCESS);
-        return dataFileIO;
+        storageIO.open(DataAccessOption.WRITE_ACCESS);
+        return storageIO;
     }
     
 

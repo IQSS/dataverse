@@ -555,14 +555,14 @@ public class DataFile extends DvObject implements Comparable {
         return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
     }
 
-    public StorageIO<DataFile> getDataFileIO() throws IOException {
-        StorageIO<DataFile> dataFileIO = DataAccess.getDataFileIO(this);
+    public StorageIO<DataFile> getStorageIO() throws IOException {
+        StorageIO<DataFile> storageIO = DataAccess.getStorageIO(this);
         
-        if (dataFileIO == null) {
+        if (storageIO == null) {
             throw new IOException("Failed to create DataFileIO for datafile.");
         }
         
-        return dataFileIO; 
+        return storageIO; 
     }
     
     /*

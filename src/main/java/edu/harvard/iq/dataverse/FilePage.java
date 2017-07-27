@@ -565,7 +565,7 @@ public class FilePage implements java.io.Serializable {
     public String getSwiftContainerName(){
         String swiftContainerName;
         try {
-            StorageIO<DataFile> dataFileIO = getFile().getDataFileIO();
+            StorageIO<DataFile> dataFileIO = getFile().getStorageIO();
             try {
                 SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) dataFileIO;
                 swiftIO.open();
@@ -672,7 +672,7 @@ public class FilePage implements java.io.Serializable {
 
     public String getPublicDownloadUrl() {
             try {
-                StorageIO<DataFile> dataFileIO = getFile().getDataFileIO();
+                StorageIO<DataFile> dataFileIO = getFile().getStorageIO();
             if (dataFileIO instanceof SwiftAccessIO) {
                 String fileDownloadUrl = null;
                 try {

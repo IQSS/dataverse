@@ -76,7 +76,7 @@ public class ImageThumbConverter {
 
         try {
 
-            StorageIO<DataFile> dataFileIO = file.getDataFileIO();
+            StorageIO<DataFile> dataFileIO = file.getStorageIO();
             return isThumbnailAvailable(dataFileIO, size);
         } catch (IOException ioEx) {
             return false;
@@ -436,7 +436,7 @@ public class ImageThumbConverter {
 
         logger.fine("entering getImageThumbnailAsBase64, size " + size+", for "+file.getStorageIdentifier());
          try {
-             StorageIO<DataFile> dataFileIO = file.getDataFileIO();
+             StorageIO<DataFile> dataFileIO = file.getStorageIO();
         
             if (!isThumbnailAvailable(dataFileIO, size)) {
                 logger.info("no thumbnail available for "+file.getStorageIdentifier());

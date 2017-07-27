@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getDataFileIO;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoThumbnail;
@@ -250,7 +250,7 @@ public class ExportService {
             Dataset dataset = version.getDataset();
             StorageIO<Dataset> dataFileIO = null;
             try {
-                dataFileIO = DataAccess.createNewDataFileIO(dataset, "file");
+                dataFileIO = DataAccess.createNewStorageIO(dataset, "file");
                 Channel outputChannel = dataFileIO.openAuxChannel(format, DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {
@@ -289,7 +289,7 @@ public class ExportService {
 
     private void clearCachedExport(Dataset dataset, String format) throws IOException {
         try {
-            StorageIO<Dataset> dataFileIO = getDataFileIO(dataset);
+            StorageIO<Dataset> dataFileIO = getStorageIO(dataset);
             dataFileIO.deleteAuxObject("export_" + format + ".cached");
 
         } catch (IOException ex) {
@@ -306,7 +306,7 @@ public class ExportService {
         StorageIO<Dataset> dataAccess = null;
 
         try {
-            dataAccess = DataAccess.getDataFileIO(dataset);
+            dataAccess = DataAccess.getStorageIO(dataset);
         } catch (IOException ioex) {
             throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached");
         }

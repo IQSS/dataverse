@@ -89,7 +89,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         
            
         
-        StorageIO<DataFile> dataAccess = datafile.getDataFileIO();
+        StorageIO<DataFile> dataAccess = datafile.getStorageIO();
         if (!dataAccess.isLocalFile()) {
             throw new IOException("Subsetting is supported on local files only!");
         }
@@ -721,7 +721,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             throw new IOException("Column "+column+" is out of bounds.");
         }
         
-        StorageIO<DataFile> dataAccess = dataFile.getDataFileIO();
+        StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
         if (!dataAccess.isLocalFile()) {
             throw new IOException("Subsetting is supported on local files only!");
         }

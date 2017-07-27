@@ -182,7 +182,7 @@ public class MapLayerMetadataServiceBean {
 
         
         try {
-            StorageIO<DataFile> dataFileIO = dataFile.getDataFileIO();
+            StorageIO<DataFile> dataFileIO = dataFile.getStorageIO();
 
             if (dataFileIO == null) {
                 logger.warning("Null DataFileIO in deleteOlderMapThumbnails()");
@@ -291,7 +291,7 @@ public class MapLayerMetadataServiceBean {
         
         StorageIO<DataFile> dataAccess = null;
         try {
-            dataAccess = mapLayerMetadata.getDataFile().getDataFileIO();
+            dataAccess = mapLayerMetadata.getDataFile().getStorageIO();
         } catch (IOException ioEx) {
             dataAccess = null;
         }
