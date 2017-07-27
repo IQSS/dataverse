@@ -33,6 +33,7 @@ public class DataAccess {
     }
 
     // set by the user in glassfish-setup.sh if DEFFAULT_STORAGE_DRIVER_IDENTIFIER = swift
+    // or DEFFAULT_STORAGE_DRIVER_IDENTIFIER = s3
     public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
     
     // The getDataFileIO() methods initialize DataFileIO objects for
@@ -56,6 +57,8 @@ public class DataAccess {
             return new FileAccessIO<>(dvObject, req);
         } else if (dvObject.getStorageIdentifier().startsWith("swift://")){
             return new SwiftAccessIO<>(dvObject, req);
+        } else if (dvObject.getStorageIdentifier().startsWith("s3://")){ //fixme: change name?
+            return new S3AccessIO<>(dvObject, req);
         } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
@@ -96,6 +99,9 @@ public class DataAccess {
             dataFileIO = new FileAccessIO<>(dvObject, null);
         } else if (driverIdentifier.equals("swift")) {
             dataFileIO = new SwiftAccessIO<>(dvObject, null);
+        } else if (driverIdentifier.equals("s3")) {
+            dataFileIO = new S3AccessIO<>(dvObject, null);
+
         } else {
             throw new IOException("createDataAccessObject: Unsupported storage method " + driverIdentifier);
         }

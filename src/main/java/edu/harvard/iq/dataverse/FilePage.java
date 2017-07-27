@@ -554,6 +554,14 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
+    public Boolean isS3Storage () {
+        Boolean s3Bool = false;
+        if (file.getStorageIdentifier().startsWith("s3://")){
+            s3Bool = true;
+        }
+        return s3Bool;
+    }
+    
     public Boolean isSwiftStorage () {
         Boolean swiftBool = false;
         if (file.getStorageIdentifier().startsWith("swift://")){
