@@ -372,20 +372,24 @@ public class DatasetVersionUI implements Serializable {
         }
 
         //sort via display order on dataset field
-        Collections.sort(retList, (DatasetField d1, DatasetField d2) -> {
+        Collections.sort(retList, new Comparator<DatasetField>() {
+            public int compare(DatasetField d1, DatasetField d2) {
                 int a = d1.getDatasetFieldType().getDisplayOrder();
                 int b = d2.getDatasetFieldType().getDisplayOrder();
-            return Integer.valueOf(a).compareTo(b);
+                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+            }
         });
 
         return sortDatasetFields(retList);
     }  
     
     private List<DatasetField> sortDatasetFields (List<DatasetField> dsfList) {
-        Collections.sort(dsfList, (DatasetField d1, DatasetField d2) -> {
+        Collections.sort(dsfList, new Comparator<DatasetField>() {
+            public int compare(DatasetField d1, DatasetField d2) {
                 int a = d1.getDatasetFieldType().getDisplayOrder();
                 int b = d2.getDatasetFieldType().getDisplayOrder();
-            return Integer.valueOf(a).compareTo(b);
+                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+            }
         });
         return dsfList;
     }    

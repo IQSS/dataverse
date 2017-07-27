@@ -491,7 +491,12 @@ public class FileMetadata implements Serializable {
         return "edu.harvard.iq.dvn.core.study.FileMetadata[id=" + id + "]";
     }
     
-    public static final Comparator<FileMetadata> compareByLabel = (FileMetadata o1, FileMetadata o2) -> o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
+    public static final Comparator<FileMetadata> compareByLabel = new Comparator<FileMetadata>() {
+        @Override
+        public int compare(FileMetadata o1, FileMetadata o2) {
+            return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
+        }
+    };
     
     
     
