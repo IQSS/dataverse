@@ -582,40 +582,23 @@ public class FilePage implements java.io.Serializable {
                 //swiftIO.open();
                 return swiftIO;
             } catch (Exception e){
-                e.printStackTrace();
+                logger.info("FilePage: Failed to cast dataFileIO as SwiftAccessIO");
             } 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            logger.info("FilePage: Failed to get dataFileIO");
         }
         return null;
     }
 
 
     public String getSwiftContainerName(){
-        String swiftContainerName;
+        SwiftAccessIO swiftObject = getSwiftObject();
         try {
-            DataFileIO dataFileIO = getFile().getDataFileIO();
-            try {
-                SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
-                swiftIO.open();
-                swiftContainerName = swiftIO.getSwiftContainerName();
-                logger.info("Swift container name: " + swiftContainerName);
-                return swiftContainerName;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } catch (Exception e) {
-                e.printStackTrace();
+            swiftObject.open();
+            return swiftObject.getSwiftContainerName();
+        } catch (IOException e){
+            logger.info("FilePage: Failed to open swift object");
         }
-//        String swiftContainerName = null;
-//        String swiftFolderPathSeparator = "-";
-//        
-//        String authorityNoSlashes = file.getOwner().getAuthority().replace(file.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-//        swiftContainerName = file.getOwner().getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-//            + swiftFolderPathSeparator + file.getOwner().getIdentifier();
-//        logger.info("Swift container name: " + swiftContainerName);
-//
-//        return swiftContainerName;
         return "";
     }
 

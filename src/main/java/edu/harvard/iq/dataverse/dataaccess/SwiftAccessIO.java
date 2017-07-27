@@ -528,11 +528,9 @@ public class SwiftAccessIO extends DataFileIO {
         // object for a primary file), we also set the file download url here: 
         // and generate a temporary URL
         if (auxItemTag == null) {
-            logger.info("lets see how many times this is called");
             setRemoteUrl(getSwiftFileURI(fileObject));
             if (!this.isWriteAccess && !this.getDataFile().isIngestInProgress()) {
                 //otherwise this gets called a bunch on upload
-                //TODO: also called a lot during ingesting
                 setTemporarySwiftUrl(generateTemporarySwiftUrl(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));
                 setTempUrlSignature(generateTempUrlSignature(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));
                 setTempUrlExpiry(generateTempUrlExpiry(TEMP_URL_EXPIRES));
@@ -698,17 +696,15 @@ public class SwiftAccessIO extends DataFileIO {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            logger.info("signature:" + hmac);
         }
         return hmac;
 
     }
     
-    private Long expiry = null;
-    public Long generateTempUrlExpiry(int duration) {
-        if (expiry == null || isExpiryExpired(expiry, duration)) {
+    private long expiry = -1;
+    public long generateTempUrlExpiry(int duration) {
+        if (expiry == -1 || isExpiryExpired(expiry, duration)) {
             expiry = (System.currentTimeMillis() / 1000) + duration;
-            logger.info("expiry:  " + expiry);
         }
         return expiry;
     }
@@ -730,7 +726,7 @@ public class SwiftAccessIO extends DataFileIO {
         return temporaryUrl;
     }
     
-    private boolean isExpiryExpired(Long expiry, int duration) {
+    private boolean isExpiryExpired(long expiry, int duration) {
         return ((expiry - duration) * 1000) > System.currentTimeMillis();
     }
 

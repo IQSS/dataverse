@@ -396,16 +396,19 @@ public class DatasetPage implements java.io.Serializable {
         this.dataverseSiteUrl = dataverseSiteUrl;
     }
     
-    public DataFile getInitialDataFile(){
+    public List<FileMetadata> getDatasetFileMetadatas() {
         Long datasetVersion = workingVersion.getId();
         if (datasetVersion != null) {
                 int unlimited = 0;
                 int maxResults = unlimited;
-            List<FileMetadata> metadatas = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);        
-                logger.fine("metadatas " + metadatas);
-            if (metadatas != null && metadatas.size() > 0) {
-                return metadatas.get(0).getDataFile();
-            }
+            return datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);     
+        } 
+        return null; 
+    }
+    
+    public DataFile getInitialDataFile() {
+        if (getDatasetFileMetadatas() != null && getDatasetFileMetadatas().size() > 0) {
+            return getDatasetFileMetadatas().get(0).getDataFile();
         }
         return null;
     }
@@ -415,58 +418,55 @@ public class DatasetPage implements java.io.Serializable {
             DataFileIO dataFileIO = getInitialDataFile().getDataFileIO();
             try {
                 SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
-                //swiftIO.open();
                 return swiftIO;
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        catch (Exception e){
-            e.printStackTrace();
+            } catch (Exception e){
+                logger.info("DatasetPage: Failed to cast dataFileIO as SwiftAccessIO");
+            } 
+        } catch (IOException e) {
+            logger.info("DatasetPage: Failed to get dataFileIO");
         }
         return null;
     }
 
     public String getSwiftContainerName() throws IOException {
         SwiftAccessIO swiftObject = getSwiftObject();
-        swiftObject.open();
-        String containerName = swiftObject.getSwiftContainerName();
-        return containerName;
+        try {
+            swiftObject.open();
+            return swiftObject.getSwiftContainerName();
+        } catch (IOException e){
+            logger.info("DatasetPage: Failed to open swift object");
+        }
+        return "";
     }
     
     public void setSwiftContainerName(String name){
         
     }
 
-    //assumes that *ALL* files in ONE specified container are stored in swift backend 
-    //could be changed 
-    //SF 
     public Boolean isSwiftStorage(){
-        Boolean swiftBool = false;
-        //containers without datafiles will not be stored in swift storage, so no compute
+        //containers without datafiles will not be stored in swift storage
         if (getInitialDataFile() != null){
-            if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
-                && getInitialDataFile().getStorageIdentifier().startsWith("swift://")) {
-                swiftBool = true;
+            for (FileMetadata fmd : getDatasetFileMetadatas()) {
+                //if any of the datafiles are stored in swift
+                if (fmd.getDataFile().getStorageIdentifier().startsWith("swift://")) {
+                    return true;
+                }
             }
         }
-        
-        return swiftBool;
+        return false;
     }
     
-    public boolean showComputeButton () {
-        boolean flag = false;
-        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
-            if (session.getUser().isAuthenticated() && fileDownloadHelper.canDownloadFile(getInitialDataFile().getFileMetadata())) {
-                // TODO: We should really get all the file metadata and check
-                // not just the initial file because a user will need access to all files
-                // in an entire dataset, not just the initial one
-                flag = true;
+    public boolean showComputeButton() {
+        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null) && session.getUser().isAuthenticated()) {
+            for (FileMetadata fmd : getDatasetFileMetadatas()) {
+                if (!fileDownloadHelper.canDownloadFile(fmd)) {
+                    return false;
+                }
             }
+            return true;
         }
-        
-        return flag;
+        return false;
     }
 
     public String getComputeUrl() throws IOException {
