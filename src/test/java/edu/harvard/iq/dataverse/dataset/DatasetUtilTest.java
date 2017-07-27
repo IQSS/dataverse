@@ -38,13 +38,14 @@ public class DatasetUtilTest {
     @Test
     public void testGetThumbnailNullDataset() {
         assertNull(DatasetUtil.getThumbnail(null));
-    }
+        assertNull(DatasetUtil.getThumbnail(null, null));
 
-    @Test
-    public void testGetThumbnailUseGeneric() {
-        Dataset dataset = new Dataset();
+        Dataset dataset = MocksFactory.makeDataset();
+        dataset.setStorageIdentifier("file://");
         dataset.setUseGenericThumbnail(true);
+
         assertNull(DatasetUtil.getThumbnail(dataset));
+        assertNull(DatasetUtil.getThumbnail(dataset, new DatasetVersion()));
     }
 
     @Test
@@ -58,18 +59,13 @@ public class DatasetUtilTest {
         DatasetThumbnail result = DatasetUtil.getThumbnail(dataset);
         assertNull(result);
     }
-
-    @Test
-    public void testGetThumbnailNullDatasetNullDatasetVersion() {
-        assertNull(DatasetUtil.getThumbnail(null, null));
-    }
-
     /**
      * Test of deleteDatasetLogo method, of class DatasetUtil.
      */
     @Test
     public void testDeleteDatasetLogo() {
         assertEquals(false, DatasetUtil.deleteDatasetLogo(null));
+        assertEquals(false, DatasetUtil.deleteDatasetLogo(new Dataset()));
     }
 
     /**
@@ -77,8 +73,7 @@ public class DatasetUtilTest {
      */
     @Test
     public void testGetDefaultThumbnailFile() {
-        DataFile result = DatasetUtil.attemptToAutomaticallySelectThumbnailFromDataFiles(null, null);
-        assertNull(result);
+        assertNull(DatasetUtil.attemptToAutomaticallySelectThumbnailFromDataFiles(null, null));
     }
 
     /**
@@ -87,8 +82,8 @@ public class DatasetUtilTest {
      */
     @Test
     public void testPersistDatasetLogoToStorageAndCreateThumbnail() {
-        Dataset result = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnail(null, null);
-        assertNull(result);
+        assertNull(DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnail(null, null));
+        //Todo: a test for this that test main logic
     }
 
     /**
@@ -96,8 +91,7 @@ public class DatasetUtilTest {
      */
     @Test
     public void testGetThumbnailAsInputStream() {
-        InputStream result = DatasetUtil.getThumbnailAsInputStream(null);
-        assertNull(result);
+        assertNull(DatasetUtil.getThumbnailAsInputStream(null));
     }
 
     /**
