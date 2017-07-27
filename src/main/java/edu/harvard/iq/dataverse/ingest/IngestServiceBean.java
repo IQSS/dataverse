@@ -1609,7 +1609,7 @@ public class IngestServiceBean {
 
                     }
                 } catch (Exception ex) {
-                    logger.warning("Exception "+ex.getClass()+" caught trying to open DataFileIO channel for the saved original (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
+                    logger.warning("Exception "+ex.getClass()+" caught trying to open DataFileIO channel for the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
                     savedOriginalFile = null;
                 }
 
