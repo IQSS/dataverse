@@ -651,15 +651,13 @@ public class Datasets extends AbstractApiBean {
                 return ok("Next we will write code to kick off crawling and importing of files");// ( https://github.com/bmckinney/bio-dataverse/tree/feature/file-system-import ) and which will notify the user if the crawling and importing was successful or not.");
             } else if ("validation failed".equals(status)) {
                 /**
-                 * @todo We've talked about notifying all users who have edit
-                 * access to the dataset rather than just the user who made the
-                 * upload request.
                  * SEK - Per Pete we will notify all those who have edit privileges 
-                 */
-                
+                 * Reading the list into a MAP eliminates doubling up of notifications
+                 * getUsersWithPermissionsOn is returning multiples of users with Edit Privileges
+                 * Might be worth addressing there, but will solve it locally here.
+                 */               
                 List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
                 Map<String, Object> distinctAuthors = new HashMap<>();
-                System.out.print("editUsers count: " +  editUsers.size());
                 editUsers.forEach((au) -> {
                     distinctAuthors.put(au.getIdentifier(), au);
                 });                
