@@ -79,6 +79,9 @@ import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
+import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
@@ -1539,53 +1542,30 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String sendBackToContributor() {
-        Command<Dataset> cmd;
-        workingVersion = dataset.getEditVersion();
-        workingVersion.setInReview(false);
         try {
-            cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
-            ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
+            //FIXME - Get Return Comment from sendBackToContributor popup
+            Command<Dataset> cmd = new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset, "");
             dataset = commandEngine.submit(cmd);
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success"));
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
-            logger.severe(ex.getMessage());
-            return "";
+            String message = ex.getMessage();
+            logger.severe("sendBackToContributor: " + message);
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", Collections.singletonList(message)));
         }
-        List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
-        List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
-        for (AuthenticatedUser au : authUsers) {
-            editUsers.remove(au);
-        }
-        for (AuthenticatedUser au : editUsers) {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId());
-        }
-
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
-        FacesContext.getCurrentInstance().addMessage(null, message);
-        return  returnToLatestVersion();
+        return returnToLatestVersion();
     }
 
     public String submitDataset() {
-        Command<Dataset> cmd;
-        workingVersion = dataset.getEditVersion();
-        workingVersion.setInReview(true);
         try {
-            cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
-            ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
+            Command<Dataset> cmd = new SubmitDatasetForReviewCommand( dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success"));
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
-            logger.severe(ex.getMessage());
-            return "";
+            String message = ex.getMessage();
+            logger.severe("submitDataset: " + message);
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", Collections.singletonList(message)));
         }
-        List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
-        for (AuthenticatedUser au : authUsers) {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
-        }
-
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "Your dataset has been submitted for review.");
-        FacesContext.getCurrentInstance().addMessage(null, message);
-        return  returnToLatestVersion();
+        return returnToLatestVersion();
     }
     
     public String releaseParentDVAndDataset(){
@@ -1727,10 +1707,10 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String registerDataset() {
-        Command<Dataset> cmd;
+        UpdateDatasetCommand cmd;
         try {
             cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
-            ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
+            cmd.setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Registration Failed", " - " + ex.toString()));

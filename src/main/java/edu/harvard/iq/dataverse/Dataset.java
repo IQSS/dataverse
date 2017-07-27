@@ -349,7 +349,10 @@ public class Dataset extends DvObjectContainer {
         return dsv;
     }
 
-
+    /**
+     * The "edit version" is the most recent *draft* of a dataset, and if the
+     * latest version of a dataset is published, a new draft will be created.
+     */
     public DatasetVersion getEditVersion() {
         return getEditVersion(null);
     }
