@@ -1,0 +1,34 @@
+#! /bin/sh
+# chkconfig: 2345 80 01
+# description: GlassFish App Server
+set -e
+
+ASADMIN=/usr/local/glassfish4/bin/asadmin
+GF_USER=glassfish
+
+case "$1" in
+  start)
+        echo -n "Starting GlassFish server: glassfish"
+        # Increase file descriptor limit:
+        ulimit -n 32768
+        # Allow "memory overcommit":
+        # (basically, this allows to run exec() calls from inside the
+        # app, without the Unix fork() call physically hogging 2X
+        # the amount of memory glassfish is already using)
+        echo 1 > /proc/sys/vm/overcommit_memory
+	LANG=en_US.UTF-8; export LANG
+
+        sudo -u $GF_USER $ASADMIN start-domain domain1
+        ;;
+  stop)
+        echo -n "Stopping GlassFish server: glassfish"
+
+        sudo -u $GF_USER $ASADMIN stop-domain domain1
+        echo "."
+         ;;
+  *)
+        echo "Usage: /etc/init.d/glassfish {start|stop}"
+
+        exit 1
+esac
+exit 0
