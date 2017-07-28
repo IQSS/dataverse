@@ -3,18 +3,15 @@ package edu.harvard.iq.dataverse.datacapturemodule;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
-import static java.lang.Thread.sleep;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Logger;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import javax.json.JsonObject;
+import static java.lang.Thread.sleep;
 
 /**
  * These tests are not expected to pass unless you have a Data Capture Module
@@ -54,4 +51,20 @@ public class DataCaptureModuleServiceBeanIT {
 
     }
 
+    @Test
+    public void testFixme() throws InterruptedException, DataCaptureModuleException {
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("PXTYLE");
+        dataset.setId(202l);
+//        String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/" + dataset.getProtocol() + ":" + dataset.getAuthority() + "/" + dataset.getIdentifier();
+        String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/" + dataset.getAuthority() + "/" + dataset.getIdentifier();
+        DataCaptureModuleServiceBean dataCaptureModuleServiceBean = new DataCaptureModuleServiceBean();
+        String uploadFolder = "myUploadFolder1";
+        String apiToken = "b440cc45-0ce9-4ae6-aabf-72f50fb8b8f2";
+        int totalSize = 54321;
+        JsonObject jsonObject = dataCaptureModuleServiceBean.startFileSystemImportJob(dataset.getId(), url, uploadFolder, totalSize, apiToken);
+        System.out.println("json: " + jsonObject);
+    }
 }

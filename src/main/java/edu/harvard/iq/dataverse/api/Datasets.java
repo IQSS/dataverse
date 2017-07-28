@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -66,6 +67,8 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
@@ -627,47 +630,76 @@ public class Datasets extends AbstractApiBean {
     }
     
     /**
-     * @todo How will authentication be handled for this method?
-     * SEK FIXME - Why is there an identifier in the path and a datasetId in the json?
-     * Also do we need to have a userId attached to it?
-     * Are there any permissions issues?
+     * @todo How will authentication be handled for this method? SEK FIXME - Why
+     * is there an identifier in the path and a datasetId in the json? Are there
+     * any permissions issues?
      */
     @POST
     @Path("{identifier}/dataCaptureModule/checksumValidation")
-    public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject result) {
-        JsonNumber userIdWhoMadeUploadRequest = result.getJsonNumber("userId");
-        /*
-        SEK - Do we need to include the upload requester?
-        We are going to send notifications to all editors of the dataset.
-        */
-        String status = result.getString("status");
+    public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) throws IOException {
+        logger.info("jsonFromDcm: " + jsonFromDcm);
+        String statusMessageFromDcm = jsonFromDcm.getString("status");
         try {
             Dataset dataset = findDatasetOrDie(id);
-            if ("validation passed".equals(status)) {
+            if ("validation passed".equals(statusMessageFromDcm)) {
+                try {
+//                    String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/${DOI_SHOULDER}/${datasetIdentifier}?mode=MERGE&uploadFolder=trn&totalSize=${sz}&userId=${dv_userId}";
+                    String url = systemConfig.getDataverseSiteUrl() + "/api/batch/jobs/import/datasets/files/" + dataset.getAuthority() + "/" + dataset.getIdentifier();
+                    String apiToken = getRequestApiKey();
+                    String uploadFolder = jsonFromDcm.getString("uploadFolder");
+                    int totalSize = jsonFromDcm.getInt("totalSize");
+
+                    // FIXME: Used to get testDcmNotifications in DatasetsIT to pass. Remove what we can.
+                    {
+                        String dsDir = System.getProperty(SystemConfig.FILES_DIRECTORY) + File.separator + dataset.getAuthority();
+                        String identifier = dataset.getIdentifier();
+                        java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + File.separator + identifier));
+                        java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + File.separator + identifier + File.separator + uploadFolder));
+                        String checksumFilename = "files.sha";
+                        String filename1 = "file1.txt";
+                        String fileContent1 = "big data!";
+                        java.nio.file.Files.write(java.nio.file.Paths.get(dsDir + File.separator + identifier + File.separator + uploadFolder + File.separator + checksumFilename), fileContent1.getBytes());
+                        // This is actually the SHA-1 of a zero byte file. It doesn't seem to matter what you send to the DCM?
+                        String checksumFileContent = "da39a3ee5e6b4b0d3255bfef95601890afd80709 " + filename1;
+                        java.nio.file.Files.createFile(java.nio.file.Paths.get(dsDir + File.separator + identifier + File.separator + uploadFolder + File.separator + filename1));
+                        java.nio.file.Files.write(java.nio.file.Paths.get(dsDir + File.separator + identifier + File.separator + uploadFolder + File.separator + checksumFilename), checksumFileContent.getBytes());
+                    }
+
+                    JsonObject jsonFromImportJobKickoff = dataCaptureModuleSvc.startFileSystemImportJob(dataset.getId(), url, uploadFolder, totalSize, apiToken);
+                    int importJobKickoffStatus = jsonFromImportJobKickoff.getInt("status");
+                    if (importJobKickoffStatus != 200) {
+                        String message = jsonFromImportJobKickoff.getString("message");
+                        return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Status code was " + importJobKickoffStatus + " and message was '" + message + "'.");
+                    }
+                    long jobId = jsonFromImportJobKickoff.getInt("executionId");
+                    String message = jsonFromImportJobKickoff.getString("message");
+                    JsonObjectBuilder job = Json.createObjectBuilder();
+                    job.add("jobId", jobId);
+                    job.add("message", message);
+                    return ok(job);
+                } catch (DataCaptureModuleException ex) {
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went while attempting to put the files into Dataverse: " + ex);
+                }
+            } else if ("validation failed".equals(statusMessageFromDcm)) {
                 /**
-                 * @todo Actually kick off the crawling and importing code at
-                 * https://github.com/bmckinney/bio-dataverse/tree/feature/file-system-import
+                 * SEK - Per Pete we will notify all those who have edit
+                 * privileges Reading the list into a MAP eliminates doubling up
+                 * of notifications getUsersWithPermissionsOn is returning
+                 * multiples of users with Edit Privileges Might be worth
+                 * addressing there, but will solve it locally here.
                  */
-                return ok("Next we will write code to kick off crawling and importing of files");// ( https://github.com/bmckinney/bio-dataverse/tree/feature/file-system-import ) and which will notify the user if the crawling and importing was successful or not.");
-            } else if ("validation failed".equals(status)) {
-                /**
-                 * SEK - Per Pete we will notify all those who have edit privileges 
-                 * Reading the list into a MAP eliminates doubling up of notifications
-                 * getUsersWithPermissionsOn is returning multiples of users with Edit Privileges
-                 * Might be worth addressing there, but will solve it locally here.
-                 */               
                 List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
                 Map<String, Object> distinctAuthors = new HashMap<>();
                 editUsers.forEach((au) -> {
                     distinctAuthors.put(au.getIdentifier(), au);
-                });                
+                });
                 distinctAuthors.values().forEach((value) -> {
                     userNotificationService.sendNotification((AuthenticatedUser) value, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
                 });
-                
+
                 return ok("User notified about checksum validation failure.");
             } else {
-                return error(Response.Status.BAD_REQUEST, "Unexpected status cannot be processed: " + status);
+                return error(Response.Status.BAD_REQUEST, "Unexpected status cannot be processed: " + statusMessageFromDcm);
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();

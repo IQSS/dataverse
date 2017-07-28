@@ -8,6 +8,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.Serializable;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.JsonObject;
 
 /**
  * This class contains all the methods that have external runtime dependencies
@@ -52,6 +53,22 @@ public class DataCaptureModuleServiceBean implements Serializable {
             return DataCaptureModuleUtil.getScriptFromRequest(scriptRequest);
         } catch (UnirestException ex) {
             String error = "Error calling " + scriptRequestUrl + ": " + ex;
+            logger.info(error);
+            throw new DataCaptureModuleException(error, ex);
+        }
+    }
+
+    public JsonObject startFileSystemImportJob(long datasetId, String url, String uploadFolder, int totalSize, String apiToken) throws DataCaptureModuleException {
+        logger.info("Using URL " + url);
+        try {
+            HttpResponse<JsonNode> unirestRequest = Unirest.post(url)
+                    .queryString("uploadFolder", uploadFolder)
+                    .queryString("totalSize", totalSize)
+                    .queryString("key", apiToken)
+                    .asJson();
+            return DataCaptureModuleUtil.startFileSystemImportJob(unirestRequest);
+        } catch (UnirestException ex) {
+            String error = "Error calling " + url + ": " + ex;
             logger.info(error);
             throw new DataCaptureModuleException(error, ex);
         }

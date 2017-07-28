@@ -31,6 +31,7 @@ import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.Json;
@@ -1090,7 +1091,7 @@ public class DatasetsIT {
      * so a fully implemented dcm is not necessary
      */
     @Test
-    public void testDcmNotifications() {
+    public void testDcmNotifications() throws IOException, InterruptedException {
         
         Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
         setDcmUrl.then().assertThat()
@@ -1208,28 +1209,51 @@ public class DatasetsIT {
                 .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
                 .statusCode(OK.getStatusCode());
         
-        
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.prettyPrint();
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        String uploadFolder = identifier;
+
+        UtilIT.makeSuperUser(username);
+
+        int totalSize = 1234567890;
         /**
          * @todo How can we test what the checksum validation notification looks
          * like in the GUI? There is no API for retrieving notifications.
          *
          * @todo How can we test that the email notification looks ok?
          */
-        // Meanwhile, the user trys uploading again...
         JsonObjectBuilder goodNews = Json.createObjectBuilder();
-        goodNews.add("userId", userId);
         goodNews.add("datasetId", datasetId);
         goodNews.add("status", "validation passed");
+        goodNews.add("uploadFolder", uploadFolder);
+        goodNews.add("datasetIdentifier", identifier);
+        goodNews.add("totalSize", totalSize);
         Response uploadSuccessful = given()
                 .body(goodNews.build().toString())
                 .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .post("/api/datasets/" + datasetId + "/dataCaptureModule/checksumValidation");
         uploadSuccessful.prettyPrint();
 
         uploadSuccessful.then().assertThat()
-                .statusCode(200)
-                .body("data.message", startsWith("Next we will write code to kick off crawling and importing of files"));
+                .body("data.message", equalTo("FileSystemImportJob in progress"))
+                .statusCode(200);
 
+        long millisecondsNeededForFileSystemImportJobToFinish = 1000;
+        Thread.sleep(millisecondsNeededForFileSystemImportJobToFinish);
+        Response datasetAsJson2 = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson2.prettyPrint();
+        datasetAsJson2.then().assertThat()
+                .body("data.latestVersion.files[0].dataFile.filename", equalTo(identifier))
+                .body("data.latestVersion.files[0].dataFile.contentType", equalTo("application/vnd.dataverse.file-package"))
+                .body("data.latestVersion.files[0].dataFile.filesize", equalTo(totalSize))
+                .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"))
+                .statusCode(OK.getStatusCode());
 
     }
 
