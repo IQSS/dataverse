@@ -25,6 +25,7 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed .icon-dataverse {color:#C55B28; font-size:28px; margin: -4px 0 0 -27px; position: absolute;}
 #navbarFixed .label.status {display:block; float:left; margin-top:16px; background:#C55B28; font-size:14px; font-weight:normal;}
 
+#navbarFixed .dropdown.accountName a:focus {outline: solid; color: default;}
 #navbarFixed form.navbar-form.navbar-form-link {margin:0; padding:0;}
 #navbarFixed form.navbar-form-link a.ui-commandlink, #navbarFixed ul.navbar-nav li.dropdown span.dropdown-toggle {display:block; padding:15px; color: #777;}
 #navbarFixed form.navbar-form-link a.ui-commandlink:hover, #navbarFixed form.navbar-form-link a.ui-commandlink:focus,
@@ -34,7 +35,6 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed .dropdown.accountName .label.label-danger {margin-left:.5em; line-height:normal; vertical-align:text-top;}
 #navbarFixed .dropdown.accountName .logout form {margin:0; padding:0; width:100%;}
 #navbarFixed .dropdown.accountName .logout a {clear: both; color: #333333; display: block; font-weight: normal; line-height: 1.42857; padding: 3px 20px; white-space: nowrap; text-decoration: none;}
-#navbarFixed .dropdown.accountName .logout a:hover, #navbarFixed .dropdown.accountName .logout a:focus {background-color: #E8E8E8; background-image: linear-gradient(to bottom, #F5F5F5 0px, #E8E8E8 100%); background-repeat: repeat-x; color: #262626; outline: 0; text-decoration: none;}
 #navbarFixed li.dropdown.open > span.dropdown-toggle {background-color: #e7e7e7;}
 
 #footer {margin-top:3em; padding-bottom:4em; color:#808080;}
