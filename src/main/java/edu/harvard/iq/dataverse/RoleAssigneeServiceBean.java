@@ -192,7 +192,7 @@ public class RoleAssigneeServiceBean {
         qstr += getRoleIdListClause(roleIdList);
         qstr += ";";
         msg("qstr: " + qstr);
-        return em.createNativeQuery(qstr).getResultList();
+        return em.createQuery(qstr, Object[].class).getResultList();
 
     }
 
@@ -221,7 +221,7 @@ public class RoleAssigneeServiceBean {
         qstr += ";";
         msg("qstr: " + qstr);
 
-        return em.createNativeQuery(qstr).getResultList();
+        return em.createQuery(qstr, Long.class).getResultList();
 
     }
 
@@ -290,7 +290,7 @@ public class RoleAssigneeServiceBean {
         qstr += ";";
         //msg("qstr: " + qstr);
 
-        return em.createNativeQuery(qstr).getResultList();
+        return em.createQuery(qstr, Object[].class).getResultList();
 
     }
 

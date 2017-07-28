@@ -113,7 +113,7 @@ public class GuestbookResponseServiceBean {
 
         List<Object[]> retVal =  new ArrayList<>();
 
-        List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
+        List<Object[]> guestbookResults = em.createQuery(queryString, Object[].class).getResultList();
         
         for (Object[] result : guestbookResults) {
             Object[] singleResult = new Object[11];
@@ -161,7 +161,7 @@ public class GuestbookResponseServiceBean {
                 + " and  r.guestbook_id = "
                 + guestbookId.toString()
                 + ";";
-        List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
+        List<Object[]> guestbookResults = em.createQuery(queryString, Object[].class).getResultList();
 
         for (Object[] result : guestbookResults) {
             Object[] singleResult = new Object[6];

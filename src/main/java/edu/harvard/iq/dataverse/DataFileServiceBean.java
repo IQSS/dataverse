@@ -256,7 +256,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
         }
         
-        return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
+        return em.createQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
                 + searchClause
                 + " order by o." + sortField + " " + sortOrder, Integer.class)
                 .getResultList();
@@ -454,7 +454,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             if (dtResult != null) {
                 DataTable dataTable = new DataTable(); 
 
-                dataTable.setId(((Integer) dtResult[0]).longValue());
+                dataTable.setId((long) dtResult[0]);
             
                 dataTable.setUnf((String)dtResult[1]);
             
@@ -471,7 +471,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                 
                 List<Object[]> tagResults;
                 try {
-                    tagResults = em.createNativeQuery("SELECT t.TYPE, t.DATAFILE_ID FROM DATAFILETAG t WHERE t.DATAFILE_ID = " + id).getResultList();
+                    tagResults = em.createQuery("SELECT t.TYPE, t.DATAFILE_ID FROM DATAFILETAG t WHERE t.DATAFILE_ID = " + id, Object[].class).getResultList();
                 } catch (Exception ex) {
                     logger.info("EXCEPTION looking up tags.");
                     tagResults = null;
@@ -522,13 +522,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         int i = 0; 
         
-        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
+        List<Object[]> dataTableResults = em.createQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID", Object[].class).getResultList();
         
         for (Object[] result : dataTableResults) {
             DataTable dataTable = new DataTable(); 
-            Long fileId = (Long)result[1];
+            long fileId = (long) result[1];
 
-            dataTable.setId(((Long) result[0]));
+            dataTable.setId(((long) result[0]));
             
             dataTable.setUnf((String)result[2]);
             
@@ -546,7 +546,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         logger.fine("Retrieved "+dataTables.size()+" DataTable objects.");
         
         i = 0; 
-        List<Object[]> dataTagsResults = em.createNativeQuery("SELECT t0.DATAFILE_ID, t0.TYPE FROM DataFileTag t0, dvObject t1 WHERE (t1.ID = t0.DATAFILE_ID) AND (t1.OWNER_ID="+ owner.getId() + ")").getResultList();
+        List<Object[]> dataTagsResults = em.createQuery("SELECT t0.DATAFILE_ID, t0.TYPE FROM DataFileTag t0, dvObject t1 WHERE (t1.ID = t0.DATAFILE_ID) AND (t1.OWNER_ID=" + owner.getId() + ")", Object[].class).getResultList();
         for (Object[] result : dataTagsResults) {
             Long datafile_id = (Long) result[0];
             Integer tagtype_id = (Integer) result[1];
@@ -562,7 +562,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         i = 0; 
         
-        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
+        List<Object[]> fileResults = em.createQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID", Object[].class).getResultList();
     
         for (Object[] result : fileResults) {
             Integer file_id = (Integer) result[0];
@@ -721,10 +721,9 @@ public class DataFileServiceBean implements java.io.Serializable {
      private List<AuthenticatedUser> retrieveFileAccessRequesters(DataFile fileIn){
         List<AuthenticatedUser> retList = new ArrayList<>();
         
-        List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = "+fileIn.getId()).getResultList();
+         List<Long> requesters = em.createQuery("select authenticated_user_id from fileaccessrequests where datafile_id = " + fileIn.getId(), Long.class).getResultList();
         
-        for (Object userIdObj : requesters){
-            Long userId = (Long) userIdObj;
+         for (Long userId : requesters) {
             AuthenticatedUser user = userService.find(userId);
             if (user != null){
                 retList.add(user);
@@ -738,7 +737,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         List<FileMetadata> retList = new ArrayList<>();
         Map<Long, Set<Long>> categoryMetaMap = new HashMap<>();
         
-        List<Object[]> categoryResults = em.createNativeQuery("select t0.filecategories_id, t0.filemetadatas_id from filemetadata_datafilecategory t0, filemetadata t1 where (t0.filemetadatas_id = t1.id) AND (t1.datasetversion_id = "+version.getId()+")").getResultList();
+        List<Object[]> categoryResults = em.createQuery("select t0.filecategories_id, t0.filemetadatas_id from filemetadata_datafilecategory t0, filemetadata t1 where (t0.filemetadatas_id = t1.id) AND (t1.datasetversion_id = " + version.getId() + ")", Object[].class).getResultList();
         int i = 0;
         for (Object[] result : categoryResults) {
             Long category_id = (Long) result[0];
@@ -751,7 +750,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         logger.fine("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
         
-        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
+        List<Object[]> metadataResults = em.createQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL from FileMetadata where datasetversion_id = " + version.getId() + " ORDER BY LABEL", Object[].class).getResultList();
         
         for (Object[] result : metadataResults) {
             Integer filemeta_id = (Integer) result[0];

@@ -16,6 +16,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -31,7 +32,7 @@ public class UserServiceBean {
     @EJB IndexServiceBean indexService;
 
     public AuthenticatedUser find(Object pk) {
-        return (AuthenticatedUser) em.find(AuthenticatedUser.class, pk);
+        return em.find(AuthenticatedUser.class, pk);
     }    
 
     
@@ -116,7 +117,7 @@ public class UserServiceBean {
     private AuthenticatedUser createAuthenticatedUserForView (Object[] dbRowValues, String roles, int rowNum){
         AuthenticatedUser user = new AuthenticatedUser();
 
-        user.setId(new Long((int)dbRowValues[0]));
+        user.setId((long) dbRowValues[0]);
         user.setUserIdentifier((String)dbRowValues[1]);
         user.setLastName(UserUtil.getStringOrNull(dbRowValues[2]));
         user.setFirstName(UserUtil.getStringOrNull(dbRowValues[3]));
@@ -190,8 +191,7 @@ public class UserServiceBean {
         qstr += " AND a.assigneeidentifier IN (" + identifierListString + ")";
         qstr += " ORDER by a.assigneeidentifier, d.name;";
 
-        Query nativeQuery = em.createNativeQuery(qstr);
-
+        TypedQuery<Object[]> nativeQuery = em.createQuery(qstr, Object[].class);
         List<Object[]> dbRoleResults = nativeQuery.getResultList();
         if (dbRoleResults == null){
             return null;
@@ -243,7 +243,7 @@ public class UserServiceBean {
         
         //System.out.println("qstr: " + qstr);
 
-        nativeQuery = em.createNativeQuery(qstr);
+        nativeQuery = em.createQuery(qstr, Object[].class);
         List<Object[]> groupResults = nativeQuery.getResultList();
         if (groupResults == null){
             return userRoleLookup;
@@ -290,7 +290,7 @@ public class UserServiceBean {
 
         //System.out.println("qstr: " + qstr);
 
-        nativeQuery = em.createNativeQuery(qstr);
+        nativeQuery = em.createQuery(qstr, Object[].class);
 
         dbRoleResults = nativeQuery.getResultList();
         if (dbRoleResults == null){
@@ -339,23 +339,23 @@ public class UserServiceBean {
         qstr += " WHERE id = " + userId.toString();
         qstr += ";";
         
-        Query nativeQuery = em.createNativeQuery(qstr);
+        TypedQuery<String> nativeQuery = em.createQuery(qstr, String.class);
 
-        userIdentifier = '@' + (String) nativeQuery.getSingleResult();
+        userIdentifier = '@' + nativeQuery.getSingleResult();
 
         qstr = " select distinct d.name from roleassignment a, dataverserole d";
         qstr += " where d.id = a.role_id and a.assigneeidentifier='" + userIdentifier + "'"
                 + " Order by d.name;";
 
-        nativeQuery = em.createNativeQuery(qstr);
+        nativeQuery = em.createQuery(qstr, String.class);
 
-        List<Object[]> roleList = nativeQuery.getResultList();
+        List<String> roleList = nativeQuery.getResultList();
 
-        for (Object o : roleList) {
+        for (String o : roleList) {
             if (!retval.isEmpty()) {
                 retval += ", ";
             }
-            retval += (String) o;
+            retval += o;
         }
         return retval;
     }
@@ -422,7 +422,7 @@ public class UserServiceBean {
         
         logger.log(Level.FINE, "getUserCount: {0}", qstr);
 
-        Query nativeQuery = em.createNativeQuery(qstr);
+        TypedQuery<Object[]> nativeQuery = em.createQuery(qstr, Object[].class);
         nativeQuery.setParameter("searchTerm", searchTerm + "%");
        
         return nativeQuery.getResultList();
