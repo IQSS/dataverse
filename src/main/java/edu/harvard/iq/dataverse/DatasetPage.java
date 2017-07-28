@@ -416,12 +416,11 @@ public class DatasetPage implements java.io.Serializable {
     public SwiftAccessIO getSwiftObject() {
         try {
             DataFileIO dataFileIO = getInitialDataFile().getDataFileIO();
-            try {
-                SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+            SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+            if (swiftIO instanceof SwiftAccessIO) {
                 return swiftIO;
-
-            } catch (Exception e){
-                logger.info("DatasetPage: Failed to cast dataFileIO as SwiftAccessIO");
+            } else {
+                logger.info("FilePage: Failed to cast dataFileIO as SwiftAccessIO");
             } 
         } catch (IOException e) {
             logger.info("DatasetPage: Failed to get dataFileIO");

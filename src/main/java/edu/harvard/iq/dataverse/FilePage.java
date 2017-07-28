@@ -577,11 +577,10 @@ public class FilePage implements java.io.Serializable {
     public SwiftAccessIO getSwiftObject() {
         try {
             DataFileIO dataFileIO = getFile().getDataFileIO();
-            try {
-                SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
-                //swiftIO.open();
+            SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+            if (swiftIO instanceof SwiftAccessIO) {
                 return swiftIO;
-            } catch (Exception e){
+            } else {
                 logger.info("FilePage: Failed to cast dataFileIO as SwiftAccessIO");
             } 
         } catch (IOException e) {
