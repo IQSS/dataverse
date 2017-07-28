@@ -187,15 +187,15 @@ public class DatasetUtil {
             return false;
         }
         try {
-            StorageIO<Dataset> dataFileIO = getStorageIO(dataset);
+            StorageIO<Dataset> storageIO = getStorageIO(dataset);
 
-            if (dataFileIO == null) {
-                logger.warning("Null DataFileIO in deleteDatasetLogo()");
+            if (storageIO == null) {
+                logger.warning("Null storageIO in deleteDatasetLogo()");
                 return false;
             }
 
-            dataFileIO.deleteAuxObject(datasetLogoFilenameFinal);
-            dataFileIO.deleteAuxObject(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            storageIO.deleteAuxObject(datasetLogoFilenameFinal);
+            storageIO.deleteAuxObject(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
 
         } catch (IOException ex) {
             logger.info("Failed to delete dataset logo: " + ex.getMessage());

@@ -248,10 +248,10 @@ public class ExportService {
             File tempFile = null;
             OutputStream outputStream = null;
             Dataset dataset = version.getDataset();
-            StorageIO<Dataset> dataFileIO = null;
+            StorageIO<Dataset> storageIO = null;
             try {
-                dataFileIO = DataAccess.createNewStorageIO(dataset, "file");
-                Channel outputChannel = dataFileIO.openAuxChannel(format, DataAccessOption.WRITE_ACCESS);
+                storageIO = DataAccess.createNewStorageIO(dataset, "file");
+                Channel outputChannel = storageIO.openAuxChannel(format, DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {
                 tempFileRequired = true;
@@ -274,7 +274,7 @@ public class ExportService {
 
                     System.out.println("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
                     System.out.println("Temp file to path:" + tempFile.toPath());
-                    dataFileIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
+                    storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
                 }
 
             } catch (IOException ioex) {
@@ -289,8 +289,8 @@ public class ExportService {
 
     private void clearCachedExport(Dataset dataset, String format) throws IOException {
         try {
-            StorageIO<Dataset> dataFileIO = getStorageIO(dataset);
-            dataFileIO.deleteAuxObject("export_" + format + ".cached");
+            StorageIO<Dataset> storageIO = getStorageIO(dataset);
+            storageIO.deleteAuxObject("export_" + format + ".cached");
 
         } catch (IOException ex) {
             throw new IOException("IO Exception thrown exporting as " + "export_" + format + ".cached");

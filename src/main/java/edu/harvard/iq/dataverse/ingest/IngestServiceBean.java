@@ -273,23 +273,23 @@ public class IngestServiceBean {
                     
                     try {
 
-                        logger.fine("Attempting to create a new DataFileIO object for " + storageId);
+                        logger.fine("Attempting to create a new storageIO object for " + storageId);
                         dataAccess = DataAccess.createNewStorageIO(dataFile, storageId);
                         
                         if (dataAccess.isLocalFile()) {
                             localFile = true; 
                         }
 
-                        logger.fine("Successfully created a new DataFileIO object.");
+                        logger.fine("Successfully created a new storageIO object.");
                         /* 
                          This commented-out code demonstrates how to copy bytes
                          from a local InputStream (or a readChannel) into the
                          writable byte channel of a Dataverse DataAccessIO object:
                         */
                         /*
-                        dataFileIO.open(DataAccessOption.WRITE_ACCESS);
+                        storageIO.open(DataAccessOption.WRITE_ACCESS);
                                                 
-                        writeChannel = dataFileIO.getWriteChannel();
+                        writeChannel = storageIO.getWriteChannel();
                         readChannel = new FileInputStream(tempLocationPath.toFile()).getChannel();
                                                 
                         long bytesPerIteration = 16 * 1024; // 16K bytes
@@ -308,7 +308,7 @@ public class IngestServiceBean {
                             local filesystem, the DataAccessIO will simply copy 
                             the file using Files.copy, like this:
                         
-                            Files.copy(tempLocationPath, dataFileIO.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                            Files.copy(tempLocationPath, storageIO.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
                         */
                         
                         dataAccess.savePath(tempLocationPath);
@@ -544,8 +544,8 @@ public class IngestServiceBean {
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
                 logger.fine("subsetting continuous vector");
-                StorageIO<DataFile> dataFileIO = dataFile.getStorageIO();
-                dataFileIO.open();
+                StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+                storageIO.open();
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
                     Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                     logger.fine("Calculating summary statistics on a Float vector;");
@@ -576,8 +576,8 @@ public class IngestServiceBean {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalDiscrete()
                     && dataFile.getDataTable().getDataVariables().get(i).isTypeNumeric()) {
                 logger.fine("subsetting discrete-numeric vector");
-                StorageIO<DataFile> dataFileIO = dataFile.getStorageIO();
-                dataFileIO.open();
+                StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+                storageIO.open();
                 Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 // We are discussing calculating the same summary stats for 
                 // all numerics (the same kind of sumstats that we've been calculating
@@ -610,8 +610,8 @@ public class IngestServiceBean {
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isTypeCharacter()) {
-                StorageIO<DataFile> dataFileIO = dataFile.getStorageIO();
-                dataFileIO.open();
+                StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+                storageIO.open();
                 logger.fine("subsetting character vector");
                 String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
@@ -680,24 +680,24 @@ public class IngestServiceBean {
 
         BufferedInputStream inputStream = null; 
         File additionalData = null; 
-        StorageIO<DataFile> dataFileIO = null;
+        StorageIO<DataFile> storageIO = null;
                 
         try {
-            dataFileIO = dataFile.getStorageIO();
-            dataFileIO.open();
+            storageIO = dataFile.getStorageIO();
+            storageIO.open();
              
             
-            if (dataFileIO.isLocalFile()) {
-                inputStream = new BufferedInputStream(dataFileIO.getInputStream());
+            if (storageIO.isLocalFile()) {
+                inputStream = new BufferedInputStream(storageIO.getInputStream());
             } else {
-                ReadableByteChannel dataFileChannel = dataFileIO.getReadChannel();
+                ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
                 File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
                 FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();
 
-                tempIngestSourceChannel.transferFrom(dataFileChannel, 0, dataFileIO.getSize());
+                tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
                 
                 inputStream = new BufferedInputStream(new FileInputStream(tempFile));
-                logger.fine("Saved "+dataFileIO.getSize()+" bytes in a local temp file.");
+                logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
             }
         } catch (IOException ioEx) {
             dataFile.SetIngestProblem();
@@ -1336,7 +1336,7 @@ public class IngestServiceBean {
         if (dataFile != null && dataFile.isImage()) {
             try {
                 StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
-                if (dataAccess != null) { // && dataFileIO.isLocalFile()) {
+                if (dataAccess != null) { // && storageIO.isLocalFile()) {
 
                     if (ImageThumbConverter.isThumbnailAvailable(dataFile, ImageThumbConverter.DEFAULT_PREVIEW_SIZE)) {
                         dataFile.setPreviewImageAvailable(true);

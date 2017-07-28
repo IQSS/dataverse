@@ -182,14 +182,14 @@ public class MapLayerMetadataServiceBean {
 
         
         try {
-            StorageIO<DataFile> dataFileIO = dataFile.getStorageIO();
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
 
-            if (dataFileIO == null) {
-                logger.warning("Null DataFileIO in deleteOlderMapThumbnails()");
+            if (storageIO == null) {
+                logger.warning("Null storageIO in deleteOlderMapThumbnails()");
                 return false;
             }
-            dataFileIO.open();
-            List<String> cachedObjectsTags = dataFileIO.listAuxObjects();
+            storageIO.open();
+            List<String> cachedObjectsTags = storageIO.listAuxObjects();
             
             if (cachedObjectsTags != null) {
                 String iconBaseTag = "img";
@@ -198,7 +198,7 @@ public class MapLayerMetadataServiceBean {
                     logger.info("found AUX tag: "+cachedFileTag);
                     if (iconBaseTag.equals(cachedFileTag) || cachedFileTag.startsWith(iconThumbTagPrefix)) {
                         logger.info("deleting cached AUX object "+cachedFileTag);
-                        dataFileIO.deleteAuxObject(cachedFileTag);
+                        storageIO.deleteAuxObject(cachedFileTag);
                     }
                 }
             }

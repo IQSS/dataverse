@@ -559,7 +559,7 @@ public class DataFile extends DvObject implements Comparable {
         StorageIO<DataFile> storageIO = DataAccess.getStorageIO(this);
         
         if (storageIO == null) {
-            throw new IOException("Failed to create DataFileIO for datafile.");
+            throw new IOException("Failed to create storageIO for datafile.");
         }
         
         return storageIO; 

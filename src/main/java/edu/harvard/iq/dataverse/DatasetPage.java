@@ -414,9 +414,9 @@ public class DatasetPage implements java.io.Serializable {
 
         String swiftContainerName;
         try {
-            StorageIO<DataFile> dataFileIO = getInitialDataFile().getStorageIO();
+            StorageIO<DataFile> storageIO = getInitialDataFile().getStorageIO();
             try {
-                SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) dataFileIO;
+                SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
                 swiftIO.open();
                 swiftContainerName = swiftIO.getSwiftContainerName();
                 logger.info("Swift container name: " + swiftContainerName);
