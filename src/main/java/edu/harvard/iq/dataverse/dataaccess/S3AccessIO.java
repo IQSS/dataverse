@@ -63,6 +63,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private AWSCredentials awsCredentials = null;
     private AmazonS3 s3 = null;
+    private String bucketName = "testiqss-1239759fgsef34w4"; //name is global, no uppercase
+
     
     //FIXME: Finish
     @Override
@@ -139,16 +141,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             File inputFile = fileSystemPath.toFile();
             if (dvObject instanceof DataFile) {
                 DataFile datafile = (DataFile)dvObject;
-                String bucketName = "testiqss-1239759fgsef34w4"; //name is global, no uppercase
 
                 String key =  datafile.getOwner().getAuthority() + "/" + datafile.getOwner().getIdentifier() + "/" + datafile.getDisplayName();
             
                 if(!s3.doesBucketExist(bucketName)) { 
-                    System.out.println("Rohit Bhattacharjee!!!! True");
                     s3.createBucket(bucketName);
-                } else { 
-                    System.out.println("Rohit Bhattacharjee!!!! False");
-                }
+                } 
 //                if(s3.doesObjectExist(bucketName, key)){
 //                    System.out.println("Rohit Bhattacharjee File Exists!!");
 //                } else{
@@ -207,10 +205,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return 0;
     }
     
-    //FIXME: Empty
     @Override 
     public Path getAuxObjectAsPath(String auxItemTag) throws IOException {
-        return null;
+        throw new UnsupportedDataAccessOperationException("S3AccessIO: this is a remote DataAccess IO object, its Aux objects have no local filesystem Paths associated with it.");
     }
 
     //FIXME: Empty
@@ -252,10 +249,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return null;
     }
 
-    //FIXME: Empty
     @Override
     public Path getFileSystemPath() throws IOException {
-        return null;
+        throw new UnsupportedDataAccessOperationException("S3AccessIO: this is a remote DataAccess IO object, it has no local filesystem path associated with it.");
     }
     
     //FIXME: Empty
@@ -264,16 +260,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return false;
     }
 
-    //FIXME: Empty
     @Override
     public WritableByteChannel getWriteChannel() throws IOException {
-        return null;
+        throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no write Channels associated with Swift objects.");
     }
     
-    //FIXME: Empty
     @Override  
     public OutputStream getOutputStream() throws IOException {
-        return null;
+        throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no output Streams associated with Swift objects.");
     }
     
     @Override
