@@ -21,7 +21,7 @@ As of the Dataverse 4.7.1 release, we allow ingest of CSV files with commas with
 Limitations:
 ------------
 
-Except for the variable names supplied in the top line, very little information describing the data can be obtained from a CSV file. We strongly recommend using one of the supported rich files formats (Stata, SPSS and R) to provide more descriptive metadata (informatinve lables, categorical values and labels, and more) that cannot be encoded in a CSV file. 
+Except for the variable names supplied in the top line, very little information describing the data can be obtained from a CSV file. We strongly recommend using one of the supported rich file formats (Stata, SPSS and R) to provide more descriptive metadata (informative labels, categorical values and labels, and more) that cannot be encoded in a CSV file. 
 
 The application will, however, make an attempt to recognize numeric, string, and date/time values in CSV files. 
 
