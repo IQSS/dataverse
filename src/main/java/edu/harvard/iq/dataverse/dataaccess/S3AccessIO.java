@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 /* 
     Experimental Amazon AWS S3 driver
  */
-public class S3AccessIO<T extends DvObject> extends DataFileIO<T> {
+public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
 
@@ -145,7 +145,7 @@ public class S3AccessIO<T extends DvObject> extends DataFileIO<T> {
         
     }
 
-    // DataFileIO method for copying a local Path (for ex., a temp file), into this DataAccess location:
+    // StorageIO method for copying a local Path (for ex., a temp file), into this DataAccess location:
 
     //FIXME: Incomplete
     @Override

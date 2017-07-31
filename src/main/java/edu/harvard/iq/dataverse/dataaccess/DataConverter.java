@@ -71,7 +71,7 @@ public class DataConverter {
     public static String SERVICE_REQUEST_CONVERT = "convert";
     
     
-    public static DataFileIO<DataFile> performFormatConversion(DataFile file, DataFileIO<DataFile> dataFileIO, String formatRequested, String formatType) {
+    public static StorageIO<DataFile> performFormatConversion(DataFile file, StorageIO<DataFile> storageIO, String formatRequested, String formatType) {
         if (!file.isTabularData()) {
             return null;
         }
@@ -80,7 +80,7 @@ public class DataConverter {
         // we don't need to do anything:
         if (formatRequested.equals(FILE_TYPE_TAB) && file.getContentType().equals("text/tab-separated-values")) {
 
-            return dataFileIO;
+            return storageIO;
         }
         
         InputStream convertedFileStream = null;
@@ -89,8 +89,8 @@ public class DataConverter {
         // We may already have a cached copy of this
         // format:
         try {
-            convertedFileStream = Channels.newInputStream((ReadableByteChannel) dataFileIO.openAuxChannel(formatRequested));
-            convertedFileSize = dataFileIO.getAuxObjectSize(formatRequested);
+            convertedFileStream = Channels.newInputStream((ReadableByteChannel) storageIO.openAuxChannel(formatRequested));
+            convertedFileSize = storageIO.getAuxObjectSize(formatRequested);
         } catch (IOException ioex) {
             logger.fine("No cached copy for file format "+formatRequested+", file "+file.getStorageIdentifier());
             convertedFileStream = null;
@@ -104,7 +104,7 @@ public class DataConverter {
             boolean tempFilesRequired = false;
 
             try {
-                Path tabFilePath = dataFileIO.getFileSystemPath();
+                Path tabFilePath = storageIO.getFileSystemPath();
                 tabFile = tabFilePath.toFile();
             } catch (UnsupportedDataAccessOperationException uoex) {
                 // this means there is no direct filesystem path for this object; it's ok!
@@ -119,15 +119,15 @@ public class DataConverter {
                 ReadableByteChannel tabFileChannel = null;
                 try {
                     logger.fine("opening datafFileIO for the source tabular file...");
-                    dataFileIO.open();
-                    tabFileChannel = dataFileIO.getReadChannel();
+                    storageIO.open();
+                    tabFileChannel = storageIO.getReadChannel();
 
                     FileChannel tempFileChannel;
                     tabFile = File.createTempFile("tempTabFile", ".tmp");
                     tempFileChannel = new FileOutputStream(tabFile).getChannel();
-                    tempFileChannel.transferFrom(tabFileChannel, 0, dataFileIO.getSize());
+                    tempFileChannel.transferFrom(tabFileChannel, 0, storageIO.getSize());
                 } catch (IOException ioex) {
-                    logger.warning("caught IOException trying to store tabular file " + dataFileIO.getDataFile().getStorageIdentifier() + " as a temp file.");
+                    logger.warning("caught IOException trying to store tabular file " + storageIO.getDataFile().getStorageIdentifier() + " as a temp file.");
 
                     return null;
                 }
@@ -144,7 +144,7 @@ public class DataConverter {
                 if (formatConvertedFile != null && formatConvertedFile.exists()) {
 
                     try {
-                        dataFileIO.savePathAsAux(Paths.get(formatConvertedFile.getAbsolutePath()), formatRequested);
+                        storageIO.savePathAsAux(Paths.get(formatConvertedFile.getAbsolutePath()), formatRequested);
 
                     } catch (IOException ex) {
                         logger.warning("failed to save cached format " + formatRequested + " for " + file.getStorageIdentifier());
@@ -177,7 +177,7 @@ public class DataConverter {
 
             inputStreamIO.setMimeType(formatType);
 
-            String fileName = dataFileIO.getFileName();
+            String fileName = storageIO.getFileName();
             if (fileName == null || fileName.isEmpty()) {
                 fileName = "f" + file.getId().toString();
             }

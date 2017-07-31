@@ -28,8 +28,8 @@ import static org.junit.Assert.*;
  *
  * @author oscardssmith
  */
-public class DataFileIOTest {
-    DataFileIO<Dataset> instance = new FileAccessIO<>();
+public class StorageIOTest {
+    StorageIO<Dataset> instance = new FileAccessIO<>();
 
     @Test
     public void testGetChannel() throws FileNotFoundException {

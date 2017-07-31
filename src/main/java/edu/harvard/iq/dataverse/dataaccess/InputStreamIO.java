@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  *
  * @author Leonid Andreev
  */
-public class InputStreamIO extends DataFileIO<DataFile> {
+public class InputStreamIO extends StorageIO<DataFile> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.InputStreamIO");
 

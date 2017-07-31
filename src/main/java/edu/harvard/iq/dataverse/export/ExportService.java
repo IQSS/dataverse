@@ -1,13 +1,12 @@
-
 package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getDataFileIO;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoThumbnail;
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.thumb48addedByImageThumbConverter;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
@@ -44,18 +43,17 @@ import javax.json.JsonObjectBuilder;
  * @author skraffmi
  */
 public class ExportService {
-    
+
     private static ExportService service;
     private ServiceLoader<Exporter> loader;
     static SettingsServiceBean settingsService;
 
     private ExportService() {
-        loader = ServiceLoader.load(Exporter.class);        
+        loader = ServiceLoader.load(Exporter.class);
     }
 
     /**
-     * TODO: Audit all calls to this getInstance method that doesn't take a
-     * SettingsServiceBean as an argument to make sure nothing broke.
+     * TODO: Audit all calls to this getInstance method that doesn't take a SettingsServiceBean as an argument to make sure nothing broke.
      */
     public static synchronized ExportService getInstance() {
         return getInstance(null);
@@ -65,12 +63,12 @@ public class ExportService {
         ExportService.settingsService = settingsService;
         if (service == null) {
             service = new ExportService();
-        } else{
+        } else {
             service.loader.reload();
         }
         return service;
     }
-                
+
     public List< String[]> getExportersLabels() {
         List<String[]> retList = new ArrayList();
         Iterator<Exporter> exporters = ExportService.getInstance().loader.iterator();
@@ -88,30 +86,27 @@ public class ExportService {
         // first we will try to locate an already existing, cached export 
         // for this format: 
         InputStream exportInputStream = getCachedExportFormat(dataset, formatName);
-        
+
         if (exportInputStream != null) {
             return exportInputStream;
         }
-        
+
         // if it doesn't exist, we'll try to run the export: 
-        
         exportFormat(dataset, formatName);
-        
+
         // and then try again: 
-        
         exportInputStream = getCachedExportFormat(dataset, formatName);
-        
+
         if (exportInputStream != null) {
             return exportInputStream;
         }
-        
+
         // if there is no cached export still - we have to give up and throw 
         // an exception!
-        
-        throw new ExportException("Failed to export the dataset as "+formatName);
-        
+        throw new ExportException("Failed to export the dataset as " + formatName);
+
     }
-    
+
     public String getExportAsString(Dataset dataset, String formatName) {
         try {
             InputStream inputStream = getExport(dataset, formatName);
@@ -133,67 +128,64 @@ public class ExportService {
         return null;
 
     }
-    
-    
+
     // This method goes through all the Exporters and calls 
     // the "chacheExport()" method that will save the produced output  
     // in a file in the dataset directory, on each Exporter available. 
-    
-    public void exportAllFormats (Dataset dataset) throws ExportException {
+    public void exportAllFormats(Dataset dataset) throws ExportException {
         try {
             clearAllCachedFormats(dataset);
         } catch (IOException ex) {
             Logger.getLogger(ExportService.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         try {
             DatasetVersion releasedVersion = dataset.getReleasedVersion();
             if (releasedVersion == null) {
-                throw new ExportException("No released version for dataset "+dataset.getGlobalId());
+                throw new ExportException("No released version for dataset " + dataset.getGlobalId());
             }
             JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
             final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(releasedVersion);
             JsonObject datasetAsJson = datasetAsJsonBuilder.build();
-            
+
             Iterator<Exporter> exporters = loader.iterator();
-            while ( exporters.hasNext()) {
+            while (exporters.hasNext()) {
                 Exporter e = exporters.next();
-                String formatName = e.getProviderName(); 
-                
+                String formatName = e.getProviderName();
+
                 cacheExport(releasedVersion, formatName, datasetAsJson, e);
-                
+
             }
         } catch (ServiceConfigurationError serviceError) {
-            throw new ExportException("Service configuration error during export. "+serviceError.getMessage());
+            throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
         }
         // Finally, if we have been able to successfully export in all available 
         // formats, we'll increment the "last exported" time stamp: 
-        
+
         dataset.setLastExportTime(new Timestamp(new Date().getTime()));
-        
+
     }
-    
+
     public void clearAllCachedFormats(Dataset dataset) throws IOException {
         try {
-        Iterator<Exporter> exporters = loader.iterator();
-        while (exporters.hasNext()) {
-            Exporter e = exporters.next();
-            String formatName = e.getProviderName();
-            
-            clearCachedExport(dataset, formatName);
-        }
-        
-        dataset.setLastExportTime(null);
+            Iterator<Exporter> exporters = loader.iterator();
+            while (exporters.hasNext()) {
+                Exporter e = exporters.next();
+                String formatName = e.getProviderName();
+
+                clearCachedExport(dataset, formatName);
+            }
+
+            dataset.setLastExportTime(null);
         } catch (IOException ex) {
             //not fatal
         }
     }
-    
+
     // This method finds the exporter for the format requested, 
     // then produces the dataset metadata as a JsonObject, then calls
-    // the "chacheExport()" method that will save the produced output  
+    // the "cacheExport()" method that will save the produced output  
     // in a file in the dataset directory. 
-    
     public void exportFormat(Dataset dataset, String formatName) throws ExportException {
         try {
             Iterator<Exporter> exporters = loader.iterator();
@@ -215,7 +207,7 @@ public class ExportService {
             throw new ExportException("No published version found during export. " + dataset.getGlobalId());
         }
     }
-    
+
     public Exporter getExporter(String formatName) throws ExportException {
         try {
             Iterator<Exporter> exporters = loader.iterator();
@@ -228,13 +220,13 @@ public class ExportService {
         } catch (ServiceConfigurationError serviceError) {
             throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
         } catch (Exception ex) {
-            throw new ExportException("Could not find Exporter \""+formatName+"\", unknown exception");
+            throw new ExportException("Could not find Exporter \"" + formatName + "\", unknown exception");
         }
-        throw new ExportException("No such Exporter: "+formatName);
+        throw new ExportException("No such Exporter: " + formatName);
     }
-    
+
     // This method runs the selected metadata exporter, caching the output 
-    // in a file in the dataset dirctory:
+    // in a file in the dataset directory / container based on its DOI:
     private void cacheExport(DatasetVersion version, String format, JsonObject datasetAsJson, Exporter exporter) throws ExportException {
         try {
             if (version.getDataset().getFileSystemDirectory() != null && !Files.exists(version.getDataset().getFileSystemDirectory())) {
@@ -251,30 +243,20 @@ public class ExportService {
             // Some drivers (like Swift) do not support that, and will give us an
             // "operation not supported" exception. If that's the case, we'll have 
             // to save the output into a temp file, and then copy it over to the 
-            // permanent storage using the DataAccess IO "save" command: 
-            
+            // permanent storage using the IO "save" command: 
             boolean tempFileRequired = false;
             File tempFile = null;
             OutputStream outputStream = null;
             Dataset dataset = version.getDataset();
-            DataFileIO<Dataset> dataFileIO = null;
-            
+            StorageIO<Dataset> storageIO = null;
             try {
-                dataFileIO = DataAccess.createNewDataFileIO(dataset, "file");
-                Channel outputChannel = dataFileIO.openAuxChannel(format, DataAccessOption.WRITE_ACCESS);
+                storageIO = DataAccess.createNewStorageIO(dataset, "file");
+                Channel outputChannel = storageIO.openAuxChannel(format, DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {
                 tempFileRequired = true;
-            }
-            
-            //todo: move if statement etc into catch above
-            if (tempFileRequired) {
-                try {
-                    tempFile = File.createTempFile("tempFileToExport", ".tmp");
-                    outputStream = new FileOutputStream(tempFile);
-                } catch (IOException ioex) {
-                    throw new ExportException("IO Exception thrown exporting as " + format);
-                }
+                tempFile = File.createTempFile("tempFileToExport", ".tmp");
+                outputStream = new FileOutputStream(tempFile);
             }
 
             try {
@@ -292,11 +274,11 @@ public class ExportService {
 
                     System.out.println("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
                     System.out.println("Temp file to path:" + tempFile.toPath());
-                    dataFileIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
+                    storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
                 }
-                
+
             } catch (IOException ioex) {
-                throw new ExportException("IO Exception thrown exporting as "  + "export_" + format + ".cached");
+                throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
             }
 
         } catch (IOException ioex) {
@@ -304,39 +286,27 @@ public class ExportService {
         }
 
     }
-    
+
     private void clearCachedExport(Dataset dataset, String format) throws IOException {
         try {
-            DataFileIO<Dataset> dataFileIO = getDataFileIO(dataset);
-            
-            dataFileIO.deleteAuxObject("export_" + format + ".cached");
-        
+            StorageIO<Dataset> storageIO = getStorageIO(dataset);
+            storageIO.deleteAuxObject("export_" + format + ".cached");
+
         } catch (IOException ex) {
             throw new IOException("IO Exception thrown exporting as " + "export_" + format + ".cached");
         }
-        
-            
-//        [original Leonid written code below:]
-//        if (dataset != null && dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
-//
-//            Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + format + ".cached");
-//            try {
-//                Files.delete(cachedMetadataFilePath);
-//            } catch (IOException ioex) {
-//            }
-//        }
+
     }
-    
+
     // This method checks if the metadata has already been exported in this 
     // format and cached on disk. If it has, it'll open the file and retun 
     // the file input stream. If not, it'll return null. 
-    
     private InputStream getCachedExportFormat(Dataset dataset, String formatName) throws ExportException, IOException {
 
-        DataFileIO<Dataset> dataAccess = null;
+        StorageIO<Dataset> dataAccess = null;
 
         try {
-            dataAccess = DataAccess.getDataFileIO(dataset);
+            dataAccess = DataAccess.getStorageIO(dataset);
         } catch (IOException ioex) {
             throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached");
         }
@@ -351,27 +321,15 @@ public class ExportService {
         } catch (IOException ioex) {
             throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached");
         }
-
-//        try {
-//            if (dataset.getFileSystemDirectory() != null) {
-//                Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + formatName + ".cached");
-//                if (Files.exists(cachedMetadataFilePath)) {
-//                    FileInputStream cachedExportInputStream = new FileInputStream(cachedMetadataFilePath.toFile());
-//                    return cachedExportInputStream;
-//                }
-//            }
-//        } catch (IOException ioex) {
-//            // don't do anything - we'll just return null
-//        }
         return null;
 
     }
-    
+
     /*The below method, getCachedExportSize(), is not currently used.
      *An exercise for the reader could be to refactor it if it's needed
      *to be compatible with storage drivers other than local filesystem.
+     *Files.exists() would need to be discarded.
      * -- L.A. 4.8 */
-    
 //    public Long getCachedExportSize(Dataset dataset, String formatName) {
 //        try {
 //            if (dataset.getFileSystemDirectory() != null) {
@@ -386,9 +344,7 @@ public class ExportService {
 //
 //        return null;
 //    }
-    
-    
-    public Boolean isXMLFormat(String provider){
+    public Boolean isXMLFormat(String provider) {
         try {
             Iterator<Exporter> exporters = loader.iterator();
             while (exporters.hasNext()) {
@@ -400,7 +356,7 @@ public class ExportService {
         } catch (ServiceConfigurationError serviceError) {
             serviceError.printStackTrace();
         }
-        return null;       
+        return null;
     }
- 
+
 }
