@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -82,10 +82,10 @@ public class DataFile extends DvObject implements Comparable {
     private String contentType;
     
 
-    @Expose    
-    @SerializedName("storageIdentifier")
-    @Column( nullable = false )
-    private String fileSystemName;
+//    @Expose    
+//    @SerializedName("storageIdentifier")
+//    @Column( nullable = false )
+//    private String fileSystemName;
 
     /**
      * End users will see "SHA-1" (with a hyphen) rather than "SHA1" in the GUI
@@ -438,13 +438,13 @@ public class DataFile extends DvObject implements Comparable {
         super.setOwner(dataset);
     }
     
-    public String getStorageIdentifier() {
-        return this.fileSystemName;
-    }
-
-    public void setStorageIdentifier(String storageIdentifier) {
-        this.fileSystemName = storageIdentifier;
-    }
+//    public String getStorageIdentifier() {
+//        return this.fileSystemName;
+//    }
+//
+//    public void setStorageIdentifier(String storageIdentifier) {
+//        this.fileSystemName = storageIdentifier;
+//    }
     
     public String getDescription() {
         FileMetadata fmd = getLatestFileMetadata();
@@ -555,14 +555,14 @@ public class DataFile extends DvObject implements Comparable {
         return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
     }
 
-    public DataFileIO<DataFile> getDataFileIO() throws IOException {
-        DataFileIO<DataFile> dataFileIO = DataAccess.getDataFileIO(this);
+    public StorageIO<DataFile> getStorageIO() throws IOException {
+        StorageIO<DataFile> storageIO = DataAccess.getStorageIO(this);
         
-        if (dataFileIO == null) {
-            throw new IOException("Failed to create DataFileIO for datafile.");
+        if (storageIO == null) {
+            throw new IOException("Failed to create storageIO for datafile.");
         }
         
-        return dataFileIO; 
+        return storageIO; 
     }
     
     /*

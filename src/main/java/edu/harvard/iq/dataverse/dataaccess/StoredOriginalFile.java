@@ -39,10 +39,10 @@ public class StoredOriginalFile {
     
     private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
     
-    public static DataFileIO<DataFile> retreive(DataFileIO<DataFile> dataFileIO) {
+    public static StorageIO<DataFile> retreive(StorageIO<DataFile> storageIO) {
         String originalMimeType;
 
-        DataFile dataFile = dataFileIO.getDataFile();
+        DataFile dataFile = storageIO.getDataFile();
 
         if (dataFile == null) {
             return null;
@@ -58,9 +58,9 @@ public class StoredOriginalFile {
         InputStreamIO inputStreamIO;
         
         try {
-            dataFileIO.open();
-            Channel storedOriginalChannel = dataFileIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
-            storedOriginalSize = dataFileIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
+            storageIO.open();
+            Channel storedOriginalChannel = storageIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
+            storedOriginalSize = storageIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
             inputStreamIO = new InputStreamIO(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
             logger.fine("Opened stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioEx) {
@@ -79,7 +79,7 @@ public class StoredOriginalFile {
             inputStreamIO.setMimeType("application/x-unknown");
         }
 
-        String fileName = dataFileIO.getFileName();
+        String fileName = storageIO.getFileName();
         if (fileName != null) {
             if (originalMimeType != null) {
                 String origFileExtension = generateOriginalExtension(originalMimeType);

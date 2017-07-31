@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -554,6 +554,14 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
+    public Boolean isS3Storage () {
+        Boolean s3Bool = false;
+        if (file.getStorageIdentifier().startsWith("s3://")){
+            s3Bool = true;
+        }
+        return s3Bool;
+    }
+    
     public Boolean isSwiftStorage () {
         Boolean swiftBool = false;
         if (file.getStorageIdentifier().startsWith("swift://")){
@@ -565,9 +573,9 @@ public class FilePage implements java.io.Serializable {
     public String getSwiftContainerName(){
         String swiftContainerName;
         try {
-            DataFileIO<DataFile> dataFileIO = getFile().getDataFileIO();
+            StorageIO<DataFile> storageIO = getFile().getStorageIO();
             try {
-                SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) dataFileIO;
+                SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
                 swiftIO.open();
                 swiftContainerName = swiftIO.getSwiftContainerName();
                 logger.info("Swift container name: " + swiftContainerName);
@@ -672,11 +680,11 @@ public class FilePage implements java.io.Serializable {
 
     public String getPublicDownloadUrl() {
             try {
-                DataFileIO<DataFile> dataFileIO = getFile().getDataFileIO();
-            if (dataFileIO instanceof SwiftAccessIO) {
+                StorageIO<DataFile> storageIO = getFile().getStorageIO();
+            if (storageIO instanceof SwiftAccessIO) {
                 String fileDownloadUrl = null;
                 try {
-                    SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) dataFileIO;
+                    SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
                     swiftIO.open();
                     fileDownloadUrl = swiftIO.getRemoteUrl();
                     logger.info("Swift url: " + fileDownloadUrl);

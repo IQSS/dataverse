@@ -48,17 +48,17 @@ import org.apache.commons.httpclient.methods.GetMethod;
  * @param <T> what it writes
  */
 
-public abstract class DataFileIO<T extends DvObject> {
+public abstract class StorageIO<T extends DvObject> {
 
-    public DataFileIO() {
+    public StorageIO() {
 
     }
 
-    public DataFileIO(T dvObject) {
+    public StorageIO(T dvObject) {
         this(dvObject, null);
     }
 
-    public DataFileIO(T dvObject, DataAccessRequest req) {
+    public StorageIO(T dvObject, DataAccessRequest req) {
         this.dvObject = dvObject;
         this.req = req;
         if (this.req == null) {
