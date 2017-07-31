@@ -48,11 +48,9 @@ public class FileRecordJobResource extends AbstractApiBean {
     DatasetServiceBean datasetService;
     
     @POST
-    @Path("import/datasets/files/{doi1}/{doi2}/{doi3}")
+    @Path("import/datasets/files/{identifier}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFilesystemImport(@PathParam("doi1") String doi1, 
-                                        @PathParam("doi2") String doi2,
-                                        @PathParam("doi3") String doi3,
+    public Response getFilesystemImport(@PathParam("identifier") String identifier, 
                                         @QueryParam("mode") @DefaultValue("MERGE") String mode,
                                         /*@QueryParam("fileMode") @DefaultValue("package_file") String fileMode*/
                                         @QueryParam("uploadFolder") String uploadFolder,
@@ -64,10 +62,8 @@ public class FileRecordJobResource extends AbstractApiBean {
         */
         String fileMode = FileRecordWriter.FILE_MODE_PACKAGE_FILE;
         try {
-            
-            String doi = "doi:" + doi1 + "/" + doi2 + "/" + doi3;
             try {
-                Dataset dataset = datasetService.findByGlobalId(doi);
+                Dataset dataset = findDatasetOrDie(identifier);
                 AuthenticatedUser user = findAuthenticatedUserOrDie();
                 /**
                  * Current constraints:
@@ -86,7 +82,7 @@ public class FileRecordJobResource extends AbstractApiBean {
                     return error(Response.Status.NOT_IMPLEMENTED, "File import mode: " + fileMode + " is not supported.");
                 }
                 if (dataset == null) {
-                    return error(Response.Status.BAD_REQUEST, "Can't find dataset with ID: " + doi);
+                    return error(Response.Status.BAD_REQUEST, "Can't find dataset with ID: " + identifier);
                 }
                 File directory = new File(System.getProperty("dataverse.files.directory")
                         + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
@@ -115,20 +111,20 @@ public class FileRecordJobResource extends AbstractApiBean {
 
                 if (dataset.getVersions().size() != 1) {
                     logger.log(Level.SEVERE, "File system import is currently only supported for datasets with one version.");
-                    return error(Response.Status.BAD_REQUEST, "Error creating FilesystemImportJob with dataset with ID: " + doi
+                    return error(Response.Status.BAD_REQUEST, "Error creating FilesystemImportJob with dataset with ID: " + identifier
                                 + " - Dataset has more than one version.");                        
                 }
 
                 if (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) {
                     logger.log(Level.SEVERE, "File system import is currently only supported for DRAFT versions.");
-                    return error(Response.Status.BAD_REQUEST, "Error creating FilesystemImportJob with dataset with ID: " + doi
+                    return error(Response.Status.BAD_REQUEST, "Error creating FilesystemImportJob with dataset with ID: " + identifier
                                             + " - Dataset isn't in DRAFT mode.");
                 }
                 
                 try {
                     long jid;
                     Properties props = new Properties();
-                    props.setProperty("datasetId", doi);
+                    props.setProperty("datasetId", identifier);
                     props.setProperty("userId", user.getIdentifier().replace("@", ""));
                     props.setProperty("mode", mode);
                     props.setProperty("fileMode", fileMode);
@@ -143,13 +139,13 @@ public class FileRecordJobResource extends AbstractApiBean {
                         JsonObjectBuilder bld = jsonObjectBuilder();
                         return this.ok(bld.add("executionId", jid).add("message", "FileSystemImportJob in progress"));
                     } else {
-                        return error(Response.Status.BAD_REQUEST, "Error creating FilesystemImportJob with dataset with ID: " + doi);
+                        return error(Response.Status.BAD_REQUEST, "Error creating FilesystemImportJob with dataset with ID: " + identifier);
                     }
 
                 } catch (JobStartException | JobSecurityException ex) {
                     logger.log(Level.SEVERE, "Job Error: " + ex.getMessage());
                     return error(Response.Status.BAD_REQUEST,
-                            "Error creating FilesystemImportJob with dataset with ID: " + doi + " - " + ex.getMessage());
+                            "Error creating FilesystemImportJob with dataset with ID: " + identifier + " - " + ex.getMessage());
                 }
 
             } catch (WrappedResponse wr) {

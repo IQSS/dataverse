@@ -325,8 +325,11 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      */
     private String getDatasetGlobalId() {
         if (jobParams.containsKey("datasetId")) {
+            
             String datasetId = jobParams.getProperty("datasetId");
-            dataset = datasetServiceBean.findByGlobalId(datasetId);
+            
+            System.out.print("******************** FielRecordJobListener: " + datasetId);
+            dataset = datasetServiceBean.find(new Long(datasetId));
             getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
             return dataset.getGlobalId();
         }

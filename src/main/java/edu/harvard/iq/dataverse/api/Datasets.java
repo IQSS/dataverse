@@ -108,8 +108,6 @@ public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
     
-    private static final String PERSISTENT_ID_KEY=":persistentId";
-    
     @Inject DataverseSession session;    
 
     @EJB
@@ -645,12 +643,13 @@ public class Datasets extends AbstractApiBean {
             if ("validation passed".equals(statusMessageFromDcm)) {
                 try {
 //                    String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/${DOI_SHOULDER}/${datasetIdentifier}?mode=MERGE&uploadFolder=trn&totalSize=${sz}&userId=${dv_userId}";
-                    String url = systemConfig.getDataverseSiteUrl() + "/api/batch/jobs/import/datasets/files/" + dataset.getAuthority() + "/" + dataset.getIdentifier();
+                    String url = systemConfig.getDataverseSiteUrl() + "/api/batch/jobs/import/datasets/files/" + dataset.getId();
                     String apiToken = getRequestApiKey();
                     String uploadFolder = jsonFromDcm.getString("uploadFolder");
                     int totalSize = jsonFromDcm.getInt("totalSize");
 
                     // FIXME: Used to get testDcmNotifications in DatasetsIT to pass. Remove what we can.
+                    /*
                     {
                         String dsDir = System.getProperty(SystemConfig.FILES_DIRECTORY) + File.separator + dataset.getAuthority();
                         String identifier = dataset.getIdentifier();
@@ -664,7 +663,7 @@ public class Datasets extends AbstractApiBean {
                         String checksumFileContent = "da39a3ee5e6b4b0d3255bfef95601890afd80709 " + filename1;
                         java.nio.file.Files.createFile(java.nio.file.Paths.get(dsDir + File.separator + identifier + File.separator + uploadFolder + File.separator + filename1));
                         java.nio.file.Files.write(java.nio.file.Paths.get(dsDir + File.separator + identifier + File.separator + uploadFolder + File.separator + checksumFilename), checksumFileContent.getBytes());
-                    }
+                    }*/
 
                     JsonObject jsonFromImportJobKickoff = dataCaptureModuleSvc.startFileSystemImportJob(dataset.getId(), url, uploadFolder, totalSize, apiToken);
                     int importJobKickoffStatus = jsonFromImportJobKickoff.getInt("status");
@@ -880,36 +879,6 @@ public class Datasets extends AbstractApiBean {
     }
     private void msgt(String m){
         dashes(); msg(m); dashes();
-    }
-    
-
-   
-    private Dataset findDatasetOrDie(String id) throws WrappedResponse {
-        Dataset dataset;
-        if (id.equals(PERSISTENT_ID_KEY)) {
-            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
-            if (persistentId == null) {
-                throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
-            }
-            dataset = datasetService.findByGlobalId(persistentId);
-            if (dataset == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
-            }
-            return dataset;
-
-        } else {
-            try {
-                dataset = datasetService.find(Long.parseLong(id));
-                if (dataset == null) {
-                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
-                }
-                return dataset;
-            } catch (NumberFormatException nfe) {
-                throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
-            }
-        }
     }
     
     

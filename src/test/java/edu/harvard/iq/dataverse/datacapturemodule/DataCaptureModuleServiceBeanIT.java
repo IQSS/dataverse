@@ -60,7 +60,8 @@ public class DataCaptureModuleServiceBeanIT {
         dataset.setIdentifier("PXTYLE");
         dataset.setId(202l);
 //        String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/" + dataset.getProtocol() + ":" + dataset.getAuthority() + "/" + dataset.getIdentifier();
-        String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/" + dataset.getAuthority() + "/" + dataset.getIdentifier();
+        String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/" + dataset.getGlobalId();
+        System.out.print("url: " + url);
         DataCaptureModuleServiceBean dataCaptureModuleServiceBean = new DataCaptureModuleServiceBean();
         String uploadFolder = "myUploadFolder1";
         String apiToken = "b440cc45-0ce9-4ae6-aabf-72f50fb8b8f2";
