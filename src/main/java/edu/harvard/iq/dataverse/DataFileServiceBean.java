@@ -526,7 +526,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         for (Object[] result : dataTableResults) {
             DataTable dataTable = new DataTable(); 
-            long fileId = (long) result[1];
+            long fileId = ((Number) result[1]).longValue();
 
             dataTable.setId(((long) result[0]));
             
