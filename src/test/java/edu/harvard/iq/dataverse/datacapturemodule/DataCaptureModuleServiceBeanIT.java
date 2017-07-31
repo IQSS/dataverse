@@ -32,7 +32,8 @@ public class DataCaptureModuleServiceBeanIT {
         Dataset dataset = new Dataset();
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         long timeInMillis = calendar.getTimeInMillis();
-        dataset.setId(timeInMillis);
+        String ident = Long.toString( timeInMillis );
+        dataset.setIdentifier( ident );
         String jsonString = DataCaptureModuleUtil.generateJsonForUploadRequest(authenticatedUser, dataset).toString();
         logger.info("jsonString: " + jsonString);
         UploadRequestResponse uploadRequestResponse = dataCaptureModuleServiceBean.requestRsyncScriptCreation(jsonString, dcmBaseUrl + DataCaptureModuleServiceBean.uploadRequestPath);
@@ -44,7 +45,7 @@ public class DataCaptureModuleServiceBeanIT {
         sleep(DataCaptureModuleServiceBean.millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls);
 
         // Step 2: Script request.
-        ScriptRequestResponse scriptRequestResponseGood = dataCaptureModuleServiceBean.retreiveRequestedRsyncScript(dataset.getId(), dcmBaseUrl + DataCaptureModuleServiceBean.scriptRequestPath);
+        ScriptRequestResponse scriptRequestResponseGood = dataCaptureModuleServiceBean.retreiveRequestedRsyncScript(dataset.getIdentifier(), dcmBaseUrl + DataCaptureModuleServiceBean.scriptRequestPath);
         System.out.println("script: " + scriptRequestResponseGood.getScript());
         assertNotNull(scriptRequestResponseGood.getScript());
         assertTrue(scriptRequestResponseGood.getScript().startsWith("#!"));
