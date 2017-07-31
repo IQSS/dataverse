@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -168,7 +169,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             newFileSize = inputFile.length();
 
-        } catch (Exception ioex) {
+        } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
                 failureMsg = "Swift AccessIO: Unknown exception occured while uploading a local file into a Swift StoredObject";
@@ -309,8 +310,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     new AWSStaticCredentialsProvider(credentials)).withRegion(Regions.US_EAST_1).build();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new IOException("S3AccessIO: failed to authenticate S3");
+            throw new IOException("S3AccessIO: failed to authenticate S3" + ex.getMessage());
         }
 
         return s3;
