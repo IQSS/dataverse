@@ -479,7 +479,6 @@
                     </compilerArguments>
                     <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
                     <compilerArgument>${compilerArgument}</compilerArgument>
-                    <compilerArgument>-Xlint:unchecked</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>

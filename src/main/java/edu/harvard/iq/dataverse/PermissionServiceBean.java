@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import javax.persistence.TypedQuery;
+import javax.persistence.Query;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which
@@ -395,7 +395,7 @@ public class PermissionServiceBean {
          */
         String query = "SELECT id FROM dvobject WHERE dtype = 'Dataverse' and id in (select definitionpoint_id from roleassignment where assigneeidentifier in (" + identifiers + "));";
         logger.log(Level.FINE, "query: {0}", query);
-        TypedQuery<Integer> nativeQuery = em.createQuery(query, Integer.class);
+        Query nativeQuery = em.createNativeQuery(query);
         List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
         List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
         for (int dvIdAsInt : dataverseIdsToCheck) {
@@ -474,9 +474,9 @@ public class PermissionServiceBean {
         String roleString = getRolesClause (roles);
         String typeString = getTypesClause(types);
 
-        TypedQuery<Integer> nativeQuery = em.createQuery("SELECT id FROM dvobject WHERE " + typeString
-        + " id in (select definitionpoint_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
-                                                         + roleString + ");", Integer.class);
+        Query nativeQuery = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+                + typeString + " id in (select definitionpoint_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
+                + roleString + ");");
         List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
         List<Long> dataversesUserHasPermissionOn = new LinkedList<>();
         String indirectParentIds = "";
@@ -496,8 +496,8 @@ public class PermissionServiceBean {
         // Get child datasets and files
         if (indirect) {
             indirectParentIds += ") ";
-            TypedQuery<Integer> nativeQueryIndirect = em.createQuery("SELECT id FROM dvobject WHERE "
-                + " owner_id in " + indirectParentIds + " and dType = 'Dataset'; ", Integer.class);
+            Query nativeQueryIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+                    + " owner_id in " + indirectParentIds + " and dType = 'Dataset'; ");
 
             List<Integer> childDatasetIds = nativeQueryIndirect.getResultList();
 
@@ -514,8 +514,8 @@ public class PermissionServiceBean {
                     }
                 }
             }
-            TypedQuery<Integer> nativeQueryFileIndirect = em.createQuery("SELECT id FROM dvobject WHERE "
-            + " owner_id in " + indirectDatasetParentIds + " and dType = 'DataFile'; ", Integer.class);
+            Query nativeQueryFileIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+                    + " owner_id in " + indirectDatasetParentIds + " and dType = 'DataFile'; ");
 
             List<Integer> childFileIds = nativeQueryFileIndirect.getResultList();
 

@@ -207,7 +207,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         doReport();
 
         // report any unused checksums
-        HashMap<String, String> checksumHashMap = (HashMap<String, String>) jobContext.getTransientUserData();
+        HashMap checksumHashMap = (HashMap<String, String>) jobContext.getTransientUserData();
         for (Object key : checksumHashMap.keySet()) {
             getJobLogger().log(Level.SEVERE, "File listed in checksum manifest not found: " + key);
         }

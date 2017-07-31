@@ -37,7 +37,6 @@ import java.util.Iterator;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileNotFoundException;
 import java.nio.channels.Channel;
 import java.nio.file.DirectoryStream;
@@ -115,7 +114,7 @@ public class FileAccessIO extends DataFileIO {
                     && dataFile.getDataTable() != null
                     && (!this.noVarHeader())) {
 
-                List<DataVariable> datavariables = dataFile.getDataTable().getDataVariables();
+                List datavariables = dataFile.getDataTable().getDataVariables();
                 String varHeaderLine = generateVariableHeader(datavariables);
                 this.setVarHeader(varHeaderLine);
             }

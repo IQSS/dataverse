@@ -139,7 +139,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         qstr += " WHERE  dv.id IN " + dvObjectClause;
         qstr += ";";
 
-        return em.createQuery(qstr, Object[].class).getResultList();
+        return em.createNativeQuery(qstr, Object[].class).getResultList();
         
     }
     
@@ -165,7 +165,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         qstr += " WHERE  dv.owner_id IN " + dvObjectClause;
         qstr += ";";
 
-        return em.createQuery(qstr, Object[].class).getResultList();
+        return em.createNativeQuery(qstr, Object[].class).getResultList();
         
     }
     
@@ -178,7 +178,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         
         String qstr = "SELECT h.dataverse_id FROM harvestingclient h;";
 
-        return em.createQuery(qstr, Long.class).getResultList();
+        return em.createNativeQuery(qstr).getResultList();
         
     }
     
@@ -206,7 +206,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         List<Object[]> searchResults;
         
         try {
-            searchResults = em.createQuery(qstr, Object[].class).getResultList();
+            searchResults = em.createNativeQuery(qstr).getResultList();
         } catch (Exception ex) {
             searchResults = null;
         }
@@ -222,7 +222,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             Long ownerId;
             if (result[0] != null) {
                 try {
-                    objectId = (long) result[0];
+                    objectId = ((Integer) result[0]).longValue();
                 } catch (Exception ex) {
                     logger.warning("OBJECT PATH: could not cast result[0] (dvobject id) to Integer!");
                     objectId = null;
