@@ -19,6 +19,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -133,8 +134,10 @@ public class Shib implements java.io.Serializable {
         
         int latestTermsDocVer = systemConfig.getShibAuthTermsVer();        
         if (acceptedTermsDocVer < latestTermsDocVer) {
+            Map<String, String> params = context.getRequestParameterMap();
+            String paramRedirectPage = params.get("redirectPage");            
+            String termsConditionsPageURL = "https://dev-aws.qdr.org/qdr-sso/dv-terms-conditions-redirect?redirectPage=" + paramRedirectPage;
             // Direct user to Drupal T&C page
-            String termsConditionsPageURL = "https://dev-aws.qdr.org/shib_auth/get_custom_data?returnToDataverse=true";
             try {
                 context.redirect(termsConditionsPageURL);
                 return;
