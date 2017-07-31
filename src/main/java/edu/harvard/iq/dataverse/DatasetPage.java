@@ -416,9 +416,8 @@ public class DatasetPage implements java.io.Serializable {
     public SwiftAccessIO getSwiftObject() {
         try {
             DataFileIO dataFileIO = getInitialDataFile().getDataFileIO();
-            SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
-            if (swiftIO instanceof SwiftAccessIO) {
-                return swiftIO;
+            if (dataFileIO instanceof SwiftAccessIO) {
+                return (SwiftAccessIO)dataFileIO;
             } else {
                 logger.info("FilePage: Failed to cast dataFileIO as SwiftAccessIO");
             } 
@@ -468,6 +467,17 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
+    /*
+    in getComputeUrl(), we are sending the container/dataset name and the exipiry and signature 
+    for the temporary url of only ONE datafile within the dataset. This is because in the 
+    ceph version of swift, we are only able to generate the temporary url for a single object 
+    within a container.
+    Ideally, we want a temporary url for an entire container/dataset, so perhaps this could instead
+    be handled on the compute environment end. 
+    Additionally, we have to think about the implications this could have with dataset versioning, 
+    since we currently store all files (even from old versions) in the same container.
+    --SF
+    */
     public String getComputeUrl() throws IOException {
         SwiftAccessIO swiftObject = getSwiftObject();
         swiftObject.open();
