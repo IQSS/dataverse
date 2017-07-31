@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 if [ ! -z "$1" ]; then
   MAILSERVER=$1
   MAILSERVER_ARG="--mailserver $MAILSERVER"
@@ -17,12 +18,16 @@ pid=$$
 if [ -e default.config ]; then
 	mv default.config tmp-${pid}-default.config
 fi
+
 echo "HOST_DNS_ADDRESS	localhost" > default.config
 echo "GLASSFISH_DIRECTORY	/home/glassfish/glassfish4" >> default.config
+
 if [ ! -z "$MAILSERVER" ]; then
 	echo "MAIL_SERVER	$MAILSERVER" >> default.config
 fi
+
 ./install -y -f
+
 if [ -e tmp-${pid}-default.config ]; then # if we moved it out, move it back
 	mv -f tmp-${pid}-default.config default.config
 fi
