@@ -60,30 +60,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         this.setIsLocalFile(false);
     }
 
-    //FIXME: Delete vars? 
-    private boolean isReadAccess = false;
-    private boolean isWriteAccess = false;
     private AWSCredentials awsCredentials = null;
     private AmazonS3 s3 = null;
-
-
-    //FIXME: Copied, change?
-    @Override
-    public boolean canRead() {
-        return isReadAccess;
-    }
-
-//FIXME: Copied, change?
-    @Override
-    public boolean canWrite() {
-        return isWriteAccess;
-    }
-
-    
-//    @Override
-//    public DvObjectType getDvObjectType() {
-//     
-//    }
     
     //FIXME: Finish
     @Override
@@ -133,13 +111,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             } catch (Exception ex) {
                 this.setFileName("unknown");
             }
-            
-            
+
             
         } else if (dvObject instanceof Dataset) {
             
         } else if (dvObject instanceof Dataverse) {
-            Dataverse dataverse = this.getDataverse();
+
         } else {
             throw new IOException("Data Access: Invalid DvObject type");
         }
@@ -159,16 +136,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         try {
             File inputFile = fileSystemPath.toFile();
+            if (dvObject instanceof DataFile) {
+                DataFile datafile = (DataFile)dvObject;
+                String bucketName = "testiqss-1239759fgsef34w4"; //name is global, no uppercase
 
-            String bucketName = "testiqss-1239759fgsef34w4"; //name is global, no uppercase
-            s3.deleteBucket(bucketName);
-            String key = "MyObjectKey";
+                s3.deleteBucket(bucketName);
+                String key =  datafile.getOwner().getAuthority() + "/" + datafile.getOwner().getIdentifier() + "/" + datafile.getDisplayName();
                     
-            s3.createBucket(bucketName);
-            s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
+                s3.createBucket(bucketName);
+                s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
 
-            newFileSize = inputFile.length();
-
+                newFileSize = inputFile.length();
+            } else {
+                throw new IOException("DvObject type other than datafile is not yet supported");
+            }
+            
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
@@ -180,9 +162,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         // if it has uploaded successfully, we can reset the size
         // of the object:
-        
-        //FIXME: do this?
-        //setSize(newFileSize);
+        setSize(newFileSize);
         
     }
     
