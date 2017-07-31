@@ -4,5 +4,7 @@ img.navbar-custom-logo {height:60px;}
 
 ul.nav li.dropdown a {color: #333; text-decoration: none;}
 
+#dataverseHeader .dataverseHeaderLogo img {max-height: 100%; max-width: 100%;}
+
 /*--------- Page Elements --------- */
 #datasetButtonBar, #dataverseButtonBar {display:none;}
