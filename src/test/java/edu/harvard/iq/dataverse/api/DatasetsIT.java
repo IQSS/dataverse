@@ -1083,16 +1083,16 @@ public class DatasetsIT {
         assertEquals(200, deleteUserResponse.getStatusCode());
 
         UtilIT.deleteUser(noPermsUsername);
-        
+
     }
 
     /**
-     * This test is just a test of notifications
-     * so a fully implemented dcm is not necessary
+     * This test is just a test of notifications so a fully implemented dcm is
+     * not necessary
      */
     @Test
     public void testDcmNotifications() throws IOException, InterruptedException {
-        
+
         Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
         setDcmUrl.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -1168,7 +1168,7 @@ public class DatasetsIT {
          */
         /*
         Can't find dataset - give bad dataset ID
-        */
+         */
         JsonObjectBuilder wrongDataset = Json.createObjectBuilder();
         wrongDataset.add("userId", userId);
         wrongDataset.add("datasetId", "78921457982457921");
@@ -1202,13 +1202,12 @@ public class DatasetsIT {
                  */
                 .statusCode(200)
                 .body("data.message", equalTo("User notified about checksum validation failure."));
-               
+
         Response authorsGetsBadNews = UtilIT.getNotifications(apiToken);
         authorsGetsBadNews.prettyPrint();
         authorsGetsBadNews.then().assertThat()
                 .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
                 .statusCode(OK.getStatusCode());
-        
 
         Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
         datasetAsJson.prettyPrint();
@@ -1220,6 +1219,24 @@ public class DatasetsIT {
 
         UtilIT.makeSuperUser(username);
 
+        boolean doExtraTesting = false;
+
+        if (doExtraTesting) {
+
+            String SEP = java.io.File.separator;
+            String dsDir = "/Users/pdurbin/dataverse/files/10.5072/FK2";
+            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + SEP + identifier));
+            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + SEP + identifier + SEP + uploadFolder));
+            String checksumFilename = "files.sha";
+            String filename1 = "file1.txt";
+            String fileContent1 = "big data!";
+            java.nio.file.Files.write(java.nio.file.Paths.get(dsDir + SEP + identifier + SEP + uploadFolder + SEP + checksumFilename), fileContent1.getBytes());
+//            // This is actually the SHA-1 of a zero byte file. It doesn't seem to matter what you send to the DCM?
+            String checksumFileContent = "da39a3ee5e6b4b0d3255bfef95601890afd80709 " + filename1;
+            java.nio.file.Files.createFile(java.nio.file.Paths.get(dsDir + SEP + identifier + SEP + uploadFolder + SEP + filename1));
+            java.nio.file.Files.write(java.nio.file.Paths.get(dsDir + SEP + identifier + SEP + uploadFolder + SEP + checksumFilename), checksumFileContent.getBytes());
+
+        }
         int totalSize = 1234567890;
         /**
          * @todo How can we test what the checksum validation notification looks
@@ -1239,23 +1256,24 @@ public class DatasetsIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .post("/api/datasets/" + datasetId + "/dataCaptureModule/checksumValidation");
         uploadSuccessful.prettyPrint();
-/*
+
         uploadSuccessful.then().assertThat()
                 .body("data.message", equalTo("FileSystemImportJob in progress"))
                 .statusCode(200);
 
-        long millisecondsNeededForFileSystemImportJobToFinish = 1000;
-        Thread.sleep(millisecondsNeededForFileSystemImportJobToFinish);
-        Response datasetAsJson2 = UtilIT.nativeGet(datasetId, apiToken);
-        datasetAsJson2.prettyPrint();
-        datasetAsJson2.then().assertThat()
-                .body("data.latestVersion.files[0].dataFile.filename", equalTo(identifier))
-                .body("data.latestVersion.files[0].dataFile.contentType", equalTo("application/vnd.dataverse.file-package"))
-                .body("data.latestVersion.files[0].dataFile.filesize", equalTo(totalSize))
-                .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"))
-                .statusCode(OK.getStatusCode());
-*/
+        if (doExtraTesting) {
 
+            long millisecondsNeededForFileSystemImportJobToFinish = 1000;
+            Thread.sleep(millisecondsNeededForFileSystemImportJobToFinish);
+            Response datasetAsJson2 = UtilIT.nativeGet(datasetId, apiToken);
+            datasetAsJson2.prettyPrint();
+            datasetAsJson2.then().assertThat()
+                    .body("data.latestVersion.files[0].dataFile.filename", equalTo(identifier))
+                    .body("data.latestVersion.files[0].dataFile.contentType", equalTo("application/vnd.dataverse.file-package"))
+                    .body("data.latestVersion.files[0].dataFile.filesize", equalTo(totalSize))
+                    .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"))
+                    .statusCode(OK.getStatusCode());
+        }
     }
 
 }

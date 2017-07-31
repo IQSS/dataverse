@@ -636,7 +636,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{identifier}/dataCaptureModule/checksumValidation")
     public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) throws IOException {
-        logger.info("jsonFromDcm: " + jsonFromDcm);
+        logger.fine("jsonFromDcm: " + jsonFromDcm);
         String statusMessageFromDcm = jsonFromDcm.getString("status");
         try {
             Dataset dataset = findDatasetOrDie(id);
@@ -647,23 +647,6 @@ public class Datasets extends AbstractApiBean {
                     String apiToken = getRequestApiKey();
                     String uploadFolder = jsonFromDcm.getString("uploadFolder");
                     int totalSize = jsonFromDcm.getInt("totalSize");
-
-                    // FIXME: Used to get testDcmNotifications in DatasetsIT to pass. Remove what we can.
-                    /*
-                    {
-                        String dsDir = System.getProperty(SystemConfig.FILES_DIRECTORY) + File.separator + dataset.getAuthority();
-                        String identifier = dataset.getIdentifier();
-                        java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + File.separator + identifier));
-                        java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + File.separator + identifier + File.separator + uploadFolder));
-                        String checksumFilename = "files.sha";
-                        String filename1 = "file1.txt";
-                        String fileContent1 = "big data!";
-                        java.nio.file.Files.write(java.nio.file.Paths.get(dsDir + File.separator + identifier + File.separator + uploadFolder + File.separator + checksumFilename), fileContent1.getBytes());
-                        // This is actually the SHA-1 of a zero byte file. It doesn't seem to matter what you send to the DCM?
-                        String checksumFileContent = "da39a3ee5e6b4b0d3255bfef95601890afd80709 " + filename1;
-                        java.nio.file.Files.createFile(java.nio.file.Paths.get(dsDir + File.separator + identifier + File.separator + uploadFolder + File.separator + filename1));
-                        java.nio.file.Files.write(java.nio.file.Paths.get(dsDir + File.separator + identifier + File.separator + uploadFolder + File.separator + checksumFilename), checksumFileContent.getBytes());
-                    }*/
 
                     JsonObject jsonFromImportJobKickoff = dataCaptureModuleSvc.startFileSystemImportJob(dataset.getId(), url, uploadFolder, totalSize, apiToken);
                     int importJobKickoffStatus = jsonFromImportJobKickoff.getInt("status");
