@@ -139,7 +139,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         qstr += " WHERE  dv.id IN " + dvObjectClause;
         qstr += ";";
 
-        return em.createNativeQuery(qstr, Object[].class).getResultList();
+        return em.createNativeQuery(qstr).getResultList();
         
     }
     
@@ -165,7 +165,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         qstr += " WHERE  dv.owner_id IN " + dvObjectClause;
         qstr += ";";
 
-        return em.createNativeQuery(qstr, Object[].class).getResultList();
+        return em.createNativeQuery(qstr).getResultList();
         
     }
     
