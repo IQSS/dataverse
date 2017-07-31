@@ -39,6 +39,8 @@ public class Shib implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
+    @Inject
+    SettingsWrapper settingsWrapper;
 
     @EJB
     AuthenticationServiceBean authSvc;
@@ -133,10 +135,11 @@ public class Shib implements java.io.Serializable {
         }
         
         int latestTermsDocVer = systemConfig.getShibAuthTermsVer();        
-        if (acceptedTermsDocVer < latestTermsDocVer) {
+        if (acceptedTermsDocVer < latestTermsDocVer) {            
+            String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
             Map<String, String> params = context.getRequestParameterMap();
             String paramRedirectPage = params.get("redirectPage");            
-            String termsConditionsPageURL = "https://dev-aws.qdr.org/qdr-sso/dv-terms-conditions-redirect?redirectPage=" + paramRedirectPage;
+            String termsConditionsPageURL = QDRDrupalSiteURL + "/qdr-sso/dv-terms-conditions-redirect?redirectPage=" + paramRedirectPage;
             // Direct user to Drupal T&C page
             try {
                 context.redirect(termsConditionsPageURL);
