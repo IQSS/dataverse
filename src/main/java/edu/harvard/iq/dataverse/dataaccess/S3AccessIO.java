@@ -12,6 +12,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.partitions.PartitionsLoader;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -140,11 +141,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 DataFile datafile = (DataFile)dvObject;
                 String bucketName = "testiqss-1239759fgsef34w4"; //name is global, no uppercase
 
-                s3.deleteBucket(bucketName);
                 String key =  datafile.getOwner().getAuthority() + "/" + datafile.getOwner().getIdentifier() + "/" + datafile.getDisplayName();
-                    
-                s3.createBucket(bucketName);
-                s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
+            
+                if(!s3.doesBucketExist(bucketName)) { 
+                    System.out.println("Rohit Bhattacharjee!!!! True");
+                    s3.createBucket(bucketName);
+                } else { 
+                    System.out.println("Rohit Bhattacharjee!!!! False");
+                }
+//                if(s3.doesObjectExist(bucketName, key)){
+//                    System.out.println("Rohit Bhattacharjee File Exists!!");
+//                } else{
+                    s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
+//                }
 
                 newFileSize = inputFile.length();
             } else {
