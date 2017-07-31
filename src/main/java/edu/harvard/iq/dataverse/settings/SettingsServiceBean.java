@@ -241,18 +241,20 @@ public class SettingsServiceBean {
         */
         ShibPassiveLoginEnabled,
         /**
-         * URL for Shibboleth Single Logout
-         */
-        ShibLogoutUrl,
-        /**
-         * Latest version of Terms and Conditions document
-         */
-        ShibAuthTermsVer,
-      
-         /**
          * Whether Export should exclude FieldType.EMAIL
          */
-        ExcludeEmailFromExport;
+        ExcludeEmailFromExport,
+        
+        /**
+         * QDR Custom settings
+         * 
+         */
+        /** URL for Shibboleth Single Logout */        
+        ShibLogoutUrl,
+        /** Latest version of Terms and Conditions document */
+        ShibAuthTermsVer,
+        /** Url of integrated Drupal Site */
+        QDRDrupalSiteURL;
         
         @Override
         public String toString() {
