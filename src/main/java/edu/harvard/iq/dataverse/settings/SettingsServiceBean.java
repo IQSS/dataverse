@@ -279,8 +279,19 @@ public class SettingsServiceBean {
         NavbarAboutUrl,
         
         // Option to override multiple guides with a single url
-        NavbarGuidesUrl; 
+        NavbarGuidesUrl,
 
+        
+        /**
+         * QDR Custom settings
+         * 
+         */
+        /** URL for Shibboleth Single Logout */        
+        ShibLogoutUrl,
+        /** Latest version of Terms and Conditions document */
+        ShibAuthTermsVer,
+        /** Url of integrated Drupal Site */
+        QDRDrupalSiteURL;
         
         @Override
         public String toString() {

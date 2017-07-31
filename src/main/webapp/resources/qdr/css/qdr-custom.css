@@ -1,0 +1,8 @@
+/*--------- Header --------- */
+span.navbar-brand {padding:1px; height:60px;}
+img.navbar-custom-logo {height:60px;}
+
+ul.nav li.dropdown a {color: #333; text-decoration: none;}
+
+/*--------- Page Elements --------- */
+#datasetButtonBar, #dataverseButtonBar {display:none;}
