@@ -168,6 +168,11 @@ public class Dataset extends DvObjectContainer {
         this.authority = authority;
     }
 
+    /**
+     * returns dataset identifier.
+     * For example, a dataset with database id (primary key) 3, persistent ID
+     * doi:10.5072/FK2/abcde, this should return "abcde".
+     */
     public String getIdentifier() {
         return identifier;
     }
