@@ -3,15 +3,19 @@ package edu.harvard.iq.dataverse.dataaccess;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.partitions.PartitionsLoader;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import edu.harvard.iq.dataverse.DataFile;
@@ -80,7 +84,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private String bucketName = "testiqss-1239759fgsef34w4"; //name is global, no uppercase
     private String s3FolderPath;
     String s3FileName;
-    
+
+    private String key = null;    
 //    private S3Object initializeS3Object(boolean writeAccess) throws IOException {
 //        return initializeS3Object(writeAccess, null);
 //    }
@@ -295,9 +300,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     }
     
-    //FIXME: Empty
+    //FIXME: s3 or s3client..? + need key defined for this method
     @Override
     public void delete() throws IOException {
+        if (key != null) {
+            try {
+            DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
+            s3.deleteObject(deleteObjRequest);
+            //s3client.deleteObject(bucketName, key);
+            } catch (AmazonClientException ase) {
+                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            }
+        } else {
+            //initialize key
+        }
+        
     }
 
     //FIXME: Empty
