@@ -18,6 +18,8 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.thirdparty.apache.http.client.methods.HttpRequestBase;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -344,6 +346,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: s3 or s3client..? + need key defined for this method
     @Override
     public void delete() throws IOException {
+
         String key = null;
         if (dvObject instanceof DataFile) {
             key = s3FileName;
@@ -373,6 +376,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: Empty
     @Override
     public boolean isAuxObjectCached(String auxItemTag) throws IOException {
+        String key = null;
+        if (s3 == null) {
+            open();
+        }
+        if (dvObject instanceof DataFile) {
+            key = s3FileName + "." + auxItemTag;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath + "/" + auxItemTag;
+        }
+        try {
+            return s3.doesObjectExist(bucketName, key);
+        } catch (AmazonClientException ase) {
+                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+        }
         return false;
     }
     
@@ -396,9 +413,23 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
+        String key = null;
+        if (s3 == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        if (dvObject instanceof DataFile) {
+            key = s3FileName + "." + auxItemTag;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath + "/" + auxItemTag;
+        }
+        try {
+            File inputFile = fileSystemPath.toFile();
+            s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
+        } catch (AmazonClientException ase) {
+            System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+        }
     }
     
-    //FIXME: Empty
     // this method copies a local InputStream into this DataAccess Auxiliary location:
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
@@ -407,16 +438,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             open(DataAccessOption.WRITE_ACCESS);
         }
         if (dvObject instanceof DataFile) {
-            key = s3FileName;
+            key = s3FileName + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
-            key = s3FolderPath;
+            key = s3FolderPath + "/" + auxItemTag;
         }
         try {
             byte[] bytes = IOUtils.toByteArray(inputStream);
             long length = bytes.length;
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(length);
-            s3.putObject(bucketName, key + "." + auxItemTag, inputStream, metadata);
+            s3.putObject(bucketName, key, inputStream, metadata);
         } catch(IOException ioex) {
             String failureMsg = ioex.getMessage();
             
@@ -446,6 +477,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: Empty
     @Override
     public String getStorageLocation() {
+        s3.getBucketLocation(s3FileName);
         return null;
     }
 
@@ -457,7 +489,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: Empty
     @Override
     public boolean exists() throws IOException {
-        return false;
+        String key = null;
+        if (dvObject instanceof DataFile) {
+            key = s3FileName;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath;
+        }
+        
+        boolean exists = s3.doesObjectExist(bucketName, key);
+        
+        return exists;
     }
 
     @Override
@@ -475,10 +516,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return null;
     }
 
-    @Override
-    public String getSwiftContainerName() {
-        return null;
-    }
     
     // Auxilary helper methods, S3-specific:
     // // FIXME: Refer to swift implementation while implementing S3
