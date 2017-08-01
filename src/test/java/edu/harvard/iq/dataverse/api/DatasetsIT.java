@@ -1087,8 +1087,6 @@ public class DatasetsIT {
          */
         JsonObjectBuilder wrongDataset = Json.createObjectBuilder();
         String fakeDatasetId = "78921457982457921";
-        wrongDataset.add("userId", userId);
-        wrongDataset.add("datasetId", fakeDatasetId);
         wrongDataset.add("status", "validation passed");
         UtilIT.makeSuperUser(username);
         Response datasetNotFound = UtilIT.dataCaptureModuleChecksumValidation(fakeDatasetId, wrongDataset.build(), apiToken);
@@ -1099,8 +1097,6 @@ public class DatasetsIT {
                 .body("message", equalTo("Dataset with ID " + fakeDatasetId + " not found."));
 
         JsonObjectBuilder badNews = Json.createObjectBuilder();
-        badNews.add("userId", userId);
-        badNews.add("datasetId", datasetId2);
         // Status options are documented at https://github.com/sbgrid/data-capture-module/blob/master/doc/api.md#post-upload
         badNews.add("status", "validation failed");
         Response uploadFailed = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, badNews.build(), apiToken);
@@ -1156,10 +1152,8 @@ public class DatasetsIT {
          * @todo How can we test that the email notification looks ok?
          */
         JsonObjectBuilder goodNews = Json.createObjectBuilder();
-        goodNews.add("datasetId", 840);
         goodNews.add("status", "validation passed");
         goodNews.add("uploadFolder", uploadFolder);
-        goodNews.add("datasetIdentifier", identifier);
         goodNews.add("totalSize", totalSize);
         Response uploadSuccessful = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, goodNews.build(), apiToken);
         /**
