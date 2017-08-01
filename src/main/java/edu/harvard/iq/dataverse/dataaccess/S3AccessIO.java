@@ -369,10 +369,23 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return false;
     }
     
-    //FIXME: Empty
     @Override
     public long getAuxObjectSize(String auxItemTag) throws IOException {
-        return 0;
+        String key = null;
+        if (s3 == null) {
+            open();
+        }
+        if (dvObject instanceof DataFile) {
+            key = s3FileName + "." + auxItemTag;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath + "/" + auxItemTag;
+        }
+        try {
+            return s3.getObjectMetadata(bucketName, key).getContentLength();
+        } catch (AmazonClientException ase) {
+                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+        }
+        return -1L;
     }
     
     @Override 
@@ -385,7 +398,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public void backupAsAux(String auxItemTag) throws IOException {
     }
 
-    //FIXME: Empty
     @Override
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
@@ -471,10 +483,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath;
         }
-        
-        boolean exists = s3.doesObjectExist(bucketName, key);
-        
-        return exists;
+        try {
+            return s3.doesObjectExist(bucketName, key);
+        } catch (AmazonClientException ase) {
+                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+        }
+        return false;
     }
 
     @Override
