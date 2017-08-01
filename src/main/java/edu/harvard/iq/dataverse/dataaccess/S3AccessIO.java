@@ -18,6 +18,8 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.thirdparty.apache.http.client.methods.HttpRequestBase;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -320,12 +322,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: s3 or s3client..? + need key defined for this method
     @Override
     public void delete() throws IOException {
+<<<<<<< HEAD
+        
+=======
         String key = null;
         if (dvObject instanceof DataFile) {
             key = s3FileName;
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath;
         }
+>>>>>>> 047cdecbf144aaf6fb2b2fab098171a24b8b1c97
         if (key != null) {
             try {
             DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
@@ -335,7 +341,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
             }
         } else {
+<<<<<<< HEAD
+            //initialize key
+            
+=======
             throw new IOException("Failed to delete the object because the key was null");
+>>>>>>> 047cdecbf144aaf6fb2b2fab098171a24b8b1c97
         }
         
     }
@@ -448,7 +459,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: Empty
     @Override
     public boolean exists() throws IOException {
-        return false;
+        boolean exists = s3.doesObjectExist(bucketName, key);
+        return exists;
     }
 
     @Override
