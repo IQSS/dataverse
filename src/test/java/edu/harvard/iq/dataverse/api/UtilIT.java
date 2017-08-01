@@ -32,6 +32,7 @@ import static com.jayway.restassured.path.xml.XmlPath.from;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import org.apache.commons.lang3.math.NumberUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -1056,12 +1057,12 @@ public class UtilIT {
     }
 
     static Response dataCaptureModuleChecksumValidation(String datasetPersistentId, JsonObject jsonObject, String apiToken) {
-        String persistentIdInPath = datasetPersistentId; // Assume integer
-        String optionalQueryParam = ""; // No need for query param with doi in it if integer
-//        if (!":persistentId".equals(datasetPersistentId)) {
-//            optionalQueryParam = "?persistentId=" + persistentIdInPath;
-//            persistentIdInPath = ":persistentId";
-//        }
+        String persistentIdInPath = datasetPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If datasetPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(datasetPersistentId)) {
+            persistentIdInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetPersistentId;
+        }
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()

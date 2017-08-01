@@ -1058,6 +1058,13 @@ public class DatasetsIT {
         createDatasetResponse2.prettyPrint();
         Integer datasetId2 = JsonPath.from(createDatasetResponse2.body().asString()).getInt("data.id");
 
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+
         /**
          * Here we are pretending to be the Data Capture Module reporting on if
          * checksum validation success or failure. Don't notify the user on
@@ -1096,7 +1103,7 @@ public class DatasetsIT {
         badNews.add("datasetId", datasetId2);
         // Status options are documented at https://github.com/sbgrid/data-capture-module/blob/master/doc/api.md#post-upload
         badNews.add("status", "validation failed");
-        Response uploadFailed = UtilIT.dataCaptureModuleChecksumValidation(datasetId.toString(), badNews.build(), apiToken);
+        Response uploadFailed = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, badNews.build(), apiToken);
         uploadFailed.prettyPrint();
 
         uploadFailed.then().assertThat()
@@ -1114,19 +1121,20 @@ public class DatasetsIT {
                 .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
                 .statusCode(OK.getStatusCode());
 
-        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
-        datasetAsJson.prettyPrint();
-        datasetAsJson.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
-        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String uploadFolder = identifier;
 
+        /**
+         * The "extra testing" involves having this REST Assured test do two
+         * jobs done by the rsync script and the DCM. The rsync script creates
+         * "files.sha" and (if checksum validation succeeds) the DCM moves the
+         * files and the "files.sha" file into the uploadFolder.
+         */
         boolean doExtraTesting = false;
 
         if (doExtraTesting) {
 
             String SEP = java.io.File.separator;
+            // Set this to where you keep your files in dev. It might be nice to have an API to query to get this location from Dataverse.
             String dsDir = "/Users/pdurbin/dataverse/files/10.5072/FK2";
             java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + SEP + identifier));
             java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + SEP + identifier + SEP + uploadFolder));
@@ -1153,7 +1161,7 @@ public class DatasetsIT {
         goodNews.add("uploadFolder", uploadFolder);
         goodNews.add("datasetIdentifier", identifier);
         goodNews.add("totalSize", totalSize);
-        Response uploadSuccessful = UtilIT.dataCaptureModuleChecksumValidation(datasetId.toString(), goodNews.build(), apiToken);
+        Response uploadSuccessful = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, goodNews.build(), apiToken);
         /**
          * Errors here are expected unless you've set doExtraTesting to true to
          * do the jobs of the rsync script and the DCM to create the files.sha
