@@ -352,6 +352,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: Empty
     @Override
     public boolean isAuxObjectCached(String auxItemTag) throws IOException {
+        String key = null;
+        if (s3 == null) {
+            open();
+        }
+        if (dvObject instanceof DataFile) {
+            key = s3FileName + "." + auxItemTag;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath + "/" + auxItemTag;
+        }
+        try {
+            return s3.doesObjectExist(bucketName, key);
+        } catch (AmazonClientException ase) {
+                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+        }
         return false;
     }
     
@@ -380,19 +394,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             open(DataAccessOption.WRITE_ACCESS);
         }
         if (dvObject instanceof DataFile) {
-            key = s3FileName;
+            key = s3FileName + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
-            key = s3FolderPath;
+            key = s3FolderPath + "/" + auxItemTag;
         }
         try {
             File inputFile = fileSystemPath.toFile();
-            s3.putObject(new PutObjectRequest(bucketName, key + "." + auxItemTag, inputFile));
+            s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
         } catch (AmazonClientException ase) {
             System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
         }
     }
     
-    //FIXME: Empty
     // this method copies a local InputStream into this DataAccess Auxiliary location:
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
@@ -401,16 +414,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             open(DataAccessOption.WRITE_ACCESS);
         }
         if (dvObject instanceof DataFile) {
-            key = s3FileName;
+            key = s3FileName + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
-            key = s3FolderPath;
+            key = s3FolderPath + "/" + auxItemTag;
         }
         try {
             byte[] bytes = IOUtils.toByteArray(inputStream);
             long length = bytes.length;
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(length);
-            s3.putObject(bucketName, key + "." + auxItemTag, inputStream, metadata);
+            s3.putObject(bucketName, key, inputStream, metadata);
         } catch(IOException ioex) {
             String failureMsg = ioex.getMessage();
             
@@ -451,8 +464,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: Empty
     @Override
     public boolean exists() throws IOException {
-        boolean exists = s3.doesObjectExist(bucketName, key);
-        return exists;
+        //boolean exists = s3.doesObjectExist(bucketName, key);
+        //return exists;
+        return false;
     }
 
     @Override
