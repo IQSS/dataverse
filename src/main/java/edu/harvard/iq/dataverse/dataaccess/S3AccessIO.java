@@ -17,6 +17,9 @@ import com.amazonaws.partitions.PartitionsLoader;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.thirdparty.apache.http.client.methods.HttpRequestBase;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -190,6 +193,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: s3 or s3client..? + need key defined for this method
     @Override
     public void delete() throws IOException {
+        
         if (key != null) {
             try {
             DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
@@ -200,6 +204,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
         } else {
             //initialize key
+            
         }
         
     }
@@ -274,7 +279,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: Empty
     @Override
     public boolean exists() throws IOException {
-        return false;
+        boolean exists = s3.doesObjectExist(bucketName, key);
+        return exists;
     }
 
     @Override
