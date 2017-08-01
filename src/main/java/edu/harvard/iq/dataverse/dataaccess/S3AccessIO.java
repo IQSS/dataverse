@@ -453,6 +453,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: Empty
     @Override
     public String getStorageLocation() {
+        s3.getBucketLocation(s3FileName);
         return null;
     }
 
@@ -464,9 +465,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: Empty
     @Override
     public boolean exists() throws IOException {
-        //boolean exists = s3.doesObjectExist(bucketName, key);
-        //return exists;
-        return false;
+        String key = null;
+        if (dvObject instanceof DataFile) {
+            key = s3FileName;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath;
+        }
+        
+        boolean exists = s3.doesObjectExist(bucketName, key);
+        
+        return exists;
     }
 
     @Override
