@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 
 
 /**
@@ -178,12 +179,27 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         
     }
     
-    //FIXME: Empty
     @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
         if (s3 == null || !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
+        try {
+            byte[] bytes = IOUtils.toByteArray(inputStream);
+            long length = bytes.length;
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(length);
+            s3.putObject(bucketName, key, inputStream, metadata);
+        } catch (IOException ioex) {
+            String failureMsg = ioex.getMessage();
+            if (failureMsg == null) {
+                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3 Storage.";
+            }
+
+            throw new IOException(failureMsg);
+        }
+        //TODO:
+        // setSize(swiftFileObject.getContentLength());
 
     }
     
@@ -242,6 +258,23 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     // this method copies a local InputStream into this DataAccess Auxiliary location:
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
+        if (s3 == null) {
+            open();
+        }
+        try {
+            byte[] bytes = IOUtils.toByteArray(inputStream);
+            long length = bytes.length;
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(length);
+            s3.putObject(bucketName, key + "." + auxItemTag, inputStream, metadata);
+        } catch(IOException ioex) {
+            String failureMsg = ioex.getMessage();
+            
+            if (failureMsg == null) {
+                failureMsg = "Swift AccessIO: Unknown exception occured while saving a local InputStream as a Swift StoredObject";
+            }
+            throw new IOException(failureMsg);
+        }  
     }
     
     //FIXME: Empty
@@ -279,12 +312,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public WritableByteChannel getWriteChannel() throws IOException {
-        throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no write Channels associated with Swift objects.");
+        throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no write Channels associated with S3 objects.");
     }
     
     @Override  
     public OutputStream getOutputStream() throws IOException {
-        throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no output Streams associated with Swift objects.");
+        throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no output Streams associated with S3 objects.");
     }
     
     @Override
