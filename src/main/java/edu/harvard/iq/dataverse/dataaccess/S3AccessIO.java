@@ -440,9 +440,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return null;
     }
     
-    //FIXME: Empty
     @Override
     public void deleteAuxObject(String auxItemTag) throws IOException {
+        String key = null;
+        if (dvObject instanceof DataFile) {
+            key = s3FileName + "." + auxItemTag;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath + "/" + auxItemTag;
+        }
+        DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, key);
+        s3.deleteObject(dor);
+        if (key == null) {
+            throw new FileNotFoundException("No such Aux object: "+auxItemTag);
+        }
+        
     }
     
     //FIXME: Empty
