@@ -372,6 +372,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
+        String key = null;
+        if (s3 == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        if (dvObject instanceof DataFile) {
+            key = s3FileName;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath;
+        }
+        try {
+            File inputFile = fileSystemPath.toFile();
+            s3.putObject(new PutObjectRequest(bucketName, key + "." + auxItemTag, inputFile));
+        } catch (AmazonClientException ase) {
+            System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+        }
     }
     
     //FIXME: Empty
@@ -451,10 +466,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return null;
     }
 
-    @Override
-    public String getSwiftContainerName() {
-        return null;
-    }
     
     // Auxilary helper methods, S3-specific:
     // // FIXME: Refer to swift implementation while implementing S3
