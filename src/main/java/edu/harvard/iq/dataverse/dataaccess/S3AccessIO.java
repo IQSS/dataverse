@@ -67,15 +67,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         this.setIsLocalFile(false);
         awsCredentials = new ProfileCredentialsProvider().getCredentials();
         s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).withRegion(Regions.US_EAST_1).build();
-        
-        if(dvObject instanceof DataFile)
-        {
-            s3FolderPath=this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
-            s3FileName=s3FolderPath+"/"+this.getDataFile().getDisplayName();
-        }else if(dvObject instanceof Dataset)
-        {
-            s3FolderPath=this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
-            
+
+        if (dvObject instanceof DataFile) {
+            s3FolderPath = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+            s3FileName = s3FolderPath + "/" + this.getDataFile().getDisplayName();
+        } else if (dvObject instanceof Dataset) {
+            Dataset dataset = (Dataset)dvObject;
+            s3FolderPath = dataset.getAuthority() + "/" + dataset.getIdentifier();
         }
         
     }
@@ -84,9 +82,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private AmazonS3 s3 = null;
     private String bucketName = "testiqss-1239759fgsef34w4"; //name is global, no uppercase
     private String s3FolderPath;
-    String s3FileName;
+    private String s3FileName;
 
-    private String key = null;    
 //    private S3Object initializeS3Object(boolean writeAccess) throws IOException {
 //        return initializeS3Object(writeAccess, null);
 //    }
@@ -260,8 +257,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             File inputFile = fileSystemPath.toFile();
             if (dvObject instanceof DataFile) {
                 DataFile datafile = (DataFile)dvObject;
-
-                String key =  datafile.getOwner().getAuthority() + "/" + datafile.getOwner().getIdentifier() + "/" + datafile.getDisplayName();
             
                 if(!s3.doesBucketExist(bucketName)) { 
                     s3.createBucket(bucketName);
@@ -269,7 +264,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 //                if(s3.doesObjectExist(bucketName, key)){
 //                    System.out.println("Rohit Bhattacharjee File Exists!!");
 //                } else{
-                    s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
+                    s3.putObject(new PutObjectRequest(bucketName, s3FileName, inputFile));
 //                }
                     
                 newFileSize = inputFile.length();
@@ -294,8 +289,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
+        String key = null;
         if (s3 == null || !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
+        }
+        if (dvObject instanceof DataFile) {
+            key = s3FileName;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath;
         }
         try {
             byte[] bytes = IOUtils.toByteArray(inputStream);
@@ -319,6 +320,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: s3 or s3client..? + need key defined for this method
     @Override
     public void delete() throws IOException {
+        String key = null;
+        if (dvObject instanceof DataFile) {
+            key = s3FileName;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath;
+        }
         if (key != null) {
             try {
             DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
@@ -328,7 +335,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
             }
         } else {
-            //initialize key
+            throw new IOException("Failed to delete the object because the key was null");
         }
         
     }
@@ -371,8 +378,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     // this method copies a local InputStream into this DataAccess Auxiliary location:
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
-        if (s3 == null) {
-            open();
+        String key = null;
+        if (s3 == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        if (dvObject instanceof DataFile) {
+            key = s3FileName;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath;
         }
         try {
             byte[] bytes = IOUtils.toByteArray(inputStream);
