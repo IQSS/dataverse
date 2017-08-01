@@ -48,6 +48,13 @@ Here's the syntax for sending the JSON.
 
 In the case of failure, replace "validation passed" with "validation failed".
 
+Troubleshooting
+~~~~~~~~~~~~~~~
+
+The following low level command should only be used when troubleshooting the "import" code a DCM uses but is documented here for completeness.
+
+``curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$DV_BASE_URL/api/batch/jobs/import/datasets/files/$DATASET_DB_ID?uploadFolder=$UPLOAD_FOLDER&totalSize=$TOTAL_SIZE"``
+
 Repository Storage Abstraction Layer (RSAL)
 -------------------------------------------
 
