@@ -1173,7 +1173,9 @@ public class DatasetsIT {
         wrongDataset.add("userId", userId);
         wrongDataset.add("datasetId", "78921457982457921");
         wrongDataset.add("status", "validation passed");
+        UtilIT.makeSuperUser(username);
         Response datasetNotFound = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
                 .body(wrongDataset.build().toString())
                 .contentType(ContentType.JSON)
                 .post("/api/datasets/" + "78921457982457921" + "/dataCaptureModule/checksumValidation");
@@ -1189,6 +1191,7 @@ public class DatasetsIT {
         // Status options are documented at https://github.com/sbgrid/data-capture-module/blob/master/doc/api.md#post-upload
         badNews.add("status", "validation failed");
         Response uploadFailed = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
                 .body(badNews.build().toString())
                 .contentType(ContentType.JSON)
                 .post("/api/datasets/" + datasetId + "/dataCaptureModule/checksumValidation");
@@ -1216,8 +1219,6 @@ public class DatasetsIT {
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String uploadFolder = identifier;
-
-        UtilIT.makeSuperUser(username);
 
         boolean doExtraTesting = false;
 

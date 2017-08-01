@@ -628,13 +628,19 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
-    /**
-     * @todo How will authentication be handled for this method? 
-     */
     @POST
     @Path("{identifier}/dataCaptureModule/checksumValidation")
     public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) throws IOException {
         logger.fine("jsonFromDcm: " + jsonFromDcm);
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!authenticatedUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
         String statusMessageFromDcm = jsonFromDcm.getString("status");
         try {
             Dataset dataset = findDatasetOrDie(id);
