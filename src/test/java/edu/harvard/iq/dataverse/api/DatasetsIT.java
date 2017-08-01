@@ -1256,24 +1256,36 @@ public class DatasetsIT {
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .post("/api/datasets/" + datasetId + "/dataCaptureModule/checksumValidation");
+        /**
+         * Errors here are expected unless you've set doExtraTesting to true to
+         * do the jobs of the rsync script and the DCM to create the files.sha
+         * file and put it and the data files in place. You might see stuff
+         * like: "message": "Uploaded files have passed checksum validation but
+         * something went wrong while attempting to put the files into
+         * Dataverse. Status code was 400 and message was 'Dataset directory is
+         * invalid.'."
+         */
         uploadSuccessful.prettyPrint();
-
-        uploadSuccessful.then().assertThat()
-                .body("data.message", equalTo("FileSystemImportJob in progress"))
-                .statusCode(200);
 
         if (doExtraTesting) {
 
-            long millisecondsNeededForFileSystemImportJobToFinish = 1000;
-            Thread.sleep(millisecondsNeededForFileSystemImportJobToFinish);
-            Response datasetAsJson2 = UtilIT.nativeGet(datasetId, apiToken);
-            datasetAsJson2.prettyPrint();
-            datasetAsJson2.then().assertThat()
-                    .body("data.latestVersion.files[0].dataFile.filename", equalTo(identifier))
-                    .body("data.latestVersion.files[0].dataFile.contentType", equalTo("application/vnd.dataverse.file-package"))
-                    .body("data.latestVersion.files[0].dataFile.filesize", equalTo(totalSize))
-                    .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"))
-                    .statusCode(OK.getStatusCode());
+            uploadSuccessful.then().assertThat()
+                    .body("data.message", equalTo("FileSystemImportJob in progress"))
+                    .statusCode(200);
+
+            if (doExtraTesting) {
+
+                long millisecondsNeededForFileSystemImportJobToFinish = 1000;
+                Thread.sleep(millisecondsNeededForFileSystemImportJobToFinish);
+                Response datasetAsJson2 = UtilIT.nativeGet(datasetId, apiToken);
+                datasetAsJson2.prettyPrint();
+                datasetAsJson2.then().assertThat()
+                        .body("data.latestVersion.files[0].dataFile.filename", equalTo(identifier))
+                        .body("data.latestVersion.files[0].dataFile.contentType", equalTo("application/vnd.dataverse.file-package"))
+                        .body("data.latestVersion.files[0].dataFile.filesize", equalTo(totalSize))
+                        .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"))
+                        .statusCode(OK.getStatusCode());
+            }
         }
     }
 
