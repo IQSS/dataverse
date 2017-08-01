@@ -629,9 +629,7 @@ public class Datasets extends AbstractApiBean {
     }
     
     /**
-     * @todo How will authentication be handled for this method? SEK FIXME - Why
-     * is there an identifier in the path and a datasetId in the json? Are there
-     * any permissions issues?
+     * @todo How will authentication be handled for this method? 
      */
     @POST
     @Path("{identifier}/dataCaptureModule/checksumValidation")
