@@ -274,6 +274,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
         long newFileSize = -1;
+        String storageIdentifier = dvObject.getStorageIdentifier();
 
         if (s3 == null || !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
@@ -287,12 +288,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 if(!s3.doesBucketExist(bucketName)) { 
                     s3.createBucket(bucketName);
                 } 
-//                if(s3.doesObjectExist(bucketName, key)){
-//                    System.out.println("Rohit Bhattacharjee File Exists!!");
-//                } else{
-                    s3.putObject(new PutObjectRequest(bucketName, s3FileName, inputFile));
-//                }
+
+                s3.putObject(new PutObjectRequest(bucketName, s3FileName, inputFile));
                     
+                dvObject.setStorageIdentifier("s3://" + storageIdentifier);
                 newFileSize = inputFile.length();
             } else {
                 throw new IOException("DvObject type other than datafile is not yet supported");
@@ -484,10 +483,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath + "/" + auxItemTag;
         }
-        DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, key);
-        s3.deleteObject(dor);
-        if (key == null) {
-            throw new FileNotFoundException("No such Aux object: "+auxItemTag);
+        try {
+            DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, key);
+            s3.deleteObject(dor);
+        } catch (AmazonClientException ase) {
+                System.out.println("S3AccessIO: Unable to delete object    " + ase.getMessage());
         }
         
     }
