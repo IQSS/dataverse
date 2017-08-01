@@ -87,7 +87,7 @@ public class FileRecordJobResource extends AbstractApiBean {
                 File directory = new File(System.getProperty("dataverse.files.directory")
                         + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
                 if (!isValidDirectory(directory)) {
-                    return error(Response.Status.BAD_REQUEST, "Dataset directory is invalid.");    
+                    return error(Response.Status.BAD_REQUEST, "Dataset directory is invalid. " + directory);    
                 }
                 
                 if (Strings.isNullOrEmpty(uploadFolder)) {
