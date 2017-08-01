@@ -85,106 +85,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private String bucketName = "testiqss-1239759fgsef34w4"; //name is global, no uppercase
     private String s3FolderPath;
     private String s3FileName;
-
-//    private S3Object initializeS3Object(boolean writeAccess) throws IOException {
-//        return initializeS3Object(writeAccess, null);
-//    }
-//    
-//    private S3Object  initializeS3Object(boolean writeAccess, String auxItemTag) throws IOException {
-////        String swiftEndPoint = null;
-////        String swiftContainerName = null;
-////        
-//        S3Object fileObject;
-//        List<String> auxFiles = null; 
-//        String s3FolderPathSeparator = "/";
-//        String storageIdentifier = dvObject.getStorageIdentifier();
-//        
-//         if (dvObject instanceof DataFile) {
-//            Dataset owner = this.getDataFile().getOwner();
-//
-//            if (storageIdentifier.startsWith("s3://")) {
-//               
-//                if ( StringUtil.isEmpty(s3FileName)) {
-//                    // all of these things need to be specified, for this to be a valid Swift location
-//                    // identifier.
-//                    throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
-//                }
-//
-//                if (auxItemTag != null) {
-//                    s3FileName = s3FileName.concat("."+auxItemTag);
-//                }
-//            } else if (this.isReadAccess) {
-//                // An attempt to call Swift driver,  in a Read mode on a non-swift stored datafile
-//                // object!
-//                throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object.");
-//            } else if (this.isWriteAccess) {   
-//                
-//                s3FolderPath = owner.getAuthority() + s3FolderPathSeparator + owner.getIdentifier() + s3FolderPathSeparator;
-////                 String key =  datafile.getOwner().getAuthority() + "/" + datafile.getOwner().getIdentifier() + "/" + datafile.getDisplayName();
-//            
-//                s3FileName = s3FolderPath+this.getDataFile().getDisplayName();
-//                //Storage Identifier is now updated after the object is uploaded on s3.
-//                dvObject.setStorageIdentifier("s3://" + s3FolderPath + s3FolderPathSeparator + s3FileName);
-//            } else {
-//                throw new IOException("SwiftAccessIO: unknown access mode.");
-//            }
-//        } else if (dvObject instanceof Dataset) {
-//            Dataset dataset = this.getDataset();
-//
-//            if (storageIdentifier.startsWith("s3://")) {
-//                // This is a call on an already existing swift object. 
-//
-//                //We will not have a file name, just an aux tag
-//                if (auxItemTag != null) {
-//                    s3FileName = auxItemTag;
-//                } else {
-//                    throw new IOException("Dataset related auxillary files require an auxItemTag");
-//                }       
-//
-//                if (StringUtil.isEmpty(s3FileName) ) {
-//                    // all of these things need to be specified, for this to be a valid Swift location
-//                    // identifier.
-//                    throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
-//                }
-//
-//            } else if (this.isReadAccess) {
-//                // An attempt to call Swift driver,  in a Read mode on a non-swift stored datafile
-//                // object!
-//                throw new IOException("IO driver mismatch: SwiftAccessIO called on a non-swift stored object.");
-//            } else if (this.isWriteAccess) {
-//                s3FolderPath= dataset.getAuthority() + s3FolderPathSeparator + dataset.getIdentifier() + s3FolderPathSeparator;
-//                s3FileName = auxItemTag;
-//                dvObject.setStorageIdentifier("s3://"+ s3FolderPath);
-//            } else {
-//                throw new IOException("SwiftAccessIO: unknown access mode.");
-//            }
-//        } else {
-//            //for future scope, if dataverse is decided to be stored in swift storage containersopen    
-//            throw new FileNotFoundException("Error initializing swift object");  
-//        }
-//
-//        fileObject = this.swiftContainer.getObject(swiftFileName);
-//
-//        // If this is the main, primary datafile object (i.e., not an auxiliary 
-//        // object for a primary file), we also set the file download url here: 
-//        if (auxItemTag == null && dvObject instanceof DataFile) {
-//            setRemoteUrl(getSwiftFileURI(fileObject));
-//            logger.fine(getRemoteUrl() + " success; write mode: "+writeAccess);
-//        } else {
-//            logger.fine("sucessfully opened AUX object "+auxItemTag+" , write mode: "+writeAccess);
-//        }
-//
-//        if (!writeAccess && !fileObject.exists()) {
-//            throw new FileNotFoundException("SwiftAccessIO: DvObject " + swiftFileName + " does not exist (Dataverse dvObject id: " + dvObject.getId());
-//        }
-//
-//        auxFiles = null; 
-//
-//        return fileObject;
-// 
-//    }
-//    
-    //FIXME: Finish
+  
     @Override
     public void open(DataAccessOption... options) throws IOException {
         DataAccessRequest req = this.getRequest();
@@ -198,7 +99,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             isReadAccess = true;
         }
         
-        //FIXME: Fill. Most of the content in here I (Matthew) don't really understand. copypaste
+        //FIXME: Finish? 
         if (dvObject instanceof DataFile) {
             DataFile dataFile = this.getDataFile();
             
@@ -210,13 +111,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 throw new IOException("Data Access: No local storage identifier defined for this datafile.");
             }
             if (isReadAccess) {
-                s3object=s3.getObject(new GetObjectRequest(bucketName,s3FileName));
-                InputStream in=s3object.getObjectContent();
-                
-                if(in==null){
-                    throw new IOException ("Cannot get Object" + s3FileName);
+                s3object = s3.getObject(new GetObjectRequest(bucketName, s3FileName));
+                InputStream in = s3object.getObjectContent();
+
+                if (in == null) {
+                    throw new IOException("Cannot get Object" + s3FileName);
                 }
-                
+
                 this.setInputStream(in);
                 
                 setChannel(Channels.newChannel(in));
@@ -256,8 +157,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             
         } else if (dvObject instanceof Dataset) {
             
-            Dataset dataset=this.getDataset();
-            dataset.setStorageIdentifier(s3FolderPath);
+            Dataset dataset = this.getDataset();
+            dataset.setStorageIdentifier("s3://" + s3FolderPath);
             
             
         } else if (dvObject instanceof Dataverse) {
@@ -269,8 +170,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     // StorageIO method for copying a local Path (for ex., a temp file), into this DataAccess location:
-
-    //FIXME: Incomplete
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
         long newFileSize = -1;
@@ -337,12 +236,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             throw new IOException(failureMsg);
         }
-        //TODO:
-        // setSize(swiftFileObject.getContentLength());
+        setSize(s3.getObjectMetadata(bucketName, key).getContentLength());
 
     }
     
-    //FIXME: s3 or s3client..? + need key defined for this method
     @Override
     public void delete() throws IOException {
 
@@ -356,7 +253,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             try {
             DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
             s3.deleteObject(deleteObjRequest);
-            //s3client.deleteObject(bucketName, key);
             } catch (AmazonClientException ase) {
                 System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
             }
@@ -369,10 +265,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: Empty
     @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
-        return null;
+        if (isWriteAccessRequested(options)) {
+            throw new UnsupportedDataAccessOperationException("S3AccessIO: write mode openAuxChannel() not yet implemented in this storage driver.");
+        }
+        
+        InputStream fin = getAuxFileAsInputStream(auxItemTag);
+
+        if (fin == null) {
+            throw new IOException("Failed to open auxilary file " + auxItemTag + " for S3 file");
+        }
+        
+        return Channels.newChannel(fin);
     }
 
-    //FIXME: Empty
     @Override
     public boolean isAuxObjectCached(String auxItemTag) throws IOException {
         String key = null;
@@ -509,7 +414,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         throw new UnsupportedDataAccessOperationException("S3AccessIO: this is a remote DataAccess IO object, it has no local filesystem path associated with it.");
     }
     
-    //FIXME: Empty
     @Override
     public boolean exists() throws IOException {
         String key = null;
@@ -538,7 +442,22 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
-        return null;
+        String key = null;
+        if (s3 == null) {
+            open();
+        }
+        if (dvObject instanceof DataFile) {
+            key = s3FileName + "." + auxItemTag;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath + "/" + auxItemTag;
+        }
+        try {
+            S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, key));
+            return s3object.getObjectContent();
+        } catch (AmazonClientException ase) {
+                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+        }
+        throw new IOException("S3AccessIO: Failed to get aux file as input stream");
     }
 
     
