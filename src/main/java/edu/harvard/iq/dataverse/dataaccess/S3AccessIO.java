@@ -188,6 +188,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public void open(DataAccessOption... options) throws IOException {
         DataAccessRequest req = this.getRequest();
+        S3Object s3object=null;
         
         if (isWriteAccessRequested(options)) {
             isWriteAccess = true;
@@ -209,13 +210,32 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 throw new IOException("Data Access: No local storage identifier defined for this datafile.");
             }
             if (isReadAccess) {
+                s3object=s3.getObject(new GetObjectRequest(bucketName,s3FileName));
+                InputStream in=s3object.getObjectContent();
+                
+                if(in==null){
+                    throw new IOException ("Cannot get Object" + s3FileName);
+                }
+                
+                this.setInputStream(in);
+                
+                setChannel(Channels.newChannel(in));
+                this.setSize(in.available());
+                
+                  if (dataFile.getContentType() != null
+                        && dataFile.getContentType().equals("text/tab-separated-values")
+                        && dataFile.isTabularData()
+                        && dataFile.getDataTable() != null
+                        && (!this.noVarHeader())) {
+
+                    List<DataVariable> datavariables = dataFile.getDataTable().getDataVariables();
+                    String varHeaderLine = generateVariableHeader(datavariables);
+                    this.setVarHeader(varHeaderLine);
+                }
+                
+                
                 
             } else if (isWriteAccess) {
-                //create a real init function
-                awsCredentials = new ProfileCredentialsProvider().getCredentials();
-                s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).withRegion(Regions.US_EAST_1).build();
-                
-                //saveInputStream();
                 
                 
                 //I'm not sure what I actually need here. 
@@ -235,6 +255,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             
         } else if (dvObject instanceof Dataset) {
+            
+            Dataset dataset=this.getDataset();
+            dataset.setStorageIdentifier(s3FolderPath);
+            
             
         } else if (dvObject instanceof Dataverse) {
 
@@ -452,9 +476,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return null;
     }
     
-    //FIXME: Empty
     @Override
     public void deleteAuxObject(String auxItemTag) throws IOException {
+        String key = null;
+        if (dvObject instanceof DataFile) {
+            key = s3FileName + "." + auxItemTag;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath + "/" + auxItemTag;
+        }
+        DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, key);
+        s3.deleteObject(dor);
+        if (key == null) {
+            throw new FileNotFoundException("No such Aux object: "+auxItemTag);
+        }
+        
     }
     
     //FIXME: Empty
