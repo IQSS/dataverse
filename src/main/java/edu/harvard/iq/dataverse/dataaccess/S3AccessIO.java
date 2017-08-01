@@ -322,16 +322,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //FIXME: s3 or s3client..? + need key defined for this method
     @Override
     public void delete() throws IOException {
-<<<<<<< HEAD
-        
-=======
+
         String key = null;
         if (dvObject instanceof DataFile) {
             key = s3FileName;
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath;
         }
->>>>>>> 047cdecbf144aaf6fb2b2fab098171a24b8b1c97
         if (key != null) {
             try {
             DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
@@ -341,12 +338,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
             }
         } else {
-<<<<<<< HEAD
-            //initialize key
-            
-=======
             throw new IOException("Failed to delete the object because the key was null");
->>>>>>> 047cdecbf144aaf6fb2b2fab098171a24b8b1c97
         }
         
     }
