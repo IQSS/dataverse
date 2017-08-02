@@ -51,6 +51,9 @@ import org.apache.commons.io.IOUtils;
 /**
  *
  * @author Matthew A Dunlap
+ * @author Sarah Ferry
+ * @author Rohit B
+ * @author Brian Silverstein
  * @param <T> what it stores
  */
 /* 
@@ -84,13 +87,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private AWSCredentials awsCredentials = null;
     private AmazonS3 s3 = null;
-    private String bucketName = "testiqss-1239759fgsef34w4"; //name is global, no uppercase
+    private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String s3FolderPath;
     private String s3FileName;
     private String storageIdentifier;
   
     @Override
     public void open(DataAccessOption... options) throws IOException {
+        if(bucketName == null || !s3.doesBucketExist(bucketName)) { 
+            throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
+        } 
+        
         DataAccessRequest req = this.getRequest();
         S3Object s3object=null;
         
@@ -184,10 +191,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             File inputFile = fileSystemPath.toFile();
             if (dvObject instanceof DataFile) {            
-                if(!s3.doesBucketExist(bucketName)) { 
-                    s3.createBucket(bucketName);
-                } 
-
                 s3.putObject(new PutObjectRequest(bucketName, s3FileName, inputFile));
                     
                 newFileSize = inputFile.length();
