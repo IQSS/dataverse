@@ -70,7 +70,7 @@ public class ExportService {
     }
 
     public List< String[]> getExportersLabels() {
-        List<String[]> retList = new ArrayList();
+        List<String[]> retList = new ArrayList<>();
         Iterator<Exporter> exporters = ExportService.getInstance().loader.iterator();
         while (exporters.hasNext()) {
             Exporter e = exporters.next();
@@ -121,7 +121,7 @@ public class ExportService {
                 br.close();
                 return sb.toString();
             }
-        } catch (Exception ex) {
+        } catch (ExportException | IOException ex) {
             //ex.printStackTrace();
             return null;
         }

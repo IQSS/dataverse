@@ -309,12 +309,12 @@ public class MailServiceBean implements java.io.Serializable {
     public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment){       
         
         String messageText = ResourceBundle.getBundle("Bundle").getString("notification.email.greeting");
-        DatasetVersion version = null;
-        Dataset dataset = null;
-        DvObject dvObj = null;
-        String dvObjURL = null;
-        String dvObjTypeStr = null;
-        String pattern ="";
+        DatasetVersion version;
+        Dataset dataset;
+        DvObject dvObj;
+        String dvObjURL;
+        String dvObjTypeStr;
+        String pattern;
 
         switch (userNotification.getType()) {
             case ASSIGNROLE:
@@ -508,7 +508,9 @@ public class MailServiceBean implements java.io.Serializable {
             case REVOKEROLE:
                 // Can either be a dataverse or dataset, so search both
                 Dataverse dataverse = dataverseService.find(userNotification.getObjectId());
-                if (dataverse != null) return dataverse;
+                if (dataverse != null) {
+                    return dataverse;
+                }
 
                 Dataset dataset = datasetService.find(userNotification.getObjectId());
                 return dataset;

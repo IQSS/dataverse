@@ -335,7 +335,7 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-        private Long numberOfFilesToShow = new Long(25);
+        private Long numberOfFilesToShow = (long) 25;
 
     public Long getNumberOfFilesToShow() {
         return numberOfFilesToShow;
@@ -1585,7 +1585,7 @@ public class DatasetPage implements java.io.Serializable {
                 commandEngine.submit(cmd);
                 JsfHelper.addSuccessMessage(JH.localize("dataverse.publish.success"));
 
-            } catch (Exception ex) {
+            } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
                 JsfHelper.addErrorMessage(JH.localize("dataverse.publish.failure"));
 
@@ -1784,7 +1784,7 @@ public class DatasetPage implements java.io.Serializable {
     
     public String deleteDataset() {
 
-        Command cmd;
+        DestroyDatasetCommand cmd;
         try {
             cmd = new DestroyDatasetCommand(dataset, dvRequestService.getDataverseRequest());
             commandEngine.submit(cmd);
@@ -1815,7 +1815,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String deleteDatasetVersion() {
-        Command cmd;
+        DeleteDatasetVersionCommand cmd;
         try {
             cmd = new DeleteDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
             commandEngine.submit(cmd);
@@ -2256,9 +2256,9 @@ public class DatasetPage implements java.io.Serializable {
                 // the file was just added during this step, so in addition to 
                 // removing it from the fileMetadatas (for display), we also remove it from 
                 // the newFiles list and the dataset's files, so it won't get uploaded at all
-                Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
+                Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
-                    FileMetadata fmd = (FileMetadata) fmit.next();
+                    FileMetadata fmd = fmit.next();
                     if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
                         fmit.remove();
                         break;
@@ -2734,7 +2734,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<DatasetVersion> resetReleasedVersionTabList() {
-        List<DatasetVersion> retList = new ArrayList();
+        List<DatasetVersion> retList = new ArrayList<>();
         for (DatasetVersion version : dataset.getVersions()) {
             if (version.isReleased() || version.isArchived()) {
                 retList.add(version);
@@ -3111,7 +3111,7 @@ public class DatasetPage implements java.io.Serializable {
         selectedTags = null;
         selectedTags = new String[0];
         
-        List selectedCategoriesByName= new ArrayList<>();
+        List<String> selectedCategoriesByName= new ArrayList<>();
         for (FileMetadata fm : selectedFiles) {
             if (fm.getCategories() != null) {
                 for (int i = 0; i < fm.getCategories().size(); i++) {
@@ -3127,7 +3127,7 @@ public class DatasetPage implements java.io.Serializable {
         if (selectedCategoriesByName.size() > 0) {
             selectedTags = new String[selectedCategoriesByName.size()];
             for (int i = 0; i < selectedCategoriesByName.size(); i++) {
-                selectedTags[i] = (String) selectedCategoriesByName.get(i);
+                selectedTags[i] = selectedCategoriesByName.get(i);
             }
         }
         Arrays.sort(selectedTags);
@@ -3162,15 +3162,13 @@ public class DatasetPage implements java.io.Serializable {
                         }
                         if (fmd.getDataFile().isTabularData()) {
                             fmd.getDataFile().setTags(null);
-                            for (int i = 0; i < selectedTabFileTags.length; i++) {
-
+                            for (String selectedTabFileTag : selectedTabFileTags) {
                                 DataFileTag tag = new DataFileTag();
                                 try {
-                                    tag.setTypeByLabel(selectedTabFileTags[i]);
+                                    tag.setTypeByLabel(selectedTabFileTag);
                                     tag.setDataFile(fmd.getDataFile());
                                     fmd.getDataFile().addTag(tag);
-
-                                } catch (IllegalArgumentException iax) {
+                                }catch (IllegalArgumentException iax) {
                                     // ignore 
                                 }
                             }
@@ -3492,7 +3490,7 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
        
-        Long idForNotification = new Long(0);
+        Long idForNotification = (long) 0;
         if (fileIdString != null) {
             String[] ids = fileIdString.split(",");
             for (String id : ids) {

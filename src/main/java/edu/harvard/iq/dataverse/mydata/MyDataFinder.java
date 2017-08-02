@@ -54,7 +54,7 @@ public class MyDataFinder {
     public String errorMessage = null;
     // --------------------
 
-    public Map<Long, Boolean> harvestedDataverseIds = new HashMap();
+    public Map<Long, Boolean> harvestedDataverseIds = new HashMap<>();
 
     // Populated in initial query.  DvObject ids -- regardless of Dtype,
     // are sorted into respective buckets in regard to permissions.
@@ -63,12 +63,12 @@ public class MyDataFinder {
     // ----------------------------
     // POPULATED IN STEP 1 (1st query)
     // ----------------------------
-    public Map<Long, Long> childToParentIds = new HashMap();
+    public Map<Long, Long> childToParentIds = new HashMap<>();
     public Map<Long, Boolean> idsWithDataversePermissions = new HashMap<>();  // { role id : true }
     public Map<Long, Boolean> idsWithDatasetPermissions = new HashMap<>();  // { role id : true }
     public Map<Long, Boolean> idsWithFilePermissions = new HashMap<>();  // { role id : true }
 
-    private List<Long> directDvObjectIds = new ArrayList<Long>();
+    private List<Long> directDvObjectIds = new ArrayList<>();
 
     // Lists later used to format Solr Queries
     // 
@@ -132,12 +132,12 @@ public class MyDataFinder {
         // ----------------------------
         // POPULATED IN STEP 1 (1st query)
         // ----------------------------
-        this.childToParentIds = new HashMap();
+        this.childToParentIds = new HashMap<>();
         this.idsWithDataversePermissions = new HashMap<>();  // { role id : true }
         this.idsWithDatasetPermissions = new HashMap<>();  // { role id : true }
         this.idsWithFilePermissions = new HashMap<>();  // { role id : true }
 
-        this.directDvObjectIds = new ArrayList<Long>();
+        this.directDvObjectIds = new ArrayList<>();
 
         // Lists later used to format Solr Queries
         // 

@@ -32,8 +32,8 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
 
     @Override
     public int compare(String o1, String o2) {
-        List tokenizedList1 = getTokenizedList(o1);
-        List tokenizedList2 = getTokenizedList(o2);
+        List<Object> tokenizedList1 = getTokenizedList(o1);
+        List<Object> tokenizedList2 = getTokenizedList(o2);
 
         for (int i = 0; i < Math.min(tokenizedList1.size(), tokenizedList2.size()); i++) {
             Object token1 = tokenizedList1.get(i);
@@ -41,7 +41,7 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
 
             if (token1 instanceof BigDecimal) {
                 if (token2 instanceof BigDecimal) {
-                    int compareVal = ((BigDecimal) token1).compareTo((BigDecimal) token2);
+                    int compareVal = ((Comparable<BigDecimal>) token1).compareTo((BigDecimal) token2);
                     if (compareVal != 0) {
                         return compareVal;
                     }
@@ -54,7 +54,7 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
                 return 1; // token2 is a number, token1 is  not
 
             } else {
-                int compareVal = ((String) token1).compareTo((String) token2);
+                int compareVal = ((Comparable<String>) token1).compareTo((String) token2);
                 if (compareVal != 0) {
                     return compareVal;
                 }
@@ -62,7 +62,7 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
         }
 
         // they match up, so compare based on who stll has tokens
-        return new Integer(tokenizedList1.size()).compareTo(new Integer(tokenizedList2.size()));
+        return new Integer(tokenizedList1.size()).compareTo(tokenizedList2.size());
     }
 
     /* this method returns a list of the String as tokens of BigDecimals and Strings
@@ -76,8 +76,8 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
     // it is in a proper grouping (i.e. 1,00 is treated as 100, even if that is not a standard way of writing it)
     // a '-' is only used to denote negative if it is the first character of the String
     */
-    private List getTokenizedList(String value) {
-        List tokenizedList = new ArrayList();
+    private List<Object> getTokenizedList(String value) {
+        List<Object> tokenizedList = new ArrayList<>();
         char[] charArray = value.trim().toCharArray();
 
         StringBuffer currentToken = new StringBuffer("");

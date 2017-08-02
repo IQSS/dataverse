@@ -21,7 +21,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
@@ -48,8 +48,8 @@ public class WorldMapTokenServiceBean {
      * 
      * Retrieve a fresh token to map a Dataverse file on GeoConnect
      * 
-     * @param dataFileID
-     * @param dvUserID
+     * @param dataFile
+     * @param dvUser
      * @return WorldMapToken
      */
     @TransactionAttribute(REQUIRES_NEW) 
@@ -71,7 +71,7 @@ public class WorldMapTokenServiceBean {
         if (pk==null){
             return null;
         }
-        return (WorldMapToken) em.find(WorldMapToken.class, pk);
+        return em.find(WorldMapToken.class, pk);
     }
     
 
@@ -107,7 +107,7 @@ public class WorldMapTokenServiceBean {
     */
     public void deleteExpiredTokens(){
 
-        Query query = em.createQuery("select object(w) from WorldMapToken as w where w.hasExpired IS TRUE");// order by o.name");
+        TypedQuery<WorldMapToken> query = em.createQuery("select object(w) from WorldMapToken as w where w.hasExpired IS TRUE", WorldMapToken.class);// order by o.name");
         List<WorldMapToken> tokenList = query.getResultList();
         for (WorldMapToken wmToken : tokenList) {
            // em.remove(token);

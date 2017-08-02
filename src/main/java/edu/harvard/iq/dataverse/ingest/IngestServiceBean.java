@@ -692,7 +692,6 @@ public class IngestServiceBean {
             storageIO = dataFile.getStorageIO();
             storageIO.open();
              
-            
             if (storageIO.isLocalFile()) {
                 inputStream = new BufferedInputStream(storageIO.getInputStream());
             } else {
