@@ -29,7 +29,7 @@
                     <div id="topDatasetBlock" class="row">
                         <div id="actionButtonBlock" class="col-xs-12">
                             <!-- Metrics -->
-                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{!(widgetWrapper.widgetView or settingsWrapper.rsyncWorkflow or FilePage.fileMetadata.datasetVersion.deaccessioned)}">
+                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{!(widgetWrapper.widgetView or settingsWrapper.rsyncDownload or FilePage.fileMetadata.datasetVersion.deaccessioned)}">
                                 <div id="metrics-label" class="col-xs-4 small text-center">
                                     <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                 </div>
@@ -272,7 +272,7 @@
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
-                                    rendered="#{settingsWrapper.rsyncWorkflow}">
+                                    rendered="#{settingsWrapper.rsyncDownload}">
                                 <p class="help-block">#{bundle['file.dataFilesTab.dataAccess.info']}</p>
                                 <div class="row">
                                     <div class="form-group col-xs-12">
