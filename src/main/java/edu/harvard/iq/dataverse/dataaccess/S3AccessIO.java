@@ -176,8 +176,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             File inputFile = fileSystemPath.toFile();
             if (dvObject instanceof DataFile) {
-                DataFile datafile = (DataFile)dvObject;
-            
                 if(!s3.doesBucketExist(bucketName)) { 
                     s3.createBucket(bucketName);
                 } 
@@ -409,7 +407,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     @Override
-    public void deleteAuxObject(String auxItemTag) throws IOException {
+    public void deleteAuxObject(String auxItemTag) {
         String key = null;
         if (dvObject instanceof DataFile) {
             key = s3FileName + "." + auxItemTag;
@@ -438,12 +436,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public Path getFileSystemPath() throws IOException {
+    public Path getFileSystemPath() throws UnsupportedDataAccessOperationException {
         throw new UnsupportedDataAccessOperationException("S3AccessIO: this is a remote DataAccess IO object, it has no local filesystem path associated with it.");
     }
     
     @Override
-    public boolean exists() throws IOException {
+    public boolean exists() {
         String key = null;
         if (dvObject instanceof DataFile) {
             key = s3FileName;
@@ -459,12 +457,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public WritableByteChannel getWriteChannel() throws IOException {
+    public WritableByteChannel getWriteChannel() throws UnsupportedDataAccessOperationException {
         throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no write Channels associated with S3 objects.");
     }
     
     @Override  
-    public OutputStream getOutputStream() throws IOException {
+    public OutputStream getOutputStream() throws UnsupportedDataAccessOperationException {
         throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no output Streams associated with S3 objects.");
     }
     
