@@ -432,9 +432,46 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         
     }
     
-    //FIXME: Empty
+    //TODO: is this efficient? i.e. number of calls to S3
     @Override
     public void deleteAllAuxObjects() throws IOException {
+        String prefix = null;
+        if (s3 == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        if (dvObject instanceof DataFile) {
+            prefix = s3FileName + ".";
+        } else if (dvObject instanceof Dataset) {
+            prefix = s3FolderPath + "/";
+        }
+                
+        List<String> ret = new ArrayList<>();
+        ObjectListing storedAuxFilesList = null;
+        List<S3ObjectSummary> storedAuxFilesSummary = null;
+        logger.info("S3 prefix: " + prefix);
+        try {
+            ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
+            storedAuxFilesList = s3.listObjects(req);
+            storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
+            while (storedAuxFilesList.isTruncated()) {
+                logger.info("S3 listAuxObjects: going to second page of list");
+                storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
+                storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
+            }
+        } catch (AmazonClientException ase) {
+            System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+        }
+        
+        for (S3ObjectSummary item : storedAuxFilesSummary) {
+            String key = item.getKey();
+            logger.info("Trying to delete auxiliary file " + key);
+            try {
+                DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, key);
+                s3.deleteObject(dor);
+            } catch (AmazonClientException ase) {
+                    System.out.println("S3AccessIO: Unable to delete auxilary object    " + ase.getMessage());
+            }
+        }
     }
     
     //FIXME: Empty
