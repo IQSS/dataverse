@@ -76,13 +76,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         this.setIsLocalFile(false);
         awsCredentials = new ProfileCredentialsProvider().getCredentials();
         s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).withRegion(Regions.US_EAST_1).build();
-        if (dvObject instanceof DataFile) {
-            s3FolderPath = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
-            s3FileName = s3FolderPath + "/" + this.getDataFile().getStorageIdentifier();
-        } else if (dvObject instanceof Dataset) {
-            Dataset dataset = (Dataset)dvObject;
-            s3FolderPath = dataset.getAuthority() + "/" + dataset.getIdentifier();
-        }
+        
     }
 
     private AWSCredentials awsCredentials = null;
@@ -109,9 +103,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             isReadAccess = true;
         }
         
+//        Dataset dataset = (Dataset)dvObject;
+        
         //FIXME: Finish? 
         if (dvObject instanceof DataFile) {
+            
             DataFile dataFile = this.getDataFile();
+            s3FolderPath = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+//            s3FileName = this.getDataFile().getStorageIdentifier();
             
             if (req != null && req.getParameter("noVarHeader") != null) {
                 this.setNoVarHeader(true);
@@ -123,7 +122,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             if (isReadAccess) {
                 storageIdentifier = dvObject.getStorageIdentifier();
                 if (storageIdentifier.startsWith("s3://")) {
-                    bucketName = storageIdentifier.substring(storageIdentifier.indexOf(":") + 3, storageIdentifier.lastIndexOf(":"));
+                    logger.info("Rohit BHATTA: "+storageIdentifier);
+                    bucketName = storageIdentifier.substring(5, storageIdentifier.lastIndexOf(":"));
                     s3FileName = s3FolderPath + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
                 }
                 logger.info("s3FileName: " + s3FileName);
@@ -152,9 +152,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 }
                 
             } else if (isWriteAccess) {
+                
+                
                 storageIdentifier = dvObject.getStorageIdentifier();
+                if(storageIdentifier.startsWith("s3://")){
+                    s3FileName = s3FolderPath + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
+                }
+                else{
+                s3FileName=s3FolderPath+"/"+storageIdentifier;
                 dvObject.setStorageIdentifier("s3://" + bucketName + ":"+ storageIdentifier);
-
+                }
+                
+                
                 
                 //I'm not sure what I actually need here. 
                 //s3 does not use file objects like swift
@@ -168,6 +177,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             
             Dataset dataset = this.getDataset();
+            s3FolderPath = dataset.getAuthority() + "/" + dataset.getIdentifier();
+        
             dataset.setStorageIdentifier("s3://" + s3FolderPath);
             
             
@@ -191,6 +202,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             File inputFile = fileSystemPath.toFile();
             if (dvObject instanceof DataFile) {            
+
                 s3.putObject(new PutObjectRequest(bucketName, s3FileName, inputFile));
                     
                 newFileSize = inputFile.length();
@@ -244,6 +256,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public void delete() throws IOException {
+
         String key = null;
         if (dvObject instanceof DataFile) {
             key = s3FileName;
@@ -398,7 +411,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public List<String>listAuxObjects() throws IOException {
         String prefix = null;
         if (s3 == null || !this.canWrite()) {
-            open(DataAccessOption.WRITE_ACCESS);
+            open();
         }
         if (dvObject instanceof DataFile) {
             prefix = s3FileName + ".";
@@ -435,7 +448,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     @Override
-    public void deleteAuxObject(String auxItemTag) throws IOException {
+    public void deleteAuxObject(String auxItemTag) {
         String key = null;
         if (dvObject instanceof DataFile) {
             key = s3FileName + "." + auxItemTag;
@@ -497,12 +510,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public Path getFileSystemPath() throws IOException {
+    public Path getFileSystemPath() throws UnsupportedDataAccessOperationException {
         throw new UnsupportedDataAccessOperationException("S3AccessIO: this is a remote DataAccess IO object, it has no local filesystem path associated with it.");
     }
     
     @Override
-    public boolean exists() throws IOException {
+    public boolean exists() {
         String key = null;
         if (dvObject instanceof DataFile) {
             key = s3FileName;
@@ -518,12 +531,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public WritableByteChannel getWriteChannel() throws IOException {
+    public WritableByteChannel getWriteChannel() throws UnsupportedDataAccessOperationException {
         throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no write Channels associated with S3 objects.");
     }
     
     @Override  
-    public OutputStream getOutputStream() throws IOException {
+    public OutputStream getOutputStream() throws UnsupportedDataAccessOperationException {
         throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no output Streams associated with S3 objects.");
     }
     
