@@ -1,7 +1,7 @@
 Big Data Support
 ================
 
-Big data support is highly experimental, but now that we have your attention, please get in touch if you're interested in kicking the tires on this feature! For ways to contact us, please see "Getting Help" in the :doc:`intro` section.
+Big data support is highly experimental. Eventually this content will move to the Installation Guide.
 
 .. contents:: |toctitle|
         :local:
@@ -18,7 +18,7 @@ Install a DCM
 
 Installation instructions can be found at https://github.com/sbgrid/data-capture-module . If you have feedback on these instructions, please get in touch.
 
-Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`config` section:
+Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
 
 - ``:DataCaptureModuleUrl`` should be set to the URL of a DCM you installed.
 - ``:UploadMethods`` should be set to ``dcm/rsync+ssh``.
