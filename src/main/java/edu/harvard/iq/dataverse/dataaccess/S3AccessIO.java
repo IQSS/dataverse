@@ -73,15 +73,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         this.setIsLocalFile(false);
         awsCredentials = new ProfileCredentialsProvider().getCredentials();
         s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).withRegion(Regions.US_EAST_1).build();
-
         if (dvObject instanceof DataFile) {
             s3FolderPath = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
-            s3FileName = s3FolderPath + "/" + this.getDataFile().getFileMetadata().getLabel();
+            s3FileName = s3FolderPath + "/" + this.getDataFile().getStorageIdentifier();
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = (Dataset)dvObject;
             s3FolderPath = dataset.getAuthority() + "/" + dataset.getIdentifier();
         }
-        
     }
 
     private AWSCredentials awsCredentials = null;
@@ -89,6 +87,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private String bucketName = "testiqss-1239759fgsef34w4"; //name is global, no uppercase
     private String s3FolderPath;
     private String s3FileName;
+    private String storageIdentifier;
   
     @Override
     public void open(DataAccessOption... options) throws IOException {
@@ -115,6 +114,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
             }
             if (isReadAccess) {
+                storageIdentifier = dvObject.getStorageIdentifier();
+                if (storageIdentifier.startsWith("s3://")) {
+                    bucketName = storageIdentifier.substring(storageIdentifier.indexOf(":") + 3, storageIdentifier.lastIndexOf(":"));
+                    s3FileName = s3FolderPath + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
+                }
+                logger.info("s3FileName: " + s3FileName);
+                logger.info("BUCKET!: " + bucketName);
                 s3object = s3.getObject(new GetObjectRequest(bucketName, s3FileName));
                 InputStream in = s3object.getObjectContent();
 
@@ -139,7 +145,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 }
                 
             } else if (isWriteAccess) {
-                
+                storageIdentifier = dvObject.getStorageIdentifier();
+                dvObject.setStorageIdentifier("s3://" + bucketName + ":"+ storageIdentifier);
+
                 
                 //I'm not sure what I actually need here. 
                 //s3 does not use file objects like swift
@@ -168,7 +176,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
         long newFileSize = -1;
-        String storageIdentifier = dvObject.getStorageIdentifier();
 
         if (s3 == null || !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
@@ -183,7 +190,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
                 s3.putObject(new PutObjectRequest(bucketName, s3FileName, inputFile));
                     
-                dvObject.setStorageIdentifier("s3://" + storageIdentifier);
                 newFileSize = inputFile.length();
             } else {
                 throw new IOException("DvObject type other than datafile is not yet supported");
