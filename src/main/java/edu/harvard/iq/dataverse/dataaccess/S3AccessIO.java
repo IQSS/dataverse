@@ -111,7 +111,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
             
             if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
-                throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+                throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
             }
             if (isReadAccess) {
                 s3object = s3.getObject(new GetObjectRequest(bucketName, s3FileName));
@@ -137,8 +137,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     this.setVarHeader(varHeaderLine);
                 }
                 
-                
-                
             } else if (isWriteAccess) {
                 
                 
@@ -150,14 +148,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
             this.setMimeType(dataFile.getContentType());
-
-            try {
-                this.setFileName(dataFile.getFileMetadata().getLabel());
-            } catch (Exception ex) {
-                this.setFileName("unknown");
-            }
-
-            
+            this.setFileName(dataFile.getFileMetadata().getLabel());
         } else if (dvObject instanceof Dataset) {
             
             Dataset dataset = this.getDataset();
@@ -225,13 +216,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath;
         }
+        byte[] bytes = IOUtils.toByteArray(inputStream);
+        long length = bytes.length;
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(length);
         try {
-            byte[] bytes = IOUtils.toByteArray(inputStream);
-            long length = bytes.length;
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(length);
             s3.putObject(bucketName, key, inputStream, metadata);
-        } catch (IOException ioex) {
+        } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3 Storage.";
@@ -254,8 +245,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         if (key != null) {
             try {
-            DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
-            s3.deleteObject(deleteObjRequest);
+                DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
+                s3.deleteObject(deleteObjRequest);
             } catch (AmazonClientException ase) {
                 logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
             }
@@ -335,6 +326,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (s3 == null || !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
+
         if (dvObject instanceof DataFile) {
             key = s3FileName + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
@@ -360,13 +352,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath + "/" + auxItemTag;
         }
+        byte[] bytes = IOUtils.toByteArray(inputStream);
+        long length = bytes.length;
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(length);
         try {
-            byte[] bytes = IOUtils.toByteArray(inputStream);
-            long length = bytes.length;
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(length);
             s3.putObject(bucketName, key, inputStream, metadata);
-        } catch(IOException ioex) {
+        } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             
             if (failureMsg == null) {
@@ -393,17 +385,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         ObjectListing storedAuxFilesList = null;
         List<S3ObjectSummary> storedAuxFilesSummary = null;
         logger.info("S3 prefix: " + prefix);
+
+        ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
+        storedAuxFilesList = s3.listObjects(req);
+        storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
         try {
-            ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
-            storedAuxFilesList = s3.listObjects(req);
-            storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
             while (storedAuxFilesList.isTruncated()) {
                 logger.info("S3 listAuxObjects: going to second page of list");
                 storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
                 storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
             }
         } catch (AmazonClientException ase) {
-            System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
         }
         
         for (S3ObjectSummary item : storedAuxFilesSummary) {
