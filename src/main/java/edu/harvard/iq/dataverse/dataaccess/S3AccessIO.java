@@ -519,22 +519,5 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     //FIXME: This method is used across the IOs, why repeat?
-    private boolean isWriteAccessRequested (DataAccessOption... options) throws IOException {
-        
-        for (DataAccessOption option: options) {
-            // In the future we may need to be able to open read-write 
-            // Channels; no support, or use case for that as of now. 
-            
-            if (option == DataAccessOption.READ_ACCESS) {
-                return false;
-            }
 
-            if (option == DataAccessOption.WRITE_ACCESS) {
-                return true;
-            }
-        }
-        
-        // By default, we open the file in read mode:
-        return false; 
-    }
 }
