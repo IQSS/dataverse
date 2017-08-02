@@ -14,7 +14,6 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 /**
  *
@@ -32,13 +31,12 @@ public class FeaturedDataverseServiceBean {
     private static final Logger logger = Logger.getLogger(FeaturedDataverseServiceBean.class.getCanonicalName());
     
     public List<DataverseFeaturedDataverse> findByDataverseId(Long dataverseId) {
-        Query query = em.createQuery("select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = :dataverseId order by o.displayOrder");
-        query.setParameter("dataverseId", dataverseId);
-        return query.getResultList();
+        String qr = "select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = :dataverseId order by o.displayOrder";
+        return em.createQuery(qr, DataverseFeaturedDataverse.class).setParameter("dataverseId", dataverseId).getResultList();
     }
     
     public List<Dataverse> findByDataverseIdQuick(Long dataverseId) {
-         List<Object[]> searchResults = null;
+         List<Object[]> searchResults;
          
          try {
              //searchResults = em.createNativeQuery("SELECT id, alias, name FROM dataverse WHERE id IN (select featureddataverse_id from DataverseFeaturedDataverse where dataverse_id = "+dataverseId+" order by displayOrder)").getResultList();
@@ -78,7 +76,7 @@ public class FeaturedDataverseServiceBean {
     }
     
     public List<DataverseFeaturedDataverse> findByRootDataverse() {
-        return em.createQuery("select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = 1 order by o.displayOrder").getResultList();
+        return em.createQuery("select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = 1 order by o.displayOrder", DataverseFeaturedDataverse.class).getResultList();
     }
 
     public void delete(DataverseFeaturedDataverse dataverseFeaturedDataverse) {
@@ -96,10 +94,10 @@ public class FeaturedDataverseServiceBean {
         
         dataverseFeaturedDataverse.setDisplayOrder(diplayOrder);
         
-        Dataverse dataverse = (Dataverse)em.find(Dataverse.class,dataverseId);
+        Dataverse dataverse = em.find(Dataverse.class, dataverseId);
         dataverseFeaturedDataverse.setDataverse(dataverse);
         
-        Dataverse featuredDataverse = (Dataverse)em.find(Dataverse.class,featuredDataverseId);
+        Dataverse featuredDataverse = em.find(Dataverse.class, featuredDataverseId);
         dataverseFeaturedDataverse.setFeaturedDataverse(featuredDataverse);
 
         em.persist(dataverseFeaturedDataverse);

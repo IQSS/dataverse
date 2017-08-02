@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -71,7 +70,7 @@ public class DataFile extends DvObject implements Comparable {
     public static final char INGEST_STATUS_INPROGRESS = 67;
     public static final char INGEST_STATUS_ERROR = 68; 
     
-    public static final Long ROOT_DATAFILE_ID_DEFAULT = new Long(-1);
+    public static final Long ROOT_DATAFILE_ID_DEFAULT = (long) -1;
     
     private String name;
     
@@ -258,7 +257,7 @@ public class DataFile extends DvObject implements Comparable {
 
     public void setDataTable(DataTable dt) {
         if (this.getDataTables() == null) {
-            this.setDataTables( new ArrayList() );
+            this.setDataTables( new ArrayList<>() );
         } else {
             this.getDataTables().clear();
         }
@@ -275,11 +274,9 @@ public class DataFile extends DvObject implements Comparable {
         List<DataFileTag> currentDataTags = this.getTags();
         List<String> tagStrings = new ArrayList<>();
         
-        if (( currentDataTags != null)||(!currentDataTags.isEmpty())){
+        if (( currentDataTags != null)&&(!currentDataTags.isEmpty())){
                        
-            Iterator itr = currentDataTags.iterator();
-            while (itr.hasNext()){
-                DataFileTag element = (DataFileTag)itr.next();
+            for (DataFileTag element : currentDataTags) {
                 tagStrings.add(element.getTypeLabel());
              }
         }
@@ -297,9 +294,7 @@ public class DataFile extends DvObject implements Comparable {
         }
         
         
-        Iterator itr = currentDataTags.iterator();
-        while (itr.hasNext()){
-            DataFileTag element = (DataFileTag)itr.next();
+        for (DataFileTag element : currentDataTags) {
             builder.add(element.getTypeLabel());            
         }
         return builder;
@@ -358,7 +353,7 @@ public class DataFile extends DvObject implements Comparable {
 
     public void setIngestReport(IngestReport report) {
         if (ingestReports == null) {
-            ingestReports = new ArrayList();
+            ingestReports = new ArrayList<>();
         } else {
             ingestReports.clear();
         }
@@ -489,8 +484,9 @@ public class DataFile extends DvObject implements Comparable {
             if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
                 fmd = fileMetadata;
             } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
-                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   )
+                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
                 fmd = fileMetadata;
+        }
         }
         return fmd;
     }
@@ -594,10 +590,7 @@ public class DataFile extends DvObject implements Comparable {
     }
     
     public boolean isFilePackage() {
-        if (DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType)) {
-            return true;
-        }
-        return false;
+        return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
     }
 
     public void setIngestStatus(char ingestStatus) {
@@ -916,7 +909,7 @@ public class DataFile extends DvObject implements Comparable {
         // ----------------------------------        
         // Checksum
         // ----------------------------------
-        Map<String, String> checkSumMap = new HashMap<String, String>();
+        Map<String, String> checkSumMap = new HashMap<>();
         checkSumMap.put("type", getChecksumType().toString());
         checkSumMap.put("value", getChecksumValue());
         

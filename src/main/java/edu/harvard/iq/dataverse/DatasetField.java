@@ -170,7 +170,7 @@ public class DatasetField implements Serializable {
 
     @OneToMany(mappedBy = "parentDatasetField", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList();
+    private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList<>();
 
     public List<DatasetFieldCompoundValue> getDatasetFieldCompoundValues() {
         return datasetFieldCompoundValues;
@@ -182,7 +182,7 @@ public class DatasetField implements Serializable {
 
     @OneToMany(mappedBy = "datasetField", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private List<DatasetFieldValue> datasetFieldValues = new ArrayList();
+    private List<DatasetFieldValue> datasetFieldValues = new ArrayList<>();
 
     public List<DatasetFieldValue> getDatasetFieldValues() {
         return this.datasetFieldValues;
@@ -194,7 +194,7 @@ public class DatasetField implements Serializable {
 
     @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(indexes = {@Index(columnList="datasetfield_id"),@Index(columnList="controlledvocabularyvalues_id")})
-    private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
+    private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList<>();
 
     public List<ControlledVocabularyValue> getControlledVocabularyValues() {
         return controlledVocabularyValues;
@@ -250,8 +250,10 @@ public class DatasetField implements Serializable {
     public String getDisplayValue() {
         String returnString = "";
         for (String value : getValues()) {
-            if(value == null) value="";
-            returnString += (returnString.equals("") ? "" : "; ") + value.trim();
+            if(value == null) {
+                value="";
+            }
+            returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
         }
         return returnString;
     }
@@ -262,7 +264,7 @@ public class DatasetField implements Serializable {
             for (DatasetField dsf : dscv.getChildDatasetFields()) {
                 for (String value : dsf.getValues()) {
                     if (!(value == null)) {
-                        returnString += (returnString.equals("") ? "" : "; ") + value.trim();
+                        returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
                     }
                 }
             }
@@ -271,7 +273,7 @@ public class DatasetField implements Serializable {
     }
 
     public List<String> getValues() {
-        List returnList = new ArrayList();
+        List<String> returnList = new ArrayList<>();
         if (!datasetFieldValues.isEmpty()) {
             for (DatasetFieldValue dsfv : datasetFieldValues) {
                 returnList.add(dsfv.getDisplayValue());
@@ -418,10 +420,7 @@ public class DatasetField implements Serializable {
             return false;
         }
         DatasetField other = (DatasetField) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
     @Override

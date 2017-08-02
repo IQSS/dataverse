@@ -19,6 +19,7 @@
 
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -66,6 +67,8 @@ import java.util.Scanner;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.batch.operations.JobSecurityException;
+import javax.batch.operations.NoSuchJobExecutionException;
 
 @Named
 @Dependent
@@ -314,7 +317,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 getJobLogger().log(Level.SEVERE, "Job execution is null");
             }
 
-        } catch (Exception e) {
+        } catch (NoSuchJobExecutionException | JobSecurityException | JsonProcessingException e) {
             getJobLogger().log(Level.SEVERE, "Creating job json: " + e.getMessage());
         }
     }
