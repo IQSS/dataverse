@@ -544,8 +544,10 @@ public class IngestServiceBean {
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
                 logger.fine("subsetting continuous vector");
+
                 StorageIO<DataFile> storageIO = dataFile.getStorageIO();
                 storageIO.open();
+
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
                     Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                     logger.fine("Calculating summary statistics on a Float vector;");
@@ -576,8 +578,10 @@ public class IngestServiceBean {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalDiscrete()
                     && dataFile.getDataTable().getDataVariables().get(i).isTypeNumeric()) {
                 logger.fine("subsetting discrete-numeric vector");
+
                 StorageIO<DataFile> storageIO = dataFile.getStorageIO();
                 storageIO.open();
+
                 Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 // We are discussing calculating the same summary stats for 
                 // all numerics (the same kind of sumstats that we've been calculating
@@ -610,8 +614,10 @@ public class IngestServiceBean {
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isTypeCharacter()) {
+
                 StorageIO<DataFile> storageIO = dataFile.getStorageIO();
                 storageIO.open();
+
                 logger.fine("subsetting character vector");
                 String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
@@ -686,7 +692,6 @@ public class IngestServiceBean {
             storageIO = dataFile.getStorageIO();
             storageIO.open();
              
-            
             if (storageIO.isLocalFile()) {
                 inputStream = new BufferedInputStream(storageIO.getInputStream());
             } else {

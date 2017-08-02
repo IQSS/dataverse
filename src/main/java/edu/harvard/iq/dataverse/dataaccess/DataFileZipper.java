@@ -45,20 +45,20 @@ public class DataFileZipper {
     private OutputStream outputStream = null; 
     private ZipOutputStream zipOutputStream = null;
     
-    private List fileNameList = null; // the list of file names to check for duplicates
-    private List zippedFilesList = null; // list of successfully zipped files, to update guestbooks and download counts (not yet implemented)
+    private List<String> fileNameList = null; // the list of file names to check for duplicates
+    private List<Long> zippedFilesList = null; // list of successfully zipped files, to update guestbooks and download counts (not yet implemented)
     
     private String fileManifest = "";
 
     public DataFileZipper() {
-        fileNameList = new ArrayList();
-        zippedFilesList = new ArrayList(); 
+        fileNameList = new ArrayList<>();
+        zippedFilesList = new ArrayList<>(); 
     }
     
     public DataFileZipper(OutputStream outputStream) {
         this.outputStream = outputStream;
-        fileNameList = new ArrayList();
-        zippedFilesList = new ArrayList();
+        fileNameList = new ArrayList<>();
+        zippedFilesList = new ArrayList<>();
     }
     
     public void setOutputStream(OutputStream outputStream) {

@@ -104,7 +104,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }    
 
     private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
-        List<Dataset> retList = new ArrayList();
+        List<Dataset> retList = new ArrayList<>();
         TypedQuery<Dataset>  query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
         query.setParameter("ownerId", ownerId);
         if (!onlyPublished) {
@@ -120,7 +120,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public List<Dataset> findAll() {
-        return em.createQuery("select object(o) from Dataset as o order by o.id").getResultList();
+        return em.createQuery("select object(o) from Dataset as o order by o.id", Dataset.class).getResultList();
     }
     
     
@@ -130,6 +130,10 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
+     * @param numPartitions
+     * @param partitionId
+     * @param skipIndexed
+     * @return a list of datasets
      * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
      */     
     public List<Dataset> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
@@ -171,7 +175,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         // -- L.A. 4.2.4
         String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);        
         int index2 = globalId.indexOf(separator, index1 + 1);
-        int index3 = 0;
+        int index3;
         if (index1 == -1) {            
             logger.info("Error parsing identifier: " + globalId + ". ':' not found in string");
             return null;
@@ -267,12 +271,15 @@ public class DatasetServiceBean implements java.io.Serializable {
      * Check that a identifier entered by the user is unique (not currently used
      * for any other study in this Dataverse Network) alos check for duplicate
      * in EZID if needed
-     */
+     * @param userIdentifier
+     * @param dataset
+     * @param idServiceBean
+     * @return   */
     public boolean isIdentifierUniqueInDatabase(String userIdentifier, Dataset dataset, IdServiceBean idServiceBean) {
         String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
         query += " and d.protocol ='" + dataset.getProtocol() + "'";
         query += " and d.authority = '" + dataset.getAuthority() + "'";
-        boolean u = em.createQuery(query).getResultList().size() == 0;
+        boolean u = em.createQuery(query).getResultList().isEmpty();
             
         try{
             if (idServiceBean.alreadyExists(dataset)) {
@@ -413,7 +420,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         xmlw.writeEndElement(); // titles
 
         xmlw.writeStartElement("section");
-        String sectionString = "";
+        String sectionString;
         if (version.getDataset().isReleased()) {
             sectionString = new SimpleDateFormat("yyyy-MM-dd").format(version.getDataset().getPublicationDate());
         } else {
@@ -492,23 +499,19 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public List<DatasetLock> getDatasetLocks() {
         String query = "SELECT sl FROM DatasetLock sl";
-        return (List<DatasetLock>) em.createQuery(query).getResultList();
+        return em.createQuery(query, DatasetLock.class).getResultList();
     }
 
     public boolean checkDatasetLock(Long datasetId) {
         String nativeQuery = "SELECT sl.id FROM DatasetLock sl WHERE sl.dataset_id = " + datasetId + " LIMIT 1;";
-        Integer lockId = null; 
+        Integer lockId; 
         try {
             lockId = (Integer)em.createNativeQuery(nativeQuery).getSingleResult();
         } catch (Exception ex) {
             lockId = null; 
         }
         
-        if (lockId != null) {
-            return true;
-        }
-        
-        return false;
+        return lockId != null;
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -524,7 +527,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             AuthenticatedUser user = em.find(AuthenticatedUser.class, userId);
             lock.setUser(user);
             if (user.getDatasetLocks() == null) {
-                user.setDatasetLocks(new ArrayList());
+                user.setDatasetLocks(new ArrayList<>());
             }
             user.getDatasetLocks().add(lock);
         }
@@ -626,6 +629,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
      * 
+     * @param datasetIds
      * @return 
      */
     public Map<Long, String> getArchiveDescriptionsForHarvestedDatasets(Set<Long> datasetIds){
@@ -636,7 +640,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         String datasetIdStr = Strings.join(datasetIds, ", ");
         
         String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d WHERE d.harvestingClient_id = h.id AND d.id IN (" + datasetIdStr + ")";
-        List<Object[]> searchResults = null;
+        List<Object[]> searchResults;
         
         try {
             searchResults = em.createNativeQuery(qstr).getResultList();
@@ -651,7 +655,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         Map<Long, String> ret = new HashMap<>();
         
         for (Object[] result : searchResults) {
-            Long dsId = null;
+            Long dsId;
             if (result[0] != null) {
                 try {
                     dsId = (Long)result[0];
@@ -740,22 +744,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         String logTimestamp = logFormatter.format(new Date());
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
         String logFileName = "../logs" + File.separator + "export_" + logTimestamp + ".log";
-        FileHandler fileHandler = null;
-        boolean fileHandlerSuceeded = false;
+        FileHandler fileHandler;
+        boolean fileHandlerSuceeded;
         try {
             fileHandler = new FileHandler(logFileName);
             exportLogger.setUseParentHandlers(false);
             fileHandlerSuceeded = true;
-        } catch (IOException ex) {
+        } catch (IOException | SecurityException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+            return;
         }
 
         if (fileHandlerSuceeded) {
             exportLogger.addHandler(fileHandler);
         } else {
-            exportLogger = null;
             exportLogger = logger;
         }
 
@@ -791,7 +793,6 @@ public class DatasetServiceBean implements java.io.Serializable {
                         }
                     }
                 }
-                dataset = null;
             }
         }
         exportLogger.info("Datasets processed: " + countAll.toString());

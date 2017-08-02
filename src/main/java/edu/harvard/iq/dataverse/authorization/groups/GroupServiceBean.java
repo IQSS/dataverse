@@ -198,7 +198,7 @@ public class GroupServiceBean {
         Set<Group> retVal = new HashSet<>(); 
         
          // Groups whose ancestors were not collected yet.
-        Set<Group> perimeter = new HashSet(groups);
+        Set<Group> perimeter = new HashSet<>(groups);
         
         while ( ! perimeter.isEmpty() ) {
             Group next = perimeter.iterator().next();
