@@ -528,7 +528,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             DataTable dataTable = new DataTable(); 
             long fileId = ((Number) result[1]).longValue();
 
-            dataTable.setId(((long) result[0]));
+            dataTable.setId(((Number) result[1]).longValue());
             
             dataTable.setUnf((String)result[2]);
             
