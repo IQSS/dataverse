@@ -111,7 +111,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
             
             if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
-                throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+                throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
             }
             if (isReadAccess) {
                 s3object = s3.getObject(new GetObjectRequest(bucketName, s3FileName));
@@ -137,8 +137,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     this.setVarHeader(varHeaderLine);
                 }
                 
-                
-                
             } else if (isWriteAccess) {
                 
                 
@@ -150,14 +148,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
             this.setMimeType(dataFile.getContentType());
-
-            try {
-                this.setFileName(dataFile.getFileMetadata().getLabel());
-            } catch (Exception ex) {
-                this.setFileName("unknown");
-            }
-
-            
+            this.setFileName(dataFile.getFileMetadata().getLabel());
         } else if (dvObject instanceof Dataset) {
             
             Dataset dataset = this.getDataset();
@@ -202,7 +193,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
-                failureMsg = "Swift AccessIO: Unknown exception occured while uploading a local file into a Swift StoredObject";
+                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3Object";
             }
 
             throw new IOException(failureMsg);
@@ -225,13 +216,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath;
         }
+        byte[] bytes = IOUtils.toByteArray(inputStream);
+        long length = bytes.length;
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(length);
         try {
-            byte[] bytes = IOUtils.toByteArray(inputStream);
-            long length = bytes.length;
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(length);
             s3.putObject(bucketName, key, inputStream, metadata);
-        } catch (IOException ioex) {
+        } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3 Storage.";
@@ -254,10 +245,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         if (key != null) {
             try {
-            DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
-            s3.deleteObject(deleteObjRequest);
+                DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
+                s3.deleteObject(deleteObjRequest);
             } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+                logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
             }
         } else {
             throw new IOException("Failed to delete the object because the key was null");
@@ -294,7 +285,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.doesObjectExist(bucketName, key);
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
         }
         return false;
     }
@@ -313,7 +304,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.getObjectMetadata(bucketName, key).getContentLength();
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
         }
         return -1L;
     }
@@ -335,6 +326,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (s3 == null || !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
+
         if (dvObject instanceof DataFile) {
             key = s3FileName + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
@@ -344,7 +336,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             File inputFile = fileSystemPath.toFile();
             s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
         } catch (AmazonClientException ase) {
-            System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
         }
     }
     
@@ -360,17 +352,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath + "/" + auxItemTag;
         }
+        byte[] bytes = IOUtils.toByteArray(inputStream);
+        long length = bytes.length;
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(length);
         try {
-            byte[] bytes = IOUtils.toByteArray(inputStream);
-            long length = bytes.length;
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(length);
             s3.putObject(bucketName, key, inputStream, metadata);
-        } catch(IOException ioex) {
+        } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             
             if (failureMsg == null) {
-                failureMsg = "Swift AccessIO: Unknown exception occured while saving a local InputStream as a Swift StoredObject";
+                failureMsg = "S3AccessIO: Unknown exception occured while saving a local InputStream as S3Object";
             }
             throw new IOException(failureMsg);
         }  
@@ -393,17 +385,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         ObjectListing storedAuxFilesList = null;
         List<S3ObjectSummary> storedAuxFilesSummary = null;
         logger.info("S3 prefix: " + prefix);
+
+        ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
+        storedAuxFilesList = s3.listObjects(req);
+        storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
         try {
-            ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
-            storedAuxFilesList = s3.listObjects(req);
-            storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
             while (storedAuxFilesList.isTruncated()) {
                 logger.info("S3 listAuxObjects: going to second page of list");
                 storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
                 storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
             }
         } catch (AmazonClientException ase) {
-            System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
         }
         
         for (S3ObjectSummary item : storedAuxFilesSummary) {
@@ -427,7 +420,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, key);
             s3.deleteObject(dor);
         } catch (AmazonClientException ase) {
-                System.out.println("S3AccessIO: Unable to delete object    " + ase.getMessage());
+            logger.warning("S3AccessIO: Unable to delete object    " + ase.getMessage());
         }
         
     }
@@ -497,7 +490,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.doesObjectExist(bucketName, key);
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
         }
         return false;
     }
@@ -527,30 +520,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, key));
             return s3object.getObjectContent();
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
         }
         throw new IOException("S3AccessIO: Failed to get aux file as input stream");
     }
 
     
     // Auxilary helper methods, S3-specific:
-    // // FIXME: Refer to swift implementation while implementing S3
-    
-    AmazonS3 authenticateWithS3(String swiftEndPoint) throws IOException {
-        AWSCredentials credentials = getAWSCredentials();
-
-        AmazonS3 s3 = null;
-
-        try {
-            s3 = AmazonS3ClientBuilder.standard().withCredentials(
-                    new AWSStaticCredentialsProvider(credentials)).withRegion(Regions.US_EAST_1).build();
-
-        } catch (Exception ex) {
-            throw new IOException("S3AccessIO: failed to authenticate S3" + ex.getMessage());
-        }
-
-        return s3;
-    }
      
     //FIXME: It looks like the best way to do credentials is to change a jvm variable on launch
     //          and use the standard getCredentials. Test this.
@@ -573,22 +549,5 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     //FIXME: This method is used across the IOs, why repeat?
-    private boolean isWriteAccessRequested (DataAccessOption... options) throws IOException {
-        
-        for (DataAccessOption option: options) {
-            // In the future we may need to be able to open read-write 
-            // Channels; no support, or use case for that as of now. 
-            
-            if (option == DataAccessOption.READ_ACCESS) {
-                return false;
-            }
 
-            if (option == DataAccessOption.WRITE_ACCESS) {
-                return true;
-            }
-        }
-        
-        // By default, we open the file in read mode:
-        return false; 
-    }
 }
