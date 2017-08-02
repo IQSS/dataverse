@@ -17,8 +17,11 @@ import com.amazonaws.partitions.PartitionsLoader;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.thirdparty.apache.http.client.methods.HttpRequestBase;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
@@ -199,7 +202,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
-                failureMsg = "Swift AccessIO: Unknown exception occured while uploading a local file into a Swift StoredObject";
+                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3Object";
             }
 
             throw new IOException(failureMsg);
@@ -262,7 +265,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         
     }
 
-    //FIXME: Empty
     @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
         if (isWriteAccessRequested(options)) {
@@ -368,16 +370,49 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             String failureMsg = ioex.getMessage();
             
             if (failureMsg == null) {
-                failureMsg = "Swift AccessIO: Unknown exception occured while saving a local InputStream as a Swift StoredObject";
+                failureMsg = "S3AccessIO: Unknown exception occured while saving a local InputStream as S3Object";
             }
             throw new IOException(failureMsg);
         }  
     }
     
-    //FIXME: Empty
+    //TODO: How do we test this?
     @Override
     public List<String>listAuxObjects() throws IOException {
-        return null;
+        String prefix = null;
+        if (s3 == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        if (dvObject instanceof DataFile) {
+            prefix = s3FileName + ".";
+        } else if (dvObject instanceof Dataset) {
+            prefix = s3FolderPath + "/";
+        }
+                
+        List<String> ret = new ArrayList<>();
+        ObjectListing storedAuxFilesList = null;
+        List<S3ObjectSummary> storedAuxFilesSummary = null;
+        logger.info("S3 prefix: " + prefix);
+        try {
+            ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
+            storedAuxFilesList = s3.listObjects(req);
+            storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
+            while (storedAuxFilesList.isTruncated()) {
+                logger.info("S3 listAuxObjects: going to second page of list");
+                storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
+                storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
+            }
+        } catch (AmazonClientException ase) {
+            System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+        }
+        
+        for (S3ObjectSummary item : storedAuxFilesSummary) {
+            String key = item.getKey();
+            String fileName = key.substring(key.lastIndexOf("/"));
+            logger.info("S3 cached aux object fileName: " + fileName);
+            ret.add(fileName);
+        }
+        return ret;
     }
     
     @Override
@@ -462,23 +497,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     
     // Auxilary helper methods, S3-specific:
-    // // FIXME: Refer to swift implementation while implementing S3
-    
-    AmazonS3 authenticateWithS3(String swiftEndPoint) throws IOException {
-        AWSCredentials credentials = getAWSCredentials();
-
-        AmazonS3 s3 = null;
-
-        try {
-            s3 = AmazonS3ClientBuilder.standard().withCredentials(
-                    new AWSStaticCredentialsProvider(credentials)).withRegion(Regions.US_EAST_1).build();
-
-        } catch (Exception ex) {
-            throw new IOException("S3AccessIO: failed to authenticate S3" + ex.getMessage());
-        }
-
-        return s3;
-    }
      
     //FIXME: It looks like the best way to do credentials is to change a jvm variable on launch
     //          and use the standard getCredentials. Test this.
