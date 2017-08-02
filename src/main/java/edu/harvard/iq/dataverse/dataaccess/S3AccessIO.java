@@ -257,7 +257,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
             s3.deleteObject(deleteObjRequest);
             } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+                System.out.println("Caught an AmazonServiceException in S3AccessIO.delete():    " + ase.getMessage());
             }
         } else {
             throw new IOException("Failed to delete the object because the key was null");
@@ -294,7 +294,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.doesObjectExist(bucketName, key);
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+                System.out.println("Caught an AmazonServiceException in S3AccessIO.isAuxObjectCached:    " + ase.getMessage());
         }
         return false;
     }
@@ -313,7 +313,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.getObjectMetadata(bucketName, key).getContentLength();
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+                System.out.println("Caught an AmazonServiceException in S3AccessIO.getAuxObjectSize:    " + ase.getMessage());
         }
         return -1L;
     }
@@ -344,7 +344,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             File inputFile = fileSystemPath.toFile();
             s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
         } catch (AmazonClientException ase) {
-            System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            System.out.println("Caught an AmazonServiceException in S3AccessIO.savePathAsAux():    " + ase.getMessage());
         }
     }
     
@@ -403,7 +403,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
             }
         } catch (AmazonClientException ase) {
-            System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            System.out.println("Caught an AmazonServiceException in S3AccessIO.listAuxObjects():    " + ase.getMessage());
         }
         
         for (S3ObjectSummary item : storedAuxFilesSummary) {
@@ -427,7 +427,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, key);
             s3.deleteObject(dor);
         } catch (AmazonClientException ase) {
-                System.out.println("S3AccessIO: Unable to delete object    " + ase.getMessage());
+                System.out.println("S3AccessIO: Unable to delete aux object    " + ase.getMessage());
         }
         
     }
@@ -460,7 +460,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.doesObjectExist(bucketName, key);
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+                System.out.println("Caught an AmazonServiceException in S3AccessIO.exists():    " + ase.getMessage());
         }
         return false;
     }
@@ -490,7 +490,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, key));
             return s3object.getObjectContent();
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+                System.out.println("Caught an AmazonServiceException in S3AccessIO.getAuxFileAsInputStream():    " + ase.getMessage());
         }
         throw new IOException("S3AccessIO: Failed to get aux file as input stream");
     }
