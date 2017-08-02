@@ -564,14 +564,11 @@ public class FilePage implements java.io.Serializable {
     }
     
     public boolean showComputeButton () {
-        boolean flag = false;
         if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
-            if (session.getUser().isAuthenticated() && fileDownloadHelper.canDownloadFile(fileMetadata)) {
-                flag = true;
-            }
+            return true;
         }
         
-        return flag;
+        return false;
     }
     
     public SwiftAccessIO getSwiftObject() {
@@ -601,11 +598,14 @@ public class FilePage implements java.io.Serializable {
     }
 
     public String getComputeUrl() throws IOException {
-        SwiftAccessIO swiftObject = getSwiftObject();
+        /*SwiftAccessIO swiftObject = getSwiftObject();
         swiftObject.open();
         //generate a temp url for a file
         return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
-    }
+        */
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
+
+        }
 
     private List<DataFile> allRelatedFiles() {
         List<DataFile> dataFiles = new ArrayList();

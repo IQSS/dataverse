@@ -114,10 +114,20 @@
         </p:commandLink>
     </ui:fragment>
     
-    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{isFilePg and FilePage.showComputeButton()}">
-        <!-- Compute Button *File pg only* -->
+    <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{isFilePg and FilePage.showComputeButton() and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+        <!-- Compute Button *File pg only* --> 
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
+    
+    <!-- ... and this is a "fake download button" - we show it when the user is not authorized to download the file; clicking on it will show a popup saying "no, you can't - the file is restricted" -->
+    
+    <p:commandLink type="button" 
+                   styleClass="btn btn-default" 
+                   rendered="#{isFilePg and FilePage.showComputeButton() and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
+                   update="@widgetVar(computeAccessDeniedPopup)"
+                   onclick="PF('computeAccessDeniedPopup').show();handleResizeDialog('computeAccessDeniedPopup');">
+        <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute'] }
+    </p:commandLink>
         
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) }"
                    type="button" styleClass="btn btn-default"
