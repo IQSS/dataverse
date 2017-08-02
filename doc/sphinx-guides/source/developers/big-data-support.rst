@@ -16,7 +16,7 @@ Data Capture Module (DCM) is an experimental component that allows users to uplo
 Install a DCM
 ~~~~~~~~~~~~~
 
-Installation instructions can be found at https://github.com/sbgrid/data-capture-module . If you have feedback on these instructions, please get in touch.
+Installation instructions can be found at https://github.com/sbgrid/data-capture-module . Note that a shared filesystem between Dataverse and your DCM is required. You cannot use a DCM with non-filesystem storage options such as Swift.
 
 Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
 
