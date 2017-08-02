@@ -1,0 +1,9 @@
+ints,Strings,Times,Not quite Times,Dates,Not quite Dates,Numbers,Not quite Ints,Not quite Numbers,"Column that hates you, contains many comas, and is verbose and long enough that it would cause ingest to fail if ingest failed when a header was more than 256 characters long. Really, it's just sadistic.　Also to make matters worse, the space at the begining of this sentance was a special unicode space designed to make you angry."
+-199,hello,2013-04-08 13:14:23,2013-04-08 13:14:23,2017-06-20,2017/06/20,null,1,2,823478788778713
+2,Sdfwer,2013-04-08 13:14:23,2013-04-08 13:14:23,2017-06-20,1100/06/20,INF,2,NaN,",1,2,3"
+0,cjlajfo.,2013-04-08 13:14:23,2013-04-08 13:14:23,2017-06-20,3000/06/20,-inf,3,inf,\casdf
+-1,Mywer,2013-04-08 13:14:23,2013-04-08 13:14:23,2017-06-20,06-20-2011,3.141592653,4,4.8,"　 ""  "
+266128,Sf,2013-04-08 13:14:23,2013-04-08 13:14:23,2017-06-20,06-20-1917,0,5,Inf+11,
+null,null,2013-04-08 13:14:23,2013-04-08 13:14:23,2017-06-20,03/03/1817,123,6.000001,11-2,"""adf\0\na\td
+sf"""
+-2389,,2013-04-08 13:14:23,2013-04-08 13:14:72,2017-06-20,2017-03-12,nan,2,nap,💩⌛👩🏻■
