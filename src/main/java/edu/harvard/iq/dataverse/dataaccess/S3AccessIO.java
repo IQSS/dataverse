@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.partitions.PartitionsLoader;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
@@ -75,7 +76,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         if (dvObject instanceof DataFile) {
             s3FolderPath = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
-            s3FileName = s3FolderPath + "/" + this.getDataFile().getDisplayName();
+            s3FileName = s3FolderPath + "/" + this.getDataFile().getFileMetadata().getLabel();
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = (Dataset)dvObject;
             s3FolderPath = dataset.getAuthority() + "/" + dataset.getIdentifier();
@@ -175,9 +176,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         try {
             File inputFile = fileSystemPath.toFile();
-            if (dvObject instanceof DataFile) {
-                DataFile datafile = (DataFile)dvObject;
-            
+            if (dvObject instanceof DataFile) {            
                 if(!s3.doesBucketExist(bucketName)) { 
                     s3.createBucket(bucketName);
                 } 
@@ -236,7 +235,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public void delete() throws IOException {
-
         String key = null;
         if (dvObject instanceof DataFile) {
             key = s3FileName;
@@ -314,9 +312,27 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         throw new UnsupportedDataAccessOperationException("S3AccessIO: this is a remote DataAccess IO object, its Aux objects have no local filesystem Paths associated with it.");
     }
 
-    //FIXME: Empty
     @Override
     public void backupAsAux(String auxItemTag) throws IOException {
+        String key = null;
+        String destinationKey = null;
+        if (dvObject instanceof DataFile) {
+            key = s3FileName;
+            destinationKey = s3FileName + "." + auxItemTag;
+        } else if (dvObject instanceof Dataset) {
+            key = s3FolderPath;
+            destinationKey = s3FolderPath + "/" + auxItemTag;
+        }
+        logger.info("key: " + key);
+        logger.info("destination key:" + key);
+        try {
+            logger.info("trying to copy object");
+            s3.copyObject(new CopyObjectRequest(bucketName, key, bucketName, destinationKey));
+        } catch (AmazonClientException ase) {
+                System.out.println("Caught an AmazonServiceException in S3AccessIO.backupAsAux:    " + ase.getMessage());
+        }
+        // I'm assuming we don't need to delete the main object here - ?
+        // s3.deleteObject(new DeleteObjectRequest(bucketName, key));
     }
 
     @Override
@@ -439,16 +455,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             prefix = s3FolderPath + "/";
         }
                 
-        List<String> ret = new ArrayList<>();
         ObjectListing storedAuxFilesList = null;
         List<S3ObjectSummary> storedAuxFilesSummary = null;
-        logger.info("S3 prefix: " + prefix);
         try {
             ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
             storedAuxFilesList = s3.listObjects(req);
             storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
             while (storedAuxFilesList.isTruncated()) {
-                logger.info("S3 listAuxObjects: going to second page of list");
                 storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
                 storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
             }
@@ -468,10 +481,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    //FIXME: Empty
+    //TODO: Do we need this?
     @Override
     public String getStorageLocation() {
-        s3.getBucketLocation(s3FileName);
         return null;
     }
 
@@ -549,6 +561,4 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return awsCredentials;
     }
     
-    //FIXME: This method is used across the IOs, why repeat?
-
 }
