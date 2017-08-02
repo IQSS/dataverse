@@ -671,7 +671,7 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
     }
     
-    public boolean isRsyncWorkflow(){
+    public boolean isRsyncUpload(){
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
         return uploadMethods != null &&  uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
     }

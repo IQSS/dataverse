@@ -141,8 +141,12 @@ public class SettingsWrapper implements java.io.Serializable {
         return systemConfig.isPublicInstall();
     }
     
-    public boolean isRsyncWorkflow() {
-        return systemConfig.isRsyncWorkflow();
+    public boolean isRsyncUpload() {
+        return systemConfig.isRsyncUpload();
+    }
+    
+    public boolean isRsyncDownload() {
+        return false;
     }
     
     public String getSupportTeamName() {
