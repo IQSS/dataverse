@@ -202,7 +202,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
-                failureMsg = "Swift AccessIO: Unknown exception occured while uploading a local file into a Swift StoredObject";
+                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3Object";
             }
 
             throw new IOException(failureMsg);
@@ -370,7 +370,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             String failureMsg = ioex.getMessage();
             
             if (failureMsg == null) {
-                failureMsg = "Swift AccessIO: Unknown exception occured while saving a local InputStream as a Swift StoredObject";
+                failureMsg = "S3AccessIO: Unknown exception occured while saving a local InputStream as S3Object";
             }
             throw new IOException(failureMsg);
         }  
@@ -497,23 +497,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     
     // Auxilary helper methods, S3-specific:
-    // // FIXME: Refer to swift implementation while implementing S3
-    
-    AmazonS3 authenticateWithS3(String swiftEndPoint) throws IOException {
-        AWSCredentials credentials = getAWSCredentials();
-
-        AmazonS3 s3 = null;
-
-        try {
-            s3 = AmazonS3ClientBuilder.standard().withCredentials(
-                    new AWSStaticCredentialsProvider(credentials)).withRegion(Regions.US_EAST_1).build();
-
-        } catch (Exception ex) {
-            throw new IOException("S3AccessIO: failed to authenticate S3" + ex.getMessage());
-        }
-
-        return s3;
-    }
      
     //FIXME: It looks like the best way to do credentials is to change a jvm variable on launch
     //          and use the standard getCredentials. Test this.
