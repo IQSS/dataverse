@@ -646,7 +646,8 @@ public class Datasets extends AbstractApiBean {
             if ("validation passed".equals(statusMessageFromDcm)) {
                 try {
 //                    String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/${DOI_SHOULDER}/${datasetIdentifier}?mode=MERGE&uploadFolder=trn&totalSize=${sz}&userId=${dv_userId}";
-                    String url = systemConfig.getDataverseSiteUrl() + "/api/batch/jobs/import/datasets/files/" + dataset.getId();
+                    String dataverseBaseUrl = "http://localhost:8080";
+                    String url = dataverseBaseUrl + "/api/batch/jobs/import/datasets/files/" + dataset.getId();
                     String apiToken = getRequestApiKey();
                     String uploadFolder = jsonFromDcm.getString("uploadFolder");
                     int totalSize = jsonFromDcm.getInt("totalSize");
