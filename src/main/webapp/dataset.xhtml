@@ -1094,6 +1094,17 @@
                             <p:commandButton styleClass="btn btn-default" id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
+                    
+                    <!-- RSYNC UPLOAD POPUP -->
+                    <p:dialog header="#{bundle['file.uploadFiles']}" widgetVar="rsyncUpload_popup" modal="true">
+                        <p class="help-block">
+                            Hey, do some stuff here...
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="PF('rsyncUpload_popup').hide();"/>
+                        </div>
+                    </p:dialog>
+                    <!-- END RSYNC UPLOAD POPUP -->
 
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
