@@ -157,23 +157,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 storageIdentifier = dvObject.getStorageIdentifier();
                 if(storageIdentifier.startsWith("s3://")){
                     s3FileName = s3FolderPath + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
+                } else {
+                    s3FileName=s3FolderPath+"/"+storageIdentifier;
+                    dvObject.setStorageIdentifier("s3://" + bucketName + ":"+ storageIdentifier);
                 }
-                else{
-                s3FileName=s3FolderPath+"/"+storageIdentifier;
-                dvObject.setStorageIdentifier("s3://" + bucketName + ":"+ storageIdentifier);
-                }
                 
-                
-                
-                //I'm not sure what I actually need here. 
-                //s3 does not use file objects like swift
-                //maybe use putobjectrequest as an intermediate
-                //...
-                //maybe I just need an amazons3 object
             }
-
+            
             this.setMimeType(dataFile.getContentType());
-            this.setFileName(dataFile.getFileMetadata().getLabel());
+
+            try {
+                this.setFileName(dataFile.getFileMetadata().getLabel());
+            } catch (Exception ex) {
+                this.setFileName("unknown");
+            }  
+            
         } else if (dvObject instanceof Dataset) {
             
             Dataset dataset = this.getDataset();
@@ -236,6 +234,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath;
         }
+        //FIXME: Is this the most efficient way to calculate length? Creating a duplicate of the data?
         byte[] bytes = IOUtils.toByteArray(inputStream);
         long length = bytes.length;
         ObjectMetadata metadata = new ObjectMetadata();
