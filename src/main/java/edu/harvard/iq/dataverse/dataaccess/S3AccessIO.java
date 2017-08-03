@@ -88,6 +88,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
   
     @Override
     public void open(DataAccessOption... options) throws IOException {
+        if(s3==null)
+        {
+            throw new IOException("ERROR: s3 not initialised. ");
+        }
+        
         if(bucketName == null || !s3.doesBucketExist(bucketName)) { 
             throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
         } 
@@ -543,9 +548,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
         String key = null;
-        if (s3 == null) {
+        
+        
             open();
-        }
+        
         if (dvObject instanceof DataFile) {
             key = s3FileName + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
