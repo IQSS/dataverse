@@ -138,7 +138,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 this.setInputStream(in);
                 
                 setChannel(Channels.newChannel(in));
-                this.setSize(in.available());
+                this.setSize(s3object.getObjectMetadata().getContentLength());
                 
                   if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
