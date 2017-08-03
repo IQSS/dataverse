@@ -43,7 +43,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
         this.theDataset = theDataset;
-        this.filesToDelete = new ArrayList();
+        this.filesToDelete = new ArrayList<>();
     }    
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
@@ -57,7 +57,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         this.theDataset = theDataset;
         
         // get the latest file metadata for the file; ensuring that it is a draft version
-        this.filesToDelete = new ArrayList();
+        this.filesToDelete = new ArrayList<>();
         for (FileMetadata fmd : theDataset.getEditVersion().getFileMetadatas()) {
             if (fmd.getDataFile().equals(fileToDelete)) {
                 filesToDelete.add(fmd);
