@@ -1096,10 +1096,32 @@
                     </p:dialog>
                     
                     <!-- RSYNC UPLOAD POPUP -->
-                    <p:dialog header="#{bundle['file.uploadFiles']}" widgetVar="rsyncUpload_popup" modal="true">
+                    <p:dialog id="rsyncUploadInfoPopup" styleClass="smallPopUp" header="#{bundle['file.uploadFiles']}" widgetVar="rsyncUpload_popup" modal="true">
                         <p class="help-block">
-                            Hey, do some stuff here...
+                            <span class="glyphicon glyphicon-info-sign"></span>
+                            <h:outputFormat value=" #{bundle['file.rsyncUpload.info']}" escape="false">
+                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                <f:param value="#{systemConfig.guidesVersion}"/>
+                            </h:outputFormat>
                         </p>
+                        <ol>
+                            <li>
+                                <h:outputText value="#{bundle['file.rsyncUpload.step1']}" escape="false"/>
+                            </li>
+                            <li>
+                                <h:outputFormat value="#{bundle['file.rsyncUpload.step2']}" escape="false">
+                                    <f:param value="http://www.espn.com/"/>
+                                </h:outputFormat>
+                            </li>
+                            <li>
+                                <h:outputFormat value="#{bundle['file.rsyncUpload.step3']}" escape="false">
+                                    <f:param value="upload6"/>
+                                </h:outputFormat>
+                            </li>
+                            <li>
+                                <h:outputText value="#{bundle['file.rsyncUpload.step4']}" escape="false"/>
+                            </li>
+                        </ol>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('rsyncUpload_popup').hide();"/>
                         </div>
