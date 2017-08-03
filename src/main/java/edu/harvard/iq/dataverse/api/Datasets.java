@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -116,6 +117,9 @@ public class Datasets extends AbstractApiBean {
     
     @EJB
     PermissionServiceBean permissionService;
+    
+    @EJB
+    AuthenticationServiceBean authenticationServiceBean;
     
     @EJB
     DDIExportServiceBean ddiExportService;
@@ -663,22 +667,16 @@ public class Datasets extends AbstractApiBean {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went while attempting to put the files into Dataverse: " + ex);
                 }
             } else if ("validation failed".equals(statusMessageFromDcm)) {
-                /**
-                 * SEK - Per Pete we will notify all those who have edit
-                 * privileges Reading the list into a MAP eliminates doubling up
-                 * of notifications getUsersWithPermissionsOn is returning
-                 * multiples of users with Edit Privileges Might be worth
-                 * addressing there, but will solve it locally here.
-                 */
-                List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
-                Map<String, Object> distinctAuthors = new HashMap<>();
-                editUsers.forEach((au) -> {
-                    distinctAuthors.put(au.getIdentifier(), au);
-                });
+                Map<String, AuthenticatedUser> distinctAuthors = permissionService.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
                 distinctAuthors.values().forEach((value) -> {
                     userNotificationService.sendNotification((AuthenticatedUser) value, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
                 });
-
+                List <AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
+                if (superUsers != null && !superUsers.isEmpty()) {
+                    superUsers.forEach((au) -> {
+                        userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());               
+                    });
+                }
                 return ok("User notified about checksum validation failure.");
             } else {
                 return error(Response.Status.BAD_REQUEST, "Unexpected status cannot be processed: " + statusMessageFromDcm);
