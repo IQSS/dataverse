@@ -16,7 +16,9 @@ import org.junit.After;
 import org.junit.Assert;
 
 /**
- *
+ *  NOTE: This test WILL NOT pass if your installation is not configured for Amazon S3 storage.
+ *  For S3 storage, you must set two jvm options: storage-driver-id and s3-bucket-name
+ *  Refer to the guides or to https://github.com/IQSS/dataverse/issues/3921#issuecomment-319973245
  * @author bsilverstein
  */
 public class S3AccessIT {
@@ -29,12 +31,6 @@ public class S3AccessIT {
         
     }
     
-    
-    //tests:
-    //testStorageIdentifier
-    //testAddDataset
-    //testPublishDataset
-        //testAddFilesToPublishedDataset    
     @Test
     public void testAddDataFileS3Prefix() {
         //create user who will make a dataverse/dataset
@@ -49,13 +45,14 @@ public class S3AccessIT {
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         createDatasetResponse.prettyPrint();
         
-        //upload a tabular file via native
+        //upload a tabular file via native, check storage id prefix for s3
         String pathToFile = "scripts/search/data/tabular/1char";
         Response addFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
         addFileResponse.prettyPrint();
         addFileResponse.then().assertThat()
                 .body("data.files[0].dataFile.storageIdentifier", startsWith("s3://"));
         
+        //clean up test dvobjects and user
         Response deleteDataset = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDataset.prettyPrint();
         deleteDataset.then().assertThat()
@@ -70,13 +67,5 @@ public class S3AccessIT {
         deleteUser.prettyPrint();
         deleteUser.then().assertThat()
                 .statusCode(200);
-
-        
     }
-    
-    @After
-    public void tearDownClass() {
-        
-    }
-   
 }
