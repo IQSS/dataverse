@@ -232,7 +232,9 @@ You also have the option to set a custom container name separator. It is initial
 Amazon S3 Storage
 +++++++++++++++++
 
-For institutions and organizations looking to use Amazon's S3 cloud storage for their installation, we can do can this with some brief setup steps. It's recommended you install the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
+For institutions and organizations looking to use Amazon's S3 cloud storage for their installation, we can do can this with some brief setup steps. 
+
+You'll need an AWS account with an associated S3 bucket for your installation to use. From the S3 management console, you can poke around and get familiar with your bucket. Make note of the bucket's name and the region its data is hosted in. It's recommended you install the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
 First, we'll get our access keys set up. If you already have your access keys configured, skip this step. From the command line, run:
 
