@@ -119,7 +119,7 @@
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
     
-    <!-- ... and this is a "fake compute button" - we show it when the user is not authorized to download the file: (clicking on it will show a popup saying "no, you can't - the file is restricted") -->
+    <!-- LEONIDS... and this is a "fake compute button" - we show it when the user is not authorized to download the file: (clicking on it will show a popup saying "no, you can't - the file is restricted") -->
     <p:commandLink type="button" 
                    styleClass="btn btn-default" 
                    rendered="#{isFilePg and FilePage.showComputeButton() and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
@@ -127,7 +127,17 @@
                    onclick="PF('computeAccessDeniedPopup').show();handleResizeDialog('computeAccessDeniedPopup');">
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute'] }
     </p:commandLink>
-        
+    
+        <!--SARAHS ... and this is a "fake compute button" - we show it when the user is not authorized to download the file: (rolling over it will tell the user "no, you can't - the file is restricted") -->
+<!--        <p:commandLink type="button" 
+                   rendered="#{isFilePg and FilePage.showComputeButton() and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
+                   styleClass="btn btn-default bootstrap-button-tooltip btn-access #{!(fileDownloadHelper.canDownloadFile(fileMetadata)) ? 'ui-state-disabled' : ''} "
+                   title="#{bundle['file.compute.fileAccessDenied']}">
+        <span class="glyphicon glyphicon-flash">
+                #{bundle['file.compute'] }
+        </span>
+    </p:commandLink>-->
+           
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) }"
                    type="button" styleClass="btn btn-default"
                    actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'Download')}">

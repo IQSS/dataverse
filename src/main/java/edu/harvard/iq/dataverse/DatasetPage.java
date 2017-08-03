@@ -416,7 +416,7 @@ public class DatasetPage implements java.io.Serializable {
     public SwiftAccessIO getSwiftObject() {
         try {
             DataFileIO dataFileIO = getInitialDataFile().getDataFileIO();
-            if (dataFileIO instanceof SwiftAccessIO) {
+            if (dataFileIO != null || dataFileIO instanceof SwiftAccessIO) {
                 return (SwiftAccessIO)dataFileIO;
             } else {
                 logger.info("FilePage: Failed to cast dataFileIO as SwiftAccessIO");
@@ -456,17 +456,20 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean showComputeButton() {
-        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null) && session.getUser().isAuthenticated()) {
-            for (FileMetadata fmd : getDatasetFileMetadatas()) {
-                if (!fileDownloadHelper.canDownloadFile(fmd)) {
-                    return false;
-                }
-            }
+        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
             return true;
         }
         return false;
     }
 
+    public boolean canDownloadAllFiles(){
+       for (FileMetadata fmd : getDatasetFileMetadatas()) {
+            if (!fileDownloadHelper.canDownloadFile(fmd)) {
+                return false;
+            }
+        }
+       return true;
+    }
     /*
     in getComputeUrl(), we are sending the container/dataset name and the exipiry and signature 
     for the temporary url of only ONE datafile within the dataset. This is because in the 
