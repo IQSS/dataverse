@@ -239,7 +239,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath;
         }
-        //FIXME: Is this the most efficient way to calculate length? Creating a duplicate of the data?
+        //FIXME: Copying over the object to a byte array is farily inefficient.
+        // We need the length of the data to upload inputStreams (see our putObject calls).
+        // There may be ways to work around this, see https://github.com/aws/aws-sdk-java/issues/474 to start.
         byte[] bytes = IOUtils.toByteArray(inputStream);
         long length = bytes.length;
         ObjectMetadata metadata = new ObjectMetadata();
