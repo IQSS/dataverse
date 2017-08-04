@@ -254,7 +254,7 @@ Then, we'll need to identify which S3 bucket we're using. Replace ``your_bucket_
 
 ``./asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=your_bucket_name"``
 
-Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and datafiles and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
+Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
 .. _Branding Your Installation:
 
