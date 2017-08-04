@@ -52,7 +52,7 @@ import org.apache.commons.io.IOUtils;
  *
  * @author Matthew A Dunlap
  * @author Sarah Ferry
- * @author Rohit B
+ * @author Rohit Bhattacharjee
  * @author Brian Silverstein
  * @param <T> what it stores
  */
@@ -127,12 +127,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             if (isReadAccess) {
                 storageIdentifier = dvObject.getStorageIdentifier();
                 if (storageIdentifier.startsWith("s3://")) {
-                    logger.info("Rohit BHATTA: "+storageIdentifier);
+                    
                     bucketName = storageIdentifier.substring(5, storageIdentifier.lastIndexOf(":"));
                     s3FileName = s3FolderPath + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
                 }
-                logger.info("s3FileName: " + s3FileName);
-                logger.info("BUCKET!: " + bucketName);
                 s3object = s3.getObject(new GetObjectRequest(bucketName, s3FileName));
                 InputStream in = s3object.getObjectContent();
 
@@ -198,7 +196,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public void savePath(Path fileSystemPath) throws IOException {
         long newFileSize = -1;
 
-        if (s3 == null || !this.canWrite()) {
+        if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
 
@@ -231,7 +229,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
         String key = null;
-        if (s3 == null || !this.canWrite()) {
+        if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
         if (dvObject instanceof DataFile) {
@@ -262,7 +260,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public void delete() throws IOException {
-
+        
         String key = null;
         if (dvObject instanceof DataFile) {
             key = s3FileName;
@@ -300,9 +298,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public boolean isAuxObjectCached(String auxItemTag) throws IOException {
         String key = null;
-        if (s3 == null) {
             open();
-        }
         if (dvObject instanceof DataFile) {
             key = s3FileName + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
@@ -319,9 +315,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public long getAuxObjectSize(String auxItemTag) throws IOException {
         String key = null;
-        if (s3 == null) {
             open();
-        }
         if (dvObject instanceof DataFile) {
             key = s3FileName + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
@@ -367,7 +361,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
         String key = null;
-        if (s3 == null || !this.canWrite()) {
+        if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
 
@@ -388,7 +382,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
         String key = null;
-        if (s3 == null || !this.canWrite()) {
+        if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
         if (dvObject instanceof DataFile) {
@@ -416,7 +410,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public List<String>listAuxObjects() throws IOException {
         String prefix = null;
-        if (s3 == null || !this.canWrite()) {
+        if (!this.canWrite()) {
             open();
         }
         if (dvObject instanceof DataFile) {
@@ -474,7 +468,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public void deleteAllAuxObjects() throws IOException {
         String prefix = null;
-        if (s3 == null || !this.canWrite()) {
+        if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
         if (dvObject instanceof DataFile) {
@@ -549,8 +543,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
         String key = null;
-        
-        
             open();
         
         if (dvObject instanceof DataFile) {
