@@ -189,8 +189,8 @@ Enabling a second authentication provider will result in the Log In page showing
 - ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. 
 - The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work. This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to builtin. Then the user initiates a conversion from builtin to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
-File Storage Alternatives
--------------------------
+File Storage: Local Filesystem vs. Swift vs. S3
+-----------------------------------------------
 
 By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
 
@@ -242,9 +242,9 @@ First, we'll get our access keys set up. If you already have your access keys co
 
 ``aws configure``
 
-You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account. The subsequent config steps after the access keys are up to you.
+You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account. The subsequent config steps after the access keys are up to you. For reference, these keys are stored in ``~/.aws/credentials``.
 
-Second, with your access to your bucket in place, we'll want to navigate to ``/glassfish4/glassfish/bin/`` and execute the following ``asadmin`` commands to set up the proper JVM options. Recall that out of the box, Dataverse is configured to use local file storage. You'll need to delete the existing storage driver before setting the new one.
+Second, with your access to your bucket in place, we'll want to navigate to ``/usr/local/glassfish4/glassfish/bin/`` and execute the following ``asadmin`` commands to set up the proper JVM options. Recall that out of the box, Dataverse is configured to use local file storage. You'll need to delete the existing storage driver before setting the new one.
 
 ``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
 
@@ -254,13 +254,7 @@ Then, we'll need to identify which S3 bucket we're using. Replace ``your_bucket_
 
 ``./asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=your_bucket_name"``
 
-Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to create datasets and see them in your S3 bucket. Within a bucket, the folder structure emulates the one found in local file storage. 
-
-If you're set up to run REST-Assured tests (see http://guides.dataverse.org/en/latest/developers/testing.html), and don't want to use the GUI, you can run the ``S3AccessIT`` test:
-
-``mvn test -Dtest=S3AccessIT``
-
-Provided you've pointed Dataverse to the right S3 bucket, and your root dataverse permissions are in place, the test should pass with flying colors.
+Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and datafiles and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
 .. _Branding Your Installation:
 
