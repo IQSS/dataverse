@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -59,9 +60,11 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import java.math.BigDecimal;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
 import javax.ws.rs.QueryParam;
@@ -83,6 +86,10 @@ public class Admin extends AbstractApiBean {
     AuthTestDataServiceBean authTestDataService;
     @EJB
     UserServiceBean userService;
+    @EJB
+    IngestServiceBean ingestService;
+    @EJB
+    DataFileServiceBean fileService;
 
     // Make the session available
     @Inject
@@ -923,6 +930,27 @@ public class Admin extends AbstractApiBean {
     public Response fixUnf(@PathParam("datasetVersionId") String datasetVersionId, 
                            @QueryParam("forceRecalculate") boolean forceRecalculate) {
         JsonObjectBuilder info = datasetVersionSvc.fixMissingUnf(datasetVersionId, forceRecalculate);
+        return ok(info);
+    }
+    
+    @Path("datafiles/integrity/fixmissingoriginaltypes")
+    @GET
+    public Response fixMissingOriginalTypes() {
+        JsonObjectBuilder info = Json.createObjectBuilder();
+        
+        List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalTypes(); 
+        
+        if (affectedFileIds.isEmpty()) {
+            info.add("message", "All the tabular files in the database already have the original types set correctly; exiting.");
+        } else {
+            for (Long fileid : affectedFileIds) {
+                logger.info("found file id: "+fileid);
+            }
+            info.add("message", "Found "+affectedFileIds.size()+" tabular files with missing original types. Kicking off an async job that will repair the files in the background.");
+        }
+        
+        ingestService.fixMissingOriginalTypes(affectedFileIds);
+        
         return ok(info);
     }
 

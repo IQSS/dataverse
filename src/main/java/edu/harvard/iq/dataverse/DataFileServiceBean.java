@@ -942,6 +942,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         em.remove(mergedFM);
     }
     
+    /* 
+     * Same, for DataTables:
+    */
+    
+    public DataTable saveDataTable(DataTable dataTable) {
+        DataTable merged = em.merge(dataTable);
+        em.flush();
+        return merged;
+    }
+    
     public List<DataFile> findHarvestedFilesByClient(HarvestingClient harvestingClient) {
         String qr = "SELECT d FROM DataFile d, DvObject o, Dataset s WHERE o.id = d.id AND o.owner.id = s.id AND s.harvestedFrom.id = :harvestingClientId";
         return em.createQuery(qr, DataFile.class)
@@ -1421,4 +1431,15 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         return false;
     }  // end: isReplacementFile
+    
+    public List<Long> selectFilesWithMissingOriginalTypes() {
+        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND t.originalfileformat='" + MIME_TYPE_TAB + "' ORDER BY f.id");
+        
+        try {
+            return query.getResultList();
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
+    
 }
