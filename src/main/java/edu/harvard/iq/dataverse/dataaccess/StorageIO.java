@@ -116,6 +116,7 @@ public abstract class StorageIO<T extends DvObject> {
     // thumbnails for images, etc. - in physical files with the same file 
     // name but various reserved extensions. 
    
+    //This function retrieves auxiliary files related to datasets, and returns them as inputstream
     public abstract InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException ;
     
     public abstract Channel openAuxChannel(String auxItemTag, DataAccessOption... option) throws IOException;
