@@ -112,32 +112,6 @@
                             <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
                         </h:outputLink>-->
 
-                        <!-- LEONIDS... and this is a "fake compute button" - we show it when the user is not authorized to download the file: (clicking on it will show a popup saying "no, you can't - the file is restricted") -->
-                        <!--***When it is possible to compute on an entire datset, change rendered to 
-                        rendered="#{DatasetPage.showComputeButton() and !(DatasetPage.canDownloadAllFiles())}"-->
-                        
-                        <p:commandLink type="button" 
-                                       styleClass="btn btn-default" 
-                                       rendered="#{DatasetPage.showComputeButton()}"
-                                       update="@widgetVar(datasetComputeAccessDeniedPopup)"
-                                       onclick="PF('datasetComputeAccessDeniedPopup').show();handleResizeDialog('datasetComputeAccessDeniedPopup');">
-                            <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute'] }
-                        </p:commandLink>
-
-                        <!--SARAHS ... and this is a "fake compute button" - we show it when the user is not authorized to download the file: (rolling over it will tell the user "no, you can't - the file is restricted") -->
-                        <!--***When it is possible to compute on an entire datset, change rendered to 
-                            rendered="#{DatasetPage.showComputeButton() and !(DatasetPage.canDownloadAllFiles())}"
-                            and change styleClass to 
-                            styleClass="btn btn-default bootstrap-button-tooltip btn-access #{!(DatasetPage.canDownloadAllFiles()) ? 'ui-state-disabled' : ''} "-->
-
-<!--                        <p:commandLink type="button" 
-                                       rendered="#{DatasetPage.showComputeButton()}"
-                                       styleClass="btn btn-default bootstrap-button-tooltip btn-access #{DatasetPage.showComputeButton() ? 'ui-state-disabled' : ''} "
-                                       title="#{bundle['dataset.compute.datasetComputeDisabled']}">
-                            <span class="glyphicon glyphicon-flash">
-                                    #{bundle['file.compute'] }
-                            </span>
-                        </p:commandLink>-->
                     </div>
                     <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">

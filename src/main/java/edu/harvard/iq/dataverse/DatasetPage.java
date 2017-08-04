@@ -441,8 +441,8 @@ public class DatasetPage implements java.io.Serializable {
     public void setSwiftContainerName(String name){
         
     }
-
-    public Boolean isSwiftStorage(){
+    //This function applies to an entire dataset
+    public boolean isSwiftStorage() {
         //containers without datafiles will not be stored in swift storage
         if (getInitialDataFile() != null){
             for (FileMetadata fmd : getDatasetFileMetadatas()) {
@@ -455,8 +455,25 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
+    //This function applies to a single datafile
+    public boolean isSwiftStorage(FileMetadata metadata){
+        if (metadata.getDataFile().getStorageIdentifier().startsWith("swift://")) {
+            return true;
+        }
+        return false;
+    }
+    
+    //This function applies to an entire dataset
     public boolean showComputeButton() {
         if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
+            return true;
+        }
+        return false;
+    }
+    
+    //this function applies to a single datafile
+    public boolean showComputeButton(FileMetadata metadata) {
+        if (isSwiftStorage(metadata) && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
             return true;
         }
         return false;
@@ -486,6 +503,24 @@ public class DatasetPage implements java.io.Serializable {
         swiftObject.open();
         //assuming we are able to get a temp url for a dataset
         return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+    }
+    
+    //For a single file
+    public String getComputeUrl(FileMetadata metadata) {
+        SwiftAccessIO swiftObject = null;
+        try {
+            DataFileIO dataFileIO = metadata.getDataFile().getDataFileIO();
+            if (dataFileIO != null || dataFileIO instanceof SwiftAccessIO) {
+                swiftObject = (SwiftAccessIO)dataFileIO;
+                swiftObject.open();
+            }
+
+        } catch (IOException e) {
+            logger.info("DatasetPage: Failed to get dataFileIO");
+        }
+        
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+
     }
     
     public String getCloudEnvironmentName() {
