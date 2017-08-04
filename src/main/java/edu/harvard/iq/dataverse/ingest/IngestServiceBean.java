@@ -1556,6 +1556,7 @@ public class IngestServiceBean {
         for (Long fileId : datafileIds) {
             fixMissingOriginalType(fileId);
         }
+        logger.info("Finished repairing tabular data files that were missing the original file format labels.");
     }
     
     // This method fixes a datatable object that's missing the format type of 
