@@ -80,7 +80,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             dataFileIO = ImageThumbConverter.getImageThumbnailAsInputStream(dataFileIO, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE); 
                         } else {
                             try {
-                                int size = new Integer(di.getConversionParamValue()).intValue();
+                                int size = new Integer(di.getConversionParamValue());
                                 if (size > 0) {                                    
                                     dataFileIO = ImageThumbConverter.getImageThumbnailAsInputStream(dataFileIO, size);
                                 }
@@ -282,7 +282,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     if (di.getGbr() != null && !(isThumbnailDownload(di) || isPreprocessedMetadataDownload(di))) {
                         try {
                             logger.fine("writing guestbook response.");
-                            Command cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
+                            Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                             di.getCommand().submit(cmd);
                         } catch (CommandException e) {
                             //if an error occurs here then download won't happen no need for response recs...

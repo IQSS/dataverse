@@ -7,7 +7,6 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 /**
  *
@@ -18,7 +17,7 @@ import javax.persistence.Query;
 @Named
 public class DataverseFacetServiceBean implements java.io.Serializable {
     
-    public static final LruCache<Long,List<DataverseFacet>> cache = new LruCache();
+    public static final LruCache<Long,List<DataverseFacet>> cache = new LruCache<>();
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -30,9 +29,8 @@ public class DataverseFacetServiceBean implements java.io.Serializable {
         List<DataverseFacet> res = cache.get(dataverseId);
 
         if ( res == null ) {
-            Query query = em.createNamedQuery("DataverseFacet.findByDataverseId", DataverseFacet.class);
-            query.setParameter("dataverseId", dataverseId);
-            res = query.getResultList();
+            res = em.createNamedQuery("DataverseFacet.findByDataverseId", DataverseFacet.class)
+                            .setParameter("dataverseId", dataverseId).getResultList();
             cache.put(dataverseId, res);
         }
 
@@ -65,8 +63,7 @@ public class DataverseFacetServiceBean implements java.io.Serializable {
     }
     
     public DataverseFacet create(int displayOrder, Long datasetFieldTypeId, Long dataverseId) {
-        return create( displayOrder,
-                        (DatasetFieldType)em.find(DatasetFieldType.class,datasetFieldTypeId),
+        return create(displayOrder, em.find(DatasetFieldType.class,datasetFieldTypeId),
                         dataverses.find(dataverseId) );
     }
     

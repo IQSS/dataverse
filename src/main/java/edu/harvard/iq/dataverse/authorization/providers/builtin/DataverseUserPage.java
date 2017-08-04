@@ -424,7 +424,7 @@ public class DataverseUserPage implements java.io.Serializable {
     private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
         // Find user's role(s) for given dataverse/dataset
         Set<RoleAssignment> roles = permissionService.assignmentsFor(au, dvObj);
-        List<String> roleNames = new ArrayList();
+        List<String> roleNames = new ArrayList<>();
 
         // Include roles derived from a user's groups
         Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
@@ -639,7 +639,7 @@ public class DataverseUserPage implements java.io.Serializable {
         return notificationsList;
     }
 
-    public void setNotificationsList(List notificationsList) {
+    public void setNotificationsList(List<UserNotification> notificationsList) {
         this.notificationsList = notificationsList;
     }
 

@@ -50,7 +50,7 @@ public class NavigationWrapper implements java.io.Serializable {
             // to regenerate the query string, we need to use the parameter map; however this can contain internal POST parameters
             // that we don't want, so we filter through a list of paramters we do allow
             // @todo verify what needs to be in this list of available parameters (for example do we want to repeat searches when you login?
-            List acceptableParameters = new ArrayList();
+            List<String> acceptableParameters = new ArrayList<>();
             acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId", "datasetId", "selectedFileIds", "mode", "dataverseId", "fileId", "datasetVersionId"));
 
             if (req.getParameterMap() != null) {
