@@ -57,7 +57,7 @@ public class DataAccess {
             return new FileAccessIO<>(dvObject, req);
         } else if (dvObject.getStorageIdentifier().startsWith("swift://")){
             return new SwiftAccessIO<>(dvObject, req);
-        } else if (dvObject.getStorageIdentifier().startsWith("s3://")){ //fixme: change name?
+        } else if (dvObject.getStorageIdentifier().startsWith("s3://")){ 
             return new S3AccessIO<>(dvObject, req);
         } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");

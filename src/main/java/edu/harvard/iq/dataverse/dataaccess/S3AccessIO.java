@@ -57,7 +57,7 @@ import org.apache.commons.io.IOUtils;
  * @param <T> what it stores
  */
 /* 
-    Experimental Amazon AWS S3 driver
+    Amazon AWS S3 driver
  */
 public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
@@ -108,14 +108,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             isReadAccess = true;
         }
         
-//        Dataset dataset = (Dataset)dvObject;
         
-        //FIXME: Finish? 
         if (dvObject instanceof DataFile) {
             
             DataFile dataFile = this.getDataFile();
             s3FolderPath = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
-//            s3FileName = this.getDataFile().getStorageIdentifier();
             
             if (req != null && req.getParameter("noVarHeader") != null) {
                 this.setNoVarHeader(true);
