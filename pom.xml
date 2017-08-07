@@ -55,7 +55,7 @@
     
     <dependencyManagement> 
         <dependencies> 
-            <!--Due to our old version of glassfish and its version of jackson,
+<!--            Due to our old version of glassfish and its version of jackson,
                 we are pointing to an aws sdk with unique references to needed libraries.
                 If we update glassfish, we should return to the normal sdk as well. -->
             <dependency> 
@@ -68,6 +68,17 @@
         </dependencies> 
     </dependencyManagement>
     <dependencies>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-bundle</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>aws-java-sdk-ses</artifactId>
+                </exclusion>
+            </exclusions>
+            <version>1.11.169</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -390,10 +401,11 @@
             <version>0.9.10</version>
         </dependency>
         <!--FIXME: Even with the aws block in DependencyManagement, maven complains about version? -->
-        <dependency>
+<!--        <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-bundle</artifactId>
             <version>1.11.169</version>
+<<<<<<< HEAD
             <exclusions>
                 <exclusion>
                     <artifactId>
@@ -402,6 +414,9 @@
                 </exclusion>    
             </exclusions>
         </dependency>
+=======
+        </dependency>-->
+>>>>>>> ca594dee55d7dbc1421600410ea8a40a04543e8b
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>
