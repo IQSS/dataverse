@@ -81,9 +81,6 @@ public class FileRecordJobResource extends AbstractApiBean {
                 if (!fileMode.equals(FileRecordWriter.FILE_MODE_INDIVIDUAL_FILES) && !fileMode.equals(FileRecordWriter.FILE_MODE_PACKAGE_FILE)) {
                     return error(Response.Status.NOT_IMPLEMENTED, "File import mode: " + fileMode + " is not supported.");
                 }
-                if (dataset == null) {
-                    return error(Response.Status.BAD_REQUEST, "Can't find dataset with ID: " + identifier);
-                }
                 File directory = new File(System.getProperty("dataverse.files.directory")
                         + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
                 if (!isValidDirectory(directory)) {
