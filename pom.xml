@@ -71,11 +71,6 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-bundle</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>aws-java-sdk-ses</artifactId>
-                </exclusion>
-            </exclusions>
             <version>1.11.169</version>
         </dependency>
 
@@ -604,6 +599,28 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.0.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>truezip-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>remove-a-file-in-sub-archive</id>
+                        <goals>
+                            <goal>remove</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <fileset>
+                                <directory>target/dataverse-4.7.1.war/WEB-INF/lib/aws-java-sdk-bundle-1.11.169.jar/META-INF</directory>
+                                <includes>
+                                    <include>javamail.providers</include>
+                                </includes>
+                            </fileset>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
