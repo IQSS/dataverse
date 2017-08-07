@@ -46,25 +46,10 @@ public class DataCaptureModuleUtil {
         }
         int httpStatusCode = uploadRequest.getStatus();
         String script = body.getObject().getString("script");
-	String datasetIdentifier = body.getObject().getString("datasetIdentifier");
+        String datasetIdentifier = body.getObject().getString("datasetIdentifier");
         long userId = body.getObject().getLong("userId");
         ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetIdentifier, userId, script);
         return scriptRequestResponse;
-    }
-
-    public static JsonObject startFileSystemImportJob(HttpResponse<JsonNode> uploadRequest) {
-        JsonObjectBuilder jab = Json.createObjectBuilder();
-        jab.add("status", uploadRequest.getStatus());
-        int status = uploadRequest.getStatus();
-        JsonNode body = uploadRequest.getBody();
-        logger.info("Got " + status + " with body: " + body);
-        if (status != 200) {
-            jab.add("message", body.getObject().getString("message"));
-            return jab.build();
-        }
-        jab.add("executionId", body.getObject().getJSONObject("data").getLong("executionId"));
-        jab.add("message", body.getObject().getJSONObject("data").getString("message"));
-        return jab.build();
     }
 
     static UploadRequestResponse makeUploadRequest(HttpResponse<String> uploadRequest) {
