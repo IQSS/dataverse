@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
@@ -35,6 +36,7 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
@@ -48,6 +50,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionComman
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
@@ -644,38 +647,30 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(id);
             if ("validation passed".equals(statusMessageFromDcm)) {
+                String uploadFolder = jsonFromDcm.getString("uploadFolder");
+                int totalSize = jsonFromDcm.getInt("totalSize");
+                ImportMode importMode = ImportMode.MERGE;
                 try {
-//                    String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/${DOI_SHOULDER}/${datasetIdentifier}?mode=MERGE&uploadFolder=trn&totalSize=${sz}&userId=${dv_userId}";
-                    String dataverseBaseUrl = "http://localhost:8080";
-                    String url = dataverseBaseUrl + "/api/batch/jobs/import/datasets/files/" + dataset.getId();
-                    String apiToken = getRequestApiKey();
-                    String uploadFolder = jsonFromDcm.getString("uploadFolder");
-                    int totalSize = jsonFromDcm.getInt("totalSize");
-
-                    JsonObject jsonFromImportJobKickoff = dataCaptureModuleSvc.startFileSystemImportJob(dataset.getId(), url, uploadFolder, totalSize, apiToken);
-                    int importJobKickoffStatus = jsonFromImportJobKickoff.getInt("status");
-                    if (importJobKickoffStatus != 200) {
-                        String message = jsonFromImportJobKickoff.getString("message");
-                        return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Status code was " + importJobKickoffStatus + " and message was '" + message + "'.");
-                    }
+                    JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(findUserOrDie()), dataset, uploadFolder, new Long(totalSize), importMode));
                     long jobId = jsonFromImportJobKickoff.getInt("executionId");
                     String message = jsonFromImportJobKickoff.getString("message");
                     JsonObjectBuilder job = Json.createObjectBuilder();
                     job.add("jobId", jobId);
                     job.add("message", message);
                     return ok(job);
-                } catch (DataCaptureModuleException ex) {
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went while attempting to put the files into Dataverse: " + ex);
+                } catch (WrappedResponse wr) {
+                    String message = wr.getMessage();
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
                 }
             } else if ("validation failed".equals(statusMessageFromDcm)) {
                 Map<String, AuthenticatedUser> distinctAuthors = permissionService.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
                 distinctAuthors.values().forEach((value) -> {
                     userNotificationService.sendNotification((AuthenticatedUser) value, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
                 });
-                List <AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
+                List<AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
                 if (superUsers != null && !superUsers.isEmpty()) {
                     superUsers.forEach((au) -> {
-                        userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());               
+                        userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
                     });
                 }
                 return ok("User notified about checksum validation failure.");
