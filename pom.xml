@@ -13,6 +13,7 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<additionalparam>-Xdoclint:none</additionalparam>
+        <aws.version>1.11.172</aws.version>
     </properties>
 
     <repositories>
@@ -52,26 +53,26 @@
         </repository>
 
     </repositories>
-    
-    <dependencyManagement> 
-        <dependencies> 
-<!--            Due to our old version of glassfish and its version of jackson,
+  
+    <!--            Due to our old version of glassfish and its version of jackson,
                 we are pointing to an aws sdk with unique references to needed libraries.
-                If we update glassfish, we should return to the normal sdk as well. -->
+                If we update glassfish, we should return to the normal sdk as well. -->  
+<!--    <dependencyManagement> 
+        <dependencies> 
             <dependency> 
                 <groupId>com.amazonaws</groupId> 
                 <artifactId>aws-java-sdk-bom</artifactId> 
-                <version>1.11.169</version> 
+                <version>1.11.172</version> 
                 <type>pom</type> 
                 <scope>import</scope> 
             </dependency> 
         </dependencies> 
-    </dependencyManagement>
+    </dependencyManagement>-->
     <dependencies>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-bundle</artifactId>
-            <version>1.11.169</version>
+            <version>${aws.version}</version>
         </dependency>
 
         <dependency>
@@ -609,29 +610,7 @@
                         <phase>package</phase>
                         <configuration>
                             <fileset>
-                                <directory>target/dataverse-4.7.1.war/WEB-INF/lib/aws-java-sdk-bundle-1.11.169.jar/META-INF</directory>
-                                <includes>
-                                    <include>javamail.providers</include>
-                                </includes>
-                            </fileset>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>truezip-maven-plugin</artifactId>
-                <version>1.1</version>
-                <executions>
-                    <execution>
-                        <id>remove-a-file-in-sub-archive</id>
-                        <goals>
-                            <goal>remove</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <fileset>
-                                <directory>target/dataverse-4.7.1.war/WEB-INF/lib/aws-java-sdk-bundle-1.11.169.jar/META-INF</directory>
+                                <directory>target/dataverse-${project.version}.war/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
                                 <includes>
                                     <include>javamail.providers</include>
                                 </includes>
