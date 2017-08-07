@@ -400,7 +400,6 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-bundle</artifactId>
             <version>1.11.169</version>
-<<<<<<< HEAD
             <exclusions>
                 <exclusion>
                     <artifactId>
@@ -408,10 +407,7 @@
                     </artifactId>
                 </exclusion>    
             </exclusions>
-        </dependency>
-=======
         </dependency>-->
->>>>>>> ca594dee55d7dbc1421600410ea8a40a04543e8b
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>
