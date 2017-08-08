@@ -440,29 +440,17 @@ public class DatasetPage implements java.io.Serializable {
     //could be changed 
     //SF 
     public Boolean isSwiftStorage(){
-        Boolean swiftBool = false;
         //containers without datafiles will not be stored in swift storage, so no compute
-        if (getInitialDataFile() != null){
-            if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
-                && getInitialDataFile().getStorageIdentifier().startsWith("swift://")) {
-                swiftBool = true;
-            }
-        }
-        
-        return swiftBool;
+        return (getInitialDataFile() != null)
+               && "swift".equals(System.getProperty("dataverse.files.storage-driver-id"))
+               && getInitialDataFile().getStorageIdentifier().startsWith("swift://");
     }
     
     public Boolean isS3Storage(){
-        Boolean s3Bool = false;
         //containers without datafiles will not be stored in swift storage, so no compute
-        if (getInitialDataFile() != null){
-            if ("s3".equals(System.getProperty("dataverse.files.storage-driver-id")) 
-                && getInitialDataFile().getStorageIdentifier().startsWith("s3://")) {
-                s3Bool = true;
-            }
-        }
-        
-        return s3Bool;
+        return (getInitialDataFile() != null)
+               && "s3".equals(System.getProperty("dataverse.files.storage-driver-id"))
+               && getInitialDataFile().getStorageIdentifier().startsWith("s3://");
     }
 
     public String getComputeUrl() {
