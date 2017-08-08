@@ -252,7 +252,7 @@ public class ExportService {
             StorageIO<Dataset> storageIO = null;
             try {
                 storageIO = DataAccess.createNewStorageIO(dataset, "file");
-                Channel outputChannel = storageIO.openAuxChannel(format, DataAccessOption.WRITE_ACCESS);
+                Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached", DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {
                 tempFileRequired = true;
