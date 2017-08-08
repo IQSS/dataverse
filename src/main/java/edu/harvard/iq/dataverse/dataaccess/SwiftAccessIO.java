@@ -601,7 +601,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 //otherwise this gets called a bunch on upload
                 setTemporarySwiftUrl(generateTemporarySwiftUrl(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));
                 setTempUrlSignature(generateTempUrlSignature(swiftEndPoint, swiftContainerName, swiftFileName, TEMP_URL_EXPIRES));
-                setTempUrlExpiry(generateTempUrlExpiry(TEMP_URL_EXPIRES));
+                setTempUrlExpiry(generateTempUrlExpiry(TEMP_URL_EXPIRES, System.currentTimeMillis()));
             }
             setSwiftFileName(swiftFileName);
 
@@ -734,14 +734,14 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     //lets cache them if the expiry is not expired
     private String hmac = null;
     public String generateTempUrlSignature(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
-        if (hmac == null || isExpiryExpired(generateTempUrlExpiry(duration), duration)) {
+        if (hmac == null || isExpiryExpired(generateTempUrlExpiry(duration, System.currentTimeMillis()), duration, System.currentTimeMillis())) {
             Properties p = getSwiftProperties();
             String secretKey = p.getProperty("swift.hash_key." + swiftEndPoint);
             if (secretKey == null) {
                 throw new IOException("Please input a hash key in swift.properties");
             }
             String path = "/v1/" + containerName + "/" + objectName;
-            Long expires = generateTempUrlExpiry(duration);
+            Long expires = generateTempUrlExpiry(duration, System.currentTimeMillis());
             String hmacBody = "GET\n" + expires + "\n" + path;
             try {
                 hmac = calculateRFC2104HMAC(hmacBody, secretKey);
@@ -754,9 +754,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     private long expiry = -1;
-    public long generateTempUrlExpiry(int duration) {
-        if (expiry == -1 || isExpiryExpired(expiry, duration)) {
-            expiry = (System.currentTimeMillis() / 1000) + duration;
+    public long generateTempUrlExpiry(int duration, long currentTime) {
+        if (expiry == -1 || isExpiryExpired(expiry, duration, System.currentTimeMillis())) {
+            expiry = (currentTime / 1000) + duration;
         }
         return expiry;
     }
@@ -767,8 +767,8 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         String baseUrl = p.getProperty("swift.swift_endpoint." + swiftEndPoint);
         String path = "/v1/" + containerName + "/" + objectName;
         
-        if (temporaryUrl == null || isExpiryExpired(generateTempUrlExpiry(duration), duration)) {
-            temporaryUrl = baseUrl + path + "?temp_url_sig=" + generateTempUrlSignature(swiftEndPoint, containerName, objectName, duration) + "&temp_url_expires=" + generateTempUrlExpiry(duration);
+        if (temporaryUrl == null || isExpiryExpired(generateTempUrlExpiry(duration, System.currentTimeMillis()), duration, System.currentTimeMillis())) {
+            temporaryUrl = baseUrl + path + "?temp_url_sig=" + generateTempUrlSignature(swiftEndPoint, containerName, objectName, duration) + "&temp_url_expires=" + generateTempUrlExpiry(duration, System.currentTimeMillis());
         }
         logger.info("temporary url: " + temporaryUrl);
         if (temporaryUrl == null) {
@@ -778,8 +778,8 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         return temporaryUrl;
     }
     
-    private boolean isExpiryExpired(long expiry, int duration) {
-        return ((expiry - duration) * 1000) > System.currentTimeMillis();
+    public boolean isExpiryExpired(long expiry, int duration, long currentTime) {
+        return ((expiry - duration) * 1000) > currentTime;
     }
 
     @Override
@@ -807,13 +807,13 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
      }
      
     //https://gist.github.com/ishikawa/88599
-    private static String toHexString(byte[] bytes) {
+    public static String toHexString(byte[] bytes) {
         Formatter formatter = new Formatter();
 
         for (byte b : bytes) {
             formatter.format("%02x", b);
         }
-
+        
         return formatter.toString();
     }
 
