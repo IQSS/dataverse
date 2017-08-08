@@ -123,6 +123,18 @@ There are several advanced options available for certain file types.
 - Image files: .jpg, .png, and .tif files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
 - SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
 
+.. _rsync_upload:
+
+Rsync Upload
+------------
+
+Rsync is typically used for synchronizing files and directories between two different systems, using SSH to connect rather than HTTP, to better facilitate large file transfers.
+
+File Upload Script
+~~~~~~~~~~~~~~~~~~
+
+Download the file upload script in order to upload files via a terminal window, to run the rsync script.
+
 .. _cloud-storage:
 
 Cloud Storage + Computing

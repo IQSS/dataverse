@@ -622,7 +622,8 @@ Sample output appears below.
 
 * When multiple pages of results exist, the ``selectedPage`` parameters may be specified.
 * Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.
-.. code-block:: text
+
+.. code-block:: javascript
 
     {
         "status":"OK",
@@ -704,8 +705,9 @@ Sample output appears below.
                     "createdTime":"2000-01-01 00:00:00.0",
                     "lastLoginTime":"2017-07-03 12:22:35.926",
                     "lastApiUseTime":"2017-07-03 12:55:57.186"
-                },
-                **... 22 more user documents ...**
+                }
+                
+                // ... 22 more user documents ...
             ]
         }
     }
