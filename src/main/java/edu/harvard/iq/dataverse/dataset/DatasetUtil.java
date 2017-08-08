@@ -326,8 +326,15 @@ public class DatasetUtil {
         } catch (IOException ex) {
             logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
         }
-        //boolean originalFileWasDeleted = originalFile.delete();
-        logger.fine("Thumbnail saved to " + thumbFileLocation + ".");
+        boolean tmpFileWasDeleted = tmpFile.delete();
+        boolean originalFileWasDeleted = tmpFileForResize.delete();
+        try {
+            Files.delete(Paths.get(thumbFileLocation));
+        } catch (IOException ioex) {
+            logger.fine("Failed to delete temporary thumbnail file");
+        }
+        
+        logger.fine("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalFileWasDeleted);
         return dataset;
     }
 
@@ -360,7 +367,7 @@ public class DatasetUtil {
      * The dataset logo is the file that a user uploads which is *not* one of
      * the data files. Compare to the datavese logo. We do not save the original
      * file that is uploaded. Rather, we delete it after first creating at least
-     * one thumbnail from it. Update after #3919: We now keep the original one as well.
+     * one thumbnail from it. 
      */
     public static boolean isDatasetLogoPresent(Dataset dataset) {
         if (dataset == null) {

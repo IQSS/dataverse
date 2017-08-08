@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import static edu.harvard.iq.dataverse.IdServiceBean.logger;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
@@ -251,7 +252,7 @@ public class ExportService {
             StorageIO<Dataset> storageIO = null;
             try {
                 storageIO = DataAccess.createNewStorageIO(dataset, "file");
-                Channel outputChannel = storageIO.openAuxChannel(format, DataAccessOption.WRITE_ACCESS);
+                Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached", DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {
                 tempFileRequired = true;
@@ -273,8 +274,9 @@ public class ExportService {
                     cachedExportOutputStream.close();
 
                     System.out.println("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
-                    System.out.println("Temp file to path:" + tempFile.toPath());
                     storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
+                    boolean tempFileDeleted = tempFile.delete();
+                    logger.info("tempFileDeleted: " + tempFileDeleted);
                 }
 
             } catch (IOException ioex) {
