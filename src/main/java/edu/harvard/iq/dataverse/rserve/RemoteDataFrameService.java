@@ -21,7 +21,7 @@ package edu.harvard.iq.dataverse.rserve;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import java.io.*;
 import java.util.*;
@@ -564,7 +564,7 @@ public class RemoteDataFrameService {
             // send the tabular data file to the Rserve side:
             
             DataAccessRequest daReq = new DataAccessRequest();
-            DataFileIO accessObject = DataAccess.getDataFileIO(dataFile, daReq);
+            StorageIO<DataFile> accessObject = DataAccess.getStorageIO(dataFile, daReq);
             
             if (accessObject == null) {
                 return null; 

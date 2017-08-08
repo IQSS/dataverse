@@ -5,12 +5,17 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoThumbnail;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.thumb48addedByImageThumbConverter;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,6 +26,8 @@ import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -158,7 +165,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         // Before we do anything else, check if it's a harvested dataset; 
         // no need to check anything else if so (harvested datasets never have 
         // thumbnails)
-        
+
         if (result.isHarvested()) {
             return null; 
         }
@@ -192,11 +199,28 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         }
         
         String cardImageUrl = null;
+        StorageIO<Dataset> dataAccess = null;
+                
+        try{
+            dataAccess = DataAccess.getStorageIO(dataset);
+        }
+        catch(IOException ioex){
+          //  return null;
+        }
         
-        Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + DatasetUtil.datasetLogoThumbnail + DatasetUtil.thumb48addedByImageThumbConverter);
-        if (Files.exists(path)) {
+        InputStream in = null;
+        try {
+            if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
+                in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            }
+        } catch (Exception ioex) {
+//            return null;
+              //ignore
+        }
+        
+        if (in != null) {
             try {
-                byte[] bytes = Files.readAllBytes(path);
+                byte[] bytes = IOUtils.toByteArray(in);
                 String base64image = Base64.getEncoder().encodeToString(bytes);
                 cardImageUrl = FileUtil.DATA_URI_SCHEME + base64image;
                 this.dvobjectThumbnailsMap.put(datasetId, cardImageUrl);
