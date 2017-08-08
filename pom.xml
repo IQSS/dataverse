@@ -57,24 +57,12 @@
     <!--            Due to our old version of glassfish and its version of jackson,
                 we are pointing to an aws sdk with unique references to needed libraries.
                 If we update glassfish, we should return to the normal sdk as well. -->  
-<!--    <dependencyManagement> 
-        <dependencies> 
-            <dependency> 
-                <groupId>com.amazonaws</groupId> 
-                <artifactId>aws-java-sdk-bom</artifactId> 
-                <version>1.11.172</version> 
-                <type>pom</type> 
-                <scope>import</scope> 
-            </dependency> 
-        </dependencies> 
-    </dependencyManagement>-->
     <dependencies>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-bundle</artifactId>
             <version>${aws.version}</version>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -396,19 +384,6 @@
             <artifactId>joss</artifactId>
             <version>0.9.10</version>
         </dependency>
-        <!--FIXME: Even with the aws block in DependencyManagement, maven complains about version? -->
-<!--        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-bundle</artifactId>
-            <version>1.11.169</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>
-                        aws-java-sdk-ses
-                    </artifactId>
-                </exclusion>    
-            </exclusions>
-        </dependency>-->
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>
@@ -597,13 +572,16 @@
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.0.0</version>
             </plugin>
+            <!-- v4.8: The truezip-maven-plugin below deletes two copies of a file that the AWS SDK bundle
+            includes called javamail.providers which breaks system emails. TODO: make our own AWS SDK without Amazon SES.
+            - bsilverstein 8/8/2017 -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>truezip-maven-plugin</artifactId>
                 <version>1.1</version>
                 <executions>
                     <execution>
-                        <id>remove-a-file-in-sub-archive</id>
+                        <id>remove-javamail-providers-from-exploded</id>
                         <goals>
                             <goal>remove</goal>
                         </goals>
@@ -618,7 +596,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>remove-a-file-in-other-archive</id>
+                        <id>remove-javamail-providers-from-war</id>
                         <goals>
                             <goal>remove</goal>
                         </goals>
