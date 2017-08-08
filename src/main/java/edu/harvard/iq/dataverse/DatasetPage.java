@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
+import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -78,12 +80,15 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -234,6 +239,27 @@ public class DatasetPage implements java.io.Serializable {
     private String dataverseSiteUrl = ""; 
     
     private boolean removeUnusedTags;
+    
+    private Boolean hasRsyncScript = false;
+
+    public Boolean isHasRsyncScript() {
+        return hasRsyncScript;
+    }
+
+    public void setHasRsyncScript(Boolean hasRsyncScript) {
+        this.hasRsyncScript = hasRsyncScript;
+    }
+    
+    private String rsyncScript = "";
+
+    public String getRsyncScript() {
+        return rsyncScript;
+    }
+
+    public void setRsyncScript(String rsyncScript) {
+        this.rsyncScript = rsyncScript;
+    }
+    
     
     private String thumbnailString = null; 
 
@@ -1291,6 +1317,21 @@ public class DatasetPage implements java.io.Serializable {
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(dataset, null, session);
+                logger.fine("Checking if rsync support is enabled.");
+                if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+                    try {
+                        ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
+                        logger.fine("script: " + scriptRequestResponse.getScript());
+                        if(!scriptRequestResponse.getScript().isEmpty()){
+                            setHasRsyncScript(true);
+                            setRsyncScript(scriptRequestResponse.getScript());
+                        }
+                    } catch (RuntimeException ex) {
+                        logger.info("Problem getting rsync script: " + ex.getLocalizedMessage());
+                    } catch (CommandException cex) {
+                        logger.info("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
+                    }  
+                }
                 
             }
         } else if (ownerId != null) {
@@ -3769,5 +3810,27 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
     }*/
+    
+    
+    public void downloadRsyncScript() {
+
+        String bibFormatDowload = new BibtexCitation(workingVersion).toString();
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("application/download");
+
+        String fileNameString;
+
+        fileNameString = "attachment;filename=" + workingVersion.getDataset().getIdentifier() + "-RsyncScript.txt";
+        response.setHeader("Content-Disposition", fileNameString);
+
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            out.write(getRsyncScript().getBytes());
+            out.flush();
+            ctx.responseComplete();
+        } catch (IOException e) {
+        }
+    }
 
 }

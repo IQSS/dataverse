@@ -1104,15 +1104,27 @@
                                 <f:param value="#{systemConfig.guidesVersion}"/>
                             </h:outputFormat>
                         </p>
+                        
+                        <ui:fragment rendered="#{DatasetPage.workingVersion.fileMetadatas.size() > 0}">
+                            <h:outputText value="#{bundle['file.rsyncUpload.filesExist']}" escape="false"/>
+                        </ui:fragment>
+                        
+                        
+                        <ui:fragment rendered="#{!DatasetPage.isHasRsyncScript() and DatasetPage.workingVersion.fileMetadatas.size() == 0}">
+                            <h:outputText value="#{bundle['file.rsyncUpload.noScriptAvailable']}" escape="false"/>
+                        </ui:fragment>
+                        
+                        <ui:fragment rendered="#{DatasetPage.isHasRsyncScript() and DatasetPage.workingVersion.fileMetadatas.size() == 0}">
                         <ol>
                             <li>
                                 <h:outputText value="#{bundle['file.rsyncUpload.step1']}" escape="false"/>
                             </li>
                             <li>
-                                <h:outputFormat value="#{bundle['file.rsyncUpload.step2']}" escape="false">
-                                    <f:param value="http://www.espn.com/"/>
-                                </h:outputFormat>
+                            <h:commandLink id="rsyncDL" actionListener="#{DatasetPage.downloadRsyncScript()}">
+                                <h:outputText value="#{bundle['file.rsyncUpload.step2']}"  escape="false" />
+                            </h:commandLink>
                             </li>
+
                             <li>
                                 <h:outputFormat value="#{bundle['file.rsyncUpload.step3']}" escape="false">
                                     <f:param value="upload6"/>
@@ -1122,6 +1134,7 @@
                                 <h:outputText value="#{bundle['file.rsyncUpload.step4']}" escape="false"/>
                             </li>
                         </ol>
+                        </ui:fragment>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('rsyncUpload_popup').hide();"/>
                         </div>
