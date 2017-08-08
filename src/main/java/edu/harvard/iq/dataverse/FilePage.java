@@ -572,7 +572,7 @@ public class FilePage implements java.io.Serializable {
     
     public SwiftAccessIO getSwiftObject() {
         try {
-            StorageIO storageIO = getFile().getStorageIO();
+            StorageIO<DataFile> storageIO = getFile().getStorageIO();
             if (storageIO != null && storageIO instanceof SwiftAccessIO) {
                 return (SwiftAccessIO)storageIO;
             } else {

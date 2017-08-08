@@ -415,11 +415,11 @@ public class DatasetPage implements java.io.Serializable {
     
     public SwiftAccessIO getSwiftObject() {
         try {
-            StorageIO storageIO = getInitialDataFile().getStorageIO();
+            StorageIO<DataFile> storageIO = getInitialDataFile().getStorageIO();
             if (storageIO != null && storageIO instanceof SwiftAccessIO) {
                 return (SwiftAccessIO)storageIO;
             } else {
-                logger.info("FilePage: Failed to cast storageIO as SwiftAccessIO");
+                logger.info("FilePage: Failed to cast storageIO as SwiftAccessIO (most likely because storageIO is a FileAccessIO)");
             } 
         } catch (IOException e) {
             logger.info("DatasetPage: Failed to get storageIO");
@@ -514,7 +514,7 @@ public class DatasetPage implements java.io.Serializable {
     public String getComputeUrl(FileMetadata metadata) {
         SwiftAccessIO swiftObject = null;
         try {
-            StorageIO storageIO = metadata.getDataFile().getStorageIO();
+            StorageIO<DataFile> storageIO = metadata.getDataFile().getStorageIO();
             if (storageIO != null && storageIO instanceof SwiftAccessIO) {
                 swiftObject = (SwiftAccessIO)storageIO;
                 swiftObject.open();
