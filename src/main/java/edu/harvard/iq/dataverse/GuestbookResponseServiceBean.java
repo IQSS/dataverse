@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -37,7 +39,8 @@ import javax.persistence.TypedQuery;
 @Named
 public class GuestbookResponseServiceBean {
     
-    public static final String BASE_QUERY_STRING_WITH_GUESTBOOK = "select r.id, g.name, v.value,  r.responsetime, r.downloadtype,  m.label, r.dataFile_id, r.name, r.email, r.institution, r.position from guestbookresponse r,"
+    public static final String BASE_QUERY_STRING_WITH_GUESTBOOK = "select r.id, g.name, v.value,  r.responsetime, r.downloadtype,  "
+                + "m.label, r.dataFile_id, r.name, r.email, r.institution, r.position from guestbookresponse r,"
                 + " datasetfieldvalue v, filemetadata m, dvobject o, guestbook g  "
                 + " where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
@@ -55,7 +58,12 @@ public class GuestbookResponseServiceBean {
                 + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + "  and m.datafile_id = r.datafile_id "
                 + "  and r.dataset_id = o.id ";
+    
+    private static final String SEPARATOR = ",";
+    private static final String NEWLINE = "\n";
 
+    private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/d/yyyy");
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -106,7 +114,74 @@ public class GuestbookResponseServiceBean {
     }
 
     
-    
+    public void streamResponsesByDataverseIdAndGuestbookId(OutputStream out, Long dataverseId, Long guestbookId) throws IOException {
+        String queryString = BASE_QUERY_STRING_WITH_GUESTBOOK
+                + " and  o.owner_id = "
+                + dataverseId.toString()
+                + " and r.guestbook_id = "
+                + guestbookId.toString()
+                + ";";
+
+        List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
+
+        // the CSV header:
+        out.write("Guestbook, Dataset, Date, Type, File Name, File Id, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+        
+        for (Object[] result : guestbookResults) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(result[1]);
+            sb.append(SEPARATOR);
+
+            sb.append(result[2]);
+            sb.append(SEPARATOR);
+            
+            if (result[3] != null) {
+                sb.append(DATE_FORMAT.format((Date) result[3]));
+            } else {
+                sb.append("N/A");
+            }
+            sb.append(SEPARATOR);
+            
+            sb.append(result[4]);
+            sb.append(SEPARATOR);
+
+            sb.append(result[5]);
+            sb.append(SEPARATOR);
+
+            sb.append(result[6] == null ? "" : result[6]);
+            sb.append(SEPARATOR);
+            
+            sb.append(result[7] == null ? "" : result[7]);
+            sb.append(SEPARATOR);
+            
+            sb.append(result[8] == null ? "" : result[8]);
+            sb.append(SEPARATOR);
+            
+            sb.append(result[9] == null ? "" : result[9]);
+            sb.append(SEPARATOR);
+            
+            sb.append(result[10] == null ? "" : result[10]);
+            sb.append(SEPARATOR);
+            
+            // Finally, custom questions and answers, if present:
+            // (this current implementation runs an extra query for every single
+            // guestbookresponse entry! -- we need to pre-cache these instead -- L.A.)
+            String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
+            List<Object[]> customResponses = em.createNativeQuery(cqString).getResultList();
+            if (customResponses != null) {
+                for (Object[] response : customResponses) {
+                    sb.append(SEPARATOR);
+                    sb.append(response[0]);
+                    sb.append(SEPARATOR);
+                    sb.append(response[1] == null ? "" : response[1]);
+                }
+            }
+
+            sb.append(NEWLINE);
+
+            out.write(sb.toString().getBytes());
+        }
+    }
     
     
     private List<Object[]> findArray (String queryString){

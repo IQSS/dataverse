@@ -68,6 +68,24 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         }
     }
     
+    public void streamResponsesByDataverseAndGuestbook(){
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("text/comma-separated-values");
+        String fileNameString = "attachment;filename=" + getFileName();
+        response.setHeader("Content-Disposition", fileNameString);
+        //selectedGuestbook
+        //String converted = convertResponsesToTabDelimited();
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            guestbookResponseService.streamResponsesByDataverseIdAndGuestbookId(out, dataverseId, guestbookId);
+            out.flush();
+            ctx.responseComplete();
+        } catch (Exception e) {
+
+        }
+    }
+    
     public void downloadResponsesByDataverseAndGuestbook(){
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
@@ -87,7 +105,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     }
     
     private String getFileName(){
-       return  dataverse.getName() + "_GuestbookReponses.csv";
+       return  dataverse.getName().replace(' ', '_') + "_GuestbookReponses.csv";
     }
 
     private final String SEPARATOR = ",";
