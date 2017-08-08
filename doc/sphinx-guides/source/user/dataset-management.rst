@@ -135,6 +135,31 @@ File Upload Script
 
 Download the file upload script in order to upload files via a terminal window, to run the rsync script.
 
+Features
+
+- Upload files is disabled on dataset create because in order to produce the upload script, and have a container to store the files, the dataset needs to exist.
+- Instead of an upload pg, you have an upload popup, with instructions to follow, as well as a script to download.
+- There are requirements for preparing your data before upload, like making sure all your files are in one directory. Anything else?
+
+Upload In Progress
+~~~~~~~~~~~~~~~~~~
+
+Features
+
+- Dataset locks, "upload in progress" msg displayed, some features like publish, delete, upload are disabled.
+- You can edit your metadata still.
+- Cancel upload by canceling script in terminal window.
+
+Dataverse Package
+~~~~~~~~~~~~~~~~~
+
+Features
+
+- Instead of a bunch of files displayed, you have one file, a "Dataverse Package".
+- Once you've uploaded your files, upload is disabled.
+- There are Data Access locations, as well as Verify Data commands, displayed on the dataset and file pgs.
+- "If delete, delete the dataset"?
+
 .. _cloud-storage:
 
 Cloud Storage + Computing
