@@ -573,7 +573,7 @@ public class FilePage implements java.io.Serializable {
     public SwiftAccessIO getSwiftObject() {
         try {
             StorageIO storageIO = getFile().getStorageIO();
-            if (storageIO instanceof SwiftAccessIO) {
+            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
                 return (SwiftAccessIO)storageIO;
             } else {
                 logger.info("FilePage: Failed to cast storageIO as SwiftAccessIO");
@@ -598,9 +598,12 @@ public class FilePage implements java.io.Serializable {
 
     public String getComputeUrl() throws IOException {
         SwiftAccessIO swiftObject = getSwiftObject();
-        swiftObject.open();
-        //generate a temp url for a file
-        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        if (swiftObject != null) {
+            swiftObject.open();
+            //generate a temp url for a file
+            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        }
+        return "";
         }
 
     private List<DataFile> allRelatedFiles() {

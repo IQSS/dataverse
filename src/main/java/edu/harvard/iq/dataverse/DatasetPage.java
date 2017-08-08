@@ -416,7 +416,7 @@ public class DatasetPage implements java.io.Serializable {
     public SwiftAccessIO getSwiftObject() {
         try {
             StorageIO storageIO = getInitialDataFile().getStorageIO();
-            if (storageIO != null || storageIO instanceof SwiftAccessIO) {
+            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
                 return (SwiftAccessIO)storageIO;
             } else {
                 logger.info("FilePage: Failed to cast storageIO as SwiftAccessIO");
@@ -501,9 +501,13 @@ public class DatasetPage implements java.io.Serializable {
     */
     public String getComputeUrl() throws IOException {
         SwiftAccessIO swiftObject = getSwiftObject();
-        swiftObject.open();
-        //assuming we are able to get a temp url for a dataset
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        if (swiftObject != null) {
+            swiftObject.open();
+            //assuming we are able to get a temp url for a dataset
+            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        }
+        return "";
+        
     }
     
     //For a single file
@@ -511,7 +515,7 @@ public class DatasetPage implements java.io.Serializable {
         SwiftAccessIO swiftObject = null;
         try {
             StorageIO storageIO = metadata.getDataFile().getStorageIO();
-            if (storageIO != null || storageIO instanceof SwiftAccessIO) {
+            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
                 swiftObject = (SwiftAccessIO)storageIO;
                 swiftObject.open();
             }
