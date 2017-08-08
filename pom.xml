@@ -615,6 +615,12 @@
                                     <include>javamail.providers</include>
                                 </includes>
                             </fileset>
+                            <fileset>
+                                <directory>target/dataverse-${project.version}/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
+                                <includes>
+                                    <include>javamail.providers</include>
+                                </includes>
+                            </fileset>
                         </configuration>
                     </execution>
                 </executions>
