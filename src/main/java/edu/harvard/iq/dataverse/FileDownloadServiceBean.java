@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
@@ -133,32 +132,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
     
-    public void callSwiftDownloadServlet(FileMetadata fileMetadata) {
-        String fileDownloadUrl = null;
-        try {
-            DataFileIO dataFileIO = fileMetadata.getDataFile().getDataFileIO();
-            if (dataFileIO instanceof SwiftAccessIO) {
-                try {
-                    SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
-                    swiftIO.open();
-                    fileDownloadUrl = swiftIO.getTemporarySwiftUrl();
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
-                    //TODO: don't redirect if "access denied"
-                    //if we figure out the proper duration, we wont have to worry about
-                    //ever getting access denied
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
 
-                }
-            }
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        
-    }
-    
-        //public String startFileDownload(FileMetadata fileMetadata, String format) {
+    //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;
         if(!fileMetadata.getDatasetVersion().isDraft()){
@@ -166,11 +141,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
            writeGuestbookResponseRecord(guestbookResponse);
             recordsWritten = true;
         }
-//        if (fileMetadata.getDataFile().getStorageIdentifier().startsWith(("swift://"))){
-//            callSwiftDownloadServlet(fileMetadata);
-//        } else {
         callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
-//        }
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
     
