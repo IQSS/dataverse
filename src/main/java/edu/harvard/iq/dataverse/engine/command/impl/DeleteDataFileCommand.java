@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -60,7 +60,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
         // We need to delete a bunch of physical files, either from the file system,
         // or from some other storage medium where the datafile is stored, 
-        // via its DataFileIO driver.
+        // via its StorageIO driver.
         // First we delete the derivative files, then try to delete the data 
         // file itself; if that 
         // fails, we throw an exception and abort the command without
@@ -72,15 +72,15 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         if (!doomed.isHarvested() && !StringUtil.isEmpty(doomed.getStorageIdentifier())) {
 
             logger.log(Level.FINE, "Storage identifier for the file: {0}", doomed.getStorageIdentifier());
-            DataFileIO dataFileIO = null;
+            StorageIO<DataFile> storageIO = null;
 
             try {
-                dataFileIO = doomed.getDataFileIO();
+                storageIO = doomed.getStorageIO();
             } catch (IOException ioex) {
                 throw new CommandExecutionException("Failed to initialize physical access driver.", ioex, this);
             }
 
-            if (dataFileIO != null) {
+            if (storageIO != null) {
 
                 // First, delete all the derivative files:
                 // We may have a few extra files associated with this object - 
@@ -91,19 +91,19 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 // auxiliary files, we'll just leave an error message in the 
                 // log file and proceed deleting the database object.
                 try {
-                    dataFileIO.open();
-                    dataFileIO.deleteAllAuxObjects();
+                    storageIO.open();
+                    storageIO.deleteAllAuxObjects();
                 } catch (IOException ioex) {
                     Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting Auxiliary file(s) while deleting DataFile {0}", doomed.getStorageIdentifier());
                 }
 
                 // We only want to attempt to delete the main physical file
                 // if it actually exists, on the filesystem or whereever it 
-                // is actually stored by its DataFileIO:
+                // is actually stored by its StorageIO:
                 boolean physicalFileExists = false;
 
                 try {
-                    physicalFileExists = dataFileIO.exists();
+                    physicalFileExists = storageIO.exists();
                 } catch (IOException ioex) {
                     // We'll assume that an exception here means that the file does not
                     // exist; so we can skip trying to delete it. 
@@ -112,7 +112,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
                 if (physicalFileExists) {
                     try {
-                        dataFileIO.delete();
+                        storageIO.delete();
                     } catch (IOException ex) {
                         // This we will treat as a fatal condition:
                         throw new CommandExecutionException("Error deleting physical file object while deleting DataFile " + doomed.getId() + " from the database.", ex, this);
@@ -121,10 +121,10 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
                 logger.log(Level.FINE, "Successfully deleted physical storage object (file) for the DataFile {0}", doomed.getId());
 
-                // Destroy the dataFileIO object - we will need to purge the 
+                // Destroy the storageIO object - we will need to purge the 
                 // DataFile from the database (below), so we don't want to have any
                 // objects in this transaction that reference it:
-                dataFileIO = null;
+                storageIO = null;
             }
         }
 

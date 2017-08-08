@@ -797,12 +797,13 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
         try {
             if (datasetId != null) {
-                searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID, t2.USEGENERICTHUMBNAIL FROM DATASETVERSION t0, DATAVERSE t1, DATASET t2 WHERE t0.ID = " 
+                searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID, t2.USEGENERICTHUMBNAIL, t3.STORAGEIDENTIFIER FROM DATASETVERSION t0, DATAVERSE t1, DATASET t2, DVOBJECT t3 WHERE t0.ID = " 
                         + datasetVersionId 
                         + " AND t1.ID = " 
                         + dataverseId
                         + " AND t2.ID = "
-                        + datasetId).getSingleResult()
+                        + datasetId
+                        + " AND t2.ID = t3.ID").getSingleResult()
                         
                         ;
             } else {
@@ -832,7 +833,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             solrSearchResult.setDataverseAlias((String) searchResult[1]);
         }
         
-        if (searchResult.length == 4) {
+        if (searchResult.length == 5) {
             Dataset datasetEntity = new Dataset();
             String globalIdentifier = solrSearchResult.getIdentifier();
             GlobalId globalId = new GlobalId(globalIdentifier);
@@ -840,7 +841,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             datasetEntity.setProtocol(globalId.getProtocol());
             datasetEntity.setAuthority(globalId.getAuthority());
             datasetEntity.setIdentifier(globalId.getIdentifier());
-
+            if (searchResult[4] != null) {
+                datasetEntity.setStorageIdentifier(searchResult[4].toString());
+            }
             solrSearchResult.setEntity(datasetEntity);
             if (searchResult[2] != null) {
                 // This is the image file specifically assigned as the "icon" for
