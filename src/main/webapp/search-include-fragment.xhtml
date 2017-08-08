@@ -277,7 +277,7 @@
                         <!--BROWSE GUEST HIDDEN-->
                         <p>
                             <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.hidden']}" escape="false">
-                                <f:param value="#{navigationWrapper.redirectPage}"/>
+                                <f:param value="#{'/shib.xhtml'.concat(navigationWrapper.redirectPage)}"/>
                             </h:outputFormat>
                         </p>
                     </ui:fragment>
