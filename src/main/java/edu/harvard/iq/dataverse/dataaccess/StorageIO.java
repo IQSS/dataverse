@@ -22,20 +22,18 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import java.io.FileInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channel;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Formatter;
 import java.util.Iterator;
 import java.util.List;
 
@@ -47,34 +45,43 @@ import org.apache.commons.httpclient.methods.GetMethod;
 /**
  *
  * @author Leonid Andreev
+ * @param <T> what it writes
  */
 
-public abstract class DataFileIO {
+public abstract class StorageIO<T extends DvObject> {
 
-    public DataFileIO() {
+    public StorageIO() {
 
     }
 
-    public DataFileIO(DataFile dataFile) {
-        this(dataFile, null);
+    public StorageIO(T dvObject) {
+        this(dvObject, null);
     }
 
-    public DataFileIO(DataFile dataFile, DataAccessRequest req) {
-        this.dataFile = dataFile;
+    public StorageIO(T dvObject, DataAccessRequest req) {
+        this.dvObject = dvObject;
         this.req = req;
-
         if (this.req == null) {
             this.req = new DataAccessRequest();
         }
     }
 
+    
+    
     // Abstract methods to be implemented by the storage drivers:
 
     public abstract void open(DataAccessOption... option) throws IOException;
-    
-    public abstract boolean canRead();
 
-    public abstract boolean canWrite();
+    protected boolean isReadAccess = false;
+    protected boolean isWriteAccess = false;
+
+    public boolean canRead() {
+        return isReadAccess;
+    }
+
+    public boolean canWrite() {
+        return isWriteAccess;
+    }
 
     public abstract String getStorageLocation() throws IOException;
     // do we need this method?
@@ -108,6 +115,8 @@ public abstract class DataFileIO {
     // such as "saved original" and cached format conversions for tabular files, 
     // thumbnails for images, etc. - in physical files with the same file 
     // name but various reserved extensions. 
+   
+    public abstract InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException ;
     
     public abstract Channel openAuxChannel(String auxItemTag, DataAccessOption... option) throws IOException;
     
@@ -130,14 +139,12 @@ public abstract class DataFileIO {
     public abstract void deleteAuxObject(String auxItemTag) throws IOException; 
     
     public abstract void deleteAllAuxObjects() throws IOException;
-    
 
-    private DataFile dataFile;
     private DataAccessRequest req;
-
     private InputStream in;
     private OutputStream out; 
     protected Channel channel;
+    protected DvObject dvObject;
 
     private int status;
     private long size;
@@ -153,15 +160,15 @@ public abstract class DataFileIO {
 
     private String swiftContainerName;
 
-    private Boolean isLocalFile = false;
-    private Boolean isRemoteAccess = false;
-    private Boolean isHttpAccess = false;
-    private Boolean noVarHeader = false;
+    private boolean isLocalFile = false;
+    private boolean isRemoteAccess = false;
+    private boolean isHttpAccess = false;
+    private boolean noVarHeader = false;
 
     // For remote downloads:
-    private Boolean isZippedStream = false;
-    private Boolean isDownloadSupported = true;
-    private Boolean isSubsetSupported = false;
+    private boolean isZippedStream = false;
+    private boolean isDownloadSupported = true;
+    private boolean isSubsetSupported = false;
 
     private String swiftFileName;
 
@@ -194,8 +201,21 @@ public abstract class DataFileIO {
         return (ReadableByteChannel) channel;
     }
     
+    public DvObject getDvObject()
+    {
+        return dvObject;
+    }
+    
     public DataFile getDataFile() {
-        return dataFile;
+        return (DataFile) dvObject;
+    }
+    
+    public Dataset getDataset() {
+        return (Dataset) dvObject;
+    }
+
+    public Dataverse getDataverse() {
+        return (Dataverse) dvObject;
     }
 
     public DataAccessRequest getRequest() {
@@ -266,37 +286,37 @@ public abstract class DataFileIO {
         return responseHeaders;
     }
 
-    public Boolean isLocalFile() {
+    public boolean isLocalFile() {
         return isLocalFile;
     }
 
-    public Boolean isRemoteAccess() {
+    public boolean isRemoteAccess() {
         return isRemoteAccess;
     }
 
-    public Boolean isHttpAccess() {
+    public boolean isHttpAccess() {
         return isHttpAccess;
     }
 
-    public Boolean isDownloadSupported() {
+    public boolean isDownloadSupported() {
         return isDownloadSupported;
     }
 
-    public Boolean isSubsetSupported() {
+    public boolean isSubsetSupported() {
         return isSubsetSupported;
     }
 
-    public Boolean isZippedStream() {
+    public boolean isZippedStream() {
         return isZippedStream;
     }
 
-    public Boolean noVarHeader() {
+    public boolean noVarHeader() {
         return noVarHeader;
     }
 
         // setters:
-    public void setDataFile(DataFile f) {
-        dataFile = f;
+    public void setDvObject(T f) {
+        dvObject = f;
     }
 
     public void setRequest(DataAccessRequest dar) {
@@ -371,31 +391,31 @@ public abstract class DataFileIO {
         responseHeaders = headers;
     }
 
-    public void setIsLocalFile(Boolean f) {
+    public void setIsLocalFile(boolean f) {
         isLocalFile = f;
     }
 
-    public void setIsRemoteAccess(Boolean r) {
+    public void setIsRemoteAccess(boolean r) {
         isRemoteAccess = r;
     }
 
-    public void setIsHttpAccess(Boolean h) {
+    public void setIsHttpAccess(boolean h) {
         isHttpAccess = h;
     }
 
-    public void setIsDownloadSupported(Boolean d) {
+    public void setIsDownloadSupported(boolean d) {
         isDownloadSupported = d;
     }
 
-    public void setIsSubsetSupported(Boolean s) {
+    public void setIsSubsetSupported(boolean s) {
         isSubsetSupported = s;
     }
 
-    public void setIsZippedStream(Boolean zs) {
+    public void setIsZippedStream(boolean zs) {
         isZippedStream = zs;
     }
 
-    public void setNoVarHeader(Boolean nvh) {
+    public void setNoVarHeader(boolean nvh) {
         noVarHeader = nvh;
     }
 
@@ -422,20 +442,20 @@ public abstract class DataFileIO {
         }
     }
     
-    public String generateVariableHeader(List dvs) {
+    public String generateVariableHeader(List<DataVariable> dvs) {
         String varHeader = null;
 
         if (dvs != null) {
-            Iterator iter = dvs.iterator();
+            Iterator<DataVariable> iter = dvs.iterator();
             DataVariable dv;
 
             if (iter.hasNext()) {
-                dv = (DataVariable) iter.next();
+                dv = iter.next();
                 varHeader = dv.getName();
             }
 
             while (iter.hasNext()) {
-                dv = (DataVariable) iter.next();
+                dv = iter.next();
                 varHeader = varHeader + "\t" + dv.getName();
             }
 

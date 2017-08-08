@@ -99,7 +99,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
 
         try {
-            Command cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
+            CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
             commandEngine.submit(cmd);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
@@ -263,7 +263,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/xml");
-        String fileNameString = "";
+        String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
             fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".xml";
@@ -277,7 +277,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             out.write(xml.getBytes());
             out.flush();
             ctx.responseComplete();
-        } catch (Exception e) {
+        } catch (IOException e) {
 
         }
     }
@@ -304,7 +304,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
 
-        String fileNameString = "";
+        String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
             fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".ris";
@@ -319,14 +319,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             out.write(risFormatDowload.getBytes());
             out.flush();
             ctx.responseComplete();
-        } catch (Exception e) {
+        } catch (IOException e) {
 
         }
     }
     
     private String getFileNameDOI(DatasetVersion workingVersion) {
         Dataset ds = workingVersion.getDataset();
-        return "DOI:" + ds.getAuthority() + "_" + ds.getIdentifier().toString();
+        return "DOI:" + ds.getAuthority() + "_" + ds.getIdentifier();
     }
 
     public void downloadDatasetCitationBibtex(Dataset dataset) {
@@ -351,7 +351,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
 
-        String fileNameString = "";
+        String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation:
             fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".bib";
@@ -366,7 +366,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             out.write(bibFormatDowload.getBytes());
             out.flush();
             ctx.responseComplete();
-        } catch (Exception e) {
+        } catch (IOException e) {
 
         }
     }
@@ -375,7 +375,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
        
     public boolean requestAccess(Long fileId) {     
         DataFile file = datafileService.find(fileId);
-        if (!file.getFileAccessRequesters().contains((AuthenticatedUser) session.getUser())) {            
+        if (!file.getFileAccessRequesters().contains(session.getUser())) {
             try {
                 commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));                        
                 return true;

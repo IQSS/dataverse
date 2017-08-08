@@ -142,7 +142,9 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		RoleAssignmentSet retVal = new RoleAssignmentSet(user);
 		while ( dv != null ) {
 			retVal.add( directRoleAssignments(user, dv) );
-			if ( dv.isPermissionRoot() ) break;
+			if ( dv.isPermissionRoot() ) {
+                            break;
+                        }
 			dv = dv.getOwner();
 		}
 		return retVal;
@@ -201,7 +203,9 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	 * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser, edu.harvard.iq.dataverse.Dataverse)
 	 */
 	public List<RoleAssignment> directRoleAssignments( RoleAssignee roas, DvObject dvo ) {
-		if ( roas==null ) throw new IllegalArgumentException("RoleAssignee cannot be null");
+		if ( roas==null ) {
+                    throw new IllegalArgumentException("RoleAssignee cannot be null");
+                }
 		TypedQuery<RoleAssignment> query = em.createNamedQuery(
 				"RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
 				RoleAssignment.class);
@@ -251,7 +255,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
          that contain that permission
          */
         List<DataverseRole> rolesToCheck = findBuiltinRoles();
-        List<DataverseRole> retVal = new ArrayList();
+        List<DataverseRole> retVal = new ArrayList<>();
         rolesToCheck.addAll(findByOwnerId(ownerId));
         for (DataverseRole role : rolesToCheck) {
             if (role.permissions().contains(permissionIn)) {

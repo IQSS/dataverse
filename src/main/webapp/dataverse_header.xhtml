@@ -13,10 +13,10 @@
     
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
-        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
+        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}" role="navigation">
             <div class="container">
                 <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-pressed="false">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
@@ -26,7 +26,7 @@
                     
                     <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
                         <a href="/">
-                            <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
+                            <span class="navbar-brand" tabindex="1"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
                         </a>
                     </ui:fragment>
 
@@ -46,8 +46,8 @@
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a id="navbar-search-toggle" title="#{bundle['header.search.title']}">
+                         <li>
+                            <a href="#" id="navbar-search-toggle" title="#{bundle['header.search.title']}">
                                 <span class="glyphicon glyphicon-search"></span>
                             </a>
                         </li>
@@ -103,22 +103,22 @@
                         </ui:fragment>
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
-                                <span id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown">
+                                <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
                                     <ui:fragment rendered="#{dataverseSession.user.superuser}">
                                         <span class="glyphicon glyphicon-user text-danger"></span>
                                     </ui:fragment>
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
                                     <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
                                                   value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />                                    <b class="caret"></b>
-                                </span>
+                                </a>
                                 <ul class="dropdown-menu">
-                                    <li>
+                                    <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="dataRelatedToMe" />
                                             <h:outputText value="#{bundle['header.user.selectTab.dataRelated']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li>
+                                    <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="notifications" />
                                             <h:outputText value="#{bundle['header.user.selectTab.notifications']}" />
@@ -127,27 +127,27 @@
                                         </h:outputLink>
                                     </li>
                                     <ui:remove>
-                                        <li>
+                                        <li tabindex="-1">
                                             <h:outputLink value="/dataverseuser.xhtml">
                                                 <f:param name="selectTab" value="groupsRoles" />
                                                 <h:outputText value="#{bundle['header.user.selectTab.groupsAndRoles']}" />
                                             </h:outputLink>
                                         </li>
                                     </ui:remove>
-                                    <li>
+                                    <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="accountInfo" />
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li>
+                                    <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="apiTokenTab" />
                                             <h:outputText value="#{bundle['header.user.selectTab.apiToken']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li class="divider"></li>
-                                    <li class="logout">
+                                    <li class="divider" tabindex="-1"></li>
+                                    <li class="logout" tabindex="-1">
                                         <o:form useRequestURI="true" styleClass="navbar-form navbar-left" pt:role="logout">
                                             <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout">
                                                 <h:outputText value="#{bundle['header.logOut']}" />

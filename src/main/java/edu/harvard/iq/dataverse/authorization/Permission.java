@@ -70,6 +70,7 @@ public enum Permission implements java.io.Serializable {
      */
     private final boolean requiresAuthenticatedUser;
 
+    @SafeVarargs
     Permission(String aHumanName, boolean authenticatedUserRequired, Class<? extends DvObject>... appliesToList) {
         humanName = aHumanName;
         appliesTo = new HashSet<>(Arrays.asList(appliesToList));

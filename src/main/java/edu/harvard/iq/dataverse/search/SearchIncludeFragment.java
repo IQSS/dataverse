@@ -104,7 +104,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     // commenting out dataverseSubtreeContext. it was not well-loved in the GUI
 //    private String dataverseSubtreeContext;
     private String selectedTypesString;
-    private List<String> selectedTypesList = new ArrayList<String>();
+    private List<String> selectedTypesList = new ArrayList<>();
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
@@ -293,9 +293,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         selectedTypesList = new ArrayList<>();
         String[] parts = selectedTypesString.split(":");
 //        int count = 0;
-        for (String string : parts) {
-            selectedTypesList.add(string);
-        }
+        selectedTypesList.addAll(Arrays.asList(parts));
 
         List<String> filterQueriesFinalAllTypes = new ArrayList<>();
         String[] arr = selectedTypesList.toArray(new String[selectedTypesList.size()]);
@@ -863,23 +861,23 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean isSortedByNameAsc() {
-        return getCurrentSort().equals(searchFieldNameSort + ":" + ASCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldNameSort + ":" + ASCENDING);
     }
 
     public boolean isSortedByNameDesc() {
-        return getCurrentSort().equals(searchFieldNameSort + ":" + DESCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldNameSort + ":" + DESCENDING);
     }
 
     public boolean isSortedByReleaseDateAsc() {
-        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + ASCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + ASCENDING);
     }
 
     public boolean isSortedByReleaseDateDesc() {
-        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + DESCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + DESCENDING);
     }
 
     public boolean isSortedByRelevance() {
-        return getCurrentSort().equals(searchFieldRelevance + ":" + DESCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldRelevance + ":" + DESCENDING);
     }
 
     public int getPage() {
@@ -1232,7 +1230,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (dataverse.getId().equals(result.getParentIdAsLong())) {
                     // definitely NOT linked:
                     result.setIsInTree(true);
-                } else if (result.getParentIdAsLong().longValue() == 1L) {
+                } else if (result.getParentIdAsLong() == 1L) {
                     // the object's parent is the root Dv; and the current 
                     // Dv is NOT root... definitely linked:
                     result.setIsInTree(false);

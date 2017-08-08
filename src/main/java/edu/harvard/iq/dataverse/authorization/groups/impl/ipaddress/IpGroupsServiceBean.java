@@ -95,7 +95,7 @@ public class IpGroupsServiceBean {
     }
     
     public List<IpGroup> findAll() {
-        return em.createNamedQuery("IpGroup.findAll").getResultList();
+        return em.createNamedQuery("IpGroup.findAll", IpGroup.class).getResultList();
     }
     
     public Set<IpGroup> findAllIncludingIp( IpAddress ipa ) {

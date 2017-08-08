@@ -76,21 +76,21 @@ public class ImageThumbConverter {
 
         try {
 
-            DataFileIO dataFileIO = file.getDataFileIO();
-            return isThumbnailAvailable(dataFileIO, size);
+            StorageIO<DataFile> storageIO = file.getStorageIO();
+            return isThumbnailAvailable(storageIO, size);
         } catch (IOException ioEx) {
             return false;
         }
 
     }
     
-    private static boolean isThumbnailAvailable(DataFileIO dataFileIO, int size) {
+    private static boolean isThumbnailAvailable(StorageIO<DataFile> storageIO, int size) {
 
-        if (dataFileIO == null || dataFileIO.getDataFile() == null) {
+        if (storageIO == null || storageIO.getDvObject()== null) {
             return false;
         }
 
-        DataFile file = dataFileIO.getDataFile();
+        DataFile file = storageIO.getDataFile();
 
         // if thumbnails are not even supported on this file type, no need
         // to check anything else:
@@ -105,18 +105,18 @@ public class ImageThumbConverter {
             return false;
         }
 
-        if (isThumbnailCached(dataFileIO, size)) {
+        if (isThumbnailCached(storageIO, size)) {
             return true;
         }
 
         logger.fine("Checking for thumbnail, file type: " + file.getContentType());
 
         if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-            return generateImageThumbnail(dataFileIO, size);
+            return generateImageThumbnail(storageIO, size);
         } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
-            return generatePDFThumbnail(dataFileIO, size);
+            return generatePDFThumbnail(storageIO, size);
         } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile") || (file.isTabularData() && file.hasGeospatialTag())) {
-            return generateWorldMapThumbnail(dataFileIO, size);
+            return generateWorldMapThumbnail(storageIO, size);
         }
 
         return false;
@@ -133,10 +133,10 @@ public class ImageThumbConverter {
     // Note that this method is mainly used by the data access API methods. 
     // Whenever a page needs a thumbnail, we prefer to rely on the Base64
     // string version.
-    public static InputStreamIO getImageThumbnailAsInputStream(DataFileIO dataFileIO, int size) {
+    public static InputStreamIO getImageThumbnailAsInputStream(StorageIO<DataFile> storageIO, int size) {
         logger.fine("entering getImageThumb, size " + size);
 
-        if (!isThumbnailAvailable(dataFileIO, size)) {
+        if (!isThumbnailAvailable(storageIO, size)) {
             return null;
         }
 
@@ -145,20 +145,20 @@ public class ImageThumbConverter {
         InputStream cachedThumbnailInputStream = null;
 
         try {
-            dataFileIO.open();
-            Channel cachedThumbnailChannel = dataFileIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
+            storageIO.open();
+            Channel cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
             if (cachedThumbnailChannel == null) {
                 logger.warning("Null channel for aux object " + THUMBNAIL_SUFFIX + size);
                 return null;
             }
             cachedThumbnailInputStream = Channels.newInputStream((ReadableByteChannel) cachedThumbnailChannel);
-            int cachedThumbnailSize = (int) dataFileIO.getAuxObjectSize(THUMBNAIL_SUFFIX + size);
+            int cachedThumbnailSize = (int) storageIO.getAuxObjectSize(THUMBNAIL_SUFFIX + size);
 
             InputStreamIO inputStreamIO = new InputStreamIO(cachedThumbnailInputStream, cachedThumbnailSize);
             
             inputStreamIO.setMimeType(THUMBNAIL_MIME_TYPE);
             
-            String fileName = dataFileIO.getFileName();
+            String fileName = storageIO.getFileName();
             if (fileName != null) {
                 fileName = fileName.replaceAll("\\.[^\\.]*$", ".png");
                 inputStreamIO.setFileName(fileName);
@@ -175,9 +175,9 @@ public class ImageThumbConverter {
         }
     }
     
-    private static boolean generatePDFThumbnail(DataFileIO dataFileIO, int size) {
-        if (isPdfFileOverSizeLimit(dataFileIO.getDataFile().getFilesize())) {
-            logger.fine("Image file too large (" + dataFileIO.getDataFile().getFilesize() + " bytes) - skipping");
+    private static boolean generatePDFThumbnail(StorageIO<DataFile> storageIO, int size) {
+        if (isPdfFileOverSizeLimit(storageIO.getDataFile().getFilesize())) {
+            logger.fine("Image file too large (" + storageIO.getDataFile().getFilesize() + " bytes) - skipping");
             return false;
         }
         
@@ -200,7 +200,7 @@ public class ImageThumbConverter {
         boolean tempFilesRequired = false; 
         
         try {
-            Path pdfFilePath = dataFileIO.getFileSystemPath();
+            Path pdfFilePath = storageIO.getFileSystemPath();
             sourcePdfFile = pdfFilePath.toFile();
             logger.fine("Opened the source pdf file as a local File.");
         } catch (UnsupportedDataAccessOperationException uoex) {
@@ -217,11 +217,11 @@ public class ImageThumbConverter {
             ReadableByteChannel pdfFileChannel;
 
             try {
-                dataFileIO.open();
-                //inputStream = dataFileIO.getInputStream();
-                pdfFileChannel = dataFileIO.getReadChannel();
+                storageIO.open();
+                //inputStream = storageIO.getInputStream();
+                pdfFileChannel = storageIO.getReadChannel();
             } catch (IOException ioex) {
-                logger.warning("caught IOException trying to open an input stream for " + dataFileIO.getDataFile().getStorageIdentifier());
+                logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier());
                 return false;
             }
 
@@ -231,7 +231,7 @@ public class ImageThumbConverter {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
                 tempFileChannel = new FileOutputStream(tempFile).getChannel();
 
-                tempFileChannel.transferFrom(pdfFileChannel, 0, dataFileIO.getSize());
+                tempFileChannel.transferFrom(pdfFileChannel, 0, storageIO.getSize());
             } catch (IOException ioex) {
                 logger.warning("GenerateImageThumb: failed to save pdf bytes in a temporary file.");
                 return false;
@@ -254,7 +254,7 @@ public class ImageThumbConverter {
         if (tempFilesRequired) {
             try {
                 logger.fine("attempting to save generated pdf thumbnail, as AUX file "+THUMBNAIL_SUFFIX + size);
-                dataFileIO.savePathAsAux(Paths.get(imageThumbFileName), THUMBNAIL_SUFFIX + size);
+                storageIO.savePathAsAux(Paths.get(imageThumbFileName), THUMBNAIL_SUFFIX + size);
             } catch (IOException ioex) {
                 logger.warning("failed to save generated pdf thumbnail, as AUX file "+THUMBNAIL_SUFFIX + size+"!");
                 return false; 
@@ -264,24 +264,21 @@ public class ImageThumbConverter {
         return true;
     }
     
-    private static boolean generateImageThumbnail(DataFileIO dataFileIO, int size) {
+    private static boolean generateImageThumbnail(StorageIO<DataFile> storageIO, int size) {
 
-        if (isImageOverSizeLimit(dataFileIO.getDataFile().getFilesize())) {
+        if (isImageOverSizeLimit(storageIO.getDataFile().getFilesize())) {
             logger.fine("Image file too large - skipping");
             return false;
         }
-        
-        InputStream inputStream;
 
         try {
-            dataFileIO.open();
-            inputStream = dataFileIO.getInputStream();
+            storageIO.open();
         } catch (IOException ioex) {
-            logger.warning("caught IOException trying to open an input stream for " + dataFileIO.getDataFile().getStorageIdentifier());
+            logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
         }
 
-        return generateImageThumbnailFromInputStream(dataFileIO, size, inputStream);
+        return generateImageThumbnailFromInputStream(storageIO, size, storageIO.getInputStream());
     }
     
     /*
@@ -295,21 +292,21 @@ public class ImageThumbConverter {
      * Also note that it works the exact same way for tabular-mapped-as-worldmap
      * files as well. 
     */
-    private static boolean generateWorldMapThumbnail(DataFileIO dataFileIO, int size) {
+    private static boolean generateWorldMapThumbnail(StorageIO<DataFile> storageIO, int size) {
 
         InputStream worldMapImageInputStream = null;
 
         try {
-            dataFileIO.open();
+            storageIO.open();
             
-            Channel worldMapImageChannel = dataFileIO.openAuxChannel(WORLDMAP_IMAGE_SUFFIX);
+            Channel worldMapImageChannel = storageIO.openAuxChannel(WORLDMAP_IMAGE_SUFFIX);
             if (worldMapImageChannel == null) {
                 logger.warning("Could not open channel for aux ."+ WORLDMAP_IMAGE_SUFFIX + " object; (" + size + ")");
                 return false;
             }
             worldMapImageInputStream = Channels.newInputStream((ReadableByteChannel) worldMapImageChannel);
             
-            long worldMapImageSize = dataFileIO.getAuxObjectSize(WORLDMAP_IMAGE_SUFFIX);
+            long worldMapImageSize = storageIO.getAuxObjectSize(WORLDMAP_IMAGE_SUFFIX);
             
             if (isImageOverSizeLimit(worldMapImageSize)) {
                 logger.fine("WorldMap image too large - skipping");
@@ -321,23 +318,23 @@ public class ImageThumbConverter {
             return false;
             
         } catch (IOException ioex) {
-            logger.warning("caught IOException trying to open an input stream for worldmap .img file (" + dataFileIO.getDataFile().getStorageIdentifier() + ")");
+            logger.warning("caught IOException trying to open an input stream for worldmap .img file (" + storageIO.getDataFile().getStorageIdentifier() + ")");
             return false;
         }
 
-        return generateImageThumbnailFromInputStream(dataFileIO, size, worldMapImageInputStream);
+        return generateImageThumbnailFromInputStream(storageIO, size, worldMapImageInputStream);
     }
     
     /*
      * This is the actual workhorse method that does the rescaling of the full 
      * size image: 
     */
-    private static boolean generateImageThumbnailFromInputStream(DataFileIO dataFileIO, int size, InputStream inputStream) {
+    private static boolean generateImageThumbnailFromInputStream(StorageIO<DataFile> storageIO, int size, InputStream inputStream) {
 
         BufferedImage fullSizeImage;
 
         try {
-            logger.fine("attempting to read the image file with ImageIO.read(InputStream), " + dataFileIO.getDataFile().getStorageIdentifier());
+            logger.fine("attempting to read the image file with ImageIO.read(InputStream), " + storageIO.getDataFile().getStorageIdentifier());
             fullSizeImage = ImageIO.read(inputStream);
         } catch (IOException ioex) {
             logger.warning("Caught exception attempting to read the image file with ImageIO.read(InputStream)");
@@ -352,7 +349,7 @@ public class ImageThumbConverter {
         int width = fullSizeImage.getWidth(null);
         int height = fullSizeImage.getHeight(null);
 
-        logger.fine("image dimensions: " + width + "x" + height + "(" + dataFileIO.getDataFile().getStorageIdentifier() + ")");
+        logger.fine("image dimensions: " + width + "x" + height + "(" + storageIO.getDataFile().getStorageIdentifier() + ")");
 
         OutputStream outputStream = null;
 
@@ -366,11 +363,11 @@ public class ImageThumbConverter {
         File tempFile = null;
 
         try {
-            Channel outputChannel = dataFileIO.openAuxChannel(THUMBNAIL_SUFFIX + size, DataAccessOption.WRITE_ACCESS);
+            Channel outputChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size, DataAccessOption.WRITE_ACCESS);
             outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
-            logger.fine("Opened an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + dataFileIO.getDataFile().getStorageIdentifier());
+            logger.fine("Opened an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + storageIO.getDataFile().getStorageIdentifier());
         } catch (IOException ioex) {
-            //logger.warning("Failed to open an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + dataFileIO.getDataFile().getStorageIdentifier());
+            //logger.warning("Failed to open an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + storageIO.getDataFile().getStorageIdentifier());
             tempFileRequired = true;
         }
 
@@ -398,7 +395,7 @@ public class ImageThumbConverter {
              */
             
             if (tempFileRequired) {
-                dataFileIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), THUMBNAIL_SUFFIX + size);
+                storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), THUMBNAIL_SUFFIX + size);
             }
 
         } catch (IOException ioex) {
@@ -410,19 +407,19 @@ public class ImageThumbConverter {
 
     }
     
-    private static boolean isThumbnailCached(DataFileIO dataFileIO, int size) {
+    private static boolean isThumbnailCached(StorageIO<DataFile> storageIO, int size) {
         boolean cached;
         try {
-            cached = dataFileIO.isAuxObjectCached(THUMBNAIL_SUFFIX + size);
+            cached = storageIO.isAuxObjectCached(THUMBNAIL_SUFFIX + size);
         } catch (IOException ioex) {
-            logger.fine("caught IO exception while checking for a cached thumbnail (file "+dataFileIO.getDataFile().getStorageIdentifier()+")");
+            logger.fine("caught IO exception while checking for a cached thumbnail (file "+storageIO.getDataFile().getStorageIdentifier()+")");
             return false;
         }
         
         if (cached) {
-            logger.fine("thumbnail is cached for "+dataFileIO.getDataFile().getStorageIdentifier());
+            logger.fine("thumbnail is cached for "+storageIO.getDataFile().getStorageIdentifier());
         } else {
-            logger.fine("no thumbnail cached for "+dataFileIO.getDataFile().getStorageIdentifier());
+            logger.fine("no thumbnail cached for "+storageIO.getDataFile().getStorageIdentifier());
         }
         
         
@@ -439,22 +436,22 @@ public class ImageThumbConverter {
 
         logger.fine("entering getImageThumbnailAsBase64, size " + size+", for "+file.getStorageIdentifier());
          try {
-            DataFileIO dataFileIO = file.getDataFileIO();
+             StorageIO<DataFile> storageIO = file.getStorageIO();
         
-            if (!isThumbnailAvailable(dataFileIO, size)) {
+            if (!isThumbnailAvailable(storageIO, size)) {
                 logger.info("no thumbnail available for "+file.getStorageIdentifier());
                 return null; 
             }
 
         
-            //dataFileIO.open(); 
-            Channel cachedThumbnailChannel = dataFileIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
+            //storageIO.open(); 
+            Channel cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
             if (cachedThumbnailChannel == null) {
                 logger.warning("Null channel for aux object "+ THUMBNAIL_SUFFIX + size);
                 return null;
             }
             InputStream cachedThumbnailInputStream = Channels.newInputStream((ReadableByteChannel) cachedThumbnailChannel);
-            int cachedThumbnailSize = (int)dataFileIO.getAuxObjectSize(THUMBNAIL_SUFFIX + size);
+            int cachedThumbnailSize = (int)storageIO.getAuxObjectSize(THUMBNAIL_SUFFIX + size);
             
             return getImageAsBase64FromInputStream(cachedThumbnailInputStream, cachedThumbnailSize);
         

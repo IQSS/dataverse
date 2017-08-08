@@ -31,7 +31,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
     
     
     public List<Dataverse> findLinkedDataverses(Long linkingDataverseId) {
-        List<Dataverse> retList = new ArrayList();
+        List<Dataverse> retList = new ArrayList<>();
         Query query = em.createQuery("select object(o) from DataverseLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
         query.setParameter("linkingDataverseId", linkingDataverseId);
         for (Object o : query.getResultList()) {
@@ -42,7 +42,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
     }
 
     public List<Dataverse> findLinkingDataverses(Long dataverseId) {
-        List<Dataverse> retList = new ArrayList();
+        List<Dataverse> retList = new ArrayList<>();
         Query query = em.createQuery("select object(o) from DataverseLinkingDataverse as o where o.dataverse.id =:dataverseId order by o.id");
         query.setParameter("dataverseId", dataverseId);
         for (Object o : query.getResultList()) {

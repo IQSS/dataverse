@@ -1365,6 +1365,10 @@
                 </h:form>
                 <script type="text/javascript" src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{DatasetPage.dropBoxKey}"/>
                 <script type="text/javascript">
+                    $(document).ready(function () {
+                        popoverHTML('#{bundle.htmlAllowedTitle}');
+                    });
+                    
                     function testReturnReason(){
                         var returnReasonText = PF('returnReason').jq.val();
                         if (returnReasonText.length===0){

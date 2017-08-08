@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -26,7 +26,6 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -210,7 +209,7 @@ public class FilePage implements java.io.Serializable {
     }
     
     public List< String[]> getExporters(){
-        List<String[]> retList = new ArrayList();
+        List<String[]> retList = new ArrayList<>();
         String myHostURL = systemConfig.getDataverseSiteUrl();
         for (String [] provider : ExportService.getInstance(settingsService).getExportersLabels() ){
             String formatName = provider[1];
@@ -264,7 +263,7 @@ public class FilePage implements java.io.Serializable {
         return returnToDraftVersion();
     }
     
-    private List<FileMetadata> filesToBeDeleted = new ArrayList();
+    private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public String deleteFile() {
 
@@ -289,7 +288,7 @@ public class FilePage implements java.io.Serializable {
                 filesToBeDeleted.add(markedForDelete);
                 
             } else {
-                 List<FileMetadata> filesToKeep = new ArrayList();
+                 List<FileMetadata> filesToKeep = new ArrayList<>();
                  for (FileMetadata fmo: editDataset.getEditVersion().getFileMetadatas()){
                       if (!fmo.getDataFile().getId().equals(this.getFile().getId())){
                           filesToKeep.add(fmo);
@@ -328,14 +327,14 @@ public class FilePage implements java.io.Serializable {
         if (this.activeTabIndex == 1) {
             setFileMetadatasForTab(loadFileMetadataTabList());
         } else {
-            setFileMetadatasForTab( new ArrayList());         
+            setFileMetadatasForTab( new ArrayList<>());         
         }
     }
     
     
     private List<FileMetadata> loadFileMetadataTabList() {
         List<DataFile> allfiles = allRelatedFiles();
-        List<FileMetadata> retList = new ArrayList();
+        List<FileMetadata> retList = new ArrayList<>();
         for (DatasetVersion versionLoop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
             boolean foundFmd = false;
             
@@ -573,14 +572,14 @@ public class FilePage implements java.io.Serializable {
     
     public SwiftAccessIO getSwiftObject() {
         try {
-            DataFileIO dataFileIO = getFile().getDataFileIO();
-            if (dataFileIO instanceof SwiftAccessIO) {
-                return (SwiftAccessIO)dataFileIO;
+            StorageIO storageIO = getFile().getStorageIO();
+            if (storageIO instanceof SwiftAccessIO) {
+                return (SwiftAccessIO)storageIO;
             } else {
-                logger.info("FilePage: Failed to cast dataFileIO as SwiftAccessIO");
+                logger.info("FilePage: Failed to cast storageIO as SwiftAccessIO");
             } 
         } catch (IOException e) {
-            logger.info("FilePage: Failed to get dataFileIO");
+            logger.info("FilePage: Failed to get storageIO");
         }
         return null;
     }
@@ -605,7 +604,7 @@ public class FilePage implements java.io.Serializable {
         }
 
     private List<DataFile> allRelatedFiles() {
-        List<DataFile> dataFiles = new ArrayList();
+        List<DataFile> dataFiles = new ArrayList<>();
         DataFile dataFileToTest = fileMetadata.getDataFile();
         Long rootDataFileId = dataFileToTest.getRootDataFileId();
         if (rootDataFileId < 0) {
@@ -636,7 +635,7 @@ public class FilePage implements java.io.Serializable {
             return false;
         }
         
-        List<DataFile> dataFiles = new ArrayList();
+        List<DataFile> dataFiles = new ArrayList<>();
         
         dataFiles.add(dataFileToTest);
         
@@ -680,11 +679,11 @@ public class FilePage implements java.io.Serializable {
 
     public String getPublicDownloadUrl() {
             try {
-            DataFileIO dataFileIO = getFile().getDataFileIO();
-            if (dataFileIO instanceof SwiftAccessIO) {
+                StorageIO<DataFile> storageIO = getFile().getStorageIO();
+            if (storageIO instanceof SwiftAccessIO) {
                 String fileDownloadUrl = null;
                 try {
-                    SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+                    SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
                     swiftIO.open();
                     //if its a public install, lets just give users the permanent URL!
                     if (systemConfig.isPublicInstall()){                        

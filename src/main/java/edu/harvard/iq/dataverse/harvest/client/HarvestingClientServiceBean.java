@@ -53,7 +53,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvestingClinetServiceBean");
     
     public HarvestingClient find(Object pk) {
-        return (HarvestingClient) em.find(HarvestingClient.class, pk);
+        return em.find(HarvestingClient.class, pk);
     }
     
     public HarvestingClient findByNickname(String nickName) {
@@ -69,7 +69,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     public List<HarvestingClient> getAllHarvestingClients() {
         try {
-            return em.createQuery("SELECT object(c) FROM HarvestingClient AS c WHERE c.harvestType='oai' ORDER BY c.name").getResultList();
+            return em.createQuery("SELECT object(c) FROM HarvestingClient AS c WHERE c.harvestType='oai' ORDER BY c.name", HarvestingClient.class).getResultList();
         } catch (Exception ex) {
             logger.warning("Unknown exception caught while looking up configured Harvesting Clients: "+ex.getMessage());
         }
@@ -103,7 +103,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         em.refresh(harvestingClient);
         harvestingClient.setHarvestingNow(true);
         if (harvestingClient.getRunHistory() == null) {
-            harvestingClient.setRunHistory(new ArrayList<ClientHarvestRun>());
+            harvestingClient.setRunHistory(new ArrayList<>());
         }
         ClientHarvestRun currentRun = new ClientHarvestRun();
         currentRun.setHarvestingClient(harvestingClient);
