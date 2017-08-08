@@ -1588,12 +1588,12 @@ public class IngestServiceBean {
                 // swift and similar implementations, we'll read the saved aux 
                 // channel and save it as a local temp file. 
                 
-                DataFileIO dataFileIO;
+                StorageIO<DataFile> dataFileIO;
                 File savedOriginalFile = null;
                 boolean tempFileRequired = false;
                 
                 try {
-                    dataFileIO = dataFile.getDataFileIO();
+                    dataFileIO = dataFile.getStorageIO();
                     dataFileIO.open();
 
                     if (dataFileIO.isLocalFile()) {
