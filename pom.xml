@@ -610,13 +610,22 @@
                         <phase>package</phase>
                         <configuration>
                             <fileset>
-                                <directory>target/dataverse-${project.version}.war/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
+                                <directory>target/dataverse-${project.version}/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
                                 <includes>
                                     <include>javamail.providers</include>
                                 </includes>
                             </fileset>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>remove-a-file-in-other-archive</id>
+                        <goals>
+                            <goal>remove</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
                             <fileset>
-                                <directory>target/dataverse-${project.version}/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
+                                <directory>target/dataverse-${project.version}.war/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
                                 <includes>
                                     <include>javamail.providers</include>
                                 </includes>
