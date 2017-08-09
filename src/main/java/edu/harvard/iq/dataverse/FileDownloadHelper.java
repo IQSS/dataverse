@@ -36,10 +36,17 @@ public class FileDownloadHelper implements java.io.Serializable {
 
     
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
-
-
     
-    
+    private String selectedFileId = null;
+
+    public String getSelectedFileId() {
+        return selectedFileId;
+    }
+
+    public void setSelectedFileId(String selectedFileId) {
+        this.selectedFileId = selectedFileId;
+    }
+   
     /**
      *  WARNING: Before calling this, make sure the user has download
      *  permission for the file!!  (See DatasetPage.canDownloadFile())
@@ -181,6 +188,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     
     public void requestAccess(DataFile file) {
+        System.out.print("requestAccess FileDownloadhelper");
         if (fileDownloadService.requestAccess(file.getId())) {
             // update the local file object so that the page properly updates
             file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());

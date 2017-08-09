@@ -67,6 +67,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     @Inject TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
+    @Inject FileDownloadHelper fileDownloadHelper;
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());
     
@@ -338,10 +339,49 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         }
     }
+    
+    
+    public void requestAccess(String fileIdString){
+        System.out.print("requestAccess FileDownloadServiceBean");
+        if(fileIdString.isEmpty()){
+            fileIdString = fileDownloadHelper.getSelectedFileId();
+        }
+
+        Dataset dataset = null;
+        DataFile file = null;        
+        Long idForNotification = (long) 0;
+        if (fileIdString != null && !fileIdString.isEmpty()) {
+            String[] ids = fileIdString.split(",");
+            for (String id : ids) {
+                Long test = null;
+                try {
+                    test = new Long(id);
+                } catch (NumberFormatException nfe) {
+                    // do nothing...
+                    test = null;
+                }
+                if (test != null) {
+                    idForNotification = test;
+                    if (dataset == null){
+                        file = datafileService.find(test);
+                        dataset = file.getOwner();
+                    }
+
+                    requestAccess(test);
+                }
+            }
+        }
+        if (idForNotification.intValue() > 0 && dataset != null) {
+            sendRequestFileAccessNotification(dataset, idForNotification);
+        }
+    }
 
     
        
-    public boolean requestAccess(Long fileId) {     
+    public boolean requestAccess(Long fileId) {   
+        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null){
+            return false;
+        }
         DataFile file = datafileService.find(fileId);
         if (!file.getFileAccessRequesters().contains(session.getUser())) {
             try {
