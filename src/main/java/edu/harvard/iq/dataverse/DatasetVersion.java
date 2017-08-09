@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -99,7 +98,7 @@ public class DatasetVersion implements Serializable {
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
     
-    /**
+    /*
      * @todo versionState should never be null so when we are ready, uncomment
      * the `nullable = false` below.
      */
@@ -512,7 +511,6 @@ public class DatasetVersion implements Serializable {
     }
 
     public DatasetVersion getLargestMinorRelease() {
-
         if (this.getDataset().isReleased()) {
             for (DatasetVersion testVersion : this.dataset.getVersions()) {
                 if (testVersion.getVersionNumber() != null && testVersion.getVersionNumber().equals(this.getVersionNumber())) {

@@ -24,6 +24,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.Date;
 import java.io.Serializable;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -37,16 +39,41 @@ import javax.persistence.TemporalType;
 
 /**
  *
+ * Holds the reason a dataset is locked, and possibly the user that created the lock.
+ * 
  * @author Leonid Andreev
+ * @author Michael Bar-Sinai
+ * 
  */
 @Entity
 @Table(indexes = {@Index(columnList="user_id"), @Index(columnList="dataset_id")})
+@NamedQueries(
+        @NamedQuery(name="DatasetLock.getLocksByDatasetId",
+                    query="SELECT l FROM DatasetLock l WHERE l.dataset.id=:datasetId")
+)
 public class DatasetLock implements Serializable {
+    
+    public enum Reason {
+        Ingest,
+        Workflow,
+        InReview
+    }
+    
     private static final long serialVersionUID = 1L;
     
-    public DatasetLock() {
+    /**
+     * Constructing a lock for the given reason.
+     * @param aReason Why the dataset gets locked.
+     */
+    public DatasetLock( Reason aReason ) {
+        reason = aReason;
+        startTime = new Date();
     }
-
+    
+    /**
+     * JPA no-args constructor
+     */
+    protected DatasetLock(){}
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,7 +89,10 @@ public class DatasetLock implements Serializable {
     @ManyToOne
     @JoinColumn(nullable=false)
     private AuthenticatedUser user;    
-
+    
+    @Enumerated(EnumType.STRING)
+    private Reason reason;
+    
     private String info;
 
     public Long getId() {
@@ -99,7 +129,6 @@ public class DatasetLock implements Serializable {
         this.user = user;
     }
 
-
     public String getInfo() {
         return info;
     }
@@ -107,7 +136,14 @@ public class DatasetLock implements Serializable {
     public void setInfo(String info) {
         this.info = info;
     }
-    
+
+    public Reason getReason() {
+        return reason;
+    }
+
+    public void setReason(Reason reason) {
+        this.reason = reason;
+    }
     
     @Override
     public int hashCode() {

@@ -246,10 +246,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     public boolean isLocked() {
-        if (datasetLock != null) {
-            return true;
-        }
-        return false;
+        return (getDatasetLock()!=null);
     }
 
     public boolean isDeaccessioned() {
@@ -300,6 +297,7 @@ public class Dataset extends DvObjectContainer {
         //if the latest version has values get them copied over
         if (template != null) {
             dsv.updateDefaultValuesFromTemplate(template);
+            setVersions(new ArrayList());
         } else {
             latestVersion = getLatestVersionForCopy();
             
@@ -339,15 +337,7 @@ public class Dataset extends DvObjectContainer {
             }
         }
 
-        // I'm adding the version to the list so it will be persisted when
-        // the study object is persisted.
-        if (template == null) {
-            getVersions().add(0, dsv);
-        } else {
-            this.setVersions(new ArrayList());
-            getVersions().add(0, dsv);
-        }
-
+        getVersions().add(0, dsv);
         dsv.setDataset(this);
         return dsv;
     }
@@ -377,7 +367,7 @@ public class Dataset extends DvObjectContainer {
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setDataset(this);
         dsv.initDefaultValues();
-        this.setVersions(new ArrayList());
+        setVersions(new ArrayList());
         getVersions().add(0, dsv);
         return dsv;
     }

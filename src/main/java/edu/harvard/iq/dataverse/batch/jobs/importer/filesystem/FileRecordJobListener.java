@@ -22,6 +22,7 @@ package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -167,11 +168,10 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         // lock the dataset
         jobLogger.log(Level.INFO, "Locking dataset");
         String info = "Starting batch file import job.";
-        if (user.getId() != null) {
-            datasetServiceBean.addDatasetLock(dataset.getId(), user.getId(), info);
-        } else {
-            datasetServiceBean.addDatasetLock(dataset.getId(), null, info);
-        }
+        datasetServiceBean.addDatasetLock(dataset.getId(),
+                    DatasetLock.Reason.Ingest, 
+                    (user!=null)?user.getId():null,
+                    info);
 
         // check constraints for running the job
         if (canRunJob()) {

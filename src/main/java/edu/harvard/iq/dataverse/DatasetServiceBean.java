@@ -486,32 +486,24 @@ public class DatasetServiceBean implements java.io.Serializable {
         return ddu;
     }
 
-    public List<DatasetLock> getDatasetLocks() {
-        String query = "SELECT sl FROM DatasetLock sl";
-        return (List<DatasetLock>) em.createQuery(query).getResultList();
-    }
-
     public boolean checkDatasetLock(Long datasetId) {
-        String nativeQuery = "SELECT sl.id FROM DatasetLock sl WHERE sl.dataset_id = " + datasetId + " LIMIT 1;";
-        Integer lockId = null; 
-        try {
-            lockId = (Integer)em.createNativeQuery(nativeQuery).getSingleResult();
-        } catch (Exception ex) {
-            lockId = null; 
-        }
-        
-        if (lockId != null) {
-            return true;
-        }
-        
-        return false;
+        TypedQuery<DatasetLock> lockCounter = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        lockCounter.setParameter("datasetId", datasetId);
+        lockCounter.setMaxResults(1);
+        List<DatasetLock> lock = lockCounter.getResultList();
+        return lock.size()>0;
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void addDatasetLock(Long datasetId, Long userId, String info) {
+    public void addDatasetLock(Dataset dataset, DatasetLock lock) {
+       dataset.setDatasetLock(lock);
+       em.persist(lock); 
+    }
+    
+    public void addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
 
         Dataset dataset = em.find(Dataset.class, datasetId);
-        DatasetLock lock = new DatasetLock();
+        DatasetLock lock = new DatasetLock(reason);
         lock.setDataset(dataset);
         lock.setInfo(info);
         lock.setStartTime(new Date());
@@ -525,8 +517,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             user.getDatasetLocks().add(lock);
         }
 
-        dataset.setDatasetLock(lock);
-        em.persist(lock);
+        addDatasetLock(dataset, lock);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
