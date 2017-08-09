@@ -269,7 +269,7 @@ public class ExportService {
                     cachedExportOutputStream.flush();
                     cachedExportOutputStream.close();
 
-                } else if (tempFileRequired) {
+                } else {
                     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
                     exporter.exportDataset(version, datasetAsJson, outputStream);
                     outputStream.flush();
