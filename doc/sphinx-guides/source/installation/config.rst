@@ -224,15 +224,6 @@ You also have the option to set a custom container name separator. It is initial
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-folder-path-separator=-"``
 
-To enable the usage of temporary URLs, you must also set a hash key both on your swift endpoint and in your swift.properties file. You should enable it by adding 
-
-.. code-block:: none
-
-    swift.hash_key.endpoint1=your-hash-key
-
-to your swift.properties file.
-
-
 Setting up Compute
 +++++++++++++++++++
 
@@ -243,6 +234,14 @@ Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your clo
 ``:ComputeBaseUrl?containerName=yourContainer&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
 
 which you can configure properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
+
+To enable the usage of temporary URLs, you must also set a hash key both on your swift endpoint and in your swift.properties file. You should enable it by adding 
+
+.. code-block:: none
+
+    swift.hash_key.endpoint1=your-hash-key
+
+to your swift.properties file.
 
 You also have the option to set a custom expiration length for a generated temporary URL. It is initalized to 60 seconds, but you can change it by running the create command:
 
