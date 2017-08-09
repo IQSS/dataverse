@@ -195,7 +195,7 @@ public class FileUtil implements java.io.Serializable  {
             if (fileType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)){
                 return ShapefileHandler.SHAPEFILE_FILE_TYPE_FRIENDLY_NAME;
             }
-            if (fileType.indexOf(";") != -1) {
+            if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
@@ -212,7 +212,7 @@ public class FileUtil implements java.io.Serializable  {
         String fileType = dataFile.getContentType();
         
         if (fileType != null) {
-            if (fileType.indexOf(";") != -1) {
+            if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
 
@@ -237,7 +237,7 @@ public class FileUtil implements java.io.Serializable  {
         String fileType = dataFile.getOriginalFileFormat();
          
         if (fileType != null && !fileType.equals("")) {
-            if (fileType.indexOf(";") != -1) {
+            if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
@@ -451,7 +451,7 @@ public class FileUtil implements java.io.Serializable  {
                     if (xmlr.getLocalName().equals("graphml")) {
                         String schema = xmlr.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
                         logger.fine("schema = "+schema);
-                        if (schema!=null && schema.indexOf("http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd")!=-1){
+                        if (schema!=null && schema.contains("http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd")){
                             logger.fine("graphML is true");
                             isGraphML = true;
                         }
@@ -477,11 +477,11 @@ public class FileUtil implements java.io.Serializable  {
     public static final long ONE_GB = ONE_KB * ONE_MB;
  
     public static String getFriendlySize(Long filesize) {
-        if (filesize == null || filesize.longValue() < 0) {
+        if (filesize == null || filesize < 0) {
             return "unknown";
         }
 
-        long bytesize = filesize.longValue();
+        long bytesize = filesize;
         String displaySize;
 
         if (bytesize / ONE_GB > 0) {
@@ -675,10 +675,7 @@ public class FileUtil implements java.io.Serializable  {
                 uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
                 File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
                 datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm());
-            } catch (IOException ioex) {
-                datafile = null;
-            } catch (FileExceedsMaxSizeException femsx) {
-                // not a fatal error - we'll still try to add this file as is, further below
+            } catch (IOException | FileExceedsMaxSizeException ioex) {
                 datafile = null;
             } finally {
                 if (uncompressedIn != null) {
@@ -1012,7 +1009,7 @@ public class FileUtil implements java.io.Serializable  {
         datafile.getFileMetadatas().add(fmd);
         if (addToDataset) {
             if (version.getFileMetadatas() == null) {
-                version.setFileMetadatas(new ArrayList());
+                version.setFileMetadatas(new ArrayList<>());
             }
             version.getFileMetadatas().add(fmd);
             fmd.setDatasetVersion(version);

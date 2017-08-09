@@ -18,6 +18,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.EditableValueHolder;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
@@ -130,7 +131,7 @@ public class GuestbookResponseServiceBean {
             singleResult[7] = result[8];
             singleResult[8] = result[9];
             singleResult[9] = result[10];
-            String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + (Integer) result[0];
+            String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
                 singleResult[10]  = em.createNativeQuery(cqString).getResultList();
             
             /*
@@ -141,7 +142,6 @@ public class GuestbookResponseServiceBean {
             
             retVal.add(singleResult);
         }
-        guestbookResults = null;       
         
         return retVal;
         
@@ -176,12 +176,11 @@ public class GuestbookResponseServiceBean {
             singleResult[3] = result[4];
             singleResult[4] = result[5];
             if(hasCustomQuestions){
-                String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + (Integer) result[0];
+                String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
                 singleResult[5]   = em.createNativeQuery(cqString).getResultList();
             }
             retVal.add(singleResult);
         }
-        guestbookResults = null;       
         
         return retVal;
     }
@@ -256,7 +255,7 @@ public class GuestbookResponseServiceBean {
     }
 
     public Long findCountAll(Long dataverseId) {
-        String queryString = "";
+        String queryString;
         if (dataverseId != null) {
             queryString = "select count(o.id) from GuestbookResponse  o,  DvObject v where o.dataset_id = v.id and v.owner_id = " + dataverseId + " ";
         } else {
@@ -299,7 +298,7 @@ public class GuestbookResponseServiceBean {
 
     private List<Object[]> convertIntegerToLong(List<Object[]> list, int index) {
         for (Object[] item : list) {
-            item[index] = new Long((Integer) item[index]);
+            item[index] = (long) item[index];
         }
 
         return list;
@@ -316,7 +315,7 @@ public class GuestbookResponseServiceBean {
 
     private String generateIDsforTempInsert(List<Long> idList) {
         int count = 0;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Iterator<Long> iter = idList.iterator();
         while (iter.hasNext()) {
             Long id = iter.next();
@@ -398,7 +397,7 @@ public class GuestbookResponseServiceBean {
     
     public GuestbookResponse initGuestbookResponseForFragment(Dataset dataset, FileMetadata fileMetadata, DataverseSession session){   
         
-        DatasetVersion workingVersion = null;
+        DatasetVersion workingVersion;
         if (fileMetadata != null){
             workingVersion = fileMetadata.getDatasetVersion();
         } else {
@@ -501,7 +500,7 @@ public class GuestbookResponseServiceBean {
     }
     
     private void initCustomQuestions(GuestbookResponse guestbookResponse, Dataset dataset) {
-        guestbookResponse.setCustomQuestionResponses(new ArrayList());
+        guestbookResponse.setCustomQuestionResponses(new ArrayList<>());
         for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
             CustomQuestionResponse cqr = new CustomQuestionResponse();
             cqr.setGuestbookResponse(guestbookResponse);
@@ -639,7 +638,7 @@ public class GuestbookResponseServiceBean {
     }
     
     private List<SelectItem> setResponseUISelectItems(CustomQuestion cq) {
-        List<SelectItem> retList = new ArrayList();
+        List<SelectItem> retList = new ArrayList<>();
         for (CustomQuestionValue cqv : cq.getCustomQuestionValues()) {
             SelectItem si = new SelectItem(cqv.getValueString(), cqv.getValueString());
             retList.add(si);
