@@ -224,7 +224,7 @@ The solution is to put the file back to how it was before Netbeans touched it. I
 Configuring / Troubleshooting Mail Host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Out of the box, no emails will be sent from your development environment. This is because you have set the ``:SystemEmail`` setting and make sure you've configured your SMTP correctly.
+Out of the box, no emails will be sent from your development environment. This is because you have to set the ``:SystemEmail`` setting and make sure you've configured your SMTP correctly.
 
 You can configure ``:SystemEmail`` like this:
 
