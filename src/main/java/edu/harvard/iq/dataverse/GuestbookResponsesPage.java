@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 @ViewScoped
 @Named("guestbookResponsesPage")
 public class GuestbookResponsesPage implements java.io.Serializable {
+    private static final Logger logger = Logger.getLogger(GuestbookResponsesPage.class.getCanonicalName());
 
     @EJB
     GuestbookServiceBean guestbookService;
@@ -63,11 +65,36 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     public void init() {
         guestbook = guestbookService.find(guestbookId);
         dataverse = dvService.find(dataverseId);
-        if(guestbook != null){            
-            responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId);
+        
+        if(guestbook != null){ 
+            guestbook.setResponseCount(guestbookResponseService.findCountByGuestbookId(guestbookId , dataverseId));
+            
+            logger.info("Guestbook responses count: "+guestbook.getResponseCount());
+            if (guestbook.getResponseCount() <= displayLimit) {
+                
+                responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId);
+            }
         }
     }
     
+    /* 
+      *experimental* display limit on the number of guestbookresponse entries 
+      (will be configurable)
+    */
+    private long displayLimit = 1000L; 
+    
+    public long getDisplayLimit() {
+        return displayLimit;
+    }
+    
+    public void setDisplayLimit(long limit) {
+        displayLimit = limit;
+    }
+    
+    private String getFileName(){
+       return  dataverse.getName().replace(' ', '_') + "_GuestbookReponses.csv";
+    }
+
     public void streamResponsesByDataverseAndGuestbook(){
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
@@ -86,6 +113,8 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         }
     }
     
+    /* 
+      The methods below have been replaced with the "streamResponsesByDataverseAndGuestbook()", above -- L.A.
     public void downloadResponsesByDataverseAndGuestbook(){
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
@@ -102,12 +131,9 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         } catch (Exception e) {
 
         }
-    }
+    } 
     
-    private String getFileName(){
-       return  dataverse.getName().replace(' ', '_') + "_GuestbookReponses.csv";
-    }
-
+    
     private final String SEPARATOR = ",";
     private final String END_OF_LINE = "\n";
 
@@ -150,7 +176,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         }
 
         return sb.toString();
-    }
+    } */
     
     public Dataverse getDataverse() {
         return dataverse;

@@ -28,7 +28,7 @@
                                 <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</span>
                             </label>
                             <div class="col-sm-9">
-                                #{guestbookResponsesPage.guestbook.name}
+                                #{guestbookResponsesPage.guestbook.name} #{guestbookResponsesPage.guestbook.responseCount}
                             </div>
                             <div class="pull-right">
                                 <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.streamResponsesByDataverseAndGuestbook()}"  >

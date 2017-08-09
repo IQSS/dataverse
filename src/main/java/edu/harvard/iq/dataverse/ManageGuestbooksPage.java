@@ -126,6 +126,8 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
     }
 
+    /* This method does not appear to be needed; the ManageGuestbooksPage does not
+       offer to download collected responses by dataverse and guestbook...
     public void downloadResponsesByDataverseAndGuestbook(){
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
@@ -142,7 +144,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         } catch (Exception e) {
 
         }
-    }
+    }*/
 
     private String getFileName(){
        return  dataverse.getName() + "_GuestbookReponses.csv";

@@ -14,8 +14,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -38,6 +41,7 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class GuestbookResponseServiceBean {
+    private static final Logger logger = Logger.getLogger(GuestbookResponseServiceBean.class.getCanonicalName());
     
     public static final String BASE_QUERY_STRING_WITH_GUESTBOOK = "select r.id, g.name, v.value,  r.responsetime, r.downloadtype,  "
                 + "m.label, r.dataFile_id, r.name, r.email, r.institution, r.position from guestbookresponse r,"
@@ -113,8 +117,46 @@ public class GuestbookResponseServiceBean {
         return findArray(queryString);       
     }
 
+    private Map<Long, String> selectCustomQuestionAnswers(Long dataverseId, Long guestbookId) {
+        Map<Long, String> ret = new HashMap<>();
+
+        logger.info("Entering selectCustomQuestionAnswers");
+        int count = 0;
+
+        String cqString = "select r.guestbookResponse_id, q.questionstring, r.response  "
+                + "from customquestionresponse r, customquestion q, guestbookresponse g, dvobject o "
+                + "where q.id = r.customquestion_id "
+                + "and r.guestbookResponse_id = g.id "
+                + "and g.dataset_id = o.id "
+                + "and g.guestbook_id = " + guestbookId + " "
+                + "and o.owner_id = " + dataverseId;
+
+        List<Object[]> customResponses = em.createNativeQuery(cqString).getResultList();
+
+        if (customResponses != null) {
+            for (Object[] response : customResponses) {
+                Long responseId = (Long) response[0];
+
+                String qa = SEPARATOR + response[1] + SEPARATOR + (response[2] == null ? "" : response[2]);
+
+                if (ret.containsKey(responseId)) {
+                    ret.put(responseId, ret.get(responseId) + qa);
+                } else {
+                    ret.put(responseId, qa);
+                }
+
+                count++;
+            }
+        }
+
+        logger.info("Found " + count + " responses to custom questions");
+
+        return ret;
+    }
     
     public void streamResponsesByDataverseIdAndGuestbookId(OutputStream out, Long dataverseId, Long guestbookId) throws IOException {
+        Map<Long, String> customQandAs = selectCustomQuestionAnswers(dataverseId, guestbookId);
+        
         String queryString = BASE_QUERY_STRING_WITH_GUESTBOOK
                 + " and  o.owner_id = "
                 + dataverseId.toString()
@@ -128,6 +170,8 @@ public class GuestbookResponseServiceBean {
         out.write("Guestbook, Dataset, Date, Type, File Name, File Id, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
         
         for (Object[] result : guestbookResults) {
+            Integer guestbookResponseId = (Integer)result[0];
+            
             StringBuilder sb = new StringBuilder();
             sb.append(result[1]);
             sb.append(SEPARATOR);
@@ -161,12 +205,15 @@ public class GuestbookResponseServiceBean {
             sb.append(SEPARATOR);
             
             sb.append(result[10] == null ? "" : result[10]);
-            sb.append(SEPARATOR);
             
             // Finally, custom questions and answers, if present:
-            // (this current implementation runs an extra query for every single
-            // guestbookresponse entry! -- we need to pre-cache these instead -- L.A.)
-            String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
+            
+            // (the old implementation, below, would run one extra query FOR EVERY SINGLE
+            // guestbookresponse entry! -- instead, we are now pre-caching all the 
+            // available custom question responses, with a single native query at 
+            // the top of this method. -- L.A.)
+            
+            /*String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
             List<Object[]> customResponses = em.createNativeQuery(cqString).getResultList();
             if (customResponses != null) {
                 for (Object[] response : customResponses) {
@@ -175,10 +222,17 @@ public class GuestbookResponseServiceBean {
                     sb.append(SEPARATOR);
                     sb.append(response[1] == null ? "" : response[1]);
                 }
-            }
+            }*/
+            
+            if (customQandAs.containsKey(guestbookResponseId.longValue())) {
+                sb.append(customQandAs.get(guestbookResponseId.longValue())); 
+            } 
 
             sb.append(NEWLINE);
 
+            // Finally, write the line out: 
+            // (i.e., we are writing one guestbook response at a time, thus allowing the 
+            // whole thing to stream in real time -- L.A.)
             out.write(sb.toString().getBytes());
         }
     }
@@ -209,11 +263,6 @@ public class GuestbookResponseServiceBean {
             String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
                 singleResult[10]  = em.createNativeQuery(cqString).getResultList();
             
-            /*
-            List<CustomQuestionResponse> customResponses = em.createQuery("select o from CustomQuestionResponse as  o where o.guestbookResponse.id = " + (Integer) result[0] + " order by o.customQuestion.id ", CustomQuestionResponse.class).getResultList();
-            if(!customResponses.isEmpty()){
-                singleResult[8] =  customResponses;
-            }*/
             
             retVal.add(singleResult);
         }
