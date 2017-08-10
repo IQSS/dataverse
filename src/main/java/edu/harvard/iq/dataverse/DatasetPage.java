@@ -440,16 +440,10 @@ public class DatasetPage implements java.io.Serializable {
     //could be changed 
     //SF 
     public Boolean isSwiftStorage(){
-        Boolean swiftBool = false;
         //containers without datafiles will not be stored in swift storage, so no compute
-        if (getInitialDataFile() != null){
-            if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
-                && getInitialDataFile().getStorageIdentifier().startsWith("swift://")) {
-                swiftBool = true;
-            }
-        }
-        
-        return swiftBool;
+        return (getInitialDataFile() != null)
+               && "swift".equals(System.getProperty("dataverse.files.storage-driver-id"))
+               && getInitialDataFile().getStorageIdentifier().startsWith("swift://");
     }
 
     public String getComputeUrl() {

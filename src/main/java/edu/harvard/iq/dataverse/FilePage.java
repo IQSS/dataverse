@@ -554,11 +554,7 @@ public class FilePage implements java.io.Serializable {
     }
     
     public Boolean isSwiftStorage () {
-        Boolean swiftBool = false;
-        if (file.getStorageIdentifier().startsWith("swift://")){
-            swiftBool = true;
-        }
-        return swiftBool;
+        return file.getStorageIdentifier().startsWith("swift://");
     }
 
     public String getSwiftContainerName(){

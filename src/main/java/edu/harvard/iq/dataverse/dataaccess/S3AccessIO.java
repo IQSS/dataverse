@@ -3,35 +3,26 @@ package edu.harvard.iq.dataverse.dataaccess;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.partitions.PartitionsLoader;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.thirdparty.apache.http.client.methods.HttpRequestBase;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,9 +32,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
@@ -212,7 +201,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         // if it has uploaded successfully, we can reset the size
         // of the object:
         setSize(newFileSize);
-        
     }
     
     //TODO: pass in size?
@@ -246,7 +234,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException(failureMsg);
         }
         setSize(s3.getObjectMetadata(bucketName, key).getContentLength());
-
     }
     
     @Override
@@ -257,6 +244,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             key = s3FolderPath;
         }
+
         if (key == null) {
             throw new IOException("Failed to delete the object because the key was null");
         }
@@ -264,9 +252,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
             s3.deleteObject(deleteObjRequest);
         } catch (AmazonClientException ase) {
-            System.out.println("Caught an AmazonServiceException in S3AccessIO.delete():    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException in S3AccessIO.delete():    " + ase.getMessage());
         }
-
     }
 
     @Override
@@ -296,7 +283,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.doesObjectExist(bucketName, key);
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException in S3AccessIO.isAuxObjectCached:    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException in S3AccessIO.isAuxObjectCached:    " + ase.getMessage());
         }
         return false;
     }
@@ -313,9 +300,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.getObjectMetadata(bucketName, key).getContentLength();
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException in S3AccessIO.getAuxObjectSize:    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException in S3AccessIO.getAuxObjectSize:    " + ase.getMessage());
         }
-        return -1L;
+        return -1;
     }
     
     @Override 
@@ -358,8 +345,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             File inputFile = fileSystemPath.toFile();
             s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
         } catch (AmazonClientException ase) {
-            System.out.println("Caught an AmazonServiceException in S3AccessIO.savePathAsAux():    " + ase.getMessage());
             //TODO: throw IOExceptions
+            logger.warning("Caught an AmazonServiceException in S3AccessIO.savePathAsAux():    " + ase.getMessage());
         }
     }
     
@@ -420,7 +407,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
             }
         } catch (AmazonClientException ase) {
-            System.out.println("Caught an AmazonServiceException in S3AccessIO.listAuxObjects():    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException in S3AccessIO.listAuxObjects():    " + ase.getMessage());
             logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
         }
         
@@ -474,7 +461,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
             }
         } catch (AmazonClientException ase) {
-            System.out.println("Caught an AmazonServiceException:    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
         }
         
         for (S3ObjectSummary item : storedAuxFilesSummary) {
@@ -485,7 +472,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, key);
                 s3.deleteObject(dor);
             } catch (AmazonClientException ase) {
-                    System.out.println("S3AccessIO: Unable to delete auxilary object    " + ase.getMessage());
+                logger.warning("S3AccessIO: Unable to delete auxilary object    " + ase.getMessage());
             }
         }
     }
@@ -512,7 +499,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.doesObjectExist(bucketName, key);
         } catch (AmazonClientException ase) {
-            System.out.println("Caught an AmazonServiceException in S3AccessIO.exists():    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException in S3AccessIO.exists():    " + ase.getMessage());
         }
         return false;
     }
@@ -541,7 +528,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, key));
             return s3object.getObjectContent();
         } catch (AmazonClientException ase) {
-                System.out.println("Caught an AmazonServiceException in S3AccessIO.getAuxFileAsInputStream():    " + ase.getMessage());
+            logger.warning("Caught an AmazonServiceException in S3AccessIO.getAuxFileAsInputStream():    " + ase.getMessage());
         }
         throw new IOException("S3AccessIO: Failed to get aux file as input stream");
     }

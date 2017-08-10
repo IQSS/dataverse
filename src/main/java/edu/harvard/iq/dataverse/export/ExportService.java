@@ -262,16 +262,18 @@ public class ExportService {
 
             try {
                 Path cachedMetadataFilePath = Paths.get(version.getDataset().getFileSystemDirectory().toString(), "export_" + format + ".cached");
-                FileOutputStream cachedExportOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
-                exporter.exportDataset(version, datasetAsJson, cachedExportOutputStream);
-                cachedExportOutputStream.flush();
-                cachedExportOutputStream.close();
 
-                if (tempFileRequired) {
-                    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
-                    exporter.exportDataset(version, datasetAsJson, outputStream);
+                if (!tempFileRequired) {
+                    FileOutputStream cachedExportOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
+                    exporter.exportDataset(version, datasetAsJson, cachedExportOutputStream);
                     cachedExportOutputStream.flush();
                     cachedExportOutputStream.close();
+
+                } else {
+                    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
+                    exporter.exportDataset(version, datasetAsJson, outputStream);
+                    outputStream.flush();
+                    outputStream.close();
 
                     System.out.println("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
                     storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
