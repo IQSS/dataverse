@@ -503,6 +503,9 @@ public class DatasetPage implements java.io.Serializable {
         SwiftAccessIO swiftObject = getSwiftObject();
         if (swiftObject != null) {
             swiftObject.open();
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName();
+            }
             //assuming we are able to get a temp url for a dataset
             return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
         }
@@ -522,6 +525,9 @@ public class DatasetPage implements java.io.Serializable {
 
         } catch (IOException e) {
             logger.info("DatasetPage: Failed to get storageIO");
+        }
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName();
         }
         
         return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
