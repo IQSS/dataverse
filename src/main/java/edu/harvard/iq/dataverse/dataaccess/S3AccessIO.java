@@ -87,7 +87,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } 
         
         DataAccessRequest req = this.getRequest();
-        S3Object s3object=null;
         
         if (isWriteAccessRequested(options)) {
             isWriteAccess = true;
@@ -119,7 +118,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 } else {
                     //TODO: throw exception
                 }
-                s3object = s3.getObject(new GetObjectRequest(bucketName, s3FileName));
+                S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, s3FileName));
                 InputStream in = s3object.getObjectContent();
 
                 if (in == null) {
@@ -131,11 +130,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 setChannel(Channels.newChannel(in));
                 this.setSize(s3object.getObjectMetadata().getContentLength());
                 
-                  if (dataFile.getContentType() != null
-                        && dataFile.getContentType().equals("text/tab-separated-values")
-                        && dataFile.isTabularData()
-                        && dataFile.getDataTable() != null
-                        && (!this.noVarHeader())) {
+                if (dataFile.getContentType() != null
+                    && dataFile.getContentType().equals("text/tab-separated-values")
+                    && dataFile.isTabularData()
+                    && dataFile.getDataTable() != null
+                    && (!this.noVarHeader())) {
 
                     List<DataVariable> datavariables = dataFile.getDataTable().getDataVariables();
                     String varHeaderLine = generateVariableHeader(datavariables);
@@ -306,7 +305,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     @Override 
-    public Path getAuxObjectAsPath(String auxItemTag) throws IOException {
+    public Path getAuxObjectAsPath(String auxItemTag) throws UnsupportedDataAccessOperationException {
         throw new UnsupportedDataAccessOperationException("S3AccessIO: this is a remote DataAccess IO object, its Aux objects have no local filesystem Paths associated with it.");
     }
 
@@ -392,14 +391,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             prefix = s3FolderPath + "/";
         }
-                
-        List<String> ret = new ArrayList<>();
-        ObjectListing storedAuxFilesList = null;
-        List<S3ObjectSummary> storedAuxFilesSummary = null;
 
+        List<String> ret = new ArrayList<>();
         ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
-        storedAuxFilesList = s3.listObjects(req);
-        storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
+        ObjectListing storedAuxFilesList = s3.listObjects(req);
+        List<S3ObjectSummary> storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
         try {
             while (storedAuxFilesList.isTruncated()) {
                 logger.info("S3 listAuxObjects: going to second page of list");
@@ -410,7 +406,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.listAuxObjects():    " + ase.getMessage());
             logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
         }
-        
+
         for (S3ObjectSummary item : storedAuxFilesSummary) {
             String key = item.getKey();
             String fileName = key.substring(key.lastIndexOf("/"));
@@ -449,12 +445,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             prefix = s3FolderPath + "/";
         }
-                
-        ObjectListing storedAuxFilesList = null;
+
         List<S3ObjectSummary> storedAuxFilesSummary = null;
         try {
             ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
-            storedAuxFilesList = s3.listObjects(req);
+            ObjectListing storedAuxFilesList = s3.listObjects(req);
             storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
             while (storedAuxFilesList.isTruncated()) {
                 storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
@@ -500,8 +495,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             return s3.doesObjectExist(bucketName, key);
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.exists():    " + ase.getMessage());
+            return false;
         }
-        return false;
     }
 
     @Override
@@ -529,8 +524,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             return s3object.getObjectContent();
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.getAuxFileAsInputStream():    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Failed to get aux file as input stream");
         }
-        throw new IOException("S3AccessIO: Failed to get aux file as input stream");
     }
 
     
