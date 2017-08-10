@@ -12,8 +12,12 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.MultiObjectDeleteException;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -430,7 +434,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    //TODO: is this efficient? i.e. number of calls to S3
     @Override
     public void deleteAllAuxObjects() throws IOException {
         String prefix = null;
@@ -457,18 +460,25 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("S3AccessIO: Failed to get aux objects for listing to delete.");
         }
         
+        DeleteObjectsRequest multiObjectDeleteRequest = new DeleteObjectsRequest(bucketName);
+        List<KeyVersion> keys = new ArrayList<KeyVersion>();
+
         for (S3ObjectSummary item : storedAuxFilesSummary) {
             String key = item.getKey();
-            logger.info("Trying to delete auxiliary file " + key);
-            try {
-                //TODO: deleteObjectS?
-                DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, key);
-                s3.deleteObject(dor);
-            } catch (AmazonClientException ase) {
-                logger.warning("S3AccessIO: Unable to delete auxilary object    " + ase.getMessage());
-                throw new IOException("S3AccessIO: Failed to delete one or more auxiliary objects.");
-            }
+            keys.add(new KeyVersion(key));
         }
+        multiObjectDeleteRequest.setKeys(keys);
+
+        logger.info("Trying to delete auxiliary files...");
+        try {
+            s3.deleteObjects(multiObjectDeleteRequest);
+        } catch (MultiObjectDeleteException e) {
+            logger.warning("S3AccessIO: Unable to delete auxilary objects" + e.getMessage());
+            throw new IOException("S3AccessIO: Failed to delete one or more auxiliary objects.");
+        }
+        
+        
+        
     }
     
     //TODO: Do we need this?
