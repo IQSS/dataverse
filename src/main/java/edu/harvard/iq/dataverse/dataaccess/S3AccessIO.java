@@ -66,12 +66,22 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public S3AccessIO(T dvObject, DataAccessRequest req) {
         super(dvObject, req);
         this.setIsLocalFile(false);
+        try {
         awsCredentials = new ProfileCredentialsProvider().getCredentials();
         s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).withRegion(Regions.US_EAST_1).build();
+        } catch (Exception e){
+                throw new AmazonClientException(
+                        "Cannot load the credentials from the credential profiles file. "
+                        + "Please make sure that your credentials file is at the correct "
+                        + "location (~/.aws/credentials), and is in valid format.",
+                        e);
+            }
+        
         //TODO: move getAwsCredentials
     }
 
-    private AWSCredentials awsCredentials = null;
+    //private AWSCredentials awsCredentials = null;
+    private AWSCredentials awsCredentials = new ProfileCredentialsProvider().getCredentials();
     private AmazonS3 s3 = null;
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String s3FolderPath;
@@ -595,25 +605,4 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("S3AccessIO: Failed to get aux file as input stream");
         }
     }
-
-    // Auxilary helper methods, S3-specific:
-    //FIXME: It looks like the best way to do credentials is to change a jvm variable on launch
-    //          and use the standard getCredentials. Test this.
-    private AWSCredentials getAWSCredentials() {
-        if (awsCredentials == null) {
-            try {
-                //We can leave this as is and set an env variable
-                awsCredentials = new ProfileCredentialsProvider().getCredentials();
-            } catch (Exception e) {
-                throw new AmazonClientException(
-                        "Cannot load the credentials from the credential profiles file. "
-                        + "Please make sure that your credentials file is at the correct "
-                        + "location (~/.aws/credentials), and is in valid format.",
-                        e);
-            }
-        }
-
-        return awsCredentials;
-    }
-
 }
