@@ -184,6 +184,11 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     @Override
+    public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
+        saveInputStream(inputStream);
+    }
+    
+    @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
         // Since this is a local fileystem file, we can use the
         // quick NIO Files.copy method: 
@@ -305,6 +310,11 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             Files.copy(fileSystemPath, auxPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
         }
+    }
+    
+    @Override
+    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
+        saveInputStreamAsAux(inputStream, auxItemTag);
     }
     
     @Override
