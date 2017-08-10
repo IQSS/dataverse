@@ -11,7 +11,6 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    <!-- Upload (removed - L.A. 4.2) -->
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
                  scrollRows="25" scrollable="true" liveScroll="true"
@@ -78,7 +77,7 @@
                             </p:commandLink>
                         </span>
                     </div>
-                </div>                
+                </div>
             </div>
             <div class="row" style="margin-bottom:6px;">
                 <div id="filesHeaderCount" class="col-xs-2 text-left">
@@ -87,27 +86,25 @@
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                     </h:outputFormat>
                 </div>
-                <div class="col-xs-10">
-                    <!-- Button Panels -->
+                <div id="filesButtons" class="col-xs-10">
                     <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
-                    <div jsf:id="zipDownloadPanel" class="button-block tab-header pull-right text-right"
+                    <div jsf:id="uploadComputeBlock" class="button-block tab-header pull-right text-right"
                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
                                          and (DatasetPage.canUpdateDataset()
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                        
-                        <p:commandLink  type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'ui-state-disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
+                        <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'ui-state-disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
                                         rendered="#{DatasetPage.sessionUserAuthenticated 
                                                     and DatasetPage.canUpdateDataset()
                                                     and !widgetWrapper.widgetView and settingsWrapper.rsyncUpload}">
-                            <!-- RSYNC UPLOAD BUTTON -->
+                            <!-- RSYNC UPLOAD FILES BUTTON -->
                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText value="#{bundle['file.uploadFiles']}"/>
                         </p:commandLink>
-                        
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                       type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'ui-state-disabled' : ''}"
                                       disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated 
                                                                                     and DatasetPage.canUpdateDataset()
                                                                                     and !widgetWrapper.widgetView and !settingsWrapper.rsyncUpload}">
+                            <!-- UPLOAD FILES BUTTON -->
                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
                         <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.isSwiftStorage()}">
@@ -115,7 +112,7 @@
                             <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
                         </h:outputLink>
                     </div>
-                    <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
+                    <div jsf:id="restrictDeleteBlock" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
                         <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -138,10 +135,9 @@
                             <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
                         </p:commandLink>
                     </div>
-                    
-                    <!--SORT BUTTON-->
-                    <div class="button-block btn-group pull-right" jsf:rendered="#{DatasetPage.sortButtonEnabled and DatasetPage.fileMetadatas.size() gt 1}">
+                    <div id="sortBlock" class="button-block btn-group pull-right" jsf:rendered="#{DatasetPage.sortButtonEnabled and DatasetPage.fileMetadatas.size() gt 1}">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <!--SORT BUTTON-->
                             <span class="glyphicon glyphicon-sort"/> #{bundle['file.results.btn.sort']} <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
