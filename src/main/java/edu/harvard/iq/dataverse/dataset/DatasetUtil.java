@@ -271,7 +271,7 @@ public class DatasetUtil {
         
         //File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
         try {
-            //this goes through Swift API/local storage to write the dataset thumbnail into a container
+            //this goes through Swift API/local storage/s3 to write the dataset thumbnail into a container
             dataAccess.savePathAsAux(tmpFile.toPath(), datasetLogoFilenameFinal);
         } catch (IOException ex) {
             logger.severe("Failed to move original file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
@@ -326,15 +326,16 @@ public class DatasetUtil {
         } catch (IOException ex) {
             logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
         }
+        //This deletes the tempfiles created for rescaling and encoding
         boolean tmpFileWasDeleted = tmpFile.delete();
-        boolean originalFileWasDeleted = tmpFileForResize.delete();
+        boolean originalTempFileWasDeleted = tmpFileForResize.delete();
         try {
             Files.delete(Paths.get(thumbFileLocation));
         } catch (IOException ioex) {
             logger.fine("Failed to delete temporary thumbnail file");
         }
         
-        logger.fine("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalFileWasDeleted);
+        logger.info("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalTempFileWasDeleted);
         return dataset;
     }
 
