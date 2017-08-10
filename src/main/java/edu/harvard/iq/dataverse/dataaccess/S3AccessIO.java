@@ -78,8 +78,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
     }
 
-    //private AWSCredentials awsCredentials = null;
-    private AWSCredentials awsCredentials = new ProfileCredentialsProvider().getCredentials();
+    private AWSCredentials awsCredentials = null;
     private AmazonS3 s3 = null;
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String s3FolderPath;
