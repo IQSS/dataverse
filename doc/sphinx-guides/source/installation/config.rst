@@ -224,7 +224,9 @@ You also have the option to set a **custom container name separator.** It is ini
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-folder-path-separator=-"``
 
-By default, your Swift installation will be public-only, meaning users will be unable to put access restrictions on their data. In order to **enable file access restrictions**, you must enable Swift to use temporary URLs for file access. To enable usage of temporary URLs, set a hash key both on your swift endpoint and in your swift.properties file. You can do so by adding 
+By default, your Swift installation will be public-only, meaning users will be unable to put access restrictions on their data. If you are comfortable with this level of privacy, the final step in your setup is to set the  :ref:`:PublicInstall` setting to `true`.
+
+In order to **enable file access restrictions**, you must enable Swift to use temporary URLs for file access. To enable usage of temporary URLs, set a hash key both on your swift endpoint and in your swift.properties file. You can do so by adding 
 
 .. code-block:: none
 
@@ -244,11 +246,15 @@ Setting up Compute
 
 Once you have configured a Swift Object Storage backend, you also have the option of enabling a connection to a computing environment. To do so, you need to configure the database settings for :ref:`:ComputeBaseUrl` and  :ref:`:CloudEnvironmentName`.
 
-Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your cloud environment, the compute button on dataset and file pages will link validated users to your computing environment. The compute button will redirect to: 
+Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your cloud environment, the compute button on dataset and file pages will link validated users to your computing environment. Depending on the configuration of your installation, the compute button will either redirect to: 
 
-``:ComputeBaseUrl?containerName=yourContainer&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
+``:ComputeBaseUrl?containerName=yourContainer&objectName=yourObject``
 
-which you can configure properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
+if your installation's :ref:`:PublicInstall` setting is true, or:
+
+``:ComputeBaseUrl?containerName=yourContainer&objectName=yourObject&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
+
+otherwise. You can configure this redirect properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
 
 
 .. _Branding Your Installation:
