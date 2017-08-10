@@ -28,7 +28,7 @@
                                 <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</span>
                             </label>
                             <div class="col-sm-9">
-                                #{guestbookResponsesPage.guestbook.name} #{guestbookResponsesPage.guestbook.responseCount}
+                                #{guestbookResponsesPage.guestbook.name}
                             </div>
                             <div class="pull-right">
                                 <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.streamResponsesByDataverseAndGuestbook()}"  >
@@ -36,6 +36,31 @@
                                 </button>  
                             </div>
                         </div>
+                    
+                    <p:fragment id="tooManyEntries" rendered="#{guestbookResponsesPage.guestbook.responseCount > systemConfig.guestbookResponsesPageDisplayLimit}">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div id="no-clients-message" class="panel panel-default">
+                                    <div class="panel-body">
+                                                <span class="help-block h3">
+                                                    <h:outputFormat value="#{bundle['dataset.guestbooksResponses.tooManyResponses.header']}">
+                                                        <f:param value="#{systemConfig.guestbookResponsesPageDisplayLimit}"/>
+                                                    </h:outputFormat>
+                                        </span>
+                                        <ul>
+                                            <li>
+                                                <h:outputFormat value="#{bundle['dataset.guestbooksResponses.tooManyResponses.message']}" escape="false">
+                                                    <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
+                                                </h:outputFormat>    
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </p:fragment>
+                    
+                    
                     <p:dataTable id="responsesGuestbook" value="#{guestbookResponsesPage.responsesAsArray}" var="response">
                         <p:column sortBy="#{response[0]}" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">
                             <h:outputText value="#{response[0]}"/>

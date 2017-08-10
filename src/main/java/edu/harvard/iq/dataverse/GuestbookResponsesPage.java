@@ -5,9 +5,12 @@
  */
 package edu.harvard.iq.dataverse;
 
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -32,6 +35,9 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     @EJB
     DataverseServiceBean dvService;
     
+    @EJB
+    SystemConfig systemConfig;
+    
     private Long guestbookId;
     
     private Long dataverseId;
@@ -51,7 +57,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         this.redirectString = redirectString;
     }
 
-    private List<GuestbookResponse> responses;
+    /*private List<GuestbookResponse> responses;*/
     private List<Object[]> responsesAsArray;
 
     public List<Object[]> getResponsesAsArray() {
@@ -70,29 +76,19 @@ public class GuestbookResponsesPage implements java.io.Serializable {
             guestbook.setResponseCount(guestbookResponseService.findCountByGuestbookId(guestbookId , dataverseId));
             
             logger.info("Guestbook responses count: "+guestbook.getResponseCount());
-            if (guestbook.getResponseCount() <= displayLimit) {
-                
-                responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId);
-            }
+            responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId, systemConfig.getGuestbookResponsesPageDisplayLimit());
+            
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, 
+                    JH.localize("dataset.guestbooksResponses.tip.title"), 
+                    JH.localize("dataset.guestbooksResponses.tip.downloadascsv")));
         }
     }
     
-    /* 
-      *experimental* display limit on the number of guestbookresponse entries 
-      (will be configurable)
-    */
-    private long displayLimit = 1000L; 
-    
-    public long getDisplayLimit() {
-        return displayLimit;
-    }
-    
-    public void setDisplayLimit(long limit) {
-        displayLimit = limit;
-    }
-    
     private String getFileName(){
-       return  dataverse.getName().replace(' ', '_') + "_GuestbookReponses.csv";
+       // The fix below replaces any spaces in the name of the dataverse with underscores;
+       // without it, the filename was chopped off (by the browser??), and the user 
+       // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A. 
+       return  dataverse.getName().replace(' ', '_') + "_" + guestbook.getId() + "_GuestbookReponses.csv";
     }
 
     public void streamResponsesByDataverseAndGuestbook(){
@@ -101,15 +97,13 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         response.setContentType("text/comma-separated-values");
         String fileNameString = "attachment;filename=" + getFileName();
         response.setHeader("Content-Disposition", fileNameString);
-        //selectedGuestbook
-        //String converted = convertResponsesToTabDelimited();
         try {
             ServletOutputStream out = response.getOutputStream();
             guestbookResponseService.streamResponsesByDataverseIdAndGuestbookId(out, dataverseId, guestbookId);
             out.flush();
             ctx.responseComplete();
         } catch (Exception e) {
-
+            logger.warning("Failed to stream collected guestbook responses for guestbook " + guestbookId + ", dataverse "+dataverseId);
         }
     }
     
@@ -211,12 +205,12 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         this.guestbook = guestbook;
     }
 
-    public List<GuestbookResponse> getResponses() {
+    /*public List<GuestbookResponse> getResponses() {
         return responses;
     }
 
     public void setResponses(List<GuestbookResponse> responses) {
         this.responses = responses;
-    }
+    }*/
 
 }

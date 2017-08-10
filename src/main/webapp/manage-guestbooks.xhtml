@@ -38,7 +38,7 @@
                                 <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['dataset.manageGuestbooks.createBtn']}"/>
                             </h:outputLink> 
                             <ui:fragment rendered="#{manageGuestbooksPage.displayDownloadAll}">
-                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{manageGuestbooksPage.downloadResponsesByDataverse()}"  >
+                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{manageGuestbooksPage.streamResponsesByDataverse()}"  >
                                      #{bundle['dataset.manageGuestbooks.download.all.responses']}
                                 </button> 
                             </ui:fragment>
