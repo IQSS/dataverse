@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -74,8 +75,9 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         theDataset.getEditVersion().setReleaseTime(updateTime);
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         theDataset.setModificationTime(updateTime);
-        theDataset.getEditVersion().setInReview(false); // TODO SBG replace by updating lock reason
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
+        
+        ctxt.engine().submit( new RemoveLockCommand(getRequest(), theDataset));
 
         updateFiles(updateTime, ctxt);
         
@@ -93,9 +95,13 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         if ( prePubWf.isPresent() ) {
+            // We start a workflow
+            ctxt.engine().submit( new AddLockCommand(getRequest(), theDataset, new DatasetLock(DatasetLock.Reason.Workflow, getRequest().getAuthenticatedUser())));
             ctxt.workflows().start(prePubWf.get(), buildContext(doiProvider, TriggerType.PrePublishDataset) );
             return new PublishDatasetResult(theDataset, false);
+            
         } else {
+            // Synchronous publishing (no workflow involved)
             theDataset = ctxt.engine().submit( new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()) );
             return new PublishDatasetResult(ctxt.em().merge(theDataset), true);
         }

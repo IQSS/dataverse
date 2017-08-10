@@ -28,6 +28,7 @@ public class AddLockCommand extends AbstractCommand<DatasetLock> {
 
     @Override
     public DatasetLock execute(CommandContext ctxt) throws CommandException {
+        lock.setDataset(dataset);
         ctxt.datasets().addDatasetLock(dataset, lock);
         return lock;
     }

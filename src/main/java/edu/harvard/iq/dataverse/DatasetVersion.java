@@ -138,8 +138,6 @@ public class DatasetVersion implements Serializable {
     private String archiveNote;
     
     private String deaccessionLink;
-    
-    private boolean inReview;
 
     @Transient
     private String contributorNames;
@@ -211,17 +209,14 @@ public class DatasetVersion implements Serializable {
         this.datasetFields = datasetFields;
     }
     
-    public void setInReview(boolean inReview){
-        this.inReview = inReview;
-    }
-
     /**
      * The only time a dataset can be in review is when it is in draft.
-     * @return 
+     * @return {@code true} iff the dataset version is in review.
      */
     public boolean isInReview() {
         if (versionState != null && versionState.equals(VersionState.DRAFT)) {
-            return inReview;
+            DatasetLock l = getDataset().getDatasetLock();
+            return (l != null) && l.getReason()==DatasetLock.Reason.InReview;
         } else {
             return false;
         }

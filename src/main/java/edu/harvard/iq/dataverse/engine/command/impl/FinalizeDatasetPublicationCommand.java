@@ -54,7 +54,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
         ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
 
-        // TODO MBS/SBG: remove lock
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset));
         
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset)
                 .ifPresent(wf -> ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset)));

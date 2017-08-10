@@ -75,7 +75,10 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
+import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
@@ -1374,15 +1377,8 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String sendBackToContributor() {
-        Command<Dataset> cmd;
-        
-        datasetService.removeDatasetLock(dataset.getId());
-        workingVersion = dataset.getEditVersion();
-        workingVersion.setInReview(false);
         try {
-            cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
-            ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
-            dataset = commandEngine.submit(cmd);
+            commandEngine.submit(new RemoveLockCommand(dvRequestService.getDataverseRequest(), dataset));
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
@@ -1404,22 +1400,20 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String submitDataset() {
-        Command<Dataset> cmd;
-        workingVersion = dataset.getEditVersion();
-        workingVersion.setInReview(true);
+        DataverseRequest req = dvRequestService.getDataverseRequest();
+        DatasetLock inReviewLock = new DatasetLock(DatasetLock.Reason.InReview, req.getAuthenticatedUser());
         try {
-            cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
-            ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
-            dataset = commandEngine.submit(cmd);
+            commandEngine.submit( new AddLockCommand(req, dataset, inReviewLock));
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
             return "";
         }
         List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
-        for (AuthenticatedUser au : authUsers) {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
-        }
+        
+        Timestamp ts = new Timestamp(new Date().getTime());
+        Long latestVersionId = dataset.getLatestVersion().getId();
+        authUsers.forEach( au -> userNotificationService.sendNotification(au, ts, UserNotification.Type.SUBMITTEDDS, latestVersionId));
 
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "Your dataset has been submitted for review.");
         FacesContext.getCurrentInstance().addMessage(null, message);
@@ -1528,7 +1522,7 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
                 }
-                dataset = commandEngine.submit(cmd).getDataset(); // TODO SBG: this might need to change to "release workflow in progress.
+                dataset = commandEngine.submit(cmd).getDataset();
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 if (notifyPublish) {
                     List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);

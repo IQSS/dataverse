@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
@@ -139,12 +140,30 @@ public class WorkflowServiceBean {
     private void rollback(Workflow wf, WorkflowContext ctxt, Failure failure, int idx) {
         WorkflowStepData wsd = wf.getSteps().get(idx);
         logger.log(Level.INFO, "{0} rollback of step {1}", new Object[]{ctxt.getInvocationId(), idx});
-        createStep(wsd).rollback(ctxt, failure);
-        if (idx > 0) {
-            rollback(wf, ctxt, failure, --idx);
+        try {
+            createStep(wsd).rollback(ctxt, failure);
+        } finally {
+            if (idx > 0) {
+                rollback(wf, ctxt, failure, --idx);
+            } else {
+                unlockDataset(ctxt);
+            }
         }
     }
-
+    
+    /**
+     * Unlocks the dataset after the workflow is over. 
+     * @param ctxt 
+     */
+    @Asynchronous
+    private void unlockDataset( WorkflowContext ctxt ) {
+        try {
+            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset()) );
+        } catch (CommandException ex) {
+            logger.log(Level.SEVERE, "Cannot unlock dataset after rollback: " + ex.getMessage(), ex);
+        }
+    }
+    
     private void pauseAndAwait(Workflow wf, WorkflowContext ctxt, Pending pendingRes, int idx) {
         PendingWorkflowInvocation pending = new PendingWorkflowInvocation(wf, ctxt, pendingRes);
         pending.setPendingStepIdx(idx);
@@ -157,6 +176,8 @@ public class WorkflowServiceBean {
         if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
             try {
                 engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getDoiProvider(), ctxt.getRequest()) );
+                unlockDataset(ctxt);
+                
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);

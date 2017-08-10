@@ -35,6 +35,7 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NamedStoredProcedureQuery;
@@ -84,6 +85,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     OAIRecordServiceBean recordService;
+    
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
     
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
@@ -503,7 +507,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     public void addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
 
         Dataset dataset = em.find(Dataset.class, datasetId);
-        DatasetLock lock = new DatasetLock(reason);
+        DatasetLock lock = new DatasetLock(reason, dvRequestService.getDataverseRequest().getAuthenticatedUser());
         lock.setDataset(dataset);
         lock.setInfo(info);
         lock.setStartTime(new Date());

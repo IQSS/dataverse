@@ -12,3 +12,13 @@ ALTER TABLE DATASETLOCK ADD COLUMN REASON VARCHAR(255);
 
 -- All existing dataset locks are due to ingest.
 UPDATE DATASETLOCK set REASON='Ingest';
+
+-- /!\ Important!
+-- change "1" to the an admin user id.
+--
+INSERT INTO datasetlock (info, starttime, dataset_id, user_id, reason)
+SELECT '', localtimestamp, dataset_id, 1, 'InReview'
+FROM datasetversion
+WHERE inreview=true;
+
+ALTER TABLE DATASETVERSTION DROP COLUMN inreview;

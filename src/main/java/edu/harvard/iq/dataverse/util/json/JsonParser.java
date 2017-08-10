@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import static java.util.stream.Collectors.toList;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -50,7 +49,6 @@ import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
-import static org.hibernate.validator.internal.util.privilegedactions.GetAnnotationParameter.action;
 
 /**
  * Parses JSON objects into domain objects.
@@ -296,7 +294,6 @@ public class JsonParser {
             if (versionStateStr != null) {
                 dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
             }
-            dsv.setInReview(obj.getBoolean("inReview", false));
             dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
             dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
             dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
