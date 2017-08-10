@@ -189,7 +189,7 @@ public class GuestbookResponseServiceBean {
             sb.append(SEPARATOR);
             
             // position: 
-            sb.append(result[10] == null ? "" : ((String)result[7]).replace(',', ' '));
+            sb.append(result[10] == null ? "" : ((String)result[10]).replace(',', ' '));
             
             // Finally, custom questions and answers, if present:
             
@@ -219,6 +219,7 @@ public class GuestbookResponseServiceBean {
             // (i.e., we are writing one guestbook response at a time, thus allowing the 
             // whole thing to stream in real time -- L.A.)
             out.write(sb.toString().getBytes());
+            out.flush();
         }
     }
     

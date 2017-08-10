@@ -87,7 +87,7 @@ public class SystemConfig {
     
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
     
-    private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 1000L; 
+    private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 5000L; 
     
     public String getVersion() {
         return getVersion(false);

@@ -42,14 +42,19 @@
                             <div class="col-sm-12">
                                 <div id="no-clients-message" class="panel panel-default">
                                     <div class="panel-body">
-                                                <span class="help-block h3">
-                                                    <h:outputFormat value="#{bundle['dataset.guestbooksResponses.tooManyResponses.header']}">
-                                                        <f:param value="#{systemConfig.guestbookResponsesPageDisplayLimit}"/>
-                                                    </h:outputFormat>
+                                        <span class="help-block h3">
+                                            <h:outputText value="#{bundle['dataset.guestbooksResponses.tooManyResponses.header']}"/>
                                         </span>
                                         <ul>
                                             <li>
-                                                <h:outputFormat value="#{bundle['dataset.guestbooksResponses.tooManyResponses.message']}" escape="false">
+                                                <h:outputFormat value="#{bundle['dataset.guestbooksResponses.tooManyResponses.message.1']}" escape="false">
+                                                    <f:param value="#{systemConfig.guestbookResponsesPageDisplayLimit}"/>
+                                                </h:outputFormat>    
+                                            </li>
+                                        </ul>
+                                        <ul>
+                                            <li>
+                                                <h:outputFormat value="#{bundle['dataset.guestbooksResponses.tooManyResponses.message.2']}" escape="false">
                                                     <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
                                                 </h:outputFormat>    
                                             </li>
