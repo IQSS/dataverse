@@ -254,7 +254,7 @@ if your installation's :ref:`:PublicInstall` setting is true, or:
 
 ``:ComputeBaseUrl?containerName=yourContainer&objectName=yourObject&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
 
-otherwise. You can configure this redirect properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
+You can configure this redirect properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
 
 
 .. _Branding Your Installation:
@@ -929,6 +929,8 @@ Set the base URL for the "Compute" button for a dataset.
 Set the name of the cloud environment you've integrated with your Dataverse installation.
 
 ``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
+
+.. _:PublicInstall:
 
 :PublicInstall
 +++++++++++++++++++++
