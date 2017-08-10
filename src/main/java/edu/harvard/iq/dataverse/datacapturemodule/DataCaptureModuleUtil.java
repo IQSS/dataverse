@@ -46,7 +46,7 @@ public class DataCaptureModuleUtil {
         }
         int httpStatusCode = uploadRequest.getStatus();
         String script = body.getObject().getString("script");
-	String datasetIdentifier = body.getObject().getString("datasetIdentifier");
+        String datasetIdentifier = body.getObject().getString("datasetIdentifier");
         long userId = body.getObject().getLong("userId");
         ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetIdentifier, userId, script);
         return scriptRequestResponse;

@@ -88,7 +88,7 @@ public class FileRecordReader extends AbstractItemReader {
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
-        dataset = datasetServiceBean.findByGlobalId(jobParams.getProperty("datasetId"));
+        dataset = datasetServiceBean.find(new Long(jobParams.getProperty("datasetId")));
         user = authenticationServiceBean.getAuthenticatedUser(jobParams.getProperty("userId"));
         mode = jobParams.getProperty("mode");
         uploadFolder = jobParams.getProperty("uploadFolder");
