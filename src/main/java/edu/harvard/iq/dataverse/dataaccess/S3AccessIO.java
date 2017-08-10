@@ -76,8 +76,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                         + "location (~/.aws/credentials), and is in valid format.",
                         e);
             }
-        
-        //TODO: move getAwsCredentials
     }
 
     //private AWSCredentials awsCredentials = null;
@@ -258,6 +256,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         //TODO? Copying over the object to a byte array is farily inefficient.
         // We need the length of the data to upload inputStreams (see our putObject calls).
         // There may be ways to work around this, see https://github.com/aws/aws-sdk-java/issues/474 to start.
+        // This is out of scope of creating the S3 driver and referenced in issue #4064!
         byte[] bytes = IOUtils.toByteArray(inputStream);
         long length = bytes.length;
         ObjectMetadata metadata = new ObjectMetadata();
