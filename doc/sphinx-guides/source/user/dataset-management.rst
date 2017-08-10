@@ -125,30 +125,33 @@ There are several advanced options available for certain file types.
 
 .. _rsync_upload:
 
-Rsync Upload
+rsync Upload
 ------------
 
-Rsync is typically used for synchronizing files and directories between two different systems, using SSH to connect rather than HTTP, to better facilitate large file transfers.
+rsync is typically used for synchronizing files and directories between two different systems, using SSH to connect rather than HTTP. Some Dataverse installations allow uploads using rsync, to facilitate extremely large file transfers in a reliable and secure manner.
 
 File Upload Script
 ~~~~~~~~~~~~~~~~~~
 
-Download the file upload script in order to upload files via a terminal window, to run the rsync script.
+An rsync-enabled Dataverse installation has a file upload process that differs from the traditional browser-based upload process you may be used to. In order to transfer your data to Dataverse's storage, you will need to complete the following steps:
 
-Features
+1. Create your dataset. In rsync-enabled Dataverse installations, you cannot upload files until the dataset creation process is complete. After you hit "Save Dataset" on the Dataset Creation page, you will be taken to the page for your dataset.
 
-- Upload files is disabled on dataset create because in order to produce the upload script, and have a container to store the files, the dataset needs to exist.
-- Instead of an upload pg, you have an upload popup, with instructions to follow, as well as a script to download.
-- There are requirements for preparing your data before upload, like making sure all your files are in one directory. Anything else?
+2. On the dataset page, click the "+ Upload Files" button. This will open a box with instructions and a link to the file upload script.
 
-Upload In Progress
-~~~~~~~~~~~~~~~~~~
+3. Make sure your files are ready for upload. You will need to have one directory that you can point the upload script to. All files in this directory and in any subdirectories will be uploaded. The directory structure will be preserved, and will be represented when your dataset is downloaded from Dataverse. Note that your data will be uploaded in the form of an rsync package, and each dataset can only host one such package. Be sure that all files you want to include are present before you upload.
 
-Features
+4. Download the rsync file upload script using the link in the Upload Files instruction box. There are no requirements for where you save the script; put it somewhere you can find it.
 
-- Dataset locks, "upload in progress" msg displayed, some features like publish, delete, upload are disabled.
-- You can edit your metadata still.
-- Cancel upload by canceling script in terminal window.
+5. To begin the upload process, you will need to run the script you downloaded. For this, you will have to go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to navigate to the directory where you saved the upload script, and run the command that the Upload Files instruction box provides. This will begin the upload script. Please note that this upload script will expire 7 days after you downloaded it. If it expires and you still need to use it, simply download the script script from Dataverse again.
+
+**Note:** Unlike other operating systems, Windows does not come with rsync installed by default. If you are using Windows, you may need to install rsync before the upload script will work. The developers of rsync recommend `cwRsync <https://www.itefix.net/cwrsync>`_ for Windows users.
+
+6. Follow the instructions provided by the upload script running in your terminal. If you need to cancel the upload, you can do so by canceling the script running in your terminal window.
+
+7. Once the upload script completes its job, Dataverse will begin ingesting your data upload. This may take some time depending on the file size of your upload. While your upload is ingesting, you will not be able to delete or publish your dataset, and you will not be able to upload more files. You will still be able to edit the dataset's metadata, though. Once ingest is complete, the disabled functions will be enabled again. During ingest, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..." 
+
+8. Once ingest is complete, you will be notified, and your data will be available for download on the dataset page. At this point, the upload feature for this dataset will be disabled. If you need to upload a new version of your data, you will need to delete the dataset's current data package and upload a new one.
 
 Dataverse Package
 ~~~~~~~~~~~~~~~~~
@@ -156,7 +159,6 @@ Dataverse Package
 Features
 
 - Instead of a bunch of files displayed, you have one file, a "Dataverse Package".
-- Once you've uploaded your files, upload is disabled.
 - There are Data Access locations, as well as Verify Data commands, displayed on the dataset and file pgs.
 - "If delete, delete the dataset"?
 
