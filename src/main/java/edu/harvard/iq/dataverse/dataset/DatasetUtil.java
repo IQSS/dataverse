@@ -109,7 +109,7 @@ public class DatasetUtil {
         if (dataset == null) {
             return null;
         }
-        
+
         StorageIO<Dataset> dataAccess = null;
                 
         try{
@@ -123,12 +123,12 @@ public class DatasetUtil {
         InputStream in = null;
         try {
             if (dataAccess == null) {
-                logger.info("Cannot retrieve thumbnail file");
+                logger.info("Cannot retrieve thumbnail file.");
             } else if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
         } catch (IOException ex) {
-            logger.info("Cannot retrieve thumbnail file");
+            logger.info("Cannot retrieve dataset thumbnail file, will try to get thumbnail from file.");
         }
 
         

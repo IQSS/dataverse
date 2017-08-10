@@ -107,6 +107,7 @@ public abstract class StorageIO<T extends DvObject> {
     
     // same, for an InputStream:
     public abstract void saveInputStream(InputStream inputStream) throws IOException;
+    public abstract void saveInputStream(InputStream inputStream, Long filesize) throws IOException;
     
     // Auxiliary File Management: (new as of 4.0.2!)
     
@@ -134,6 +135,7 @@ public abstract class StorageIO<T extends DvObject> {
     
     // this method copies a local InputStream into this DataAccess Auxiliary location:
     public abstract void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException; 
+    public abstract void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException;
     
     public abstract List<String>listAuxObjects() throws IOException;
     
