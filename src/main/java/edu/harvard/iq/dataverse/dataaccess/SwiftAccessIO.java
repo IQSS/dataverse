@@ -770,7 +770,6 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         if (temporaryUrl == null || isExpiryExpired(generateTempUrlExpiry(duration, System.currentTimeMillis()), duration, System.currentTimeMillis())) {
             temporaryUrl = baseUrl + path + "?temp_url_sig=" + generateTempUrlSignature(swiftEndPoint, containerName, objectName, duration) + "&temp_url_expires=" + generateTempUrlExpiry(duration, System.currentTimeMillis());
         }
-        logger.info("temporary url: " + temporaryUrl);
         if (temporaryUrl == null) {
             throw new IOException("Failed to generate the temporary Url");
         }
