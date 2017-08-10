@@ -65,6 +65,14 @@ After restarting Glassfish you should see the new provider under "Other options"
 
 By default, the Log In page will show the "builtin" provider, but you can adjust this via the ``:DefaultAuthProvider`` configuration option. For details, see :doc:`config`.
 
+ORCID Sandbox
+^^^^^^^^^^^^^
+
+ORCID provides a sandbox registry, which may be of use for staging or development installations.
+This template can be used for configuring this setting (**this is not something you should do in a production environment**).
+
+- :download:`orcid-sandbox.json <../_static/installation/files/root/auth-providers/orcid-sandbox.json>`
+
 Converting Local Users to OAuth
 -------------------------------
 
