@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
+import edu.harvard.iq.dataverse.DataFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,7 +20,7 @@ import java.util.logging.Logger;
  *
  * @author Leonid Andreev
  */
-public class InputStreamIO extends DataFileIO {
+public class InputStreamIO extends StorageIO<DataFile> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.InputStreamIO");
 
@@ -138,4 +139,12 @@ public class InputStreamIO extends DataFileIO {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: there is no output stream associated with this object.");
     }
 
+   
+
+    @Override
+    public InputStream getAuxFileAsInputStream(String auxItemTag) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+   
 }
