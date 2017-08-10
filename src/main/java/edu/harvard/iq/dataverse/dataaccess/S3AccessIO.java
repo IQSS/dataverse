@@ -77,8 +77,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
   
     @Override
     public void open(DataAccessOption... options) throws IOException {
-        if(s3==null)
-        {
+        if(s3==null) {
             throw new IOException("ERROR: s3 not initialised. ");
         }
         
@@ -112,11 +111,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             if (isReadAccess) {
                 storageIdentifier = dvObject.getStorageIdentifier();
                 if (storageIdentifier.startsWith("s3://")) {
-                    //TODO: Change 5
-                    bucketName = storageIdentifier.substring(5, storageIdentifier.lastIndexOf(":"));
+                    bucketName = storageIdentifier.substring(storageIdentifier.indexOf(":") + 3, storageIdentifier.lastIndexOf(":"));
                     s3FileName = s3FolderPath + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
                 } else {
-                    //TODO: throw exception
+                    throw new IOException("IO driver mismatch: S3AccessIO called on a non-s3 stored object.");
                 }
                 S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, s3FileName));
                 InputStream in = s3object.getObjectContent();
@@ -202,7 +200,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         setSize(newFileSize);
     }
     
-    //TODO: pass in size?
+    //TODO: pass in size? or get size from data file object
     
     @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
@@ -252,6 +250,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             s3.deleteObject(deleteObjRequest);
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.delete():    " + ase.getMessage());
+            throw new IOException("Failed to delete object" + dvObject.getId());
         }
     }
 
@@ -283,8 +282,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             return s3.doesObjectExist(bucketName, key);
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.isAuxObjectCached:    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Failed to cache auxilary object : " + auxItemTag);
         }
-        return false;
     }
     
     @Override
@@ -324,7 +323,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             s3.copyObject(new CopyObjectRequest(bucketName, key, bucketName, destinationKey));
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.backupAsAux:    " + ase.getMessage());
-            throw new IOException("Unable to backup original auxiliary object");
+            throw new IOException("S3AccessIO: Unable to backup original auxiliary object");
         }
     }
 
@@ -344,8 +343,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             File inputFile = fileSystemPath.toFile();
             s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
         } catch (AmazonClientException ase) {
-            //TODO: throw IOExceptions
             logger.warning("Caught an AmazonServiceException in S3AccessIO.savePathAsAux():    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Failed to save path as an auxiliary object.");
         }
     }
     
@@ -379,7 +378,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }  
     }
     
-    //TODO: How do we test this?
     @Override
     public List<String>listAuxObjects() throws IOException {
         String prefix = null;
@@ -398,19 +396,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         List<S3ObjectSummary> storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
         try {
             while (storedAuxFilesList.isTruncated()) {
-                logger.info("S3 listAuxObjects: going to second page of list");
+                logger.fine("S3 listAuxObjects: going to second page of list");
                 storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
                 storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
             }
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.listAuxObjects():    " + ase.getMessage());
-            logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Failed to get aux objects for listing.");
         }
 
         for (S3ObjectSummary item : storedAuxFilesSummary) {
             String key = item.getKey();
             String fileName = key.substring(key.lastIndexOf("/"));
-            logger.info("S3 cached aux object fileName: " + fileName);
+            logger.fine("S3 cached aux object fileName: " + fileName);
             ret.add(fileName);
         }
         return ret;
@@ -430,7 +428,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } catch (AmazonClientException ase) {
             logger.warning("S3AccessIO: Unable to delete object    " + ase.getMessage());
         }
-        
     }
     
     //TODO: is this efficient? i.e. number of calls to S3
@@ -457,6 +454,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Failed to get aux objects for listing to delete.");
         }
         
         for (S3ObjectSummary item : storedAuxFilesSummary) {
@@ -468,6 +466,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 s3.deleteObject(dor);
             } catch (AmazonClientException ase) {
                 logger.warning("S3AccessIO: Unable to delete auxilary object    " + ase.getMessage());
+                throw new IOException("S3AccessIO: Failed to delete one or more auxiliary objects.");
             }
         }
     }
@@ -489,7 +488,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (dvObject instanceof DataFile) {
             key = s3FileName;
         } else {
-            //todo: throw exception
+            logger.warning("Trying to check if a path exists is only supported for a data file.");
         }
         try {
             return s3.doesObjectExist(bucketName, key);
@@ -512,7 +511,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
         String key = null;
-            open();
+        open();
         
         if (dvObject instanceof DataFile) {
             key = s3FileName + "." + auxItemTag;
@@ -520,8 +519,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             key = s3FolderPath + "/" + auxItemTag;
         }
         try {
-            S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, key));
-            return s3object.getObjectContent();
+            if (this.isAuxObjectCached(auxItemTag)) {
+                S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, key));
+                return s3object.getObjectContent();
+            } else {
+                logger.fine("S3AccessIO: Aux object is not cached, unable to get aux object as input stream.");
+                return null;
+            }
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.getAuxFileAsInputStream():    " + ase.getMessage());
             throw new IOException("S3AccessIO: Failed to get aux file as input stream");
