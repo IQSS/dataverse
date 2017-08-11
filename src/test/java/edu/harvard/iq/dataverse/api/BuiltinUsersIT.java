@@ -9,7 +9,10 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,6 +28,52 @@ public class BuiltinUsersIT {
     @BeforeClass
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
+
+    @Test
+    public void testCreateTimeAndApiLastUse() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response getUserAsJson = UtilIT.getAuthenticatedUser(username, apiToken);
+        getUserAsJson.prettyPrint();
+        getUserAsJson.then().assertThat()
+                // Checking that it's 2017 or whatever. Not y3k compliant! 
+                .body("data.createdTime", startsWith("2"))
+                .body("data.authenticationProviderId", equalTo("builtin"))
+                .statusCode(OK.getStatusCode());
+
+        Response getUserAsJsonAgain = UtilIT.getAuthenticatedUser(username, apiToken);
+        getUserAsJsonAgain.prettyPrint();
+        getUserAsJsonAgain.then().assertThat()
+                // ApiUseTime should be null, user has not used API yet here
+                .body("data.lastApiUseTime", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+    }
+    
+    @Test
+    public void testLastApiUse() {
+        Response createApiUser = UtilIT.createRandomUser();
+        String apiUsername = UtilIT.getUsernameFromResponse(createApiUser);
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createApiUser);
+        
+        Response createDataverse = UtilIT.createRandomDataverse(secondApiToken);
+        String alias = UtilIT.getAliasFromResponse(createDataverse);
+        Response createDatasetViaApi = UtilIT.createRandomDatasetViaNativeApi(alias, secondApiToken);
+        Response getApiUserAsJson = UtilIT.getAuthenticatedUser(apiUsername, secondApiToken);
+        
+        getApiUserAsJson.prettyPrint();
+        getApiUserAsJson.then().assertThat()
+                // Checking that it's 2017 or whatever. Not y3k compliant! 
+                .body("data.lastApiUseTime", startsWith("2"))
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
@@ -75,6 +124,25 @@ public class BuiltinUsersIT {
         String randomUsername = " " + getRandomUsername();
         String email = randomUsername + "@mailinator.com";
         Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.statusCode());
+    }
+    
+    @Test 
+    public void testBadCharacterInUsername() {
+        String randomUsername = getRandomUsername() + "/";
+        String email = randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.statusCode());
+    }
+    
+    @Test
+    public void testAccentInUsername() {
+        String randomUsername = getRandomUsername();
+        String randomUsernameWeird = "õÂ" + randomUsername;
+        String email = randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsernameWeird, "firstName", "lastName", email);
         createUserResponse.prettyPrint();
         assertEquals(400, createUserResponse.statusCode());
     }

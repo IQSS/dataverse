@@ -2,11 +2,15 @@ package edu.harvard.iq.dataverse.api;
 
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -50,13 +54,19 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 import java.util.List;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.userdata.UserListMaker;
+import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import java.math.BigDecimal;
+import java.util.ResourceBundle;
+import javax.inject.Inject;
 import javax.ws.rs.QueryParam;
 /**
  * Where the secure, setup API calls live.
@@ -74,6 +84,20 @@ public class Admin extends AbstractApiBean {
     ShibServiceBean shibService;
     @EJB
     AuthTestDataServiceBean authTestDataService;
+    @EJB
+    UserServiceBean userService;
+    @EJB
+    IngestServiceBean ingestService;
+    @EJB
+    DataFileServiceBean fileService;
+
+    // Make the session available
+    @Inject
+    DataverseSession session;    
+
+    public static final String listUsersPartialAPIPath = "list-users";
+    public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
+
 
     @Path("settings")
     @GET
@@ -273,6 +297,7 @@ public class Admin extends AbstractApiBean {
         }
     }
 
+    @Deprecated
     @GET
     @Path("authenticatedUsers")
     public Response listAuthenticatedUsers() {
@@ -291,7 +316,39 @@ public class Admin extends AbstractApiBean {
         return ok(userArray);
     }
 
+    
+    @GET
+    @Path(listUsersPartialAPIPath)
+    @Produces({"application/json"})
+    public Response filterAuthenticatedUsers(@QueryParam("searchTerm") String searchTerm,
+                        @QueryParam("selectedPage") Integer selectedPage,
+                        @QueryParam("itemsPerPage") Integer itemsPerPage
+    ) { 
+        
+        User authUser;
+        try {
+            authUser = this.findUserOrDie();
+        } catch (AbstractApiBean.WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, 
+                    ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.invalid_apikey")
+                    );
+        }
 
+        if (!authUser.isSuperuser()){
+            return error(Response.Status.FORBIDDEN, 
+                    ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
+        }
+        
+        
+        UserListMaker userListMaker = new UserListMaker(userService);      
+        
+        String sortKey = null;
+        UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, sortKey);
+
+        return ok(userListResult.toJSON());
+    }
+    
+    
     /**
      * @todo Make this support creation of BuiltInUsers.
      *
@@ -873,6 +930,27 @@ public class Admin extends AbstractApiBean {
     public Response fixUnf(@PathParam("datasetVersionId") String datasetVersionId, 
                            @QueryParam("forceRecalculate") boolean forceRecalculate) {
         JsonObjectBuilder info = datasetVersionSvc.fixMissingUnf(datasetVersionId, forceRecalculate);
+        return ok(info);
+    }
+    
+    @Path("datafiles/integrity/fixmissingoriginaltypes")
+    @GET
+    public Response fixMissingOriginalTypes() {
+        JsonObjectBuilder info = Json.createObjectBuilder();
+        
+        List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalTypes(); 
+        
+        if (affectedFileIds.isEmpty()) {
+            info.add("message", "All the tabular files in the database already have the original types set correctly; exiting.");
+        } else {
+            for (Long fileid : affectedFileIds) {
+                logger.info("found file id: "+fileid);
+            }
+            info.add("message", "Found "+affectedFileIds.size()+" tabular files with missing original types. Kicking off an async job that will repair the files in the background.");
+        }
+        
+        ingestService.fixMissingOriginalTypes(affectedFileIds);
+        
         return ok(info);
     }
 

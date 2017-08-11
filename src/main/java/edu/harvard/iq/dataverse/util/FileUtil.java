@@ -124,6 +124,12 @@ public class FileUtil implements java.io.Serializable  {
     
     public static final String MIME_TYPE_ZIP   = "application/zip";
     
+    public static final String MIME_TYPE_FITSIMAGE = "image/fits";
+    // SHAPE file type: 
+    // this is the only supported file type in the GEO DATA class:
+    
+    public static final String MIME_TYPE_GEO_SHAPE = "application/zipped-shapefile";
+    
     public static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
     public static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
     
@@ -189,7 +195,7 @@ public class FileUtil implements java.io.Serializable  {
             if (fileType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)){
                 return ShapefileHandler.SHAPEFILE_FILE_TYPE_FRIENDLY_NAME;
             }
-            if (fileType.indexOf(";") != -1) {
+            if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
@@ -206,7 +212,7 @@ public class FileUtil implements java.io.Serializable  {
         String fileType = dataFile.getContentType();
         
         if (fileType != null) {
-            if (fileType.indexOf(";") != -1) {
+            if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
 
@@ -231,7 +237,7 @@ public class FileUtil implements java.io.Serializable  {
         String fileType = dataFile.getOriginalFileFormat();
          
         if (fileType != null && !fileType.equals("")) {
-            if (fileType.indexOf(";") != -1) {
+            if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
@@ -445,7 +451,7 @@ public class FileUtil implements java.io.Serializable  {
                     if (xmlr.getLocalName().equals("graphml")) {
                         String schema = xmlr.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
                         logger.fine("schema = "+schema);
-                        if (schema!=null && schema.indexOf("http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd")!=-1){
+                        if (schema!=null && schema.contains("http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd")){
                             logger.fine("graphML is true");
                             isGraphML = true;
                         }
@@ -471,11 +477,11 @@ public class FileUtil implements java.io.Serializable  {
     public static final long ONE_GB = ONE_KB * ONE_MB;
  
     public static String getFriendlySize(Long filesize) {
-        if (filesize == null || filesize.longValue() < 0) {
+        if (filesize == null || filesize < 0) {
             return "unknown";
         }
 
-        long bytesize = filesize.longValue();
+        long bytesize = filesize;
         String displaySize;
 
         if (bytesize / ONE_GB > 0) {
@@ -669,10 +675,7 @@ public class FileUtil implements java.io.Serializable  {
                 uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
                 File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
                 datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm());
-            } catch (IOException ioex) {
-                datafile = null;
-            } catch (FileExceedsMaxSizeException femsx) {
-                // not a fatal error - we'll still try to add this file as is, further below
+            } catch (IOException | FileExceedsMaxSizeException ioex) {
                 datafile = null;
             } finally {
                 if (uncompressedIn != null) {
@@ -1006,7 +1009,7 @@ public class FileUtil implements java.io.Serializable  {
         datafile.getFileMetadatas().add(fmd);
         if (addToDataset) {
             if (version.getFileMetadatas() == null) {
-                version.setFileMetadatas(new ArrayList());
+                version.setFileMetadatas(new ArrayList<>());
             }
             version.getFileMetadatas().add(fmd);
             fmd.setDatasetVersion(version);
@@ -1332,6 +1335,45 @@ public class FileUtil implements java.io.Serializable  {
         return file;
     }
 
+    /* 
+     * This method tells you if thumbnail generation is *supported* 
+     * on this type of file. i.e., if true, it does not guarantee that a thumbnail 
+     * can/will be generated; but it means that we can try. 
+     */
+    public static boolean isThumbnailSupported (DataFile file) {
+        if (file == null) {
+            return false;
+        }
+        
+        if (file.isHarvested() || "".equals(file.getStorageIdentifier())) {
+            return false;
+        }
+        
+        String contentType = file.getContentType();
+        
+        // Some browsers (Chrome?) seem to identify FITS files as mime
+        // type "image/fits" on upload; this is both incorrect (the official
+        // mime type for FITS is "application/fits", and problematic: then
+        // the file is identified as an image, and the page will attempt to 
+        // generate a preview - which of course is going to fail...
+        if (MIME_TYPE_FITSIMAGE.equalsIgnoreCase(contentType)) {
+            return false;
+        }
+        // besides most image/* types, we can generate thumbnails for
+        // pdf and "world map" files:
+        
+        return (contentType != null && 
+                (contentType.startsWith("image/") || 
+                contentType.equalsIgnoreCase("application/pdf") ||
+                (file.isTabularData() && file.hasGeospatialTag()) ||
+                contentType.equalsIgnoreCase(MIME_TYPE_GEO_SHAPE)));
+    }
+    
+    
+    /* 
+     * The method below appears to be unnecessary; 
+     * it duplicates the method generateImageThumbnailFromFileAsBase64() from ImageThumbConverter;
+     * plus it creates an unnecessary temp file copy of the source file.    
     public static String rescaleImage(File file) throws IOException {
         if (file == null) {
             logger.info("file was null!!");
@@ -1352,10 +1394,11 @@ public class FileUtil implements java.io.Serializable  {
         File resizedFile = new File(pathToResizedFile);
         return ImageThumbConverter.getImageAsBase64FromFile(resizedFile);
     }
+    */
     
     public static DatasetThumbnail getThumbnail(DataFile file) {
 
-        String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(file, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
+        String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(file, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, file);
         return defaultDatasetThumbnail;
 

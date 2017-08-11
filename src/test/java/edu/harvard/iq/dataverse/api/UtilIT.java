@@ -29,6 +29,9 @@ import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -57,8 +60,14 @@ public class UtilIT {
         return restAssuredBaseUri;
     }
 
-    public static Response createRandomUser() {
-        String randomString = getRandomUsername();
+    /**
+     * Begin each username with a prefix
+     * 
+     * @param usernamePrefix
+     * @return 
+     */
+    public static Response createRandomUser(String usernamePrefix) {
+        String randomString = getRandomUsername(usernamePrefix);
         logger.info("Creating random test user " + randomString);
         String userAsJson = getUserAsJsonString(randomString, randomString, randomString);
         String password = getPassword(userAsJson);
@@ -67,6 +76,13 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .post("/api/builtin-users?key=" + BUILTIN_USER_KEY + "&password=" + password);
         return response;
+    }
+
+    
+    
+    public static Response createRandomUser() {
+        
+        return createRandomUser("user");
     }
 
     private static String getUserAsJsonString(String username, String firstName, String lastName) {
@@ -113,12 +129,31 @@ public class UtilIT {
         return password;
     }
 
+    private static String getRandomUsername(String usernamePrefix) {
+
+        if (usernamePrefix == null){
+            return getRandomUsername();
+        }
+        return usernamePrefix + getRandomIdentifier().substring(0, 8);
+    }
+
+    public static String getRandomString(int length) {
+        if (length < 0){
+            length = 3;
+        }
+        return getRandomIdentifier().substring(0, length+1);
+    }
+
     private static String getRandomUsername() {
         return "user" + getRandomIdentifier().substring(0, 8);
     }
 
     public static String getRandomIdentifier() {
         return UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    public static String getRandomDvAlias() {
+        return "dv" + getRandomIdentifier();
     }
 
     static String getUsernameFromResponse(Response createUserResponse) {
@@ -223,6 +258,27 @@ public class UtilIT {
 
     private static String getDatasetJson() {
         File datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1.json");
+        try {
+            String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+            return datasetVersionAsJson;
+        } catch (IOException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    static Response createDatasetViaNativeApi(String dataverseAlias, String pathToJsonFile, String apiToken) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+        Response createDatasetResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType("application/json")
+                .post("/api/dataverses/" + dataverseAlias + "/datasets");
+        return createDatasetResponse;
+    }
+
+    private static String getDatasetJson(String pathToJsonFile) {
+        File datasetVersionJson = new File(pathToJsonFile);
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
             return datasetVersionAsJson;
@@ -462,7 +518,7 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
     }
-
+    
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
@@ -548,11 +604,55 @@ public class UtilIT {
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/dataverse/" + alias);
     }
 
+    static Response publishDataverseViaNativeApi(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .post("/api/dataverses/" + dataverseAlias + "/actions/:publish");
+    }
+
+    static Response submitDatasetForReview(String datasetPersistentId, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.post("/api/datasets/:persistentId/submitForReview?persistentId=" + datasetPersistentId);
+    }
+
+    static Response returnDatasetToAuthor(String datasetPersistentId, JsonObject jsonObject, String apiToken) {
+        String jsonIn = jsonObject.toString();
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                    .body(jsonIn)
+                    .contentType("application/json");
+        }
+        return requestSpecification
+                .post("/api/datasets/:persistentId/returnToAuthor?persistentId=" + datasetPersistentId);
+    }
+
+    static Response getNotifications(String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/notifications/all");
+    }
+
     static Response nativeGetUsingPersistentId(String persistentId, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/datasets/:persistentId/?persistentId=" + persistentId);
         return response;
+    }
+
+    static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/:latest-published/metadata/citation?persistentId=" + persistentId);
     }
 
     static Response makeSuperUser(String username) {
@@ -580,6 +680,47 @@ public class UtilIT {
         return response;
     }
 
+    /**
+     * Used to the test the filter Authenticated Users API endpoint
+     * 
+     * Note 1 : All params are optional for endpoint to work EXCEPT superUserApiToken
+     * Note 2 : sortKey exists in API call but not currently used
+     * 
+     * @param apiToken
+     * @return 
+     */
+    static Response filterAuthenticatedUsers(String superUserApiToken,
+                                             String searchTerm,
+                                             Integer selectedPage,
+                                             Integer itemsPerPage
+    //                                         String sortKey
+    ) {
+
+       
+        List<String> queryParams = new ArrayList<String>();
+        if (searchTerm != null){
+            queryParams.add("searchTerm=" + searchTerm);
+        }
+        if (selectedPage != null){
+            queryParams.add("selectedPage=" + selectedPage.toString());
+        }
+        if (itemsPerPage != null){
+            queryParams.add("itemsPerPage=" + itemsPerPage.toString());
+        }
+
+        String queryString = "";
+        if (queryParams.size() > 0){
+            queryString = "?" + String.join("&", queryParams);
+        }
+               
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, superUserApiToken)
+                .get("/api/admin/list-users" + queryString);
+        
+        return response;
+    }
+
+    
     static Response getAuthProviders(String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -616,6 +757,14 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(data)
                 .put("/api/admin/authenticatedUsers/convert/builtin2oauth");
+        return response;
+    }
+    
+    static Response restrictFile(Long datafileId, boolean restrict, String apiToken){
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(restrict)
+                .put("/api/files/" + datafileId + "/restrict");
         return response;
     }
 
@@ -684,10 +833,30 @@ public class UtilIT {
                 .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
-    static Response search(String query, String apiToken) {
+    static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
+//        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/search?q=" + query);
+                //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+                .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+    }
+
+    static Response search(String query, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/search?q=" + query);
+    }
+
+    static Response searchAndShowFacets(String query, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/search?q=" + query + "&show_facets=true");
     }
 
     static Response indexClear() {
@@ -878,6 +1047,15 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/files/" + fileId + "/map?key=" + apiToken);
+    }
+
+    static Response getRsyncScript(String datasetPersistentId, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/:persistentId/dataCaptureModule/rsync?persistentId=" + datasetPersistentId);
     }
 
     @Test

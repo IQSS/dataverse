@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -95,6 +96,9 @@ public class AuthenticationServiceBean {
     @EJB
     PasswordResetServiceBean passwordResetServiceBean;
 
+    @EJB
+    UserServiceBean userService; 
+        
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -321,13 +325,17 @@ public class AuthenticationServiceBean {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
+            if (user != null){
+                user = userService.updateLastLogin(user);
+            }
+            
             /**
              * @todo Why does a method called "authenticate" have the potential
              * to call "createAuthenticatedUser"? Isn't the creation of a user a
              * different action than authenticating?
              *
              * @todo Wouldn't this be more readable with if/else rather than
-             * ternary?
+             * ternary?  (please)
              */
             return ( user == null ) ?
                 AuthenticationServiceBean.this.createAuthenticatedUser(
@@ -433,14 +441,12 @@ public class AuthenticationServiceBean {
     }
     
     public AuthenticatedUser save( AuthenticatedUser user ) {
-        user.setModificationTime(getCurrentTimestamp());
         em.persist(user);
         em.flush();
         return user;
     }
     
     public AuthenticatedUser update( AuthenticatedUser user ) {
-        user.setModificationTime(getCurrentTimestamp());
         return em.merge(user);
     }
     
@@ -493,12 +499,16 @@ public class AuthenticationServiceBean {
      * @throws EJBException which may wrap an ConstraintViolationException if the proposed user does not pass bean validation.
      */
     public AuthenticatedUser createAuthenticatedUser(UserRecordIdentifier userRecordId,
-                                                     String proposedAuthenticatedUserIdentifier,
-                                                     AuthenticatedUserDisplayInfo userDisplayInfo,
-                                                     boolean generateUniqueIdentifier) {
+            String proposedAuthenticatedUserIdentifier,
+            AuthenticatedUserDisplayInfo userDisplayInfo,
+            boolean generateUniqueIdentifier) {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
-        authenticatedUser.applyDisplayInfo(userDisplayInfo);
+        // set account creation time & initial login time (same timestamp)
+        authenticatedUser.setCreatedTime(new Timestamp(new Date().getTime()));
+        authenticatedUser.setLastLoginTime(authenticatedUser.getCreatedTime());
         
+        authenticatedUser.applyDisplayInfo(userDisplayInfo);
+
         // we have no desire for leading or trailing whitespace in identifiers
         if (proposedAuthenticatedUserIdentifier != null) {
             proposedAuthenticatedUserIdentifier = proposedAuthenticatedUserIdentifier.trim();
@@ -535,7 +545,7 @@ public class AuthenticationServiceBean {
              * better to do something like "startConfirmEmailProcessForNewUser". */
             confirmEmailService.createToken(authenticatedUser);
         }
-
+        
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
             .setInfo(authenticatedUser.getIdentifier()));
 

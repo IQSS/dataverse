@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -13,6 +14,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.util.ResourceBundle;
@@ -41,7 +44,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         updateParentDataversesSubjectsField(theDataset, ctxt);
-        publicizeExternalIdentifier(theDataset, ctxt, doiProvider);
+        publicizeExternalIdentifier(theDataset, ctxt);
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
@@ -101,23 +104,14 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
 
-    private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt, String doiProvider) throws CommandException {
+    private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = theDataset.getProtocol();
-        if (protocol.equals("doi")) {
-            switch (doiProvider) {
-                case "EZID":
-                    ctxt.doiEZId().publicizeIdentifier(dataset);
-                    break;
-                case "DataCite":
-                    try {
-                        ctxt.doiDataCite().publicizeIdentifier(dataset);
-                    } catch (IOException io) {
-                        throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
-                    } catch (Exception e) {
-                        throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
-                    }
-                    break;
-            }
+        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
+        if (idServiceBean!= null )
+        try {
+            idServiceBean.publicizeIdentifier(dataset);
+        } catch (Throwable e) {
+            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
         }
     }
 }

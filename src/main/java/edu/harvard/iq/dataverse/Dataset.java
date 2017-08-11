@@ -74,13 +74,13 @@ import org.hibernate.validator.constraints.NotBlank;
         uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
 public class Dataset extends DvObjectContainer {
     private static final Logger logger = Logger.getLogger(Dataset.class.getCanonicalName());
-    
+
     public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
     @OrderBy("id")
-    private List<DataFile> files = new ArrayList();
+    private List<DataFile> files = new ArrayList<>();
 
     private String protocol;
     private String authority;
@@ -98,9 +98,9 @@ public class Dataset extends DvObjectContainer {
     
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("versionNumber DESC, minorVersionNumber DESC")
-    private List<DatasetVersion> versions = new ArrayList();
-    
-    @OneToOne(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetVersion> versions = new ArrayList<>();
+
+    @OneToOne(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     private DatasetLock datasetLock;
     
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
@@ -149,9 +149,9 @@ public class Dataset extends DvObjectContainer {
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(this);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-        datasetVersion.setFileMetadatas(new ArrayList());
-        datasetVersion.setVersionNumber(new Long(1));
-        datasetVersion.setMinorVersionNumber(new Long(0));
+        datasetVersion.setFileMetadatas(new ArrayList<>());
+        datasetVersion.setVersionNumber((long) 1);
+        datasetVersion.setMinorVersionNumber((long) 0);
         versions.add(datasetVersion);
     }
 
@@ -171,6 +171,11 @@ public class Dataset extends DvObjectContainer {
         this.authority = authority;
     }
 
+    /**
+     * returns dataset identifier.
+     * For example, a dataset with database id (primary key) 3, persistent ID
+     * doi:10.5072/FK2/abcde, this should return "abcde".
+     */
     public String getIdentifier() {
         return identifier;
     }
@@ -289,7 +294,7 @@ public class Dataset extends DvObjectContainer {
     private DatasetVersion createNewDatasetVersion(Template template) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
-        dsv.setFileMetadatas(new ArrayList());
+        dsv.setFileMetadatas(new ArrayList<>());
         DatasetVersion latestVersion;
 
         //if the latest version has values get them copied over
@@ -335,12 +340,23 @@ public class Dataset extends DvObjectContainer {
             }
         }
 
-        getVersions().add(0, dsv);
+        // I'm adding the version to the list so it will be persisted when
+        // the study object is persisted.
+        if (template == null) {
+            getVersions().add(0, dsv);
+        } else {
+            this.setVersions(new ArrayList<>());
+            getVersions().add(0, dsv);
+        }
+
         dsv.setDataset(this);
         return dsv;
     }
 
-
+    /**
+     * The "edit version" is the most recent *draft* of a dataset, and if the
+     * latest version of a dataset is published, a new draft will be created.
+     */
     public DatasetVersion getEditVersion() {
         return getEditVersion(null);
     }
@@ -365,7 +381,7 @@ public class Dataset extends DvObjectContainer {
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setDataset(this);
         dsv.initDefaultValues();
-        setVersions(new ArrayList());
+        this.setVersions(new ArrayList<>());
         getVersions().add(0, dsv);
         return dsv;
     }
@@ -375,7 +391,7 @@ public class Dataset extends DvObjectContainer {
             return getVersions().get(0).getReleaseTime();
         } else {
             for (DatasetVersion version : this.getVersions()) {
-                if (version.isReleased() && version.getMinorVersionNumber().equals(new Long(0))) {
+                if (version.isReleased() && version.getMinorVersionNumber().equals((long) 0)) {
                     return version.getReleaseTime();
                 }
             }
@@ -430,10 +446,10 @@ public class Dataset extends DvObjectContainer {
         if (newCategoryNames != null) {
             Collection<String> oldCategoryNames = getCategoryNames();
 
-            for (int i = 0; i < newCategoryNames.size(); i++) {
-                if (!oldCategoryNames.contains(newCategoryNames.get(i))) {
+            for (String newCategoryName : newCategoryNames) {
+                if (!oldCategoryNames.contains(newCategoryName)) {
                     DataFileCategory newCategory = new DataFileCategory();
-                    newCategory.setName(newCategoryNames.get(i));
+                    newCategory.setName(newCategoryName);
                     newCategory.setDataset(this);
                     this.addFileCategory(newCategory);
                 }
@@ -442,11 +458,11 @@ public class Dataset extends DvObjectContainer {
     }
 
     public DataFileCategory getCategoryByName(String categoryName) {
-        if (categoryName != null && !categoryName.equals("")) {
+        if (categoryName != null && !categoryName.isEmpty()) {
             if (dataFileCategories != null) {
-                for (int i = 0; i < dataFileCategories.size(); i++) {
-                    if (categoryName.equals(dataFileCategories.get(i).getName())) {
-                        return dataFileCategories.get(i);
+                for (DataFileCategory dataFileCategory : dataFileCategories) {
+                    if (categoryName.equals(dataFileCategory.getName())) {
+                        return dataFileCategory;
                     }
                 }
             }
@@ -703,6 +719,18 @@ public class Dataset extends DvObjectContainer {
 
     public DatasetThumbnail getDatasetThumbnail() {
         return DatasetUtil.getThumbnail(this);
+    }
+
+    /** 
+     * Handle the case where we also have the datasetVersionId.
+     * This saves trying to find the latestDatasetVersion, and 
+     * other costly queries, etc.
+     * 
+     * @param datasetVersionId
+     * @return 
+     */
+    public DatasetThumbnail getDatasetThumbnail(DatasetVersion datasetVersion) {
+        return DatasetUtil.getThumbnail(this, datasetVersion);
     }
 
 }

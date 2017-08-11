@@ -1,9 +1,36 @@
 Geoconnect and WorldMap
 =======================
 
-.. contents:: :local:
+One of the optional components listed under "Architecture and Components" in the :doc:`/installation/prep` section of the Installation Guide is `Geoconnect <https://github.com/IQSS/geoconnect>`_, a piece of middleware that allows Dataverse users to create maps in `WorldMap <http://worldmap.harvard.edu>`_ based on geospatial data stored in Dataverse. For more details on the feature from the user perspective, see the :doc:`/user/data-exploration/worldmap` section of the User Guide.
 
-One of the optional components listed under "Architecture and Components" in the :doc:`/installation/prep` section of the Installation Guide is `Geoconnect <https://github.com/IQSS/geoconnect>`_, piece of middleware that allows Dataverse users to create maps in `WorldMap <http://worldmap.harvard.edu>`_ based on geospatial data stored in Dataverse. For more details on the feature from the user perspective, see the :doc:`/user/data-exploration/worldmap` section of the User Guide.
+.. contents:: |toctitle|
+	:local:
+
+Update "mapitlink"
+------------------
+
+SQL commands to point a Dataverse installation at different Geoconnect servers:
+
+
+**Geoconnect Production** *geoconnect.datascience.iq.harvard.edu*
+
+.. code-block:: sql
+
+    update worldmapauth_tokentype set mapitlink = 'https://geoconnect.datascience.iq.harvard.edu/shapefile/map-it', hostname='geoconnect.datascience.iq.harvard.edu' where name = 'GEOCONNECT';
+
+**Heroku Test** *geoconnect-dev.herokuapp.com*
+
+.. code-block:: sql
+
+    update worldmapauth_tokentype set mapitlink = 'https://geoconnect-dev.herokuapp.com/shapefile/map-it', hostname='geoconnect-dev.herokuapp.com' where name = 'GEOCONNECT';
+
+
+**View Current Settings**
+
+.. code-block:: sql
+
+    SELECT * from worldmapauth_tokentype;
+
 
 Removing Dead Explore Links
 ---------------------------

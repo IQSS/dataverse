@@ -21,7 +21,7 @@ echo  "- Enabling Geoconnect"
 curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectCreateEditMaps"
 curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectViewMaps"
 echo  "- Setting system email"
-curl -X PUT -d "Dataverse Support <support@dataverse.org>" http://localhost:8080/api/admin/settings/:SystemEmail
+curl -X PUT -d "Harvard Dataverse Support <support@dataverse.org>" http://localhost:8080/api/admin/settings/:SystemEmail
 curl -X PUT -d ", The President &#38; Fellows of Harvard College" http://localhost:8080/api/admin/settings/:FooterCopyright
 echo "- Setting up the Harvard Shibboleth institutional group"
 curl -s -X POST -H 'Content-type:application/json' --upload-file data/shibGroupHarvard.json "$SERVER/admin/groups/shib?key=$adminKey"

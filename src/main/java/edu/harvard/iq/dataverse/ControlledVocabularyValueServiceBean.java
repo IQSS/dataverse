@@ -5,13 +5,12 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -27,7 +26,7 @@ public class ControlledVocabularyValueServiceBean implements java.io.Serializabl
     public List<ControlledVocabularyValue> findByDatasetFieldTypeId(Long dsftId) {
 
         String queryString = "select o from ControlledVocabularyValue as o where o.datasetFieldType.id = " + dsftId + " ";
-        Query query = em.createQuery(queryString);
+        TypedQuery<ControlledVocabularyValue> query = em.createQuery(queryString, ControlledVocabularyValue.class);
         return query.getResultList();
         
     }

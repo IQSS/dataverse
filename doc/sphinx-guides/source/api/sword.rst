@@ -3,6 +3,12 @@ SWORD API
 
 SWORD_ stands for "Simple Web-service Offering Repository Deposit" and is a "profile" of AtomPub (`RFC 5023`_) which is a RESTful API that allows non-Dataverse software to deposit files and metadata into a Dataverse installation. :ref:`client-libraries` are available in Python, Java, R, Ruby, and PHP.
 
+.. contents:: |toctitle|
+    :local:
+
+About
+-----
+
 Introduced in Dataverse Network (DVN) `3.6 <http://guides.dataverse.org/en/3.6.2/dataverse-api-main.html#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs continue to work (with deprecation warnings). Due to architectural changes and security improvements (especially the introduction of API tokens) in Dataverse 4.0, a few backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
 
 Dataverse implements most of SWORDv2_, which is specified at http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html . Please reference the `SWORDv2 specification`_ for expected HTTP status codes (i.e. 201, 204, 404, etc.), headers (i.e. "Location"), etc. For a quick introduction to SWORD, the two minute video at http://cottagelabs.com/news/intro-to-sword-2 is recommended.
@@ -16,8 +22,6 @@ As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse 4.0 datas
 .. _RFC 5023: https://tools.ietf.org/html/rfc5023
 
 .. _SWORDv2 specification: http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html
-
-.. contents::
 
 .. _incompatible:
 
@@ -223,7 +227,7 @@ Client libraries
 
 - Python: https://github.com/swordapp/python-client-sword2
 - Java: https://github.com/swordapp/JavaClient2.0
-- R: https://github.com/ropensci/dvn
+- R: https://github.com/IQSS/dataverse-client-r
 - Ruby: https://github.com/swordapp/sword2ruby
 - PHP: https://github.com/swordapp/swordappv2-php-library
 

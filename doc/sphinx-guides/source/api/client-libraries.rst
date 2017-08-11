@@ -5,6 +5,9 @@ Currently there are client libraries for Python, R, and Java that can be used to
 
 Because Dataverse is a SWORD server, additional client libraries exist for Java, Ruby, and PHP per the :doc:`/api/sword` page.
 
+.. contents:: |toctitle|
+	:local:
+
 Python
 ------
 
@@ -15,7 +18,7 @@ https://github.com/IQSS/dataverse-client-python is the offical Python package fo
 R
 -
 
-https://github.com/IQSS/dataverse-client-r is the official R package for Dataverse APIs.
+https://github.com/IQSS/dataverse-client-r is the official R package for Dataverse APIs. The latest release can be installed from `CRAN <https://cran.r-project.org/package=dataverse>`_.
 
 It was created by `Thomas Leeper <http://thomasleeper.com>`_ whose dataverse can be found at https://dataverse.harvard.edu/dataverse/leeper
 

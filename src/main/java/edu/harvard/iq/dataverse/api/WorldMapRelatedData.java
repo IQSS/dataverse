@@ -249,10 +249,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
             
         // Redirect to geoconnect url
- //       String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH + dfile.getId();
-        String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH;
+        String callback_url = systemConfig.getDataverseSiteUrl() + GET_WORLDMAP_DATAFILE_API_PATH;
         String redirect_url_str = token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
-        //String redirect_url_str = TokenApplicationType.LOCAL_DEV_MAPIT_LINK + "/" +  token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
+
         URI redirect_uri;
         
         try {
@@ -265,7 +264,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
     }
     
-     private String getServerNamePort(HttpServletRequest request){
+    @Deprecated
+    private String getServerNamePort(HttpServletRequest request){
         if (request == null){
             return "";
         }
@@ -453,7 +453,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //------------------------------------
         // Dataverse URLs to this server 
         //------------------------------------
-        String serverName =  this.getServerNamePort(request);
+        String serverName = systemConfig.getDataverseSiteUrl();
         jsonData.add("return_to_dataverse_url", dset_version.getReturnToFilePageURL(serverName, dset, dfile));
         jsonData.add("datafile_download_url", dfile.getMapItFileDownloadURL(serverName));
 
@@ -736,11 +736,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
             return error(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");               
        };
 
-       // (7) For the DataFile, set "previewImageAvailable" to False
-       //
-       dfile.setPreviewImageAvailable(false);
-       dataFileService.save(dfile);
-     
        
        return ok("Map layer metadata deleted.");
         

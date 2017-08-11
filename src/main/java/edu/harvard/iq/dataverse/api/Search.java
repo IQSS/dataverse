@@ -201,13 +201,20 @@ public class Search extends AbstractApiBean {
          * see permission documents (all Solr documents, really) and we get a
          * NPE when trying to determine the DvObject type if their query matches
          * a permission document.
-         *
-         * @todo Check back on https://github.com/IQSS/dataverse/issues/1838 for
-         * when/if the Search API is opened up to not require a key.
          */
-        AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+        User userToExecuteSearchAs = GuestUser.get();
+        try {
+            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            if (authenticatedUser != null) {
+                userToExecuteSearchAs = authenticatedUser;
+            }
+        } catch (WrappedResponse ex) {
+            if (!tokenLessSearchAllowed()) {
+                throw ex;
+            }
+        }
         if (nonPublicSearchAllowed()) {
-            return authenticatedUser;
+            return userToExecuteSearchAs;
         } else {
             return GuestUser.get();
         }
@@ -216,6 +223,13 @@ public class Search extends AbstractApiBean {
     public boolean nonPublicSearchAllowed() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiNonPublicAllowed, safeDefaultIfKeyNotFound);
+    }
+
+    public boolean tokenLessSearchAllowed() {
+        boolean outOfBoxBehavior = false;
+        boolean tokenLessSearchAllowed = settingsSvc.isFalseForKey(SettingsServiceBean.Key.SearchApiRequiresToken, outOfBoxBehavior);
+        logger.fine("tokenLessSearchAllowed: " + tokenLessSearchAllowed);
+        return tokenLessSearchAllowed;
     }
 
     private boolean getDataRelatedToMe() {

@@ -99,7 +99,7 @@ public class RoleAssigneeServiceBean {
     }
 
     public List<AuthenticatedUser> getExplicitUsers(RoleAssignee ra) {
-        List<AuthenticatedUser> explicitUsers = new ArrayList();
+        List<AuthenticatedUser> explicitUsers = new ArrayList<>();
         if (ra instanceof AuthenticatedUser) {
             explicitUsers.add((AuthenticatedUser) ra);
         } else if (ra instanceof ExplicitGroup) {
@@ -140,7 +140,7 @@ public class RoleAssigneeServiceBean {
         }
         String roleAssigneeIdentifier = "@" + au.getUserIdentifier();
 
-        List<DataverseRole> retList = new ArrayList();
+        List<DataverseRole> retList = new ArrayList<>();
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s", "");   // remove spaces from string
         List<String> userGroups = getUserExplicitGroups(au);
         List<String> userRunTimeGroups = getUserRuntimeGroups(dataverseRequest);
@@ -192,8 +192,7 @@ public class RoleAssigneeServiceBean {
         qstr += getRoleIdListClause(roleIdList);
         qstr += ";";
         msg("qstr: " + qstr);
-        return em.createNativeQuery(qstr)
-                .getResultList();
+        return em.createNativeQuery(qstr).getResultList();
 
     }
 
@@ -222,8 +221,7 @@ public class RoleAssigneeServiceBean {
         qstr += ";";
         msg("qstr: " + qstr);
 
-        return em.createNativeQuery(qstr)
-                .getResultList();
+        return em.createNativeQuery(qstr).getResultList();
 
     }
 
@@ -292,8 +290,7 @@ public class RoleAssigneeServiceBean {
         qstr += ";";
         //msg("qstr: " + qstr);
 
-        return em.createNativeQuery(qstr)
-                .getResultList();
+        return em.createNativeQuery(qstr).getResultList();
 
     }
 
@@ -326,7 +323,7 @@ public class RoleAssigneeServiceBean {
     }
 
     private List<String> getUserRuntimeGroups(DataverseRequest dataverseRequest) {
-        List<String> retVal = new ArrayList();
+        List<String> retVal = new ArrayList<>();
 
         //Set<Group> groups = groupSvc.groupsFor(dataverseRequest, null);
         Set<Group> groups = groupSvc.collectAncestors(groupSvc.groupsFor(dataverseRequest));

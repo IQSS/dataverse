@@ -75,10 +75,13 @@ public class UserNotificationServiceBean {
     
     public void delete(UserNotification userNotification) {
         em.remove(em.merge(userNotification));
+    }    
+
+    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
+        sendNotification(dataverseUser, sendDate, type, objectId, "");
     }
     
-    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
-        
+    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);

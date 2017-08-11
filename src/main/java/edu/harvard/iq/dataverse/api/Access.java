@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.BibtexCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -26,15 +27,15 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
-import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
@@ -203,7 +204,8 @@ public class Access extends AbstractApiBean {
         
         DownloadInfo dInfo = new DownloadInfo(df);
 
-        if (dataFileService.thumbnailSupported(df)) {
+        logger.fine("checking if thumbnails are supported on this file.");
+        if (FileUtil.isThumbnailSupported(df)) {
             dInfo.addServiceAvailable(new OptionalAccessService("thumbnail", "image/png", "imageThumb=true", "Image Thumbnail (64x64)"));
         }
 
@@ -216,6 +218,7 @@ public class Access extends AbstractApiBean {
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
+        
         if (gbr != null){
             downloadInstance.setGbr(gbr);
             downloadInstance.setDataverseRequestService(dvRequestService);
@@ -225,6 +228,7 @@ public class Access extends AbstractApiBean {
             String value = uriInfo.getQueryParameters().getFirst(key);
             
             if (downloadInstance.isDownloadServiceSupported(key, value)) {
+                logger.fine("is download service supported? key="+key+", value="+value);
                 // this automatically sets the conversion parameters in 
                 // the download instance to key and value;
                 // TODO: I should probably set these explicitly instead. 
@@ -266,23 +270,17 @@ public class Access extends AbstractApiBean {
                     }
                 }
 
+                logger.fine("downloadInstance: "+downloadInstance.getConversionParam()+","+downloadInstance.getConversionParamValue());
+                
                 break;
             } else {
                 // Service unknown/not supported/bad arguments, etc.:
                 // TODO: throw new ServiceUnavailableException(); 
             }
-            
         }
+        
         /* 
-         * Provide content type header:
-         * (this will be done by the InstanceWriter class - ?)
-         */
-         
-        /* Provide "Access-Control-Allow-Origin" header:
-         * (may not be needed here... - that header was added specifically
-         * to get the data exploration app to be able to access the metadata
-         * API; may have been something specific to Vito's installation too
-         * -- L.A.)
+         * Provide "Access-Control-Allow-Origin" header:
          */
         response.setHeader("Access-Control-Allow-Origin", "*");
                 
@@ -550,60 +548,17 @@ public class Access extends AbstractApiBean {
         return Response.ok(stream).build();
     }
     
+    
+    /* 
+     * Geting rid of the tempPreview API - it's always been a big, fat hack. 
+     * the edit files page is now using the Base64 image strings in the preview 
+     * URLs, just like the search and dataset pages.
     @Path("tempPreview/{fileSystemId}")
     @GET
     @Produces({"image/png"})
-    public InputStream tempPreview(@PathParam("fileSystemId") String fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
+    public InputStream tempPreview(@PathParam("fileSystemId") String fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
-        String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
-        
-        String mimeTypeParam = uriInfo.getQueryParameters().getFirst("mimetype");
-        String imageThumbFileName = null;
-                
-        if ("application/pdf".equals(mimeTypeParam)) {
-            imageThumbFileName = ImageThumbConverter.generatePDFThumb(fileSystemName);
-        } else {
-            imageThumbFileName = ImageThumbConverter.generateImageThumb(fileSystemName);
-        }
-        
-        // TODO: 
-        // double-check that this temporary preview thumbnail gets deleted 
-        // once the file is saved "for real". 
-        // (or maybe we shouldn't delete it - but instead move it into the 
-        // permanent location... so that it doesn't have to be generated again?)
-        // -- L.A. Aug. 21 2014
-        // Update: 
-        // the temporary thumbnail file does get cleaned up now; 
-        // but yeay, maybe we should be saving it permanently instead, as 
-        // the above suggested...
-        // -- L.A. Feb. 28 2015
-        
-        
-        if (imageThumbFileName == null) {
-            return null; 
-        }
-        /* 
-         removing the old, non-vector default icon: 
-            imageThumbFileName = getWebappImageResource(DEFAULT_FILE_ICON);
-        }
-        */
-
-        InputStream in;
-
-        try {
-            in = new FileInputStream(imageThumbFileName);
-        } catch (Exception ex) {
-
-            return null;
-        }
-        return in;
-
-    }
+    }*/
     
     
     
@@ -621,18 +576,18 @@ public class Access extends AbstractApiBean {
             return null; 
         }
         
-        DataFileIO thumbnailDataAccess = null; 
+        StorageIO<DataFile> thumbnailDataAccess = null;
         
         try {
-            DataFileIO dataAccess = df.getAccessObject();
-            if (dataAccess != null && dataAccess.isLocalFile()) {
+            StorageIO<DataFile> dataAccess = df.getStorageIO();
+            if (dataAccess != null) { // && dataAccess.isLocalFile()) {
                 dataAccess.open();
 
                 if ("application/pdf".equalsIgnoreCase(df.getContentType())
                         || df.isImage()
                         || "application/zipped-shapefile".equalsIgnoreCase(df.getContentType())) {
 
-                    thumbnailDataAccess = ImageThumbConverter.getImageThumb((FileAccessIO) dataAccess, 48);
+                    thumbnailDataAccess = ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
                 }
             }
         } catch (IOException ioEx) {
@@ -662,7 +617,7 @@ public class Access extends AbstractApiBean {
         }
         
         //String imageThumbFileName = null; 
-        DataFileIO thumbnailDataAccess = null;
+        StorageIO thumbnailDataAccess = null;
         
         // First, check if this dataset has a designated thumbnail image: 
         
@@ -672,11 +627,10 @@ public class Access extends AbstractApiBean {
             if (logoDataFile != null) {
         
                 try {
-                    DataFileIO dataAccess = logoDataFile.getAccessObject();
-                    if (dataAccess != null && dataAccess.isLocalFile()) {
+                    StorageIO<DataFile> dataAccess = logoDataFile.getStorageIO();
+                    if (dataAccess != null) { // && dataAccess.isLocalFile()) {
                         dataAccess.open();
-
-                        thumbnailDataAccess = ImageThumbConverter.getImageThumb((FileAccessIO) dataAccess, 48);
+                        thumbnailDataAccess = ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
                     }
                 } catch (IOException ioEx) {
                     thumbnailDataAccess = null; 
@@ -692,12 +646,12 @@ public class Access extends AbstractApiBean {
                 if (!datasetVersion.getDataset().isHarvested()) {
                     thumbnailDataAccess = getThumbnailForDatasetVersion(datasetVersion); 
                 }
-            }
+            }*/
             
             if (thumbnailDataAccess != null && thumbnailDataAccess.getInputStream() != null) {
                 return thumbnailDataAccess.getInputStream();
             } 
-            */
+            
         }
 
         return null; 
@@ -707,7 +661,7 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({ "image/png" })
     public InputStream dvCardImage(@PathParam("dataverseId") Long dataverseId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
-        logger.info("entering dvCardImage");
+        logger.fine("entering dvCardImage");
         
         Dataverse dataverse = dataverseService.find(dataverseId);
         
@@ -723,13 +677,13 @@ public class Access extends AbstractApiBean {
         if (dataverse.getDataverseTheme()!=null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
             File dataverseLogoFile = getLogo(dataverse);
             if (dataverseLogoFile != null) {
-                logger.info("dvCardImage: logo file found");
+                logger.fine("dvCardImage: logo file found");
                 String logoThumbNailPath = null;
                 InputStream in = null;
 
                 try {
                     if (dataverseLogoFile.exists()) {
-                        logoThumbNailPath =  ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
+                        logoThumbNailPath =  ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
                         if (logoThumbNailPath != null) {
                             in = new FileInputStream(logoThumbNailPath);
                         }
@@ -738,7 +692,7 @@ public class Access extends AbstractApiBean {
                     in = null; 
                 }
                 if (in != null) {
-                    logger.info("dvCardImage: successfully obtained thumbnail for dataverse logo.");
+                    logger.fine("dvCardImage: successfully obtained thumbnail for dataverse logo.");
                     return in;
                 }    
             }
@@ -752,7 +706,7 @@ public class Access extends AbstractApiBean {
         // And we definitely don't want to be doing this for harvested 
         // dataverses:
         /*
-        DataFileIO thumbnailDataAccess = null; 
+        StorageIO thumbnailDataAccess = null; 
         
         if (!dataverse.isHarvested()) {
             for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverseId)) {
@@ -782,9 +736,9 @@ public class Access extends AbstractApiBean {
     // is too expensive! Instead we are now selecting an available thumbnail and
     // giving the dataset card a direct link to that file thumbnail. -- L.A., 4.2.2
     /*
-    private DataFileIO getThumbnailForDatasetVersion(DatasetVersion datasetVersion) {
+    private StorageIO getThumbnailForDatasetVersion(DatasetVersion datasetVersion) {
         logger.info("entering getThumbnailForDatasetVersion()");
-        DataFileIO thumbnailDataAccess = null;
+        StorageIO thumbnailDataAccess = null;
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
 
@@ -795,7 +749,7 @@ public class Access extends AbstractApiBean {
                 if (dataFile != null && dataFile.isImage()) {
 
                     try {
-                        DataFileIO dataAccess = dataFile.getAccessObject();
+                        StorageIO dataAccess = dataFile.getStorageIO();
                         if (dataAccess != null && dataAccess.isLocalFile()) {
                             dataAccess.open();
 
@@ -980,7 +934,7 @@ public class Access extends AbstractApiBean {
         if (session != null) {
             if (session.getUser() != null) {
                 if (session.getUser().isAuthenticated()) {
-                    user = (AuthenticatedUser) session.getUser();
+                    user = session.getUser();
                 } else {
                     logger.fine("User associated with the session is not an authenticated user.");
                     if (session.getUser() instanceof PrivateUrlUser) {

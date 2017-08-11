@@ -6,13 +6,13 @@
 Developer Guide
 =======================================================
 
-Contents:
+**Contents:**
 
 .. toctree::
 
    intro
    dev-environment
-   branching-strategy
+   version-control
    testing
    documentation
    debugging
@@ -20,4 +20,5 @@ Contents:
    making-releases
    tools
    unf/index
+   geospatial
    selinux

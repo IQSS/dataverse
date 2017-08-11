@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -59,10 +60,10 @@ public class TestCommandContext implements CommandContext {
 		return null;
 	}
 
-        @Override
-        public IngestServiceBean ingest() {
-            return null; 
-        }
+    @Override
+    public IngestServiceBean ingest() {
+        return null; 
+    }
         
 	@Override
 	public PermissionServiceBean permissions() {
@@ -109,10 +110,10 @@ public class TestCommandContext implements CommandContext {
 		return null;
 	} 
 
-        @Override
-        public DOIDataCiteServiceBean doiDataCite() {
-            return null;
-        }
+    @Override
+    public DOIDataCiteServiceBean doiDataCite() {
+        return null;
+    }
 
         @Override
 	public HandlenetServiceBean handleNet() {
@@ -198,4 +199,8 @@ public class TestCommandContext implements CommandContext {
         return null;
     }
 
+    @Override
+    public DataCaptureModuleServiceBean dataCaptureModule() {
+        return null;
+    }
 }

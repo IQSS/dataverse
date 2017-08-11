@@ -8,7 +8,8 @@ Preparation
 
 We'll try to get you up and running as quickly as possible, but we thought you might like to hear about your options. :)
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Choose Your Own Installation Adventure
 --------------------------------------
@@ -37,10 +38,11 @@ There are some community-lead projects to use configuration management tools suc
 
 The Dataverse development team is happy to "bless" additional community efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a repo under https://github.com/IQSS and managing team access.
 
-Dataverse permits a fair amount of flexibility in where you choose to install the various components. The diagram below shows a load balancer, multiple proxies and web servers, redundant database servers, and offloading of potentially resource intensive work to a separate server. A setup such as this is advanced enough to be considered out of scope for this guide but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
+Dataverse permits a fair amount of flexibility in where you choose to install the various components. The diagram below shows a load balancer, multiple proxies and web servers, redundant database servers, and offloading of potentially resource intensive work to a separate server. 
 
 |3webservers|
 
+A setup such as this is advanced enough to be considered out of scope for this guide but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
 
 .. _architecture:
 
@@ -56,7 +58,7 @@ When planning your installation you should be aware of the following components 
 - PostgreSQL: a relational database.
 - Solr: a search engine. A Dataverse-specific schema is provided.
 - SMTP server: for sending mail for password resets and other notifications.
-- Persistent identifier service: DOI support is provided. An EZID subscription or DataCite account is required for production use.
+- Persistent identifier service: DOI and Handle support are provided. Production use requires a registered DOI or Handle.net authority.
 
 There are a number of optional components you may choose to install or configure, including:
 
@@ -65,7 +67,7 @@ There are a number of optional components you may choose to install or configure
 - Apache: a web server that can "reverse proxy" Glassfish applications and rewrite HTTP traffic.
 - Shibboleth: an authentication system described in :doc:`shibboleth`. Its use with Dataverse requires Apache.
 - OAuth2: an authentication system described in :doc:`oauth2`.
-- Geoconnect: :doc:`/user/data-exploration/worldmap` describes the feature and the code can be downloaded from https://github.com/IQSS/geoconnect
+- Geoconnect: a system that allows users to create maps from geospatial files, described in :doc:`geoconnect`.
 
 System Requirements
 -------------------
@@ -98,7 +100,7 @@ Here are some questions to keep in the back of your mind as you test and move in
 - How do I want my users to log in to Dataverse? With local accounts? With Shibboleth/SAML? With OAuth providers such as ORCID, GitHub, or Google?
 - Do I want to to run Glassfish on the standard web ports (80 and 443) or do I want to "front" Glassfish with a proxy such as Apache or nginx? See "Network Ports" in the :doc:`config` section.
 - How many points of failure am I willing to tolerate? How much complexity do I want?
-- How much does it cost to subscribe to a service to create persistent identifiers such as DOIs?
+- How much does it cost to subscribe to a service to create persistent identifiers such as DOIs or handles?
 
 Next Steps
 ----------

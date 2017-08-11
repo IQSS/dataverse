@@ -5,8 +5,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -17,14 +17,20 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
-import java.util.ResourceBundle;
 
 /**
- *
+ * Kick-off a dataset publication process. The process may complete immediatly, 
+ * but may also result in a workflow being started and pending on some external 
+ * response. Either way, the process will be completed by an instance of 
+ * {@link FinalizeDatasetPublicationCommand}.
+ * 
+ * @see FinalizeDatasetPublicationCommand
+ * 
  * @author skraffmiller
  * @author michbarsinai
  */
@@ -32,8 +38,6 @@ import java.util.ResourceBundle;
 public class PublishDatasetCommand extends AbstractPublishDatasetCommand<PublishDatasetResult> {
 
     private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
-
-    private static final String DEFAULT_DOI_PROVIDER_KEY = "";
 
     boolean minorRelease;
     
@@ -47,9 +51,11 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     public PublishDatasetResult execute(CommandContext ctxt) throws CommandException {
 
         verifyCommandArguments();
+        registerExternalIdentifier(theDataset, ctxt);
 
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, DEFAULT_DOI_PROVIDER_KEY);
-        registerExternalIdentifier(theDataset, ctxt, doiProvider);
+        /* make an attempt to register if not registered */
+        String nonNullDefaultIfKeyNotFound = "";
+        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
 
         if (theDataset.getPublicationDate() == null) {
             // First Release
@@ -88,7 +94,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         if (ddu == null) {
             ddu = new DatasetVersionUser();
             ddu.setDatasetVersion(theDataset.getLatestVersion());
-            ddu.setAuthenticatedUser((AuthenticatedUser) getUser()); // safe, as user is verified as authenticated in #verifyCommandArguments
+            String id = getUser().getIdentifier();
+            id = id.startsWith("@") ? id.substring(1) : id;
+            AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
+            ddu.setAuthenticatedUser(au);
         }
         ddu.setLastUpdateDate((Timestamp) updateTime);
         ctxt.em().merge(ddu);
@@ -107,7 +116,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
     }
     
-    private void updateFiles(Timestamp updateTime, CommandContext ctxt) {
+    private void updateFiles(Timestamp updateTime, CommandContext ctxt) throws CommandException {
         for (DataFile dataFile : theDataset.getFiles()) {
             if (dataFile.getPublicationDate() == null) {
                 // this is a new, previously unpublished file, so publish by setting date
@@ -120,6 +129,54 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // set the files restriction flag to the same as the latest version's
             if (dataFile.getFileMetadata() != null && dataFile.getFileMetadata().getDatasetVersion().equals(theDataset.getLatestVersion())) {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
+            }
+            
+            
+            if (dataFile.isRestricted()) {
+                // A couple things need to happen if the file has been restricted: 
+                // 1. If there's a map layer associated with this shape file, or 
+                //    tabular-with-geo-tag file, all that map layer data (that 
+                //    includes most of the actual data in the file!) need to be
+                //    removed from WorldMap and GeoConnect, since anyone can get 
+                //    download the data from there;
+                // 2. If this (image) file has been assigned as the dedicated 
+                //    thumbnail for the dataset, we need to remove that assignment, 
+                //    now that the file is restricted. 
+
+                // Map layer: 
+                
+                if (ctxt.mapLayerMetadata().findMetadataByDatafile(dataFile) != null) {
+                    // (We need an AuthenticatedUser in order to produce a WorldMap token!)
+                    String id = getUser().getIdentifier();
+                    id = id.startsWith("@") ? id.substring(1) : id;
+                    AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
+                    try {
+                        ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(dataFile, authenticatedUser);
+
+                        // If that was successful, delete the layer on the Dataverse side as well:
+                        //SEK 4/20/2017                
+                        //Command to delete from Dataverse side
+                        ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));
+
+                        // RP - Bit of hack, update the datafile here b/c the reference to the datafile 
+                        // is not being passed all the way up/down the chain.   
+                        //
+                        dataFile.setPreviewImageAvailable(false);
+
+                    } catch (IOException ioex) {
+                        // We are not going to treat it as a fatal condition and bail out, 
+                        // but we will send a notification to the user, warning them about
+                        // the layer still being out there, un-deleted:
+                        ctxt.notifications().sendNotification(authenticatedUser, new Timestamp(new Date().getTime()), UserNotification.Type.MAPLAYERDELETEFAILED, dataFile.getFileMetadata().getId());
+                    }
+
+                }
+                
+                // Dataset thumbnail assignment: 
+                
+                if (dataFile.equals(theDataset.getThumbnailFile())) {
+                    theDataset.setThumbnailFile(null);
+                }
             }
         }
     }
@@ -159,14 +216,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
 
     
     private void notifyUsers(CommandContext ctxt, DvObject subject, UserNotification.Type messageType ) {
-        List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(subject);
-        for (RoleAssignment ra : ras) {
-            if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
-                for (AuthenticatedUser au : ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier()))) {
-                    ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), messageType, theDataset.getId());
-                }
-            }
-        }
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        ctxt.roles().directRoleAssignments(subject).stream()
+            .filter(  ra -> ra.getRole().permissions().contains(Permission.DownloadFile) )
+            .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
+            .distinct() // prevent double-send
+            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) );
     }
     
     /**
@@ -189,58 +244,37 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
      * @param doiProvider
      * @throws CommandException 
      */
-    private void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt, String doiProvider) throws CommandException {
-        String protocol = theDataset.getProtocol();
-        String authority = theDataset.getAuthority();
-        int attempts = 0;
+    private void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
+        IdServiceBean idServiceBean = IdServiceBean.getBean(theDataset.getProtocol(), ctxt);
         if (theDataset.getGlobalIdCreateTime() == null) {
-            if (protocol.equals("doi")) {
-                switch( doiProvider ) {
-                    case "EZID":
-                        String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                        while (!doiRetString.contains(theDataset.getIdentifier())
-                            && doiRetString.contains("identifier already exists")
-                            && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+          if (idServiceBean!=null) {
+            try {
+              if (!idServiceBean.alreadyExists(theDataset)) {
+                idServiceBean.createIdentifier(theDataset);
+                theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+              } else {
+                int attempts = 0;
 
-                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
-                            doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                            
-                            attempts++;
-                        }
-                        
-                        if (doiRetString.contains(theDataset.getIdentifier())) {
-                            theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                        } else if (doiRetString.contains("identifier already exists")) {
-                            throw new IllegalCommandException("EZID refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
-                        } else {
-                            throw new IllegalCommandException("Failed to create identifier (" + theDataset.getIdentifier() + ") with EZID: " + doiRetString, this);
-                        }     
-                        break;
-                        
-                    case "DataCite":
-                        try {
-                            while (ctxt.doiDataCite().alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-                                theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(protocol, authority, theDataset.getDoiSeparator()));
-                            }
-
-                            if (ctxt.doiDataCite().alreadyExists(theDataset)) {
-                                throw new IllegalCommandException("DataCite refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
-                            }
-                            ctxt.doiDataCite().createIdentifier(theDataset);
-                            theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                        } catch (Exception e) {
-                            throw new CommandException(ResourceBundle.getBundle("Bundle").getString("dataset.publish.error.datacite"), this);
-                        }
-                        break;
-                        
-                    default:
-                        throw new IllegalCommandException("This dataset may not be published because its DOI provider is not supported. Please contact Dataverse Support for assistance.", this);
-                        
+                while (idServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                  theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+                  attempts++;
                 }
-            } else {
-                throw new IllegalCommandException("This dataset may not be published because its external ID provider is not supported. Please contact Dataverse Support for assistance.", this);
+
+                if (idServiceBean.alreadyExists(theDataset)) {
+                  throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset;gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
+                }
+                idServiceBean.createIdentifier(theDataset);
+                theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+
+              }
+
+            } catch (Throwable e) {
+              throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
             }
+          } else {
+            throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);
+          }
+          
         }
     }
-
 }

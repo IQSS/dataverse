@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -56,6 +57,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
@@ -68,6 +70,18 @@ import javax.json.JsonObject;
  * @author michael
  */
 public class JsonPrinter {
+
+    private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
+
+    static SettingsServiceBean settingsService;
+
+    public JsonPrinter(SettingsServiceBean settingsService) {
+        this.settingsService = settingsService;
+    }
+
+    public JsonPrinter() {
+        this(null);
+    }
 
     public static final BriefJsonPrinter brief = new BriefJsonPrinter();
 
@@ -101,6 +115,9 @@ public class JsonPrinter {
                 .add("position", authenticatedUser.getPosition())
                 .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
                 .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
+                .add("createdTime", authenticatedUser.getCreatedTime())
+                .add("lastLoginTime", authenticatedUser.getLastLoginTime())
+                .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
                 .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     
@@ -350,7 +367,7 @@ public class JsonPrinter {
         }
         String rootDataverseName = root.getName();
         if (!StringUtil.isEmpty(rootDataverseName)) {
-            return rootDataverseName + " Dataverse";
+            return rootDataverseName;
         } else {
             return "";
         }
@@ -439,7 +456,7 @@ public class JsonPrinter {
         blockBld.add("displayName", block.getDisplayName());
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
-        DatasetFieldWalker.walk(fields, new DatasetFieldsToJson(fieldsArray));
+        DatasetFieldWalker.walk(fields, settingsService, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
         return blockBld;
@@ -510,6 +527,7 @@ public class JsonPrinter {
                 // categories - and we probably need to export them too!) -- L.A. 4.5
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
+                .add("restricted", fmd.isRestricted()) 
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())

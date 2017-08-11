@@ -1,6 +1,9 @@
 Finding and Using Data
 +++++++++++++++++++++++
 
+.. contents:: |toctitle|
+	:local:
+
 Finding Data
 =============
 
