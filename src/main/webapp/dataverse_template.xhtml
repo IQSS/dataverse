@@ -38,13 +38,14 @@
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <f:loadBundle basename="Bundle" var="bundle"/>
         <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
-        
+	<c:if test="#{not empty settingsWrapper.get(':StyleCustomizationFile')}">
         <ui:fragment>
             <style>
                 /* Custom CSS */
                 <o:resourceInclude path="/CustomizationFilesServlet?customFileType=style" />
             </style>
-        </ui:fragment>
+    </ui:fragment>
+    </c:if>
                 
         <ui:include src="dataverse_header.xhtml">
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
