@@ -34,10 +34,6 @@
                 if (window !== top) top.location = window.location;
             </script>
         </ui:fragment>
-    </h:head>
-    <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
-        <f:loadBundle basename="Bundle" var="bundle"/>
-        <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
 	<c:if test="#{not empty settingsWrapper.get(':StyleCustomizationFile')}">
         <ui:fragment>
             <style>
@@ -46,6 +42,11 @@
             </style>
     </ui:fragment>
     </c:if>
+    </h:head>
+    <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
+        <f:loadBundle basename="Bundle" var="bundle"/>
+	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>
+
                 
         <ui:include src="dataverse_header.xhtml">
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
