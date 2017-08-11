@@ -272,6 +272,9 @@ public class DatasetField implements Serializable {
         return returnString;
     }
 
+    /**
+     * despite the name, this returns a list of display values; not a list of values
+     */
     public List<String> getValues() {
         List<String> returnList = new ArrayList<>();
         if (!datasetFieldValues.isEmpty()) {
@@ -287,9 +290,33 @@ public class DatasetField implements Serializable {
         }
         return returnList;
     }
+    /**
+     * list of values (as opposed to display values).
+     * used for passing to solr for indexing
+     */
+    public List<String> getValues_nondisplay()
+    {
+        List returnList = new ArrayList();
+        if (!datasetFieldValues.isEmpty()) {
+            for (DatasetFieldValue dsfv : datasetFieldValues) {
+                returnList.add(dsfv.getValue());
+            }
+        } else {
+            for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
+                if (cvv != null && cvv.getStrValue() != null) {
+                    returnList.add(cvv.getStrValue());
+                }
+            }
+        }
+        return returnList;
+    }
 
+    /**
+     * appears to be only used for sending info to solr; changed to return values
+     * instead of display values
+     */
     public List<String> getValuesWithoutNaValues() {
-        List<String> returnList = getValues();
+        List<String> returnList = getValues_nondisplay();
         returnList.removeAll(Arrays.asList(NA_VALUE));
         return returnList;
     }
