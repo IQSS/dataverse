@@ -427,6 +427,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public void deleteAuxObject(String auxItemTag) throws IOException {
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
         String destinationKey = getDestinationKey(auxItemTag);
         try {
             DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, destinationKey);
