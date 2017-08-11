@@ -10,16 +10,23 @@
     <h:head>
     </h:head>
 
-    <h:body>
+    <h:body onunload="">
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name}"/>
             <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
+                <script>
+                window.onpageshow = function(event) {
+                    if (event.persisted) {
+                        window.location.reload(); 
+                    }
+                };
+                </script>
                 <f:loadBundle basename="Bundle" var="bundle"/>
                 <f:metadata>
-                    <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}" />
+                    <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0, max-stale=0')}" />
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
