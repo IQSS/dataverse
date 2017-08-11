@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -564,9 +564,9 @@ public class FilePage implements java.io.Serializable {
     public String getSwiftContainerName(){
         String swiftContainerName;
         try {
-            DataFileIO dataFileIO = getFile().getDataFileIO();
+            StorageIO<DataFile> storageIO = getFile().getStorageIO();
             try {
-                SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+                SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
                 swiftIO.open();
                 swiftContainerName = swiftIO.getSwiftContainerName();
                 logger.info("Swift container name: " + swiftContainerName);
@@ -671,11 +671,11 @@ public class FilePage implements java.io.Serializable {
 
     public String getPublicDownloadUrl() {
             try {
-            DataFileIO dataFileIO = getFile().getDataFileIO();
-            if (dataFileIO instanceof SwiftAccessIO) {
+                StorageIO<DataFile> storageIO = getFile().getStorageIO();
+            if (storageIO instanceof SwiftAccessIO) {
                 String fileDownloadUrl = null;
                 try {
-                    SwiftAccessIO swiftIO = (SwiftAccessIO)dataFileIO;
+                    SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
                     swiftIO.open();
                     fileDownloadUrl = swiftIO.getRemoteUrl();
                     logger.info("Swift url: " + fileDownloadUrl);
