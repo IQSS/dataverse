@@ -128,7 +128,7 @@ There are several advanced options available for certain file types.
 rsync Upload
 ------------
 
-rsync is typically used for synchronizing files and directories between two different systems, using SSH to connect rather than HTTP. Some Dataverse installations allow uploads using rsync, to facilitate extremely large file transfers in a reliable and secure manner.
+rsync is typically used for synchronizing files and directories between two different systems, using SSH to connect rather than HTTP. Some Dataverse installations allow uploads using rsync, to facilitate large file transfers in a reliable and secure manner.
 
 File Upload Script
 ~~~~~~~~~~~~~~~~~~
@@ -139,19 +139,19 @@ An rsync-enabled Dataverse installation has a file upload process that differs f
 
 2. On the dataset page, click the "+ Upload Files" button. This will open a box with instructions and a link to the file upload script.
 
-3. Make sure your files are ready for upload. You will need to have one directory that you can point the upload script to. All files in this directory and in any subdirectories will be uploaded. The directory structure will be preserved, and will be represented when your dataset is downloaded from Dataverse. Note that your data will be uploaded in the form of an rsync package, and each dataset can only host one such package. Be sure that all files you want to include are present before you upload.
+3. Make sure your files are ready for upload. You will need to have one directory that you can point the upload script to. All files in this directory and in any subdirectories will be uploaded. The directory structure will be preserved, and will be reproduced when your dataset is downloaded from Dataverse. Note that your data will be uploaded in the form of a data package, and each dataset can only host one such package. Be sure that all files you want to include are present before you upload.
 
 4. Download the rsync file upload script using the link in the Upload Files instruction box. There are no requirements for where you save the script; put it somewhere you can find it.
 
-5. To begin the upload process, you will need to run the script you downloaded. For this, you will have to go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to navigate to the directory where you saved the upload script, and run the command that the Upload Files instruction box provides. This will begin the upload script. Please note that this upload script will expire 7 days after you downloaded it. If it expires and you still need to use it, simply download the script script from Dataverse again.
+5. To begin the upload process, you will need to run the script you downloaded. For this, you will have to go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to navigate to the directory where you saved the upload script, and run the command that the Upload Files instruction box provides. This will begin the upload script. Please note that this upload script will expire 7 days after you downloaded it. If it expires and you still need to use it, simply download the script from Dataverse again.
 
-**Note:** Unlike other operating systems, Windows does not come with rsync installed by default. If you are using Windows, you may need to install rsync before the upload script will work. The developers of rsync recommend `cwRsync <https://www.itefix.net/cwrsync>`_ for Windows users.
+**Note:** Unlike other operating systems, Windows does not come with rsync supported by default. We have not optimized this feature for Windows users, but you may be able to get it working if you install the right Unix utilities. If you have found a way to get this feature working for you on Windows, please email support@dataverse.org with your solution and we'll add it to this guide.
 
-6. Follow the instructions provided by the upload script running in your terminal. If you need to cancel the upload, you can do so by canceling the script running in your terminal window.
+6. Follow the instructions provided by the upload script running in your terminal. If you need to cancel the upload, you can do so by canceling the script running in your terminal window. If your upload gets interrupted, you can resume it from the same point later.
 
-7. Once the upload script completes its job, Dataverse will begin ingesting your data upload. This may take some time depending on the file size of your upload. While your upload is ingesting, you will not be able to delete or publish your dataset, and you will not be able to upload more files. You will still be able to edit the dataset's metadata, though. Once ingest is complete, the disabled functions will be enabled again. During ingest, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..." 
+7. Once the upload script completes its job, Dataverse will begin processing your data upload and running a checksum validation. This may take some time depending on the file size of your upload. While your upload is processing, you will not be able to delete or publish your dataset, and you will not be able to upload more files. You will still be able to edit the dataset's metadata, though. Once processing is complete, the disabled functions will be enabled again. During processing, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..." 
 
-8. Once ingest is complete, you will be notified, and your data will be available for download on the dataset page. At this point, the upload feature for this dataset will be disabled. If you need to upload a new version of your data, you will need to delete the dataset's current data package and upload a new one.
+8. Once processing is complete, you will be notified. At this point you can publish your dataset and your data will be available for download on the dataset page. **Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact Dataverse Support at support@dataverse.org.
 
 Dataverse Package
 ~~~~~~~~~~~~~~~~~
