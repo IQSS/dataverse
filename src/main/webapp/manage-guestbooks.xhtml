@@ -21,8 +21,9 @@
             <ui:define name="body">
                 <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils" />
                 <h:form id="manageGuestbooksForm">
-                    <div class="form-group clearfix">
-                        <ui:fragment rendered="#{manageGuestbooksPage.dataverse.owner ne null}">
+                    <div class="row" id="resultsCountPaginatorBlock">
+                        <div class="col-xs-6" jsf:rendered="#{manageGuestbooksPage.dataverse.owner ne null}">
+                            <div class="results-count margin-top">
                             <label for="guestbookRoot" class="normal-text">
                                 <h:selectBooleanCheckbox id="guestbookRoot" value="#{manageGuestbooksPage.inheritGuestbooksValue}">
                                     <p:ajax update="@form" listener="#{manageGuestbooksPage.updateGuestbooksRoot}" />
@@ -31,20 +32,23 @@
                                     <f:param value="#{manageGuestbooksPage.dataverse.guestbookRootDataverseName}"/>
                                 </h:outputFormat>
                             </label>
-                        </ui:fragment>
-                        <div class="pull-right button-block">
-                            <h:outputLink type="button" styleClass="btn btn-default"
-                                          value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}">
-                                <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['dataset.manageGuestbooks.createBtn']}"/>
-                            </h:outputLink> 
-                            <ui:fragment rendered="#{manageGuestbooksPage.displayDownloadAll}">
-                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{manageGuestbooksPage.streamResponsesByDataverse()}"  >
-                                     #{bundle['dataset.manageGuestbooks.download.all.responses']}
-                                </button> 
-                            </ui:fragment>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <p class="button-block text-right">
+                                <h:outputLink type="button" styleClass="btn btn-default"
+                                              value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}">
+                                    <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['dataset.manageGuestbooks.createBtn']}"/>
+                                </h:outputLink>
+                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{manageGuestbooksPage.streamResponsesByDataverse()}"
+                                        jsf:rendered="#{manageGuestbooksPage.displayDownloadAll}">
+                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle['dataset.manageGuestbooks.download.all.responses']}
+                                </button>
+                            </p>
                         </div>
                     </div>
-                    <div>
+                    <div class="row">
+                        <div class="col-xs-12">
                         <div id="no-guestbooks-message" class="panel panel-default" jsf:rendered="#{empty manageGuestbooksPage.guestbooks}">
                             <div class="panel-body">
                                 <span class="help-block h3">#{bundle['dataset.manageGuestbooks.noGuestbooks.why.header']}</span>
@@ -69,6 +73,7 @@
                                 </p>
                             </div>
                         </div>
+                        
                         <p:dataTable id="allGuestbooks" styleClass="manageTable" var="guestbook" value="#{manageGuestbooksPage.guestbooks}"
                                      rendered="#{!empty manageGuestbooksPage.guestbooks}">
                             <p:column width="25%" sortBy="#{guestbook.name}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
@@ -105,13 +110,40 @@
                                                    update="@form,:messagePanel"
                                                    oncomplete="bind_tooltip_popover();"/>
                                     <div class="btn-group" role="group">
-                                        <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                        <ui:remove><p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
                                                        oncomplete="PF('viewGuestbook').show();bind_bsui_components();"
                                                        update=":manageGuestbooksForm"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
                                             <span class="glyphicon glyphicon-eye-open"></span>
-                                        </p:commandLink>
+                                        </p:commandLink></ui:remove>
+                                        
+                                        
+                                        <div class="btn-group">
+                                            <a href="#" type="button" class="btn btn-default dropdown-toggle bootstrap-button-tooltip" data-toggle="dropdown" aria-expanded="false"
+                                               title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
+                                                <span class="glyphicon glyphicon-eye-open"/> <span class="caret"></span>
+                                            </a>
+                                            <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                <li>
+                                                    <p:commandLink action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
+                                                                    oncomplete="PF('viewGuestbook').show();bind_bsui_components();"
+                                                                    update=":manageGuestbooksForm">
+                                                        #{bundle['dataset.manageGuestbooks.tab.action.btn.preview']}
+                                                    </p:commandLink>
+                                                </li>
+                                                
+                                                <ui:fragment rendered="#{guestbook.responseCount > 0}">
+                                                    <li>
+                                                        <h:outputLink value="/guestbook-responses.xhtml?dataverseId=#{manageGuestbooksPage.dataverse.id}&#38;guestbookId=#{guestbook.id}">
+                                                            <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}</span>
+                                                        </h:outputLink>
+                                                    </li>
+                                                </ui:fragment>
+                                            </ul>
+                                        </div>
+                                        
+                                        
                                         <h:outputLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                       value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}&#38;sourceId=#{guestbook.id}"
                                                       title="#{bundle['dataset.manageGuestbooks.tab.action.btn.copy']}">
@@ -131,14 +163,11 @@
                                             <span class="glyphicon glyphicon-trash"></span>
                                         </p:commandLink>
                                     </div>
-                                    <h:outputLink type="button" styleClass="btn btn-default"
-                                                  rendered="#{guestbook.responseCount > 0}"
-                                                  value="/guestbook-responses.xhtml?dataverseId=#{manageGuestbooksPage.dataverse.id}&#38;guestbookId=#{guestbook.id}">
-                                        <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}</span>
-                                    </h:outputLink>
+                                    
                                 </div>
                             </p:column>
                         </p:dataTable>
+                        </div>
                     </div>
                     <p:dialog header="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
@@ -158,11 +187,12 @@
                             </h:outputLink>
                         </div>
                         <div class="form-horizontal">
+                            <p class="help-block">
+                                #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}
+                            </p>
                             <div class="form-group">
                                 <label for="select_DatasetTemplate" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">
-                                        #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
-                                    </span>
+                                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
                                 </label>
                                 <div class="col-sm-7">
                                     <p class="form-control-static">
@@ -176,43 +206,40 @@
                                         #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
                                     </span>
                                 </label>
-                                <div class="col-sm-8" style="padding-top:8px">
-                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredAccountInformation}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.requiredAccountInformation']} 
-                                        <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.requiredAccountInformation}" var="q">
-                                            <li  style="padding-left:20px" >
-                                                <h:outputText value="#{q}"/>
-                                            </li>
-                                        </ui:repeat>
-                                        <br/>
-                                    </div>
-                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalAccountInformation}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.optionalAccountInformation']} 
-                                        <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.optionalAccountInformation}" var="q">
-                                            <li  style="padding-left:20px" >
-                                                <h:outputText value="#{q}"/>
-                                            </li>
-                                        </ui:repeat>
-                                        <br/>
-                                    </div>                                    
-                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredQuestionsList}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.requiredCustomQuestions']} 
-                                        <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.requiredQuestionsList}" var="q">
-                                            <li  style="padding-left:20px" >
-                                                <h:outputText value="#{q}"/>
-                                            </li>
-                                        </ui:repeat>
-                                        <br/>
-                                    </div>
-                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalQuestionsList}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.optionalCustomQuestions']} 
-                                        <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.optionalQuestionsList}" var="q">
-                                            <li  style="padding-left:20px" >
-                                                <h:outputText value="#{q}"/>
-                                            </li>
-                                        </ui:repeat>
-                                        <br/>
-                                    </div>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">
+                                        <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.accountInformation']}"/>
+                                        <ul>
+                                            <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.requiredAccountInformation}" var="ai">
+                                                <li>
+                                                    <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
+                                                </li>
+                                            </ui:repeat>
+                                            <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.optionalAccountInformation}" var="ai">
+                                                <li>
+                                                    <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
+                                                </li>
+                                            </ui:repeat>
+                                        </ul>
+                                    </p>
+                                    
+                                    <ui:fragment rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredQuestionsList or !empty manageGuestbooksPage.selectedGuestbook.optionalQuestionsList}">
+                                    <p class="form-control-static">
+                                        <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}"/>
+                                        <ul>
+                                            <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.requiredQuestionsList}" var="q">
+                                                <li>
+                                                    <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
+                                                </li>
+                                            </ui:repeat>
+                                            <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.optionalQuestionsList}" var="q">
+                                                <li>
+                                                    <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
+                                                </li>
+                                            </ui:repeat>
+                                        </ul>
+                                    </p>
+                                    </ui:fragment>
                                 </div>
                             </div>
                         </div>
