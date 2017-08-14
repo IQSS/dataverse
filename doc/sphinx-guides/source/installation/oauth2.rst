@@ -68,8 +68,8 @@ By default, the Log In page will show the "builtin" provider, but you can adjust
 ORCID Sandbox
 ^^^^^^^^^^^^^
 
-ORCID provides a sandbox registry, which may be of use for staging or development installations.
-This template can be used for configuring this setting (**this is not something you should do in a production environment**).
+ORCID provides a sandbox registry, which may be useful for staging, or for development installations.
+This template can be used for configuring this setting (**this is not something you should use in a production environment**):
 
 - :download:`orcid-sandbox.json <../_static/installation/files/root/auth-providers/orcid-sandbox.json>`
 
