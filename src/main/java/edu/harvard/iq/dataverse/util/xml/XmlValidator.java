@@ -66,35 +66,39 @@ public class XmlValidator {
         }
     }
 
-    public static boolean xmlWellFormed(String filename) throws ParserConfigurationException, SAXException, IOException {
+    /**
+     * @param filename XML file on disk to check for well-formedness.
+     * @return true if well-formed or an exception with a message about why if
+     * not.
+     * @throws Exception if the XML is not well-formed with a message about why.
+     */
+    public static boolean xmlWellFormed(String filename) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setValidating(false);
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
         builder.setErrorHandler(new SimpleErrorHandler());
-        // the "parse" method also validates XML, will throw an exception if misformatted
         try {
             Document document = builder.parse(new InputSource(filename));
             return true;
-        } catch (Exception ex) {
-            logger.info("XML is not well formed: " + ex);
-            return false;
+        } catch (SAXException ex) {
+            throw new Exception("XML is not well formed: " + ex.getMessage(), ex);
         }
 
     }
 
     public static class SimpleErrorHandler implements ErrorHandler {
 
+        @Override
         public void warning(SAXParseException e) throws SAXException {
-            System.out.println(e.getMessage());
         }
 
+        @Override
         public void error(SAXParseException e) throws SAXException {
-            System.out.println(e.getMessage());
         }
 
+        @Override
         public void fatalError(SAXParseException e) throws SAXException {
-            System.out.println(e.getMessage());
         }
     }
 }
