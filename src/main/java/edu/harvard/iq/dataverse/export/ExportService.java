@@ -64,8 +64,6 @@ public class ExportService {
         ExportService.settingsService = settingsService;
         if (service == null) {
             service = new ExportService();
-        } else {
-            service.loader.reload();
         }
         return service;
     }
