@@ -3707,10 +3707,10 @@ public class DatasetPage implements java.io.Serializable {
     /**
      * dataset description
      *
-     * @return title of workingVersion
+     * @return description of workingVersion
      */
     public String getDescription() {
-        assert (null != workingVersion);
+        // TODO: Switch to `getDescriptionPlainText()` when we are ready to QA this.
         return workingVersion.getDescription();
     }
 

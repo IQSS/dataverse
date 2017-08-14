@@ -609,12 +609,13 @@ public class DatasetVersion implements Serializable {
         //todo get "Production Date" from datasetfieldvalue table
         return "Production Date";
     }
-    
+
     /**
-     * datasetVersion Description
-     * @return a string with the description of the dataset
+     * @return A string with the description of the dataset as-is from the
+     * database (if available, or empty string) without passing it through
+     * methods such as stripAllTags, sanitizeBasicHTML or similar.
      */
-    public String getDescription() {
+    public String getDescriptionPristine() {
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
                 String descriptionString = "";
@@ -626,12 +627,35 @@ public class DatasetVersion implements Serializable {
                         }
                     }
                 }
-                return MarkupChecker.sanitizeBasicHTML(descriptionString);
+                logger.fine("pristine description: " + descriptionString);
+                return descriptionString;
             }
         }
         return "";
     }
     
+    /**
+     * @return A string with the description of the dataset that has been passed
+     * through the sanitizeBasicHTML method.
+     *
+     * FIXME: Rename this to something like getDescriptionSanitizedHtml(). This
+     * is the original and oldest method so for now we're keeping the name the
+     * same.
+     */
+    public String getDescription() {
+        String sanitized = MarkupChecker.sanitizeBasicHTML(getDescriptionPristine());
+        logger.fine("sanitized: " + sanitized);
+        return sanitized;
+    }
+
+    /**
+     * @return Strip out all A string with the description of the dataset that
+     * has been passed through the stripAllTags method to remove all HTML tags.
+     */
+    public String getDescriptionPlainText() {
+        return MarkupChecker.stripAllTags(getDescriptionPristine());
+    }
+
     public List<String[]> getDatasetContacts(){
         List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
