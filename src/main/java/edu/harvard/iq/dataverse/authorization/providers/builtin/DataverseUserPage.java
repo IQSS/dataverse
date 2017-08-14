@@ -361,7 +361,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
             return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";            
             
-        } else {
+        } else if (session.getUser().isAuthenticated()) {
             String emailBeforeUpdate = currentUser.getEmail();
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
@@ -389,6 +389,7 @@ public class DataverseUserPage implements java.io.Serializable {
             }
             return null;
         }
+        return null;
     }
 
     public String cancel() {
