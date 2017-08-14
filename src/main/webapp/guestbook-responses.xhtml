@@ -23,6 +23,19 @@
 
             <ui:define name="body">
                 <h:form id="manageGuestbooksForm">
+                    <p:fragment id="tooManyEntries" rendered="#{guestbookResponsesPage.guestbook.responseCount gt systemConfig.guestbookResponsesPageDisplayLimit}">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div id="no-clients-message" class="alert alert-warning" role="alert">
+                                    <span class="glyphicon glyphicon-warning-sign"/>
+                                    <h:outputFormat value=" #{bundle['dataset.guestbooksResponses.tooManyResponses.message']}" escape="false">
+                                        <f:param value="#{systemConfig.guestbookResponsesPageDisplayLimit}"/>
+                                        <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
+                                    </h:outputFormat>
+                                </div>
+                            </div>
+                        </div>
+                    </p:fragment>
                     <div class="row">
                         <label for="guestbookNameStatic" class="col-sm-2 control-label">
                             <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</span>
@@ -41,49 +54,20 @@
                                 </h:outputFormat>
                                 <h:outputFormat rendered="#{guestbookResponsesPage.guestbook.responseCount gt systemConfig.guestbookResponsesPageDisplayLimit}"
                                                 styleClass="highlightBold" value="#{bundle['dataset.guestbooksResponses.count.toofresults']}">
-                                    <f:param value="1"/>
-                                    <f:param value="#{systemConfig.guestbookResponsesPageDisplayLimit}"/>
+                                    <f:param value="#{guestbookResponsesPage.guestbook.responseCount - 5000}"/>
+                                    <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
                                     <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
                                 </h:outputFormat>
                             </div>
                         </div>
                         <div class="col-xs-6">
                             <p class="button-block text-right">
-                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.streamResponsesByDataverseAndGuestbook()}"  >
+                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.streamResponsesByDataverseAndGuestbook()}">
                                      <span class="glyphicon glyphicon-download-alt"/> #{bundle['dataset.manageGuestbooks.download.responses']}
                                 </button>
                             </p>
                         </div>
                     </div>
-                    
-                    <p:fragment id="tooManyEntries" rendered="#{guestbookResponsesPage.guestbook.responseCount gt systemConfig.guestbookResponsesPageDisplayLimit}">
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <div id="no-clients-message" class="panel panel-default">
-                                    <div class="panel-body">
-                                        <span class="help-block h3">
-                                            <h:outputText value="#{bundle['dataset.guestbooksResponses.tooManyResponses.header']}"/>
-                                        </span>
-                                        <ul>
-                                            <li>
-                                                <h:outputFormat value="#{bundle['dataset.guestbooksResponses.tooManyResponses.message.1']}" escape="false">
-                                                    <f:param value="#{systemConfig.guestbookResponsesPageDisplayLimit}"/>
-                                                </h:outputFormat>    
-                                            </li>
-                                        </ul>
-                                        <ul>
-                                            <li>
-                                                <h:outputFormat value="#{bundle['dataset.guestbooksResponses.tooManyResponses.message.2']}" escape="false">
-                                                    <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
-                                                </h:outputFormat>    
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </p:fragment>
-                    
                     <p:dataTable id="responsesGuestbook" value="#{guestbookResponsesPage.responsesAsArray}" var="response">
                         <p:column sortBy="#{response[0]}" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">
                             <h:outputText value="#{response[0]}"/>
