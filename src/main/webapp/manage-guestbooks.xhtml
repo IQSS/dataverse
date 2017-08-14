@@ -110,60 +110,35 @@
                                                    update="@form,:messagePanel"
                                                    oncomplete="bind_tooltip_popover();"/>
                                     <div class="btn-group" role="group">
-                                        <ui:remove><p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                        <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
                                                        oncomplete="PF('viewGuestbook').show();bind_bsui_components();"
                                                        update=":manageGuestbooksForm"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
-                                            <span class="glyphicon glyphicon-eye-open"></span>
-                                        </p:commandLink></ui:remove>
-                                        
-                                        
-                                        <div class="btn-group">
-                                            <a href="#" type="button" class="btn btn-default dropdown-toggle bootstrap-button-tooltip" data-toggle="dropdown" aria-expanded="false"
-                                               title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
-                                                <span class="glyphicon glyphicon-eye-open"/> <span class="caret"></span>
-                                            </a>
-                                            <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                <li>
-                                                    <p:commandLink action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
-                                                                    oncomplete="PF('viewGuestbook').show();bind_bsui_components();"
-                                                                    update=":manageGuestbooksForm">
-                                                        #{bundle['dataset.manageGuestbooks.tab.action.btn.preview']}
-                                                    </p:commandLink>
-                                                </li>
-                                                
-                                                <ui:fragment rendered="#{guestbook.responseCount > 0}">
-                                                    <li>
-                                                        <h:outputLink value="/guestbook-responses.xhtml?dataverseId=#{manageGuestbooksPage.dataverse.id}&#38;guestbookId=#{guestbook.id}">
-                                                            <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}</span>
-                                                        </h:outputLink>
-                                                    </li>
-                                                </ui:fragment>
-                                            </ul>
-                                        </div>
-                                        
-                                        
+                                            <span class="glyphicon glyphicon-eye-open no-text"></span>
+                                        </p:commandLink>
                                         <h:outputLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                       value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}&#38;sourceId=#{guestbook.id}"
                                                       title="#{bundle['dataset.manageGuestbooks.tab.action.btn.copy']}">
-                                            <span class="glyphicon glyphicon-duplicate"></span>
+                                            <span class="glyphicon glyphicon-duplicate no-text"></span>
                                         </h:outputLink>
                                         <h:outputLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                       rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
                                                       value="/guestbook.xhtml?id=#{guestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}"
                                                       title="#{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}">
-                                            <span class="glyphicon glyphicon-pencil"></span>
+                                            <span class="glyphicon glyphicon-pencil no-text"></span>
                                         </h:outputLink>
                                         <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.setSelectedGuestbook(guestbook)}"
                                                        rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.deletable}"
                                                        oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete']}">
-                                            <span class="glyphicon glyphicon-trash"></span>
+                                            <span class="glyphicon glyphicon-trash no-text"></span>
                                         </p:commandLink>
                                     </div>
-                                    
+                                    <h:outputLink styleClass="btn btn-default" value="/guestbook-responses.xhtml?dataverseId=#{manageGuestbooksPage.dataverse.id}&#38;guestbookId=#{guestbook.id}">
+                                        <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}</span>
+                                    </h:outputLink>
                                 </div>
                             </p:column>
                         </p:dataTable>
