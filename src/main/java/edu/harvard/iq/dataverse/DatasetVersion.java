@@ -656,6 +656,15 @@ public class DatasetVersion implements Serializable {
         return MarkupChecker.stripAllTags(getDescriptionPristine());
     }
 
+    /**
+     * @return A string with the description of the dataset that has been passed
+     * through the escapeHtml method to change the "less than" sign to "&lt;"
+     * for example.
+     */
+    public String getDescriptionHtmlEscaped() {
+        return MarkupChecker.escapeHtml(getDescriptionPristine());
+    }
+
     public List<String[]> getDatasetContacts(){
         List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
