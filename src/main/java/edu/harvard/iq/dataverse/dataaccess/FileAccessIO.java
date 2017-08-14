@@ -115,6 +115,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
                     this.setVarHeader(varHeaderLine);
                 }
             } else if (isWriteAccess) {
+                
+                if (dataFile.getOwner().getFileSystemDirectory() != null && !Files.exists(dataFile.getOwner().getFileSystemDirectory())) {
+                Files.createDirectories(dataFile.getOwner().getFileSystemDirectory());
+                }
                 FileOutputStream fout = openLocalFileAsOutputStream();
 
                 if (fout == null) {
