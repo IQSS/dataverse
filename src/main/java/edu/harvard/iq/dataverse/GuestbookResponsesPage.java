@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
@@ -13,6 +14,7 @@ import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +39,9 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     
     @EJB
     SystemConfig systemConfig;
+    
+    @Inject
+    PermissionsWrapper permissionsWrapper;
     
     private Long guestbookId;
     
@@ -68,20 +73,28 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         this.responsesAsArray = responsesAsArray;
     }
     
-    public void init() {
+    public String init() {
         guestbook = guestbookService.find(guestbookId);
         dataverse = dvService.find(dataverseId);
-        
-        if(guestbook != null){ 
-            guestbook.setResponseCount(guestbookResponseService.findCountByGuestbookId(guestbookId , dataverseId));
-            
-            logger.info("Guestbook responses count: "+guestbook.getResponseCount());
-            responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId, systemConfig.getGuestbookResponsesPageDisplayLimit());
-            
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, 
-                    JH.localize("dataset.guestbooksResponses.tip.title"), 
-                    JH.localize("dataset.guestbooksResponses.tip.downloadascsv")));
+
+        if (dataverse == null || guestbook == null) {
+            return permissionsWrapper.notFound();
         }
+
+        if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        }
+
+        guestbook.setResponseCount(guestbookResponseService.findCountByGuestbookId(guestbookId, dataverseId));
+
+        logger.info("Guestbook responses count: " + guestbook.getResponseCount());
+        responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId, systemConfig.getGuestbookResponsesPageDisplayLimit());
+
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
+                JH.localize("dataset.guestbooksResponses.tip.title"),
+                JH.localize("dataset.guestbooksResponses.tip.downloadascsv")));
+
+        return null;
     }
     
     private String getFileName(){
