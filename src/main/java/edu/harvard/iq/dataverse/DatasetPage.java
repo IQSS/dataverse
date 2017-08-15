@@ -3710,8 +3710,7 @@ public class DatasetPage implements java.io.Serializable {
      * @return description of workingVersion
      */
     public String getDescription() {
-        // TODO: Switch to `getDescriptionPlainText()` when we are ready to QA this.
-        return workingVersion.getDescription();
+        return workingVersion.getDescriptionPlainText();
     }
 
     /**
