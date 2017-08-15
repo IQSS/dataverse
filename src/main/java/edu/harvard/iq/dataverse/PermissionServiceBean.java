@@ -27,6 +27,7 @@ import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -418,6 +419,17 @@ public class PermissionServiceBean {
         }
         
         return usersHasPermissionOn;
+    }
+    
+    public Map<String, AuthenticatedUser> getDistinctUsersWithPermissionOn(Permission permission, DvObject dvo) {
+
+        List<AuthenticatedUser> users = getUsersWithPermissionOn(permission, dvo);
+        Map<String, AuthenticatedUser> distinctUsers = new HashMap<>();
+        users.forEach((au) -> {
+            distinctUsers.put(au.getIdentifier(), au);
+        });
+
+        return distinctUsers;
     } 
     
     public List<Long> getDvObjectsUserHasRoleOn(User user) {

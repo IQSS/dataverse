@@ -109,7 +109,7 @@ public class FileRecordWriter extends AbstractItemWriter {
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
-        dataset = datasetServiceBean.findByGlobalId(jobParams.getProperty("datasetId"));
+        dataset = datasetServiceBean.find(Long.parseLong(jobParams.getProperty("datasetId")));
         user = authenticationServiceBean.getAuthenticatedUser(jobParams.getProperty("userId"));
         //jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
         fileCount = ((Map<String, String>) jobContext.getTransientUserData()).size();
