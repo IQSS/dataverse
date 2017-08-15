@@ -22,6 +22,7 @@ body .ui-widget {font-size: inherit;}
     z-index: 930;
 }
 #navbarFixed .navbar-brand {color:#C55B28; padding-left:32px;}
+#navbarFixed .navbar-brand.custom-logo {height:auto; padding:0;}
 #navbarFixed .icon-dataverse {color:#C55B28; font-size:28px; margin: -4px 0 0 -27px; position: absolute;}
 #navbarFixed .label.status {display:block; float:left; margin-top:16px; background:#C55B28; font-size:14px; font-weight:normal;}
 
