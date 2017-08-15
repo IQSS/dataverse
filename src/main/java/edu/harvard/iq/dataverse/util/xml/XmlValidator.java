@@ -9,7 +9,6 @@ import javax.xml.transform.Source;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -24,7 +23,7 @@ public class XmlValidator {
 
     private static final Logger logger = Logger.getLogger(XmlValidator.class.getCanonicalName());
 
-    public static boolean validateXml(String fileToValidate, URL schemaToValidateAgainst) throws MalformedURLException, SAXException, IOException {
+    public static boolean validateXmlSchema(String fileToValidate, URL schemaToValidateAgainst) throws MalformedURLException, SAXException, IOException {
         Source xmlFile = new StreamSource(new File(fileToValidate));
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         Schema schema = schemaFactory.newSchema(schemaToValidateAgainst);
@@ -47,7 +46,7 @@ public class XmlValidator {
      * not.
      * @throws Exception if the XML is not well-formed with a message about why.
      */
-    public static boolean xmlWellFormed(String filename) throws Exception {
+    public static boolean validateXmlWellFormed(String filename) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setValidating(false);
         factory.setNamespaceAware(true);

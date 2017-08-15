@@ -2,12 +2,10 @@ package edu.harvard.iq.dataverse.util.xml;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -17,7 +15,7 @@ public class XmlValidatorTest {
 
     @Test
     public void testValidateXml() throws IOException, SAXException, ParserConfigurationException {
-        assertTrue(XmlValidator.validateXml("scripts/issues/3845/sendToDataCite.xml", new URL("http://schema.datacite.org/meta/kernel-3/metadata.xsd")));
+        assertTrue(XmlValidator.validateXmlSchema("src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml", new URL("http://schema.datacite.org/meta/kernel-3/metadata.xsd")));
         // FIXME: Make sure the DDI we export is valid: https://github.com/IQSS/dataverse/issues/3648
 //        assertTrue(XmlValidator.validateXml("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml", new URL("http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd")));
     }
@@ -28,7 +26,7 @@ public class XmlValidatorTest {
         // well-formed XML
         Exception ex1 = null;
         try {
-            assertTrue(XmlValidator.xmlWellFormed("scripts/issues/3845/sendToDataCite.xml"));
+            assertTrue(XmlValidator.validateXmlWellFormed("src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml"));
         } catch (Exception ex) {
             ex1 = ex;
         }
@@ -37,7 +35,7 @@ public class XmlValidatorTest {
         // not well-formed XML
         Exception ex2 = null;
         try {
-            XmlValidator.xmlWellFormed("scripts/issues/3845/not-well-formed.xml");
+            XmlValidator.validateXmlWellFormed("src/test/java/edu/harvard/iq/dataverse/util/xml/not-well-formed.xml");
         } catch (Exception ex) {
             ex2 = ex;
         }
@@ -47,7 +45,7 @@ public class XmlValidatorTest {
         // other exception
         Exception ex3 = null;
         try {
-            XmlValidator.xmlWellFormed("path/to/nowhere.xml");
+            XmlValidator.validateXmlWellFormed("path/to/nowhere.xml");
         } catch (Exception ex) {
             ex3 = ex;
         }
