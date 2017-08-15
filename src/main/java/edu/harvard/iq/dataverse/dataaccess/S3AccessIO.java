@@ -82,8 +82,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private AmazonS3 s3 = null;
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String key;
-    private String s3FileName;
-    private String storageIdentifier;
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
@@ -106,19 +104,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         if (dvObject instanceof DataFile) {
+            String storageIdentifier = dvObject.getStorageIdentifier();
 
             DataFile dataFile = this.getDataFile();
-            key = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+            key = dataFile.getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
 
             if (req != null && req.getParameter("noVarHeader") != null) {
                 this.setNoVarHeader(true);
             }
 
-            if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
+            if (storageIdentifier == null || "".equals(storageIdentifier)) {
                 throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
             }
+
             if (isReadAccess) {
-                storageIdentifier = dvObject.getStorageIdentifier();
                 if (storageIdentifier.startsWith("s3://")) {
                     bucketName = storageIdentifier.substring(storageIdentifier.indexOf(":") + 3, storageIdentifier.lastIndexOf(":"));
                     key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
@@ -149,7 +148,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 }
 
             } else if (isWriteAccess) {
-                storageIdentifier = dvObject.getStorageIdentifier();
                 if (storageIdentifier.startsWith("s3://")) {
                     key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
                 } else {
