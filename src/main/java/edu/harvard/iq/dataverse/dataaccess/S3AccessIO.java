@@ -467,12 +467,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         multiObjectDeleteRequest.setKeys(keys);
 
-        logger.info("Trying to delete auxiliary files...");
-        try {
-            s3.deleteObjects(multiObjectDeleteRequest);
-        } catch (MultiObjectDeleteException e) {
-            logger.warning("S3AccessIO: Unable to delete auxilary objects" + e.getMessage());
-            throw new IOException("S3AccessIO: Failed to delete one or more auxiliary objects.");
+        if (keys.isEmpty()){
+            logger.warning("S3AccessIO: no auxiliary objects to delete..");
+        } else {
+            logger.info("Trying to delete auxiliary files...");
+            try {
+                s3.deleteObjects(multiObjectDeleteRequest);
+            } catch (MultiObjectDeleteException e) {
+                logger.warning("S3AccessIO: Unable to delete auxilary objects" + e.getMessage());
+                throw new IOException("S3AccessIO: Failed to delete one or more auxiliary objects.");
+            }
         }
     }
 
