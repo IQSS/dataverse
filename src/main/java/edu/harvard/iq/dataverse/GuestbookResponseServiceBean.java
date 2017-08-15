@@ -47,7 +47,7 @@ public class GuestbookResponseServiceBean {
     // the collected data, in CSV format, from the manage-guestbooks and 
     // guestbook-results pages. (for entire dataverses, and for the individual 
     // guestbooks within dataverses, respectively). -- L.A. 
-    public static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, v.value,  r.responsetime, r.downloadtype,"
+    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, v.value,  r.responsetime, r.downloadtype,"
                 + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position "
                 + "from guestbookresponse r, datasetfieldvalue v, filemetadata m, dvobject o, guestbook g  "
                 + "where "  
@@ -62,7 +62,7 @@ public class GuestbookResponseServiceBean {
     // on the guestbook-results.xhtml page (the info we show on the page is 
     // less detailed than what we let the users download as CSV files, so this 
     // query has fewer fields than the one above). -- L.A.
-    public static final String BASE_QUERY_STRING_FOR_PAGE_DISPLAY = "select  r.id, v.value, r.responsetime, r.downloadtype,  m.label, r.name "
+    private static final String BASE_QUERY_STRING_FOR_PAGE_DISPLAY = "select  r.id, v.value, r.responsetime, r.downloadtype,  m.label, r.name "
                 + "from guestbookresponse r, datasetfieldvalue v, filemetadata m , dvobject o "
                 + "where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
@@ -73,7 +73,7 @@ public class GuestbookResponseServiceBean {
     
     // And a custom query for retrieving *all* the custom question responses, for 
     // a given dataverse, or for an individual guestbook within the dataverse:
-    public static final String BASE_QUERY_CUSTOM_QUESTION_ANSWERS = "select q.questionstring, r.response, g.id "
+    private static final String BASE_QUERY_CUSTOM_QUESTION_ANSWERS = "select q.questionstring, r.response, g.id "
                 + "from customquestionresponse r, customquestion q, guestbookresponse g, dvobject o "
                 + "where q.id = r.customquestion_id "
                 + "and r.guestbookResponse_id = g.id "
