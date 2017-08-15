@@ -465,6 +465,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             String destinationKey = item.getKey();
             keys.add(new KeyVersion(destinationKey));
         }
+        //Check if the list of auxiliary files for a data file is empty
+        if (keys.isEmpty()) {
+            return;
+        }
         multiObjectDeleteRequest.setKeys(keys);
 
         logger.info("Trying to delete auxiliary files...");
