@@ -467,21 +467,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         //Check if the list of auxiliary files for a data file is empty
         if (keys.isEmpty()) {
+            logger.fine("S3AccessIO: No auxiliary objects to delete.");
             return;
         }
         multiObjectDeleteRequest.setKeys(keys);
 
-        if (keys.isEmpty()){
-            logger.warning("S3AccessIO: no auxiliary objects to delete..");
-        } else {
-            logger.info("Trying to delete auxiliary files...");
+        logger.info("Trying to delete auxiliary files...");
             try {
                 s3.deleteObjects(multiObjectDeleteRequest);
             } catch (MultiObjectDeleteException e) {
                 logger.warning("S3AccessIO: Unable to delete auxilary objects" + e.getMessage());
                 throw new IOException("S3AccessIO: Failed to delete one or more auxiliary objects.");
             }
-        }
     }
 
     //TODO: Do we need this?
