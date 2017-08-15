@@ -115,7 +115,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
                     this.setVarHeader(varHeaderLine);
                 }
             } else if (isWriteAccess) {
-                
+                // Creates a new directory as needed for a dataset.
                 if (dataFile.getOwner().getFileSystemDirectory() != null && !Files.exists(dataFile.getOwner().getFileSystemDirectory())) {
                 Files.createDirectories(dataFile.getOwner().getFileSystemDirectory());
                 }

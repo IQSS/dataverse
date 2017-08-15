@@ -230,15 +230,6 @@ public class ExportService {
     // in a file in the dataset directory / container based on its DOI:
     private void cacheExport(DatasetVersion version, String format, JsonObject datasetAsJson, Exporter exporter) throws ExportException {
         try {
-//            if (version.getDataset().getFileSystemDirectory() != null && !Files.exists(version.getDataset().getFileSystemDirectory())) {
-//                /* Note that "createDirectories()" must be used - not 
-//                     * "createDirectory()", to make sure all the parent 
-//                     * directories that may not yet exist are created as well. 
-//                 */
-//
-//                Files.createDirectories(version.getDataset().getFileSystemDirectory());
-//            }
-
             // With some storage drivers, we can open a WritableChannel, or OutputStream 
             // to directly write the generated metadata export that we want to cache; 
             // Some drivers (like Swift) do not support that, and will give us an
