@@ -73,11 +73,12 @@ public class GuestbookResponseServiceBean {
     
     // And a custom query for retrieving *all* the custom question responses, for 
     // a given dataverse, or for an individual guestbook within the dataverse:
-    public static final String BASE_QUERY_CUSTOM_QUESTION_ANSWERS = "select r.guestbookResponse_id, q.questionstring, r.response  "
+    public static final String BASE_QUERY_CUSTOM_QUESTION_ANSWERS = "select q.questionstring, r.response, g.id "
                 + "from customquestionresponse r, customquestion q, guestbookresponse g, dvobject o "
                 + "where q.id = r.customquestion_id "
                 + "and r.guestbookResponse_id = g.id "
                 + "and g.dataset_id = o.id ";
+
     
     private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/d/yyyy");
     
@@ -122,7 +123,7 @@ public class GuestbookResponseServiceBean {
         // dataverse; see the comment below, how it's saving us a metric f-ton
         // of queries now) -- L.A. 
         
-        Map<Long, Object> customQandAs = mapCustomQuestionAnswersAsStrings(dataverseId, guestbookId);
+        Map<Integer, Object> customQandAs = mapCustomQuestionAnswersAsStrings(dataverseId, guestbookId);
         
         String queryString = BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV
                 + " and  o.owner_id = " 
@@ -209,8 +210,8 @@ public class GuestbookResponseServiceBean {
                 }
             }*/
             
-            if (customQandAs.containsKey(guestbookResponseId.longValue())) {
-                sb.append(customQandAs.get(guestbookResponseId.longValue())); 
+            if (customQandAs.containsKey(guestbookResponseId)) {
+                sb.append(customQandAs.get(guestbookResponseId)); 
             } 
 
             sb.append(NEWLINE);
@@ -255,7 +256,7 @@ public class GuestbookResponseServiceBean {
             return retVal; 
         }
         
-        Map<Long, Object> customQandAs = null;
+        Map<Integer, Object> customQandAs = null;
         
         if (hasCustomQuestions) {
             // if this Guestbook has custom questions, let's look up all the 
@@ -275,34 +276,36 @@ public class GuestbookResponseServiceBean {
 
         for (Object[] result : guestbookResults) {
             Object[] singleResult = new Object[6];
-            
-            Integer guestbookResponseId = (Integer)result[0];
-            
-            singleResult[0] = result[1];
-            if (result[2] != null){
-                singleResult[1] = new SimpleDateFormat("MMMM d, yyyy").format((Date) result[2]);
-            } else {
-                singleResult[1] =  "N/A";
-            }
 
-            singleResult[2] = result[3];
-            singleResult[3] = result[4];
-            singleResult[4] = result[5];
-            
-            // Finally, custom questions and answers, if present:
-            if(hasCustomQuestions) {
-                // (the old implementation, below, would run one extra query FOR EVERY SINGLE
-                // guestbookresponse entry! -- instead, we are now pre-caching all the 
-                // available custom question responses, with a single native query, above.
-                // -- L.A.)
-            
-                /*String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
-                singleResult[5]   = em.createNativeQuery(cqString).getResultList();*/
-                if (customQandAs.containsKey(guestbookResponseId.longValue())) {
-                    singleResult[5] = customQandAs.get(guestbookResponseId.longValue());
+            Integer guestbookResponseId = (Integer) result[0];
+
+            if (guestbookResponseId != null) {
+                singleResult[0] = result[1];
+                if (result[2] != null) {
+                    singleResult[1] = new SimpleDateFormat("MMMM d, yyyy").format((Date) result[2]);
+                } else {
+                    singleResult[1] = "N/A";
                 }
+
+                singleResult[2] = result[3];
+                singleResult[3] = result[4];
+                singleResult[4] = result[5];
+
+                // Finally, custom questions and answers, if present:
+                if (hasCustomQuestions) {
+                    // (the old implementation, below, would run one extra query FOR EVERY SINGLE
+                    // guestbookresponse entry! -- instead, we are now pre-caching all the 
+                    // available custom question responses, with a single native query, above.
+                    // -- L.A.)
+
+                    /*String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
+                    singleResult[5]   = em.createNativeQuery(cqString).getResultList();*/
+                    if (customQandAs.containsKey(guestbookResponseId)) {
+                        singleResult[5] = customQandAs.get(guestbookResponseId);
+                    }
+                }
+                retVal.add(singleResult);
             }
-            retVal.add(singleResult);
         }
         
         return retVal;
@@ -314,27 +317,22 @@ public class GuestbookResponseServiceBean {
        The results are saved in maps, and later re-combined with the individual 
        "normal" guestbook responses, retrieved from GuestbookResponse table. -- L.A. 
     */
-    private Map<Long, Object> mapCustomQuestionAnswersAsLists(Long dataverseId, Long guestbookId, Integer firstResponse, Integer lastResponse) {
+    private Map<Integer, Object> mapCustomQuestionAnswersAsLists(Long dataverseId, Long guestbookId, Integer firstResponse, Integer lastResponse) {
         return selectCustomQuestionAnswers(dataverseId, guestbookId, false, firstResponse, lastResponse);
     }
     
-    private Map<Long, Object> mapCustomQuestionAnswersAsStrings(Long dataverseId, Long guestbookId) {
+    private Map<Integer, Object> mapCustomQuestionAnswersAsStrings(Long dataverseId, Long guestbookId) {
         return selectCustomQuestionAnswers(dataverseId, guestbookId, true, null, null);
     }
     
-    private Map<Long, Object> selectCustomQuestionAnswers(Long dataverseId, Long guestbookId, boolean asString, Integer lastResponse, Integer firstResponse) {
-        Map<Long, Object> ret = new HashMap<>();
+    private Map<Integer, Object> selectCustomQuestionAnswers(Long dataverseId, Long guestbookId, boolean asString, Integer lastResponse, Integer firstResponse) {
+        Map<Integer, Object> ret = new HashMap<>();
 
-        logger.info("Entering selectCustomQuestionAnswers");
         int count = 0;
 
-        String cqString = "select r.guestbookResponse_id, q.questionstring, r.response  "
-                + "from customquestionresponse r, customquestion q, guestbookresponse g, dvobject o "
-                + "where q.id = r.customquestion_id "
-                + "and r.guestbookResponse_id = g.id "
-                + "and g.dataset_id = o.id "
+        String cqString = BASE_QUERY_CUSTOM_QUESTION_ANSWERS
                 + "and o.owner_id = " + dataverseId;
-        
+                
         if (guestbookId != null) {
             cqString += ( "and g.guestbook_id = " + guestbookId);
         }
@@ -353,10 +351,12 @@ public class GuestbookResponseServiceBean {
 
         if (customResponses != null) {
             for (Object[] response : customResponses) {
-                Long responseId = (Long) response[0];
+                Integer responseId = (Integer) response[2];
 
                 if (asString) {
-                    String qa = SEPARATOR + ((String)response[1]).replace(',', ' ') + SEPARATOR + (response[2] == null ? "" : ((String)response[2]).replace(',', ' '));
+                    // as combined strings of comma-separated question and answer values
+                    
+                    String qa = SEPARATOR + ((String)response[0]).replace(',', ' ') + SEPARATOR + (response[1] == null ? "" : ((String)response[1]).replace(',', ' '));
 
                     if (ret.containsKey(responseId)) {
                         ret.put(responseId, ret.get(responseId) + qa);
@@ -365,14 +365,11 @@ public class GuestbookResponseServiceBean {
                     }
                 } else {
                     // as a list of Object[]s - this is for display on the custom-responses page
-                    Object[] qaPair = new Object[2];
-                    qaPair[0] = response[1];
-                    qaPair[1] = response[2];
-
+                    
                     if (!ret.containsKey(responseId)) {
                         ret.put(responseId, new ArrayList<>());
                     }
-                    ((List) ret.get(responseId)).add(qaPair);
+                    ((List) ret.get(responseId)).add(response);
                 }
 
                 count++;
