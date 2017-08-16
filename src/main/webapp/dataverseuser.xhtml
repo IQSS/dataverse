@@ -449,11 +449,21 @@
                                     <f:param value="&lt;/a&gt;"/>
                                 </h:outputFormat>
                             </p>
-                            <div class="highlight">
+                            <div id="apiToken" class="highlight hidden">
                                  <pre>
                                     <code class="language-html" data-lang="html">${ApiTokenPage.apiToken}</code>
                                  </pre>
                             </div>
+                            <!--Script removes "hidden" class from div containing API token to stop javascript browser exploits-->
+                            <script>
+                                $(document).ready(function() {
+                                    $("div#apiToken").removeClass("hidden");
+                                });
+                                //Produces "Are you sure you want to leave this page?" alert to allow API token to hide again
+                                $(window).on("beforeunload", function() {
+                                    $("div#apiToken").addClass("hidden");
+                                });
+                            </script>
                             <div>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}                                </button>
