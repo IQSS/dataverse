@@ -261,7 +261,9 @@ public class Shib implements java.io.Serializable {
                 logger.info("Unable to redirect user to homepage at " + prettyFacesHomePageString);
             }
         } else {
-            state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
+            /*** QDRCustom: do not change state to allow for auto-creation of local account  ***/
+            /*** state = State.PROMPT_TO_CREATE_NEW_ACCOUNT; ***/
+            
             displayNameToPersist = displayInfo.getTitle();
             emailToPersist = emailAddress;
             /**
@@ -306,7 +308,18 @@ public class Shib implements java.io.Serializable {
                     debugSummary = "Could not find a builtin account based on the username. Here we should simply create a new Shibboleth user";
                 }
             } else {
-                debugSummary = "Could not find an auth user based on email address";
+                // QDRCustom: auto-create local account for authenticated Shibboleth user
+                debugSummary = "Could not find an auth user based on email address. Creating new local account for Shibboleth user with email: " + emailAddress;                
+                String destinationAfterAccountCreation = confirmAndCreateAccount();
+                if (destinationAfterAccountCreation != null) {
+                    try {
+                        context.redirect(destinationAfterAccountCreation);
+                        return;
+                    } catch (IOException ex) {
+                        logger.info("Unable to redirect user to page: " + destinationAfterAccountCreation);
+                        return;
+                    }                    
+                }                
             }
 
         }
