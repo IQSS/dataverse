@@ -260,6 +260,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public void delete() throws IOException {
+        open();
         if (key == null) {
             throw new IOException("Failed to delete the object because the key was null");
         }
