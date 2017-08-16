@@ -145,13 +145,13 @@ An rsync-enabled Dataverse installation has a file upload process that differs f
 
 5. To begin the upload process, you will need to run the script you downloaded. For this, you will have to go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to navigate to the directory where you saved the upload script, and run the command that the Upload Files instruction box provides. This will begin the upload script. Please note that this upload script will expire 7 days after you downloaded it. If it expires and you still need to use it, simply download the script from Dataverse again.
 
-**Note:** Unlike other operating systems, Windows does not come with rsync supported by default. We have not optimized this feature for Windows users, but you may be able to get it working if you install the right Unix utilities. If you have found a way to get this feature working for you on Windows, please email support@dataverse.org with your solution and we'll add it to this guide.
+**Note:** Unlike other operating systems, Windows does not come with rsync supported by default. We have not optimized this feature for Windows users, but you may be able to get it working if you install the right Unix utilities. (If you have found a way to get this feature working for you on Windows, you can contribute it to our project. Please reference our `Contributing to Dataverse <https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md>`_ document in the root of the source tree.)
 
 6. Follow the instructions provided by the upload script running in your terminal. If you need to cancel the upload, you can do so by canceling the script running in your terminal window. If your upload gets interrupted, you can resume it from the same point later.
 
 7. Once the upload script completes its job, Dataverse will begin processing your data upload and running a checksum validation. This may take some time depending on the file size of your upload. While your upload is processing, you will not be able to delete or publish your dataset, and you will not be able to upload more files. You will still be able to edit the dataset's metadata, though. Once processing is complete, the disabled functions will be enabled again. During processing, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..." 
 
-8. Once processing is complete, you will be notified. At this point you can publish your dataset and your data will be available for download on the dataset page. **Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact Dataverse Support at support@dataverse.org.
+8. Once processing is complete, you will be notified. At this point you can publish your dataset and your data will be available for download on the dataset page. **Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact the support team for the Dataverse installation you are using.
 
 Dataverse Package
 ~~~~~~~~~~~~~~~~~
