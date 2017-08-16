@@ -250,6 +250,9 @@ public class DatasetPage implements java.io.Serializable {
         this.hasRsyncScript = hasRsyncScript;
     }
     
+    /**
+     * The contents of the script.
+     */
     private String rsyncScript = "";
 
     public String getRsyncScript() {
@@ -259,8 +262,13 @@ public class DatasetPage implements java.io.Serializable {
     public void setRsyncScript(String rsyncScript) {
         this.rsyncScript = rsyncScript;
     }
-    
-    
+
+    private String rsyncScriptFilename;
+
+    public String getRsyncScriptFilename() {
+        return rsyncScriptFilename;
+    }
+
     private String thumbnailString = null; 
 
     // This is the Dataset-level thumbnail; 
@@ -1325,6 +1333,7 @@ public class DatasetPage implements java.io.Serializable {
                         if(!scriptRequestResponse.getScript().isEmpty()){
                             setHasRsyncScript(true);
                             setRsyncScript(scriptRequestResponse.getScript());
+                            rsyncScriptFilename = "upload-"+ workingVersion.getDataset().getIdentifier() + ".bash";
                         }
                     } catch (RuntimeException ex) {
                         logger.info("Problem getting rsync script: " + ex.getLocalizedMessage());
@@ -3819,10 +3828,10 @@ public class DatasetPage implements java.io.Serializable {
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
 
-        String fileNameString;
+        String contentDispositionString;
 
-        fileNameString = "attachment;filename=" + workingVersion.getDataset().getIdentifier() + "-RsyncScript.txt";
-        response.setHeader("Content-Disposition", fileNameString);
+        contentDispositionString = "attachment;filename=" + rsyncScriptFilename;
+        response.setHeader("Content-Disposition", contentDispositionString);
 
         try {
             ServletOutputStream out = response.getOutputStream();
@@ -3830,6 +3839,8 @@ public class DatasetPage implements java.io.Serializable {
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
+            String error = "Problem getting bytes from rsync script: " + e;
+            logger.info(error);
         }
     }
 

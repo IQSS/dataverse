@@ -866,8 +866,12 @@ public class DatasetsIT {
         }
 
         // TODO: Test this with a value like "junk" rather than a valid URL which would give `java.net.MalformedURLException: no protocol`.
-//        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888/ur.py");
-        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
+        // The DCM Vagrant box runs on port 8888: https://github.com/sbgrid/data-capture-module/blob/master/Vagrantfile
+        String dcmVagrantUrl = "http://localhost:8888";
+        // The DCM mock runs on port 5000: https://github.com/sbgrid/data-capture-module/blob/master/doc/mock.md
+        String dcmMockUrl = "http://localhost:5000";
+        String dcmUrl = dcmMockUrl;
+        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, dcmUrl);
         setDcmUrl.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -966,7 +970,7 @@ public class DatasetsIT {
         String rsyncScript = getRsyncScript.body().asString();
         System.out.println("script:\n" + rsyncScript);
         assertTrue(rsyncScript.startsWith("#!"));
-        assertTrue(rsyncScript.contains(datasetId.toString()));
+        assertTrue(rsyncScript.contains("placeholder")); // The DCM mock script has the word "placeholder" in it.
 
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
         removeUploadMethods.then().assertThat()
