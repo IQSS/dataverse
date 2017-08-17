@@ -3785,11 +3785,10 @@ public class DatasetPage implements java.io.Serializable {
     /**
      * dataset description
      *
-     * @return title of workingVersion
+     * @return description of workingVersion
      */
     public String getDescription() {
-        assert (null != workingVersion);
-        return workingVersion.getDescription();
+        return workingVersion.getDescriptionPlainText();
     }
 
     /**

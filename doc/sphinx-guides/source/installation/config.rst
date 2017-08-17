@@ -456,6 +456,14 @@ While the above two options are recommended because they have been tested by the
 
 For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite and EZID must be tested with Dataverse to establish whether or not it will function properly.
 
+Out of the box, Dataverse is configured to use base URL string from EZID. You can delete it like this:
+
+``asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://ezid.cdlib.org'``
+
+Then, to switch to DataCite, you can issue the following command:
+
+``asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
+
 See also these related database settings below:
 
 - :ref:`:DoiProvider`
@@ -470,12 +478,28 @@ doi.username
 
 Used in conjuction with ``doi.baseurlstring``.
 
+Out of the box, Dataverse is configured with a test username from EZID. You can delete it with the following command:
+
+``asadmin delete-jvm-options '-Ddoi.username=apitest'``
+
+Once you have a username from your provider, you can enter it like this:
+
+``asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
+
 .. _doi.password:
 
 doi.password
 ++++++++++++
 
+Out of the box, Dataverse is configured with a test password from EZID. You can delete it with the following command:
+
 Used in conjuction with ``doi.baseurlstring``.
+
+``asadmin delete-jvm-options '-Ddoi.password=apitest'``
+
+Once you have a password from your provider, you can enter it like this:
+
+``asadmin create-jvm-options '-Ddoi.password=YOUR_PASSWORD_HERE'``
 
 .. _dataverse.handlenet.admcredfile:
 
