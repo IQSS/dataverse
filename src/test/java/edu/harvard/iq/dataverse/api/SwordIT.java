@@ -16,7 +16,9 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.startsWith;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -51,6 +53,7 @@ public class SwordIT {
             RestAssured.baseURI = "https://dev1.dataverse.org";
         }
         Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
         superuser = UtilIT.getUsernameFromResponse(createUser);
         apiTokenSuperuser = UtilIT.getApiTokenFromResponse(createUser);
         String apitoken = UtilIT.getApiTokenFromResponse(createUser);
@@ -105,6 +108,24 @@ public class SwordIT {
         }
         UtilIT.deleteUser(username);
 
+    }
+    
+    @Test
+    public void testSwordAuthUserLastApiUse(){
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apitoken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response serviceDocumentResponse = UtilIT.getServiceDocument(apitoken);
+        
+        Response getUserAsJsonAgain = UtilIT.getAuthenticatedUser(username, apitoken);
+        getUserAsJsonAgain.prettyPrint();
+        getUserAsJsonAgain.then().assertThat()
+                // Checking that it's 2017 or whatever. Not y3k compliant! 
+                .body("data.lastApiUseTime", startsWith("2"))
+                .statusCode(OK.getStatusCode());
+
+        UtilIT.deleteUser(username);
     }
 
     @Test
@@ -203,6 +224,14 @@ public class SwordIT {
         uploadFile1.prettyPrint();
         assertEquals(CREATED.getStatusCode(), uploadFile1.getStatusCode());
 
+        Response getDatasetJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat()
+                .body("data.latestVersion.files[0].dataFile.filename", equalTo("trees.png"))
+                .body("data.latestVersion.files[0].dataFile.rootDataFileId", equalTo(-1))
+                .body("data.latestVersion.files[0].dataFile.previousDataFileId", nullValue())
+                .statusCode(OK.getStatusCode());
+
         Response swordStatementUnAuth = UtilIT.getSwordStatement(persistentId, apiTokenNoPrivs);
         swordStatementUnAuth.prettyPrint();
         swordStatementUnAuth.then().assertThat()
@@ -230,13 +259,13 @@ public class SwordIT {
 
         Response attemptToDownloadUnpublishedFileWithoutApiToken = UtilIT.downloadFile(fileId);
         attemptToDownloadUnpublishedFileWithoutApiToken.then().assertThat()
-                .body("html.head.title", equalTo("403 Not Authorized - Root Dataverse"))
+                .body("html.head.title", equalTo("403 Not Authorized - Root"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response attemptToDownloadUnpublishedFileUnauthApiToken = UtilIT.downloadFile(fileId, apiTokenNoPrivs);
         attemptToDownloadUnpublishedFileUnauthApiToken.prettyPrint();
         attemptToDownloadUnpublishedFileUnauthApiToken.then().assertThat()
-                .body("html.head.title", equalTo("403 Not Authorized - Root Dataverse"))
+                .body("html.head.title", equalTo("403 Not Authorized - Root"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response downloadUnpublishedFileWithValidApiToken = UtilIT.downloadFile(fileId, apiToken);

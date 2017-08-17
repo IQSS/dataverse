@@ -26,6 +26,8 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     private EntityManager em;
 
     /**
+     * @param linkingDataverseId
+     * @return 
      * @todo Should this method simply be deleted? It isn't used anywhere and is
      * throwing exceptions: Syntax error parsing [select object(o.dataverse.id)
      * from DatasetLinkingDataverse as o where o.linkingDataverse.id
@@ -33,7 +35,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
      */
     @Deprecated
     public List<Dataset> findLinkedDataverses(Long linkingDataverseId) {
-        List<Dataset> retList = new ArrayList();
+        List<Dataset> retList = new ArrayList<>();
         Query query = em.createQuery("select object(o.dataverse.id) from DatasetLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
         query.setParameter("linkingDataverseId", linkingDataverseId);
         for (Object o : query.getResultList()) {
@@ -55,7 +57,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     }
 
     public List<Dataverse> findLinkingDataverses(Long datasetId) {
-        List<Dataverse> retList = new ArrayList();
+        List<Dataverse> retList = new ArrayList<>();
         for (DatasetLinkingDataverse dld : findDatasetLinkingDataverses(datasetId)) {
             retList.add(dld.getLinkingDataverse());
         }
@@ -63,7 +65,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     }
 
     public List<DatasetLinkingDataverse> findDatasetLinkingDataverses(Long datasetId) {
-        return em.createQuery("select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id")
+        return em.createQuery("select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id", DatasetLinkingDataverse.class)
                 .setParameter("datasetId", datasetId)
                 .getResultList();
     }

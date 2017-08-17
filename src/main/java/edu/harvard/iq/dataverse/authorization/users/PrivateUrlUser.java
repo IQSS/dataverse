@@ -30,18 +30,15 @@ public class PrivateUrlUser implements User {
     }
 
     /**
-     * @return By always returning false for isAuthenticated(), we prevent a
+     * By always returning false for isAuthenticated(), we prevent a
      * name from appearing in the corner as well as preventing an account page
      * and MyData from being accessible. The user can still navigate to the home
      * page but can only see published datasets.
+     * 
+     * @return {@code false}.
      */
     @Override
     public boolean isAuthenticated() {
-        return false;
-    }
-
-    @Override
-    public boolean isBuiltInUser() {
         return false;
     }
 
@@ -60,5 +57,7 @@ public class PrivateUrlUser implements User {
         String title = BundleUtil.getStringFromBundle("dataset.privateurl.roleassigeeTitle");
         return new RoleAssigneeDisplayInfo(title, null);
     }
+
+
 
 }

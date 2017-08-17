@@ -1,30 +1,21 @@
-# RFI Checklist
+## New Contributors
 
-_**Before** submitting the pull request, fill out sections (1.) Related Issues and (2.) Pull Request Checklist._
+Welcome! New contributors should at least glance at [CONTRIBUTING.md](/CONTRIBUTING.md), especially the section on pull requests where we encourage you to reach out to other developers before you start coding. Also, please note that we measure code coverage and prefer you write unit tests. Pull requests can still be reviewed without tests or completion of the checklist outlined below. Thanks!
 
-### 1. Related Issues
+## Related Issues
 
-_List and [link](https://guides.github.com/features/issues/#notifications) to the issues in this Pull Request._
+- connects to #ISSUE_NUMBER: ISSUE_TITLE
 
-- [#### + Title HERE]
+## Pull Request Checklist
 
----
-### 2. Pull Request Checklist
+- [ ] Unit [tests][] completed
+- [ ] Integration [tests][]: None
+- [ ] Deployment requirements, [SQL updates][], [Solr updates][], etc.: None
+- [ ] [Documentation][docs] completed
+- [ ] Merged latest from "develop" [branch][] and resolved conflicts
 
-- [ ]  Functionality completed as described in FRD
-- [ ]  Dependencies, risks, assumptions in FRD addressed
-- [ ]  Unit tests completed
-- [ ]  Deployment requirements identified (e.g., SQL scripts, indexing)
-- [ ]  Documentation completed
-- [ ]  All code checkins completed
-
----
-### 3. Review Checklist
-
-_**After** the pull request has been submitted, fill out this section._
-
-- [ ]  Code review completed or waived
-- [ ]  Testing requirements completed
-- [ ]  Usability testing completed or waived
-- [ ]  Support testing completed or waived
-- [ ]  Merged with develop branch and resolved conflicts
+[tests]: http://guides.dataverse.org/en/latest/developers/testing.html
+[SQL updates]: https://github.com/IQSS/dataverse/tree/develop/scripts/database/upgrades
+[Solr updates]: https://github.com/IQSS/dataverse/blob/develop/conf/solr/4.6.0/schema.xml
+[docs]: http://guides.dataverse.org/en/latest/developers/documentation.html
+[branch]: http://guides.dataverse.org/en/latest/developers/branching-strategy.html

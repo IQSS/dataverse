@@ -5,6 +5,7 @@ import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class InfoIT {
 
@@ -34,4 +35,23 @@ public class InfoIT {
                         + SettingsServiceBean.Key.DatasetPublishPopupCustomText
                         + " not found"));
     }
+
+    @Test
+    public void testGetVersion() {
+        Response response = given().urlEncodingEnabled(false)
+                .get("/api/info/version");
+        response.prettyPrint();
+        response.then().assertThat().statusCode(200)
+                .body("data.version", notNullValue());
+    }
+
+    @Test
+    public void testGetServer() {
+        Response response = given().urlEncodingEnabled(false)
+                .get("/api/info/server");
+        response.prettyPrint();
+        response.then().assertThat().statusCode(200)
+                .body("data.message", notNullValue());
+    }
+
 }

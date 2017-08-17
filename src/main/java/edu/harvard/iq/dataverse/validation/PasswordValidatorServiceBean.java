@@ -77,7 +77,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     @EJB
     SystemConfig systemConfig;
 
-    PasswordValidatorServiceBean() {
+    public PasswordValidatorServiceBean() {
         final Properties properties = PropertiesMessageResolver.getDefaultProperties();
         properties.setProperty(GoodStrengthRule.ERROR_CODE_GOODSTRENGTH, GoodStrengthRule.ERROR_MESSAGE_GOODSTRENGTH);
         properties.setProperty(ExpirationRule.ERROR_CODE_EXPIRED, ExpirationRule.ERROR_MESSAGE_EXPIRED);

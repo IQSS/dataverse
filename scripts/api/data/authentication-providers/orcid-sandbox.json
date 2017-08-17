@@ -1,0 +1,8 @@
+{
+    "id":"orcid-sandbox",
+    "factoryAlias":"oauth2",
+    "title":"ORCID Sandbox",
+    "subtitle":"ORCiD - sandbox",
+    "factoryData":"type: orcid | userEndpoint: https://api.sandbox.orcid.org/v1.2/{ORCID}/orcid-profile | clientId: APP-HIV99BRM37FSWPH6 | clientSecret: ee844b70-f223-4f15-9b6f-4991bf8ed7f0",
+    "enabled":true
+}

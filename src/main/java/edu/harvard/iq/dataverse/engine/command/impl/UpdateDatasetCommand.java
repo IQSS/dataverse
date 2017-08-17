@@ -5,12 +5,7 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileCategory;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -18,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
@@ -27,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
 
@@ -41,11 +38,12 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     private final Dataset theDataset;
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
+    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
         this.theDataset = theDataset;
-        this.filesToDelete = new ArrayList();
+        this.filesToDelete = new ArrayList<>();
     }    
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
@@ -59,7 +57,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         this.theDataset = theDataset;
         
         // get the latest file metadata for the file; ensuring that it is a draft version
-        this.filesToDelete = new ArrayList();
+        this.filesToDelete = new ArrayList<>();
         for (FileMetadata fmd : theDataset.getEditVersion().getFileMetadatas()) {
             if (fmd.getDataFile().equals(fileToDelete)) {
                 filesToDelete.add(fmd);
@@ -128,14 +126,16 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         Timestamp updateTime = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         theDataset.setModificationTime(updateTime);
+         
         for (DataFile dataFile : theDataset.getFiles()) {
+            
             if (dataFile.getCreateDate() == null) {
                 dataFile.setCreateDate(updateTime);
                 dataFile.setCreator((AuthenticatedUser) getUser());
             }
             dataFile.setModificationTime(updateTime);
         }
-        
+                
         // Remove / delete any files that were removed
         
         // If any of the files that we are deleting has a UNF, we will need to 
@@ -143,7 +143,9 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         // of the UNFs of the individual files. 
         boolean recalculateUNF = false;
         
-        for (FileMetadata fmd : filesToDelete) {              
+        for (FileMetadata fmd : filesToDelete) {
+            
+            
             //  check if this file is being used as the default thumbnail
             if (fmd.getDataFile().equals(theDataset.getThumbnailFile())) {
                 logger.info("deleting the dataset thumbnail designation");
@@ -179,26 +181,53 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        
+        IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
+        boolean registerWhenPublished = idServiceBean.registerWhenPublished();
+        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, theDataset.getProtocol(), theDataset.getGlobalIdCreateTime()});
+        if ( !registerWhenPublished && theDataset.getGlobalIdCreateTime() == null) {
+            try {
+                logger.fine("creating identifier");
+               
+                String doiRetString = idServiceBean.createIdentifier(theDataset);
+                int attempts = 0;
+                while (!doiRetString.contains(theDataset.getIdentifier())
+                       && doiRetString.contains("identifier already exists")
+                       && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                // if the identifier exists, we'll generate another one
+                // and try to register again... but only up to some
+                // reasonably high number of times - so that we don't 
+                // go into an infinite loop here, if EZID is giving us 
+                // these duplicate messages in error. 
+                // 
+                // (and we do want the limit to be a "reasonably high" number! 
+                // true, if our identifiers are randomly generated strings, 
+                // then it is highly unlikely that we'll ever run into a 
+                // duplicate race condition repeatedly; but if they are sequential
+                // numeric values, than it is entirely possible that a large
+                // enough number of values will be legitimately registered 
+                // by another entity sharing the same authority...)
+                
+                    theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+                    doiRetString = idServiceBean.createIdentifier(theDataset);
 
-        if (theDataset.getProtocol().equals("doi")
-                && doiProvider.equals("EZID") && theDataset.getGlobalIdCreateTime() == null) {
-            String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-            if (doiRetString.contains(theDataset.getIdentifier())) {
-                theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-            } else {
-                //try again if identifier exists
-                if (doiRetString.contains("identifier already exists")) {
-                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
-                    doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                    if (!doiRetString.contains(theDataset.getIdentifier())) {
-                        // didn't register new identifier
-                    } else {
-                        theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                    }
-                } else {
-                    //some reason other that duplicate identifier so don't try again
-                    //EZID down possibly
+                    attempts++;
                 }
+                // And if the registration failed for some reason other that an 
+                // existing duplicate identifier - for example, EZID down --
+                // we simply give up. 
+                if (doiRetString.contains(theDataset.getIdentifier())) {
+                theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                }
+                else if (doiRetString.contains("identifier already exists")) {
+                logger.warning("EZID refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier());
+                }
+                else {
+                logger.warning("Failed to create identifier (" + theDataset.getIdentifier() + ") with EZID: " + doiRetString);
+                }
+                   
+            } catch (Throwable e) {
+                // EZID probably down
             }
         }
 

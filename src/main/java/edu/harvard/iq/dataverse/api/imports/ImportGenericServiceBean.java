@@ -2,11 +2,13 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.ForeignMetadataFieldMapping;
 import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;  
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -65,7 +67,10 @@ public class ImportGenericServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-     ForeignMetadataFormatMapping findFormatMappingByName (String name) {
+    
+    public static String DCTERMS = "http://purl.org/dc/terms/";
+    
+    public ForeignMetadataFormatMapping findFormatMappingByName (String name) {
         try {
             return em.createNamedQuery("ForeignMetadataFormatMapping.findByName", ForeignMetadataFormatMapping.class)
                     .setParameter("name", name)
@@ -175,6 +180,59 @@ public class ImportGenericServiceBean {
 
     }
     
+    // Helper method for importing harvested Dublin Core xml.
+    // Dublin Core is considered a mandatory, built in metadata format mapping. 
+    // It is distributed as required content, in reference_data.sql. 
+    // Note that arbitrary formatting tags are supported for the outer xml
+    // wrapper. -- L.A. 4.5
+    public DatasetDTO processOAIDCxml(String DcXmlToParse) throws XMLStreamException {
+        // look up DC metadata mapping: 
+        
+        ForeignMetadataFormatMapping dublinCoreMapping = findFormatMappingByName(DCTERMS);
+        if (dublinCoreMapping == null) {
+            throw new EJBException("Failed to find metadata mapping for " + DCTERMS);
+        }
+
+        DatasetDTO datasetDTO = this.initializeDataset();
+        StringReader reader = null;
+        XMLStreamReader xmlr = null;
+
+        try {
+            reader = new StringReader(DcXmlToParse);
+            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            xmlr = xmlFactory.createXMLStreamReader(reader);
+
+            //while (xmlr.next() == XMLStreamConstants.COMMENT); // skip pre root comments
+            xmlr.nextTag();
+
+            xmlr.require(XMLStreamConstants.START_ELEMENT, null, OAI_DC_OPENING_TAG);
+
+            processXMLElement(xmlr, ":", OAI_DC_OPENING_TAG, dublinCoreMapping, datasetDTO);
+        } catch (XMLStreamException ex) {
+            throw new EJBException("ERROR occurred while parsing XML fragment  (" + DcXmlToParse.substring(0, 64) + "...); ", ex);
+        }
+
+        
+        datasetDTO.getDatasetVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
+        
+        // Our DC import handles the contents of the dc:identifier field 
+        // as an "other id". In the context of OAI harvesting, we expect 
+        // the identifier to be a global id, so we need to rearrange that: 
+        
+        String identifier = getOtherIdFromDTO(datasetDTO.getDatasetVersion());
+        logger.fine("Imported identifier: "+identifier);
+        
+        String globalIdentifier = reassignIdentifierAsGlobalId(identifier, datasetDTO);
+        logger.fine("Detected global identifier: "+globalIdentifier);
+        
+        if (globalIdentifier == null) {
+            throw new EJBException("Failed to find a global identifier in the OAI_DC XML record.");
+        }
+        
+        return datasetDTO;
+
+    }
+    
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetDTO datasetDTO) throws XMLStreamException {
         logger.fine("entering processXMLElement; ("+currentPath+")");
         
@@ -228,7 +286,7 @@ public class ImportGenericServiceBean {
                         } else{
                             FieldDTO value = null;
                             if (mappingDefinedFieldType.isAllowMultiples()){
-                                List<String> values = new ArrayList<String>();
+                                List<String> values = new ArrayList<>();
                                 values.add(parseText(xmlr));
                                 value = FieldDTO.createMultiplePrimitiveFieldDTO(dataverseFieldName, values);
                             }else {
@@ -239,23 +297,26 @@ public class ImportGenericServiceBean {
                             MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
                             citationBlock.addField(value);
                         }
-                    } else {
+                    } else // Process the payload of this XML element:
+                    //xxString dataverseFieldName = mappingDefined.getDatasetfieldName();
+                    if (dataverseFieldName != null && !dataverseFieldName.isEmpty()) {
+                        DatasetFieldType dataverseFieldType = datasetfieldService.findByNameOpt(dataverseFieldName);
+                        FieldDTO value;
+                        if (dataverseFieldType != null) {
 
-                        // Process the payload of this XML element:
-                        //xxString dataverseFieldName = mappingDefined.getDatasetfieldName();
-                        if (dataverseFieldName != null && !dataverseFieldName.equals("")) {
-                            FieldDTO value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
-                            DatasetFieldType dataverseFieldType = datasetfieldService.findByNameOpt(dataverseFieldName);
-                            if (dataverseFieldType != null) {
-                                value = makeDTO(dataverseFieldType, value, dataverseFieldName);
-//                                value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
-//                            FieldDTO dataverseField = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
-                                MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
-                                citationBlock.addField(value);
-// TO DO replace database output with Json                             createDatasetFieldValue(dataverseFieldType, cachedCompoundValue, elementTextPayload, datasetVersion);
+                            if (dataverseFieldType.isControlledVocabulary()) {
+                                value = FieldDTO.createVocabFieldDTO(dataverseFieldName, parseText(xmlr));
                             } else {
-                                throw new EJBException("Bad foreign metadata field mapping: no such DatasetField " + dataverseFieldName + "!");
+                                value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
                             }
+                            value = makeDTO(dataverseFieldType, value, dataverseFieldName);
+                            //  value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
+                            //  FieldDTO dataverseField = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
+                            MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
+                            citationBlock.addField(value);
+                            // TO DO replace database output with Json                             createDatasetFieldValue(dataverseFieldType, cachedCompoundValue, elementTextPayload, datasetVersion);
+                        } else {
+                            throw new EJBException("Bad foreign metadata field mapping: no such DatasetField " + dataverseFieldName + "!");
                         }
                     }
                 } else {
@@ -271,10 +332,11 @@ public class ImportGenericServiceBean {
 
     private FieldDTO makeDTO(DatasetFieldType dataverseFieldType, FieldDTO value, String dataverseFieldName) {
         if (dataverseFieldType.isAllowMultiples()){
-            if(dataverseFieldType.isCompound()){
+            if(dataverseFieldType.isCompound()) {
                 value = FieldDTO.createMultipleCompoundFieldDTO(dataverseFieldName, value);
-            }
-            else {
+            } else if (dataverseFieldType.isControlledVocabulary()) {
+                value = FieldDTO.createMultipleVocabFieldDTO(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
+            } else {
                 value = FieldDTO.createMultiplePrimitiveFieldDTO(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
             }
             if (dataverseFieldType.isChild()) {
@@ -289,6 +351,10 @@ public class ImportGenericServiceBean {
                 value = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
             }
         }
+        
+        // TODO: 
+        // it looks like the code below has already been executed, in one of the 
+        // if () blocks above... is this ok to be doing it again?? -- L.A. 4.5
         if (dataverseFieldType.isChild()) {
                                     DatasetFieldType parentDatasetFieldType = dataverseFieldType.getParentDatasetFieldType();
                                     if (parentDatasetFieldType.isAllowMultiples()) {
@@ -299,7 +365,89 @@ public class ImportGenericServiceBean {
         return value;
     }
     
+    private String getOtherIdFromDTO(DatasetVersionDTO datasetVersionDTO) {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            String key = entry.getKey();
+            MetadataBlockDTO value = entry.getValue();
+            if ("citation".equals(key)) {
+                for (FieldDTO fieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
+                        String otherId = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (FieldDTO next : foo) {
+                                if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
+                                    otherId =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!otherId.isEmpty()){
+                                return otherId;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    private String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
+
+        int index1 = identifierString.indexOf(':');
+        int index2 = identifierString.lastIndexOf('/');
+        if (index1==-1) {
+            logger.warning("Error parsing identifier: " + identifierString + ". ':' not found in string");
+            return null; 
+        }  
        
+        String protocol = identifierString.substring(0, index1);
+        
+        if (GlobalId.DOI_PROTOCOL.equals(protocol) || GlobalId.HDL_PROTOCOL.equals(protocol)) {
+            logger.fine("Processing hdl:- or doi:-style identifier : "+identifierString);        
+        
+        } else if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
+            
+            // We also recognize global identifiers formatted as global resolver URLs:
+            
+            if (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
+                logger.fine("Processing Handle identifier formatted as a resolver URL: "+identifierString);
+                protocol = GlobalId.HDL_PROTOCOL;
+                index1 = GlobalId.HDL_RESOLVER_URL.length() - 1; 
+            } else if (identifierString.startsWith(GlobalId.DOI_RESOLVER_URL)) {
+                logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
+                protocol = GlobalId.DOI_PROTOCOL;
+                index1 = GlobalId.DOI_RESOLVER_URL.length() - 1; 
+            } else {
+                logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);
+                return null;
+            }
+            // index2 was already found as the *last* index of '/' - so it's still good. 
+        } else {
+            logger.warning("Unknown identifier format: "+identifierString);
+            return null; 
+        }
+        
+        if (index2 == -1) {
+            logger.warning("Error parsing identifier: " + identifierString + ". Second separator not found in string");
+            return null;
+        }
+
+        String authority = identifierString.substring(index1 + 1, index2);
+        String identifier = identifierString.substring(index2 + 1);
+
+        datasetDTO.setProtocol(protocol);
+        datasetDTO.setDoiSeparator("/");
+        datasetDTO.setAuthority(authority);
+        datasetDTO.setIdentifier(identifier);
+
+        // reassemble and return: 
+        logger.fine("parsed identifier, finalized " + protocol + ":" + authority + "/" + identifier);
+        return protocol + ":" + authority + "/" + identifier;
+    }
+        
+        
+    public static final String OAI_DC_OPENING_TAG = "dc";
+    public static final String DCTERMS_OPENING_TAG = "dcterms";
+    
     public static final String SOURCE_DVN_3_0 = "DVN_3_0";
     
     public static final String NAMING_PROTOCOL_HANDLE = "hdl";
@@ -369,7 +517,7 @@ public class ImportGenericServiceBean {
         DatasetDTO datasetDTO = this.initializeDataset();
 
         // Read docDescr and studyDesc into DTO objects.
-        Map fileMap = mapDCTerms(xmlToParse, datasetDTO);
+        Map<String, String> fileMap = mapDCTerms(xmlToParse, datasetDTO);
         if (!importType.equals(ImportType.MIGRATION)) {
                   //EMK TODO:  Call methods for reading FileMetadata and related objects from xml, return list of FileMetadata objects.
                    /*try {
@@ -386,7 +534,7 @@ public class ImportGenericServiceBean {
         DatasetDTO datasetDTO = this.initializeDataset();
         try {
             // Read docDescr and studyDesc into DTO objects.
-            Map fileMap = mapDCTerms(xmlToParse, datasetDTO);
+            Map<String, String> fileMap = mapDCTerms(xmlToParse, datasetDTO);
             // 
             // convert DTO to Json, 
             Gson gson = new Gson();
@@ -395,7 +543,7 @@ public class ImportGenericServiceBean {
             JsonObject obj = jsonReader.readObject();
             //and call parse Json to read it into a datasetVersion
             DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
-        } catch (Exception e) {
+        } catch (XMLStreamException | JsonParseException e) {
             // EMK TODO: exception handling
             e.printStackTrace();
         }
@@ -410,9 +558,9 @@ public class ImportGenericServiceBean {
         // Save Dataset and DatasetVersion in database
     }
 
-    public Map mapDCTerms(String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException {
+    public Map<String, String> mapDCTerms(String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException {
 
-        Map filesMap = new HashMap();
+        Map<String, String> filesMap = new HashMap<>();
         StringReader reader = new StringReader(xmlToParse);
         XMLStreamReader xmlr = null;
         XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
@@ -423,10 +571,10 @@ public class ImportGenericServiceBean {
     }
    
  
-    public Map mapDCTerms(File ddiFile,  DatasetDTO datasetDTO ) {
+    public Map<String, String> mapDCTerms(File ddiFile, DatasetDTO datasetDTO) {
         FileInputStream in = null;
         XMLStreamReader xmlr = null;
-        Map filesMap = new HashMap();
+        Map<String, String> filesMap = new HashMap<>();
 
         try {
             in = new FileInputStream(ddiFile);
@@ -451,7 +599,7 @@ public class ImportGenericServiceBean {
         return filesMap;
     }
     
-    private void processDCTerms( XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException {
+    private void processDCTerms(XMLStreamReader xmlr, DatasetDTO datasetDTO, Map<String, String> filesMap) throws XMLStreamException {
        
         // make sure we have a codeBook
         //while ( xmlr.next() == XMLStreamConstants.COMMENT ); // skip pre root comments
@@ -481,13 +629,13 @@ public class ImportGenericServiceBean {
         datasetVersionDTO.setMetadataBlocks(metadataBlocks);
         
         datasetVersionDTO.getMetadataBlocks().put("citation", new MetadataBlockDTO());
-        datasetVersionDTO.getMetadataBlocks().get("citation").setFields(new ArrayList<FieldDTO>());
+        datasetVersionDTO.getMetadataBlocks().get("citation").setFields(new ArrayList<>());
         datasetVersionDTO.getMetadataBlocks().put("geospatial", new MetadataBlockDTO());
-        datasetVersionDTO.getMetadataBlocks().get("geospatial").setFields(new ArrayList<FieldDTO>());
+        datasetVersionDTO.getMetadataBlocks().get("geospatial").setFields(new ArrayList<>());
         datasetVersionDTO.getMetadataBlocks().put("social_science", new MetadataBlockDTO());
-        datasetVersionDTO.getMetadataBlocks().get("social_science").setFields(new ArrayList<FieldDTO>());
+        datasetVersionDTO.getMetadataBlocks().get("social_science").setFields(new ArrayList<>());
         datasetVersionDTO.getMetadataBlocks().put("astrophysics", new MetadataBlockDTO());
-        datasetVersionDTO.getMetadataBlocks().get("astrophysics").setFields(new ArrayList<FieldDTO>());
+        datasetVersionDTO.getMetadataBlocks().get("astrophysics").setFields(new ArrayList<>());
      
         return datasetDTO;
         
@@ -520,7 +668,7 @@ public class ImportGenericServiceBean {
             throw new XMLStreamException("parser must be on START_ELEMENT to read next text", xmlr.getLocation());
         }
         int eventType = xmlr.next();
-        StringBuffer content = new StringBuffer();
+        StringBuilder content = new StringBuilder();
         while(eventType != XMLStreamConstants.END_ELEMENT ) {
             if(eventType == XMLStreamConstants.CHARACTERS
             || eventType == XMLStreamConstants.CDATA
@@ -546,13 +694,15 @@ public class ImportGenericServiceBean {
    
     
    private Map<String,String> parseCompoundText (XMLStreamReader xmlr, String endTag) throws XMLStreamException {
-        Map<String,String> returnMap = new HashMap<String,String>();
+        Map<String,String> returnMap = new HashMap<>();
         String text = "";
 
         while (true) {
             int event = xmlr.next();
             if (event == XMLStreamConstants.CHARACTERS) {
-                if (text != "") { text += "\n";}
+                if (!text.isEmpty()) {
+                    text += "\n";
+                }
                 text += xmlr.getText().trim().replace('\n',' ');
             } else if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("ExtLink")) {
@@ -576,10 +726,12 @@ public class ImportGenericServiceBean {
      
      private Object parseTextNew(XMLStreamReader xmlr, String endTag) throws XMLStreamException {
         String returnString = "";
-        Map returnMap = null;
+        Map<String, Object> returnMap = null;
 
         while (true) {
-            if (!returnString.equals("")) { returnString += "\n";}
+            if (!returnString.isEmpty()) {
+                returnString += "\n";
+            }
             int event = xmlr.next();
             if (event == XMLStreamConstants.CHARACTERS) {
                 returnString += xmlr.getText().trim().replace('\n',' ');
@@ -709,15 +861,15 @@ public class ImportGenericServiceBean {
     }
   
     private String parseUNF(String unfString) {
-        if (unfString.indexOf("UNF:") != -1) {
+        if (unfString.contains("UNF:")) {
             return unfString.substring( unfString.indexOf("UNF:") );
         } else {
             return null;
         }
     }
   
-    private Map parseDVNCitation(XMLStreamReader xmlr) throws XMLStreamException {
-        Map returnValues = new HashMap();
+    private Map<String, Object> parseDVNCitation(XMLStreamReader xmlr) throws XMLStreamException {
+        Map<String, Object> returnValues = new HashMap<>();
         
         while (true) {
             int event = xmlr.next();
@@ -734,7 +886,7 @@ public class ImportGenericServiceBean {
                 }
                 else if (xmlr.getLocalName().equals("notes")) {
                     if (NOTE_TYPE_REPLICATION_FOR.equals(xmlr.getAttributeValue(null, "type")) ) {
-                        returnValues.put("replicationData", new Boolean(true));
+                        returnValues.put("replicationData", true);
                     }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {

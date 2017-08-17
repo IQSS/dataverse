@@ -16,7 +16,7 @@ public class TestDataverseEngine implements DataverseEngine {
 	
 	private final TestCommandContext ctxt;
     
-    private final Map<DvObject, Set<Permission>> reqiredPermissionsForObjects = new HashMap<>();
+    private final Map<DvObject, Set<Permission>> requiredPermissionsForObjects = new HashMap<>();
     
 	public TestDataverseEngine(TestCommandContext ctxt) {
 		this.ctxt = ctxt;
@@ -28,13 +28,13 @@ public class TestDataverseEngine implements DataverseEngine {
         final Map<String, Set<Permission>> requiredPermissions = aCommand.getRequiredPermissions();
         aCommand.getRequest();
         for ( String dvObjKey : affectedDvs.keySet() ) {
-            reqiredPermissionsForObjects.put( affectedDvs.get(dvObjKey), requiredPermissions.get(dvObjKey) );
+            requiredPermissionsForObjects.put( affectedDvs.get(dvObjKey), requiredPermissions.get(dvObjKey) );
         }
 		return aCommand.execute(ctxt);
 	}
 
     public Map<DvObject, Set<Permission>> getReqiredPermissionsForObjects() {
-        return reqiredPermissionsForObjects;
+        return requiredPermissionsForObjects;
     }
 	
 }

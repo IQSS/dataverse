@@ -2,9 +2,11 @@ package edu.harvard.iq.dataverse.api;
 
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
@@ -13,13 +15,13 @@ public class Util {
 
     static final Set<String> VALID_BOOLEAN_VALUES;
     static final Set<String> BOOLEAN_TRUE_VALUES;
-    
+
     static {
         BOOLEAN_TRUE_VALUES = new TreeSet<>();
         BOOLEAN_TRUE_VALUES.add("true");
         BOOLEAN_TRUE_VALUES.add("yes");
         BOOLEAN_TRUE_VALUES.add("1");
-        
+
         VALID_BOOLEAN_VALUES = new TreeSet<>();
         VALID_BOOLEAN_VALUES.addAll(BOOLEAN_TRUE_VALUES );
         VALID_BOOLEAN_VALUES.add("no");
@@ -32,21 +34,14 @@ public class Util {
             return rdr.readArray();
         }
     }
-    
+
     static boolean isBoolean( String s ) {
         return VALID_BOOLEAN_VALUES.contains(s.toLowerCase());
     }
-    
+
     static boolean isTrue( String s ) {
         return BOOLEAN_TRUE_VALUES.contains(s.toLowerCase());
     }
-    
-	static boolean isNumeric( String s ) {
-		for ( char c : s.toCharArray() ) {
-			if ( ! Character.isDigit(c) ) return false;
-		}
-		return true;
-	}
 
     /**
      * @param date The Date object to convert.
@@ -70,7 +65,7 @@ public class Util {
      */
     private static final  String DATE_TIME_FORMAT_STRING = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     private static final String DATE_FORMAT_STRING = "yyyy-MM-dd";
-         
+
     private static final ThreadLocal<SimpleDateFormat> DATETIME_FORMAT_TL = new ThreadLocal<SimpleDateFormat>(){
         @Override
         protected SimpleDateFormat initialValue()
@@ -80,7 +75,7 @@ public class Util {
             return format;
         }
     };
-      
+
     private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT_TL = new ThreadLocal<SimpleDateFormat>(){
         @Override
         protected SimpleDateFormat initialValue()
@@ -90,7 +85,7 @@ public class Util {
             return format;
         }
     };
-    
+
     /**
      * Note: SimpleDateFormat is not thread-safe! Never retain the format returned by this method in a field.
      * @return The standard API format for date-and-time.
@@ -98,7 +93,7 @@ public class Util {
     public static SimpleDateFormat getDateTimeFormat() {
         return DATETIME_FORMAT_TL.get();
     }
-    
+
     /**
      * Note: SimpleDateFormat is not thread-safe! Never retain the format returned by this method in a field.
      * @return The standard API format for dates.
@@ -106,7 +101,25 @@ public class Util {
     public static SimpleDateFormat getDateFormat() {
         return DATE_FORMAT_TL.get();
     }
-    
-   
+
+    /**
+     * Takes in a list of strings and returns a list stripped of nulls, empty strings and duplicates
+     * @param stringsToCheck
+     * @return
+     */
+
+    public static List<String> removeDuplicatesNullsEmptyStrings(List<String> stringsToCheck){
+
+        if (stringsToCheck == null){
+            throw new NullPointerException("stringsToCheck cannot be null");
+        }
+
+        return stringsToCheck.stream()
+                        .filter(p -> p != null)         // no nulls
+                        .map(String :: trim)            // strip strings
+                        .filter(p -> p.length() > 0 )   // no empty strings
+                        .distinct()                     // distinct
+                        .collect(Collectors.toList());
+    }
 
 }

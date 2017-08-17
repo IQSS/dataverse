@@ -8,7 +8,7 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -41,14 +41,14 @@ public class TemplateServiceBean {
     }
 
     public Template findByDeafultTemplateOwnerId(Long ownerId) {
-        Query query = em.createQuery("select object(o.defaultTemplate) from Dataverse as o where o.owner.id =:ownerId order by o.name");
+        TypedQuery<Template> query = em.createQuery("select object(o.defaultTemplate) from Dataverse as o where o.owner.id =:ownerId order by o.name", Template.class);
         query.setParameter("ownerId", ownerId);
-        return (Template) query.getSingleResult();
+        return query.getSingleResult();
     }
 
     
     public List<Dataverse> findDataversesByDefaultTemplateId(Long defaultTemplateId) {
-        Query query = em.createQuery("select object(o) from Dataverse as o where o.defaultTemplate.id =:defaultTemplateId order by o.name");
+        TypedQuery<Dataverse> query = em.createQuery("select object(o) from Dataverse as o where o.defaultTemplate.id =:defaultTemplateId order by o.name", Dataverse.class);
         query.setParameter("defaultTemplateId", defaultTemplateId);
         return query.getResultList();
     }

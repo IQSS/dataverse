@@ -5,15 +5,22 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import java.util.*;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -29,6 +36,52 @@ public class BuiltinUsersIT {
     @BeforeClass
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
+
+    @Test
+    public void testCreateTimeAndApiLastUse() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response getUserAsJson = UtilIT.getAuthenticatedUser(username, apiToken);
+        getUserAsJson.prettyPrint();
+        getUserAsJson.then().assertThat()
+                // Checking that it's 2017 or whatever. Not y3k compliant! 
+                .body("data.createdTime", startsWith("2"))
+                .body("data.authenticationProviderId", equalTo("builtin"))
+                .statusCode(OK.getStatusCode());
+
+        Response getUserAsJsonAgain = UtilIT.getAuthenticatedUser(username, apiToken);
+        getUserAsJsonAgain.prettyPrint();
+        getUserAsJsonAgain.then().assertThat()
+                // ApiUseTime should be null, user has not used API yet here
+                .body("data.lastApiUseTime", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+    }
+    
+    @Test
+    public void testLastApiUse() {
+        Response createApiUser = UtilIT.createRandomUser();
+        String apiUsername = UtilIT.getUsernameFromResponse(createApiUser);
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createApiUser);
+        
+        Response createDataverse = UtilIT.createRandomDataverse(secondApiToken);
+        String alias = UtilIT.getAliasFromResponse(createDataverse);
+        Response createDatasetViaApi = UtilIT.createRandomDatasetViaNativeApi(alias, secondApiToken);
+        Response getApiUserAsJson = UtilIT.getAuthenticatedUser(apiUsername, secondApiToken);
+        
+        getApiUserAsJson.prettyPrint();
+        getApiUserAsJson.then().assertThat()
+                // Checking that it's 2017 or whatever. Not y3k compliant! 
+                .body("data.lastApiUseTime", startsWith("2"))
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
@@ -82,6 +135,25 @@ public class BuiltinUsersIT {
         createUserResponse.prettyPrint();
         assertEquals(400, createUserResponse.statusCode());
     }
+    
+    @Test 
+    public void testBadCharacterInUsername() {
+        String randomUsername = getRandomUsername() + "/";
+        String email = randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.statusCode());
+    }
+    
+    @Test
+    public void testAccentInUsername() {
+        String randomUsername = getRandomUsername();
+        String randomUsernameWeird = "õÂ" + randomUsername;
+        String email = randomUsername + "@mailinator.com";
+        Response createUserResponse = createUser(randomUsernameWeird, "firstName", "lastName", email);
+        createUserResponse.prettyPrint();
+        assertEquals(400, createUserResponse.statusCode());
+    }
 
     @Test
     public void testLogin() {
@@ -121,15 +193,16 @@ public class BuiltinUsersIT {
     /**
      * testValidatePasswordCleanInstall
      *
-     * Verify if the defaults kick in from {@link edu.harvard.iq.dataverse.util.SystemConfig} when running from a clean install where nothing was set with VM or admin API
-     * settings.
+     * Verify if the defaults kick in from
+     * {@link edu.harvard.iq.dataverse.util.SystemConfig} when running from a
+     * clean install where nothing was set with VM or admin API settings.
      */
     @Test
     public void testValidatePasswordCleanInstall() {
 
         Arrays.stream(SettingsServiceBean.Key.values())
                 .filter(key -> key.name().startsWith("PV"))
-                .forEach(key->given().delete("/api/admin/settings/" + key));
+                .forEach(key -> given().delete("/api/admin/settings/" + key));
 
         Collections.unmodifiableMap(Stream.of(
                 new AbstractMap.SimpleEntry<>(" ", Arrays.asList( // All is wrong here:
@@ -195,7 +268,7 @@ public class BuiltinUsersIT {
                 new AbstractMap.SimpleEntry<>("Potat  0", Collections.emptyList()), // correct length, uppercase, lowercase and digit. All ok...
                 new AbstractMap.SimpleEntry<>("                    ", Collections.emptyList())) // 20 character password length. All ok...
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
-                (password,expectedErrors) -> {
+                (password, expectedErrors) -> {
                     final Response response = given().body(password).when().post("/api/admin/validatePassword");
                     response.prettyPrint();
                     final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");

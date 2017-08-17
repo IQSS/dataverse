@@ -16,8 +16,8 @@ public class BuiltinAuthenticationProviderFactory implements AuthenticationProvi
     
     private final BuiltinAuthenticationProvider provider;
 
-    public BuiltinAuthenticationProviderFactory( BuiltinUserServiceBean busBean, PasswordValidatorServiceBean passwordValidatorService ) {
-        provider = new BuiltinAuthenticationProvider( busBean, passwordValidatorService );
+    public BuiltinAuthenticationProviderFactory(BuiltinUserServiceBean busBean, PasswordValidatorServiceBean passwordValidatorService) {
+        provider = new BuiltinAuthenticationProvider(busBean, passwordValidatorService);
     }
     
     @Override

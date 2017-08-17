@@ -13,10 +13,10 @@
     <error-page>
         <error-code>403</error-code>
         <location>/403.xhtml</location>
-    </error-page>    
+    </error-page>
     <!-- Welcome page -->
     <welcome-file-list>
-        <welcome-file>dataverse.xhtml</welcome-file>
+        <welcome-file>Homepage</welcome-file>
     </welcome-file-list>
     <context-param>
         <param-name>org.jboss.weld.context.conversation.lazy</param-name>
@@ -70,9 +70,26 @@
     </servlet>
     <!-- Map these files with JSF -->
     <servlet>
+        <servlet-name>OAIServlet</servlet-name>
+        <servlet-class>edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>Citation Servlet</servlet-name>
         <servlet-class>edu.harvard.iq.dataverse.CitationServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>Homepage Servlet</servlet-name>
+        <servlet-class>edu.harvard.iq.dataverse.HomepageServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>HomepageServlet</servlet-name>
+        <servlet-class>edu.harvard.iq.dataverse.HomepageServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>HomepageServlet</servlet-name>
+        <url-pattern>/Homepage</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
@@ -94,9 +111,14 @@
         <url-pattern>/primepush/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
+        <servlet-name>OAIServlet</servlet-name>
+        <url-pattern>/oai</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
         <servlet-name>Citation Servlet</servlet-name>
         <url-pattern>/citation</url-pattern>
     </servlet-mapping>
+
     <session-config>
         <session-timeout>
             1440

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{bundle['dashboard.title']} - #{dataverseServiceBean.findRootDataverse().name}"/>
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:define name="body">
+                <f:metadata>
+                    <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
+                    <f:viewAction action="#{dashboardPage.init}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), bundle['dashboard.title'])}"/>
+                </f:metadata>
+               
+                <div id="dashboard-block" class="content">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card-box">
+                                    <h4 class="header-title">#{bundle['dashboard.card.harvestingclients.header']}</h4>
+                                    <div class="row text-center">
+                                        <div class="col-xs-12" jsf:rendered="#{dashboardPage.numberOfConfiguredHarvestClients lt 1}">
+                                            <p class="small text-muted">#{bundle['harvestclients.noClients.label']}</p>
+                                        </div>
+                                        <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfConfiguredHarvestClients gt 0}">
+                                            #{dashboardPage.numberOfConfiguredHarvestClients}
+                                            <p class="small text-muted">
+                                                <h:outputFormat value="#{bundle['dashboard.card.harvestingclients.clients']}">
+                                                    <f:param value="#{dashboardPage.numberOfConfiguredHarvestClients}"/>
+                                                </h:outputFormat>
+                                            </p>
+                                        </div>
+                                        <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfConfiguredHarvestClients gt 0}">
+                                            #{dashboardPage.numberOfHarvestedDatasets}
+                                            <p class="small text-muted">
+                                                <h:outputFormat value="#{bundle['dashboard.card.harvestingclients.datasets']}">
+                                                    <f:param value="#{dashboardPage.numberOfOaiSets}"/>
+                                                </h:outputFormat>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div  class="col-xs-12">
+                                            <p>
+                                                <a href="/harvestclients.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}" class="btn btn-primary" role="button">#{bundle['dashboard.card.harvestingclients.btn.manage']}</a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card-box">
+                                    <h4 class="header-title">#{bundle['dashboard.card.harvestingserver.header']}</h4>
+                                    <div class="row text-center">
+                                        <div class="col-xs-12" jsf:rendered="#{dashboardPage.numberOfOaiSets lt 1}">
+                                            <p class="small text-muted">#{bundle['harvestserver.service.empty']}</p>
+                                        </div>
+                                        <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfOaiSets gt 0}">
+                                            <h:outputText value="#{dashboardPage.harvestServerEnabled ? 'Enabled' : 'Disabled'}"/>
+                                            <p class="small text-muted">#{bundle['dashboard.card.harvestingserver.status']}</p>
+                                        </div>
+                                        <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfOaiSets gt 0}">
+                                            #{dashboardPage.numberOfOaiSets}
+                                            <p class="small text-muted">
+                                                <h:outputFormat value="#{bundle['dashboard.card.harvestingserver.sets']}">
+                                                    <f:param value="#{dashboardPage.numberOfOaiSets}"/>
+                                                </h:outputFormat>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div  class="col-xs-12">
+                                            <p>
+                                                <a href="/harvestsets.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}" class="btn btn-primary" role="button">#{bundle['dashboard.card.harvestingserver.btn.manage']}</a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card-box">
+                                    <h4 class="header-title">#{bundle['dashboard.card.metadataexport.header']}</h4>
+                                    <div class="row text-left">
+                                        <div class="col-xs-12">
+                                            <p class="help-block">
+                                                <span class="glyphicon glyphicon-info-sign"/>
+                                                <h:outputFormat value=" #{bundle['dashboard.card.metadataexport.message']}" escape="false">
+                                                    <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
+                                                    <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/api&#34; target=&#34;_blank&#34;&gt;"/>
+                                                    <f:param value="&lt;/a&gt;"/>
+                                                </h:outputFormat>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card-box">
+                                    <h4 class="header-title">#{bundle['dashboard.card.users']}</h4>
+                                    <div class="row text-center">
+                                        <div class="col-xs-6">
+                                            <h:outputText value="#{DashboardUsersPage.getUserCount()}"/>
+                                            <p class="small text-muted">#{bundle['dashboard.card.users']}</p>
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <h:outputText value="#{DashboardUsersPage.getSuperUserCount()}"/>
+                                            <p class="small text-muted">#{bundle['dashboard.card.users.super']}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div  class="col-xs-12">
+                                            <p>
+                                                <a href="/dashboard-users.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.users.manage']}</a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script type="text/javascript">
+                    $(document).ready(function () {
+                        $('#dashboard-block div.row > div.col-md-4 > div.card-box').matchHeight();
+                    });
+                </script>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

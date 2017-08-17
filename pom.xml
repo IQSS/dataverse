@@ -4,14 +4,15 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.4</version>
+    <version>4.7.1</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 
     <repositories>
@@ -41,7 +42,7 @@
         </repository>
         <repository>
             <id>dataone.org</id>
-            <url>http://dev-testing.dataone.org/maven</url>
+            <url>http://maven.dataone.org</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -202,7 +203,7 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.4.0</version>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -323,17 +324,31 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>0.7.5.201505241946</version>
         </dependency>
+        <!-- Added specific versionf of SLF4J jars; otherwise we end up with
+        conflicting versions of slf4j-api and slf4j-log4j12, loaded as
+        dependencies for different packages; which was causing some incompatibility
+        issues -L.A. 4.3 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.7</version>
+	</dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>1.10.19</version>
         </dependency>
         <!-- Added for DataCite -->
-        <dependency>
+        <!--dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.6.1</version>
-        </dependency>
+        </dependency -->
         <dependency>
             <groupId>axis</groupId>
             <artifactId>axis</artifactId>
@@ -359,6 +374,12 @@
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
         </dependency>
+	<!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
+        <dependency>
+            <groupId>org.javaswift</groupId>
+            <artifactId>joss</artifactId>
+            <version>0.9.10</version>
+        </dependency>
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>
@@ -379,7 +400,58 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
-
+        <!-- OAuth2 authentication. -->
+        <dependency>
+            <groupId>com.github.scribejava</groupId>
+            <artifactId>scribejava-apis</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+	<!-- EXPERIMENTAL: -->
+	<!-- lyncode xoai OAI-PMH implementation: -->
+	<!-- unfortunately, their 4.10 version -->
+	<!-- is still buggy. As an experiment, I'm using -->
+	<!-- a patched version I built locally. -->
+	<!-- (pull requests pending - L.A. -->
+	<dependency>
+	  <groupId>com.lyncode</groupId>
+	  <artifactId>xoai-common</artifactId>
+	  <version>4.1.0-header-patch</version>
+	</dependency>
+	<dependency>
+	  <groupId>com.lyncode</groupId>
+	  <artifactId>xoai-data-provider</artifactId>
+	  <version>4.1.0-header-patch</version>
+	</dependency>
+        <dependency>
+	  <groupId>com.lyncode</groupId>
+	  <artifactId>xoai-service-provider</artifactId>
+	  <version>4.1.0-header-patch</version>
+	</dependency>
+        <!-- Added for AutoService -->
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+            <version>1.0-rc2</version>
+            <optional>true</optional>
+            <type>jar</type>
+        </dependency>
+        <!-- For API File Upload: 1 of 2 -->
+        <dependency>
+           <groupId>org.glassfish.jersey.containers</groupId>
+           <artifactId>jersey-container-servlet</artifactId>
+           <version>2.23.2</version>
+       </dependency>
+        <!-- For API File Upload: 2 of 2 -->
+       <dependency>
+           <groupId>org.glassfish.jersey.media</groupId>
+           <artifactId>jersey-media-multipart</artifactId>
+           <version>2.23.2</version>
+       </dependency>
+        <dependency>
+            <groupId>com.mashape.unirest</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>1.4.9</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -432,6 +504,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
+		    <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <archive>
                         <manifest>

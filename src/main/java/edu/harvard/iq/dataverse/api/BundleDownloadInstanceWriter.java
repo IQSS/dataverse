@@ -56,7 +56,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
             if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
                 DataAccessRequest daReq = new DataAccessRequest();
                 DataFile sf = di.getDownloadInfo().getDataFile();
-                DataFileIO accessObject = DataAccess.createDataAccessObject(sf, daReq);
+                StorageIO<DataFile> accessObject = DataAccess.getStorageIO(sf, daReq);
 
                 if (accessObject != null) {
                     accessObject.open();
@@ -94,7 +94,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     // Now, the original format: 
                     String origFormat = null; 
                     try {
-                        DataFileIO accessObjectOrig = StoredOriginalFile.retreive(accessObject); //.retrieve(sf, (FileAccessIO) accessObject);
+                        StorageIO<DataFile> accessObjectOrig = StoredOriginalFile.retreive(accessObject); //.retrieve(sf, (FileAccessIO) accessObject);
                         if (accessObjectOrig != null) {
                             instream = accessObjectOrig.getInputStream();
                             if (instream != null) {
@@ -127,11 +127,8 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     // add an RData version: 
                     if (!"application/x-rlang-transport".equals(origFormat)) {
                         try {
-                            DataFileIO accessObjectRdata
-                                    = DataFileConverter.performFormatConversion(
-                                            sf,
-                                            (FileAccessIO) accessObject,
-                                            "RData", "application/x-rlang-transport");
+                            StorageIO<DataFile> accessObjectRdata = DataConverter.performFormatConversion(sf, accessObject,
+                                                                                                           "RData", "application/x-rlang-transport");
 
                             if (accessObjectRdata != null) {
                                 instream = accessObjectRdata.getInputStream();

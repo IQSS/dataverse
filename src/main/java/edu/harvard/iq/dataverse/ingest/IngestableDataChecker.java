@@ -568,7 +568,7 @@ public class IngestableDataChecker implements java.io.Serializable {
         String readableFormatType = null;
         try {
             int buffer_size = this.getBufferSize(fh);
-            dbgLog.info("buffer_size: " + buffer_size);
+            dbgLog.fine("buffer_size: " + buffer_size);
         
             // set-up a FileChannel instance for a given file object
             FileChannel srcChannel = new FileInputStream(fh).getChannel();

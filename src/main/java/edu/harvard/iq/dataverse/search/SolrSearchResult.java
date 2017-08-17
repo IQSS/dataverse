@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,8 +31,16 @@ public class SolrSearchResult {
     private String persistentUrl;
     private String downloadUrl;
     private String apiUrl;
+    /**
+     * This is called "imageUrl" because it used to really be a URL. While
+     * performance improvements were being made in the 4.2 timeframe, we started
+     * putting base64 representations of images in this String instead, which
+     * broke the Search API and probably things built on top of it such as
+     * MyData. See "`image_url` from Search API results no longer yields a
+     * downloadable image" at https://github.com/IQSS/dataverse/issues/3616
+     */
     private String imageUrl;
-    private boolean displayImage;
+    private DatasetThumbnail datasetThumbnail;
     private String query;
     private String name;
     private String nameSort;
@@ -67,7 +77,12 @@ public class SolrSearchResult {
     private String filetype;
     private String fileContentType;
     private Long fileSizeInBytes;
+    /**
+     * fileMD5 is here for legacy and backward-compatibility reasons. It might be deprecated some day in favor of "fileChecksumType" and "fileChecksumValue"
+     */
     private String fileMd5;
+    private DataFile.ChecksumType fileChecksumType;
+    private String fileChecksumValue;
     private String dataverseAlias;
     private String dataverseParentAlias;
 //    private boolean statePublished;
@@ -388,7 +403,7 @@ public class SolrSearchResult {
      */
     public JsonObjectBuilder getJsonForMyData() {
 
-        JsonObjectBuilder myDataJson = json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls) 
+        JsonObjectBuilder myDataJson = json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls)
 
         myDataJson.add("publication_statuses", this.getPublicationStatusesAsJSON())
                 .add("is_draft_state", this.isDraftState())
@@ -494,7 +509,13 @@ public class SolrSearchResult {
                 .add("file_type", this.filetype)
                 .add("file_content_type", this.fileContentType)
                 .add("size_in_bytes", getFileSizeInBytes())
+                /**
+                 * "md5" was the only possible value so it's hard-coded here but
+                 * we might want to deprecate it someday since we now put the
+                 * MD5 or SHA-1 in "checksum".
+                 */
                 .add("md5", getFileMd5())
+                .add("checksum", JsonPrinter.getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
                 .add("unf", getUnf())
                 .add("dataset_citation", datasetCitation)
                 .add("deaccession_reason", this.deaccessionReason)
@@ -622,12 +643,12 @@ public class SolrSearchResult {
         this.imageUrl = imageUrl;
     }
 
-    public boolean isDisplayImage() {
-        return displayImage;
+    public DatasetThumbnail getDatasetThumbnail() {
+        return datasetThumbnail;
     }
 
-    public void setDisplayImage(boolean displayImage) {
-        this.displayImage = displayImage;
+    public void setDatasetThumbnail(DatasetThumbnail datasetThumbnail) {
+        this.datasetThumbnail = datasetThumbnail;
     }
 
     public String getQuery() {
@@ -807,11 +828,31 @@ public class SolrSearchResult {
     }
 
     public String getFileMd5() {
-        return fileMd5;
+        if (DataFile.ChecksumType.MD5.equals(getFileChecksumType())) {
+            return fileMd5;
+        } else {
+            return null;
+        }
     }
 
     public void setFileMd5(String fileMd5) {
         this.fileMd5 = fileMd5;
+    }
+
+    public DataFile.ChecksumType getFileChecksumType() {
+        return fileChecksumType;
+    }
+
+    public void setFileChecksumType(DataFile.ChecksumType fileChecksumType) {
+        this.fileChecksumType = fileChecksumType;
+    }
+
+    public String getFileChecksumValue() {
+        return fileChecksumValue;
+    }
+
+    public void setFileChecksumValue(String fileChecksumValue) {
+        this.fileChecksumValue = fileChecksumValue;
     }
 
     public String getNameSort() {
@@ -874,7 +915,7 @@ public class SolrSearchResult {
             String badString = "null";
             if (!identifier.contains(badString)) {
                 if (entity != null && entity instanceof Dataset) {
-                    if (this.isHarvested()) {
+                    if (this.isHarvested() && ((Dataset)entity).getHarvestedFrom() != null) {
                         String remoteArchiveUrl = ((Dataset) entity).getRemoteArchiveURL();
                         if (remoteArchiveUrl != null) {
                             return remoteArchiveUrl;
@@ -1019,5 +1060,6 @@ public class SolrSearchResult {
     public void setUserRole(List<String> userRole) {
         this.userRole = userRole;
     }
+
 
 }

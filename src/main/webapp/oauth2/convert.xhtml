@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <h:head>
+
+    </h:head>
+
+    <h:body>
+        <f:metadata>
+            <!--<f:viewAction action="#{OAuth2FirstLoginPage.setupMockData()}"/>-->
+        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name}"/>
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h1>
+                            <h:outputText value="#{OAuth2FirstLoginPage.welcomeMessage}"/>
+                        </h1>
+                    </div>
+                </div>
+
+                <p:tabView id="tabView">
+                    <p:tab id="convertAccountTab" title="#{bundle['account.info']}">
+                        <h:form id="convertAccountForm" styleClass="form-horizontal">
+                            <p class="help-block">
+                                <span class="glyphicon glyphicon-info-sign"/>
+                                <h:outputFormat value="#{OAuth2FirstLoginPage.convertTip}" escape="false"/>
+                            </p>
+                            <div class="form-group">
+                                <label for="position" class="col-sm-3 control-label">
+                                    #{bundle['login.builtin.credential.usernameOrEmail']}
+                                </label>
+                                <div class="col-sm-9">
+                                    <h:inputText value="#{OAuth2FirstLoginPage.username}" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="position" class="col-sm-3 control-label">
+                                    #{bundle['login.builtin.credential.password']}
+                                </label>
+                                <div class="col-sm-9">
+                                    <h:inputSecret value="#{OAuth2FirstLoginPage.password}" />
+                                </div>
+                            </div>
+                            
+                            <!-- WHAT IS THIS CUSTOM MSG BLK FOR? -->
+                            
+                            <div jsf:rendered="#{OAuth2FirstLoginPage.authenticationFailed}" class="row">
+                                <div class="col-md-12">
+                                    <div class="alert alert-danger">
+                                        #{bundle['oauth2.convertAccount.authenticationFailed']}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-9">
+                                    <a href="/passwordreset.xhtml">
+                                        #{bundle['login.forgot.text']}
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-12 button-block">
+                                    <p:commandButton value="#{bundle['oauth2.convertAccount.buttonTitle']}" styleClass="btn btn-default"
+                                                     action="#{OAuth2FirstLoginPage.convertExistingAccount}"
+                                                     ajax="false" update="@all" />
+                                    <p:commandButton value="#{bundle['cancel']}" styleClass="btn btn-default"
+                                                     action="/oauth2/firstLogin.xhtml?faces-redirect=true"/>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:tab>
+                </p:tabView>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

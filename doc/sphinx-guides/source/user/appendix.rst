@@ -5,6 +5,9 @@ Appendix
 
 Additional documentation complementary to the User Guide.
 
+.. contents:: |toctitle|
+	:local:
+
 Metadata References
 ======================
 
@@ -21,8 +24,6 @@ Detailed below are what metadata schemas we support for Citation and Domain Spec
   : These metadata elements can be mapped/exported to the International Virtual Observatory Alliance’s (IVOA) 
   `VOResource Schema format <http://www.ivoa.net/documents/latest/RM.html>`__ and is based on 
   `Virtual Observatory (VO) Discovery and Provenance Metadata <http://perma.cc/H5ZJ-4KKY>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/astrophysics.tsv>`__).
-- `Life Sciences Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=2>`__: based on `ISA-Tab Specification <http://isatab.sourceforge.net/format.html>`__, along with controlled vocabulary from subsets of the `OBI Ontology <http://bioportal.bioontology.org/ontologies/OBI>`__ and the `NCBI Taxonomy for Organisms <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/biomedical.tsv>`__).
+- `Life Sciences Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=2>`__: based on `ISA-Tab Specification <http://isa-tools.org/format/specification/>`__, along with controlled vocabulary from subsets of the `OBI Ontology <http://bioportal.bioontology.org/ontologies/OBI>`__ and the `NCBI Taxonomy for Organisms <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/biomedical.tsv>`__).
 
-
-
-
+See also the `Dataverse 4.0 Metadata Crosswalk: DDI, DataCite, DC, DCTerms, VO, ISA-Tab <https://docs.google.com/spreadsheets/d/10Luzti7svVTVKTA-px27oq3RxCUM-QbiTkm8iMd5C54/edit?usp=sharing>`__ document.

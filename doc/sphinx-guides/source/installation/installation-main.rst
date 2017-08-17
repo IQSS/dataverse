@@ -4,7 +4,10 @@ Installation
 
 Now that the :doc:`prerequisites` are in place, we are ready to execute the Dataverse installation script (the "installer") and verify that the installation was successful by logging in with a "superuser" account.
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
+
+.. _dataverse-installer:
 
 Running the Dataverse Installer
 -------------------------------
@@ -24,15 +27,23 @@ Execute the installer script like this::
         # cd dvinstall
         # ./install
 
-**NEW in Dataverse 4.3:** It is no longer necessary to run the installer as root!
-Just make sure the user that runs the installer has the write permission in the Glassfish directory. For example, if your Glassfish directory is owned by root, and you try to run the installer as a regular user, it's not going to work. 
-(Do note, that you want the Glassfish directory to be owned by the same user that will be running Glassfish. And you most likely won't need to run it as root. The only reason to run it as root would be to be able to run the application on the default HTTP(S) ports 80 and 443, instead of 8080 and 8181. However, an easier, and more secure way to achieve that would be to instead keep Glassfish running on a high port, and hide it behind an Apache Proxy, via AJP, running on port 80. This configuration is in fact required if you choose to have your Dataverse support Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
+**It is no longer necessary to run the installer as root!**
+
+Just make sure the user running the installer has write permission to:
+
+- /usr/local/glassfish4/glassfish/lib
+- /usr/local/glassfish4/glassfish/domains/domain1
+- the current working directory of the installer (it currently writes its logfile there), and
+- your jvm-option specified files.dir
+
+The only reason to run Glassfish as root would be to allow Glassfish itself to listen on the default HTTP(S) ports 80 and 443, or any other port below 1024. However, it is simpler and more secure to run Glassfish run on its default port of 8080 and hide it behind an Apache Proxy, via AJP, running on port 80 or 443. This configuration is required if you're going to use Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
 
 
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
 
 - Internet Address of your host: localhost
 - Glassfish Directory: /usr/local/glassfish4
+- Glassfish User: current user running the installer script
 - Administrator email address for this Dataverse: (none)
 - SMTP (mail) server to relay notification messages: localhost
 - Postgres Server Address: [127.0.0.1]
@@ -47,6 +58,10 @@ The script will prompt you for some configuration values. If this is a test/eval
 - Rserve Server Port: 6311
 - Rserve User Name: rserve
 - Rserve User Password: rserve
+
+If desired, these default values can be configured by creating a ``default.config`` (example :download:`here <../_static/util/default.config>`) file in the installer's working directory with new values (if this file isn't present, the above defaults will be used).
+
+This allows the installer to be run in non-interactive mode (with ``./install -y -f > install.out 2> install.err``), which can allow for easier interaction with automated provisioning tools.
 
 **New, as of 4.3:**
 
@@ -83,7 +98,7 @@ Congratulations! You have a working Dataverse installation. Soon you'll be tweet
 
 Trouble? See if you find an answer in the troubleshooting section below.
 
-Next you'll want to check out the :doc:`config` section.
+Next you'll want to check out the :doc:`config` section, especially the section on security which reminds you to change the password above.
 
 Troubleshooting
 ---------------
@@ -98,9 +113,57 @@ Check to make sure you used a fully qualified domain name when installing Datave
 Problems Sending Email
 ++++++++++++++++++++++
 
-You can confirm the SMTP server being used with this command:
+If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Glassfish asadmin command:
 
 ``asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
+
+This should return the DNS of the mail host you configured during or after installation. mail/notifyMailSession is the JavaMail Session that's used to send emails to users. 
+
+If the command returns a host you don't want to use, you can modify your notifyMailSession with the Glassfish ``asadmin set`` command with necessary options (`click here for the manual page <https://docs.oracle.com/cd/E18930_01/html/821-2433/set-1.html>`_), or via the admin console at http://localhost:4848 with your domain running. 
+
+If your mail host requires a username/password for access, continue to the next section.
+
+Mail Host Configuration & Authentication
+++++++++++++++++++++++++++++++++++++++++
+
+If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Glassfish admin console. 
+
+In a browser, with your domain online, navigate to http://localhost:4848 and on the side panel find JavaMail Sessions. By default, Dataverse uses a session named mail/notifyMailSession for routing outgoing emails. Click this mail session in the window to modify it.
+
+When fine tuning your JavaMail Session, there are a number of fields you can edit. The most important are:
+
++ **Mail Host:** Desired mail host’s DNS address (e.g. smtp.gmail.com)
++ **Default User:** Username mail host will recognize (e.g. user\@gmail.com)
++ **Default Sender Address:** Email address that your Dataverse will send mail from
+
+Depending on the SMTP server you're using, you may need to add additional properties at the bottom of the page (below "Advanced").
+
+From the "Add Properties" utility at the bottom, use the “Add Property” button for each entry you need, and include the name / corresponding value as needed. Descriptions are optional, but can be used for your own organizational needs. 
+
+**Note:** These properties are just an example. You may need different/more/fewer properties all depending on the SMTP server you’re using.
+
+==============================	==============================
+			Name 							Value
+==============================	==============================
+mail.smtp.auth					true
+mail.smtp.password				[Default User password*]
+mail.smtp.port					[Port number to route through]
+==============================	==============================
+
+**\*WARNING**: Entering a password here will *not* conceal it on-screen. It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
+
+If your installation’s mail host uses SSL (like smtp.gmail.com) you’ll need these name/value pair properties in place:
+
+======================================	==============================
+				Name 								Value
+======================================	==============================
+mail.smtp.socketFactory.port			465
+mail.smtp.port							465
+mail.smtp.socketFactory.fallback		false
+mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
+======================================	==============================
+
+Be sure you save the changes made here and then restart your Glassfish server to test it out.
 
 UnknownHostException While Deploying
 ++++++++++++++++++++++++++++++++++++
@@ -151,4 +214,4 @@ Rerun Installer
 
 With all the data cleared out, you should be ready to rerun the installer per above.
 
-Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. Your mileage may vary. :)
+Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. Your mileage may vary. :) For more on this topic, see "Rebuilding Your Dev Environment" in the :doc:`/developers/dev-environment` section of the Developer Guide.

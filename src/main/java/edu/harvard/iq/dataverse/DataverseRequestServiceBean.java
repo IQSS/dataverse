@@ -6,7 +6,6 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 
 /**
  * The service bean to go to when one needs the current {@link DataverseRequest}.
@@ -19,16 +18,16 @@ public class DataverseRequestServiceBean {
     @Inject
     DataverseSession dataverseSessionSvc;
     
-    @Context
-    HttpServletRequest httpRequest;
+    @Inject
+    private HttpServletRequest request;
     
-    private DataverseRequest dataverseRequest;
+   private DataverseRequest dataverseRequest;
     
     @PostConstruct
     protected void setup() {
-        dataverseRequest = new DataverseRequest(dataverseSessionSvc.getUser(), httpRequest);
+        dataverseRequest = new DataverseRequest(dataverseSessionSvc.getUser(), request);
     }
-
+    
     public DataverseRequest getDataverseRequest() {
         return dataverseRequest;
     }

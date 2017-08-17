@@ -34,6 +34,33 @@ public class SettingsServiceBean {
      */
     public enum Key {
         /**
+         * Defines a public installation -- all datafiles are unrestricted
+         */
+        PublicInstall,
+        /**
+         * Sets the name of your cloud computing environment.
+         * For example, "Massachusetts Open Cloud"
+         */
+        CloudEnvironmentName,
+        /**
+         * Defines the base for a computing environment URL.
+         * The container name will be appended to this on the "Compute" button 
+         */
+        ComputeBaseUrl,
+        /**
+         * For example, https://datacapture.example.org
+         */
+        DataCaptureModuleUrl,
+        RepositoryStorageAbstractionLayerUrl,
+        UploadMethods,
+        DownloadMethods,
+        IdentifierGenerationStyle,
+        OAuth2CallbackUrl,
+        DefaultAuthProvider,
+        FooterCopyright,
+        FileFixityChecksumAlgorithm,
+        MinutesUntilConfirmEmailTokenExpires,
+        /**
          * Override Solr highlighting "fragsize"
          * https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
          */
@@ -59,7 +86,12 @@ public class SettingsServiceBean {
          * Search API. See also https://github.com/IQSS/dataverse/issues/1299
          */
         SearchApiNonPublicAllowed,
-        
+        /**
+         * In Dataverse 4.7 and earlier, an API token was required to use the
+         * Search API. Tokens are no longer required but you can revert to the
+         * old behavior by setting this to false.
+         */
+        SearchApiRequiresToken,
         /**
          * Experimental: Use Solr to power the file listing on the dataset page.
          */
@@ -87,6 +119,7 @@ public class SettingsServiceBean {
          * of possible account types.
          */
         DebugShibAccountType,
+        DebugOAuthAccountType,
         /** Application-wide Terms of Use per installation. */
         ApplicationTermsOfUse,
         /** Terms of Use specific to API per installation. */
@@ -121,12 +154,6 @@ public class SettingsServiceBean {
         SolrHostColonPort,
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
-        /**
-         * Experimental: Key for if DDI export is enabled or disabled.
-         */
-        DdiExportEnabled,
-        /** Key for if Shibboleth is enabled or disabled. */
-        ShibEnabled,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
         /** Key for the url to send users who want to sign up to. */
@@ -149,10 +176,21 @@ public class SettingsServiceBean {
         TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
+
+        /**
+         * A link to an installation of https://github.com/IQSS/miniverse or
+         * some other metrics app.
+         */
+        MetricsUrl,
         /* zip download size limit */
+        /** Optionally override version number in guides. */
+        GuidesVersion,
         ZipDownloadLimit,
         /* zip upload number of files limit */
         ZipUploadFilesLimit,
+        /* the number of files the GUI user is allowed to upload in one batch, 
+            via drag-and-drop, or through the file select dialog */
+        MultipleUploadFilesLimit,
         /* Size limits for generating thumbnails on the fly */
         /* (i.e., we'll attempt to generate a thumbnail on the fly if the 
          * size of the file is less than this)
@@ -165,9 +203,6 @@ public class SettingsServiceBean {
         StatusMessageText,
         /* return email address for system emails such as notifications */
         SystemEmail, 
-        /* whether file landing page is available
-        for 4.2 development */
-        ShowFileLandingPage,
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 
         case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
@@ -218,6 +253,45 @@ public class SettingsServiceBean {
         Whether to display the publish text for every published version
         */
         DatasetPublishPopupCustomTextOnAllVersions,
+        /*
+        Whether Harvesting (OAI) service is enabled
+        */
+        OAIServerEnabled,
+        
+        /**
+        * Whether Shibboleth passive authentication mode is enabled
+        */
+        ShibPassiveLoginEnabled,
+        /**
+         * Whether Export should exclude FieldType.EMAIL
+         */
+        ExcludeEmailFromExport,
+        /*
+         Location and name of HomePage customization file
+        */
+        HomePageCustomizationFile,
+        /*
+         Location and name of Header customization file
+        */
+        HeaderCustomizationFile,
+        /*
+         Location and name of Footer customization file
+        */
+        FooterCustomizationFile,
+        /*
+         Location and name of CSS customization file
+        */
+        StyleCustomizationFile,
+        /*
+         Location and name of installation logo customization file
+        */
+        LogoCustomizationFile,
+        
+        // Option to override the navbar url underlying the "About" link
+        NavbarAboutUrl,
+        
+        // Option to override multiple guides with a single url
+        NavbarGuidesUrl, 
 
         /**
          * The dictionary filepaths separated by a pipe (|)
@@ -263,7 +337,7 @@ public class SettingsServiceBean {
      * Values that are considered as "true".
      * @see #isTrue(java.lang.String, boolean) 
      */
-    private static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
+    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
             new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
     
     /**
@@ -357,6 +431,10 @@ public class SettingsServiceBean {
     
     public boolean isTrueForKey( Key key, boolean defaultValue ) {
         return isTrue( key.toString(), defaultValue );
+    }
+
+    public boolean isFalseForKey( Key key, boolean defaultValue ) {
+        return ! isTrue( key.toString(), defaultValue );
     }
             
     public void deleteValueForKey( Key name ) {

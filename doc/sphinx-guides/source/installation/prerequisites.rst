@@ -2,11 +2,12 @@
 Prerequisites
 =============
 
-Before running the Dataverse installation script, you must install and configure the following software, preferably on a distribution of Linux such as RHEL or its derivatives such as CentOS. After following all the steps below (which have been written based on CentOS 6), you can proceed to the :doc:`installation-main` section.
+Before running the Dataverse installation script, you must install and configure the following software, preferably on a Linux distribution such as RHEL or CentOS. After following all the steps below (which are mostly based on CentOS 6), you can proceed to the :doc:`installation-main` section.
 
 You **may** find it helpful to look at how the configuration is done automatically by various tools such as Vagrant, Puppet, or Ansible. See the :doc:`prep` section for pointers on diving into these scripts.
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Java
 ----
@@ -42,7 +43,7 @@ Glassfish Version 4.1 is required. There are known issues with Glassfish 4.1.1 a
 Installing Glassfish
 ====================
 
-**Important**: once Glassfish is installed, a new version of the Weld library (v2.2.10.SP1) must be downloaded and installed. This fixes a serious issue in the library supplied with Glassfish 4.1 ( see https://github.com/IQSS/dataverse/issues/647 for details). Please note that if you plan to front Glassfish with Apache you must also patch Grizzly as explained in the :doc:`shibboleth` section.
+**Note:** The Dataverse installer need not be run as root, and it is recommended that Glassfish not run as root either. We suggest the creation of a glassfish service account for this purpose.
 
 - Download and install Glassfish (installed in ``/usr/local/glassfish4`` in the example commands below)::
 
@@ -50,32 +51,47 @@ Installing Glassfish
 	# unzip glassfish-4.1.zip
 	# mv glassfish4 /usr/local
 
+If you intend to install and run Glassfish under a service account (and we hope you do), chown -R the Glassfish hierarchy to root to protect it but give the service account access to the below directories:
+
+- Set service account permissions::
+
+	# chown -R root:root /usr/local/glassfish4
+	# chown glassfish /usr/local/glassfish4/glassfish/lib
+	# chown -R glassfish:glassfish /usr/local/glassfish4/glassfish/domains/domain1
+
+After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
+
+Once Glassfish is installed, you'll need a newer version of the Weld library (v2.2.10.SP1) to fix a serious issue in the library supplied with Glassfish 4.1 (see https://github.com/IQSS/dataverse/issues/647 for details). If you plan to front Glassfish with Apache you must also patch Grizzly as explained in the :doc:`shibboleth` section.
+
 - Remove the stock Weld jar; download Weld v2.2.10.SP1 and install it in the modules folder::
 
 	# cd /usr/local/glassfish4/glassfish/modules
 	# rm weld-osgi-bundle.jar
 	# wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.10.SP1/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar
-	# /usr/local/glassfish4/bin/asadmin start-domain
 
-- Verify the Weld version::
+- Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
 
-	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
-
-- Stop Glassfish and change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
-
-	# /usr/local/glassfish4/bin/asadmin stop-domain
 	# vim /usr/local/glassfish4/glassfish/domains/domain1/config/domain.xml
 
 This recommendation comes from http://blog.c2b2.co.uk/2013/07/glassfish-4-performance-tuning.html among other places.
 
-Glassfish Init Script
-=====================
+- Start Glassfish and verify the Weld version::
 
-The Dataverse installation script will start Glassfish if necessary, but while you're configuring Glassfish, you might find the following init script helpful to have Glassfish start on boot.
+	# /usr/local/glassfish4/bin/asadmin start-domain
+	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
 
-Adjust `this Glassfish init script <../_static/installation/files/etc/init.d/glassfish>`_ for your needs or write your own.
+Launching Glassfish on system boot
+==================================
 
-It is not necessary to have Glassfish running before you execute the Dataverse installation script because it will start Glassfish for you.
+The Dataverse installation script will start Glassfish if necessary, but you may find the following scripts helpful to launch Glassfish start automatically on boot.
+
+- This :download:`Systemd file<../_static/installation/files/etc/systemd/glassfish.service>` may be serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or Ubuntu 16+)
+- This :download:`init script<../_static/installation/files/etc/init.d/glassfish.init.service>` may be useful for RHEL/CentOS6 or Ubuntu >= 14 if you're using a Glassfish service account, or
+- This :download:`Glassfish init script <../_static/installation/files/etc/init.d/glassfish.init.root>` may be helpful if you're just going to run Glassfish as root.
+
+It is not necessary for Glassfish to be running before you execute the Dataverse installation script; it will start Glassfish for you.
+
+Please note that you must run Glassfish in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
 PostgreSQL
 ----------
@@ -98,7 +114,7 @@ The standard init script that ships RHEL 6 and similar should work fine. Enable 
 
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
-=====================================================================================
+=======================================================================================
 
 - The application and the installer script will be connecting to PostgreSQL over TCP/IP, using password authentication. In this section we explain how to configure PostgreSQL to accept these connections.
 
@@ -137,8 +153,6 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
       	kill -1 PROCESS_ID
 
-
-
 Solr 
 ----
 
@@ -161,12 +175,13 @@ The reason for backing up the ``schema.xml`` file is that Dataverse requires a c
 
 With the Dataverse-specific schema in place, you can now start Solr::
 
+	# cd /usr/local/solr-4.6.0/example
 	# java -jar start.jar
 
 Solr Init Script
 ================
 
-The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but starting Solr with an init script is recommended. You can attempt to adjust `this Solr init script <../_static/installation/files/etc/init.d/solr>`_ for your needs or write your own.
+The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but starting Solr with an init script is recommended. You can attempt to adjust this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.
 
 Solr should be running before the installation script is executed.
 
@@ -190,4 +205,31 @@ Installing jq
         # chmod +x jq
         # jq --version
 
+ImageMagick
+-----------
+
+Dataverse uses `ImageMagick <https://www.imagemagick.org>`_ to generate thumbnail previews of PDF files. This is an optional component, meaning that if you don't have ImageMagick installed, there will be no thumbnails for PDF files, in the search results and on the dataset pages; but everything else will be working. (Thumbnail previews for non-PDF image files are generated using standard Java libraries and do not require any special installation steps). 
+
+Installing and configuring ImageMagick
+======================================
+
+On a Red Hat and similar Linux distributions, you can install ImageMagick with something like::
+
+	# yum install ImageMagick 
+
+(most RedHat systems will have it pre-installed). 
+When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required. 
+
+On MacOS you can compile ImageMagick from sources, or use one of the popular installation frameworks, such as brew. 
+
+If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Glassfish configuration using the JVM option, below. For example::
+
+   <jvm-options>-Ddataverse.path.imagemagick.convert=/opt/local/bin/convert</jvm-options>
+
+(see the :doc:`config` section for more information on the JVM options)
+
+
+
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
+
+

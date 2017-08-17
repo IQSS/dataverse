@@ -2,46 +2,48 @@
 Making Releases
 ===============
 
-Please note! The text below reflects the :doc:`/developers/branching-strategy` for Dataverse 4.2.3 and below but this is under review. For updates, please follow https://github.com/IQSS/dataverse/issues/2863
+.. contents:: |toctitle|
+	:local:
 
 Bump Version Numbers
 --------------------
 
-Before tagging, ensure the version number has been incremented in the following places:
+Before tagging, ensure the version number has been incremented to the milestone (i.e. 4.6.2) in the following places:
 
-- pom.xml (and scripts that reference the name of the war file)
+- pom.xml
 - doc/sphinx-guides/source/conf.py
 - doc/sphinx-guides/source/index.rst 
 
 Here's an example commit where all three files were updated at once: https://github.com/IQSS/dataverse/commit/813b66a6077e8f94026a8db5320cceffefc10e11
 
-Finalize Documentation
-----------------------
+Merge "develop" into "master"
+-----------------------------
 
-The source for user-facing documentation (including this very guide) is under https://github.com/IQSS/dataverse/tree/master/doc
-
-Docs don't write themselves. Please help out! Before a release is tagged documentation related to that release should be checked in to the release branch (i.e. 4.0.1), ultimately to be hosted under a version number at http://guides.dataverse.org
+The "develop" branch should be merged into "master" before tagging. See also the branching strategy described in the :doc:`version-control` section.
 
 Write Release Notes
 -------------------
 
-See http://keepachangelog.com
+Create a draft release at https://github.com/IQSS/dataverse/releases/new
 
-Merge Release Branch
---------------------
+- The "tag version" and "title" should be the number of the milestone with a "v" in front (i.e. v4.6.2).
+- For the description, follow previous examples at https://github.com/IQSS/dataverse/releases
 
-The release branch (i.e. 4.0.1) should be merged into "master" before tagging.
+Make Artifacts Available for Download
+-------------------------------------
 
-Tag the Release
----------------
+Upload the following artifacts to the draft release you created:
 
-The tag will be the number of the milestone and release branch (i.e. 4.0.1).
-
-Make Release Available for Download
------------------------------------
-
-Upload the following to https://github.com/IQSS/dataverse/releases
-
-- installer (for new installs)
+- installer
 - war file
 - database migration script
+- other files as needed, such as an updated Solr schema
+
+Publish Release
+---------------
+
+Click the "Publish release" button.
+
+----
+
+Previous: :doc:`coding-style` | Next: :doc:`tools`

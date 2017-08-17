@@ -20,6 +20,7 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -81,7 +82,7 @@ public class DataFileTag implements Serializable {
     }
     
     public static List<String> listTags() {
-        List<String> retlist = new ArrayList();
+        List<String> retlist = new ArrayList<>();
         
         for(TagType t : TagType.values()) {
             retlist.add(TagTypeToLabels.get(t));
@@ -136,10 +137,7 @@ public class DataFileTag implements Serializable {
         if (this.type == null){
             return false;
         }
-        if (this.type == TagType.Geospatial){
-            return true;
-        }
-        return false;
+        return this.type == TagType.Geospatial;
     }
     
     @Override
@@ -156,10 +154,7 @@ public class DataFileTag implements Serializable {
             return false;
         }
         DataFileTag other = (DataFileTag) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
     @Override
@@ -167,4 +162,41 @@ public class DataFileTag implements Serializable {
         return "edu.harvard.iq.dataverse.DataFileTag[ id=" + id + " ]";
     }
     
+    
+    /**
+     * Static method to check whether a string is a valid tag
+     * 
+     * Used for API check
+     * 
+     * @param tagString
+     * @return 
+     */
+    public static boolean isDataFileTag(String label){
+        
+        if (label == null){
+            throw new NullPointerException("label cannot be null");
+        }
+       
+        return TagLabelToTypes.containsKey(label);
+    }
+    
+    public TagType getDataFileTagFromLabel(String label){
+        
+        if (!TagLabelToTypes.containsKey(label)){
+            return null;
+        }
+        
+        return TagLabelToTypes.get(label);
+    }
+    
+    
+    public static List<String> getListofLabels(){
+    
+        return new ArrayList<>(TagTypeToLabels.values());
+    }
+    
+    public static String getListofLabelsAsString(){
+        
+        return StringUtils.join(DataFileTag.getListofLabels(), ", ");
+    }
 }

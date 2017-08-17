@@ -14,8 +14,12 @@ public class DatasetDTO implements java.io.Serializable {
         private String authority;
         private String globalIdCreateTime;
         private String doiSeparator;
+        private String publisher;
+        private String publicationDate;
         private DatasetVersionDTO datasetVersion;
         private List<DataFileDTO> dataFiles;
+	public static final String DOI_PROTOCOL = "doi";
+	public static final String HDL_PROTOCOL = "hdl";
 
     public String getId() {
         return id;
@@ -80,6 +84,22 @@ public class DatasetDTO implements java.io.Serializable {
 
     public void setDoiSeparator(String doiSeparator) {
         this.doiSeparator = doiSeparator;
+    }
+    
+    public String getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
+
+    public String getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(String publicationDate) {
+        this.publicationDate = publicationDate;
     }
 
     @Override

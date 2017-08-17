@@ -31,7 +31,7 @@ import javax.persistence.*;
 		, @Index(columnList="owner_id")
 		, @Index(columnList="creator_id")
 		, @Index(columnList="releaseuser_id")})
-public abstract class DvObject implements java.io.Serializable {
+public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
     public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
     public static final String DATASET_DTYPE_STRING = "Dataset";
@@ -64,12 +64,12 @@ public abstract class DvObject implements java.io.Serializable {
 
         @Override
         public String visit(Dataset ds) {
-            return "[" + ds.getId() + " " + ds.getLatestVersion().getTitle() + "]";
+            return "[" + ds.getId() + (ds.getLatestVersion() != null ? " " + ds.getLatestVersion().getTitle() : "") + "]";
         }
 
         @Override
         public String visit(DataFile df) {
-            return "[" + df.getId() + " " + df.getFileMetadata().getLabel() + "]";
+            return "[" + df.getId() + (df.getFileMetadata() != null ? " " + df.getFileMetadata().getLabel() : "") + "]";
         }
     };
     
@@ -107,6 +107,14 @@ public abstract class DvObject implements java.io.Serializable {
 
     private Timestamp permissionIndexTime;
     
+    @Column
+    private String storageIdentifier;
+    
+    /**
+     * previewImageAvailable could also be thought of as "thumbnail has been
+     * generated. However, were all three thumbnails generated? We might need a
+     * boolean per thumbnail size.
+     */
     private boolean previewImageAvailable;
     
     public boolean isPreviewImageAvailable() {
@@ -282,6 +290,21 @@ public abstract class DvObject implements java.io.Serializable {
         
         return null;
     }    
+    
+    public String getStorageIdentifier() {
+        return storageIdentifier;
+    }
+    
+    public void setStorageIdentifier(String storageIdentifier) {
+        this.storageIdentifier = storageIdentifier;
+    }
+    
+    /**
+     * 
+     * @param other 
+     * @return {@code true} iff {@code other} is {@code this} or below {@code this} in the containment hierarchy.
+     */
+    public abstract boolean isAncestorOf( DvObject other );
     
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
