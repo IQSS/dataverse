@@ -40,10 +40,11 @@ public class PasswordValidatorTest {
         int minLength;
         String dictionaries;
         int numberOfCharacteristics;
+        int numberOfRepeatingCharactersAllowed;
 
         Params(int numberOfExpectedErrors, String password, Date passwordModificationTime, int expirationDays,
                int expirationMinLength, int goodStrength, int maxLength, int minLength, String dictionaries,
-               int numberOfCharacteristics) {
+               int numberOfCharacteristics, int numberOfRepeatingCharactersAllowed) {
 
             this.numberOfExpectedErrors = numberOfExpectedErrors;
             this.password = password;
@@ -55,6 +56,7 @@ public class PasswordValidatorTest {
             this.minLength = minLength;
             this.dictionaries = dictionaries;
             this.numberOfCharacteristics = numberOfCharacteristics;
+            this.numberOfRepeatingCharactersAllowed = numberOfRepeatingCharactersAllowed;
         }
 
         int getExpectedErrors() {
@@ -96,6 +98,10 @@ public class PasswordValidatorTest {
         int getNumberOfCharacteristics() {
             return numberOfCharacteristics;
         }
+        
+        int getNumberOfRepeatingCharactersAllowed() {
+            return numberOfRepeatingCharactersAllowed;
+        }
 
         @Override
         public String toString() {
@@ -103,7 +109,7 @@ public class PasswordValidatorTest {
                     String.format(
                             "numberOfExpectedErrors=%s\npassword='%s'\npasswordModificationTime=%s\nexpirationDays=%s\n" +
                                     "expirationMaxLength=%s\ngoodStrength=%s\nmaxLength=%s\nminLength=%s\ndictionaries=%s\n" +
-                                    "numberOfCharacteristics=%s\n%s",
+                                    "numberOfCharacteristics=%s\nnumberOfRepeatingCharactersAllowed=%s\n%s",
                             numberOfExpectedErrors,
                             password,
                             passwordModificationTime,
@@ -114,6 +120,7 @@ public class PasswordValidatorTest {
                             minLength,
                             dictionaries,
                             numberOfCharacteristics,
+                            numberOfRepeatingCharactersAllowed,
                             StringUtils.repeat("-", 80)
                     );
         }
@@ -132,6 +139,7 @@ public class PasswordValidatorTest {
         final Date expired = new Date(new Date().getTime() - DAY * 400);
         final Date notExpired = new Date(new Date().getTime() - DAY * 300);
         final int numberOfCharacters = 3;
+        final int numberOfRepeatingCharactersAllowed = 4;
         final int expirationDays = 365;
         final int expirationMinLength = 10;
         final int goodStrength20 = 20;
@@ -140,31 +148,33 @@ public class PasswordValidatorTest {
         final String dictionary = createDictionary("56pOtAtO", false);
 
         final List<Params> paramsList = Arrays.asList(new Params[]{
-                        new Params(7, "p otato", expired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters), // everything wrong here for both validators.
-                        new Params(6, "p otato", expired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters), // no GoodStrength validator
-                        new Params(0, "p", expired, expirationDays, 0, 0, 0, 0, dictionary, 0), // no validation... everything if off
-                        new Params(1, "po", expired, expirationDays, 0, 0, 1, 0, dictionary, 0), // this password is too long
-                        new Params(1, "potato", expired, expirationDays, 7, 0, 0, 0, dictionary, 0), // set expiration again
-                        new Params(5, "p otato", expired, 401, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters), // 401 days before expiration
-                        new Params(5, "p otato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
-                        new Params(4, "one potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
-                        new Params(3, "Two potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
-                        new Params(0, "Three.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
-                        new Params(1, "F0ur.potato", expired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters),
-                        new Params(0, "F0ur.potatos", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters),
-                        new Params(1, "F0ur.potato", expired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters),
-                        new Params(0, "4.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
-                        new Params(0, "55Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters),
-                        new Params(1, "56Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters), // password in dictionary
-                        new Params(0, "6 Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters),
-                        new Params(3, "7 Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, 4), // add a fourth characteristic
-                        new Params(0, "7 Potato901234567890", notExpired, expirationMinLength, minLength, goodStrength20, maxLength, minLength, dictionary, 4), // Now it does not matter: 20 characters
-                        new Params(0, "8.Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, 4), // Now we use all four
-                        new Params(1, "Potato.Too.12345.Short", notExpired, expirationDays, expirationMinLength, 0, maxLength, 23, dictionary, numberOfCharacters),
-                        new Params(0, "Potatoes on my plate with beef", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters),
-                        new Params(0, "Potatoes on my plate with pie.", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters),
-                        new Params(0, "Potatoes on a plate          .", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters),
-                        new Params(0, "                              ", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters)
+                        new Params(7, "p otato", expired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed), // everything wrong here for both validators.
+                        new Params(6, "p otato", expired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed), // no GoodStrength validator
+                        new Params(0, "p", expired, expirationDays, 0, 0, 0, 0, dictionary, 0, numberOfRepeatingCharactersAllowed), // no validation... everything if off
+                        new Params(1, "po", expired, expirationDays, 0, 0, 1, 0, dictionary, 0, numberOfRepeatingCharactersAllowed), // this password is too long
+                        new Params(1, "potato", expired, expirationDays, 7, 0, 0, 0, dictionary, 0, numberOfRepeatingCharactersAllowed), // set expiration again
+                        new Params(5, "p otato", expired, 401, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed), // 401 days before expiration
+                        new Params(5, "p otato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(4, "one potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(3, "Two potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(0, "Three.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(1, "F0ur.potato", expired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(0, "F0ur.potatos", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(1, "F0ur.potato", expired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(0, "4.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(0, "55Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(1, "56Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed), // password in dictionary
+                        new Params(0, "6 Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(3, "7 Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, 4, numberOfRepeatingCharactersAllowed), // add a fourth characteristic
+                        new Params(0, "7 Potato901234567890", notExpired, expirationMinLength, minLength, goodStrength20, maxLength, minLength, dictionary, 4, numberOfRepeatingCharactersAllowed), // Now it does not matter: 20 characters
+                        new Params(0, "8.Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, 4, numberOfRepeatingCharactersAllowed), // Now we use all four
+                        new Params(1, "Potato.Too.12345.Short", notExpired, expirationDays, expirationMinLength, 0, maxLength, 23, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(0, "Potatoes on my plate with beef", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(0, "Potatoes on my plate with pie.", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(0, "Potatoes on a plate          .", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
+                        new Params(0, "Repeated Potatoes:0000", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, 5), // Pass when repeating character maximum is 5
+                        new Params(0, "Repeated Potatoes:000", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed), // Allow no more than 3 repeating characters (default)
+                        new Params(0, "                              ", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed) //For some reason, whitespace doesn't count in the repeating rule?
                 }
         );
 
@@ -177,6 +187,7 @@ public class PasswordValidatorTest {
                     passwordValidatorService.setMinLength(params.getMinLength());
                     passwordValidatorService.setDictionaries(params.getDictionaries());
                     passwordValidatorService.setNumberOfCharacteristics(params.getNumberOfCharacteristics());
+                    passwordValidatorService.setNumberOfRepeatingCharactersAllowed(params.getNumberOfRepeatingCharactersAllowed());
                     List<String> errors = passwordValidatorService.validate(params.getPassword(), params.getPasswordModificationTime());
                     int actualErrors = errors.size();
                     int expectedErrors = params.getExpectedErrors();

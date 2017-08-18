@@ -318,7 +318,12 @@ public class SettingsServiceBean {
         /**
          * The number of M characteristics
          */
-        PVNumberOfCharacteristics
+        PVNumberOfCharacteristics,
+        
+        /**
+         * The number of consecutive repeated characters allowed for a password
+         */
+        PVNumberOfRepeatingCharactersAllowed
         ;
 
         @Override

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.validation;
 
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.passay.*;
+import org.passay.RepeatCharacterRegexRule;
 import org.passay.dictionary.WordListDictionary;
 import org.passay.dictionary.WordLists;
 import org.passay.dictionary.sort.ArraysSort;
@@ -59,6 +60,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(PasswordValidatorServiceBean.class.getCanonicalName());
     private static String DICTIONARY_FILES = "weak_passwords.txt";
 
+
     private enum ValidatorTypes {
         GoodStrengthValidator, StandardValidator
     }
@@ -71,6 +73,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     private int maxLength;
     private int minLength;
     private int numberOfCharacteristics;
+    private int numberOfRepeatingChars;
     private String dictionaries = DICTIONARY_FILES;
     private PropertiesMessageResolver messageResolver;
 
@@ -180,6 +183,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         int maxLength = getMaxLength();
         int minLength = getMinLength();
         int numberOfCharacteristics = getNumberOfCharacteristics();
+        int numberOfRepeatingChars = getNumberOfRepeatingCharactersAllowed();
         PasswordValidator passwordValidator = validators.get(ValidatorTypes.StandardValidator);
         if (passwordValidator == null) {
             final List<Rule> rules = new ArrayList<>(4);
@@ -195,6 +199,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             rules.add(new ExpirationRule(getExpirationMaxLength(), getExpirationDays()));
             if (numberOfCharacteristics != 0)
                 rules.add(characterRule());
+            rules.add(repeatCharacterRegexRule(numberOfRepeatingChars));
             passwordValidator = new PasswordValidator(messageResolver, rules);
             validators.put(ValidatorTypes.StandardValidator, passwordValidator);
         }
@@ -277,6 +282,12 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         characteristicsRule.getRules().add(new CharacterRule(EnglishCharacterData.Digit, 1));
         characteristicsRule.getRules().add(new CharacterRule(EnglishCharacterData.Special, 1));
         return characteristicsRule;
+    }
+    
+    private RepeatCharacterRegexRule repeatCharacterRegexRule(int sl) {
+        sl = getNumberOfRepeatingCharactersAllowed();
+        final RepeatCharacterRegexRule repeatCharacterRegexRule = new RepeatCharacterRegexRule(sl);
+        return repeatCharacterRegexRule;
     }
 
     /**
@@ -440,5 +451,17 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             validators.remove(ValidatorTypes.StandardValidator);
         }
     }
+    
+    private int getNumberOfRepeatingCharactersAllowed() {
+        int numberOfRepeatingChars = systemConfig == null ? this.numberOfRepeatingChars : systemConfig.getPVNumberOfRepeatingCharactersAllowed();
+        setNumberOfRepeatingCharactersAllowed(numberOfRepeatingChars);
+        return this.numberOfRepeatingChars;
+    }
 
+    void setNumberOfRepeatingCharactersAllowed(int numberOfRepeatingChars) {
+        if (this.numberOfRepeatingChars != numberOfRepeatingChars) {
+            this.numberOfRepeatingChars = numberOfRepeatingChars;
+            validators.remove(ValidatorTypes.StandardValidator);
+        }
+    }
 }

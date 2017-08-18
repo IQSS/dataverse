@@ -755,6 +755,24 @@ public class SystemConfig {
         }
         return numberOfCharacteristics;
     }
+    
+    /**
+     * getPVNumberOfRepeatingCharactersAllowed
+     *
+     * Get the number M consecutive repeating characters permitted. Defaults to 3.
+     *
+     * @return The number.
+     */
+    public int getPVNumberOfRepeatingCharactersAllowed() {
+        int numberOfRepeatingCharactersAllowed = 3;
+        String _numberOfRepeatingCharactersAllowed = System.getProperty("pv.numberofrepeatingcharactersallowed", settingsService.get(SettingsServiceBean.Key.PVNumberOfRepeatingCharactersAllowed.toString()));
+        try {
+            numberOfRepeatingCharactersAllowed = Integer.parseInt(_numberOfRepeatingCharactersAllowed);
+        } catch (NumberFormatException nfe) {
+            logger.warning("Invalid value for PVNumberOfRepeatingCharactersAllowed: " + _numberOfRepeatingCharactersAllowed);
+        }
+        return numberOfRepeatingCharactersAllowed;
+    }
 
     public enum FileUploadMethods {
 
