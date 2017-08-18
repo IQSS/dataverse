@@ -2320,24 +2320,36 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         for (FileMetadata markedForDelete : selectedFiles) {
-            // TODO: 
-            // the code below needs to be rewritten: 
-            // markedForDelete.getId() == null DOES NOT mean that this file 
-            // has just been uploaded! (markedForDelete is a FileMetadata, not 
-            // a DataFile!! so this maybe an existing file, but a brand new
-            // DRAFT version and a brand new filemetadata that hasn't been saved 
-            // yet) -- L.A. 4.2, Sep. 15 
+            
             if (markedForDelete.getId() != null) {
+                // This FileMetadata has an id, i.e., it exists in the database. 
+                // We are going to remove this filemetadata from the version: 
                 dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                // But the actual delete will be handled inside the UpdateDatasetCommand
+                // (called later on). The list "filesToBeDeleted" is passed to the 
+                // command as a parameter:
                 filesToBeDeleted.add(markedForDelete);
             } else {
-                // the file was just added during this step, so in addition to 
-                // removing it from the fileMetadatas (for display), we also remove it from 
-                // the newFiles list and the dataset's files, so it won't get uploaded at all
+                // This FileMetadata does not have an id, meaning it has just been 
+                // created, and not yet saved in the database. This in turn means this is 
+                // a freshly created DRAFT version; specifically created because 
+                // the user is trying to delete a file from an existing published 
+                // version. This means we are not really *deleting* the file - 
+                // we are going to keep it in the published version; we are simply 
+                // going to save a new DRAFT version that does not contain this file. 
+                // So below we are deleting the metadata from the version; we are 
+                // NOT adding the file to the filesToBeDeleted list that will be 
+                // passed to the UpdateDatasetCommand. -- L.A. Aug 2017
                 Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
                     FileMetadata fmd = fmit.next();
                     if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
+                        // And if this is an image file that happens to be assigned 
+                        // as the dataset thumbnail, let's null the assignment here:
+                        
+                        if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
+                            dataset.setThumbnailFile(null);
+                        }
                         fmit.remove();
                         break;
                     }
