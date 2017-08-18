@@ -473,7 +473,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         multiObjectDeleteRequest.setKeys(keys);
 
-        logger.info("Trying to delete auxiliary files...");
+        logger.fine("Trying to delete auxiliary files...");
             try {
                 s3.deleteObjects(multiObjectDeleteRequest);
             } catch (MultiObjectDeleteException e) {
