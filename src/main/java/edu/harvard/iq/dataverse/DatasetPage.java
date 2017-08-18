@@ -1189,7 +1189,7 @@ public class DatasetPage implements java.io.Serializable {
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
