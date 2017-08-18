@@ -265,11 +265,10 @@ public class ExportService {
                     exporter.exportDataset(version, datasetAsJson, outputStream);
                     outputStream.flush();
                     outputStream.close();
-
-                    System.out.println("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
+                    
                     storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
                     boolean tempFileDeleted = tempFile.delete();
-                    logger.info("tempFileDeleted: " + tempFileDeleted);
+                    logger.fine("tempFileDeleted: " + tempFileDeleted);
                 }
 
             } catch (IOException ioex) {
