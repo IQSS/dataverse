@@ -318,8 +318,8 @@ public class DatasetUtil {
             return null;
         }
         String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
-        logger.info("thumbFileLocation = " + thumbFileLocation);
-        logger.info("tmpFileLocation=" + tmpFileForResize.toPath().toString());
+        logger.fine("thumbFileLocation = " + thumbFileLocation);
+        logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
         //now we must save the updated thumbnail 
         try {
             dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumb48addedByImageThumbConverter);
@@ -335,7 +335,7 @@ public class DatasetUtil {
             logger.fine("Failed to delete temporary thumbnail file");
         }
         
-        logger.info("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalTempFileWasDeleted);
+        logger.fine("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalTempFileWasDeleted);
         return dataset;
     }
 
