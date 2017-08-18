@@ -31,15 +31,29 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Glassfish might be a compelling enough reason to front Glassfish with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
-Additional Recommendations
-++++++++++++++++++++++++++
+Run Glassfish as a User Other Than Root
++++++++++++++++++++++++++++++++++++++++
 
-To further enhance the security of your installation, we recommend taking the following specific actions:
+See the Glassfish section of :doc:`prerequisites` for details and init scripts for running Glassfish as non-root.
 
-- Configure Glassfish to run as a user other than root.
-- Remove /root/.glassfish/pass password files.
-- Store passwords as a hash rather than base64 encoded. Ideally this will be a salted hash, and use a strong hashing algorithm.
-- Use a strong administrator password so the hash cannot easily be cracked through dictionary attacks.
+Related to this is that you should remove ``/root/.glassfish/pass`` to ensure that Glassfish isn't ever accidentally started as root. Without the password, Glassfish won't be able to start as root, which is a good thing.
+
+Enforce Strong Passwords for User Accounts
+++++++++++++++++++++++++++++++++++++++++++
+
+Dataverse only stores passwords (as salted hash, and use a strong hashing algorithm) for "builtin" users and you can increase the password complexity rules to meet your security needs. (If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not any control over password complexity rules. See the "Auth Modes: Local vs. Remote vs. Both" section below for more on login options.)
+
+Even if you are satisfied with the out-of-the-box password complexity rules Dataverse ships with, for the "dataverseAdmin" account you should use a strong password so the hash cannot easily be cracked through dictionary attacks.
+
+Password complexity rules for "builtin" accounts can be adjusted with a variety of settings documented below. Here's a list:
+
+- :PVDictionaries
+- :PVExpirationDays
+- :PVValidatorExpirationMaxLength
+- :PVGoodStrength
+- :PVMinLength
+- :PVMaxLength
+- :PVNumberOfCharacteristics
 
 Solr
 ----
@@ -896,6 +910,79 @@ or
 Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
 
 The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
+
+:PVDictionaries
++++++++++++++++
+
+Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used as a user password.
+
+``curl -X PUT -d "/opt/bad_passwords.txt" http://localhost:8080/api/admin/settings/:PVDictionaries``
+
+This setting can be overruled with VM argument pv.dictionaries
+
+:PVExpirationDays
++++++++++++++++++
+
+Password policy setting for builtin user accounts: the number of days after an unchanged password expires given it's size is under :PVValidatorExpirationMaxLength.
+
+``curl -X PUT -d 365 http://localhost:8080/api/admin/settings/:PVExpirationDays``
+
+This setting can be overruled with VM argument pv.expirationdays
+
+Recommended setting: 365 with :PVValidatorExpirationMaxLength set.
+
+:PVValidatorExpirationMaxLength
++++++++++++++++++++++++++++++++
+
+Password policy setting for builtin user accounts: passwords with a size under :PVValidatorExpirationMaxLength will expire after :PVExpirationDays days.
+
+``curl -X PUT -d 10 http://localhost:8080/api/admin/settings/:PVValidatorExpirationMaxLength``
+
+This setting can be overruled with VM argument pv.expirationmaxlength
+
+Recommended setting: 10 with :PVExpirationDays set.
+
+:PVGoodStrength
++++++++++++++++
+
+Password policy setting for builtin user accounts: passwords equal or larger than the :PVGoodStrength setting are always valid.
+
+``curl -X PUT -d 20 http://localhost:8080/api/admin/settings/:PVGoodStrength``
+
+This setting can be overruled with VM argument pv.goodstrength
+
+Recommended setting: 20.
+
+:PVMinLength
+++++++++++++
+
+Password policy setting for builtin user accounts: a passwords minimum valid size.
+
+``curl -X PUT -d 8 http://localhost:8080/api/admin/settings/:PVMinLength``
+
+This setting can be overruled with VM argument pv.minlength
+
+Recommended setting: 10. If set lower, it is advisable to set the :PVExpirationDays and :PVValidatorExpirationMaxLength default values.
+
+:PVMaxLength
+++++++++++++
+
+Password policy setting for builtin user accounts: a passwords maximum valid size.
+
+``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:PVMaxLength``
+
+This setting can be overruled with VM argument pv.maxlength
+
+:PVNumberOfCharacteristics
+++++++++++++++++++++++++++
+
+Password policy setting for builtin user accounts: the number indicates how many of the four character rules should be part of a password. The character rules are: use of a capital, lowercase, number and special character.
+
+``curl -X PUT -d 3 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
+
+This setting can be overruled with VM argument pv.numberofcharacteristics
+
+Recommended setting: 3.
 
 :ShibPassiveLoginEnabled
 ++++++++++++++++++++++++
