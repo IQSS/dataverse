@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import javax.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
@@ -111,17 +112,41 @@ public class HarvestingServer extends AbstractApiBean {
      */
     @POST
     @Path("{specname}")
+    //@Path("/api/admin/harvest/server/oaisets/{specname}") // doesn't work.
     public Response createOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException 
     {
+	    //TODO - add authentication
+	    /*
+	     * getRequestApiKey : string
+	     * AuthenticatedUser findUserByApiToken
+	     * or findUserOrDie for covering both
+	     * but which permission to check for - DataverseRole.ADMIN probably corresponds to dataverse admin, not installation admin.
+	     * can I move this behind the admin endpoint? - no.
+	     * So who's currently allowed to create OAI sets? `isSuperUser()` from HarvestingSetsPage
+	     * ah - should work the same way - User.isSuperUser()
+	     */
+	    AuthenticatedUser dvUser;
+	    try
+	    {
+	    	dvUser = findAuthenticatedUserOrDie();
+	    }
+	    catch( WrappedResponse wr )
+	    {
+		    return wr.getResponse();
+	    }
+	    if ( ! dvUser.isSuperuser() )
+	    {
+		    return badRequest( "only superusers can create OAI sets");
+	    }
+	    
 
-	    //try () { 
 	    StringReader rdr = new StringReader(jsonBody);
 	    JsonObject json = Json.createReader(rdr).readObject();
 
 	    OAISet set = new OAISet();
 	    // TODO: check that it doesn't exist yet...
+	    // today's fun fact - you can create exact duplicate OAI sets, apparently without error.
 	    set.setSpec(spec);
-	    // TODO: jsonParser().parseOaiSet(json, set);
 	    String name,desc,defn;
 	    try
 	    {
