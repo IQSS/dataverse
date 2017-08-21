@@ -104,30 +104,62 @@ public class HarvestingServer extends AbstractApiBean {
                     "Internal error: failed to produce output for OAI set " + spec + ".");
         }
     }
-    
+   
+    /**
+     * create an OAI set from spec in path and other parameters from POST body (as JSON).
+     * {"name":$set_name, "description":$optional_set_description,"defination":$set_search_query_string}.
+     */
     @POST
     @Path("{specname}")
-    public Response createOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
-        
-        //try () { 
-            StringReader rdr = new StringReader(jsonBody);
-            JsonObject json = Json.createReader(rdr).readObject();
-            
-            OAISet set = new OAISet();
-            // TODO: check that it doesn't exist yet...
-            set.setSpec(spec);
-            // TODO: jsonParser().parseOaiSet(json, set);
-            
-            oaiSetService.save(set);
-            
-            return created( "/harvest/server/oaisets" + spec, oaiSetAsJson(set));
-                    
-        //} catch (JsonParseException ex) {
-          //  return errorResponse( Response.Status.BAD_REQUEST, "Error parsing OAI set: " + ex.getMessage() );
-            
-        //} catch (WrappedResponse ex) {
-        //    return ex.getResponse();  
-        //}
+    public Response createOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException 
+    {
+
+	    //try () { 
+	    StringReader rdr = new StringReader(jsonBody);
+	    JsonObject json = Json.createReader(rdr).readObject();
+
+	    OAISet set = new OAISet();
+	    // TODO: check that it doesn't exist yet...
+	    set.setSpec(spec);
+	    // TODO: jsonParser().parseOaiSet(json, set);
+	    String name,desc,defn;
+	    try
+	    {
+		    name = json.getString("name");
+	    }
+	    catch( NullPointerException npe_name)
+	    {
+		    throw new JsonParseException("name unspecified");
+	    }
+	    try
+	    {
+		    defn = json.getString("defination");
+	    }
+	    catch( NullPointerException npe_defn)
+	    {
+		    throw new JsonParseException("defination unspecified");
+	    }
+	    try
+	    {
+		    desc = json.getString("description");
+	    }
+	    catch( NullPointerException npe_desc)
+	    {
+		    desc = ""; //treating description as optional
+	    }
+	    set.setName( name );
+	    set.setDescription( desc );
+	    set.setDefinition( defn );
+	    oaiSetService.save(set);
+
+	    return created( "/harvest/server/oaisets" + spec, oaiSetAsJson(set));
+
+	    //} catch (JsonParseException ex) {
+	    //  return errorResponse( Response.Status.BAD_REQUEST, "Error parsing OAI set: " + ex.getMessage() );
+
+	    //} catch (WrappedResponse ex) {
+	    //    return ex.getResponse();  
+	    //}
     }
 
     @PUT
