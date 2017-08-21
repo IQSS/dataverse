@@ -341,8 +341,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     
-    public void requestAccess(String fileIdString){
-        System.out.print("requestAccess FileDownloadServiceBean");
+    public String requestAccess(String fileIdString, boolean filePage){
         if(fileIdString.isEmpty()){
             fileIdString = fileDownloadHelper.getSelectedFileId();
         }
@@ -374,8 +373,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if (idForNotification.intValue() > 0 && dataset != null) {
             sendRequestFileAccessNotification(dataset, idForNotification);
         }
+        
+        if (dataset != null && !filePage ){
+            return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  + "&faces-redirect=true"; 
+        }
+        if (file != null && filePage){
+            return "/file.xhtml?fileId=" + file.getId().toString() + "&faces-redirect=true";  
+        }
+        return "";
+        
     }
-
     
        
     public boolean requestAccess(Long fileId) {   
