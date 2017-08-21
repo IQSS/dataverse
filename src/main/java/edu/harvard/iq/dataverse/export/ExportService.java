@@ -266,6 +266,7 @@ public class ExportService {
                     outputStream.flush();
                     outputStream.close();
                     
+                    logger.fine("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
                     storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
                     boolean tempFileDeleted = tempFile.delete();
                     logger.fine("tempFileDeleted: " + tempFileDeleted);

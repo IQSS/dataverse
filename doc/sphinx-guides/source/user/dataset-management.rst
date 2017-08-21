@@ -130,8 +130,6 @@ Cloud Storage + Computing
 
 Dataverse installations can be configured to facilitate cloud-based storage and/or computing (this feature is considered experimental at this time, and some of the kinks are still being worked out). While the default configuration for Dataverse uses a local file system for storing data, a cloud-enabled Dataverse installation can use a Swift object storage database for its data. This allows users to perform computations on data using an integrated cloud computing environment.
 
-**Note:** At present, any file restrictions that users apply in Dataverse will not be supported in Swift. This means: if you set a file on Dataverse as "restricted", a user without proper permissions **could bypass that restriction** by accessing the file through Swift. For now, do not rely on file restrictions to limit access to data in a cloud-enabled Dataverse.
-
 Cloud Computing
 ~~~~~~~~~~~~~~~
 

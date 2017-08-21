@@ -42,6 +42,10 @@ public class SwordServiceBean {
                 // set the value to the  in user's email
                 childField.getSingleValue().setValue(user.getDisplayInfo().getEmailAddress());
             }
+            // We don't see any error from EZID but when using DataCite, we were seeing this error: Response code: 400, [xml] xml error: cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type '#AnonType_contributorNamecontributorcontributorsresource'.
+            if (DatasetFieldConstant.datasetContactName.equals(childField.getDatasetFieldType().getName())) {
+                childField.getSingleValue().setValue(user.getDisplayInfo().getTitle());
+            }
         }
 
         newDatasetVersion.getDatasetFields().add(emailDatasetField);

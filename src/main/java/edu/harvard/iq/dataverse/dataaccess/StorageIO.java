@@ -157,6 +157,10 @@ public abstract class StorageIO<T extends DvObject> {
     private String varHeader;
     private String errorMessage;
 
+    private String temporarySwiftUrl;
+    private String tempUrlExpiry;
+    private String tempUrlSignature;
+
     private String swiftContainerName;
 
     private boolean isLocalFile = false;
@@ -168,6 +172,9 @@ public abstract class StorageIO<T extends DvObject> {
     private boolean isZippedStream = false;
     private boolean isDownloadSupported = true;
     private boolean isSubsetSupported = false;
+
+    private String swiftFileName;
+
 
     
     // For HTTP-based downloads:
@@ -252,6 +259,22 @@ public abstract class StorageIO<T extends DvObject> {
 
     public String getRemoteUrl() {
         return remoteUrl;
+    }
+
+    public String getTemporarySwiftUrl(){
+        return temporarySwiftUrl;
+    }
+    
+    public String getTempUrlExpiry() {
+        return tempUrlExpiry;
+    }
+    
+    public String getTempUrlSignature() {
+        return tempUrlSignature;
+    }
+    
+    public String getSwiftFileName() {
+        return swiftFileName;
     }
 
     public String getSwiftContainerName(){
@@ -341,6 +364,22 @@ public abstract class StorageIO<T extends DvObject> {
 
     public void setRemoteUrl(String u) {
         remoteUrl = u;
+    }
+
+    public void setTemporarySwiftUrl(String u){
+        temporarySwiftUrl = u;
+    }
+    
+    public void setTempUrlExpiry(Long u){
+        tempUrlExpiry = String.valueOf(u);
+    }
+    
+    public void setSwiftFileName(String u) {
+        swiftFileName = u;
+    }
+    
+    public void setTempUrlSignature(String u){
+        tempUrlSignature = u;
     }
 
     public void setSwiftContainerName(String u){
