@@ -2430,6 +2430,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         // 2. Tabular DataFile Tags: 
         if (selectedTags != null) {
             for (String selectedTag : selectedTags) {
+                
+                
+//MAD: Should we be adding the DatasetVersion earlier?
+                
+                fileMetadataSelectedForTagsPopup.setDatasetVersion(this.getDataset().getLatestVersion());
                 fileMetadataSelectedForTagsPopup.addCategoryByName(selectedTag);
             }
         }
