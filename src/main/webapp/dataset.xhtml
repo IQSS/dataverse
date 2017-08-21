@@ -452,10 +452,10 @@
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
 
                             <p:remoteCommand name="refreshLockCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshLock}"/>
-                            <p:remoteCommand name="refreshAllCommand" process="@this" update="@all" actionListener="#{DatasetPage.refresh}"/>
+                            <p:remoteCommand name="refreshAllCommand" process="@this" update=":messagePanel,@all" actionListener="#{DatasetPage.refresh}"/>
 
                             <!-- see the comment in the javascript below that explains what this button is for -->
-                            <p:commandButton id="refreshButton" process="@this" widgetVar="refreshButton" update="@all" style="display:none"/>
+                            <p:commandButton id="refreshButton" process="@this" widgetVar="refreshButton" update="@all,:messagePanel" style="display:none"/>
 
                             <script type="text/javascript">
                                 $(this).ready(function () {
@@ -1122,7 +1122,7 @@
                                     <h:outputText value="#{bundle['file.rsyncUpload.step1']}" escape="false"/>
                                 </li>
                                 <li>
-                                    <h:commandLink id="rsyncDL" actionListener="#{DatasetPage.downloadRsyncScript()}">
+                                    <h:commandLink id="rsyncDL" update="@all" actionListener="#{DatasetPage.downloadRsyncScript()}">
                                         <h:outputText value="#{bundle['file.rsyncUpload.step2']}" escape="false"/>
                                     </h:commandLink>
                                 </li>
@@ -1137,7 +1137,7 @@
                             </ol>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('rsyncUpload_popup').hide();"/>
+                            <p:commandButton value="#{bundle.close}" update="@all" onclick="PF('rsyncUpload_popup').hide();"/>
                         </div>
                         <!-- END RSYNC UPLOAD POPUP -->
                     </p:dialog>

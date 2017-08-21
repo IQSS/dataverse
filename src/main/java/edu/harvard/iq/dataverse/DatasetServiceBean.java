@@ -514,6 +514,18 @@ public class DatasetServiceBean implements java.io.Serializable {
         return lockId != null;
     }
     
+    public String checkDatasetLockInfo(Long datasetId) {
+        String nativeQuery = "SELECT sl.info FROM DatasetLock sl WHERE sl.dataset_id = " + datasetId + " LIMIT 1;";
+        String infoMessage; 
+        try {
+            infoMessage = (String)em.createNativeQuery(nativeQuery).getSingleResult();
+        } catch (Exception ex) {
+            infoMessage = null; 
+        }
+        
+        return infoMessage;
+    }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void addDatasetLock(Long datasetId, Long userId, String info) {
 
