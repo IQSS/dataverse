@@ -973,6 +973,22 @@ Password policy setting for builtin user accounts: a passwords maximum valid siz
 
 This setting can be overruled with VM argument pv.maxlength
 
+:PVCharacterRules
++++++++++++++++++
+
+The default is:
+
+- one uppercase letter
+- one lowercase letter
+- one digit
+- one special character
+
+Set to "Alphabetical:1,Digit:1" to revert to the password complexity rules used in Dataverse 4.0. Note that you must also set ``:PVNumberOfCharacteristics`` to "2" since there are now only two charcter rules. Note that "Alphabetical:1,Digit:1" is a magic string. Dataverse doesn't actually parse the string meaningfully.
+
+``curl -X PUT -d 'Alphabetical:1,Digit:1' http://localhost:8080/api/admin/settings/:PVCharacterRules``
+
+``curl -X PUT -d 2 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
+
 :PVNumberOfCharacteristics
 ++++++++++++++++++++++++++
 
