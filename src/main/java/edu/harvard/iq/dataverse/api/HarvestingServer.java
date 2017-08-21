@@ -112,18 +112,10 @@ public class HarvestingServer extends AbstractApiBean {
      */
     @POST
     @Path("{specname}")
-    //@Path("/api/admin/harvest/server/oaisets/{specname}") // doesn't work.
     public Response createOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException 
     {
-	    //TODO - add authentication
 	    /*
-	     * getRequestApiKey : string
-	     * AuthenticatedUser findUserByApiToken
-	     * or findUserOrDie for covering both
-	     * but which permission to check for - DataverseRole.ADMIN probably corresponds to dataverse admin, not installation admin.
-	     * can I move this behind the admin endpoint? - no.
-	     * So who's currently allowed to create OAI sets? `isSuperUser()` from HarvestingSetsPage
-	     * ah - should work the same way - User.isSuperUser()
+	     * authorization modeled after the UI (aka HarvestingSetsPage)
 	     */
 	    AuthenticatedUser dvUser;
 	    try
@@ -178,13 +170,6 @@ public class HarvestingServer extends AbstractApiBean {
 	    oaiSetService.save(set);
 
 	    return created( "/harvest/server/oaisets" + spec, oaiSetAsJson(set));
-
-	    //} catch (JsonParseException ex) {
-	    //  return errorResponse( Response.Status.BAD_REQUEST, "Error parsing OAI set: " + ex.getMessage() );
-
-	    //} catch (WrappedResponse ex) {
-	    //    return ex.getResponse();  
-	    //}
     }
 
     @PUT
