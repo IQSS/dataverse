@@ -57,4 +57,30 @@ public class PasswordValidatorUtil {
         return characterRules;
     }
 
+    public static String getPasswordRequirements(int minLength, int maxLength, List<CharacterRule> characterRules, int numberOfCharacteristics, int numberOfRepeatingCharactersAllowed) {
+        String message = "Your password must contain:";
+        message += "<ul>";
+        message += "<li>At least " + minLength + " characters (passwords of at least 20 characters are exempt from all other requirements)</li>";
+        message += "<li>At least " + numberOfCharacteristics + " of the following: " + getRequiredCharacters(characterRules) + "</li>";
+        message += "</ul>";
+        message += "It may not include:";
+        message += "<ul>";
+        message += "<li>Number sequences of " + numberOfRepeatingCharactersAllowed + " or more numbers in a row</li>";
+        message += "<li>Dictionary words or common acronyms of 5 or more letters</li>";
+        message += "</ul>";
+        return message;
+    }
+
+    // FIXME: Figure out how to pull "a letter", for example, out of a CharacterRule.
+    public static String getRequiredCharacters(List<CharacterRule> characterRules) {
+        switch (characterRules.size()) {
+            case 2:
+                return "a letter and a number";
+            case 4:
+                return "uppercase, lowercase, numeric, or special characters";
+            default:
+                return "UNKNOWN";
+        }
+    }
+
 }

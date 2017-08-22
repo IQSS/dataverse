@@ -321,20 +321,12 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * Describes all the characteristics of a valid password.
      */
     public String getGoodPasswordDescription() {
-        final List<String> requirements = new ArrayList<>(4);
-        if (getMinLength() != 0)
-            requirements.add(String.format("a minimum of %s characters", getMinLength()));
-        if (getMaxLength() != 0)
-            requirements.add(String.format("a maximum of %s characters", getMaxLength()));
-        if (getNumberOfCharacteristics() != 0)
-            requirements.add(String.format("at least %s of these four characters: a number, special character, lowercase letter and uppercase letter", getNumberOfCharacteristics()));
-        if (getGoodStrength() != 0)
-            requirements.add(String.format("alternatively, the previous requirements do not apply for passwords of %s or more characters", getGoodStrength()));
-        return requirements.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining("; "));
+        List<CharacterRule> charRules = systemConfig == null ? PasswordValidatorUtil.getCharacterRulesDefault() : systemConfig.getPVCharacterRules();
+        if (characterRules == null) {
+            this.characterRules = charRules;
+        }
+        return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), characterRules, getNumberOfCharacteristics(), getNumberOfRepeatingCharactersAllowed());
     }
-
 
     /**
      * getGoodStrength
