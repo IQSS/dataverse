@@ -148,7 +148,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             
             //  check if this file is being used as the default thumbnail
             if (fmd.getDataFile().equals(theDataset.getThumbnailFile())) {
-                logger.info("deleting the dataset thumbnail designation");
+                logger.fine("deleting the dataset thumbnail designation");
                 theDataset.setThumbnailFile(null);
             }
             
