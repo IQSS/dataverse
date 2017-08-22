@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +15,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -21,6 +23,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import org.passay.CharacterRule;
 
 /**
  * System-wide configuration
@@ -705,12 +708,12 @@ public class SystemConfig {
     /**
      * getPVMinLength
      *
-     * Get the minimum length of a valid password. Defaults to 8.
+     * Get the minimum length of a valid password. Defaults to 6.
      *
      * @return The length.
      */
     public int getPVMinLength() {
-        int passportValidatorMinLength = 8;
+        int passportValidatorMinLength = 6;
         String _passportValidatorMinLength = System.getProperty("pv.minlength", settingsService.get(SettingsServiceBean.Key.PVMinLength.toString()));
         try {
             passportValidatorMinLength = Integer.parseInt(_passportValidatorMinLength);
@@ -739,14 +742,35 @@ public class SystemConfig {
     }
 
     /**
+     * One letter, 2 special characters, etc. Defaults to:
+     *
+     * - one uppercase
+     *
+     * - one lowercase
+     *
+     * - one digit
+     *
+     * - one special character
+     *
+     * TODO: This is more strict than what Dataverse 4.0 shipped with. Consider
+     * keeping the default the same.
+     */
+    public List<CharacterRule> getPVCharacterRules() {
+        String characterRulesString = System.getProperty("pv.characterrules", settingsService.get(SettingsServiceBean.Key.PVCharacterRules.toString()));
+        return PasswordValidatorUtil.getCharacterRules(characterRulesString);
+    }
+
+    /**
      * getPVNumberOfCharacteristics
      *
      * Get the number M characteristics. Defaults to 3.
      *
      * @return The number.
+     * 
+     * TODO: Consider changing the out-of-the-box rules to be the same as Dataverse 4.0, which was 2 (one letter, one number).
      */
     public int getPVNumberOfCharacteristics() {
-        int numberOfCharacteristics = 3;
+        int numberOfCharacteristics = 2;
         String _numberOfCharacteristics = System.getProperty("pv.numberofcharacteristics", settingsService.get(SettingsServiceBean.Key.PVNumberOfCharacteristics.toString()));
         try {
             numberOfCharacteristics = Integer.parseInt(_numberOfCharacteristics);

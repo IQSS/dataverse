@@ -316,6 +316,11 @@ public class SettingsServiceBean {
         PVMaxLength,
 
         /**
+         * One letter, 2 special characters, etc.
+         */
+        PVCharacterRules,
+
+        /**
          * The number of M characteristics
          */
         PVNumberOfCharacteristics,

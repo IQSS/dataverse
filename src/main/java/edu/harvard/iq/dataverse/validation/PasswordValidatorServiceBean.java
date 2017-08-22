@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
  * Rule 3. It will allow either:
  * a. 8 password length minimum with an annual password expiration
  * b. 10 password length minimum
+ * <p>
  * Rule 4. It will forgo all the above three requirements for passwords that have a minimum length of 20.
  * <p>
  * All presets can be tweaked by applying new settings via the admin API of VM arguments.
@@ -60,7 +61,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(PasswordValidatorServiceBean.class.getCanonicalName());
     private static String DICTIONARY_FILES = "weak_passwords.txt";
 
-
     private enum ValidatorTypes {
         GoodStrengthValidator, StandardValidator
     }
@@ -74,6 +74,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     private int minLength;
     private int numberOfCharacteristics;
     private int numberOfRepeatingChars;
+    List<CharacterRule> characterRules;
     private String dictionaries = DICTIONARY_FILES;
     private PropertiesMessageResolver messageResolver;
 
@@ -85,6 +86,14 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         properties.setProperty(GoodStrengthRule.ERROR_CODE_GOODSTRENGTH, GoodStrengthRule.ERROR_MESSAGE_GOODSTRENGTH);
         properties.setProperty(ExpirationRule.ERROR_CODE_EXPIRED, ExpirationRule.ERROR_MESSAGE_EXPIRED);
         messageResolver = new PropertiesMessageResolver(properties);
+    }
+
+    public PasswordValidatorServiceBean(List<CharacterRule> characterRules) {
+        final Properties properties = PropertiesMessageResolver.getDefaultProperties();
+        properties.setProperty(GoodStrengthRule.ERROR_CODE_GOODSTRENGTH, GoodStrengthRule.ERROR_MESSAGE_GOODSTRENGTH);
+        properties.setProperty(ExpirationRule.ERROR_CODE_EXPIRED, ExpirationRule.ERROR_MESSAGE_EXPIRED);
+        messageResolver = new PropertiesMessageResolver(properties);
+        this.characterRules = characterRules;
     }
 
     /**
@@ -128,6 +137,8 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         final PasswordData passwordData = PasswordData.newInstance(password, String.valueOf(passwordModificationTime.getTime()), null);
         final RuleResult result = new RuleResult();
         for (PasswordValidator currentUser : validators.values()) {
+            logger.fine("characterRules.size(): " + characterRules.size());
+            logger.fine("numberOfCharacteristics: " + numberOfCharacteristics);
             RuleResult r = currentUser.validate(passwordData);
             if (r.isValid())
                 return Collections.emptyList();
@@ -197,8 +208,13 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             }
             rules.add(lengthRule);
             rules.add(new ExpirationRule(getExpirationMaxLength(), getExpirationDays()));
-            if (numberOfCharacteristics != 0)
-                rules.add(characterRule());
+            if (numberOfCharacteristics != 0) {
+                List<CharacterRule> charRules = systemConfig == null ? PasswordValidatorUtil.getCharacterRulesDefault() : systemConfig.getPVCharacterRules();
+                if (characterRules == null) {
+                    this.characterRules = charRules;
+                }
+                rules.add(characterRule(characterRules));
+            }
             rules.add(repeatCharacterRegexRule(numberOfRepeatingChars));
             passwordValidator = new PasswordValidator(messageResolver, rules);
             validators.put(ValidatorTypes.StandardValidator, passwordValidator);
@@ -274,19 +290,16 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      *
      * @return A CharacterCharacteristicsRule
      */
-    private CharacterCharacteristicsRule characterRule() {
+    private CharacterCharacteristicsRule characterRule(List<CharacterRule> characterRules) {
         final CharacterCharacteristicsRule characteristicsRule = new CharacterCharacteristicsRule();
         characteristicsRule.setNumberOfCharacteristics(getNumberOfCharacteristics());
-        characteristicsRule.getRules().add(new CharacterRule(EnglishCharacterData.UpperCase, 1));
-        characteristicsRule.getRules().add(new CharacterRule(EnglishCharacterData.LowerCase, 1));
-        characteristicsRule.getRules().add(new CharacterRule(EnglishCharacterData.Digit, 1));
-        characteristicsRule.getRules().add(new CharacterRule(EnglishCharacterData.Special, 1));
+        characteristicsRule.getRules().addAll(characterRules);
         return characteristicsRule;
     }
-    
-    private RepeatCharacterRegexRule repeatCharacterRegexRule(int sl) {
-        sl = getNumberOfRepeatingCharactersAllowed();
-        final RepeatCharacterRegexRule repeatCharacterRegexRule = new RepeatCharacterRegexRule(sl);
+
+    private RepeatCharacterRegexRule repeatCharacterRegexRule(int sequenceLength) {
+        sequenceLength = getNumberOfRepeatingCharactersAllowed();
+        final RepeatCharacterRegexRule repeatCharacterRegexRule = new RepeatCharacterRegexRule(sequenceLength);
         return repeatCharacterRegexRule;
     }
 
@@ -418,6 +431,14 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         }
     }
 
+    public void setCharacterRules(List<CharacterRule> characterRules) {
+        this.characterRules = characterRules;
+    }
+
+    public List<CharacterRule> getCharacterRules() {
+        return characterRules;
+    }
+
     void setNumberOfCharacteristics(int numberOfCharacteristics) {
         if (this.numberOfCharacteristics != numberOfCharacteristics) {
             this.numberOfCharacteristics = numberOfCharacteristics;
@@ -425,7 +446,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         }
     }
 
-    private int getNumberOfCharacteristics() {
+    public int getNumberOfCharacteristics() {
         int numberOfCharacteristics = systemConfig == null ? this.numberOfCharacteristics : systemConfig.getPVNumberOfCharacteristics();
         setNumberOfCharacteristics(numberOfCharacteristics);
         return this.numberOfCharacteristics;

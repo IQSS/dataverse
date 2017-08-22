@@ -956,9 +956,9 @@ Recommended setting: 20.
 :PVMinLength
 ++++++++++++
 
-Password policy setting for builtin user accounts: a passwords minimum valid size.
+Password policy setting for builtin user accounts: a passwords minimum valid size. The default is 6.
 
-``curl -X PUT -d 8 http://localhost:8080/api/admin/settings/:PVMinLength``
+``curl -X PUT -d 6 http://localhost:8080/api/admin/settings/:PVMinLength``
 
 This setting can be overruled with VM argument pv.minlength
 
@@ -973,16 +973,37 @@ Password policy setting for builtin user accounts: a passwords maximum valid siz
 
 This setting can be overruled with VM argument pv.maxlength
 
-:PVNumberOfCharacteristics
-++++++++++++++++++++++++++
+:PVCharacterRules
++++++++++++++++++
 
-Password policy setting for builtin user accounts: the number indicates how many of the four character rules should be part of a password. The character rules are: use of a capital, lowercase, number and special character.
+The default is two rules:
+
+- one letter
+- one digit
+
+Set to "UpperCase:1,LowerCase:1,Digit:1,Special:1" to change the rule to these four:
+
+- one uppercase letter
+- one lowercase letter
+- one digit
+- one special character
+
+Please note that "UpperCase:1,LowerCase:1,Digit:1,Special:1" is currently a magic string. Dataverse doesn't parse it so you can't increase the numbers, for example.
+
+If you have increased the number of rule to 4 like this, you can also optionally increase ``:PVNumberOfCharacteristics`` to as high as 4. ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of rules or you will see "Number of characteristics must be <= to the number of rules".
+
+``curl -X PUT -d 'UpperCase:1,LowerCase:1,Digit:1,Special:1' http://localhost:8080/api/admin/settings/:PVCharacterRules``
 
 ``curl -X PUT -d 3 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
 
-This setting can be overruled with VM argument pv.numberofcharacteristics
+:PVNumberOfCharacteristics
+++++++++++++++++++++++++++
 
-Recommended setting: 3.
+Password policy setting for builtin user accounts: the number indicates how many of the character rules defined by ``:PVCharacterRules`` should be part of a password. The default is 2. See the section on ``:PVNumberOfCharacteristics`` for more discussion on how the number of characteristics cannot be set to a higher number than the number of rules.
+
+``curl -X PUT -d 2 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
+
+This setting can be overruled with VM argument pv.numberofcharacteristics
 
 :ShibPassiveLoginEnabled
 ++++++++++++++++++++++++
