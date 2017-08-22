@@ -1512,7 +1512,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (this.isFileReplaceOperation()){
               this.handleReplaceFileUpload(event, dropBoxStream, fileName, FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT, null, event);
               this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
-//              fileMetadataSelectedForTagsPopup = fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0);
               return;
              }
             // -----------------------------------------------------------
