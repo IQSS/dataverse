@@ -88,6 +88,14 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         messageResolver = new PropertiesMessageResolver(properties);
     }
 
+    public PasswordValidatorServiceBean(List<CharacterRule> characterRules) {
+        final Properties properties = PropertiesMessageResolver.getDefaultProperties();
+        properties.setProperty(GoodStrengthRule.ERROR_CODE_GOODSTRENGTH, GoodStrengthRule.ERROR_MESSAGE_GOODSTRENGTH);
+        properties.setProperty(ExpirationRule.ERROR_CODE_EXPIRED, ExpirationRule.ERROR_MESSAGE_EXPIRED);
+        messageResolver = new PropertiesMessageResolver(properties);
+        this.characterRules = characterRules;
+    }
+
     /**
      * validate
      *
@@ -129,6 +137,8 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         final PasswordData passwordData = PasswordData.newInstance(password, String.valueOf(passwordModificationTime.getTime()), null);
         final RuleResult result = new RuleResult();
         for (PasswordValidator currentUser : validators.values()) {
+            logger.fine("characterRules.size(): " + characterRules.size());
+            logger.fine("numberOfCharacteristics: " + numberOfCharacteristics);
             RuleResult r = currentUser.validate(passwordData);
             if (r.isValid())
                 return Collections.emptyList();
@@ -183,7 +193,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     private void addStandardValidator() {
         int maxLength = getMaxLength();
         int minLength = getMinLength();
-        List<CharacterRule> characterRules = getCharacterRules();
         int numberOfCharacteristics = getNumberOfCharacteristics();
         int numberOfRepeatingChars = getNumberOfRepeatingCharactersAllowed();
         PasswordValidator passwordValidator = validators.get(ValidatorTypes.StandardValidator);
@@ -200,6 +209,10 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             rules.add(lengthRule);
             rules.add(new ExpirationRule(getExpirationMaxLength(), getExpirationDays()));
             if (numberOfCharacteristics != 0) {
+                List<CharacterRule> charRules = systemConfig == null ? PasswordValidatorUtil.getCharacterRulesDefault() : systemConfig.getPVCharacterRules();
+                if (characterRules == null) {
+                    this.characterRules = charRules;
+                }
                 rules.add(characterRule(characterRules));
             }
             rules.add(repeatCharacterRegexRule(numberOfRepeatingChars));
@@ -422,10 +435,8 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         this.characterRules = characterRules;
     }
 
-    private List<CharacterRule> getCharacterRules() {
-        List<CharacterRule> charRules = systemConfig == null ? PasswordValidatorUtil.getCharacterRulesDefault() : systemConfig.getPVCharacterRules();
-        setCharacterRules(charRules);
-        return this.characterRules;
+    public List<CharacterRule> getCharacterRules() {
+        return characterRules;
     }
 
     void setNumberOfCharacteristics(int numberOfCharacteristics) {
@@ -435,7 +446,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         }
     }
 
-    private int getNumberOfCharacteristics() {
+    public int getNumberOfCharacteristics() {
         int numberOfCharacteristics = systemConfig == null ? this.numberOfCharacteristics : systemConfig.getPVNumberOfCharacteristics();
         setNumberOfCharacteristics(numberOfCharacteristics);
         return this.numberOfCharacteristics;

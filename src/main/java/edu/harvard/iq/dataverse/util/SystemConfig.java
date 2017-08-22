@@ -708,12 +708,12 @@ public class SystemConfig {
     /**
      * getPVMinLength
      *
-     * Get the minimum length of a valid password. Defaults to 8.
+     * Get the minimum length of a valid password. Defaults to 6.
      *
      * @return The length.
      */
     public int getPVMinLength() {
-        int passportValidatorMinLength = 8;
+        int passportValidatorMinLength = 6;
         String _passportValidatorMinLength = System.getProperty("pv.minlength", settingsService.get(SettingsServiceBean.Key.PVMinLength.toString()));
         try {
             passportValidatorMinLength = Integer.parseInt(_passportValidatorMinLength);
@@ -770,7 +770,7 @@ public class SystemConfig {
      * TODO: Consider changing the out-of-the-box rules to be the same as Dataverse 4.0, which was 2 (one letter, one number).
      */
     public int getPVNumberOfCharacteristics() {
-        int numberOfCharacteristics = 3;
+        int numberOfCharacteristics = 2;
         String _numberOfCharacteristics = System.getProperty("pv.numberofcharacteristics", settingsService.get(SettingsServiceBean.Key.PVNumberOfCharacteristics.toString()));
         try {
             numberOfCharacteristics = Integer.parseInt(_numberOfCharacteristics);

@@ -142,7 +142,7 @@ public class PasswordValidatorTest {
 
     @BeforeClass
     public static void setUp() {
-        passwordValidatorService = new PasswordValidatorServiceBean();
+//        passwordValidatorService = new PasswordValidatorServiceBean();
     }
 
     @SuppressWarnings("unchecked")
@@ -165,6 +165,7 @@ public class PasswordValidatorTest {
         final String dictionary = createDictionary("56pOtAtO", false);
 
         final List<Params> paramsList = Arrays.asList(new Params[]{
+            new Params(0, "potato1", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numberOfRepeatingCharactersAllowed), // Good enough for Dataverse 4.0.
             new Params(7, "p otato", expired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // everything wrong here for both validators.
             new Params(6, "p otato", expired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // no GoodStrength validator
             new Params(0, "p", expired, expirationDays, 0, 0, 0, 0, dictionary, 0, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // no validation... everything if off
@@ -199,6 +200,9 @@ public class PasswordValidatorTest {
 
         paramsList.forEach(
                 params -> {
+//                    passwordValidatorService = new PasswordValidatorServiceBean();
+                    passwordValidatorService = new PasswordValidatorServiceBean(params.getCharacterRules());
+//                    passwordValidatorService = new PasswordValidatorServiceBean(params.getCharacterRules(), params.getNumberOfCharacteristics());
                     passwordValidatorService.setGoodStrength(params.getGoodStrength());
                     passwordValidatorService.setExpirationDays(params.getExpirationDays());
                     passwordValidatorService.setExpirationMaxLength(params.getExpirationMaxLength());
@@ -208,6 +212,9 @@ public class PasswordValidatorTest {
                     passwordValidatorService.setCharacterRules(params.getCharacterRules());
                     passwordValidatorService.setNumberOfCharacteristics(params.getNumberOfCharacteristics());
                     passwordValidatorService.setNumberOfRepeatingCharactersAllowed(params.getNumberOfRepeatingCharactersAllowed());
+//                    System.out.println("num characteristics: " + passwordValidatorService.getNumberOfCharacteristics());
+//                    System.out.println("num char rules: " + passwordValidatorService.getCharacterRules().size());
+//                    System.out.println("password: " + params.getPassword());
                     List<String> errors = passwordValidatorService.validate(params.getPassword(), params.getPasswordModificationTime());
                     int actualErrors = errors.size();
                     int expectedErrors = params.getExpectedErrors();

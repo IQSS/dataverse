@@ -16,9 +16,13 @@ public class PasswordValidatorUtil {
         if (configString == null || configString.isEmpty()) {
             return saneDefault;
         }
-        // FIXME: Actually parse this "Alphabetical:1,Digit:1" string or decide if there's a better way to express the old rules since Dataverse 4.0.
-        if ("Alphabetical:1,Digit:1".equals(configString)) {
-            return getCharacterRules4dot0();
+//        // FIXME: Actually parse this "Alphabetical:1,Digit:1" string or decide if there's a better way to express the old rules since Dataverse 4.0.
+//        if ("Alphabetical:1,Digit:1".equals(configString)) {
+//            return getCharacterRules4dot0();
+//        }
+        // FIXME: Actualy parse "UpperCase:1,LowerCase:1,Digit:1,Special:1" so the numbers can be increased, etc.
+        if ("UpperCase:1,LowerCase:1,Digit:1,Special:1".equals(configString)) {
+            return getCharacterRulesHarvardLevel3();
         }
         return saneDefault;
     }
@@ -27,8 +31,7 @@ public class PasswordValidatorUtil {
      * The default out-of-the-box character rules for Dataverse.
      */
     public static List<CharacterRule> getCharacterRulesDefault() {
-        // TODO: Consider changing the out-of-the-box rules to be the same as Dataverse 4.0.
-        return getCharacterRulesHarvardLevel3();
+        return getCharacterRules4dot0();
     }
 
     /**
