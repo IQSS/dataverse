@@ -196,9 +196,7 @@ By default, a Dataverse installation stores data files (files uploaded by end us
 
 Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
 
-**Note:** At present, any file restrictions that users apply in Dataverse will not be honored in Swift. This means that a user without proper permissions **could bypass intended restrictions** by accessing the restricted file through Swift. 
-
-In order to configure a Swift installation, there are two steps you need to complete:
+**In order to configure a Swift installation,** there are two steps you need to complete:
 
 First, create a file named ``swift.properties`` as follows in the ``config`` directory for your installation of Glassfish (by default, this would be ``/usr/local/glassfish4/glassfish/domains/domain1/config/swift.properties``):
 
@@ -222,9 +220,42 @@ Then run the create command:
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
 
-You also have the option to set a custom container name separator. It is initialized to ``_``, but you can change it by running the create command:
+You also have the option to set a **custom container name separator.** It is initialized to ``_``, but you can change it by running the create command:
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-folder-path-separator=-"``
+
+By default, your Swift installation will be public-only, meaning users will be unable to put access restrictions on their data. If you are comfortable with this level of privacy, the final step in your setup is to set the  :ref:`:PublicInstall` setting to `true`.
+
+In order to **enable file access restrictions**, you must enable Swift to use temporary URLs for file access. To enable usage of temporary URLs, set a hash key both on your swift endpoint and in your swift.properties file. You can do so by adding 
+
+.. code-block:: none
+
+    swift.hash_key.endpoint1=your-hash-key
+
+to your swift.properties file.
+
+You also have the option to set a custom expiration length for a generated temporary URL. It is initalized to 60 seconds, but you can change it by running the create command:
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.temp_url_expire=3600"``
+
+In this example, you would be setting the expiration length for one hour.
+
+
+Setting up Compute
++++++++++++++++++++
+
+Once you have configured a Swift Object Storage backend, you also have the option of enabling a connection to a computing environment. To do so, you need to configure the database settings for :ref:`:ComputeBaseUrl` and  :ref:`:CloudEnvironmentName`.
+
+Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your cloud environment, the compute button on dataset and file pages will link validated users to your computing environment. Depending on the configuration of your installation, the compute button will either redirect to: 
+
+``:ComputeBaseUrl?containerName=yourContainer&objectName=yourObject``
+
+if your installation's :ref:`:PublicInstall` setting is true, or:
+
+``:ComputeBaseUrl?containerName=yourContainer&objectName=yourObject&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
+
+You can configure this redirect properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
+
 
 .. _Branding Your Installation:
 
@@ -425,6 +456,14 @@ While the above two options are recommended because they have been tested by the
 
 For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite and EZID must be tested with Dataverse to establish whether or not it will function properly.
 
+Out of the box, Dataverse is configured to use base URL string from EZID. You can delete it like this:
+
+``asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://ezid.cdlib.org'``
+
+Then, to switch to DataCite, you can issue the following command:
+
+``asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
+
 See also these related database settings below:
 
 - :ref:`:DoiProvider`
@@ -439,12 +478,28 @@ doi.username
 
 Used in conjuction with ``doi.baseurlstring``.
 
+Out of the box, Dataverse is configured with a test username from EZID. You can delete it with the following command:
+
+``asadmin delete-jvm-options '-Ddoi.username=apitest'``
+
+Once you have a username from your provider, you can enter it like this:
+
+``asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
+
 .. _doi.password:
 
 doi.password
 ++++++++++++
 
+Out of the box, Dataverse is configured with a test password from EZID. You can delete it with the following command:
+
 Used in conjuction with ``doi.baseurlstring``.
+
+``asadmin delete-jvm-options '-Ddoi.password=apitest'``
+
+Once you have a password from your provider, you can enter it like this:
+
+``asadmin create-jvm-options '-Ddoi.password=YOUR_PASSWORD_HERE'``
 
 .. _dataverse.handlenet.admcredfile:
 
@@ -881,12 +936,16 @@ You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
 
+.. _:ComputeBaseUrl:
+
 :ComputeBaseUrl
 +++++++++++++++
 
 Set the base URL for the "Compute" button for a dataset.
 
-``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse?containerName=' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
+``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
+
+.. _:CloudEnvironmentName:
 
 :CloudEnvironmentName
 +++++++++++++++++++++
@@ -894,6 +953,8 @@ Set the base URL for the "Compute" button for a dataset.
 Set the name of the cloud environment you've integrated with your Dataverse installation.
 
 ``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
+
+.. _:PublicInstall:
 
 :PublicInstall
 +++++++++++++++++++++

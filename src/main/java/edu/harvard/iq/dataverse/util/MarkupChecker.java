@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.util;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
@@ -56,6 +57,10 @@ public class MarkupChecker {
         
         return Jsoup.clean(unsafe, Whitelist.none());
         
+    }
+
+    public static String escapeHtml(String unsafe) {
+         return StringEscapeUtils.escapeHtml(unsafe);
     }
 
 }

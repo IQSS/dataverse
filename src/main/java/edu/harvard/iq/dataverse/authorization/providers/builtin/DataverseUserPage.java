@@ -291,17 +291,17 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public String save() {
         boolean passwordChanged = false;
-        if ( editMode == EditMode.CHANGE_PASSWORD ) {
+        if (editMode == EditMode.CHANGE_PASSWORD) {
             final AuthenticationProvider prv = getUserAuthProvider();
-            if ( prv.isPasswordUpdateAllowed() ) {
-                if ( ! prv.verifyPassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), currentPassword) ) {
-                    FacesContext.getCurrentInstance().addMessage("currentPassword", 
-                            new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.error.wrongPassword"),null));
+            if (prv.isPasswordUpdateAllowed()) {
+                if (!prv.verifyPassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), currentPassword)) {
+                    FacesContext.getCurrentInstance().addMessage("currentPassword",
+                                                                 new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.error.wrongPassword"), null));
                     return null;
                 }
                 prv.updatePassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), inputPassword);
                 passwordChanged = true;
-                
+
             } else {
                 // erroneous state - we can't change the password for this user, so should not have gotten here. Log and bail out.
                 logger.log(Level.WARNING, "Attempt to change a password on {0}, whose provider ({1}) does not support password change", new Object[]{currentUser.getIdentifier(), prv});
@@ -309,7 +309,6 @@ public class DataverseUserPage implements java.io.Serializable {
                 return null;
             }
         }
-        
         if (editMode == EditMode.CREATE) {
             // Create a new built-in user.
             BuiltinUser builtinUser = new BuiltinUser();
@@ -360,8 +359,12 @@ public class DataverseUserPage implements java.io.Serializable {
 
 
             return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";            
-            
-        } else {
+
+        //Happens if user is logged out while editing
+        } else if (!session.getUser().isAuthenticated()) {
+            logger.info("Redirecting");
+            return permissionsWrapper.notAuthorized() + "faces-redirect=true";
+        }else {
             String emailBeforeUpdate = currentUser.getEmail();
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
