@@ -298,11 +298,11 @@ public class SettingsServiceBean {
          */
         PVDictionaries,
 
-        /**
-         * The days and minimum length for when to apply an expiration date.
-         */
-        PVExpirationDays,
-        PVValidatorExpirationMaxLength,
+//        /**
+//         * The days and minimum length for when to apply an expiration date.
+//         */
+//        PVExpirationDays,
+//        PVValidatorExpirationMaxLength,
 
         /**
          * The minimum length of a good, long, strong password.

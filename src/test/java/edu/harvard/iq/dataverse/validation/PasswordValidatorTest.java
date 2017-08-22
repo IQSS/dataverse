@@ -165,19 +165,19 @@ public class PasswordValidatorTest {
         final String dictionary = createDictionary("56pOtAtO", false);
 
         final List<Params> paramsList = Arrays.asList(new Params[]{
-            new Params(7, "p otato", expired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // everything wrong here for both validators.
-            new Params(6, "p otato", expired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // no GoodStrength validator
+            new Params(6, "p otato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // everything wrong here for both validators.
+            new Params(5, "p otato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // no GoodStrength validator
             new Params(0, "p", expired, expirationDays, 0, 0, 0, 0, dictionary, 0, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // no validation... everything if off
             new Params(1, "po", expired, expirationDays, 0, 0, 1, 0, dictionary, 0, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // this password is too long
-            new Params(1, "potato", expired, expirationDays, 7, 0, 0, 0, dictionary, 0, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // set expiration again
+            new Params(0, "potato", notExpired, expirationDays, 7, 0, 0, 0, dictionary, 0, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // set expiration again
             new Params(5, "p otato", expired, 401, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // 401 days before expiration
             new Params(5, "p otato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
             new Params(4, "one potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
             new Params(3, "Two potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
             new Params(0, "Three.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(1, "F0ur.potato", expired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
+            new Params(0, "F0ur.potato", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
             new Params(0, "F0ur.potatos", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(1, "F0ur.potato", expired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
+            new Params(0, "F0ur.potato", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
             new Params(0, "4.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
             new Params(0, "55Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
             new Params(1, "56Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // password in dictionary
@@ -200,15 +200,16 @@ public class PasswordValidatorTest {
         paramsList.forEach(
                 params -> {
                     passwordValidatorService.setGoodStrength(params.getGoodStrength());
-                    passwordValidatorService.setExpirationDays(params.getExpirationDays());
-                    passwordValidatorService.setExpirationMaxLength(params.getExpirationMaxLength());
+//                    passwordValidatorService.setExpirationDays(params.getExpirationDays());
+//                    passwordValidatorService.setExpirationMaxLength(params.getExpirationMaxLength());
                     passwordValidatorService.setMaxLength(params.getMaxLength());
                     passwordValidatorService.setMinLength(params.getMinLength());
                     passwordValidatorService.setDictionaries(params.getDictionaries());
                     passwordValidatorService.setCharacterRules(params.getCharacterRules());
                     passwordValidatorService.setNumberOfCharacteristics(params.getNumberOfCharacteristics());
                     passwordValidatorService.setNumberOfRepeatingCharactersAllowed(params.getNumberOfRepeatingCharactersAllowed());
-                    List<String> errors = passwordValidatorService.validate(params.getPassword(), params.getPasswordModificationTime());
+//                    List<String> errors = passwordValidatorService.validate(params.getPassword(), params.getPasswordModificationTime());
+                    List<String> errors = passwordValidatorService.validate(params.getPassword());
                     int actualErrors = errors.size();
                     int expectedErrors = params.getExpectedErrors();
                     String message = message(params, errors, expectedErrors, actualErrors);

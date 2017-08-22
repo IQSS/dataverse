@@ -48,8 +48,6 @@ Even if you are satisfied with the out-of-the-box password complexity rules Data
 Password complexity rules for "builtin" accounts can be adjusted with a variety of settings documented below. Here's a list:
 
 - :PVDictionaries
-- :PVExpirationDays
-- :PVValidatorExpirationMaxLength
 - :PVGoodStrength
 - :PVMinLength
 - :PVMaxLength
@@ -920,28 +918,6 @@ Password policy setting for builtin user accounts: set a comma separated list of
 
 This setting can be overruled with VM argument pv.dictionaries
 
-:PVExpirationDays
-+++++++++++++++++
-
-Password policy setting for builtin user accounts: the number of days after an unchanged password expires given it's size is under :PVValidatorExpirationMaxLength.
-
-``curl -X PUT -d 365 http://localhost:8080/api/admin/settings/:PVExpirationDays``
-
-This setting can be overruled with VM argument pv.expirationdays
-
-Recommended setting: 365 with :PVValidatorExpirationMaxLength set.
-
-:PVValidatorExpirationMaxLength
-+++++++++++++++++++++++++++++++
-
-Password policy setting for builtin user accounts: passwords with a size under :PVValidatorExpirationMaxLength will expire after :PVExpirationDays days.
-
-``curl -X PUT -d 10 http://localhost:8080/api/admin/settings/:PVValidatorExpirationMaxLength``
-
-This setting can be overruled with VM argument pv.expirationmaxlength
-
-Recommended setting: 10 with :PVExpirationDays set.
-
 :PVGoodStrength
 +++++++++++++++
 
@@ -961,8 +937,6 @@ Password policy setting for builtin user accounts: a passwords minimum valid siz
 ``curl -X PUT -d 6 http://localhost:8080/api/admin/settings/:PVMinLength``
 
 This setting can be overruled with VM argument pv.minlength
-
-Recommended setting: 10. If set lower, it is advisable to set the :PVExpirationDays and :PVValidatorExpirationMaxLength default values.
 
 :PVMaxLength
 ++++++++++++

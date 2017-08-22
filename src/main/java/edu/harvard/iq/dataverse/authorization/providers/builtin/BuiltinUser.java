@@ -64,9 +64,9 @@ public class BuiltinUser implements Serializable {
     private int passwordEncryptionVersion; 
     private String encryptedPassword;
 
-    @Column()
-    private Timestamp passwordModificationTime;
-
+//    @Column()
+//    private Timestamp passwordModificationTime;
+//
     private String affiliation;
     private String position;
     
@@ -197,13 +197,13 @@ public class BuiltinUser implements Serializable {
     public void setPasswordEncryptionVersion(int passwordEncryptionVersion) {
         this.passwordEncryptionVersion = passwordEncryptionVersion;
     }
-
-    public Timestamp getPasswordModificationTime() {
-        return passwordModificationTime;
-    }
-
-    public void setPasswordModificationTime(Timestamp passwordModificationTime) {
-        this.passwordModificationTime = passwordModificationTime;
-    }
-
+//
+//    public Timestamp getPasswordModificationTime() {
+//        return passwordModificationTime;
+//    }
+//
+//    public void setPasswordModificationTime(Timestamp passwordModificationTime) {
+//        this.passwordModificationTime = passwordModificationTime;
+//    }
+//
 }

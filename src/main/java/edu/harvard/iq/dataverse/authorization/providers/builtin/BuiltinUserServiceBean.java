@@ -55,8 +55,8 @@ public class BuiltinUserServiceBean {
          * whitespace in an email address is a problem?
          */
         aUser.setEmail(aUser.getEmail().trim());
-        Calendar c = Calendar.getInstance();
-        aUser.setPasswordModificationTime(new Timestamp(c.getTimeInMillis()));
+//        Calendar c = Calendar.getInstance();
+//        aUser.setPasswordModificationTime(new Timestamp(c.getTimeInMillis()));
         /**
          * We throw a proper IllegalArgumentException here because otherwise
          * from the API you get a 500 response and "Can't save user: null".

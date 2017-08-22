@@ -67,8 +67,8 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
 
     @SuppressWarnings("unchecked")
     private final static LinkedHashMap<ValidatorTypes, PasswordValidator> validators = new LinkedHashMap(2);
-    private int expirationDays;
-    private int expirationMaxLength;
+//    private int expirationDays;
+//    private int expirationMaxLength;
     private int goodStrength;
     private int maxLength;
     private int minLength;
@@ -132,9 +132,11 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * @return A List with error messages. Empty when the password is valid.
      */
     public List<String> validate(String password, Date passwordModificationTime, boolean isHumanReadable) {
+//    public List<String> validate(String password, boolean isHumanReadable) {
 
         init();
         final PasswordData passwordData = PasswordData.newInstance(password, String.valueOf(passwordModificationTime.getTime()), null);
+//        final PasswordData passwordData = PasswordData.newInstance(password, "username", null);
         final RuleResult result = new RuleResult();
         for (PasswordValidator currentUser : validators.values()) {
             logger.fine("characterRules.size(): " + characterRules.size());
@@ -207,7 +209,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
                 lengthRule.setMinimumLength(minLength);
             }
             rules.add(lengthRule);
-            rules.add(new ExpirationRule(getExpirationMaxLength(), getExpirationDays()));
+//            rules.add(new ExpirationRule(getExpirationMaxLength(), getExpirationDays()));
             if (numberOfCharacteristics != 0) {
                 List<CharacterRule> charRules = systemConfig == null ? PasswordValidatorUtil.getCharacterRulesDefault() : systemConfig.getPVCharacterRules();
                 if (characterRules == null) {
@@ -402,26 +404,26 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     }
 
 
-    /**
-     * getExpirationDays
-     * <p>
-     * The number of days a passwords is good after its creation or modification date.
-     * If set to zero, an expiration is not applied for the StandardValidator.
-     *
-     * @return A number
-     */
-    private int getExpirationDays() {
-        int expirationDays = systemConfig == null ? this.expirationDays : systemConfig.getPVExpirationDays();
-        setExpirationDays(expirationDays);
-        return this.expirationDays;
-    }
-
-    void setExpirationDays(int expirationDays) {
-        if (this.expirationDays != expirationDays) {
-            this.expirationDays = expirationDays;
-            validators.remove(ValidatorTypes.StandardValidator);
-        }
-    }
+//    /**
+//     * getExpirationDays
+//     * <p>
+//     * The number of days a passwords is good after its creation or modification date.
+//     * If set to zero, an expiration is not applied for the StandardValidator.
+//     *
+//     * @return A number
+//     */
+//    private int getExpirationDays() {
+//        int expirationDays = systemConfig == null ? this.expirationDays : systemConfig.getPVExpirationDays();
+//        setExpirationDays(expirationDays);
+//        return this.expirationDays;
+//    }
+//
+//    void setExpirationDays(int expirationDays) {
+//        if (this.expirationDays != expirationDays) {
+//            this.expirationDays = expirationDays;
+//            validators.remove(ValidatorTypes.StandardValidator);
+//        }
+//    }
 
     public void setCharacterRules(List<CharacterRule> characterRules) {
         this.characterRules = characterRules;
@@ -444,26 +446,26 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         return this.numberOfCharacteristics;
     }
 
-
-    /**
-     * getExpirationMaxLength
-     * <p>
-     * The upper limit of a password length for which an expiration date will be applicable.
-     *
-     * @return A length
-     */
-    private int getExpirationMaxLength() {
-        int expirationMaxLength = systemConfig == null ? this.expirationMaxLength : systemConfig.getPVExpirationMaxLength();
-        setExpirationMaxLength(expirationMaxLength);
-        return this.expirationMaxLength;
-    }
-
-    void setExpirationMaxLength(int expirationMaxLength) {
-        if (this.expirationMaxLength != expirationMaxLength) {
-            this.expirationMaxLength = expirationMaxLength;
-            validators.remove(ValidatorTypes.StandardValidator);
-        }
-    }
+//
+//    /**
+//     * getExpirationMaxLength
+//     * <p>
+//     * The upper limit of a password length for which an expiration date will be applicable.
+//     *
+//     * @return A length
+//     */
+//    private int getExpirationMaxLength() {
+//        int expirationMaxLength = systemConfig == null ? this.expirationMaxLength : systemConfig.getPVExpirationMaxLength();
+//        setExpirationMaxLength(expirationMaxLength);
+//        return this.expirationMaxLength;
+//    }
+//
+//    void setExpirationMaxLength(int expirationMaxLength) {
+//        if (this.expirationMaxLength != expirationMaxLength) {
+//            this.expirationMaxLength = expirationMaxLength;
+//            validators.remove(ValidatorTypes.StandardValidator);
+//        }
+//    }
     
     private int getNumberOfRepeatingCharactersAllowed() {
         int numberOfRepeatingChars = systemConfig == null ? this.numberOfRepeatingChars : systemConfig.getPVNumberOfRepeatingCharactersAllowed();

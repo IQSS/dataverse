@@ -95,10 +95,5 @@ else
     echo "script post-install-api-block.sh."
 fi
 
-# Set passwords policies for builtin users
-curl -X PUT -d 365 "$SERVER/admin/settings/:PVExpirationDays"
-curl -X PUT -d 10 "$SERVER/admin/settings/:PVValidatorExpirationMaxLength"
-curl -X PUT -d 20 "$SERVER/admin/settings/:PVGoodStrength"
-
 echo
 echo "Setup done."

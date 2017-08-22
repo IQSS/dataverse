@@ -13,5 +13,3 @@ WHERE dvobject.id=ds.id)
 WHERE storageidentifier IS NULL;
 
 ALTER TABLE datafile DROP COLUMN filesystemname;
-ALTER TABLE builtinuser ADD COLUMN passwordmodificationtime timestamp without time zone;
-ALTER TABLE builtinuser ALTER COLUMN passwordmodificationtime SET DEFAULT now();
