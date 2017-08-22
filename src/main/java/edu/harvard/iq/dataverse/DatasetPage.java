@@ -1412,7 +1412,7 @@ public class DatasetPage implements java.io.Serializable {
             String lockInfo = dataset.getDatasetLock().getInfo();
             //JsfHelper.addWarningMessage(lockInfoMessage);
             if (DCM_UPLOAD_IN_PROGRESS_MESSAGE.equals(lockInfo)) {
-                /*JH.addMessage(FacesMessage.SEVERITY_WARN, "Dataset Locked: " + lockInfoMessage);*/
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage"));
                 this.lockInfoMessage = lockInfo; 
             }
         }
@@ -3887,6 +3887,18 @@ public class DatasetPage implements java.io.Serializable {
             logger.warning("Failed to lock the dataset (dataset id="+dataset.getId()+")");
         }
         
+    }
+    
+    public String finishRsyncScriptAction() { 
+        // This method is called when the user clicks on "Close" in the "Rsync Upload" 
+        // popup. If they have successfully downloaded the rsync script, the 
+        // dataset should now be locked; which means we should put up the 
+        // "dcm upload in progress" message - that will be shown on the page 
+        // until the rsync upload is completed and the dataset is unlocked. 
+        if (isLocked()) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage"));
+        } 
+        return "";
     }
 
 }

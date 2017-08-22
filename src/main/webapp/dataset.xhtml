@@ -1154,7 +1154,7 @@
                             </ol>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" update="@all" onclick="PF('rsyncUpload_popup').hide();"/>
+                            <p:commandButton action="#{DatasetPage.finishRsyncScriptAction()}" value="#{bundle.close}" update=":datasetForm,:messagePanel" onclick="PF('rsyncUpload_popup').hide();"/>
                         </div>
                         <!-- END RSYNC UPLOAD POPUP -->
                     </p:dialog>
