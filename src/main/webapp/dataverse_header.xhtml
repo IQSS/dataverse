@@ -230,8 +230,8 @@
                                         </li>
                                     </ui:remove>
                                     <li>
-                                        <h:outputLink value="/dataverseuser.xhtml">
-                                            <f:param name="selectTab" value="accountInfo" />
+                                        <!-- QDRCustom- Account Info menu link -->
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user">
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>
