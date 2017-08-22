@@ -759,12 +759,12 @@ public class SystemConfig {
     /**
      * getPVNumberOfRepeatingCharactersAllowed
      *
-     * Get the number M consecutive repeating characters permitted. Defaults to 3.
+     * Get the number M consecutive repeating characters permitted. Defaults to 4.
      *
      * @return The number.
      */
     public int getPVNumberOfRepeatingCharactersAllowed() {
-        int numberOfRepeatingCharactersAllowed = 3;
+        int numberOfRepeatingCharactersAllowed = 4;
         String _numberOfRepeatingCharactersAllowed = System.getProperty("pv.numberofrepeatingcharactersallowed", settingsService.get(SettingsServiceBean.Key.PVNumberOfRepeatingCharactersAllowed.toString()));
         try {
             numberOfRepeatingCharactersAllowed = Integer.parseInt(_numberOfRepeatingCharactersAllowed);

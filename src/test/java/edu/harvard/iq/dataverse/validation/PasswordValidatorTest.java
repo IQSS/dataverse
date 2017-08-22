@@ -172,9 +172,9 @@ public class PasswordValidatorTest {
                         new Params(0, "Potatoes on my plate with beef", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
                         new Params(0, "Potatoes on my plate with pie.", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
                         new Params(0, "Potatoes on a plate          .", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed),
-                        new Params(0, "Repeated Potatoes:0000", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, 5), // Pass when repeating character maximum is 5
+                        new Params(2, "Repeated Potatoes:0000", notExpired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed), // Because of the note output, breaking the repeating character rule throws two errors for test purposes
                         new Params(0, "Repeated Potatoes:000", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed), // Allow no more than 3 repeating characters (default)
-                        new Params(0, "                              ", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed) //For some reason, whitespace doesn't count in the repeating rule?
+                        new Params(9, "       ", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, numberOfRepeatingCharactersAllowed) //Technically 8 errors, but repeated chars still yields 2 due to "Note: ..."
                 }
         );
 
