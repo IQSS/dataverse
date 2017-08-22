@@ -214,6 +214,9 @@ public class BuiltinUsersIT {
         Response setNumCharacteristics = UtilIT.setSetting(SettingsServiceBean.Key.PVNumberOfCharacteristics, "4");
         setNumCharacteristics.then().assertThat()
                 .statusCode(200);
+        Response setNumRepeatingCharsAllowed = UtilIT.setSetting(SettingsServiceBean.Key.PVNumberOfRepeatingCharactersAllowed, "4");
+        setNumRepeatingCharsAllowed.then().assertThat()
+                .statusCode(200);
 
         Collections.unmodifiableMap(Stream.of(
                 new AbstractMap.SimpleEntry<>(" ", Arrays.asList( // All is wrong here:
@@ -273,11 +276,15 @@ public class BuiltinUsersIT {
                         "INSUFFICIENT_UPPERCASE",
                         "NO_GOODSTRENGTH"
                 )),
+                new AbstractMap.SimpleEntry<>("Pot@t00000", Arrays.asList( // correct length, case, special char, but exceeds repeated character limit (illegal match error)
+                        "ILLEGAL_MATCH",
+                        "NO_GOODSTRENGTH"
+                )),
                 new AbstractMap.SimpleEntry<>("Potat$ 01!", Collections.emptyList()), // correct length, lowercase, special character and digit. All ok...
                 new AbstractMap.SimpleEntry<>("POTAT$ o1!", Collections.emptyList()), // correct length, uppercase, special character and digit. All ok...
                 new AbstractMap.SimpleEntry<>("Potat$ o1!", Collections.emptyList()), // correct length, uppercase, lowercase and and special character. All ok...
                 new AbstractMap.SimpleEntry<>("Potat  0!", Collections.emptyList()), // correct length, uppercase, lowercase and digit. All ok...
-                new AbstractMap.SimpleEntry<>("                    ", Collections.emptyList())) // 20 character password length. All ok...
+                new AbstractMap.SimpleEntry<>("twentycharactershere", Collections.emptyList())) // 20 character password length. All ok...
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
                 (password, expectedErrors) -> {
                     final Response response = given().body(password).when().post("/api/admin/validatePassword");

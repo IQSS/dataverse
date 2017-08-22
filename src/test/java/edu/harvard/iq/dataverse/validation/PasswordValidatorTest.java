@@ -193,6 +193,7 @@ public class PasswordValidatorTest {
             new Params(0, "Repeated Potatoes:000", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // Allow no more than 3 repeating characters (default)
             new Params(7, "          ", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), //For some reason, whitespace doesn't count in the repeating rule?
             new Params(0, "potat1", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numberOfRepeatingCharactersAllowed), // Good enough for Dataverse 4.0.
+            new Params(0, "potat000000000000000", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numberOfRepeatingCharactersAllowed), // Has repeating chars exceeding limit, but goodstrength waives it
         }
         );
 
