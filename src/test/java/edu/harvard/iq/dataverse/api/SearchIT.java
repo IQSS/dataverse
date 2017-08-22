@@ -466,7 +466,7 @@ public class SearchIT {
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
                 .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(datasetLogoAsBase64))
-                .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
+                .body("data.datasetLogoPresent", CoreMatchers.equalTo(true))
                 .statusCode(200);
 
         InputStream inputStream4creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);

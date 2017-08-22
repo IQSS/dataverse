@@ -107,6 +107,7 @@ public abstract class StorageIO<T extends DvObject> {
     
     // same, for an InputStream:
     public abstract void saveInputStream(InputStream inputStream) throws IOException;
+    public abstract void saveInputStream(InputStream inputStream, Long filesize) throws IOException;
     
     // Auxiliary File Management: (new as of 4.0.2!)
     
@@ -116,6 +117,7 @@ public abstract class StorageIO<T extends DvObject> {
     // thumbnails for images, etc. - in physical files with the same file 
     // name but various reserved extensions. 
    
+    //This function retrieves auxiliary files related to datasets, and returns them as inputstream
     public abstract InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException ;
     
     public abstract Channel openAuxChannel(String auxItemTag, DataAccessOption... option) throws IOException;
@@ -133,6 +135,7 @@ public abstract class StorageIO<T extends DvObject> {
     
     // this method copies a local InputStream into this DataAccess Auxiliary location:
     public abstract void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException; 
+    public abstract void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException;
     
     public abstract List<String>listAuxObjects() throws IOException;
     
@@ -464,6 +467,23 @@ public abstract class StorageIO<T extends DvObject> {
 
         return varHeader;
     }
-    
 
+    protected boolean isWriteAccessRequested(DataAccessOption... options) throws IOException {
+
+        for (DataAccessOption option : options) {
+            // In the future we may need to be able to open read-write
+            // Channels; no support, or use case for that as of now.
+
+            if (option == DataAccessOption.READ_ACCESS) {
+                return false;
+            }
+
+            if (option == DataAccessOption.WRITE_ACCESS) {
+                return true;
+            }
+        }
+
+        // By default, we open the file in read mode:
+        return false;
+    }
 }

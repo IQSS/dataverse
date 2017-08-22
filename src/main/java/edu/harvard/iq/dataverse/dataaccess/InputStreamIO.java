@@ -54,6 +54,11 @@ public class InputStreamIO extends StorageIO<DataFile> {
     }
     
     @Override
+    public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
+        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver."); 
+    }
+    
+    @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
     }
@@ -90,6 +95,11 @@ public class InputStreamIO extends StorageIO<DataFile> {
     @Override
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+    
+    @Override
+    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
+        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver."); 
     }
     
     @Override
@@ -139,12 +149,10 @@ public class InputStreamIO extends StorageIO<DataFile> {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: there is no output stream associated with this object.");
     }
 
-   
-
     @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver."); 
     }
 
-   
+  
 }
