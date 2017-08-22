@@ -96,12 +96,9 @@ else
 fi
 
 # Set passwords policies for builtin users
-curl -X PUT -d 8 "$SERVER/admin/settings/:PVMinLength"
 curl -X PUT -d 365 "$SERVER/admin/settings/:PVExpirationDays"
 curl -X PUT -d 10 "$SERVER/admin/settings/:PVValidatorExpirationMaxLength"
 curl -X PUT -d 20 "$SERVER/admin/settings/:PVGoodStrength"
-curl -X PUT -d 3 "$SERVER/admin/settings/:PVNumberOfCharacteristics"
-
 
 echo
 echo "Setup done."
