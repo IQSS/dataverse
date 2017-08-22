@@ -142,7 +142,13 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         // re-calculate the UNF of the version - since that is the product 
         // of the UNFs of the individual files. 
         boolean recalculateUNF = false;
-        
+        /* The separate loop is just to make sure that the dataset database is 
+        updated, specifically when an image datafile is being deleted, which
+        is being used as the dataset thumbnail as part of a batch delete. 
+        if we dont remove the thumbnail association with the dataset before the 
+        actual deletion of the file, it might throw foreign key integration 
+        violation exceptions. 
+        */
         for (FileMetadata fmd : filesToDelete){
              //  check if this file is being used as the default thumbnail
             if (fmd.getDataFile().equals(theDataset.getThumbnailFile())) {
@@ -238,7 +244,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 // EZID probably down
             }
         }
-
+        
         Dataset savedDataset = ctxt.em().merge(tempDataset);
         ctxt.em().flush();
 
