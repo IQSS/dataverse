@@ -68,6 +68,7 @@ cat migrated_datasets.txt | ./files_source_ <OFFSET> > files_import.sql
 
 where <OFFSET> is the "last ID ..." from step a. 
 
+If you are migrating to 4.6 or above uncomment line 193 and comment 191
 This script may produce a lot of stderr output, that you may want to save. 
 You can do that by running it as 
 

@@ -14,6 +14,13 @@ insert into authenticateduserlookup(	authenticationproviderid, persistentuserid,
 	select				'builtin',  username, id
 	from _dvn3_vdcuser;
 
+----------------------
+--use the bellow instead of the above query for migrating to 4.7.1 and above
+---------------------
+--insert into authenticateduser(id, affiliation, email, firstname, lastname, position, useridentifier, superuser,createdtime)
+--	select			id, institution, email, firstname, lastname, position, username, false, '01-01-2000 00:00:00'
+--	from _dvn3_vdcuser;
+
 -----------------------
 -- groups
 -----------------------
