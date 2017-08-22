@@ -242,7 +242,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private Boolean hasRsyncScript = false;
     
-    private static final String DCM_UPLOAD_IN_PROGRESS = "DCM File Upload In progress"; 
+    private String DCM_UPLOAD_IN_PROGRESS_MESSAGE; 
 
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -1319,7 +1319,7 @@ public class DatasetPage implements java.io.Serializable {
                 updateDatasetFieldInputLevels();
                 
                 setExistReleasedVersion(resetExistRealeaseVersion());
-                        //moving setVersionTabList to tab change event
+                //moving setVersionTabList to tab change event
                 //setVersionTabList(resetVersionTabList());
                 //setReleasedVersionTabList(resetReleasedVersionTabList());
                 //SEK - lazymodel may be needed for datascroller in future release
@@ -1338,9 +1338,9 @@ public class DatasetPage implements java.io.Serializable {
                             rsyncScriptFilename = "upload-"+ workingVersion.getDataset().getIdentifier() + ".bash";
                         }
                     } catch (RuntimeException ex) {
-                        logger.info("Problem getting rsync script: " + ex.getLocalizedMessage());
+                        logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
                     } catch (CommandException cex) {
-                        logger.info("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
+                        logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
                     }  
                 }
                 
@@ -1391,7 +1391,7 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return permissionsWrapper.notFound();
         }
-        try {
+       try {
             privateUrl = commandEngine.submit(new GetPrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
             if (privateUrl != null) {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor", Arrays.asList(getPrivateUrlLink(privateUrl))));
@@ -1406,11 +1406,14 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
+        DCM_UPLOAD_IN_PROGRESS_MESSAGE = BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage");
+        
         if (dataset.isLocked()) {
-            String infoMessage = dataset.getDatasetLock().getInfo();
-            //JsfHelper.addWarningMessage(infoMessage);
-            if (DCM_UPLOAD_IN_PROGRESS.equals(infoMessage)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, "Dataset Locked: " + infoMessage);
+            String lockInfo = dataset.getDatasetLock().getInfo();
+            //JsfHelper.addWarningMessage(lockInfoMessage);
+            if (DCM_UPLOAD_IN_PROGRESS_MESSAGE.equals(lockInfo)) {
+                /*JH.addMessage(FacesMessage.SEVERITY_WARN, "Dataset Locked: " + lockInfoMessage);*/
+                this.lockInfoMessage = lockInfo; 
             }
         }
         return null;
@@ -2524,21 +2527,19 @@ public class DatasetPage implements java.io.Serializable {
         //RequestContext requestContext = RequestContext.getCurrentInstance();
         logger.fine("checking lock");
         if (isStillLocked()) {
-            logger.info("(still locked, " + (infoMessage == null ? "" : infoMessage) +")");
-            if (DCM_UPLOAD_IN_PROGRESS.equals(infoMessage)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, "Dataset Locked: " + infoMessage);
-            }
-        
+            logger.fine("(still locked, " + (lockInfoMessage == null ? "" : lockInfoMessage) +")");
         } else {
             // OK, the dataset is no longer locked. 
             // let's tell the page to refresh:
             logger.fine("no longer locked!");
             stateChanged = true;
             //requestContext.execute("refreshPage();");
-            if (DCM_UPLOAD_IN_PROGRESS.equals(infoMessage)) {
+            if (DCM_UPLOAD_IN_PROGRESS_MESSAGE.equals(lockInfoMessage)) {
+                // For whatever reason, this isn't working - 
+                // the success message just doesn't get rendered on the page. 
                 FacesMessage message = new FacesMessage("Success", "DCM File Upload complete");
                 FacesContext.getCurrentInstance().addMessage(null, message);
-                infoMessage = null; 
+                lockInfoMessage = null; 
             }
         }
     }
@@ -2555,17 +2556,27 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }*/
     
-    String infoMessage = null; 
+    private String lockInfoMessage = null;
+    
+    public String getLockInfo() {
+        // This is the info message associated with the dataset lock. 
+        // If this is a DCM/rsync upload in progress, this message will 
+        // contain the value of file.rsyncUpload.inProgressMessage from the Bundle;
+        return lockInfoMessage;
+    }
+    
+    public void setLockInfo(String lockInfo) {
+        lockInfoMessage = lockInfo; 
+    }
+    
     
     public boolean isStillLocked() {
         if (dataset != null && dataset.getId() != null) {
-            logger.info("checking lock status of dataset " + dataset.getId());
+            logger.fine("checking lock status of dataset " + dataset.getId());
             String infoMessage = datasetService.checkDatasetLockInfo(dataset.getId());
             if (infoMessage != null) {
-                //logger.info(infoMessage);
-                if (DCM_UPLOAD_IN_PROGRESS.equals(infoMessage)) {
-                    logger.info(infoMessage);
-                    this.infoMessage = infoMessage;
+                if (DCM_UPLOAD_IN_PROGRESS_MESSAGE.equals(infoMessage)) {
+                    this.lockInfoMessage = infoMessage;
                 }
                 return true;
             }
@@ -2579,7 +2590,6 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         if (dataset != null) {
-
             if (dataset.isLocked()) {
                 return true;
             }
@@ -3864,17 +3874,19 @@ public class DatasetPage implements java.io.Serializable {
             ctx.responseComplete();
         } catch (IOException e) {
             String error = "Problem getting bytes from rsync script: " + e;
-            logger.info(error);
+            logger.warning(error);
             return; 
         }
         
         // If the script has been successfully downloaded, lock the dataset:
-        String infoMessage = DCM_UPLOAD_IN_PROGRESS;
-        datasetService.addDatasetLock(dataset.getId(), session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, infoMessage);
-        
-        if (DCM_UPLOAD_IN_PROGRESS.equals(infoMessage)) {
-            JH.addMessage(FacesMessage.SEVERITY_WARN, "Dataset Locked: " + DCM_UPLOAD_IN_PROGRESS);
+        lockInfoMessage = DCM_UPLOAD_IN_PROGRESS_MESSAGE;
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
+        if (lock != null) {
+            dataset.setDatasetLock(lock);
+        } else {
+            logger.warning("Failed to lock the dataset (dataset id="+dataset.getId()+")");
         }
+        
     }
 
 }

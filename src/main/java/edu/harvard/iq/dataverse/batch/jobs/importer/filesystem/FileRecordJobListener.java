@@ -168,6 +168,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         
         uploadFolder = jobParams.getProperty("uploadFolder");
         
+        /*
         // lock the dataset
         jobLogger.log(Level.INFO, "Locking dataset");
         String info = "Starting batch file import job.";
@@ -176,6 +177,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         } else {
             datasetServiceBean.addDatasetLock(dataset.getId(), null, info);
         }
+        */
 
         // check constraints for running the job
         if (canRunJob()) {

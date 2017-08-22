@@ -527,7 +527,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void addDatasetLock(Long datasetId, Long userId, String info) {
+    public DatasetLock addDatasetLock(Long datasetId, Long userId, String info) {
 
         Dataset dataset = em.find(Dataset.class, datasetId);
         DatasetLock lock = new DatasetLock();
@@ -546,6 +546,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         dataset.setDatasetLock(lock);
         em.persist(lock);
+        return lock; 
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
