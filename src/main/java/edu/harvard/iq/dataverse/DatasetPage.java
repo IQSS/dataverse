@@ -433,10 +433,12 @@ public class DatasetPage implements java.io.Serializable {
         try {
             swiftObject.open();
             return swiftObject.getSwiftContainerName();
-        } catch (IOException e){
+        } catch (Exception e){
             logger.info("DatasetPage: Failed to open swift object");
         }
+        
         return "";
+        
     }
     
     public void setSwiftContainerName(String name){
