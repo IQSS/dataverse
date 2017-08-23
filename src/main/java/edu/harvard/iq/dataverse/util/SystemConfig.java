@@ -88,6 +88,8 @@ public class SystemConfig {
     
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
     
+    private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 5000L; 
+    
     public String getVersion() {
         return getVersion(false);
     }
@@ -404,6 +406,25 @@ public class SystemConfig {
         }
         
         return defaultMultipleUploadFilesLimit; 
+    }
+    
+    public long getGuestbookResponsesPageDisplayLimit() {
+        String limitSetting = settingsService.getValueForKey(SettingsServiceBean.Key.GuestbookResponsesPageDisplayLimit);   
+        
+        Long limit = null; 
+        if (limitSetting != null && !limitSetting.equals("")) {
+            try {
+                limit = new Long(limitSetting);
+            } catch (NumberFormatException nfe) {
+                limit = null; 
+            }
+        }
+        
+        if (limit != null) {
+            return limit.longValue();
+        }
+        
+        return DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT; 
     }
     
     public long getUploadLogoSizeLimit(){

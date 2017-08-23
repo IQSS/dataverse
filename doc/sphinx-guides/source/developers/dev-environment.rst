@@ -224,7 +224,7 @@ The solution is to put the file back to how it was before Netbeans touched it. I
 Configuring / Troubleshooting Mail Host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Out of the box, no emails will be sent from your development environment. This is because you have set the ``:SystemEmail`` setting and make sure you've configured your SMTP correctly.
+Out of the box, no emails will be sent from your development environment. This is because you have to set the ``:SystemEmail`` setting and make sure you've configured your SMTP correctly.
 
 You can configure ``:SystemEmail`` like this:
 
@@ -318,6 +318,15 @@ Geoconnect
 Geoconnect works as a middle layer, allowing geospatial data files in Dataverse to be visualized with Harvard WorldMap. To set up a Geoconnect development environment, you can follow the steps outlined in the `local_setup.md <https://github.com/IQSS/geoconnect/blob/master/local_setup.md>`_ guide. You will need Python and a few other prerequisites.
 
 As mentioned under "Architecture and Components" in the :doc:`/installation/prep` section of the Installation Guide, Geoconnect is an optional component of Dataverse, so this section is only necessary to follow it you are working on an issue related to this feature.
+
+DataCite
+--------
+
+If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``dataverse.siteUrl`` JVM option is unset or set to localhost (``-Ddataverse.siteUrl=http://localhost:8080``). You can try something like this:
+
+``asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
+
+``asadmin create-jvm-options '-Ddataverse.siteUrl=http\://demo.dataverse.org'``
 
 ----
 

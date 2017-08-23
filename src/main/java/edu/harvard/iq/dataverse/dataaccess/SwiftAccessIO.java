@@ -188,7 +188,13 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         setSize(newFileSize);
 
     }
-
+    
+    
+    @Override
+    public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
+        saveInputStream(inputStream);
+    }
+    
     @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
         long newFileSize = -1;
@@ -320,7 +326,12 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
     }
-
+    
+    @Override
+    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
+        saveInputStreamAsAux(inputStream, auxItemTag);
+    }
+    
     // this method copies a local InputStream into this DataAccess Auxiliary location:
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
@@ -702,26 +713,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
         return account;
     }
-
-    private boolean isWriteAccessRequested(DataAccessOption... options) throws IOException {
-
-        for (DataAccessOption option : options) {
-            // In the future we may need to be able to open read-write 
-            // Channels; no support, or use case for that as of now. 
-
-            if (option == DataAccessOption.READ_ACCESS) {
-                return false;
-            }
-
-            if (option == DataAccessOption.WRITE_ACCESS) {
-                return true;
-            }
-        }
-
-        // By default, we open the file in read mode:
-        return false;
-    }
-
+    
     private String getSwiftFileURI(StoredObject fileObject) throws IOException {
         try {
             return fileObject.getPublicURL();

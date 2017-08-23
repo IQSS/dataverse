@@ -297,6 +297,11 @@ public class UtilIT {
         return createDatasetViaSwordApiFromXML(dataverseToCreateDatasetIn, xmlIn, apiToken);
     }
 
+    static Response createDatasetViaSwordApi(String dataverseToCreateDatasetIn, String title, String description, String apiToken) {
+        String xmlIn = getDatasetXml(title, "Lastname, Firstname", description);
+        return createDatasetViaSwordApiFromXML(dataverseToCreateDatasetIn, xmlIn, apiToken);
+    }
+
     private static Response createDatasetViaSwordApiFromXML(String dataverseToCreateDatasetIn, String xmlIn, String apiToken) {
         Response createDatasetResponse = given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -567,11 +572,20 @@ public class UtilIT {
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
     }
 
-    static Response publishDatasetViaNativeApi(String persistentId, String majorOrMinor, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .urlEncodingEnabled(false)
-                .post("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
+    static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken) {
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .urlEncodingEnabled(false)
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.post("/api/datasets/" + idInPath + "/actions/:publish?type=" + majorOrMinor + optionalQueryParam);
     }
 
     static Response publishDatasetViaNativeApiDeprecated(String persistentId, String majorOrMinor, String apiToken) {
