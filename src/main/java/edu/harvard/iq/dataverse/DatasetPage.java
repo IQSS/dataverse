@@ -1412,9 +1412,10 @@ public class DatasetPage implements java.io.Serializable {
             String lockInfo = dataset.getDatasetLock().getInfo();
             //JsfHelper.addWarningMessage(lockInfoMessage);
             if (DCM_UPLOAD_IN_PROGRESS_MESSAGE.equals(lockInfo)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage"));
+                //JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage"));
                 this.lockInfoMessage = lockInfo; 
             }
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage"));
         }
         return null;
     }

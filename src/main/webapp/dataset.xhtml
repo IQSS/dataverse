@@ -312,23 +312,6 @@
                                                   value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionState}"/>
                                 </div>
                             </div>
-                            <!-- IN PROGRESS MODE -->
-                            <p:fragment id="lockedInProgressFragment" rendered="#{DatasetPage.locked and (!empty DatasetPage.lockInfo)}">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <div id="no-clients-message" class="panel panel-default">
-                                            <div class="panel-body">
-                                                <span class="help-block h3">#{bundle['dataset.message.locked']}</span>
-                                                <ul>
-                                                    <li><h:outputText value="#{DatasetPage.lockInfo}" rendered="#{DatasetPage.locked}" escape="false"/></li>
-                                                </ul>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </p:fragment>
-                            <!-- END: IN PROGRESS MODE -->
                             <!-- CITATION BLOCK -->
                             <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                 <ui:include src="dataset-citation.xhtml">
