@@ -788,7 +788,7 @@ public class SystemConfig {
      * @return The number.
      */
     public int getPVNumberOfRepeatingCharactersAllowed() {
-        int numberOfRepeatingCharactersAllowed = 4;
+        int numberOfRepeatingCharactersAllowed = 0;
         String _numberOfRepeatingCharactersAllowed = System.getProperty("pv.numberofrepeatingcharactersallowed", settingsService.get(SettingsServiceBean.Key.PVNumberOfRepeatingCharactersAllowed.toString()));
         try {
             numberOfRepeatingCharactersAllowed = Integer.parseInt(_numberOfRepeatingCharactersAllowed);

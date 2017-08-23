@@ -56,7 +56,8 @@ public class PasswordValidatorUtil {
         characterRules.add(new CharacterRule(EnglishCharacterData.Digit, 1));
         return characterRules;
     }
-
+    //TODO: Relocate this messaging to the bundle and refactor passwordreset.xhtml to use it accordingly.
+    //TODO TOO: Only show requirements which are not disabled and accurately show variables in the messaging.
     public static String getPasswordRequirements(int minLength, int maxLength, List<CharacterRule> characterRules, int numberOfCharacteristics, int numberOfRepeatingCharactersAllowed) {
         String message = "Your password must contain:";
         message += "<ul>";
