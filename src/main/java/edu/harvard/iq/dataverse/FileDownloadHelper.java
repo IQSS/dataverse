@@ -188,7 +188,6 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     
     public void requestAccess(DataFile file) {
-        System.out.print("requestAccess FileDownloadhelper");
         if (fileDownloadService.requestAccess(file.getId())) {
             // update the local file object so that the page properly updates
             file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
