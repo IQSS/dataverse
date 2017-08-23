@@ -189,6 +189,8 @@ while ( <> )
 	    # datafile object:
 	    $fsname = $dbh->quote($fsname);
 	    print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, md5, restricted) VALUES ($newdatafileid, '$type', $fsname, $fsize, '$md5', $restricted);} . "\n";
+	    # Use the below line instead of the above if you are using 4.6 or above
+            # print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, checksumtype, restricted,checksumvalue,rootdatafileid) VALUES ($newdatafileid, '$type', $fsname, $fsize, 'MD5', $restricted,'',-1);} . "\n";
 	}
 	else 
 	{
@@ -198,9 +200,7 @@ while ( <> )
 	    
 	# file metadata object:
 	print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmid, $description, $label, $restricted, 1, $dsvid, $newdatafileid);} . "\n";
-	# Use the below line instead of the above if you are using 4.6 or above
-        # print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, checksumtype, restricted,checksumvalue,rootdatafileid) VALUES ($newdatafileid, '$type', $fsname, $fsize, 'MD5', $restricted,'',-1);} . "\n";
-
+	
 	# and the category, if exists:
 
 	if ($category && $category ne "") 
