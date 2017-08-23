@@ -1410,12 +1410,9 @@ public class DatasetPage implements java.io.Serializable {
         
         if (dataset.isLocked()) {
             String lockInfo = dataset.getDatasetLock().getInfo();
-            //JsfHelper.addWarningMessage(lockInfoMessage);
             if (DCM_UPLOAD_IN_PROGRESS_MESSAGE.equals(lockInfo)) {
-                //JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage"));
-                this.lockInfoMessage = lockInfo; 
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage"));
             }
-            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage"));
         }
         return null;
     }
@@ -2535,13 +2532,6 @@ public class DatasetPage implements java.io.Serializable {
             logger.fine("no longer locked!");
             stateChanged = true;
             //requestContext.execute("refreshPage();");
-            if (DCM_UPLOAD_IN_PROGRESS_MESSAGE.equals(lockInfoMessage)) {
-                // For whatever reason, this isn't working - 
-                // the success message just doesn't get rendered on the page. 
-                FacesMessage message = new FacesMessage("Success", "DCM File Upload complete");
-                FacesContext.getCurrentInstance().addMessage(null, message);
-                lockInfoMessage = null; 
-            }
         }
     }
 
@@ -2569,7 +2559,6 @@ public class DatasetPage implements java.io.Serializable {
     public void setLockInfo(String lockInfo) {
         lockInfoMessage = lockInfo; 
     }
-    
     
     public boolean isStillLocked() {
         if (dataset != null && dataset.getId() != null) {
