@@ -291,7 +291,10 @@ public class SettingsServiceBean {
         NavbarAboutUrl,
         
         // Option to override multiple guides with a single url
-        NavbarGuidesUrl; 
+        NavbarGuidesUrl,
+        
+        // Limit on how many guestbook entries to display on the guestbook-responses page:
+        GuestbookResponsesPageDisplayLimit; 
 
         
         @Override
