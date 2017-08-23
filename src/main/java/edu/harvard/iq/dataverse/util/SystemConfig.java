@@ -678,6 +678,7 @@ public class SystemConfig {
      * @return The length.
      */
     public int getPVGoodStrength() {
+        // FIXME: Change this to 21 to match Harvard's requirements or implement a way to disable the rule (0 or -1) and have the default be disabled.
         int goodStrengthLength = 20;
         String _goodStrengthLength = System.getProperty("pv.goodstrength", settingsService.get(SettingsServiceBean.Key.PVGoodStrength.toString()));
         try {

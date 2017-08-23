@@ -327,7 +327,14 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         if (characterRules == null) {
             this.characterRules = charRules;
         }
-        return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), characterRules, getNumberOfCharacteristics(), getNumberOfRepeatingCharactersAllowed());
+        boolean dictionaryEnabled = false;
+        String dictionariesSetting = systemConfig.getPVDictionaries();
+        logger.info("dictionariesSetting: " + dictionariesSetting);
+        if (dictionariesSetting != null && !dictionariesSetting.isEmpty()) {
+            dictionaryEnabled = true;
+        }
+        logger.info("dictionaryEnabled: " + dictionaryEnabled);
+        return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), characterRules, getNumberOfCharacteristics(), getNumberOfRepeatingCharactersAllowed(), getGoodStrength(), dictionaryEnabled);
     }
 
     /**
