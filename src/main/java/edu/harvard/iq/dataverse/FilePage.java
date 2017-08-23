@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -553,47 +554,60 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
-    public Boolean isSwiftStorage () {
+    public boolean isSwiftStorage () {
         Boolean swiftBool = false;
         if (file.getStorageIdentifier().startsWith("swift://")){
             swiftBool = true;
         }
         return swiftBool;
     }
-
-    public String getSwiftContainerName(){
-        String swiftContainerName;
+    
+    public boolean showComputeButton () {
+        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public SwiftAccessIO getSwiftObject() {
         try {
             StorageIO<DataFile> storageIO = getFile().getStorageIO();
-            try {
-                SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
-                swiftIO.open();
-                swiftContainerName = swiftIO.getSwiftContainerName();
-                logger.info("Swift container name: " + swiftContainerName);
-                return swiftContainerName;
+            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
+                return (SwiftAccessIO)storageIO;
+            } else {
+                logger.fine("FilePage: Failed to cast storageIO as SwiftAccessIO");
+            } 
+        } catch (IOException e) {
+            logger.fine("FilePage: Failed to get storageIO");
+        }
+        return null;
+    }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
+    public String getSwiftContainerName(){
+        SwiftAccessIO swiftObject = getSwiftObject();
+        try {
+            swiftObject.open();
+            return swiftObject.getSwiftContainerName();
+        } catch (IOException e){
+            logger.info("FilePage: Failed to open swift object");
         }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-//        String swiftContainerName = null;
-//        String swiftFolderPathSeparator = "-";
-//        
-//        String authorityNoSlashes = file.getOwner().getAuthority().replace(file.getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-//        swiftContainerName = file.getOwner().getProtocol() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-//            + swiftFolderPathSeparator + file.getOwner().getIdentifier();
-//        logger.info("Swift container name: " + swiftContainerName);
-//
-//        return swiftContainerName;
         return "";
     }
 
-    public String getComputeUrl() {
-        return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
-    }
+    public String getComputeUrl() throws IOException {
+        SwiftAccessIO swiftObject = getSwiftObject();
+        if (swiftObject != null) {
+            swiftObject.open();
+            //generate a temp url for a file
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName();
+            }
+            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        }
+        return "";
+        }
 
     private List<DataFile> allRelatedFiles() {
         List<DataFile> dataFiles = new ArrayList<>();
@@ -677,7 +691,14 @@ public class FilePage implements java.io.Serializable {
                 try {
                     SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
                     swiftIO.open();
-                    fileDownloadUrl = swiftIO.getRemoteUrl();
+                    //if its a public install, lets just give users the permanent URL!
+                    if (systemConfig.isPublicInstall()){                        
+                        fileDownloadUrl = swiftIO.getRemoteUrl();
+                    } else {
+                        //TODO: if a user has access to this file, they should be given the swift url
+                        // perhaps even we could use this as the "private url"
+                        fileDownloadUrl = swiftIO.getTemporarySwiftUrl();
+                    }
                     logger.info("Swift url: " + fileDownloadUrl);
                     return fileDownloadUrl;
 

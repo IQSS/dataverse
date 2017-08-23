@@ -51,7 +51,7 @@ public class NavigationWrapper implements java.io.Serializable {
             // that we don't want, so we filter through a list of paramters we do allow
             // @todo verify what needs to be in this list of available parameters (for example do we want to repeat searches when you login?
             List<String> acceptableParameters = new ArrayList<>();
-            acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId", "datasetId", "selectedFileIds", "mode", "dataverseId", "fileId", "datasetVersionId"));
+            acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId", "datasetId", "selectedFileIds", "mode", "dataverseId", "fileId", "datasetVersionId", "guestbookId"));
 
             if (req.getParameterMap() != null) {
                 StringBuilder queryString = new StringBuilder();

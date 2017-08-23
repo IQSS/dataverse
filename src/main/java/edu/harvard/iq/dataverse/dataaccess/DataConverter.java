@@ -265,7 +265,7 @@ public class DataConverter {
         }
             
 
-        if (formatConvertedFile.exists()) {
+        if (formatConvertedFile != null && formatConvertedFile.exists()) {
             logger.fine("frmtCnvrtdFile:length=" + formatConvertedFile.length());
         } else {
             logger.warning("Format-converted file was not properly created.");

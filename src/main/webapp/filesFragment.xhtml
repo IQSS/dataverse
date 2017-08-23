@@ -21,7 +21,7 @@
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
         <f:facet name="header">
-            <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.isSwiftStorage()}">
+            <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.showComputeButton()}">
                 <!-- Cloud Storage Access -->
                 <div class="form-group col-xs-12 text-left">
                     <div class="col-xs-12">
@@ -107,10 +107,17 @@
                             <!-- UPLOAD FILES BUTTON -->
                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
-                        <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.isSwiftStorage()}">
-                            <!-- COMPUTE BUTTON -->
+<!--                        <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.showComputeButton()}">
+                             COMPUTE BUTTON 
                             <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
-                        </h:outputLink>
+                        </h:outputLink>-->
+                        
+                            <!-- Compute Button *Dataset pg only*: -->
+                            <!--***When it is possible to compute on an entire dataset, comment this in-->
+<!--                    <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.showComputeButton() and DatasetPage.canDownloadAllFiles()}"> 
+                            <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
+                        </h:outputLink>-->
+
                     </div>
                     <div jsf:id="restrictDeleteBlock" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">

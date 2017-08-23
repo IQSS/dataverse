@@ -728,6 +728,12 @@
                                     PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.compute.datasetCompute']}" widgetVar="datasetComputeAccessDeniedPopup" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.compute.datasetComputeDisabled']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('datasetComputeAccessDeniedPopup').hide();" type="button" />
+                        </div>
+                    </p:dialog>
                     <p:dialog id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
                         <div class="form-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">

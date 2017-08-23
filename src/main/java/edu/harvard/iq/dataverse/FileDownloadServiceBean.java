@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -131,7 +132,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
     
-        //public String startFileDownload(FileMetadata fileMetadata, String format) {
+
+    //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;
         if(!fileMetadata.getDatasetVersion().isDraft()){
@@ -142,6 +144,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
+    
     
     public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
 

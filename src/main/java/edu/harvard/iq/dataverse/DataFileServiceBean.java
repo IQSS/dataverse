@@ -1018,7 +1018,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // If this file already has the "thumbnail generated" flag set,
         // we'll just trust that:
         if (file.isPreviewImageAvailable()) {
-            logger.info("returning true");
+            logger.fine("returning true");
             return true;
         }
         

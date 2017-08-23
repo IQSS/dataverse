@@ -190,27 +190,7 @@ public class IngestServiceBean {
             IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles);
             
             Dataset dataset = version.getDataset();
-            
-            try {
-                if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
-                    /* Note that "createDirectories()" must be used - not 
-                     * "createDirectory()", to make sure all the parent 
-                     * directories that may not yet exist are created as well. 
-                     */
 
-                    Files.createDirectories(dataset.getFileSystemDirectory());
-                }
-            } catch (IOException dirEx) {
-                logger.severe("Failed to create dataset directory " + dataset.getFileSystemDirectory().toString());
-                return; 
-                // TODO:
-                // Decide how we are communicating failure information back to 
-                // the page, and what the page should be doing to communicate
-                // it to the user - if anything. 
-                // -- L.A. 
-            }
-
-            if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
                 for (DataFile dataFile : newFiles) {
                     String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier();
 
@@ -377,7 +357,6 @@ public class IngestServiceBean {
                     //performPostProcessingTasks(dataFile);
                 }
                 logger.fine("Done! Finished saving new files in permanent storage.");
-            }
         }
     }
     
@@ -1579,26 +1558,28 @@ public class IngestServiceBean {
                 // and save it in the database. 
                 // 
                 // First, we need access to the file. Note that the code below 
-                // works with any supported DataFileIO driver (although, as of now
+                // works with any supported StorageIO driver (although, as of now
                 // all the production installations out there are only using filesystem
                 // access; but just in case)
                 // The FileUtil method that determines the type takes java.io.File 
-                // as an argument. So for DataFileIO drivers that provide local 
+                // as an argument. So for StorageIO drivers that provide local 
                 // file access, we'll just go directly to the stored file. For 
                 // swift and similar implementations, we'll read the saved aux 
                 // channel and save it as a local temp file. 
                 
-                StorageIO<DataFile> dataFileIO;
+                StorageIO<DataFile> storageIO;
+
                 File savedOriginalFile = null;
                 boolean tempFileRequired = false;
                 
                 try {
-                    dataFileIO = dataFile.getStorageIO();
-                    dataFileIO.open();
+                    storageIO = dataFile.getStorageIO();
+                    storageIO.open();
 
-                    if (dataFileIO.isLocalFile()) {
+
+                    if (storageIO.isLocalFile()) {
                         try {
-                            savedOriginalFile = dataFileIO.getAuxObjectAsPath(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION).toFile();
+                            savedOriginalFile = storageIO.getAuxObjectAsPath(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION).toFile();
                         } catch (IOException ioex) {
                             // do nothing, just make sure savedOriginalFile is still null:
                             savedOriginalFile = null;
@@ -1608,14 +1589,14 @@ public class IngestServiceBean {
                     if (savedOriginalFile == null) {
                         tempFileRequired = true;
 
-                        ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) dataFileIO.openAuxChannel(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO.openAuxChannel(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
                         savedOriginalFile = File.createTempFile("tempSavedOriginal", ".tmp");
                         FileChannel tempSavedOriginalChannel = new FileOutputStream(savedOriginalFile).getChannel();
-                        tempSavedOriginalChannel.transferFrom(savedOriginalChannel, 0, dataFileIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION));
+                        tempSavedOriginalChannel.transferFrom(savedOriginalChannel, 0, storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION));
 
                     }
                 } catch (Exception ex) {
-                    logger.warning("Exception "+ex.getClass()+" caught trying to open DataFileIO channel for the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
+                    logger.warning("Exception "+ex.getClass()+" caught trying to open StorageIO channel for the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
                     savedOriginalFile = null;
                 }
 

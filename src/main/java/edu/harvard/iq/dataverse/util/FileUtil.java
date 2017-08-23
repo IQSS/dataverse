@@ -1308,7 +1308,7 @@ public class FileUtil implements java.io.Serializable  {
         logger.fine("Returning file download url: " + fileDownloadUrl);
         return fileDownloadUrl;
     }
-
+    
     public static String getPublicDownloadUrl(String dataverseSiteUrl, Long fileId) {
         if (fileId == null) {
             logger.info("In getPublicDownloadUrl but fileId is null!");

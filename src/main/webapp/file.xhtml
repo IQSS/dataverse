@@ -542,6 +542,13 @@
                             <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedPrevious').hide();"/>
                         </div>
                     </p:dialog>
+                    
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.compute.fileRestricted']}" widgetVar="computeAccessDeniedPopup" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.compute.fileAccessDenied']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('computeAccessDeniedPopup').hide();" type="button" />
+                        </div>
+                    </p:dialog>
                 </h:form>
             </ui:define>
         </ui:composition>

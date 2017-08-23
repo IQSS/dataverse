@@ -430,65 +430,145 @@ public class DatasetPage implements java.io.Serializable {
     public void setDataverseSiteUrl(String dataverseSiteUrl) {
         this.dataverseSiteUrl = dataverseSiteUrl;
     }
-
-    public DataFile getInitialDataFile(){
+    
+    public List<FileMetadata> getDatasetFileMetadatas() {
         Long datasetVersion = workingVersion.getId();
         if (datasetVersion != null) {
                 int unlimited = 0;
                 int maxResults = unlimited;
-            List<FileMetadata> metadatas = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);        
-                logger.fine("metadatas " + metadatas);
-            if (metadatas != null && metadatas.size() > 0) {
-                return metadatas.get(0).getDataFile();
-            }
+            return datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);     
+        } 
+        return null; 
+    }
+    
+    public DataFile getInitialDataFile() {
+        if (getDatasetFileMetadatas() != null && getDatasetFileMetadatas().size() > 0) {
+            return getDatasetFileMetadatas().get(0).getDataFile();
         }
         return null;
     }
     
-    public String getSwiftContainerName(){
-
-        String swiftContainerName;
+    public SwiftAccessIO getSwiftObject() {
         try {
-            StorageIO<DataFile> storageIO = getInitialDataFile().getStorageIO();
-            try {
-                SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
-                swiftIO.open();
-                swiftContainerName = swiftIO.getSwiftContainerName();
-                logger.info("Swift container name: " + swiftContainerName);
-                return swiftContainerName;
+            StorageIO<DataFile> storageIO = getInitialDataFile() == null ? null : getInitialDataFile().getStorageIO();
+            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
+                return (SwiftAccessIO)storageIO;
+            } else {
+                logger.fine("DatasetPage: Failed to cast storageIO as SwiftAccessIO (most likely because storageIO is a FileAccessIO)");
+            } 
+        } catch (IOException e) {
+            logger.fine("DatasetPage: Failed to get storageIO");
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
-        catch (Exception e){
-            e.printStackTrace();
+        return null;
+    }
+
+    public String getSwiftContainerName() throws IOException {
+        SwiftAccessIO swiftObject = getSwiftObject();
+        try {
+            swiftObject.open();
+            return swiftObject.getSwiftContainerName();
+        } catch (Exception e){
+            logger.info("DatasetPage: Failed to open swift object");
         }
+        
         return "";
+        
     }
     
     public void setSwiftContainerName(String name){
         
     }
-
-    //assumes that *ALL* files in ONE specified container are stored in swift backend 
-    //could be changed 
-    //SF 
-    public Boolean isSwiftStorage(){
-        Boolean swiftBool = false;
-        //containers without datafiles will not be stored in swift storage, so no compute
+    //This function applies to an entire dataset
+    public boolean isSwiftStorage() {
+        //containers without datafiles will not be stored in swift storage
         if (getInitialDataFile() != null){
-            if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
-                && getInitialDataFile().getStorageIdentifier().startsWith("swift://")) {
-                swiftBool = true;
+            for (FileMetadata fmd : getDatasetFileMetadatas()) {
+                //if any of the datafiles are stored in swift
+                if (fmd.getDataFile().getStorageIdentifier().startsWith("swift://")) {
+                    return true;
+                }
             }
         }
-        
-        return swiftBool;
+        return false;
+    }
+    
+    //This function applies to a single datafile
+    public boolean isSwiftStorage(FileMetadata metadata){
+        if (metadata.getDataFile().getStorageIdentifier().startsWith("swift://")) {
+            return true;
+        }
+        return false;
+    }
+    
+    //This function applies to an entire dataset
+    public boolean showComputeButton() {
+        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
+            return true;
+        }
+        return false;
+    }
+    
+    //this function applies to a single datafile
+    public boolean showComputeButton(FileMetadata metadata) {
+        if (isSwiftStorage(metadata) && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
+            return true;
+        }
+        return false;
     }
 
-    public String getComputeUrl() {
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+    public boolean canDownloadAllFiles(){
+       for (FileMetadata fmd : getDatasetFileMetadatas()) {
+            if (!fileDownloadHelper.canDownloadFile(fmd)) {
+                return false;
+            }
+        }
+       return true;
+    }
+    /*
+    in getComputeUrl(), we are sending the container/dataset name and the exipiry and signature 
+    for the temporary url of only ONE datafile within the dataset. This is because in the 
+    ceph version of swift, we are only able to generate the temporary url for a single object 
+    within a container.
+    Ideally, we want a temporary url for an entire container/dataset, so perhaps this could instead
+    be handled on the compute environment end. 
+    Additionally, we have to think about the implications this could have with dataset versioning, 
+    since we currently store all files (even from old versions) in the same container.
+    --SF
+    */
+    public String getComputeUrl() throws IOException {
+        SwiftAccessIO swiftObject = getSwiftObject();
+        if (swiftObject != null) {
+            swiftObject.open();
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName();
+            }
+            //assuming we are able to get a temp url for a dataset
+            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        }
+        return "";
+        
+    }
+    
+    //For a single file
+    public String getComputeUrl(FileMetadata metadata) {
+        SwiftAccessIO swiftObject = null;
+        try {
+            StorageIO<DataFile> storageIO = metadata.getDataFile().getStorageIO();
+            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
+                swiftObject = (SwiftAccessIO)storageIO;
+                swiftObject.open();
+            }
+
+        } catch (IOException e) {
+            logger.info("DatasetPage: Failed to get storageIO");
+        }
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName();
+        }
+        
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+
     }
     
     public String getCloudEnvironmentName() {
@@ -1230,7 +1310,7 @@ public class DatasetPage implements java.io.Serializable {
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
@@ -3780,11 +3860,10 @@ public class DatasetPage implements java.io.Serializable {
     /**
      * dataset description
      *
-     * @return title of workingVersion
+     * @return description of workingVersion
      */
     public String getDescription() {
-        assert (null != workingVersion);
-        return workingVersion.getDescription();
+        return workingVersion.getDescriptionPlainText();
     }
 
     /**
