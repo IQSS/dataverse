@@ -492,7 +492,7 @@
                             </p:dialog>
                             <!-- END: Email/Link/Share Button Group -->
                             <!-- Metrics for Root Dataverse -->
-                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{DataversePage.isRootDataverse()}">
+                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncDownload}">
                                 <div id="metrics-label" class="col-xs-4 small text-center">
                                     <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{systemConfig.metricsUrl != null}">
                                         <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
