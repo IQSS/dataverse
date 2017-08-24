@@ -2309,17 +2309,6 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void deleteFiles() {
-        
-        String fileNames = null;
-        for (FileMetadata fmd : this.getSelectedFiles()) {
-            // collect the names of the newly-restrticted files, 
-            // to show in the success message:
-            if (fileNames == null) {
-                fileNames = fmd.getLabel();
-            } else {
-                fileNames = fileNames.concat(fmd.getLabel());
-            }
-        }
 
         for (FileMetadata markedForDelete : selectedFiles) {
             
@@ -2400,14 +2389,6 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-     
-        if (fileNames != null) {
-            String successMessage = JH.localize("file.deleted.success");
-            logger.fine(successMessage);
-            successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);
-        }
-        
         /* 
            Do note that if we are deleting any files that have UNFs (i.e., 
            tabular files), we DO NEED TO RECALCULATE the UNF of the version!
@@ -2463,30 +2444,32 @@ public class DatasetPage implements java.io.Serializable {
             }
             logger.log(Level.FINE, "Couldn''t save dataset: {0}", error.toString());
             populateDatasetUpdateFailureMessage();
-            return null;
+            return returnToDraftVersion();
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
-            logger.severe(ex.getMessage());
+            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
+            logger.severe("CommandException, when attempting to update the dataset: " + ex.getMessage());
             populateDatasetUpdateFailureMessage();
-            return null;
+            return returnToDraftVersion();
         }
+        
         newFiles.clear();
-        if (editMode != null){
-                    if(editMode.equals(EditMode.CREATE)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
-        }
-        if(editMode.equals(EditMode.METADATA)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));
-        }
-        if(editMode.equals(EditMode.LICENSE)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.termsSuccess"));
-        }
-        if(editMode.equals(EditMode.FILE)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
-        }
-            
+        if (editMode != null) {
+            if (editMode.equals(EditMode.CREATE)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+            }
+            if (editMode.equals(EditMode.METADATA)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));
+            }
+            if (editMode.equals(EditMode.LICENSE)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.termsSuccess"));
+            }
+            if (editMode.equals(EditMode.FILE)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
+            }
+
         } else {
-             JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileUpdateSuccess"));
+            // must have been a bulk file update or delete:
+            JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileUpdateSuccess"));
         }
 
         editMode = null;
@@ -2503,20 +2486,22 @@ public class DatasetPage implements java.io.Serializable {
     private void populateDatasetUpdateFailureMessage(){
             // null check would help here. :) -- L.A. 
             if (editMode == null) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, "mystery failure");
+                // that must have been a bulk file update or delete:
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.filesFailure"));
                 return;
             }
+            
             if (editMode.equals(EditMode.CREATE)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.createFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.createFailure"));
             }
             if (editMode.equals(EditMode.METADATA)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.metadataFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.metadataFailure"));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.termsFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.termsFailure"));
             }
             if (editMode.equals(EditMode.FILE)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.filesFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.filesFailure"));
             }
     }
     
