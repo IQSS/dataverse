@@ -258,7 +258,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
                 + searchClause
-                + " order by o." + sortField + " " + sortOrder, Integer.class)
+                + " order by o." + sortField + " " + sortOrder)
                 .getResultList();
     }
         
