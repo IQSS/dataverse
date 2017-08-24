@@ -138,7 +138,8 @@ public class DataverseUserPage implements java.io.Serializable {
     
     private String username;
     boolean nonLocalLoginEnabled;
-    
+    private List<String> passwordErrors;
+
     public String init() {
 
         // prevent creating a user if signup not allowed.
@@ -276,12 +277,10 @@ public class DataverseUserPage implements java.io.Serializable {
 
         } 
 
-        final List<String> errors = passwordValidatorService.validate(password);
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        this.passwordErrors = errors;
         if (!errors.isEmpty()) {
             ((UIInput) toValidate).setValid(false);
-            String messageDetail = PasswordValidatorServiceBean.parseMessages(errors);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", messageDetail);
-            context.addMessage(toValidate.getClientId(context), message);
         }
     }
 
@@ -681,5 +680,9 @@ public class DataverseUserPage implements java.io.Serializable {
     public String getReasonForReturn(DatasetVersion datasetVersion) {
         // TODO: implement me! See getReasonsForReturn in api/Notifications.java
         return "";
+    }
+
+    public String getPasswordRequirements() {
+        return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
     }
 }

@@ -311,6 +311,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * @param messages A list of error messages
      * @return A Human readable string.
      */
+    // TODO: Figure out if we need this. We are probably going will custom messages rather than whatever Passay emits.
     public static String parseMessages(List<String> messages) {
         return messages.stream()
                 .map(Object::toString)
@@ -322,7 +323,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * <p>
      * Describes all the characteristics of a valid password.
      */
-    public String getGoodPasswordDescription() {
+    public String getGoodPasswordDescription(List<String> errors) {
         List<CharacterRule> charRules = systemConfig == null ? PasswordValidatorUtil.getCharacterRulesDefault() : systemConfig.getPVCharacterRules();
         if (characterRules == null) {
             this.characterRules = charRules;
@@ -334,7 +335,10 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             dictionaryEnabled = true;
         }
         logger.info("dictionaryEnabled: " + dictionaryEnabled);
-        return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), characterRules, getNumberOfCharacteristics(), getNumberOfRepeatingCharactersAllowed(), getGoodStrength(), dictionaryEnabled);
+        if (errors == null){
+            errors = new ArrayList<>();
+        }
+        return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), characterRules, getNumberOfCharacteristics(), getNumberOfRepeatingCharactersAllowed(), getGoodStrength(), dictionaryEnabled, errors);
     }
 
     /**

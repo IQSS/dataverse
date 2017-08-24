@@ -177,6 +177,7 @@ public class PasswordResetPage implements java.io.Serializable {
     }
 
     public String getGoodPasswordDescription() {
-        return passwordValidatorService.getGoodPasswordDescription();
+        // FIXME: Pass the errors in.
+        return passwordValidatorService.getGoodPasswordDescription(null);
     }
 }
