@@ -9,10 +9,12 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import org.passay.CharacterRule;
+import org.passay.EnglishCharacterData;
 
 /**
  * PasswordValidatorTest
@@ -153,7 +155,7 @@ public class PasswordValidatorTest {
         final Date expired = new Date(new Date().getTime() - DAY * 400);
         final Date notExpired = new Date(new Date().getTime() - DAY * 300);
         List<CharacterRule> characterRules4dot0 = PasswordValidatorUtil.getCharacterRules4dot0();
-        List<CharacterRule> characterRulesHarvardLevel3 = PasswordValidatorUtil.getCharacterRulesHarvardLevel3();
+        List<CharacterRule> characterRulesHarvardLevel3 = getCharacterRulesHarvardLevel3();
         final int numberOfCharacters4dot0 = 2;
         final int numberOfCharacters = 3;
         final int numberOfRepeatingCharactersAllowed = 4;
@@ -245,6 +247,15 @@ public class PasswordValidatorTest {
     private String message(Params params, List<String> errors, int expected, int actual) {
         String details = (actual == 0) ? params.toString() : PasswordValidatorServiceBean.parseMessages(errors) + "\n" + params;
         return String.format("Expected errors: %s\nActual errors: %s\nDetails: %s", expected, actual, details);
+    }
+    
+    public static List<CharacterRule> getCharacterRulesHarvardLevel3() {
+        List<CharacterRule> characterRules = new ArrayList<>();
+        characterRules.add(new CharacterRule(EnglishCharacterData.UpperCase, 1));
+        characterRules.add(new CharacterRule(EnglishCharacterData.LowerCase, 1));
+        characterRules.add(new CharacterRule(EnglishCharacterData.Digit, 1));
+        characterRules.add(new CharacterRule(EnglishCharacterData.Special, 1));
+        return characterRules;
     }
 
 }

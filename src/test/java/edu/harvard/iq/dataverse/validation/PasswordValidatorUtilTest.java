@@ -118,7 +118,26 @@ public class PasswordValidatorUtilTest {
         String req4 = PasswordValidatorUtil.getPasswordRequirements(minLength, maxLength, characterRules, numberOfCharacteristics, 0, goodStrength, true);
         System.out.println(HtmlPrinter.prettyPrint(req4));
     }
-
+    
+    /**
+     * Test of parseConfigString method, of class PasswordValidatorUtil.
+     */
+    @Test
+    public void testParseConfigString() {
+        String configString = "UpperCase:1,LowerCase:4,Digit:1,Special:1";
+        List<CharacterRule> rules = PasswordValidatorUtil.parseConfigString(configString);
+        
+        System.out.println("Uppercase valid chars: " + rules.get(0).getValidCharacters());
+        System.out.println("Lowercase valid chars: " + rules.get(1).getValidCharacters());
+        System.out.println("Special valid chars: " + rules.get(3).getValidCharacters());
+        
+        assertEquals(4, rules.size());
+        assertEquals("ABCDEFGHIJKLMNOPQRSTUVWXYZ", rules.get(0).getValidCharacters());
+        assertEquals("abcdefghijklmnopqrstuvwxyz", rules.get(1).getValidCharacters());
+        assertEquals("0123456789", rules.get(2).getValidCharacters());
+        assertEquals("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}`¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿×÷–—―‗‘’‚‛“”„†‡•…‰′″‹›‼‾⁄⁊₠₡₢₣₤₥₦₧₨₩₪₫€₭₮₯₰₱₲₳₴₵₶₷₸₹₺₻₼₽₾", rules.get(3).getValidCharacters());
+        }
+    
 //    /**
 //     * Test of getRequiredCharacters method, of class PasswordValidatorUtil.
 //     */
@@ -132,4 +151,5 @@ public class PasswordValidatorUtilTest {
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
+
 }
