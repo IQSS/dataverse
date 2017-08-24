@@ -3,9 +3,9 @@
 --------------------
 /*
 -- Query to list all user acocunts with duplicate e-mails
-select id, username, lower(email) from _dvn3_vdcuser 
+select id, username, lower(email) from vdcuser 
 where lower(email) in (
-select lower(email) from _dvn3_vdcuser 
+select lower(email) from vdcuser 
 group by lower(email)
 having count(*) > 1
 )
