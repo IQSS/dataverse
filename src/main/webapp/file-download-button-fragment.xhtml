@@ -249,8 +249,7 @@
                 </ul>
             </li>
         </ul>
-    </div>
-                 
+    </div>        
     <p:commandLink type="button" styleClass="btn btn-default" rendered="#{(fileDownloadHelper.session.user.authenticated 
                                                                           and !fileMetadata.datasetVersion.deaccessioned
                                                                           and fileMetadata.dataFile.owner.fileAccessRequest 
@@ -267,13 +266,12 @@
                                                                           and fileMetadata.dataFile.owner.fileAccessRequest 
                                                                           and !(fileDownloadHelper.canDownloadFile(fileMetadata))
                                                                             and requestAccessPopupRequired}"
-                   actionListener="#{fileDownloadHelper.setSelectedFileId(fileMetadata.dataFile.id)}"
+                   actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
                    onclick="PF('requestAccessPopup').show()"
-                   update="@this"
+                   id="requestAccessPopupButton"
                    disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
-    </p:commandLink>
-
+    </p:commandLink>       
     <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!fileDownloadHelper.session.user.authenticated 
                                                                           and !fileMetadata.datasetVersion.deaccessioned
                                                                           and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"

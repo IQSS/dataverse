@@ -3566,19 +3566,24 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String requestAccessMultipleFiles(String fileIdString) {
-        
+
         if (fileIdString.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('selectFilesForRequestAccess').show()");
             return "";
         } else {
+            fileDownloadHelper.clearRequestAccessFiles();
+            for (FileMetadata fmd : selectedFiles){
+                 fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
+            }
             if (isRequestAccessPopupRequired()) {
-                RequestContext requestContext = RequestContext.getCurrentInstance();
-                requestContext.execute("PF('requestAccessPopup').show()");
+                RequestContext requestContext = RequestContext.getCurrentInstance();                
+                requestContext.execute("PF('requestAccessPopup').show()");               
                 return "";
             } else {
-                fileDownloadService.requestAccess(fileIdString, false);
-                return returnToDatasetOnly();
+                //No popup required
+                fileDownloadHelper.requestAccessIndirect();
+                return "";
             }
         }
     }

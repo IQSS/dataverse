@@ -8,7 +8,9 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -33,9 +35,42 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     @EJB
     FileDownloadServiceBean  fileDownloadService;
-
+    
+    @EJB
+    DataFileServiceBean datafileService;
     
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
+
+    public FileDownloadHelper() {
+        this.filesForRequestAccess = new ArrayList<>();
+    }
+
+    
+    private List<DataFile> filesForRequestAccess;
+
+    public List<DataFile> getFilesForRequestAccess() {
+        return filesForRequestAccess;
+    }
+
+    public void setFilesForRequestAccess(List<DataFile> filesForRequestAccess) {
+        this.filesForRequestAccess = filesForRequestAccess;
+    }
+    
+    public void addFileForRequestAccess(DataFile dataFile){
+        this.filesForRequestAccess.clear();
+        this.filesForRequestAccess.add(dataFile);
+    }
+    
+    public void clearRequestAccessFiles(){
+        this.filesForRequestAccess.clear();
+    }
+    
+    public void addMultipleFilesForRequestAccess(DataFile dataFile) {
+        this.filesForRequestAccess.add(dataFile);
+
+     }
+        
+    
     
     private String selectedFileId = null;
 
@@ -187,16 +222,38 @@ public class FileDownloadHelper implements java.io.Serializable {
     }
     
     
-    public void requestAccess(DataFile file) {
-        if (fileDownloadService.requestAccess(file.getId())) {
-            // update the local file object so that the page properly updates
-            file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
-            
-            // create notifications
-            fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId());           
-        }
-        
-    }    
+    public void requestAccess(DataFile file){        
+        requestAccess(file, true);        
+    }
+    
+    
+     public void requestAccess(DataFile file, Boolean sendNotification) {
+         if (fileDownloadService.requestAccess(file.getId())) {
+             // update the local file object so that the page properly updates
+             file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
+             // create notification if necessary
+             if (sendNotification) {
+                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId());
+             }
+         }
+     } 
+    
+     public String requestAccessIndirect() {
+
+         DataFile notificationFile = null;
+         for (DataFile file : this.filesForRequestAccess) {
+             //Not sending notification via request method so that
+             // we can bundle them up into one nofication at dataset level
+             requestAccess(file, false);
+             if (notificationFile == null){
+                 notificationFile = file;
+             }
+         }
+         if ( notificationFile != null){
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId()); 
+         }
+         return "";
+     }
     
     
     //todo: potential cleanup - are these methods needed?

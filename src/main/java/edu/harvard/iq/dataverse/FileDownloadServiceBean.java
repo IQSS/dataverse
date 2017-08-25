@@ -343,57 +343,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
     
-    
-    public String requestAccess(String fileIdString, boolean filePage){
-        if(fileIdString.isEmpty()){
-            fileIdString = fileDownloadHelper.getSelectedFileId();
-        }
-
-        Dataset dataset = null;
-        DataFile file = null;        
-        Long idForNotification = (long) 0;
-        if (fileIdString != null && !fileIdString.isEmpty()) {
-            String[] ids = fileIdString.split(",");
-            for (String id : ids) {
-                Long test = null;
-                try {
-                    test = new Long(id);
-                } catch (NumberFormatException nfe) {
-                    // do nothing...
-                    test = null;
-                }
-                if (test != null) {
-                    idForNotification = test;
-                    if (dataset == null){
-                        file = datafileService.find(test);
-                        dataset = file.getOwner();
-                    }
-
-                    requestAccess(test);
-                }
-            }
-        }
-        if (idForNotification.intValue() > 0 && dataset != null) {
-            sendRequestFileAccessNotification(dataset, idForNotification);
-        }
-        
-        if (dataset != null && !filePage ){
-            return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  + "&faces-redirect=true"; 
-        }
-        if (file != null && filePage){
-            return "/file.xhtml?fileId=" + file.getId().toString() + "&faces-redirect=true";  
-        }
-        return "";
-        
-    }
-    
-       
     public boolean requestAccess(Long fileId) {   
         if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null){
             return false;
         }
         DataFile file = datafileService.find(fileId);
-        if (!file.getFileAccessRequesters().contains(session.getUser())) {
+        if (!file.getFileAccessRequesters().contains((AuthenticatedUser)session.getUser())) {
             try {
                 commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));                        
                 return true;

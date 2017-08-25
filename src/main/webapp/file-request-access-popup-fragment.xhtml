@@ -42,8 +42,8 @@
         </div>
         <div class="button-block">
             <p:commandLink type="button" styleClass="btn btn-default"  
-                           action="#{fileDownloadService.requestAccess(selectedFilesString, filePage)}"                           
-                           update="@form" oncomplete="PF('requestAccessPopup').hide();">
+                           action="#{fileDownloadHelper.requestAccessIndirect()}"    
+                           update="@([id$=requestAccessPopupButton])" oncomplete="PF('requestAccessPopup').hide();">
                 #{bundle['acceptTerms']}
             </p:commandLink>
             <button type="button" class="btn btn-default" onclick="PF('requestAccessPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
