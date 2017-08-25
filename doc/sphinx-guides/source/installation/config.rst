@@ -41,17 +41,17 @@ Related to this is that you should remove ``/root/.glassfish/pass`` to ensure th
 Enforce Strong Passwords for User Accounts
 ++++++++++++++++++++++++++++++++++++++++++
 
-Dataverse only stores passwords (as salted hash, and use a strong hashing algorithm) for "builtin" users and you can increase the password complexity rules to meet your security needs. (If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not any control over password complexity rules. See the "Auth Modes: Local vs. Remote vs. Both" section below for more on login options.)
+Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the "Auth Modes: Local vs. Remote vs. Both" section below for more on login options.
 
 Even if you are satisfied with the out-of-the-box password complexity rules Dataverse ships with, for the "dataverseAdmin" account you should use a strong password so the hash cannot easily be cracked through dictionary attacks.
 
 Password complexity rules for "builtin" accounts can be adjusted with a variety of settings documented below. Here's a list:
 
-- :PVDictionaries
-- :PVGoodStrength
-- :PVMinLength
-- :PVMaxLength
-- :PVNumberOfCharacteristics
+- :ref:`:PVDictionaries`
+- :ref:`:PVGoodStrength`
+- :ref:`:PVMinLength`
+- :ref:`:PVMaxLength`
+- :ref:`:PVNumberOfCharacteristics`
 
 Solr
 ----
@@ -290,7 +290,7 @@ Once you have acquired the keys, they need to be added to``credentials``. The fo
 | ``[default]``
 | ``aws_access_key_id = <insert key, no brackets>``
 | ``aws_secret_access_key = <insert secret key, no brackets>``
-|
+
 Place this file ina a folder named ``.aws`` under the home directory for the user running your dataverse installation.
 
 Setup aws via command line tools
@@ -985,75 +985,87 @@ Dataverse calculates checksums for uploaded files so that users can determine if
 
 The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
 
+.. _:PVDictionaries:
+
 :PVDictionaries
 +++++++++++++++
 
-Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used as a user password.
+Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password.
 
 ``curl -X PUT -d "/opt/bad_passwords.txt" http://localhost:8080/api/admin/settings/:PVDictionaries``
 
-This setting can be overruled with VM argument pv.dictionaries
+This setting can be overruled with VM argument ``pv.dictionaries``
+
+.. _:PVGoodStrength:
 
 :PVGoodStrength
 +++++++++++++++
 
-Password policy setting for builtin user accounts: passwords equal or larger than the :PVGoodStrength setting are always valid.
+Password policy setting for builtin user accounts: passwords of equal or greater character length than the :PVGoodStrength setting are always valid, regardless of other password constraints.
 
 ``curl -X PUT -d 20 http://localhost:8080/api/admin/settings/:PVGoodStrength``
 
-This setting can be overruled with VM argument pv.goodstrength
+This setting can be overruled with VM argument ``pv.goodstrength``
 
 Recommended setting: 20.
+
+.. _:PVMinLength:
 
 :PVMinLength
 ++++++++++++
 
-Password policy setting for builtin user accounts: a passwords minimum valid size. The default is 6.
+Password policy setting for builtin user accounts: a password's minimum valid character length. The default is 6.
 
 ``curl -X PUT -d 6 http://localhost:8080/api/admin/settings/:PVMinLength``
 
-This setting can be overruled with VM argument pv.minlength
+This setting can be overruled with VM argument ``pv.minlength``
+
+.. _:PVMaxLength:
 
 :PVMaxLength
 ++++++++++++
 
-Password policy setting for builtin user accounts: a passwords maximum valid size.
+Password policy setting for builtin user accounts: a password's maximum valid character length.
 
 ``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:PVMaxLength``
 
-This setting can be overruled with VM argument pv.maxlength
+This setting can be overruled with VM argument ``pv.maxlength``
+
+.. _:PVCharacterRules:
 
 :PVCharacterRules
 +++++++++++++++++
 
-The default is two rules:
+Password policy setting for builtinuser accounts: dictates which types of characters can be required in a password. This setting goes hand in hand with :ref:`:PVNumberOfCharacteristics`. The default is two rules:
 
 - one letter
 - one digit
 
-Set to "UpperCase:1,LowerCase:1,Digit:1,Special:1" to change the rule to these four:
+Set to "UpperCase:1,LowerCase:1,Digit:1,Special:1" to change the rule to include these four:
 
 - one uppercase letter
 - one lowercase letter
 - one digit
 - one special character
 
-Please note that "UpperCase:1,LowerCase:1,Digit:1,Special:1" is currently a magic string. Dataverse doesn't parse it so you can't increase the numbers, for example.
+Please note that "UpperCase:1,LowerCase:1,Digit:1,Special:1" is currently a magic string. Dataverse doesn't parse it, so you can't increase the numbers or make other functional changes to it.
 
-If you have increased the number of rule to 4 like this, you can also optionally increase ``:PVNumberOfCharacteristics`` to as high as 4. ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of rules or you will see "Number of characteristics must be <= to the number of rules".
+If you have implemented 4 different character rules in this way, you can also optionally increase ``:PVNumberOfCharacteristics`` to as high as 4. ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of rules or you will see the error, "Number of characteristics must be <= to the number of rules".
 
 ``curl -X PUT -d 'UpperCase:1,LowerCase:1,Digit:1,Special:1' http://localhost:8080/api/admin/settings/:PVCharacterRules``
 
 ``curl -X PUT -d 3 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
 
+.. _:PVNumberOfCharacteristics:
+
 :PVNumberOfCharacteristics
 ++++++++++++++++++++++++++
 
-Password policy setting for builtin user accounts: the number indicates how many of the character rules defined by ``:PVCharacterRules`` should be part of a password. The default is 2. See the section on ``:PVNumberOfCharacteristics`` for more discussion on how the number of characteristics cannot be set to a higher number than the number of rules.
+Password policy setting for builtin user accounts: the number indicates how many of the character rules defined by ``:PVCharacterRules`` are required as part of a password. The default is 2. ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of rules or you will see the error, "Number of characteristics must be <= to the number of rules".
 
 ``curl -X PUT -d 2 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
 
-This setting can be overruled with VM argument pv.numberofcharacteristics
+This setting can be overruled with VM argument ``pv.numberofcharacteristics``
 
 :ShibPassiveLoginEnabled
 ++++++++++++++++++++++++
