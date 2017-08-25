@@ -1067,6 +1067,21 @@ Password policy setting for builtin user accounts: the number indicates how many
 
 This setting can be overruled with VM argument ``pv.numberofcharacteristics``
 
+.. _:PVCustomPasswordResetAlertMessage:
+
+:PVCustomPasswordResetAlertMessage
+++++++++++++++++++++++++++++++++++
+
+Changes the default info message displayed when a user is required to change their password on login. The default is:
+
+``{0} Reset Password{1} – Our password requirements have changed. Please pick a strong password that matches the criteria below.``
+
+Where the {0} and {1} denote surrounding HTML **bold** tags. It's recommended to put a single space before your custom message for better appearance (as the default has above). Including the {0} and {1} to bolden part of your message is optional.
+
+Customize the message with the following curl command's syntax:
+
+``curl -X PUT -d '{0} Action Required:{1} Your current password does not meet all requirements. Please enter a new password meeting the criteria below.' http://localhost:8080/api/admin/settings/:PVCustomPasswordResetAlertMessage``
+
 :ShibPassiveLoginEnabled
 ++++++++++++++++++++++++
 
