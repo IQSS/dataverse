@@ -313,7 +313,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void setFileLabelSearchTerm(String fileLabelSearchTerm) {
-        this.fileLabelSearchTerm = fileLabelSearchTerm;
+        this.fileLabelSearchTerm = fileLabelSearchTerm.trim();
     }
     
     private List<FileMetadata> fileMetadatasSearch;
