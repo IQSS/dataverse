@@ -21,22 +21,14 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
-                    </button>
-                    
-                    
-                    <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
-                        <a href="/">
+                    </button>                       
+                    <a href="/">
+                        <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
                             <span class="navbar-brand" tabindex="1"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
-                        </a>
-                    </ui:fragment>
-
-                    <ui:fragment rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}">                       
-                        <a href="/">
-                            <h:graphicImage url="#{settingsWrapper.get(':LogoCustomizationFile')}"/>
-                        </a>
-                    </ui:fragment>
-                    
-                    
+                        </ui:fragment>
+                        <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
+                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo"/>
+                    </a>
                     <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
                         <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
                     </h:outputLink>

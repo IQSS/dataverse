@@ -190,27 +190,7 @@ public class IngestServiceBean {
             IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles);
             
             Dataset dataset = version.getDataset();
-            
-            try {
-                if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
-                    /* Note that "createDirectories()" must be used - not 
-                     * "createDirectory()", to make sure all the parent 
-                     * directories that may not yet exist are created as well. 
-                     */
 
-                    Files.createDirectories(dataset.getFileSystemDirectory());
-                }
-            } catch (IOException dirEx) {
-                logger.severe("Failed to create dataset directory " + dataset.getFileSystemDirectory().toString());
-                return; 
-                // TODO:
-                // Decide how we are communicating failure information back to 
-                // the page, and what the page should be doing to communicate
-                // it to the user - if anything. 
-                // -- L.A. 
-            }
-
-            if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
                 for (DataFile dataFile : newFiles) {
                     String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier();
 
@@ -377,7 +357,6 @@ public class IngestServiceBean {
                     //performPostProcessingTasks(dataFile);
                 }
                 logger.fine("Done! Finished saving new files in permanent storage.");
-            }
         }
     }
     
