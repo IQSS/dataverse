@@ -801,23 +801,20 @@ public class SystemConfig {
         }
         return numberOfCharacteristics;
     }
-    
+
     /**
-     * getPVNumberOfRepeatingCharactersAllowed
-     *
-     * Get the number M consecutive repeating characters permitted. Defaults to 4.
-     *
-     * @return The number.
+     * Get the number of consecutive digits allowed. Defaults to highest int
+     * possible.
      */
-    public int getPVNumberOfRepeatingCharactersAllowed() {
-        int numberOfRepeatingCharactersAllowed = 4;
-        String _numberOfRepeatingCharactersAllowed = System.getProperty("pv.numberofrepeatingcharactersallowed", settingsService.get(SettingsServiceBean.Key.PVNumberOfRepeatingCharactersAllowed.toString()));
+    public int getPVNumberOfConsecutiveDigitsAllowed() {
+        int numConsecutiveDigitsAllowed = Integer.MAX_VALUE;
+        String _numberOfConsecutiveDigitsAllowed = System.getProperty("pv.numberofrepeatingdigitsallowed", settingsService.get(SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed.toString()));
         try {
-            numberOfRepeatingCharactersAllowed = Integer.parseInt(_numberOfRepeatingCharactersAllowed);
+            numConsecutiveDigitsAllowed = Integer.parseInt(_numberOfConsecutiveDigitsAllowed);
         } catch (NumberFormatException nfe) {
-            logger.warning("Invalid value for PVNumberOfRepeatingCharactersAllowed: " + _numberOfRepeatingCharactersAllowed);
+            logger.warning("Invalid value for " + SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed + ": " + _numberOfConsecutiveDigitsAllowed);
         }
-        return numberOfRepeatingCharactersAllowed;
+        return numConsecutiveDigitsAllowed;
     }
 
     public enum FileUploadMethods {

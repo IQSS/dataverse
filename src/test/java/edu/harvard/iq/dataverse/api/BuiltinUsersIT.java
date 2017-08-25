@@ -214,8 +214,8 @@ public class BuiltinUsersIT {
         Response setNumCharacteristics = UtilIT.setSetting(SettingsServiceBean.Key.PVNumberOfCharacteristics, "4");
         setNumCharacteristics.then().assertThat()
                 .statusCode(200);
-        Response setNumRepeatingCharsAllowed = UtilIT.setSetting(SettingsServiceBean.Key.PVNumberOfRepeatingCharactersAllowed, "4");
-        setNumRepeatingCharsAllowed.then().assertThat()
+        Response setNumConsecutiveDigitsAllowed = UtilIT.setSetting(SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed, "4");
+        setNumConsecutiveDigitsAllowed.then().assertThat()
                 .statusCode(200);
 
         Collections.unmodifiableMap(Stream.of(
@@ -280,6 +280,7 @@ public class BuiltinUsersIT {
                         "ILLEGAL_MATCH",
                         "NO_GOODSTRENGTH"
                 )),
+                new AbstractMap.SimpleEntry<>("Potat$ 1234!", Collections.emptyList()), // 4 digits in a row is ok
                 new AbstractMap.SimpleEntry<>("Potat$ 01!", Collections.emptyList()), // correct length, lowercase, special character and digit. All ok...
                 new AbstractMap.SimpleEntry<>("POTAT$ o1!", Collections.emptyList()), // correct length, uppercase, special character and digit. All ok...
                 new AbstractMap.SimpleEntry<>("Potat$ o1!", Collections.emptyList()), // correct length, uppercase, lowercase and and special character. All ok...

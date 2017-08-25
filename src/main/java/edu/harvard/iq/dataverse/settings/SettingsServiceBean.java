@@ -329,10 +329,9 @@ public class SettingsServiceBean {
         PVNumberOfCharacteristics,
         
         /**
-         * The number of consecutive repeated characters allowed for a password
+         * The number of consecutive digits allowed for a password
          */
-        PVNumberOfRepeatingCharactersAllowed,
-        
+        PVNumberOfConsecutiveDigitsAllowed,
         /**
          * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
          */

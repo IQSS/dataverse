@@ -1,24 +1,39 @@
 package edu.harvard.iq.dataverse.validation;
 
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.passay.*;
-import org.passay.RepeatCharacterRegexRule;
-import org.passay.dictionary.WordListDictionary;
-import org.passay.dictionary.WordLists;
-import org.passay.dictionary.sort.ArraysSort;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.inject.Named;
+import org.passay.CharacterCharacteristicsRule;
+import org.passay.CharacterRule;
+import org.passay.DictionaryRule;
+import org.passay.IllegalRegexRule;
+import org.passay.LengthRule;
+import org.passay.PasswordData;
+import org.passay.PasswordValidator;
+import org.passay.PropertiesMessageResolver;
+import org.passay.Rule;
+import org.passay.RuleResult;
+import org.passay.RuleResultDetail;
+import org.passay.dictionary.WordListDictionary;
+import org.passay.dictionary.WordLists;
+import org.passay.dictionary.sort.ArraysSort;
 
 /**
  * PasswordValidatorServiceBean
@@ -73,7 +88,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     private int maxLength;
     private int minLength;
     private int numberOfCharacteristics;
-    private int numberOfRepeatingChars;
+    private int numberOfConsecutiveDigitsAllowed;
     List<CharacterRule> characterRules;
     private String dictionaries = DICTIONARY_FILES;
     private PropertiesMessageResolver messageResolver;
@@ -196,7 +211,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         int maxLength = getMaxLength();
         int minLength = getMinLength();
         int numberOfCharacteristics = getNumberOfCharacteristics();
-        int numberOfRepeatingChars = getNumberOfRepeatingCharactersAllowed();
+        int numberOfConsecutiveDigitsAllowed = getNumberOfConsecutiveDigitsAllowed();
         PasswordValidator passwordValidator = validators.get(ValidatorTypes.StandardValidator);
         if (passwordValidator == null) {
             final List<Rule> rules = new ArrayList<>(4);
@@ -217,7 +232,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
                 }
                 rules.add(characterRule(characterRules));
             }
-            rules.add(repeatCharacterRegexRule(numberOfRepeatingChars));
+            rules.add(repeatingDigitsRule(numberOfConsecutiveDigitsAllowed));
             passwordValidator = new PasswordValidator(messageResolver, rules);
             validators.put(ValidatorTypes.StandardValidator, passwordValidator);
         }
@@ -299,10 +314,14 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         return characteristicsRule;
     }
 
-    private RepeatCharacterRegexRule repeatCharacterRegexRule(int sequenceLength) {
-        sequenceLength = getNumberOfRepeatingCharactersAllowed();
-        final RepeatCharacterRegexRule repeatCharacterRegexRule = new RepeatCharacterRegexRule(sequenceLength);
-        return repeatCharacterRegexRule;
+    private IllegalRegexRule repeatingDigitsRule(int numConsecutiveDigitsAllowed) {
+        int complainAboutThisManyConsecutiveDigits = numConsecutiveDigitsAllowed;
+        if (numConsecutiveDigitsAllowed != Integer.MAX_VALUE) {
+            // The check above is to avoid overflowing the int. MAX_VALUE is how we disable the setting.
+            complainAboutThisManyConsecutiveDigits = numConsecutiveDigitsAllowed + 1;
+        }
+        Pattern pattern = Pattern.compile("\\d{" + complainAboutThisManyConsecutiveDigits + "}");
+        return new IllegalRegexRule(pattern.pattern());
     }
 
     /**
@@ -338,7 +357,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         if (errors == null){
             errors = new ArrayList<>();
         }
-        return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), characterRules, getNumberOfCharacteristics(), getNumberOfRepeatingCharactersAllowed(), getGoodStrength(), dictionaryEnabled, errors);
+        return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), characterRules, getNumberOfCharacteristics(), getNumberOfConsecutiveDigitsAllowed(), getGoodStrength(), dictionaryEnabled, errors);
     }
 
     /**
@@ -477,17 +496,14 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
 //            validators.remove(ValidatorTypes.StandardValidator);
 //        }
 //    }
-    
-    private int getNumberOfRepeatingCharactersAllowed() {
-        int numberOfRepeatingChars = systemConfig == null ? this.numberOfRepeatingChars : systemConfig.getPVNumberOfRepeatingCharactersAllowed();
-        setNumberOfRepeatingCharactersAllowed(numberOfRepeatingChars);
-        return this.numberOfRepeatingChars;
+    public int getNumberOfConsecutiveDigitsAllowed() {
+        int numConsecutiveDigitsAllowed = systemConfig == null ? this.numberOfConsecutiveDigitsAllowed : systemConfig.getPVNumberOfConsecutiveDigitsAllowed();
+        setNumberOfConsecutiveDigitsAllowed(numConsecutiveDigitsAllowed);
+        return this.numberOfConsecutiveDigitsAllowed;
     }
 
-    void setNumberOfRepeatingCharactersAllowed(int numberOfRepeatingChars) {
-        if (this.numberOfRepeatingChars != numberOfRepeatingChars) {
-            this.numberOfRepeatingChars = numberOfRepeatingChars;
-            validators.remove(ValidatorTypes.StandardValidator);
-        }
+    public void setNumberOfConsecutiveDigitsAllowed(int numberOfConsecutiveDigitsAllowed) {
+        this.numberOfConsecutiveDigitsAllowed = numberOfConsecutiveDigitsAllowed;
     }
+
 }

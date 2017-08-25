@@ -44,11 +44,11 @@ public class PasswordValidatorTest {
         String dictionaries;
         List<CharacterRule> characterRules;
         int numberOfCharacteristics;
-        int numberOfRepeatingCharactersAllowed;
+        int numberOfConsecutiveDigitsAllowed;
 
         Params(int numberOfExpectedErrors, String password, Date passwordModificationTime, int expirationDays,
                int expirationMinLength, int goodStrength, int maxLength, int minLength, String dictionaries,
-               int numberOfCharacteristics, List<CharacterRule> characterRules, int numberOfRepeatingCharactersAllowed) {
+               int numberOfCharacteristics, List<CharacterRule> characterRules, int numConsecutiveDigitsAllowed) {
 
             this.numberOfExpectedErrors = numberOfExpectedErrors;
             this.password = password;
@@ -61,7 +61,7 @@ public class PasswordValidatorTest {
             this.dictionaries = dictionaries;
             this.characterRules = characterRules;
             this.numberOfCharacteristics = numberOfCharacteristics;
-            this.numberOfRepeatingCharactersAllowed = numberOfRepeatingCharactersAllowed;
+            this.numberOfConsecutiveDigitsAllowed = numConsecutiveDigitsAllowed;
         }
 
         int getExpectedErrors() {
@@ -108,8 +108,8 @@ public class PasswordValidatorTest {
             return numberOfCharacteristics;
         }
         
-        int getNumberOfRepeatingCharactersAllowed() {
-            return numberOfRepeatingCharactersAllowed;
+        int getNumberOfConsecutiveDigitsAllowed() {
+            return numberOfConsecutiveDigitsAllowed;
         }
 
         @Override
@@ -120,8 +120,7 @@ public class PasswordValidatorTest {
             }
             String characterRulesReadable = sb.toString();
             return
-                    String.format(
-                            "numberOfExpectedErrors=%s\npassword='%s'\npasswordModificationTime=%s\nexpirationDays=%s\n" +
+                    String.format("numberOfExpectedErrors=%s\npassword='%s'\npasswordModificationTime=%s\nexpirationDays=%s\n" +
                                     "expirationMaxLength=%s\ngoodStrength=%s\nmaxLength=%s\nminLength=%s\ndictionaries=%s\n" +
                                     "characterRules=%s\n" +
                                     "numberOfCharacteristics=%s\nnumberOfRepeatingCharactersAllowed=%s\n%s",
@@ -136,7 +135,7 @@ public class PasswordValidatorTest {
                             dictionaries,
                             characterRulesReadable,
                             numberOfCharacteristics,
-                            numberOfRepeatingCharactersAllowed,
+                            numberOfConsecutiveDigitsAllowed,
                             StringUtils.repeat("-", 80)
                     );
         }
@@ -158,7 +157,7 @@ public class PasswordValidatorTest {
         List<CharacterRule> characterRulesHarvardLevel3 = getCharacterRulesHarvardLevel3();
         final int numberOfCharacters4dot0 = 2;
         final int numberOfCharacters = 3;
-        final int numberOfRepeatingCharactersAllowed = 4;
+        final int numConsecutiveDigitsAllowed = 4;
         final int expirationDays = 365;
         final int expirationMinLength = 10;
         final int goodStrength20 = 20;
@@ -167,35 +166,37 @@ public class PasswordValidatorTest {
         final String dictionary = createDictionary("56pOtAtO", false);
 
         final List<Params> paramsList = Arrays.asList(new Params[]{
-            new Params(6, "p otato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // everything wrong here for both validators.
-            new Params(5, "p otato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // no GoodStrength validator
-            new Params(0, "p", expired, expirationDays, 0, 0, 0, 0, dictionary, 0, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // no validation... everything if off
-            new Params(1, "po", expired, expirationDays, 0, 0, 1, 0, dictionary, 0, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // this password is too long
-            new Params(0, "potato", notExpired, expirationDays, 7, 0, 0, 0, dictionary, 0, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // set expiration again
-            new Params(5, "p otato", expired, 401, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // 401 days before expiration
-            new Params(5, "p otato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(4, "one potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(3, "Two potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(0, "Three.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(0, "F0ur.potato", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(0, "F0ur.potatos", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(0, "F0ur.potato", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(0, "4.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(0, "55Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(1, "56Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // password in dictionary
-            new Params(0, "6 Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(3, "7 Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // add a fourth characteristic
-            new Params(0, "7 Potato901234567890", notExpired, expirationMinLength, minLength, goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // Now it does not matter: 20 characters
-            new Params(0, "8.Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // Now we use all four
-            new Params(1, "Potato.Too.12345.Short", notExpired, expirationDays, expirationMinLength, 0, maxLength, 23, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(0, "Potatoes on my plate with beef", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(0, "Potatoes on my plate with pie.", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
-            new Params(0, "Potatoes on a plate  .", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed),
+            new Params(6, "p otato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // everything wrong here for both validators.
+            new Params(5, "p otato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // no GoodStrength validator
+            new Params(0, "p", expired, expirationDays, 0, 0, 0, 0, dictionary, 0, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // no validation... everything if off
+            new Params(1, "po", expired, expirationDays, 0, 0, 1, 0, dictionary, 0, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // this password is too long
+            new Params(0, "potato", notExpired, expirationDays, 7, 0, 0, 0, dictionary, 0, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // set expiration again
+            new Params(5, "p otato", expired, 401, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // 401 days before expiration
+            new Params(5, "p otato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(4, "one potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(3, "Two potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(0, "Three.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(0, "F0ur.potato", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(0, "F0ur.potatos", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(0, "F0ur.potato", notExpired, expirationDays, 15, 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(0, "4.potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(0, "55Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(1, "56Potato", notExpired, expirationDays, expirationMinLength, 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // password in dictionary
+            new Params(0, "6 Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(3, "7 Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // add a fourth characteristic
+            new Params(0, "7 Potato901234567890", notExpired, expirationMinLength, minLength, goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // Now it does not matter: 20 characters
+            new Params(0, "8.Potato", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // Now we use all four
+            new Params(2, "Potato.Too.12345.Short", notExpired, expirationDays, expirationMinLength, 0, maxLength, 23, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(0, "Potatoes on my plate with beef", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(0, "Potatoes on my plate with pie.", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            new Params(0, "Potatoes on a plate  .", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             new Params(0, "Repeated Potatoes:0000", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, 5), // Pass when repeating character maximum is 5
-            new Params(0, "Repeated Potatoes:000", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), // Allow no more than 3 repeating characters (default)
-            new Params(7, "          ", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numberOfRepeatingCharactersAllowed), //For some reason, whitespace doesn't count in the repeating rule?
-            new Params(0, "potat1", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numberOfRepeatingCharactersAllowed), // Good enough for Dataverse 4.0.
-            new Params(0, "potat000000000000000", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numberOfRepeatingCharactersAllowed), // Has repeating chars exceeding limit, but goodstrength waives it
+            new Params(0, "Repeated Potatoes:000", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // Allow no more than 3 repeating characters (default)
+            new Params(6, "          ", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), //For some reason, whitespace doesn't count in the repeating rule?
+            new Params(0, "potat1", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numConsecutiveDigitsAllowed), // Good enough for Dataverse 4.0.
+            new Params(0, "potat000000000000000", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numConsecutiveDigitsAllowed), // Has repeating chars exceeding limit, but goodstrength waives it
+            new Params(2, "ma02138", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numConsecutiveDigitsAllowed), // 5 or more numbers in a row
+            new Params(2, "ma8312002138", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numConsecutiveDigitsAllowed), // 5 or more numbers in a row
         }
         );
 
@@ -209,7 +210,7 @@ public class PasswordValidatorTest {
                     passwordValidatorService.setDictionaries(params.getDictionaries());
                     passwordValidatorService.setCharacterRules(params.getCharacterRules());
                     passwordValidatorService.setNumberOfCharacteristics(params.getNumberOfCharacteristics());
-                    passwordValidatorService.setNumberOfRepeatingCharactersAllowed(params.getNumberOfRepeatingCharactersAllowed());
+                    passwordValidatorService.setNumberOfConsecutiveDigitsAllowed(params.getNumberOfConsecutiveDigitsAllowed());
 //                    List<String> errors = passwordValidatorService.validate(params.getPassword(), params.getPasswordModificationTime());
                     List<String> errors = passwordValidatorService.validate(params.getPassword());
                     int actualErrors = errors.size();

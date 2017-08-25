@@ -10,8 +10,9 @@ public class PasswordValidatorUtil {
 
     private static final Logger logger = Logger.getLogger(PasswordValidatorUtil.class.getCanonicalName());
 
+    // TODO: Work on switching ILLEGAL_MATCH to something like TOO_MANY_DIGITS.
     public enum ErrorType {
-        TOO_SHORT, INSUFFICIENT_CHARACTERISTICS
+        TOO_SHORT, INSUFFICIENT_CHARACTERISTICS, ILLEGAL_MATCH
     };
 
     public static List<CharacterRule> getCharacterRules(String configString) {
@@ -60,8 +61,7 @@ public class PasswordValidatorUtil {
     }
 
     //TODO: Relocate this messaging to the bundle and refactor passwordreset.xhtml to use it accordingly.
-    //TODO TOO: Only show requirements which are not disabled and accurately show variables in the messaging.
-    public static String getPasswordRequirements(int minLength, int maxLength, List<CharacterRule> characterRules, int numberOfCharacteristics, int numberOfRepeatingCharactersAllowed, int goodStrength, boolean dictionaryEnabled, List<String> errors) {
+    public static String getPasswordRequirements(int minLength, int maxLength, List<CharacterRule> characterRules, int numberOfCharacteristics, int numberOfConsecutiveDigitsAllowed, int goodStrength, boolean dictionaryEnabled, List<String> errors) {
         logger.info(errors.toString());
         String message = "Your password must contain:";
         message += "<ul>";
@@ -72,14 +72,14 @@ public class PasswordValidatorUtil {
         message += "<li " + getColor(errors, ErrorType.TOO_SHORT) + ">" + getOkOrFail(errors, ErrorType.TOO_SHORT) + "At least " + minLength + " characters" + optionalGoodStrengthNote + "</li>";
         message += "<li " + getColor(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + ">" + getOkOrFail(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + "At least " + numberOfCharacteristics + " of the following: " + getRequiredCharacters(characterRules) + "</li>";
         message += "</ul>";
-        boolean repeatingDigitRuleEnabled = numberOfRepeatingCharactersAllowed > 0;
+        boolean repeatingDigitRuleEnabled = Integer.MAX_VALUE != numberOfConsecutiveDigitsAllowed;
         boolean showMayNotBlock = repeatingDigitRuleEnabled || dictionaryEnabled;
         if (showMayNotBlock) {
             message += "It may not include:";
             message += "<ul>";
         }
         if (repeatingDigitRuleEnabled) {
-            message += "<li>Number sequences of " + numberOfRepeatingCharactersAllowed + " or more numbers in a row</li>";
+            message += "<li " + getColor(errors, ErrorType.ILLEGAL_MATCH) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_MATCH) + "More than " + numberOfConsecutiveDigitsAllowed + " numbers in a row</li>";
         }
         if (dictionaryEnabled) {
             message += "<li>Dictionary words or common acronyms of 5 or more letters</li>";
