@@ -222,12 +222,39 @@ public class FileDownloadHelper implements java.io.Serializable {
     }
     
     
-    public void requestAccess(DataFile file){        
-        requestAccess(file, true);        
+    public void requestAccess(DataFile file){   
+        //Called from download button fragment via either dataset page or file page
+        // when there's only one file for the access request and there's no pop-up
+        processRequestAccess(file, true);        
     }
     
+    public void requestAccessMultiple(List<DataFile> files) {
+
+         DataFile notificationFile = null;
+         for (DataFile file : files) {
+             //Not sending notification via request method so that
+             // we can bundle them up into one nofication at dataset level
+             processRequestAccess(file, false);
+             if (notificationFile == null){
+                 notificationFile = file;
+             }
+         }
+         if ( notificationFile != null){
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId()); 
+         }
+     }
     
-     public void requestAccess(DataFile file, Boolean sendNotification) {
+     public void requestAccessIndirect() {
+         //Called when there are multiple files and no popup
+         // or there's a popup with sigular or multiple files
+         // The list of files for Request Access is set in the Dataset Page when
+         // user clicks the request access button in the files fragment
+         // (and has selected one or more files)
+         requestAccessMultiple(this.filesForRequestAccess);
+     }    
+    
+    
+     private void processRequestAccess(DataFile file, Boolean sendNotification) {
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
@@ -238,22 +265,6 @@ public class FileDownloadHelper implements java.io.Serializable {
          }
      } 
     
-     public String requestAccessIndirect() {
-
-         DataFile notificationFile = null;
-         for (DataFile file : this.filesForRequestAccess) {
-             //Not sending notification via request method so that
-             // we can bundle them up into one nofication at dataset level
-             requestAccess(file, false);
-             if (notificationFile == null){
-                 notificationFile = file;
-             }
-         }
-         if ( notificationFile != null){
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId()); 
-         }
-         return "";
-     }
     
     
     //todo: potential cleanup - are these methods needed?

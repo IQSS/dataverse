@@ -3567,9 +3567,9 @@ public class DatasetPage implements java.io.Serializable {
         return FileUtil.isRequestAccessPopupRequired(workingVersion);
     }
     
-    public String requestAccessMultipleFiles(String fileIdString) {
+    public String requestAccessMultipleFiles() {
 
-        if (fileIdString.isEmpty()) {
+        if (selectedFiles.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('selectFilesForRequestAccess').show()");
             return "";
