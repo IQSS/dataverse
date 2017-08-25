@@ -98,10 +98,10 @@ public class PasswordValidatorUtil {
         }
         // FIXME: Figure out how to put these icons on the screen nicely.
         if (errors.contains(errorState.toString())) {
-            String fail = "<span class=\"glyphicon glyphicon-ban-circle\"/> ";
+            String fail = "<span class=\"glyphicon glyphicon-ban-circle\" style=\"color:#a94442\"/> ";
             return fail;
         } else {
-            String ok = "<span class=\"glyphicon glyphicon-ok\"/> ";
+            String ok = "<span class=\"glyphicon glyphicon-ok\" style=\"color:#3c763d\"/> ";
             return ok;
         }
     }
