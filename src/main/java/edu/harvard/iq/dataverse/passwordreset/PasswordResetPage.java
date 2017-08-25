@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -10,6 +11,8 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -38,6 +41,8 @@ public class PasswordResetPage implements java.io.Serializable {
     AuthenticationServiceBean authSvc;
     @Inject
     DataverseSession session;
+    @Inject
+    SettingsWrapper settingsWrapper; 
     
     @EJB
     ActionLogServiceBean actionLogSvc;
@@ -179,5 +184,15 @@ public class PasswordResetPage implements java.io.Serializable {
     public String getGoodPasswordDescription() {
         // FIXME: Pass the errors in.
         return passwordValidatorService.getGoodPasswordDescription(null);
+    }
+    
+    public String getCustomPasswordResetAlertMessage() {
+        String customPasswordResetAlertMessage = settingsWrapper.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
+        if(customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()){
+            return customPasswordResetAlertMessage;
+        } else {
+            String defaultPasswordResetAlertMessage = BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
+            return defaultPasswordResetAlertMessage;
+        }
     }
 }
