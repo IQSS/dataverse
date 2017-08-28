@@ -68,6 +68,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     @Inject TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
+    @Inject FileDownloadHelper fileDownloadHelper;
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());
     
@@ -341,12 +342,13 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         }
     }
-
     
-       
-    public boolean requestAccess(Long fileId) {     
+    public boolean requestAccess(Long fileId) {   
+        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null){
+            return false;
+        }
         DataFile file = datafileService.find(fileId);
-        if (!file.getFileAccessRequesters().contains(session.getUser())) {
+        if (!file.getFileAccessRequesters().contains((AuthenticatedUser)session.getUser())) {
             try {
                 commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));                        
                 return true;

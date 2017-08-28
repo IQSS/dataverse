@@ -3562,37 +3562,32 @@ public class DatasetPage implements java.io.Serializable {
         return FileUtil.isDownloadPopupRequired(workingVersion);
     }
     
-       public String requestAccessMultipleFiles(String fileIdString) {
-            if (fileIdString.isEmpty()) {
+    public boolean isRequestAccessPopupRequired() {  
+        return FileUtil.isRequestAccessPopupRequired(workingVersion);
+    }
+    
+    public String requestAccessMultipleFiles() {
+
+        if (selectedFiles.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('selectFilesForRequestAccess').show()");
             return "";
-        }
-       
-        Long idForNotification = (long) 0;
-        if (fileIdString != null) {
-            String[] ids = fileIdString.split(",");
-            for (String id : ids) {
-                Long test = null;
-                try {
-                    test = new Long(id);
-                } catch (NumberFormatException nfe) {
-                    // do nothing...
-                    test = null;
-                }
-                if (test != null) {
-                    idForNotification = test;
-                    fileDownloadService.requestAccess(test);
-                }
+        } else {
+            fileDownloadHelper.clearRequestAccessFiles();
+            for (FileMetadata fmd : selectedFiles){
+                 fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
+            }
+            if (isRequestAccessPopupRequired()) {
+                RequestContext requestContext = RequestContext.getCurrentInstance();                
+                requestContext.execute("PF('requestAccessPopup').show()");               
+                return "";
+            } else {
+                //No popup required
+                fileDownloadHelper.requestAccessIndirect();
+                return "";
             }
         }
-        if (idForNotification.intValue() > 0) {
-            fileDownloadService.sendRequestFileAccessNotification(dataset,idForNotification);
-        }
-        return returnToDatasetOnly();
     }
-   
-
 
     public boolean isSortButtonEnabled() {
         /**

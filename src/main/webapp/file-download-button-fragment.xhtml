@@ -249,20 +249,29 @@
                 </ul>
             </li>
         </ul>
-    </div>
-
-    <p:commandLink type="button" styleClass="btn btn-default" rendered="#{fileDownloadHelper.session.user.authenticated 
+    </div>        
+    <p:commandLink type="button" styleClass="btn btn-default" rendered="#{(fileDownloadHelper.session.user.authenticated 
                                                                           and !fileMetadata.datasetVersion.deaccessioned
-                                                                          and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
+                                                                          and fileMetadata.dataFile.owner.fileAccessRequest 
+                                                                          and !(fileDownloadHelper.canDownloadFile(fileMetadata)))
+                                                                          and !requestAccessPopupRequired}"
                    actionListener="#{fileDownloadHelper.requestAccess(fileMetadata.dataFile)}"
                    update="@this"
                    disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-        <!-- Request Access -->
-        <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
-        <!-- 4.2.1 - TODO: make sure dataFile.fileAccessRequesters gets populated -->
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
-    </p:commandLink>
-
+    </p:commandLink>                        
+    
+    <p:commandLink type="button" styleClass="btn btn-default" rendered="#{fileDownloadHelper.session.user.authenticated 
+                                                                          and !fileMetadata.datasetVersion.deaccessioned
+                                                                          and fileMetadata.dataFile.owner.fileAccessRequest 
+                                                                          and !(fileDownloadHelper.canDownloadFile(fileMetadata))
+                                                                            and requestAccessPopupRequired}"
+                   actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
+                   onclick="PF('requestAccessPopup').show()"
+                   id="requestAccessPopupButton"
+                   disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+        <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+    </p:commandLink>       
     <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!fileDownloadHelper.session.user.authenticated 
                                                                           and !fileMetadata.datasetVersion.deaccessioned
                                                                           and fileMetadata.dataFile.owner.fileAccessRequest and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
