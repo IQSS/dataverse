@@ -991,9 +991,9 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 :PVDictionaries
 +++++++++++++++
 
-Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password.
+Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password. ``/usr/share/dict/words`` is suggested below but you are welcome to use dictionary files of your choosing. By default, no dictionary is checked.
 
-``curl -X PUT -d "/opt/bad_passwords.txt" http://localhost:8080/api/admin/settings/:PVDictionaries``
+``curl -X PUT -d "/usr/share/dict/words" http://localhost:8080/api/admin/settings/:PVDictionaries``
 
 This setting can be overruled with VM argument ``pv.dictionaries``
 

@@ -12,7 +12,7 @@ public class PasswordValidatorUtil {
 
     // TODO: Work on switching ILLEGAL_MATCH to something like TOO_MANY_DIGITS.
     public enum ErrorType {
-        TOO_SHORT, INSUFFICIENT_CHARACTERISTICS, ILLEGAL_MATCH
+        TOO_SHORT, INSUFFICIENT_CHARACTERISTICS, ILLEGAL_MATCH, ILLEGAL_WORD
     };
 
     public static List<CharacterRule> getCharacterRules(String configString) {
@@ -82,7 +82,7 @@ public class PasswordValidatorUtil {
             message += "<li " + getColor(errors, ErrorType.ILLEGAL_MATCH) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_MATCH) + "More than " + numberOfConsecutiveDigitsAllowed + " numbers in a row</li>";
         }
         if (dictionaryEnabled) {
-            message += "<li>Dictionary words or common acronyms of 5 or more letters</li>";
+            message += "<li " + getColor(errors, ErrorType.ILLEGAL_WORD) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_WORD) + "Dictionary words</li>";
         }
         if (showMayNotBlock) {
             message += "</ul>";
