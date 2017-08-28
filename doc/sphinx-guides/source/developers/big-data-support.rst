@@ -51,6 +51,26 @@ Here's the syntax for sending the JSON.
 
 ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST -H 'Content-type: application/json' --upload-file checksumValidationSuccess.json $DV_BASE_URL/api/datasets/:persistentId/dataCaptureModule/checksumValidation?persistentId=$PERSISTENT_ID``
 
+
+Steps to set up a DCM mock for Development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install python/pip/flask. On a debian machine these commands are:
+
+- ``sudo apt install python-pip`` (will install python as well)
+- ``pip install flask``
+
+Download and run mock. See documentation ``data-capture-module`` repo for more info:
+
+- ``git clone git://github.com/sbgrid/data-capture-module.git``
+- ``cd data-capture-module/api``
+- ``./dev_mock.sh``
+
+Add Dataverse settings to use mock (same as using DCM, noted above):
+
+- ``curl http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl -X PUT -d "http://localhost:5000"``
+- ``curl http://localhost:8080/api/admin/settings/:UploadMethods -X PUT -d "dcm/rsync+ssh"``
+
 Troubleshooting
 ~~~~~~~~~~~~~~~
 
