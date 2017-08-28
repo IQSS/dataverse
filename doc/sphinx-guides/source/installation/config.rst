@@ -1037,21 +1037,21 @@ This setting can be overruled with VM argument ``pv.maxlength``
 :PVCharacterRules
 +++++++++++++++++
 
-Password policy setting for builtinuser accounts: dictates which types of characters can be required in a password. This setting goes hand in hand with :ref:`:PVNumberOfCharacteristics`. The default is two rules:
+Password policy setting for builtinuser accounts: dictates which types of characters can be required in a password. This setting goes hand in hand with :ref:`:PVNumberOfCharacteristics`. The default setting contains two rules:
 
 - one letter
 - one digit
 
-Set to "UpperCase:1,LowerCase:1,Digit:1,Special:1" to change the rule to include these four:
+The default setting above is equivalent to specifying "Alphabetical:1,Digit:1".
+
+By specifying "UpperCase:1,LowerCase:1,Digit:1,Special:1", for example, you can put the following four rules in place instead:
 
 - one uppercase letter
 - one lowercase letter
 - one digit
 - one special character
 
-Please note that "UpperCase:1,LowerCase:1,Digit:1,Special:1" is currently a magic string. Dataverse doesn't parse it, so you can't increase the numbers or make other functional changes to it.
-
-If you have implemented 4 different character rules in this way, you can also optionally increase ``:PVNumberOfCharacteristics`` to as high as 4. ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of rules or you will see the error, "Number of characteristics must be <= to the number of rules".
+If you have implemented 4 different character rules in this way, you can also optionally increase ``:PVNumberOfCharacteristics`` to as high as 4. However, please note that ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of rules or you will see the error, "Number of characteristics must be <= to the number of rules".
 
 ``curl -X PUT -d 'UpperCase:1,LowerCase:1,Digit:1,Special:1' http://localhost:8080/api/admin/settings/:PVCharacterRules``
 
