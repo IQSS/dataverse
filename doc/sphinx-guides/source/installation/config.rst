@@ -1068,6 +1068,15 @@ Password policy setting for builtin user accounts: the number indicates how many
 
 This setting can be overruled with VM argument ``pv.numberofcharacteristics``
 
+.. _:PVNumberOfConsecutiveDigitsAllowed
+
+:PVNumberOfConsecutiveDigitsAllowed
++++++++++++++++++++++++++++++++++++
+
+By default, passwords can contain an unlimited number of digits in a row, but if your password policy specifies that only four digists in a row are allowed, for example, you can issue the following curl command:
+
+``curl -X PUT -d 4 http://localhost:8080/api/admin/settings/:PVNumberOfConsecutiveDigitsAllowed``
+
 .. _:PVCustomPasswordResetAlertMessage:
 
 :PVCustomPasswordResetAlertMessage
