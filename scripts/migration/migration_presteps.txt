@@ -68,8 +68,6 @@ For example:
 -- On 3.6 database, run the following to create copies of needed tables
 ----------------------------------------------
 
---To check and remove duplicate e-mails run queries from scrub_duplicate_emails.sql
-
 -- users / groups
 -- ignore network admin (assumes id of 1)
 create table _dvn3_vdcuser as select * from vdcuser where id != 1;
