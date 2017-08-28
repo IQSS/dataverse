@@ -23,6 +23,7 @@ import javax.inject.Named;
 import org.passay.CharacterCharacteristicsRule;
 import org.passay.CharacterRule;
 import org.passay.DictionaryRule;
+import org.passay.DictionarySubstringRule;
 import org.passay.IllegalRegexRule;
 import org.passay.LengthRule;
 import org.passay.PasswordData;
@@ -153,9 +154,11 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         final PasswordData passwordData = PasswordData.newInstance(password, String.valueOf(passwordModificationTime.getTime()), null);
 //        final PasswordData passwordData = PasswordData.newInstance(password, "username", null);
         final RuleResult result = new RuleResult();
+
         for (PasswordValidator currentUser : validators.values()) {
             logger.fine("characterRules.size(): " + characterRules.size());
             logger.fine("numberOfCharacteristics: " + numberOfCharacteristics);
+            logger.warning("PasswordValidator current rules: " + currentUser.toString());
             RuleResult r = currentUser.validate(passwordData);
             if (r.isValid())
                 return Collections.emptyList();
@@ -215,7 +218,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         PasswordValidator passwordValidator = validators.get(ValidatorTypes.StandardValidator);
         if (passwordValidator == null) {
             final List<Rule> rules = new ArrayList<>(4);
-            rules.add(dictionaryRule());
+            rules.add(dictionarySubstringRule());
             final LengthRule lengthRule = new LengthRule();
             if (maxLength != 0) {
                 lengthRule.setMaximumLength(maxLength);
@@ -238,7 +241,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         }
     }
 
-
     /**
      * dictionaryRule
      * <p>
@@ -259,7 +261,28 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         }
         return rule;
     }
-
+    
+        /**
+     * dictionarySubstringRule
+     * <p>
+     * Reads in the getDictionaries from a file. 
+     * Substring means that passwords containing a dictionary string fail.
+     *
+     * @return A rule.
+     */
+    private DictionarySubstringRule dictionarySubstringRule() {
+        DictionarySubstringRule rule = null;
+        try {
+            rule = new DictionarySubstringRule(
+                    new WordListDictionary(WordLists.createFromReader(
+                            getDictionaries(),
+                            false,
+                            new ArraysSort())));
+        } catch (IOException e) {
+            logger.log(Level.CONFIG, e.getMessage());
+        }
+        return rule;
+    }
 
     /**
      * getDictionaries
