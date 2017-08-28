@@ -142,11 +142,15 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         // re-calculate the UNF of the version - since that is the product 
         // of the UNFs of the individual files. 
         boolean recalculateUNF = false;
-        
-        for (FileMetadata fmd : filesToDelete) {
-            
-            
-            //  check if this file is being used as the default thumbnail
+        /* The separate loop is just to make sure that the dataset database is 
+        updated, specifically when an image datafile is being deleted, which
+        is being used as the dataset thumbnail as part of a batch delete. 
+        if we dont remove the thumbnail association with the dataset before the 
+        actual deletion of the file, it might throw foreign key integration 
+        violation exceptions. 
+        */
+        for (FileMetadata fmd : filesToDelete){
+             //  check if this file is being used as the default thumbnail
             if (fmd.getDataFile().equals(theDataset.getThumbnailFile())) {
                 logger.fine("deleting the dataset thumbnail designation");
                 theDataset.setThumbnailFile(null);
@@ -155,28 +159,38 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             if (fmd.getDataFile().getUnf() != null) {
                 recalculateUNF = true;
             }
+        }
+        
+        Dataset tempDataset = ctxt.em().merge(theDataset);
+        ctxt.em().flush();
+        
+        
+        for (FileMetadata fmd : filesToDelete) {
+            
+            
+           
             
             if (!fmd.getDataFile().isReleased()) {
                 // if file is draft (ie. new to this version, delete; otherwise just remove filemetadata object)
                 ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
-                theDataset.getFiles().remove(fmd.getDataFile());
-                theDataset.getEditVersion().getFileMetadatas().remove(fmd);
+                tempDataset.getFiles().remove(fmd.getDataFile());
+                tempDataset.getEditVersion().getFileMetadatas().remove(fmd);
                 // added this check to handle issue where you could not deleter a file that shared a category with a new file
                 // the relation ship does not seem to cascade, yet somehow it was trying to merge the filemetadata
                 // todo: clean this up some when we clean the create / update dataset methods
-                for (DataFileCategory cat : theDataset.getCategories()) {
+                for (DataFileCategory cat : tempDataset.getCategories()) {
                     cat.getFileMetadatas().remove(fmd);
                 }
             } else {
                 FileMetadata mergedFmd = ctxt.em().merge(fmd);
                 ctxt.em().remove(mergedFmd);
                 fmd.getDataFile().getFileMetadatas().remove(fmd);
-                theDataset.getEditVersion().getFileMetadatas().remove(fmd);
+                tempDataset.getEditVersion().getFileMetadatas().remove(fmd);
             }      
         }        
         
         if (recalculateUNF) {
-            ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getEditVersion());
+            ctxt.ingest().recalculateDatasetVersionUNF(tempDataset.getEditVersion());
         }
         
         String nonNullDefaultIfKeyNotFound = "";
@@ -184,14 +198,14 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         
         IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
         boolean registerWhenPublished = idServiceBean.registerWhenPublished();
-        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, theDataset.getProtocol(), theDataset.getGlobalIdCreateTime()});
-        if ( !registerWhenPublished && theDataset.getGlobalIdCreateTime() == null) {
+        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, tempDataset.getProtocol(), tempDataset.getGlobalIdCreateTime()});
+        if ( !registerWhenPublished && tempDataset.getGlobalIdCreateTime() == null) {
             try {
                 logger.fine("creating identifier");
                
-                String doiRetString = idServiceBean.createIdentifier(theDataset);
+                String doiRetString = idServiceBean.createIdentifier(tempDataset);
                 int attempts = 0;
-                while (!doiRetString.contains(theDataset.getIdentifier())
+                while (!doiRetString.contains(tempDataset.getIdentifier())
                        && doiRetString.contains("identifier already exists")
                        && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                 // if the identifier exists, we'll generate another one
@@ -208,30 +222,30 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 // enough number of values will be legitimately registered 
                 // by another entity sharing the same authority...)
                 
-                    theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
-                    doiRetString = idServiceBean.createIdentifier(theDataset);
+                    tempDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(tempDataset, idServiceBean));
+                    doiRetString = idServiceBean.createIdentifier(tempDataset);
 
                     attempts++;
                 }
                 // And if the registration failed for some reason other that an 
                 // existing duplicate identifier - for example, EZID down --
                 // we simply give up. 
-                if (doiRetString.contains(theDataset.getIdentifier())) {
-                theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                if (doiRetString.contains(tempDataset.getIdentifier())) {
+                tempDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 }
                 else if (doiRetString.contains("identifier already exists")) {
-                logger.warning("EZID refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier());
+                logger.warning("EZID refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + tempDataset.getIdentifier());
                 }
                 else {
-                logger.warning("Failed to create identifier (" + theDataset.getIdentifier() + ") with EZID: " + doiRetString);
+                logger.warning("Failed to create identifier (" + tempDataset.getIdentifier() + ") with EZID: " + doiRetString);
                 }
                    
             } catch (Throwable e) {
                 // EZID probably down
             }
         }
-
-        Dataset savedDataset = ctxt.em().merge(theDataset);
+        
+        Dataset savedDataset = ctxt.em().merge(tempDataset);
         ctxt.em().flush();
 
         /**

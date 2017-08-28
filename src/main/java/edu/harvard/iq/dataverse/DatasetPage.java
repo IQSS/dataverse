@@ -2309,37 +2309,38 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void deleteFiles() {
-        
-        String fileNames = null;
-        for (FileMetadata fmd : this.getSelectedFiles()) {
-            // collect the names of the newly-restrticted files, 
-            // to show in the success message:
-            if (fileNames == null) {
-                fileNames = fmd.getLabel();
-            } else {
-                fileNames = fileNames.concat(fmd.getLabel());
-            }
-        }
 
         for (FileMetadata markedForDelete : selectedFiles) {
-            // TODO: 
-            // the code below needs to be rewritten: 
-            // markedForDelete.getId() == null DOES NOT mean that this file 
-            // has just been uploaded! (markedForDelete is a FileMetadata, not 
-            // a DataFile!! so this maybe an existing file, but a brand new
-            // DRAFT version and a brand new filemetadata that hasn't been saved 
-            // yet) -- L.A. 4.2, Sep. 15 
+            
             if (markedForDelete.getId() != null) {
+                // This FileMetadata has an id, i.e., it exists in the database. 
+                // We are going to remove this filemetadata from the version: 
                 dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                // But the actual delete will be handled inside the UpdateDatasetCommand
+                // (called later on). The list "filesToBeDeleted" is passed to the 
+                // command as a parameter:
                 filesToBeDeleted.add(markedForDelete);
             } else {
-                // the file was just added during this step, so in addition to 
-                // removing it from the fileMetadatas (for display), we also remove it from 
-                // the newFiles list and the dataset's files, so it won't get uploaded at all
+                // This FileMetadata does not have an id, meaning it has just been 
+                // created, and not yet saved in the database. This in turn means this is 
+                // a freshly created DRAFT version; specifically created because 
+                // the user is trying to delete a file from an existing published 
+                // version. This means we are not really *deleting* the file - 
+                // we are going to keep it in the published version; we are simply 
+                // going to save a new DRAFT version that does not contain this file. 
+                // So below we are deleting the metadata from the version; we are 
+                // NOT adding the file to the filesToBeDeleted list that will be 
+                // passed to the UpdateDatasetCommand. -- L.A. Aug 2017
                 Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
                     FileMetadata fmd = fmit.next();
                     if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
+                        // And if this is an image file that happens to be assigned 
+                        // as the dataset thumbnail, let's null the assignment here:
+                        
+                        if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
+                            dataset.setThumbnailFile(null);
+                        }
                         fmit.remove();
                         break;
                     }
@@ -2388,14 +2389,6 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-     
-        if (fileNames != null) {
-            String successMessage = JH.localize("file.deleted.success");
-            logger.fine(successMessage);
-            successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);
-        }
-        
         /* 
            Do note that if we are deleting any files that have UNFs (i.e., 
            tabular files), we DO NEED TO RECALCULATE the UNF of the version!
@@ -2451,30 +2444,32 @@ public class DatasetPage implements java.io.Serializable {
             }
             logger.log(Level.FINE, "Couldn''t save dataset: {0}", error.toString());
             populateDatasetUpdateFailureMessage();
-            return null;
+            return returnToDraftVersion();
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
-            logger.severe(ex.getMessage());
+            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
+            logger.severe("CommandException, when attempting to update the dataset: " + ex.getMessage());
             populateDatasetUpdateFailureMessage();
-            return null;
+            return returnToDraftVersion();
         }
+        
         newFiles.clear();
-        if (editMode != null){
-                    if(editMode.equals(EditMode.CREATE)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
-        }
-        if(editMode.equals(EditMode.METADATA)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));
-        }
-        if(editMode.equals(EditMode.LICENSE)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.termsSuccess"));
-        }
-        if(editMode.equals(EditMode.FILE)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
-        }
-            
+        if (editMode != null) {
+            if (editMode.equals(EditMode.CREATE)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+            }
+            if (editMode.equals(EditMode.METADATA)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));
+            }
+            if (editMode.equals(EditMode.LICENSE)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.termsSuccess"));
+            }
+            if (editMode.equals(EditMode.FILE)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
+            }
+
         } else {
-             JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileUpdateSuccess"));
+            // must have been a bulk file update or delete:
+            JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileUpdateSuccess"));
         }
 
         editMode = null;
@@ -2491,20 +2486,22 @@ public class DatasetPage implements java.io.Serializable {
     private void populateDatasetUpdateFailureMessage(){
             // null check would help here. :) -- L.A. 
             if (editMode == null) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, "mystery failure");
+                // that must have been a bulk file update or delete:
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.filesFailure"));
                 return;
             }
+            
             if (editMode.equals(EditMode.CREATE)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.createFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.createFailure"));
             }
             if (editMode.equals(EditMode.METADATA)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.metadataFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.metadataFailure"));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.termsFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.termsFailure"));
             }
             if (editMode.equals(EditMode.FILE)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.filesFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.filesFailure"));
             }
     }
     
