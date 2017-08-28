@@ -92,12 +92,12 @@
                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
                                          and (DatasetPage.canUpdateDataset()
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                        <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'ui-state-disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
+                        <p:commandLink type="button" styleClass="btn btn-default btn-access" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
                                         rendered="#{DatasetPage.sessionUserAuthenticated 
                                                     and DatasetPage.canUpdateDataset()
                                                     and !widgetWrapper.widgetView and settingsWrapper.rsyncUpload}">
                             <!-- RSYNC UPLOAD FILES BUTTON -->
-                            <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText value="#{bundle['file.uploadFiles']}"/>
+                            <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['file.uploadFiles']}"/>
                         </p:commandLink>
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                       type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'ui-state-disabled' : ''}"
