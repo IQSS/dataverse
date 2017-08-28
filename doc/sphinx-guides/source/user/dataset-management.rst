@@ -141,26 +141,28 @@ An rsync-enabled Dataverse installation has a file upload process that differs f
 
 3. Make sure your files are ready for upload. You will need to have one directory that you can point the upload script to. All files in this directory and in any subdirectories will be uploaded. The directory structure will be preserved, and will be reproduced when your dataset is downloaded from Dataverse. Note that your data will be uploaded in the form of a data package, and each dataset can only host one such package. Be sure that all files you want to include are present before you upload.
 
-4. Download the rsync file upload script using the link in the Upload Files instruction box. There are no requirements for where you save the script; put it somewhere you can find it.
+4. Download the rsync file upload script using the link in the Upload Files instruction box. There are no requirements for where you save the script; put it somewhere you can find it. Downloading the upload script will put a temporary lock on your dataset to prepare it for upload. While your dataset is locked, you will not be able to delete or publish your dataset, or edit its metadata. Once you upload your files and Dataverse processes them, your dataset will be automatically unlocked and these disabled functions will be enabled again. If you have downloaded the script and locked your dataset, but you have then changed your mind and decided *not* to upload files, please contact Support about unlocking your dataset.
 
 5. To begin the upload process, you will need to run the script you downloaded. For this, you will have to go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to navigate to the directory where you saved the upload script, and run the command that the Upload Files instruction box provides. This will begin the upload script. Please note that this upload script will expire 7 days after you downloaded it. If it expires and you still need to use it, simply download the script from Dataverse again.
 
 **Note:** Unlike other operating systems, Windows does not come with rsync supported by default. We have not optimized this feature for Windows users, but you may be able to get it working if you install the right Unix utilities. (If you have found a way to get this feature working for you on Windows, you can contribute it to our project. Please reference our `Contributing to Dataverse <https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md>`_ document in the root of the source tree.)
 
-6. Follow the instructions provided by the upload script running in your terminal. If you need to cancel the upload, you can do so by canceling the script running in your terminal window. If your upload gets interrupted, you can resume it from the same point later.
+6. Follow the instructions provided by the upload script running in your terminal. It will direct you to enter the full path of the directory where your dataset files are located, and then it will start the upload process. Once you've initiated the upload, if you need to cancel it then you can do so by canceling the script running in your terminal window. If your upload gets interrupted, you can resume it from the same point later.
 
-7. Once the upload script completes its job, Dataverse will begin processing your data upload and running a checksum validation. This may take some time depending on the file size of your upload. While your upload is processing, you will not be able to delete or publish your dataset, and you will not be able to upload more files. You will still be able to edit the dataset's metadata, though. Once processing is complete, the disabled functions will be enabled again. During processing, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..." 
+7. Once the upload script completes its job, Dataverse will begin processing your data upload and running a checksum validation. This may take some time depending on the file size of your upload. During processing, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..." 
 
-8. Once processing is complete, you will be notified. At this point you can publish your dataset and your data will be available for download on the dataset page. **Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact the support team for the Dataverse installation you are using.
+8. Once processing is complete, you will be notified. At this point you can publish your dataset and your data will be available for download on the dataset page. 
 
-Dataverse Package
-~~~~~~~~~~~~~~~~~
+**Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact Support.
 
-Features
+Downloading a Dataverse Package via rsync
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Instead of a bunch of files displayed, you have one file, a "Dataverse Package".
-- There are Data Access locations, as well as Verify Data commands, displayed on the dataset and file pgs.
-- "If delete, delete the dataset"?
+Rsync-enabled Dataverse installations have a new file download process that differs from traditional browser-based downloading. Instead of multiple files, each dataset contains a single "Dataverse Package". When you download this package you will receive a folder that contains all files from the dataset, arranged in the exact folder structure in which they were originally uploaded. 
+
+At the bottom of the dataset page, under the **Data Access** tab, you will find the information you need in order to download a Dataverse Package. If the data is locally available to you (on a shared drive, for example) then you can find it at the folder path under **Local Access**. Otherwise, to download the Dataverse Package you will have to use one of the rsync commands under **Download Access**. There may be multiple commands listed, each corresponding to a different mirror that hosts the Dataverse Package. Go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to run the command that corresponds with the mirror of your choice. It's usually best to choose the mirror that is geographically closest to you.
+
+After you've downloaded the Dataverse Package, you may want to double-check that your download went perfectly. Under **Verify Data**, you'll find a command that you can run in your terminal that will initiate a checksum to ensure that the data you downloaded matches the data in Dataverse precisely. This way, you can ensure the integrity of the data you're working with. 
 
 .. _cloud-storage:
 
