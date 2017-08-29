@@ -22,6 +22,7 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -1402,6 +1403,10 @@ public class FileUtil implements java.io.Serializable  {
         DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, file);
         return defaultDatasetThumbnail;
 
+    }
+    
+    public static boolean isPackageFile(DataFile dataFile) {
+        return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(dataFile.getContentType());
     }
 
 }
