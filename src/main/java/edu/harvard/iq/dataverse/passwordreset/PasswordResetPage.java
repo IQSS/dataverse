@@ -23,6 +23,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import java.util.Date;
+import java.util.List;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
 @ViewScoped
@@ -80,6 +85,8 @@ public class PasswordResetPage implements java.io.Serializable {
     String newPassword;
     
     PasswordResetData passwordResetData;
+    
+    private List<String> passwordErrors;
 
     public void init() {
         if (token != null) {
@@ -137,6 +144,32 @@ public class PasswordResetPage implements java.io.Serializable {
         }
     }
 
+    //FIXME: This was ported from DataverseUserPage. Should it live on its own?
+    public void validateNewPassword(FacesContext context, UIComponent toValidate, Object value) {
+        String password = (String) value;
+        if (StringUtils.isBlank(password)){
+            logger.log(Level.WARNING, "new password is blank");
+
+            ((UIInput) toValidate).setValid(false);
+
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Password Error", "The new password is blank: re-type it again");
+            context.addMessage(toValidate.getClientId(context), message);
+            return;
+
+        } 
+
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        this.passwordErrors = errors;
+        if (!errors.isEmpty()) {
+            ((UIInput) toValidate).setValid(false);
+        }
+    }
+    
+    public String getPasswordRequirements() {
+        return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
+    }
+    
     public boolean isAccountUpgrade() {
         return passwordResetData.getReason() == PasswordResetData.Reason.UPGRADE_REQUIRED;
     }
