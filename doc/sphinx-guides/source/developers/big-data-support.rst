@@ -53,23 +53,49 @@ Here's the syntax for sending the JSON.
 
 
 Steps to set up a DCM mock for Development
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install python/pip/flask. On a debian machine these commands are:
+Install Flask.
 
-- ``sudo apt install python-pip`` (will install python as well)
-- ``pip install flask``
 
-Download and run mock. See documentation ``data-capture-module`` repo for more info:
+Download and run the mock. You will be cloning the https://github.com/sbgrid/data-capture-module repo.
 
 - ``git clone git://github.com/sbgrid/data-capture-module.git``
 - ``cd data-capture-module/api``
 - ``./dev_mock.sh``
 
+If you see an error about not having Flask installed, install it as explained below.
+
+On Mac, you can install Flask with:
+
+- ``mkvirtualenv mockdcm``
+- ``pip install -r requirements-mock.txt``
+
+On Ubuntu/Debian, you can install Flask with:
+
+- ``sudo apt install python-pip`` (will install python as well)
+- ``pip install flask``
+
+Once you have Flask installed, try running the dev mock script again:
+
+- ``./dev_mock.sh``
+
+This should spin up the DCM mock on port 5000.
+
 Add Dataverse settings to use mock (same as using DCM, noted above):
 
 - ``curl http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl -X PUT -d "http://localhost:5000"``
 - ``curl http://localhost:8080/api/admin/settings/:UploadMethods -X PUT -d "dcm/rsync+ssh"``
+
+At this point you should be able to download a placeholder rsync script. Dataverse is then waiting for new from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment.
+
+- ``mkdir /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
+- ``mkdir /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
+- ``cd /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
+- ``echo "hello" > file1.txt``
+- ``shasum file1.txt > files.sha``
+
+Now the files are in place and you need to send JSON to Dataverse with a success or failure message as described above. Make a copy of ``doc/sphinx-guides/source/_static/installation/files/root/big-data-support/checksumValidationSuccess.json`` and put the identifier in place such as "X1METO" under "uploadFolder"). Then use curl as described above to send the JSON.
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
