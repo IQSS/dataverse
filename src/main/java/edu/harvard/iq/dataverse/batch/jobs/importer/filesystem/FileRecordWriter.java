@@ -331,6 +331,14 @@ public class FileRecordWriter extends AbstractItemWriter {
             jobContext.setExitStatus("FAILED");
             return null;
         }
+        
+        //Verify that file exists or fail job entirely
+        
+        if (!(new File(datasetDirectory + File.separator + packageFile.getStorageIdentifier()).exists())) {
+            getJobLogger().log(Level.SEVERE, "Could not move the file folder to the final destination (" + datasetDirectory + File.separator + packageFile.getStorageIdentifier() + ")");
+            jobContext.setExitStatus("FAILED");
+            return null;
+        }
             
         packageFile.setFilesize(totalSize);
         packageFile.setModificationTime(new Timestamp(new Date().getTime()));
