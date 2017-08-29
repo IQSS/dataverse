@@ -1109,13 +1109,13 @@
                                 <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.filesExist']}" escape="false"/>
                             </p>
                         </ui:fragment>
-                        <ui:fragment rendered="#{!DatasetPage.isHasRsyncScript() and DatasetPage.workingVersion.fileMetadatas.size() == 0}">
+                        <ui:fragment rendered="#{false and !DatasetPage.isHasRsyncScript() and DatasetPage.workingVersion.fileMetadatas.size() == 0}">
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-warning-sign text-danger"></span>
                                 <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptAvailable']}" escape="false"/>
                             </p>
                         </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.isHasRsyncScript() and DatasetPage.workingVersion.fileMetadatas.size() == 0}">
+                        <ui:fragment rendered="#{true  }"> <!-- DatasetPage.isHasRsyncScript() and DatasetPage.workingVersion.fileMetadatas.size() == 0 -->
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-info-sign"></span>
                                 <h:outputFormat value=" #{bundle['file.rsyncUpload.info']}" escape="false">
@@ -1128,8 +1128,9 @@
                                     <h:outputText value="#{bundle['file.rsyncUpload.step1']}" escape="false"/>
                                 </li>
                                 <li>
-                                    <h:commandLink id="rsyncDL" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default" >
-                                        <h:outputText value="#{bundle['file.rsyncUpload.step2']}" escape="false"/>
+                                    <h:outputText value="#{bundle['file.rsyncUpload.step2']} &#158; " escape="false"/>
+                                    <h:commandLink id="rsyncDL" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default btn-xs">
+                                        <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
                                     </h:commandLink>
                                 </li>
                                 <li>

@@ -664,7 +664,7 @@ div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
 div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 /* overwrite Bootstrap code red style */
-.ui-widget-content code {background-color: #F0F0F0; color: #0048ab;}
+.ui-widget-content code {background-color: #F0F0F0; color: #333333;}
 
 .btn-sm.ui-button {padding: 5px 10px;}
 
