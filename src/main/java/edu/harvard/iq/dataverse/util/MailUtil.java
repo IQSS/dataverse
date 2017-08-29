@@ -1,11 +1,11 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.SystemEmail;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -29,7 +29,7 @@ public class MailUtil {
         return null;
     }
 
-    public static String getSubjectTextBasedOnNotification(UserNotification userNotification, String rootDataverseName) {
+    public static String getSubjectTextBasedOnNotification(UserNotification userNotification, String rootDataverseName, Object objectOfNotification) {
         List<String> rootDvNameAsList = Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName));
         switch (userNotification.getType()) {
             case ASSIGNROLE:
@@ -61,7 +61,14 @@ public class MailUtil {
             case CHECKSUMFAIL:
                 return BundleUtil.getStringFromBundle("notification.email.checksumfail.subject", rootDvNameAsList);
             case FILESYSTEMIMPORT:
-                return BundleUtil.getStringFromBundle("notification.email.import.filesystem.subject", rootDvNameAsList);
+                try {
+                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
+                    return BundleUtil.getStringFromBundle("notification.email.import.filesystem.subject", dsNameAsList);
+                } catch (Exception e) {
+                    return BundleUtil.getStringFromBundle("notification.email.import.filesystem.subject", rootDvNameAsList);
+                }
+
             case CHECKSUMIMPORT:
                 return BundleUtil.getStringFromBundle("notification.email.import.checksum.subject", rootDvNameAsList);
             case CONFIRMEMAIL:
