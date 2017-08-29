@@ -160,16 +160,13 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 recalculateUNF = true;
             }
         }
-        
+        //we have to merge to update the database but not flush because 
+        //we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(theDataset);
-        ctxt.em().flush();
+        //ctxt.em().flush();
         
         
         for (FileMetadata fmd : filesToDelete) {
-            
-            
-           
-            
             if (!fmd.getDataFile().isReleased()) {
                 // if file is draft (ie. new to this version, delete; otherwise just remove filemetadata object)
                 ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
