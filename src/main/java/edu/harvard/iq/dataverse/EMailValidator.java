@@ -30,8 +30,8 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
     
     public static boolean isEmailValid(String value, ConstraintValidatorContext context) {
         if (value == null) {
-            //we'll let someone else decide if it's required
-            return true;
+            //A null email id is not valid, as email is a required field.
+            return false;
         }
         boolean isValid = EmailValidator.getInstance().isValid(value);
         if (!isValid) {
