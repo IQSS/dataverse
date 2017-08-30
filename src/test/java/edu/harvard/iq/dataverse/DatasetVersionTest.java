@@ -1,17 +1,14 @@
-/*
- *  (C) Michael Bar-Sinai
- */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -78,14 +75,14 @@ public class DatasetVersionTest {
         DatasetVersion draft = ds.getCreateVersion();
         draft.setVersionState(DatasetVersion.VersionState.DRAFT);
         ds.setDatasetLock(new DatasetLock(DatasetLock.Reason.InReview, MocksFactory.makeAuthenticatedUser("Lauren", "Ipsumowitch")));
-        assertEquals(true, draft.isInReview());
+        assertTrue(draft.isInReview());
 
         DatasetVersion nonDraft = new DatasetVersion();
         nonDraft.setVersionState(DatasetVersion.VersionState.RELEASED);
         assertEquals(false, nonDraft.isInReview());
         
         ds.setDatasetLock(null);
-        assertEquals(false, nonDraft.isInReview());
+        assertFalse(nonDraft.isInReview());
     }
-    
+
 }

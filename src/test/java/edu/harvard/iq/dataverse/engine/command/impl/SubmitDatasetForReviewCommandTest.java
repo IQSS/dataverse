@@ -163,9 +163,8 @@ public class SubmitDatasetForReviewCommandTest {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         String expected = "Latest version of dataset is already released. Only draft versions can be submitted for review.";
         String actual = null;
-        Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
+            testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }

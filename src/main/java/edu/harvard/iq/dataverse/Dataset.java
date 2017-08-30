@@ -172,9 +172,9 @@ public class Dataset extends DvObjectContainer {
     }
 
     /**
-     * returns dataset identifier.
-     * For example, a dataset with database id (primary key) 3, persistent ID
-     * doi:10.5072/FK2/abcde, this should return "abcde".
+     * @return dataset identifier.
+     *         For example, a dataset with database id (primary key) 3, persistent ID
+     *         doi:10.5072/FK2/abcde, this should return "abcde".
      */
     public String getIdentifier() {
         return identifier;
@@ -356,6 +356,8 @@ public class Dataset extends DvObjectContainer {
     /**
      * The "edit version" is the most recent *draft* of a dataset, and if the
      * latest version of a dataset is published, a new draft will be created.
+     * 
+     * @return The edit version {@code this}.
      */
     public DatasetVersion getEditVersion() {
         return getEditVersion(null);
@@ -665,7 +667,7 @@ public class Dataset extends DvObjectContainer {
                     }
                 }
                 return this.getHarvestedFrom().getArchiveUrl();
-            }else {
+            } else {
                 return this.getHarvestedFrom().getArchiveUrl();
             }
         }
@@ -726,8 +728,8 @@ public class Dataset extends DvObjectContainer {
      * This saves trying to find the latestDatasetVersion, and 
      * other costly queries, etc.
      * 
-     * @param datasetVersionId
-     * @return 
+     * @param datasetVersion
+     * @return A thumbnail of the dataset (may be {@code null}).
      */
     public DatasetThumbnail getDatasetThumbnail(DatasetVersion datasetVersion) {
         return DatasetUtil.getThumbnail(this, datasetVersion);

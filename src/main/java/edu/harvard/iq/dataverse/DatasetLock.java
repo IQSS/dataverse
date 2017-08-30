@@ -57,8 +57,13 @@ import javax.persistence.NamedQuery;
 public class DatasetLock implements Serializable {
     
     public enum Reason {
+        /** Data being ingested */
         Ingest,
+        
+        /** Waits for a {@link Workflow} to end */
         Workflow,
+        
+        /** Waiting for a curator to approve/send back to author */
         InReview
     }
     
@@ -89,7 +94,7 @@ public class DatasetLock implements Serializable {
      * Constructing a lock for the given reason.
      * @param aReason Why the dataset gets locked.  Cannot be {@code null}.
      * @param aUser The user causing the lock. Cannot be {@code null}.
-     * @throws IllegalArguementException if any of the parameters are null. That's
+     * @throws IllegalArgumentException if any of the parameters are null. That's
      *         because JPA would throw an exception later anyway.
      */
     public DatasetLock( Reason aReason, AuthenticatedUser aUser ) {
