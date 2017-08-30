@@ -32,9 +32,10 @@ import javax.persistence.Table;
 })
 @Entity
 public class PasswordResetData implements Serializable {
-    
+     
     public enum Reason {
-        FORGOT_PASSWORD, 
+        FORGOT_PASSWORD,
+        NON_COMPLIANT_PASSWORD,
         UPGRADE_REQUIRED
     }
     

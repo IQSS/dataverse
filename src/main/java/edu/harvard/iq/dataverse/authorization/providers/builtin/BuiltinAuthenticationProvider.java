@@ -127,7 +127,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
         final List<String> errors = passwordValidatorService.validate(authReq.getCredential("Password"));
         if (!errors.isEmpty()) {
             try {
-                String passwordResetUrl = bean.requestPasswordUpgradeLink(u);
+                String passwordResetUrl = bean.requestPasswordComplianceLink(u);
                 return AuthenticationResponse.makeBreakout(u.getUserName(), passwordResetUrl);
             } catch (PasswordResetException ex) {
                 return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);

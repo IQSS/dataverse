@@ -174,6 +174,10 @@ public class PasswordResetPage implements java.io.Serializable {
         return passwordResetData.getReason() == PasswordResetData.Reason.UPGRADE_REQUIRED;
     }
     
+    public boolean isPasswordCompliant() {
+        return passwordResetData.getReason() == PasswordResetData.Reason.NON_COMPLIANT_PASSWORD;
+    }
+    
     public String getToken() {
         return token;
     }

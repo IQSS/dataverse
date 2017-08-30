@@ -154,4 +154,9 @@ public class BuiltinUserServiceBean {
         PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.UPGRADE_REQUIRED );
         return "passwordreset.xhtml?token=" + prir.getPasswordResetData().getToken() + "&faces-redirect=true";
     }
+    
+    public String requestPasswordComplianceLink( BuiltinUser aUser ) throws PasswordResetException {
+        PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.NON_COMPLIANT_PASSWORD );
+        return "passwordreset.xhtml?token=" + prir.getPasswordResetData().getToken() + "&faces-redirect=true";
+    }
 }
