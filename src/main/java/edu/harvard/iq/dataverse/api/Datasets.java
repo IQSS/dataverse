@@ -14,11 +14,18 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -29,6 +36,7 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
@@ -42,6 +50,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionComman
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
@@ -58,7 +67,6 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -68,7 +76,9 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.Collections;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -101,8 +111,6 @@ public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
     
-    private static final String PERSISTENT_ID_KEY=":persistentId";
-    
     @Inject DataverseSession session;    
 
     @EJB
@@ -110,8 +118,16 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DataverseServiceBean dataverseService;
-
-
+    
+    @EJB
+    UserNotificationServiceBean userNotificationService;
+    
+    @EJB
+    PermissionServiceBean permissionService;
+    
+    @EJB
+    AuthenticationServiceBean authenticationServiceBean;
+    
     @EJB
     DDIExportServiceBean ddiExportService;
     
@@ -634,6 +650,59 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Something went wrong attempting to download rsync script: " + EjbUtil.ejbExceptionToString(ex));
         }
     }
+    
+    @POST
+    @Path("{identifier}/dataCaptureModule/checksumValidation")
+    public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
+        logger.fine("jsonFromDcm: " + jsonFromDcm);
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!authenticatedUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        String statusMessageFromDcm = jsonFromDcm.getString("status");
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+            if ("validation passed".equals(statusMessageFromDcm)) {
+                String uploadFolder = jsonFromDcm.getString("uploadFolder");
+                int totalSize = jsonFromDcm.getInt("totalSize");
+                ImportMode importMode = ImportMode.MERGE;
+                try {
+                    JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(findUserOrDie()), dataset, uploadFolder, new Long(totalSize), importMode));
+                    long jobId = jsonFromImportJobKickoff.getInt("executionId");
+                    String message = jsonFromImportJobKickoff.getString("message");
+                    JsonObjectBuilder job = Json.createObjectBuilder();
+                    job.add("jobId", jobId);
+                    job.add("message", message);
+                    return ok(job);
+                } catch (WrappedResponse wr) {
+                    String message = wr.getMessage();
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
+                }
+            } else if ("validation failed".equals(statusMessageFromDcm)) {
+                Map<String, AuthenticatedUser> distinctAuthors = permissionService.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
+                distinctAuthors.values().forEach((value) -> {
+                    userNotificationService.sendNotification((AuthenticatedUser) value, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
+                });
+                List<AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
+                if (superUsers != null && !superUsers.isEmpty()) {
+                    superUsers.forEach((au) -> {
+                        userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
+                    });
+                }
+                return ok("User notified about checksum validation failure.");
+            } else {
+                return error(Response.Status.BAD_REQUEST, "Unexpected status cannot be processed: " + statusMessageFromDcm);
+            }
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
 
     @POST
     @Path("{id}/submitForReview")
@@ -807,36 +876,6 @@ public class Datasets extends AbstractApiBean {
     }
     private void msgt(String m){
         dashes(); msg(m); dashes();
-    }
-    
-
-   
-    private Dataset findDatasetOrDie(String id) throws WrappedResponse {
-        Dataset dataset;
-        if (id.equals(PERSISTENT_ID_KEY)) {
-            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
-            if (persistentId == null) {
-                throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
-            }
-            dataset = datasetService.findByGlobalId(persistentId);
-            if (dataset == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
-            }
-            return dataset;
-
-        } else {
-            try {
-                dataset = datasetService.find(Long.parseLong(id));
-                if (dataset == null) {
-                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
-                }
-                return dataset;
-            } catch (NumberFormatException nfe) {
-                throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
-            }
-        }
     }
     
     

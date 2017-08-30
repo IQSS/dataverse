@@ -27,8 +27,7 @@ Execute the installer script like this::
         # cd dvinstall
         # ./install
 
-It is no longer necessary to run the installer as root!
-=======================================================
+**It is no longer necessary to run the installer as root!**
 
 Just make sure the user running the installer has write permission to:
 

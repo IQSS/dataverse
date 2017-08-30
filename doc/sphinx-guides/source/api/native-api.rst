@@ -627,6 +627,7 @@ Sample output appears below.
 
 * When multiple pages of results exist, the ``selectedPage`` parameters may be specified.
 * Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.
+
 .. code-block:: text
 
     {

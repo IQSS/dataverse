@@ -471,11 +471,11 @@ public class MailServiceBean implements java.io.Serializable {
                 return messageText += accountCreatedMessage;
 
             case CHECKSUMFAIL:
-                version =  (DatasetVersion) targetObject;
+                dataset =  (Dataset) targetObject;
                 String checksumFailMsg = BundleUtil.getStringFromBundle("notification.checksumfail", Arrays.asList(
-                        version.getDataset().getGlobalId()
+                        dataset.getGlobalId()
                 ));
-                logger.info("checksumFailMsg: " + checksumFailMsg);
+                logger.fine("checksumFailMsg: " + checksumFailMsg);
                 return messageText += checksumFailMsg;
 
             case FILESYSTEMIMPORT:
@@ -485,7 +485,7 @@ public class MailServiceBean implements java.io.Serializable {
                         version.getDataset().getGlobalId(),
                         version.getDataset().getDisplayName()
                 ));
-                logger.info("fileImportMsg: " + fileImportMsg);
+                logger.fine("fileImportMsg: " + fileImportMsg);
                 return messageText += fileImportMsg;
 
             case CHECKSUMIMPORT:
@@ -494,7 +494,7 @@ public class MailServiceBean implements java.io.Serializable {
                         version.getDataset().getGlobalId(),
                         version.getDataset().getDisplayName()
                 ));
-                logger.info("checksumImportMsg: " + checksumImportMsg);
+                logger.fine("checksumImportMsg: " + checksumImportMsg);
                 return messageText += checksumImportMsg;
 
         }

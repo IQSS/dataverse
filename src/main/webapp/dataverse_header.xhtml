@@ -21,22 +21,14 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
-                    </button>
-                    
-                    
-                    <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
-                        <a href="/">
+                    </button>                       
+                    <a href="/">
+                        <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
                             <span class="navbar-brand" tabindex="1"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
-                        </a>
-                    </ui:fragment>
-
-                    <ui:fragment rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}">                       
-                        <a href="/">
-                            <h:graphicImage url="#{settingsWrapper.get(':LogoCustomizationFile')}"/>
-                        </a>
-                    </ui:fragment>
-                    
-                    
+                        </ui:fragment>
+                        <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
+                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo"/>
+                    </a>
                     <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
                         <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
                     </h:outputLink>
@@ -56,7 +48,7 @@
                                 <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
                                 <input id="navbarsearch" type="text" class="search-input ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"/>            
                             </div>                            
-                            <button type="submit" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}?q=' + document.getElementById('navbarsearch').value;
+                            <button type="submit" class="btn btn-default" onclick="window.location = '/dataverse.xhtml?alias=#{dataverseServiceBean.findRootDataverse().alias}&#38;q=' + document.getElementById('navbarsearch').value;
                                     return false;">
                                 <span class="glyphicon glyphicon-search"/> #{bundle.find}
                             </button>
@@ -166,7 +158,7 @@
                 style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};"
                 jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView}">
              <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils"/>
-            <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};; background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};"
+            <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};"
                  jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
             </div>
@@ -175,7 +167,7 @@
                     <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
                 </div>
                 <div class="dataverseHeaderCell dataverseHeaderName" jsf:rendered="#{!empty dataverse.name}">
-                    <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name}</a>
+                    <a href="/dataverse.xhtml?alias=#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name}</a>
                     <h:outputText style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                     <h:outputText value="#{bundle.unpublished}" styleClass="label label-warning label-unpublished" rendered="#{!dataverse.released}"/>
                 </div>
@@ -207,7 +199,7 @@
                             </a>
                         </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">
-                            <c:set var="dvUrl" value="/dataverse/#{breadcrumb.dvObject.alias}"/>
+                            <c:set var="dvUrl" value="/dataverse.xhtml?alias=#{breadcrumb.dvObject.alias}"/>
                             <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dvUrl) : dvUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
@@ -235,13 +227,13 @@
             <div class="dropdown #{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'dropdown-toggle keep-on' : ''}" data-delay="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? '800' : ''}" data-hover="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'dropdown' : ''}" data-target="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? '#' : ''}" data-close-others="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'true' : ''}">
                 <h:outputText value="#{dv.name}" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" rendered="#{dataverse.id == dv.id and dataset == null}"/>
                 <ui:fragment rendered="#{dataverse.id != dv.id or dataset != null}" >
-                    <a id="breadcrumbLnk#{status.index}" href="/dataverse/#{dv.alias}">
+                    <a id="breadcrumbLnk#{status.index}" href="/dataverse.xhtml?alias=#{dv.alias}">
                         <h:outputText value="#{dv.name}"/>
                     </a>
                 </ui:fragment>
 
                 <ui:fragment rendered="#{dataverseHeaderFragment.hasVisibleChildren(dv)}">
-                    <a id="taverse" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" role="button">
+                    <a id="dataverse" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" role="button">
                         <span class="glyphicon glyphicon-chevron-down"></span>
                     </a>
                 </ui:fragment>
@@ -250,7 +242,7 @@
                 <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node"  cache="true" id="tree">
                     <p:treeNode>
                         <h:outputText value="#{node.name}" styleClass="breadcrumbActive" rendered="#{dataverse.id == node.id and dataset == null}"/>
-                        <h:outputLink value="/dataverse/#{node.alias}" rendered="#{dataverse.id != node.id or dataset != null}">
+                        <h:outputLink value="/dataverse.xhtml?alias=#{node.alias}" rendered="#{dataverse.id != node.id or dataset != null}">
                             <h:outputText value="#{node.name}"/>
                         </h:outputLink>
                     </p:treeNode>

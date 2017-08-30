@@ -63,6 +63,7 @@ import java.util.Date;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.logging.Handler;
@@ -302,12 +303,18 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 
                 // [1] save json log to file
                 LoggingUtil.saveJsonLog(jobJson, logDir, jobId);
-                // [2] send user notifications
+                // [2] send user notifications - to all authors
                 notificationServiceBean.sendNotification(user, timestamp, notifyType, datasetVersionId);
-                // [3] send admin notification
-                AuthenticatedUser adminUser = authenticationServiceBean.getAuthenticatedUser("admin");
-                if (adminUser != null) {
-                    notificationServiceBean.sendNotification(adminUser, timestamp, notifyType, datasetVersionId);
+                Map<String, AuthenticatedUser> distinctAuthors = permissionServiceBean.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
+                distinctAuthors.values().forEach((value) -> {
+                    notificationServiceBean.sendNotification((AuthenticatedUser) value, new Timestamp(new Date().getTime()), notifyType, datasetVersionId);
+                });
+                // [3] send SuperUser notification
+                List <AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
+                if (superUsers != null && !superUsers.isEmpty()) {
+                    superUsers.forEach((au) -> {
+                        notificationServiceBean.sendNotification(au, timestamp, notifyType, datasetVersionId);                   
+                    });
                 }
                 // [4] action log: store location of the full log to avoid truncation issues
                 actionLogServiceBean.log(LoggingUtil.getActionLogRecord(user.getIdentifier(), jobExecution,
@@ -328,8 +335,10 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      */
     private String getDatasetGlobalId() {
         if (jobParams.containsKey("datasetId")) {
+            
             String datasetId = jobParams.getProperty("datasetId");
-            dataset = datasetServiceBean.findByGlobalId(datasetId);
+            
+            dataset = datasetServiceBean.find(new Long(datasetId));
             getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
             return dataset.getGlobalId();
         }

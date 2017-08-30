@@ -101,7 +101,7 @@
                             <div class="text-muted small"><h:outputText value="#{harvestClient.harvestingUrl}"/></div>
                         </p:column>
                         <p:column width="17%" headerText="Dataverse">
-                            <h:outputLink value="/dataverse/#{harvestClient.dataverse.alias}" title="#{harvestClient.dataverse.displayName}">
+                            <h:outputLink value="/dataverse.xhtml?alias=#{harvestClient.dataverse.alias}" title="#{harvestClient.dataverse.displayName}">
                                 <h:outputText value="#{harvestClient.dataverse.displayName}" />
                             </h:outputLink>
                         </p:column>

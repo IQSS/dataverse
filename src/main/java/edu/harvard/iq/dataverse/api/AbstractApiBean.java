@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -34,12 +35,14 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -70,6 +73,7 @@ public abstract class AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
+    private static final String PERSISTENT_ID_KEY=":persistentId";
     public static final String STATUS_ERROR = "ERROR";
     public static final String STATUS_OK = "OK";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
@@ -199,6 +203,9 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected SystemConfig systemConfig;
+
+    @EJB
+    protected DataCaptureModuleServiceBean dataCaptureModuleSvc;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -330,7 +337,6 @@ public abstract class AbstractApiBean {
     private AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
         AuthenticatedUser authUser = authSvc.lookupUser(key);
         if ( authUser != null ) {
-            System.out.println("Updating lastApiUseTime for authenticated user via abstractapibean");
             authUser = userSvc.updateLastApiUseTime(authUser);
 
             return authUser;
@@ -344,6 +350,35 @@ public abstract class AbstractApiBean {
             throw new WrappedResponse(error( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'"));
         }
         return dv;
+    }
+    
+    
+    protected Dataset findDatasetOrDie(String id) throws WrappedResponse {
+        Dataset dataset;
+        if (id.equals(PERSISTENT_ID_KEY)) {
+            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+            if (persistentId == null) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+            }
+            dataset = datasetSvc.findByGlobalId(persistentId);
+            if (dataset == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+            }
+            return dataset;
+
+        } else {
+            try {
+                dataset = datasetSvc.find(Long.parseLong(id));
+                if (dataset == null) {
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
+                }
+                return dataset;
+            } catch (NumberFormatException nfe) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
+            }
+        }
     }
 
     protected DataverseRequest createDataverseRequest( User u )  {

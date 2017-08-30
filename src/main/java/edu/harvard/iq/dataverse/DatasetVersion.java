@@ -571,10 +571,11 @@ public class DatasetVersion implements Serializable {
         //todo get "Production Date" from datasetfieldvalue table
         return "Production Date";
     }
-    
+
     /**
-     * datasetVersion Description
-     * @return a string with the description of the dataset
+     * @return A string with the description of the dataset as-is from the
+     * database (if available, or empty string) without passing it through
+     * methods such as stripAllTags, sanitizeBasicHTML or similar.
      */
     public String getDescription() {
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -588,12 +589,30 @@ public class DatasetVersion implements Serializable {
                         }
                     }
                 }
-                return MarkupChecker.sanitizeBasicHTML(descriptionString);
+                logger.fine("pristine description: " + descriptionString);
+                return descriptionString;
             }
         }
         return "";
     }
-    
+
+    /**
+     * @return Strip out all A string with the description of the dataset that
+     * has been passed through the stripAllTags method to remove all HTML tags.
+     */
+    public String getDescriptionPlainText() {
+        return MarkupChecker.stripAllTags(getDescription());
+    }
+
+    /**
+     * @return A string with the description of the dataset that has been passed
+     * through the escapeHtml method to change the "less than" sign to "&lt;"
+     * for example.
+     */
+    public String getDescriptionHtmlEscaped() {
+        return MarkupChecker.escapeHtml(getDescription());
+    }
+
     public List<String[]> getDatasetContacts(){
         List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {

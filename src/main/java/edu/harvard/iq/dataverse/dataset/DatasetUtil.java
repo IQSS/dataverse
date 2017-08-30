@@ -109,7 +109,7 @@ public class DatasetUtil {
         if (dataset == null) {
             return null;
         }
-        
+
         StorageIO<Dataset> dataAccess = null;
                 
         try{
@@ -123,12 +123,12 @@ public class DatasetUtil {
         InputStream in = null;
         try {
             if (dataAccess == null) {
-                logger.info("Cannot retrieve thumbnail file");
+                logger.info("Cannot retrieve thumbnail file.");
             } else if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
         } catch (IOException ex) {
-            logger.info("Cannot retrieve thumbnail file");
+            logger.info("Cannot retrieve dataset thumbnail file, will try to get thumbnail from file.");
         }
 
         
@@ -271,7 +271,7 @@ public class DatasetUtil {
         
         //File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
         try {
-            //this goes through Swift API/local storage to write the dataset thumbnail into a container
+            //this goes through Swift API/local storage/s3 to write the dataset thumbnail into a container
             dataAccess.savePathAsAux(tmpFile.toPath(), datasetLogoFilenameFinal);
         } catch (IOException ex) {
             logger.severe("Failed to move original file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
@@ -318,23 +318,24 @@ public class DatasetUtil {
             return null;
         }
         String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
-        logger.info("thumbFileLocation = " + thumbFileLocation);
-        logger.info("tmpFileLocation=" + tmpFileForResize.toPath().toString());
+        logger.fine("thumbFileLocation = " + thumbFileLocation);
+        logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
         //now we must save the updated thumbnail 
         try {
             dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumb48addedByImageThumbConverter);
         } catch (IOException ex) {
             logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
         }
+        //This deletes the tempfiles created for rescaling and encoding
         boolean tmpFileWasDeleted = tmpFile.delete();
-        boolean originalFileWasDeleted = tmpFileForResize.delete();
+        boolean originalTempFileWasDeleted = tmpFileForResize.delete();
         try {
             Files.delete(Paths.get(thumbFileLocation));
         } catch (IOException ioex) {
             logger.fine("Failed to delete temporary thumbnail file");
         }
         
-        logger.fine("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalFileWasDeleted);
+        logger.fine("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalTempFileWasDeleted);
         return dataset;
     }
 

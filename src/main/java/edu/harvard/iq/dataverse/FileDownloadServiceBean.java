@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -67,6 +68,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     @Inject TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
+    @Inject FileDownloadHelper fileDownloadHelper;
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());
     
@@ -131,7 +133,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
     
-        //public String startFileDownload(FileMetadata fileMetadata, String format) {
+
+    //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;
         if(!fileMetadata.getDatasetVersion().isDraft()){
@@ -142,6 +145,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
+    
     
     public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
 
@@ -338,12 +342,13 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         }
     }
-
     
-       
-    public boolean requestAccess(Long fileId) {     
+    public boolean requestAccess(Long fileId) {   
+        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null){
+            return false;
+        }
         DataFile file = datafileService.find(fileId);
-        if (!file.getFileAccessRequesters().contains(session.getUser())) {
+        if (!file.getFileAccessRequesters().contains((AuthenticatedUser)session.getUser())) {
             try {
                 commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));                        
                 return true;

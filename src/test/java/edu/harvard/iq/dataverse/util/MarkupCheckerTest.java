@@ -127,4 +127,9 @@ public class MarkupCheckerTest {
         
     }
 
+    @Test
+    public void testEscapeHtml() {
+        assertEquals("foo&lt;br&gt;bar", MarkupChecker.escapeHtml("foo<br>bar"));
+    }
+
 }

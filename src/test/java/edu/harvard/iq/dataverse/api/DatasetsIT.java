@@ -31,6 +31,7 @@ import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.Json;
@@ -214,7 +215,7 @@ public class DatasetsIT {
          */
         boolean nameRequiredForContactToAppear = true;
         if (nameRequiredForContactToAppear) {
-            assertEquals("", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact"));
+            assertEquals("Finch, Fiona", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact"));
         } else {
             assertEquals("finch@mailinator.com", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
         }
@@ -992,10 +993,77 @@ public class DatasetsIT {
                 .body("message", equalTo(":UploadMethods does not contain dcm/rsync+ssh."))
                 .statusCode(METHOD_NOT_ALLOWED.getStatusCode());
 
-        boolean readyToStartWorkingOnChecksumValidationReporting = false;
-        if (!readyToStartWorkingOnChecksumValidationReporting) {
+    }
+
+    /**
+     * This test is just a test of notifications so a fully implemented dcm is
+     * not necessary
+     */
+    @Test
+    public void testDcmChecksumValidationMessages() throws IOException, InterruptedException {
+
+        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
+        setDcmUrl.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response setUploadMethods = UtilIT.setSetting(SettingsServiceBean.Key.UploadMethods, SystemConfig.FileUploadMethods.RSYNC.toString());
+        setUploadMethods.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response urlConfigured = given()
+                .get("/api/admin/settings/" + SettingsServiceBean.Key.DataCaptureModuleUrl.toString());
+        if (urlConfigured.getStatusCode() != 200) {
+            fail(SettingsServiceBean.Key.DataCaptureModuleUrl + " has not been not configured. This test cannot run without it.");
+        }
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        long userId = JsonPath.from(createUser.body().asString()).getLong("data.authenticatedUser.id");
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(201);
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        Response getDatasetResponse = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId);
+        getDatasetResponse.prettyPrint();
+        getDatasetResponse.then().assertThat()
+                .statusCode(200);
+
+        boolean stopEarlyToVerifyTheScriptWasCreated = false;
+        if (stopEarlyToVerifyTheScriptWasCreated) {
+            logger.info("On the DCM, does /deposit/gen/upload-" + datasetId + ".bash exist? It should! Creating the dataset should be enough to create it.");
             return;
         }
+
+        Response createUser2 = UtilIT.createRandomUser();
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken2);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+
+        Response createDatasetResponse2 = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, apiToken2);
+        createDatasetResponse2.prettyPrint();
+        Integer datasetId2 = JsonPath.from(createDatasetResponse2.body().asString()).getInt("data.id");
+
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
 
         /**
          * Here we are pretending to be the Data Capture Module reporting on if
@@ -1014,75 +1082,111 @@ public class DatasetsIT {
          * IP addresses? Should there be a shared secret that's used for *all*
          * requests from the Data Capture Module to Dataverse?
          */
+        /*
+        Can't find dataset - give bad dataset ID
+         */
         JsonObjectBuilder wrongDataset = Json.createObjectBuilder();
-        wrongDataset.add("userId", userId);
-        wrongDataset.add("datasetId", datasetId2);
+        String fakeDatasetId = "78921457982457921";
         wrongDataset.add("status", "validation passed");
-        Response datasetWithoutRsyncScript = given()
-                .body(wrongDataset.build().toString())
-                .contentType(ContentType.JSON)
-                .post("/api/datasets/" + datasetId2 + "/dataCaptureModule/checksumValidation");
-        datasetWithoutRsyncScript.prettyPrint();
+        UtilIT.makeSuperUser(username);
+        Response datasetNotFound = UtilIT.dataCaptureModuleChecksumValidation(fakeDatasetId, wrongDataset.build(), apiToken);
+        datasetNotFound.prettyPrint();
 
-        datasetWithoutRsyncScript.then().assertThat()
-                .statusCode(400)
-                .body("message", equalTo("Dataset id " + datasetId2 + " does not have an rsync script."));
+        datasetNotFound.then().assertThat()
+                .statusCode(404)
+                .body("message", equalTo("Dataset with ID " + fakeDatasetId + " not found."));
 
         JsonObjectBuilder badNews = Json.createObjectBuilder();
-        badNews.add("userId", userId);
-        badNews.add("datasetId", datasetId);
         // Status options are documented at https://github.com/sbgrid/data-capture-module/blob/master/doc/api.md#post-upload
         badNews.add("status", "validation failed");
-        Response uploadFailed = given()
-                .body(badNews.build().toString())
-                .contentType(ContentType.JSON)
-                .post("/api/datasets/" + datasetId + "/dataCaptureModule/checksumValidation");
+        Response uploadFailed = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, badNews.build(), apiToken);
         uploadFailed.prettyPrint();
 
         uploadFailed.then().assertThat()
                 /**
                  * @todo Double check that we're ok with 200 here. We're saying
-                 * "Ok, the bad news was delivered."
+                 * "Ok, the bad news was delivered." We had a success of
+                 * informing the user of bad news.
                  */
                 .statusCode(200)
                 .body("data.message", equalTo("User notified about checksum validation failure."));
 
+        Response authorsGetsBadNews = UtilIT.getNotifications(apiToken);
+        authorsGetsBadNews.prettyPrint();
+        authorsGetsBadNews.then().assertThat()
+                .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
+                .statusCode(OK.getStatusCode());
+
+        String uploadFolder = identifier;
+
+        /**
+         * The "extra testing" involves having this REST Assured test do two
+         * jobs done by the rsync script and the DCM. The rsync script creates
+         * "files.sha" and (if checksum validation succeeds) the DCM moves the
+         * files and the "files.sha" file into the uploadFolder.
+         */
+        boolean doExtraTesting = false;
+
+        if (doExtraTesting) {
+
+            String SEP = java.io.File.separator;
+            // Set this to where you keep your files in dev. It might be nice to have an API to query to get this location from Dataverse.
+            String dsDir = "/Users/pdurbin/dataverse/files/10.5072/FK2";
+            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + SEP + identifier));
+            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + SEP + identifier + SEP + uploadFolder));
+            String checksumFilename = "files.sha";
+            String filename1 = "file1.txt";
+            String fileContent1 = "big data!";
+            java.nio.file.Files.write(java.nio.file.Paths.get(dsDir + SEP + identifier + SEP + uploadFolder + SEP + checksumFilename), fileContent1.getBytes());
+//            // This is actually the SHA-1 of a zero byte file. It doesn't seem to matter what you send to the DCM?
+            String checksumFileContent = "da39a3ee5e6b4b0d3255bfef95601890afd80709 " + filename1;
+            java.nio.file.Files.createFile(java.nio.file.Paths.get(dsDir + SEP + identifier + SEP + uploadFolder + SEP + filename1));
+            java.nio.file.Files.write(java.nio.file.Paths.get(dsDir + SEP + identifier + SEP + uploadFolder + SEP + checksumFilename), checksumFileContent.getBytes());
+
+        }
+        int totalSize = 1234567890;
         /**
          * @todo How can we test what the checksum validation notification looks
          * like in the GUI? There is no API for retrieving notifications.
          *
          * @todo How can we test that the email notification looks ok?
          */
-//        System.out.println("try logging in with " + username);
-        // Meanwhile, the user trys uploading again...
         JsonObjectBuilder goodNews = Json.createObjectBuilder();
-        goodNews.add("userId", userId);
-        goodNews.add("datasetId", datasetId);
         goodNews.add("status", "validation passed");
-        Response uploadSuccessful = given()
-                .body(goodNews.build().toString())
-                .contentType(ContentType.JSON)
-                .post("/api/datasets/" + datasetId + "/dataCaptureModule/checksumValidation");
+        goodNews.add("uploadFolder", uploadFolder);
+        goodNews.add("totalSize", totalSize);
+        Response uploadSuccessful = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, goodNews.build(), apiToken);
+        /**
+         * Errors here are expected unless you've set doExtraTesting to true to
+         * do the jobs of the rsync script and the DCM to create the files.sha
+         * file and put it and the data files in place. You might see stuff
+         * like: "message": "Uploaded files have passed checksum validation but
+         * something went wrong while attempting to put the files into
+         * Dataverse. Status code was 400 and message was 'Dataset directory is
+         * invalid.'."
+         */
         uploadSuccessful.prettyPrint();
 
-        uploadSuccessful.then().assertThat()
-                .statusCode(200)
-                .body("data.message", startsWith("Next we will write code to kick off crawling and importing of files"));
+        if (doExtraTesting) {
 
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
-        deleteDatasetResponse.prettyPrint();
-        assertEquals(200, deleteDatasetResponse.getStatusCode());
+            uploadSuccessful.then().assertThat()
+                    .body("data.message", equalTo("FileSystemImportJob in progress"))
+                    .statusCode(200);
 
-        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
-        deleteDataverseResponse.prettyPrint();
-        assertEquals(200, deleteDataverseResponse.getStatusCode());
+            if (doExtraTesting) {
 
-        Response deleteUserResponse = UtilIT.deleteUser(username);
-        deleteUserResponse.prettyPrint();
-        assertEquals(200, deleteUserResponse.getStatusCode());
-
-        UtilIT.deleteUser(noPermsUsername);
-
+                long millisecondsNeededForFileSystemImportJobToFinish = 1000;
+                Thread.sleep(millisecondsNeededForFileSystemImportJobToFinish);
+                Response datasetAsJson2 = UtilIT.nativeGet(datasetId, apiToken);
+                datasetAsJson2.prettyPrint();
+                datasetAsJson2.then().assertThat()
+                        .body("data.latestVersion.files[0].dataFile.filename", equalTo(identifier))
+                        .body("data.latestVersion.files[0].dataFile.contentType", equalTo("application/vnd.dataverse.file-package"))
+                        .body("data.latestVersion.files[0].dataFile.filesize", equalTo(totalSize))
+                        .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"))
+                        .statusCode(OK.getStatusCode());
+            }
+        }
     }
 
 }

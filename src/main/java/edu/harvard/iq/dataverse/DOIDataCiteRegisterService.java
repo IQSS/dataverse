@@ -47,7 +47,9 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
-        metadataTemplate.setDescription(dataset.getLatestVersion().getDescription());
+        metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
+        // For debugging, set description to an unclosed tag, to make XML not well formed.
+//        metadataTemplate.setDescription("<br>");
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dataset.getLatestVersion().getTitle());
@@ -55,6 +57,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
 
         String xmlMetadata = metadataTemplate.generateXML();
+        logger.fine("XML to send to DataCite: " + xmlMetadata);
 
         String status = metadata.get("_status").trim();
         String target = metadata.get("_target");

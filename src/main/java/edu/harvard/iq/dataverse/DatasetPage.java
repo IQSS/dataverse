@@ -317,7 +317,9 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void setFileLabelSearchTerm(String fileLabelSearchTerm) {
-        this.fileLabelSearchTerm = fileLabelSearchTerm;
+        if (fileLabelSearchTerm != null) {
+            this.fileLabelSearchTerm = fileLabelSearchTerm.trim();
+        }
     }
     
     private List<FileMetadata> fileMetadatasSearch;
@@ -399,65 +401,145 @@ public class DatasetPage implements java.io.Serializable {
     public void setDataverseSiteUrl(String dataverseSiteUrl) {
         this.dataverseSiteUrl = dataverseSiteUrl;
     }
-
-    public DataFile getInitialDataFile(){
+    
+    public List<FileMetadata> getDatasetFileMetadatas() {
         Long datasetVersion = workingVersion.getId();
         if (datasetVersion != null) {
                 int unlimited = 0;
                 int maxResults = unlimited;
-            List<FileMetadata> metadatas = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);        
-                logger.fine("metadatas " + metadatas);
-            if (metadatas != null && metadatas.size() > 0) {
-                return metadatas.get(0).getDataFile();
-            }
+            return datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);     
+        } 
+        return null; 
+    }
+    
+    public DataFile getInitialDataFile() {
+        if (getDatasetFileMetadatas() != null && getDatasetFileMetadatas().size() > 0) {
+            return getDatasetFileMetadatas().get(0).getDataFile();
         }
         return null;
     }
     
-    public String getSwiftContainerName(){
-
-        String swiftContainerName;
+    public SwiftAccessIO getSwiftObject() {
         try {
-            StorageIO<DataFile> storageIO = getInitialDataFile().getStorageIO();
-            try {
-                SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
-                swiftIO.open();
-                swiftContainerName = swiftIO.getSwiftContainerName();
-                logger.info("Swift container name: " + swiftContainerName);
-                return swiftContainerName;
+            StorageIO<DataFile> storageIO = getInitialDataFile() == null ? null : getInitialDataFile().getStorageIO();
+            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
+                return (SwiftAccessIO)storageIO;
+            } else {
+                logger.fine("DatasetPage: Failed to cast storageIO as SwiftAccessIO (most likely because storageIO is a FileAccessIO)");
+            } 
+        } catch (IOException e) {
+            logger.fine("DatasetPage: Failed to get storageIO");
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
-        catch (Exception e){
-            e.printStackTrace();
+        return null;
+    }
+
+    public String getSwiftContainerName() throws IOException {
+        SwiftAccessIO swiftObject = getSwiftObject();
+        try {
+            swiftObject.open();
+            return swiftObject.getSwiftContainerName();
+        } catch (Exception e){
+            logger.info("DatasetPage: Failed to open swift object");
         }
+        
         return "";
+        
     }
     
     public void setSwiftContainerName(String name){
         
     }
-
-    //assumes that *ALL* files in ONE specified container are stored in swift backend 
-    //could be changed 
-    //SF 
-    public Boolean isSwiftStorage(){
-        Boolean swiftBool = false;
-        //containers without datafiles will not be stored in swift storage, so no compute
+    //This function applies to an entire dataset
+    public boolean isSwiftStorage() {
+        //containers without datafiles will not be stored in swift storage
         if (getInitialDataFile() != null){
-            if ("swift".equals(System.getProperty("dataverse.files.storage-driver-id")) 
-                && getInitialDataFile().getStorageIdentifier().startsWith("swift://")) {
-                swiftBool = true;
+            for (FileMetadata fmd : getDatasetFileMetadatas()) {
+                //if any of the datafiles are stored in swift
+                if (fmd.getDataFile().getStorageIdentifier().startsWith("swift://")) {
+                    return true;
+                }
             }
         }
-        
-        return swiftBool;
+        return false;
+    }
+    
+    //This function applies to a single datafile
+    public boolean isSwiftStorage(FileMetadata metadata){
+        if (metadata.getDataFile().getStorageIdentifier().startsWith("swift://")) {
+            return true;
+        }
+        return false;
+    }
+    
+    //This function applies to an entire dataset
+    public boolean showComputeButton() {
+        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
+            return true;
+        }
+        return false;
+    }
+    
+    //this function applies to a single datafile
+    public boolean showComputeButton(FileMetadata metadata) {
+        if (isSwiftStorage(metadata) && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
+            return true;
+        }
+        return false;
     }
 
-    public String getComputeUrl() {
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + getSwiftContainerName();
+    public boolean canDownloadAllFiles(){
+       for (FileMetadata fmd : getDatasetFileMetadatas()) {
+            if (!fileDownloadHelper.canDownloadFile(fmd)) {
+                return false;
+            }
+        }
+       return true;
+    }
+    /*
+    in getComputeUrl(), we are sending the container/dataset name and the exipiry and signature 
+    for the temporary url of only ONE datafile within the dataset. This is because in the 
+    ceph version of swift, we are only able to generate the temporary url for a single object 
+    within a container.
+    Ideally, we want a temporary url for an entire container/dataset, so perhaps this could instead
+    be handled on the compute environment end. 
+    Additionally, we have to think about the implications this could have with dataset versioning, 
+    since we currently store all files (even from old versions) in the same container.
+    --SF
+    */
+    public String getComputeUrl() throws IOException {
+        SwiftAccessIO swiftObject = getSwiftObject();
+        if (swiftObject != null) {
+            swiftObject.open();
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName();
+            }
+            //assuming we are able to get a temp url for a dataset
+            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        }
+        return "";
+        
+    }
+    
+    //For a single file
+    public String getComputeUrl(FileMetadata metadata) {
+        SwiftAccessIO swiftObject = null;
+        try {
+            StorageIO<DataFile> storageIO = metadata.getDataFile().getStorageIO();
+            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
+                swiftObject = (SwiftAccessIO)storageIO;
+                swiftObject.open();
+            }
+
+        } catch (IOException e) {
+            logger.info("DatasetPage: Failed to get storageIO");
+        }
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName();
+        }
+        
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+
     }
     
     public String getCloudEnvironmentName() {
@@ -1199,7 +1281,7 @@ public class DatasetPage implements java.io.Serializable {
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
@@ -2245,37 +2327,38 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void deleteFiles() {
-        
-        String fileNames = null;
-        for (FileMetadata fmd : this.getSelectedFiles()) {
-            // collect the names of the newly-restrticted files, 
-            // to show in the success message:
-            if (fileNames == null) {
-                fileNames = fmd.getLabel();
-            } else {
-                fileNames = fileNames.concat(fmd.getLabel());
-            }
-        }
 
         for (FileMetadata markedForDelete : selectedFiles) {
-            // TODO: 
-            // the code below needs to be rewritten: 
-            // markedForDelete.getId() == null DOES NOT mean that this file 
-            // has just been uploaded! (markedForDelete is a FileMetadata, not 
-            // a DataFile!! so this maybe an existing file, but a brand new
-            // DRAFT version and a brand new filemetadata that hasn't been saved 
-            // yet) -- L.A. 4.2, Sep. 15 
+            
             if (markedForDelete.getId() != null) {
+                // This FileMetadata has an id, i.e., it exists in the database. 
+                // We are going to remove this filemetadata from the version: 
                 dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                // But the actual delete will be handled inside the UpdateDatasetCommand
+                // (called later on). The list "filesToBeDeleted" is passed to the 
+                // command as a parameter:
                 filesToBeDeleted.add(markedForDelete);
             } else {
-                // the file was just added during this step, so in addition to 
-                // removing it from the fileMetadatas (for display), we also remove it from 
-                // the newFiles list and the dataset's files, so it won't get uploaded at all
+                // This FileMetadata does not have an id, meaning it has just been 
+                // created, and not yet saved in the database. This in turn means this is 
+                // a freshly created DRAFT version; specifically created because 
+                // the user is trying to delete a file from an existing published 
+                // version. This means we are not really *deleting* the file - 
+                // we are going to keep it in the published version; we are simply 
+                // going to save a new DRAFT version that does not contain this file. 
+                // So below we are deleting the metadata from the version; we are 
+                // NOT adding the file to the filesToBeDeleted list that will be 
+                // passed to the UpdateDatasetCommand. -- L.A. Aug 2017
                 Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
                     FileMetadata fmd = fmit.next();
                     if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
+                        // And if this is an image file that happens to be assigned 
+                        // as the dataset thumbnail, let's null the assignment here:
+                        
+                        if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
+                            dataset.setThumbnailFile(null);
+                        }
                         fmit.remove();
                         break;
                     }
@@ -2324,14 +2407,6 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-     
-        if (fileNames != null) {
-            String successMessage = JH.localize("file.deleted.success");
-            logger.fine(successMessage);
-            successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);
-        }
-        
         /* 
            Do note that if we are deleting any files that have UNFs (i.e., 
            tabular files), we DO NEED TO RECALCULATE the UNF of the version!
@@ -2387,30 +2462,32 @@ public class DatasetPage implements java.io.Serializable {
             }
             logger.log(Level.FINE, "Couldn''t save dataset: {0}", error.toString());
             populateDatasetUpdateFailureMessage();
-            return null;
+            return returnToDraftVersion();
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
-            logger.severe(ex.getMessage());
+            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
+            logger.severe("CommandException, when attempting to update the dataset: " + ex.getMessage());
             populateDatasetUpdateFailureMessage();
-            return null;
+            return returnToDraftVersion();
         }
+        
         newFiles.clear();
-        if (editMode != null){
-                    if(editMode.equals(EditMode.CREATE)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
-        }
-        if(editMode.equals(EditMode.METADATA)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));
-        }
-        if(editMode.equals(EditMode.LICENSE)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.termsSuccess"));
-        }
-        if(editMode.equals(EditMode.FILE)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
-        }
-            
+        if (editMode != null) {
+            if (editMode.equals(EditMode.CREATE)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+            }
+            if (editMode.equals(EditMode.METADATA)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));
+            }
+            if (editMode.equals(EditMode.LICENSE)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.termsSuccess"));
+            }
+            if (editMode.equals(EditMode.FILE)) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
+            }
+
         } else {
-             JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileUpdateSuccess"));
+            // must have been a bulk file update or delete:
+            JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileUpdateSuccess"));
         }
 
         editMode = null;
@@ -2427,20 +2504,22 @@ public class DatasetPage implements java.io.Serializable {
     private void populateDatasetUpdateFailureMessage(){
             // null check would help here. :) -- L.A. 
             if (editMode == null) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, "mystery failure");
+                // that must have been a bulk file update or delete:
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.filesFailure"));
                 return;
             }
+            
             if (editMode.equals(EditMode.CREATE)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.createFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.createFailure"));
             }
             if (editMode.equals(EditMode.METADATA)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.metadataFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.metadataFailure"));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.termsFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.termsFailure"));
             }
             if (editMode.equals(EditMode.FILE)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.filesFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.filesFailure"));
             }
     }
     
@@ -3499,37 +3578,32 @@ public class DatasetPage implements java.io.Serializable {
         return FileUtil.isDownloadPopupRequired(workingVersion);
     }
     
-       public String requestAccessMultipleFiles(String fileIdString) {
-            if (fileIdString.isEmpty()) {
+    public boolean isRequestAccessPopupRequired() {  
+        return FileUtil.isRequestAccessPopupRequired(workingVersion);
+    }
+    
+    public String requestAccessMultipleFiles() {
+
+        if (selectedFiles.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('selectFilesForRequestAccess').show()");
             return "";
-        }
-       
-        Long idForNotification = (long) 0;
-        if (fileIdString != null) {
-            String[] ids = fileIdString.split(",");
-            for (String id : ids) {
-                Long test = null;
-                try {
-                    test = new Long(id);
-                } catch (NumberFormatException nfe) {
-                    // do nothing...
-                    test = null;
-                }
-                if (test != null) {
-                    idForNotification = test;
-                    fileDownloadService.requestAccess(test);
-                }
+        } else {
+            fileDownloadHelper.clearRequestAccessFiles();
+            for (FileMetadata fmd : selectedFiles){
+                 fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
+            }
+            if (isRequestAccessPopupRequired()) {
+                RequestContext requestContext = RequestContext.getCurrentInstance();                
+                requestContext.execute("PF('requestAccessPopup').show()");               
+                return "";
+            } else {
+                //No popup required
+                fileDownloadHelper.requestAccessIndirect();
+                return "";
             }
         }
-        if (idForNotification.intValue() > 0) {
-            fileDownloadService.sendRequestFileAccessNotification(dataset,idForNotification);
-        }
-        return returnToDatasetOnly();
     }
-   
-
 
     public boolean isSortButtonEnabled() {
         /**
@@ -3723,11 +3797,10 @@ public class DatasetPage implements java.io.Serializable {
     /**
      * dataset description
      *
-     * @return title of workingVersion
+     * @return description of workingVersion
      */
     public String getDescription() {
-        assert (null != workingVersion);
-        return workingVersion.getDescription();
+        return workingVersion.getDescriptionPlainText();
     }
 
     /**
