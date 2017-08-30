@@ -206,6 +206,13 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      */
     @Override
     public void afterJob() throws Exception {
+
+        if (jobContext.getExitStatus().equals("FAILED")) {
+            getJobLogger().log(Level.SEVERE, "Job Failed. See Log for more information.");
+            closeJobLoggerHandlers();
+            return;
+        }
+        
         // run reporting and notifications
         doReport();
 
@@ -228,6 +235,11 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         getJobLogger().log(Level.INFO, "Job end   = " + step.getEndTime());
         getJobLogger().log(Level.INFO, "Job exit status = " + step.getExitStatus());
         
+        closeJobLoggerHandlers();
+
+    }
+    
+    private void closeJobLoggerHandlers(){
         // close the job logger handlers
         for (Handler h:getJobLogger().getHandlers()) {
             h.close();
