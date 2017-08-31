@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -98,7 +99,16 @@ public class NavigationWrapper implements java.io.Serializable {
     
      public String notAuthorized(){
         if (!session.getUser().isAuthenticated()){
-            return "/loginpage.xhtml" + getRedirectPage();
+            // QDRCustom
+            ExternalContext context = FacesContext.getCurrentInstance().getExternalContext(); 
+            // Redirect user to Shibboleth login page
+            try {
+                context.redirect(getShibLoginPath());
+                return "";
+            } catch (IOException ex) {
+                logger.info("Unable to redirect user to Shibboleth login page");
+                return "";
+            }
         } else {
             return sendError(HttpServletResponse.SC_FORBIDDEN);
         }        
