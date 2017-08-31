@@ -41,6 +41,8 @@ public class Shib implements java.io.Serializable {
     DataverseSession session;
     @Inject
     SettingsWrapper settingsWrapper;
+    @Inject
+    NavigationWrapper navigationWrapper;
 
     @EJB
     AuthenticationServiceBean authSvc;
@@ -405,7 +407,16 @@ public class Shib implements java.io.Serializable {
      * https://iqssharvard.mybalsamiq.com/projects/loginwithshibboleth-version3-dataverse40/Dataverse%20Account%20III%20-%20Agree%20Terms%20of%20Use
      */
     public String cancel() {
-        return loginpage + "?faces-redirect=true";
+        // QDRCustom
+        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
+        // Redirect user to Shibboleth login page
+            try {
+                context.redirect(navigationWrapper.getShibLoginPath());
+                return "";
+            } catch (IOException ex) {
+                logger.info("Unable to redirect user to Shibboleth login page");
+                return "";
+            }
     }
 
     /**
