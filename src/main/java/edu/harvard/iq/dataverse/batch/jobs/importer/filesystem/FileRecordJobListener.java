@@ -208,7 +208,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     public void afterJob() throws Exception {
 
         //TODO add notifications to job failure?
-        if (jobContext.getExitStatus() != null && jobContext.getExitStatus().equals("FAILED")) {
+        if (jobContext.getExitStatus().equals("FAILED")) {
             getJobLogger().log(Level.SEVERE, "Job Failed. See Log for more information.");
             closeJobLoggerHandlers();
             return;
