@@ -30,14 +30,31 @@ import org.apache.commons.lang.StringUtils;
 @Named
 public class NavigationWrapper implements java.io.Serializable {
     
+    private static final Logger logger = Logger.getLogger(NavigationWrapper.class.getName());    
     @Inject
     DataverseSession session;
+    @Inject
+    SettingsWrapper settingsWrapper;
     
     String redirectPage;
 
 
     public String getRedirectPage() {
         return !StringUtils.isEmpty(getPageFromContext()) ? "?redirectPage=" + getPageFromContext() : "";
+    }
+    
+    // QDRCustom
+    public String getShibLoginPath() {
+        String QDRDataverseBaseURL = settingsWrapper.get(":QDRDataverseBaseURL");        
+        String shibLoginPath = "/Shibboleth.sso/Login?target=".concat(QDRDataverseBaseURL).concat("/shib.xhtml");                
+                
+        if (!StringUtils.isEmpty(getRedirectPage())) {
+           String redirectPageStr = getRedirectPage();
+           redirectPageStr = redirectPageStr.replace("?redirectPage","%3FredirectPage");
+           shibLoginPath = shibLoginPath.concat(redirectPageStr);
+        }
+        
+        return shibLoginPath;                        
     }
 
     public String getPageFromContext() {

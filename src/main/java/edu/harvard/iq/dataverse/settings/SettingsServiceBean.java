@@ -254,7 +254,9 @@ public class SettingsServiceBean {
         /** Latest version of Terms and Conditions document */
         ShibAuthTermsVer,
         /** Url of integrated Drupal Site */
-        QDRDrupalSiteURL;
+        QDRDrupalSiteURL,
+        /** Base Url of this Dataverse Site */
+        QDRDataverseBaseURL;
         
         @Override
         public String toString() {
