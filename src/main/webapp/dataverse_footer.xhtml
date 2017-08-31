@@ -24,8 +24,9 @@
                         </h:outputFormat>
 
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
-                            <h:outputLink styleClass="margin-sides highlightBold" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="#{bundle['footer.widget.login']} #{dataverseServiceBean.findRootDataverse().displayName}">
-                                #{bundle.login}
+                            <h:outputLink styleClass="margin-sides highlightBold" value="/Shibboleth.sso/Login" target="_blank" title="#{bundle['footer.widget.login']} #{dataverseServiceBean.findRootDataverse().displayName}">
+                                    <f:param name="target" value="#{request.contextPath.concat('/shib.xhtml').concat(navigationWrapper.redirectPage)}" />
+                                    #{bundle.login}
                             </h:outputLink>
                         </ui:fragment>
                     </span>
