@@ -172,10 +172,22 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         // lock the dataset
         jobLogger.log(Level.INFO, "Locking dataset");
         String info = "Starting batch file import job.";
-        datasetServiceBean.addDatasetLock(dataset.getId(),
-                    DatasetLock.Reason.Ingest, 
-                    (user!=null)?user.getId():null,
-                    info);
+        
+        // TODO: 
+        // In the current #3348 implementation, we are no longer locking the 
+        // Dataset here. Because it gets locked immediately after the user 
+        // downloads the rsync scipt. Once this branch (#3561) is merged into 
+        // #3348, let's revisit this. We should probably check here that 
+        // the dataset is locked, and that it's locked waiting for an 
+        // rsync upload to happen. And then we may want to "re-lock" it, with 
+        // the info field in the new lock specifying that there is now a 
+        // file crawler job in progress (to prevent another one from happening
+        // in parallel. -- L.A. Aug 31 2017
+        
+        //datasetServiceBean.addDatasetLock(dataset.getId(),
+        //            DatasetLock.Reason.Ingest, 
+        //            (user!=null)?user.getId():null,
+        //            info);
 
         // check constraints for running the job
         if (canRunJob()) {
