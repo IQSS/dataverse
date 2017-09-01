@@ -146,7 +146,7 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public boolean isRsyncDownload() {
-        return false;
+        return systemConfig.isRsyncDownload();
     }
     
     public String getSupportTeamName() {

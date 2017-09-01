@@ -1056,7 +1056,9 @@ This setting is experimental and to be used with the Data Capture Module (DCM). 
 :DownloadMethods
 ++++++++++++++++
 
-This setting is experimental and related to Repository Storage Abstraction Layer (RSAL). As of this writing it has no effect.
+This setting is experimental and related to Repository Storage Abstraction Layer (RSAL).
+
+``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
 
 :GuestbookResponsesPageDisplayLimit
 +++++++++++++++++++++++++++++++++++
