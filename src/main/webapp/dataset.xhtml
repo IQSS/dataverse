@@ -639,7 +639,7 @@
                             <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
                                 <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload(false)}" />
                             </ui:fragment>
-                            <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
+                            <ui:fragment rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}">
                                 <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
                                                  action="#{DatasetPage.modifyGuestbookMultipleResponse()}" update="@form" />
                             </ui:fragment>
@@ -1170,8 +1170,8 @@
                         <ui:include src="file-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                            <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
-                            <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
+                            <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
+                            <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}" rendered="#{!settingsWrapper.rsyncDownload}"/>
                             <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                             <ui:param name="twoRavensHelper" value="#{DatasetPage.twoRavensHelper}"/>
@@ -1181,7 +1181,7 @@
 
                     <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
                               rendered="#{empty DatasetPage.editMode}" modal="true">
-                        <div class="form-inline clearfix" jsf:rendered="#{!(empty DatasetPage.guestbookResponse.dataFile) and DatasetPage.guestbookResponse.dataFile.tabularData}">
+                        <div class="form-inline clearfix" jsf:rendered="#{!(empty DatasetPage.guestbookResponse.dataFile or !settingsWrapper.rsyncDownload) and DatasetPage.guestbookResponse.dataFile.tabularData}">
                             <ui:include src="/subset/gui_subset.xhtml">
                                 <ui:param name="dataFile" value="#{DatasetPage.guestbookResponse.dataFile}"/>
                             </ui:include>

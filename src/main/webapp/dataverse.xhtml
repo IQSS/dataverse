@@ -435,7 +435,7 @@
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
                                                 </h:link>
                                             </li>
-                                            <li>
+                                            <li jsf:rendered="#{!settingsWrapper.rsyncDownload}">
                                                 <h:link id="manageGuestbooks" styleClass="ui-commandlink ui-widget" outcome="manage-guestbooks">
                                                     <h:outputText value="#{bundle['dataverse.option.datasetGuestbooks']}" />
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
