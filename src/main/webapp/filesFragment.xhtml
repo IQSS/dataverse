@@ -236,7 +236,7 @@
 
                 <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
 
-                <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' or settingsWrapper.rsyncDownload)}">
                     <f:param value="#{DatasetPage.getGuestbookResponseCount(fileMetadata)}"/>
                 </h:outputFormat>
 
@@ -363,7 +363,7 @@
                 </ui:include>
             </ui:fragment>
 
-            <div class="btn-group">
+            <div class="btn-group" jsf:rendered="#{!settingsWrapper.rsyncDownload}" >
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
