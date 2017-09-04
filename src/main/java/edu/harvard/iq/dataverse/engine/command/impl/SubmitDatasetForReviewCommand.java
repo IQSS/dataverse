@@ -43,9 +43,10 @@ public class SubmitDatasetForReviewCommand extends AbstractCommand<Dataset> {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.inReview"), this);
         }
 
-        Dataset updatedDataset = save(ctxt);
+        //SEK 9-1 Add Lock before saving dataset
         DatasetLock inReviewLock = new DatasetLock(DatasetLock.Reason.InReview, getRequest().getAuthenticatedUser());
-        ctxt.engine().submit(new AddLockCommand(getRequest(), updatedDataset, inReviewLock));
+        ctxt.engine().submit(new AddLockCommand(getRequest(), theDataset, inReviewLock));       
+        Dataset updatedDataset = save(ctxt);
         
         return updatedDataset;
     }

@@ -83,11 +83,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         theDataset.setModificationTime(updateTime);
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         
-        ctxt.engine().submit( new RemoveLockCommand(getRequest(), theDataset));
-
         updateFiles(updateTime, ctxt);
         
         theDataset = ctxt.em().merge(theDataset);
+        
+        //Move remove lock to after merge... SEK 9/1/17
+        ctxt.engine().submit( new RemoveLockCommand(getRequest(), theDataset));
 
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), getUser());
 
@@ -192,8 +193,9 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
         }
         
-        if (theDataset.isLocked()) {
-            throw new IllegalCommandException("This dataset is locked due to files being ingested. Please try publishing later.", this);
+        if (theDataset.isLocked()  && !theDataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)) {
+            
+            throw new IllegalCommandException("This dataset is locked. Reason: " + theDataset.getDatasetLock().getReason().toString() + ". Please try publishing later.", this);
         }
         
         if (theDataset.getLatestVersion().isReleased()) {

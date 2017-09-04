@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -710,7 +711,15 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
             JsonObjectBuilder result = Json.createObjectBuilder();
-            boolean inReview = updatedDataset.getLatestVersion().isInReview();
+            
+            boolean inReview = false;
+            try{
+                inReview = updatedDataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview);
+            } catch (Exception e){
+                System.out.print("submit exception: " + e.getMessage());
+                // if there's no lock then it can't be in review by definition
+            }
+            
             result.add("inReview", inReview);
             result.add("message", "Dataset id " + updatedDataset.getId() + " has been submitted for review.");
             return ok(result);
@@ -722,6 +731,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/returnToAuthor")
     public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
+        
         if (jsonBody == null || jsonBody.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset.");
         }
@@ -737,8 +747,13 @@ public class Datasets extends AbstractApiBean {
             }
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
-            DatasetVersion latestVersion = updatedDataset.getLatestVersion();
-            boolean inReview = latestVersion.isInReview();
+            boolean inReview = false;
+            try{
+                inReview = updatedDataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview);
+            } catch (Exception e){
+                // if there's no lock then it can't be in review by definition
+            }
+
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", inReview);
             result.add("message", "Dataset id " + updatedDataset.getId() + " has been sent back to the author(s).");
