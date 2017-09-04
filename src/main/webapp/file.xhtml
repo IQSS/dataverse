@@ -144,7 +144,8 @@
                                 
                                 <!-- Explore/Download/Request Button Block -->
                                 <div class="button-container btn-group" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
-                                                                                            (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
+                                                                                            (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
+                                                                                            and !settingsWrapper.rsyncDownload}">
                                     <ui:include src="file-download-button-fragment.xhtml">
                                         <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
                                         <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
