@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.validation;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.passay.PasswordData;
 import org.passay.Rule;
 import org.passay.RuleResult;
@@ -21,8 +22,8 @@ class ExpirationRule implements Rule {
     /**
      * Error code for password being too short.
      */
-    static final String ERROR_CODE_EXPIRED = "EXPIRED";
-    static final String ERROR_MESSAGE_EXPIRED = "The password is over %1$s days old and has expired.";
+    static final String ERROR_CODE_EXPIRED = BundleUtil.getStringFromBundle("passwdVal.expireRule.errorCode");
+    static final String ERROR_MESSAGE_EXPIRED = BundleUtil.getStringFromBundle("passwdVal.expireRule.errorMsg");
     private static final long DAY = 86400000L;
 
     /**

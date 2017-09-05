@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import org.apache.commons.lang.StringUtils;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 
@@ -19,10 +20,8 @@ public class PasswordValidatorUtil {
     };
 
     public static List<CharacterRule> getCharacterRules(String configString) {
-        logger.info("configString: " + configString);
-        List<CharacterRule> saneDefault = getCharacterRulesDefault();
         if (configString == null || configString.isEmpty()) {
-            return saneDefault;
+            return getCharacterRulesDefault(); //sane default
         } else {
             List<CharacterRule> rules = parseConfigString(configString);
             return rules;
@@ -125,17 +124,43 @@ public class PasswordValidatorUtil {
         }
     }
 
-    // FIXME: Figure out how to pull "a letter", for example, out of a CharacterRule.
-    // Also, not internationalizing this method until deciding upon how to make this method more dynamic
+    // This method especially does not support character rules from other languages
+    // Also, this method is a bit klugey because passay 1.1.0 does not allow us to get the name of the character rule.
     public static String getRequiredCharacters(List<CharacterRule> characterRules) {
-        switch (characterRules.size()) {
-            case 2:
-                return "a letter and a number";
-            case 4:
-                return "uppercase, lowercase, numeric, or special characters";
-            default:
-                return "UNKNOWN";
+        
+        boolean lowerCase = false;
+        boolean upperCase = false;
+        boolean digit = false;
+        boolean alphabetical = false; //if upper or lower, alphabetical is irrelevant
+        boolean special = false;
+        
+        for(CharacterRule c : characterRules) {
+            
+            String validChars = c.getValidCharacters();
+            if(validChars.equals(EnglishCharacterData.LowerCase.getCharacters())) {
+                lowerCase = true;
+            } else if(validChars.equals(EnglishCharacterData.UpperCase.getCharacters())) {
+                upperCase = true;
+            } else if(validChars.equals(EnglishCharacterData.Digit.getCharacters())) {
+                digit = true;
+            } else if(validChars.equals(EnglishCharacterData.Alphabetical.getCharacters())) {
+                alphabetical = true;
+            } else if(validChars.equals(EnglishCharacterData.Special.getCharacters())) {
+                special = true;
+            } else {
+                //other rules should cause an error before here, but just in case
+                return BundleUtil.getStringFromBundle("passwdVal.passwdReq.unknownPasswordRule");
+            }
         }
+        
+        //these strings are not in the bundle as this whole method is based in English
+        String returnString = ((upperCase) ? "uppercase" : "") 
+                + ((lowerCase) ? ", lowercase" : "") 
+                + ((alphabetical && !(lowerCase || upperCase)) ? ", letter" : "") 
+                + ((digit) ? ", numeric" : "") 
+                + ((special) ? ", special" : "");
+        return StringUtils.strip(returnString, " ,");
     }
 
 }
+//

@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.validation;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlPrinter;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.passay.CharacterRule;
+import org.passay.EnglishCharacterData;
 
 /**
  *
@@ -120,7 +122,7 @@ public class PasswordValidatorUtilTest {
         String req4 = PasswordValidatorUtil.getPasswordRequirements(minLength, maxLength, characterRules, numberOfCharacteristics, 0, goodStrength, true, errors);
         System.out.println(HtmlPrinter.prettyPrint(req4));
     }
-
+    
     /**
      * Test of parseConfigString method, of class PasswordValidatorUtil.
      */
@@ -134,12 +136,52 @@ public class PasswordValidatorUtilTest {
         System.out.println("Special valid chars: " + rules.get(3).getValidCharacters());
 
         assertEquals(4, rules.size());
-        assertEquals("ABCDEFGHIJKLMNOPQRSTUVWXYZ", rules.get(0).getValidCharacters());
-        assertEquals("abcdefghijklmnopqrstuvwxyz", rules.get(1).getValidCharacters());
-        assertEquals("0123456789", rules.get(2).getValidCharacters());
-        assertEquals("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}`¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿×÷–—―‗‘’‚‛“”„†‡•…‰′″‹›‼‾⁄⁊₠₡₢₣₤₥₦₧₨₩₪₫€₭₮₯₰₱₲₳₴₵₶₷₸₹₺₻₼₽₾", rules.get(3).getValidCharacters());
+        assertEquals(EnglishCharacterData.UpperCase.getCharacters(), rules.get(0).getValidCharacters());
+        assertEquals(EnglishCharacterData.LowerCase.getCharacters(), rules.get(1).getValidCharacters());
+        assertEquals(EnglishCharacterData.Digit.getCharacters(), rules.get(2).getValidCharacters());
+        assertEquals(EnglishCharacterData.Special.getCharacters(), rules.get(3).getValidCharacters());
     }
 
+    @Test
+    public void testGetRequiredCharacters() {
+        List<CharacterRule> characterRules = PasswordValidatorUtil.getCharacterRules4dot0();
+        String reqChars = PasswordValidatorUtil.getRequiredCharacters(characterRules);
+        System.out.println("Character rules string for 4.0: ");
+        System.out.println(reqChars);
+        assertEquals("letter, numeric", reqChars);
+        
+        characterRules = PasswordValidatorUtil.getCharacterRulesDefault();
+        reqChars = PasswordValidatorUtil.getRequiredCharacters(characterRules);
+        System.out.println("Character rules string for default, same as 4.0: ");
+        System.out.println(reqChars);
+        assertEquals("letter, numeric", reqChars);
+          
+        String characterRulesConfigString = "UpperCase:1,LowerCase:1,Digit:1,Special:1";
+        characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
+        reqChars = PasswordValidatorUtil.getRequiredCharacters(characterRules);
+        System.out.println("Character rules string for '" + characterRulesConfigString + "': ");
+        System.out.println(reqChars);
+        assertEquals("uppercase, lowercase, numeric, special", reqChars);
+        
+        characterRulesConfigString = "UpperCase:1,LowerCase:1,Digit:1,Special:1,Alphabetical:1";
+        characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
+        reqChars = PasswordValidatorUtil.getRequiredCharacters(characterRules);
+        System.out.println("Character rules string for '" + characterRulesConfigString + "', letter should not be mentioned: ");
+        System.out.println(reqChars);
+        assertEquals("uppercase, lowercase, numeric, special", reqChars);
+        
+        characterRulesConfigString = "Digit:1";
+        characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
+        reqChars = PasswordValidatorUtil.getRequiredCharacters(characterRules);
+        System.out.println("Character rules string for '" + characterRulesConfigString + "': ");
+        System.out.println(reqChars);
+        assertEquals("numeric", reqChars);
+        
+        //one for the unknown
+        //one for only one
+    }
+
+    
 //    /**
 //     * Test of getRequiredCharacters method, of class PasswordValidatorUtil.
 //     */

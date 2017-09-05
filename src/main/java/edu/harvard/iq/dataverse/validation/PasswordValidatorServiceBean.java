@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.validation;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -75,6 +76,8 @@ import org.passay.dictionary.sort.ArraysSort;
 public class PasswordValidatorServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(PasswordValidatorServiceBean.class.getCanonicalName());
+    
+    //FIXME: hardcoding this dictionary... I think its overwritten but should remove or something.
     private static String DICTIONARY_FILES = "weak_passwords.txt";
 
     private enum ValidatorTypes {
@@ -303,7 +306,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             }
         });
         if (fileReaders.size() == 0)
-            logger.warning("Dictionary was set, but none was read in.");
+            logger.warning(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryRead"));
         return fileReaders.toArray(new FileReader[fileReaders.size()]);
     }
 
@@ -311,7 +314,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         if (dictionaries == null) {
             final URL url = PasswordValidatorServiceBean.class.getResource(DICTIONARY_FILES);
             if (url == null) {
-                logger.warning("PwDictionaries not set and no default password file found: " + DICTIONARY_FILES);
+                logger.warning(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryObj")+" " + DICTIONARY_FILES);
                 dictionaries = DICTIONARY_FILES;
             } else
                 dictionaries = url.getPath() + File.pathSeparator + url.getFile();
@@ -402,9 +405,8 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         else {
             int minLength = getMinLength();
             if (goodStrength <= minLength) {
-                int reset = minLength + 1;
-                logger.log(Level.WARNING, "The PwGoodStrength " + goodStrength + " value competes with the" +
-                        "PwMinLength value of " + minLength + " and is added  to " + reset);
+                int reset = minLength + 1;                
+                logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnSetStrength" , Arrays.asList(Integer.toString(goodStrength),Integer.toString(minLength),Integer.toString(reset))));
                 goodStrength = reset;
             }
         }

@@ -69,6 +69,7 @@ public class PasswordResetPage implements java.io.Serializable {
     /**
      * The email address that is entered to initiate the password reset process.
      */
+
     @NotBlank(message = "Please enter a valid email address.")
     @ValidateEmail(message = "Password reset page default email message.")    
     String emailAddress;
@@ -95,7 +96,9 @@ public class PasswordResetPage implements java.io.Serializable {
             if (passwordResetData != null) {
                 user = passwordResetData.getBuiltinUser();
             } else {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Reset Link", "Your password reset link is not valid."));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                        BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkTitle"),
+                        BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkDesc")));
             }
         }
     }
@@ -148,12 +151,13 @@ public class PasswordResetPage implements java.io.Serializable {
     public void validateNewPassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
         if (StringUtils.isBlank(password)){
-            logger.log(Level.WARNING, "new password is blank");
+            logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdReset.valBlankLog"));
 
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Password Error", "The new password is blank: re-type it again");
+                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesError"),
+                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesErrorDesc"));
             context.addMessage(toValidate.getClientId(context), message);
             return;
 

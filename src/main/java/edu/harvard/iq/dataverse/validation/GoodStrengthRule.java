@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.validation;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.passay.LengthRule;
 import org.passay.PasswordData;
 import org.passay.RuleResult;
@@ -13,9 +14,9 @@ import org.passay.RuleResultDetail;
  */
 class GoodStrengthRule extends LengthRule {
 
-    /** Error code for password big lenght. */
-    static final String ERROR_CODE_GOODSTRENGTH = "NO_GOODSTRENGTH";
-    static final String ERROR_MESSAGE_GOODSTRENGTH = "Note: passwords are always valid with a %1$s or more character length regardless.";
+    /** Error code for password big length. */
+    static final String ERROR_CODE_GOODSTRENGTH = BundleUtil.getStringFromBundle("passwdVal.goodStrengthRule.errorCode");
+    static final String ERROR_MESSAGE_GOODSTRENGTH = BundleUtil.getStringFromBundle("passwdVal.goodStrengthRule.errorMsg");
 
     @Override
     public RuleResult validate(PasswordData passwordData) {
