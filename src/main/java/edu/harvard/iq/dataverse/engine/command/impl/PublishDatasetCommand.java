@@ -63,7 +63,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             notifyUsers(ctxt, theDataset, UserNotification.Type.ASSIGNROLE);
             
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
-            theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
+            // the publication date not being null is the definition used by 
+            // dvobject.isReleased(); so it may be premature to set it here, 
+            // considering that this may not be a "real" publishing, but only 
+            // the initiation of a publishing workflow... So I'm moving the next line to 
+            // the FinalizeDatasetPublicationCommand(); needs to be reviewed! -- L.A. Sep. 5 2017
+            //theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
             theDataset.getEditVersion().setVersionNumber(new Long(1)); // minor release is blocked by #verifyCommandArguments
             theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
             

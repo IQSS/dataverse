@@ -18,6 +18,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +53,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
+        // moved the following line from PublishDatasetCommand -- L.A. Sep. 5 2017
+        theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
 
         exportMetadata();
         boolean doNormalSolrDocCleanUp = true;
