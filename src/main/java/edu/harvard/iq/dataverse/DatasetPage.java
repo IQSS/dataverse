@@ -1443,10 +1443,12 @@ public class DatasetPage implements java.io.Serializable {
         
         if (dataset.isLocked()) {
             // when we sync up with the rsync-upload branch, there will be a merge
-            // conflict here; once resolved, there will be more code here for other
-            // types of locks - rsync upload in progress, etc.
+            // conflict here; once resolved, there will also be code here for 
+            // rsync upload in progress, and maybe other kinds of locks. 
             if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
+            } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
             }
         }
         
