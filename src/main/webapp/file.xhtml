@@ -277,31 +277,43 @@
                                 <p class="help-block">#{bundle['file.dataFilesTab.dataAccess.info']}</p>
                                 <div class="row">
                                     <div class="form-group col-xs-12">
-                                        <label class="col-sm-3 control-label">                                                   
-                                           #{bundle['file.dataFilesTab.dataAccess.local.label']}
+                                        <label class="col-sm-3 control-label" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">                                                   
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">
+                                            #{bundle['file.dataFilesTab.dataAccess.local.label']}
+                                            </span>
                                         </label>
                                         <div class="col-sm-9">
+                                            <code>
                                             <h:outputText value="/programs/datagrid/ABC123"/>
+                                            </code>
                                         </div>
                                     </div>
                                     <div class="form-group col-xs-12">
                                         <label class="col-sm-3 control-label">                                                   
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.download.tooltip']}">
                                            #{bundle['file.dataFilesTab.dataAccess.download.label']}
+                                            </span>
                                         </label>
                                         <div class="col-sm-9">
-                                            <h:outputText value="rsync -av rsync://dv.sbgrid.org/10.0000/ABC123"/>
+                                            <code>
+                                            <h:outputText value="rsync -av rsync://dv.sbgrid.org/10.0000/ABC123"/>                            
+                                            </code>
                                             <h:outputText class="text-muted" value=" (Location, Country)"/>
                                         </div>
                                     </div>
                                     <div class="form-group col-xs-12">
-                                        <label class="col-sm-3 control-label">                                                   
+                                        <label class="col-sm-3 control-label">
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.verify.tooltip']}">
                                            #{bundle['file.dataFilesTab.dataAccess.verify.label']}
+                                            </span>
                                         </label>
                                         <div class="col-sm-9">
+                                            <code>
                                             <h:outputText value="cd ABC123 ; shasum -c files.sha"/>
+                                            </code>
                                         </div>
                                     </div>
-                                </div>
+                             </div>
                             </p:tab>
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
