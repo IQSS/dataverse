@@ -1440,6 +1440,16 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
             }
         }
+        
+        if (dataset.isLocked()) {
+            // when we sync up with the rsync-upload branch, there will be a merge
+            // conflict here; once resolved, there will be more code here for other
+            // types of locks - rsync upload in progress, etc.
+            if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
+            }
+        }
+        
         return null;
     }
     
@@ -1782,7 +1792,15 @@ public class DatasetPage implements java.io.Serializable {
                     cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
                 }
                 dataset = commandEngine.submit(cmd).getDataset();
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
+                // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset 
+                // has been published. If a publishing workflow is configured, this may have sent the 
+                // dataset into a workflow limbo, potentially waiting for a third party system to complete 
+                // the process. So it may be premature to show the "success" message at this point. 
+                if (dataset.isLocked() && dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
+                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
+                } else {
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
+                }
                 if (notifyPublish) {
                     List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
                     List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);

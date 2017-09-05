@@ -98,11 +98,24 @@ public class DatasetLock implements Serializable {
      *         because JPA would throw an exception later anyway.
      */
     public DatasetLock( Reason aReason, AuthenticatedUser aUser ) {
+        this(aReason, aUser, null);
+    }
+    
+    /**
+     * Constructing a lock for the given reason, with the specified descriptive info message.
+     * @param aReason Why the dataset gets locked.  Cannot be {@code null}.
+     * @param aUser The user causing the lock. Cannot be {@code null}.
+     * @param infoMessage Descriptive message.
+     * @throws IllegalArgumentException if any of the parameters are null. That's
+     *         because JPA would throw an exception later anyway.
+     */
+    public DatasetLock(Reason aReason, AuthenticatedUser aUser, String infoMessage) {
         if ( aReason == null ) throw new IllegalArgumentException("Cannot lock a dataset for a null reason");
         if ( aUser == null ) throw new IllegalArgumentException("Cannot lock a dataset for a null user");
         reason = aReason;
         startTime = new Date();
         user = aUser;
+        info = infoMessage;
         
     }
     

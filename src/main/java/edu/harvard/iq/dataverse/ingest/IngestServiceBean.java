@@ -430,7 +430,7 @@ public class IngestServiceBean {
         }
 
         if (count > 0) {
-            String info = "Attempting to ingest " + count + " tabular data file(s).";
+            String info = "Ingest of " + count + " tabular data file(s) is in progress.";
             logger.info(info);
             datasetService.addDatasetLock(dataset.getId(),
                     DatasetLock.Reason.Ingest, 
