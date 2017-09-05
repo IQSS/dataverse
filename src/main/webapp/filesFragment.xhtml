@@ -373,6 +373,33 @@
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                 </ui:include>
             </div>
+            <div class="column" jsf:rendered="#{settingsWrapper.rsyncDownload}" >
+                                    <div class="form-group col-xs-12">
+                                        <label class="col-sm-3 control-label">                                                   
+                                           #{bundle['file.dataFilesTab.dataAccess.local.label']}
+                                        </label>
+                                        <div class="col-sm-9">
+                                            <h:outputText value="/programs/datagrid/ABC123"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-xs-12">
+                                        <label class="col-sm-3 control-label">                                                   
+                                           #{bundle['file.dataFilesTab.dataAccess.download.label']}
+                                        </label>
+                                        <div class="col-sm-9">
+                                            <h:outputText value="rsync -av rsync://dv.sbgrid.org/10.0000/ABC123"/>
+                                            <h:outputText class="text-muted" value=" (Location, Country)"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-xs-12">
+                                        <label class="col-sm-3 control-label">                                                   
+                                           #{bundle['file.dataFilesTab.dataAccess.verify.label']}
+                                        </label>
+                                        <div class="col-sm-9">
+                                            <h:outputText value="cd ABC123 ; shasum -c files.sha"/>
+                                        </div>
+                                    </div>
+                                </div>
             <!-- END: button-block -->
         </p:column>
     </p:dataTable>
