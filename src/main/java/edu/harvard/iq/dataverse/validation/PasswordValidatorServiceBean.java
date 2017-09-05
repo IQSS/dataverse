@@ -158,8 +158,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         for (PasswordValidator currentUser : validators.values()) {
             logger.fine("characterRules.size(): " + characterRules.size());
             logger.fine("numberOfCharacteristics: " + numberOfCharacteristics);
-//TODO: Remove warning? -MAD
-            logger.warning("PasswordValidator current rules: " + currentUser.toString());
+
             RuleResult r = currentUser.validate(passwordData);
             if (r.isValid())
                 return Collections.emptyList();
