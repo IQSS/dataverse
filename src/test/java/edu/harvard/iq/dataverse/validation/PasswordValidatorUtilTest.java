@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.validation;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlPrinter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -144,41 +145,72 @@ public class PasswordValidatorUtilTest {
 
     @Test
     public void testGetRequiredCharacters() {
+        int numberOfCharacteristics = 2; //influences use of # or "each" in text generation
+        String textBeforeList = BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq" , Arrays.asList(Integer.toString(numberOfCharacteristics)))+ " " ;
         List<CharacterRule> characterRules = PasswordValidatorUtil.getCharacterRules4dot0();
-        String reqChars = PasswordValidatorUtil.getRequiredCharacters(characterRules);
+        String reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
         System.out.println("Character rules string for 4.0: ");
-        System.out.println(reqChars);
-        assertEquals("letter, numeric", reqChars);
+        System.out.println(reqString);
+        assertEquals("At least 1 character from each of the following types: letter, numeral", reqString);
         
         characterRules = PasswordValidatorUtil.getCharacterRulesDefault();
-        reqChars = PasswordValidatorUtil.getRequiredCharacters(characterRules);
+        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
         System.out.println("Character rules string for default, same as 4.0: ");
-        System.out.println(reqChars);
-        assertEquals("letter, numeric", reqChars);
+        System.out.println(reqString);
+        assertEquals("At least 1 character from each of the following types: letter, numeral", reqString);
           
         String characterRulesConfigString = "UpperCase:1,LowerCase:1,Digit:1,Special:1";
         characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
-        reqChars = PasswordValidatorUtil.getRequiredCharacters(characterRules);
+        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
         System.out.println("Character rules string for '" + characterRulesConfigString + "': ");
-        System.out.println(reqChars);
-        assertEquals("uppercase, lowercase, numeric, special", reqChars);
+        System.out.println(reqString);
+        assertEquals("At least 1 character from 2 of the following types: uppercase, lowercase, numeral, special", reqString);
         
+        numberOfCharacteristics = 4;
+        characterRulesConfigString = "UpperCase:1,LowerCase:1,Digit:1,Special:1";
+        characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
+        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
+        System.out.println("Character rules string for '" + characterRulesConfigString + "': ");
+        System.out.println(reqString);
+        assertEquals("At least 1 character from each of the following types: uppercase, lowercase, numeral, special", reqString);
+        
+        numberOfCharacteristics = 4;
         characterRulesConfigString = "UpperCase:1,LowerCase:1,Digit:1,Special:1,Alphabetical:1";
         characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
-        reqChars = PasswordValidatorUtil.getRequiredCharacters(characterRules);
+        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
         System.out.println("Character rules string for '" + characterRulesConfigString + "', letter should not be mentioned: ");
-        System.out.println(reqChars);
-        assertEquals("uppercase, lowercase, numeric, special", reqChars);
+        System.out.println(reqString);
+        assertEquals("At least 1 character from each of the following types: uppercase, lowercase, numeral, special", reqString);
         
+        numberOfCharacteristics = 2;
+        characterRulesConfigString = "UpperCase:1,LowerCase:1,Digit:1,Special:1,Alphabetical:1";
+        characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
+        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
+        System.out.println("Character rules string for '" + characterRulesConfigString + "', letter should not be mentioned: ");
+        System.out.println(reqString);
+        assertEquals("At least 1 character from 2 of the following types: uppercase, lowercase, numeral, special", reqString);
+        
+        numberOfCharacteristics = 2; //Should say each, even if more characteristics set than possible
         characterRulesConfigString = "Digit:1";
         characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
-        reqChars = PasswordValidatorUtil.getRequiredCharacters(characterRules);
+        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
         System.out.println("Character rules string for '" + characterRulesConfigString + "': ");
-        System.out.println(reqChars);
-        assertEquals("numeric", reqChars);
+        System.out.println(reqString);
+        assertEquals("At least 1 character from each of the following types: numeral", reqString);
         
-        //one for the unknown
-        //one for only one
+        characterRulesConfigString = "Digit:2";
+        characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
+        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
+        System.out.println("Character rules string for '" + characterRulesConfigString + "': ");
+        System.out.println(reqString);
+        assertEquals("Fufill 2: At least 2 numeral characters", reqString);
+        
+        characterRulesConfigString = "LowerCase:1,Digit:2,Special:3,Alphabetical:4";
+        characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
+        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
+        System.out.println("Character rules string for '" + characterRulesConfigString + "': ");
+        System.out.println(reqString);
+        assertEquals("Fufill 2: At least 1 lowercase characters, 2 numeral characters, 3 special characters", reqString);
     }
 
     

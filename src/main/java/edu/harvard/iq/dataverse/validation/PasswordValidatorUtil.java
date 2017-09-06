@@ -73,7 +73,7 @@ public class PasswordValidatorUtil {
             optionalGoodStrengthNote = " (" + BundleUtil.getStringFromBundle("passwdVal.passwdReq.goodStrength" , Arrays.asList(Integer.toString(goodStrength))) +")";
         }
         message += "<li " + getColor(errors, ErrorType.TOO_SHORT) + ">" + getOkOrFail(errors, ErrorType.TOO_SHORT) +  BundleUtil.getStringFromBundle("passwdVal.passwdReq.lengthReq" , Arrays.asList(Integer.toString(minLength))) + " " + optionalGoodStrengthNote+ "</li>";//"At least " + minLength + " characters" + optionalGoodStrengthNote + "</li>";
-        message += "<li " + getColor(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + ">" + getOkOrFail(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq" , Arrays.asList(Integer.toString(numberOfCharacteristics))) + " " + getRequiredCharacters(characterRules) + "</li>";//"At least " + numberOfCharacteristics + " of the following: " + 
+        message += "<li " + getColor(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + ">" + getOkOrFail(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) +  getRequiredCharacters(characterRules, numberOfCharacteristics) + "</li>";//"At least " + numberOfCharacteristics + " of the following: " + 
         message += "</ul>";
         boolean repeatingDigitRuleEnabled = Integer.MAX_VALUE != numberOfConsecutiveDigitsAllowed;
         boolean showMayNotBlock = repeatingDigitRuleEnabled || dictionaryEnabled;
@@ -124,42 +124,69 @@ public class PasswordValidatorUtil {
         }
     }
 
+    
+    /**
+     * Creates the string for stating the character requirements. 
+     */
     // This method especially does not support character rules from other languages
     // Also, this method is a bit klugey because passay 1.1.0 does not allow us to get the name of the character rule.
-    public static String getRequiredCharacters(List<CharacterRule> characterRules) {
+    public static String getRequiredCharacters(List<CharacterRule> characterRules, int numberOfCharacteristics) {
         
-        boolean lowerCase = false;
-        boolean upperCase = false;
-        boolean digit = false;
-        boolean alphabetical = false; //if upper or lower, alphabetical is irrelevant
-        boolean special = false;
+        //how many of each character class
+        int lowercase = 0;
+        int uppercase = 0;
+        int digit = 0;
+        int alphabetical = 0; //if upper or lower > 0, alphabetical is irrelevant
+        int special = 0;
         
         for(CharacterRule c : characterRules) {
-            
+
             String validChars = c.getValidCharacters();
             if(validChars.equals(EnglishCharacterData.LowerCase.getCharacters())) {
-                lowerCase = true;
+                lowercase = c.getNumberOfCharacters();
             } else if(validChars.equals(EnglishCharacterData.UpperCase.getCharacters())) {
-                upperCase = true;
+                uppercase = c.getNumberOfCharacters();
             } else if(validChars.equals(EnglishCharacterData.Digit.getCharacters())) {
-                digit = true;
+                digit = c.getNumberOfCharacters();
             } else if(validChars.equals(EnglishCharacterData.Alphabetical.getCharacters())) {
-                alphabetical = true;
+                alphabetical = c.getNumberOfCharacters();
             } else if(validChars.equals(EnglishCharacterData.Special.getCharacters())) {
-                special = true;
+                special = c.getNumberOfCharacters();
             } else {
                 //other rules should cause an error before here, but just in case
                 return BundleUtil.getStringFromBundle("passwdVal.passwdReq.unknownPasswordRule");
             }
         }
         
-        //these strings are not in the bundle as this whole method is based in English
-        String returnString = ((upperCase) ? "uppercase" : "") 
-                + ((lowerCase) ? ", lowercase" : "") 
-                + ((alphabetical && !(lowerCase || upperCase)) ? ", letter" : "") 
-                + ((digit) ? ", numeric" : "") 
-                + ((special) ? ", special" : "");
-        return StringUtils.strip(returnString, " ,");
+        String returnString = "";
+        
+        //these below method strings are not in the bundle as this whole method is based in English
+        
+        if(lowercase <= 1 && uppercase <= 1 && digit <= 1 && alphabetical <= 1 && special <= 1) {
+            returnString = ((uppercase == 1) ? "uppercase" : "") 
+                    + ((lowercase == 1) ? ", lowercase" : "") 
+                    + ((alphabetical == 1 && !(lowercase == 1 || uppercase == 1)) ? ", letter" : "") 
+                    + ((digit == 1) ? ", numeral" : "") 
+                    + ((special == 1) ? ", special" : "");
+            
+            int alphabeticalOffset = 0; //alphabetical only influences text if its without lower/upper
+            if(alphabetical > 0 && (lowercase > 0 || uppercase > 0)) {
+                alphabeticalOffset = 1;
+            } 
+            
+            String eachOrSomeCharacteristics = ((characterRules.size() - alphabeticalOffset) > numberOfCharacteristics ) ? Integer.toString(numberOfCharacteristics) : "each";
+            return BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq" , Arrays.asList(eachOrSomeCharacteristics)) 
+                    + " " + StringUtils.strip(returnString, " ,");
+        } else {
+            //if requiring multiple of any character type, we use a different string format
+            //this could be made to look nicer, but we don't expect this to be utilized
+            returnString = "Fufill " + numberOfCharacteristics + ": At least " + ((uppercase > 0) ? uppercase + " uppercase characters, " : "")
+                    + ((lowercase > 0) ? lowercase + " lowercase characters, " : "")
+                    + ((alphabetical > 0 && !(lowercase > 0 || uppercase > 0)) ? " letter characters, " : "") 
+                    + ((digit > 0) ? digit + " numeral characters, " : "")
+                    + ((special > 0) ? special + " special characters, " : ""); //then strip
+            return StringUtils.strip(returnString, " ,");
+        }
     }
 
 }
