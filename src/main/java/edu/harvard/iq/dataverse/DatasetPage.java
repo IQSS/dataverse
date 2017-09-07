@@ -246,8 +246,6 @@ public class DatasetPage implements java.io.Serializable {
     
     private Boolean hasRsyncScript = false;
     
-    private String DCM_UPLOAD_IN_PROGRESS_MESSAGE; 
-
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
     }
@@ -1491,13 +1489,10 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
             }
         }
-        
-        DCM_UPLOAD_IN_PROGRESS_MESSAGE = BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage");
-        
+                
         // Various info messages, when the dataset is locked (for various reasons):
         if (dataset.isLocked()) {
-            String lockInfo = dataset.getDatasetLock().getInfo();
-            if (DCM_UPLOAD_IN_PROGRESS_MESSAGE.equals(lockInfo)) {
+            if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.DcmUpload)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage"));
             } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
@@ -2634,7 +2629,7 @@ public class DatasetPage implements java.io.Serializable {
         //RequestContext requestContext = RequestContext.getCurrentInstance();
         logger.fine("checking lock");
         if (isStillLocked()) {
-            logger.fine("(still locked, " + (lockInfoMessage == null ? "" : lockInfoMessage) +")");
+            logger.fine("(still locked)");
         } else {
             // OK, the dataset is no longer locked. 
             // let's tell the page to refresh:
@@ -2656,20 +2651,6 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }*/
     
-    private String lockInfoMessage = null;
-    
-    public String getLockInfo() {
-        // This is the info message associated with the dataset lock. 
-        // If this is a DCM/rsync upload in progress, this message will 
-        // contain the value of file.rsyncUpload.inProgressMessage from the Bundle;
-        return lockInfoMessage;
-    }
-    
-    public void setLockInfo(String lockInfo) {
-        lockInfoMessage = lockInfo; 
-    }
-    
-    
     public boolean isDatasetLockedInWorkflow() {
         if (dataset != null) {
             if (dataset.isLocked()) {
@@ -2684,11 +2665,7 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isStillLocked() {
         if (dataset != null && dataset.getId() != null) {
             logger.fine("checking lock status of dataset " + dataset.getId());
-            String infoMessage = datasetService.checkDatasetLockInfo(dataset.getId());
-            if (infoMessage != null) {
-                if (DCM_UPLOAD_IN_PROGRESS_MESSAGE.equals(infoMessage)) {
-                    this.lockInfoMessage = infoMessage;
-                }
+            if (datasetService.checkDatasetLock(dataset.getId())) {
                 return true;
             }
         }
@@ -3984,7 +3961,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         // If the script has been successfully downloaded, lock the dataset:
-        lockInfoMessage = DCM_UPLOAD_IN_PROGRESS_MESSAGE;
+        String lockInfoMessage = "script downloaded";
         DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
         if (lock != null) {
             dataset.setDatasetLock(lock);
