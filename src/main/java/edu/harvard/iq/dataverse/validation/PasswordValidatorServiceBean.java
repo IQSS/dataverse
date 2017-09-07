@@ -232,11 +232,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             rules.add(lengthRule);
 //            rules.add(new ExpirationRule(getExpirationMaxLength(), getExpirationDays()));
             if (numberOfCharacteristics != 0) {
-                List<CharacterRule> charRules = systemConfig == null ? PasswordValidatorUtil.getCharacterRulesDefault() : systemConfig.getPVCharacterRules();
-                if (characterRules == null) {
-                    this.characterRules = charRules;
-                }
-                rules.add(characterRule(characterRules));
+                rules.add(characterRule(getCharacterRules()));
             }
             rules.add(repeatingDigitsRule(numberOfConsecutiveDigitsAllowed));
             passwordValidator = new PasswordValidator(messageResolver, rules);
@@ -369,10 +365,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * Describes all the characteristics of a valid password.
      */
     public String getGoodPasswordDescription(List<String> errors) {
-        List<CharacterRule> charRules = systemConfig == null ? PasswordValidatorUtil.getCharacterRulesDefault() : systemConfig.getPVCharacterRules();
-        if (characterRules == null) {
-            this.characterRules = charRules;
-        }
         boolean dictionaryEnabled = false;
         String dictionariesSetting = systemConfig.getPVDictionaries();
         logger.info("dictionariesSetting: " + dictionariesSetting);
@@ -383,7 +375,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         if (errors == null){
             errors = new ArrayList<>();
         }
-        return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), characterRules, getNumberOfCharacteristics(), getNumberOfConsecutiveDigitsAllowed(), getGoodStrength(), dictionaryEnabled, errors);
+        return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), getCharacterRules(), getNumberOfCharacteristics(), getNumberOfConsecutiveDigitsAllowed(), getGoodStrength(), dictionaryEnabled, errors);
     }
 
     /**
@@ -479,13 +471,19 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
 //            validators.remove(ValidatorTypes.StandardValidator);
 //        }
 //    }
-
+    
+    
     public void setCharacterRules(List<CharacterRule> characterRules) {
-        this.characterRules = characterRules;
+        if(!characterRules.equals(this.characterRules)) {
+            this.characterRules = characterRules;
+            validators.remove(ValidatorTypes.StandardValidator);
+        }
     }
 
     public List<CharacterRule> getCharacterRules() {
-        return characterRules;
+        List<CharacterRule> characterRules = systemConfig == null ? this.characterRules : systemConfig.getPVCharacterRules();
+        setCharacterRules(characterRules);
+        return this.characterRules;
     }
 
     void setNumberOfCharacteristics(int numberOfCharacteristics) {

@@ -204,19 +204,21 @@ public class PasswordValidatorTest {
 
         paramsList.forEach(
                 params -> {
-                    passwordValidatorService.setGoodStrength(params.getGoodStrength());
+                    int expectedErrors = params.getExpectedErrors();
+//                    List<String> errors = passwordValidatorService.validate(params.getPassword(), params.getPasswordModificationTime());
 //                    passwordValidatorService.setExpirationDays(params.getExpirationDays());
 //                    passwordValidatorService.setExpirationMaxLength(params.getExpirationMaxLength());
+                    passwordValidatorService.setGoodStrength(params.getGoodStrength());
                     passwordValidatorService.setMaxLength(params.getMaxLength());
                     passwordValidatorService.setMinLength(params.getMinLength());
                     passwordValidatorService.setDictionaries(params.getDictionaries());
-                    passwordValidatorService.setCharacterRules(params.getCharacterRules());
                     passwordValidatorService.setNumberOfCharacteristics(params.getNumberOfCharacteristics());
+                    passwordValidatorService.setCharacterRules(params.getCharacterRules());
                     passwordValidatorService.setNumberOfConsecutiveDigitsAllowed(params.getNumberOfConsecutiveDigitsAllowed());
-//                    List<String> errors = passwordValidatorService.validate(params.getPassword(), params.getPasswordModificationTime());
+
                     List<String> errors = passwordValidatorService.validate(params.getPassword());
                     int actualErrors = errors.size();
-                    int expectedErrors = params.getExpectedErrors();
+
                     String message = message(params, errors, expectedErrors, actualErrors);
                     logger.info(message);
                     Assert.assertTrue(message, actualErrors == expectedErrors);

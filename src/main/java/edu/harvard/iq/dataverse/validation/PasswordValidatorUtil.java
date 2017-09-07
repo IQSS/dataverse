@@ -158,9 +158,8 @@ public class PasswordValidatorUtil {
             }
         }
         
-        String returnString = "";
-        
         //these below method strings are not in the bundle as this whole method is based in English
+        String returnString = "";
         
         if(lowercase <= 1 && uppercase <= 1 && digit <= 1 && alphabetical <= 1 && special <= 1) {
             returnString = ((uppercase == 1) ? "uppercase" : "") 
