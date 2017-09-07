@@ -170,11 +170,16 @@ Updates the current draft version of dataset ``$id``. If the dataset does not ha
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0)::
+Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
 
 .. note:: POST should be used to publish a dataset. GET is supported for backward compatibility but is deprecated and may be removed: https://github.com/IQSS/dataverse/issues/2431
+
+.. note:: When there are no default workflows, a successful publication process will result in ``200 OK`` response. When there are workflows, it is impossible for Dataverse to know
+          how long they are going to take and whether they will succeed or not (recall that some stages might require human intervention). Thus,
+          a ``202 ACCEPTED`` is returned immediately. To know whether the publication process succeeded or not, the client code has to check the status of the dataset periodically,
+          or perform some push request in the post-publish workflow.
 
 Deletes the draft version of dataset ``$id``. Only the draft version can be deleted::
 
@@ -412,7 +417,7 @@ Example python code to replace a file.  This may be run by changing these parame
     print r.json()
     print r.status_code
 
-   
+
 
 Builtin Users
 ~~~~~~~~~~~~~
@@ -822,6 +827,57 @@ Dataset Integrity
 Recalculate the UNF value of a dataset version, if it's missing, by supplying the dataset version database id::
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
+
+Workflows
+^^^^^^^^^
+
+List all available workflows in the system::
+
+   GET http://$SERVER/api/admin/workflows
+
+Get details of a workflow with a given id::
+
+   GET http://$SERVER/api/admin/workflows/$id
+
+Add a new workflow. Request body specifies the workflow properties and steps in JSON format.
+Sample ``json`` files are available at ``scripts/api/data/workflows/``::
+
+   POST http://$SERVER/api/admin/workflows
+
+Delete a workflow with a specific id::
+
+    DELETE http://$SERVER/api/admin/workflows/$id
+
+.. warning:: If the workflow designated by ``$id`` is a default workflow, a 403 FORBIDDEN response will be returned, and the deletion will be canceled.
+
+List the default workflow for each trigger type::
+
+  GET http://$SERVER/api/admin/workflows/default/
+
+Set the default workflow for a given trigger. This workflow is run when a dataset is published. The body of the PUT request is the id of the workflow. Trigger types are ``PrePublishDataset, PostPublishDataset``::
+
+  PUT http://$SERVER/api/admin/workflows/default/$triggerType
+
+Get the default workflow for ``triggerType``. Returns a JSON representation of the workflow, if present, or 404 NOT FOUND. ::
+
+  GET http://$SERVER/api/admin/workflows/default/$triggerType
+
+Unset the default workflow for ``triggerType``. After this call, dataset releases are done with no workflow. ::
+
+  DELETE http://$SERVER/api/admin/workflows/default/$triggerType
+
+Set the whitelist of IP addresses separated by a semicolon (``;``) allowed to resume workflows. Request body is a list of IP addresses allowed to send "resume workflow" messages to this Dataverse instance::
+
+  PUT http://$SERVER/api/admin/workflows/ip-whitelist
+
+Get the whitelist of IP addresses allowed to resume workflows::
+
+  GET http://$SERVER/api/admin/workflows/ip-whitelist
+
+Restore the whitelist of IP addresses allowed to resume workflows to default (localhost only)::
+
+  DELETE http://$SERVER/api/admin/workflows/ip-whitelist
+
 
 .. |CORS| raw:: html
       

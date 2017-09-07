@@ -78,6 +78,10 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
+import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
@@ -1436,6 +1440,18 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
             }
         }
+        
+        if (dataset.isLocked()) {
+            // when we sync up with the rsync-upload branch, there will be a merge
+            // conflict here; once resolved, there will also be code here for 
+            // rsync upload in progress, and maybe other kinds of locks. 
+            if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
+            } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
+            }
+        }
+        
         return null;
     }
     
@@ -1632,10 +1648,22 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success"));
         } catch (CommandException ex) {
             String message = ex.getMessage();
-            logger.severe("sendBackToContributor: " + message);
+            logger.log(Level.SEVERE, "sendBackToContributor: {0}", message);
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", Collections.singletonList(message)));
         }
-        return returnToLatestVersion();
+        
+        List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
+        List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
+
+        editUsers.removeAll(authUsers);
+        new HashSet<>(editUsers).forEach( au -> 
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), 
+                                                     UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId())
+        );
+
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return  returnToLatestVersion();
     }
 
     public String submitDataset() {
@@ -1645,7 +1673,7 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success"));
         } catch (CommandException ex) {
             String message = ex.getMessage();
-            logger.severe("submitDataset: " + message);
+            logger.log(Level.SEVERE, "submitDataset: {0}", message);
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", Collections.singletonList(message)));
         }
         return returnToLatestVersion();
@@ -1755,7 +1783,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String releaseDataset(boolean minor) {
-        Command<Dataset> cmd;
+        Command<PublishDatasetResult> cmd;
         //SEK we want to notify concerned users if a DS in review has been published.
         boolean notifyPublish = workingVersion.isInReview();
         if (session.getUser() instanceof AuthenticatedUser) {
@@ -1765,8 +1793,16 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
                 }
-                dataset = commandEngine.submit(cmd);
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
+                dataset = commandEngine.submit(cmd).getDataset();
+                // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset 
+                // has been published. If a publishing workflow is configured, this may have sent the 
+                // dataset into a workflow limbo, potentially waiting for a third party system to complete 
+                // the process. So it may be premature to show the "success" message at this point. 
+                if (dataset.isLocked() && dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
+                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
+                } else {
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
+                }
                 if (notifyPublish) {
                     List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
                     List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
@@ -2568,7 +2604,17 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
-
+    public boolean isDatasetLockedInWorkflow() {
+        if (dataset != null) {
+            if (dataset.isLocked()) {
+                if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public boolean isStillLocked() {
         if (dataset != null && dataset.getId() != null) {
             logger.fine("checking lock status of dataset " + dataset.getId());

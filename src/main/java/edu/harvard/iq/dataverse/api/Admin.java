@@ -265,7 +265,7 @@ public class Admin extends AbstractApiBean {
     public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
         AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
         if (authenticatedUser != null) {
-            return ok(jsonForAuthUser(authenticatedUser));
+            return ok(json(authenticatedUser));
         }
         return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
     }
@@ -311,7 +311,7 @@ public class Admin extends AbstractApiBean {
         }
         JsonArrayBuilder userArray = Json.createArrayBuilder();
         authSvc.findAllAuthenticatedUsers().stream().forEach((user) -> {
-            userArray.add(jsonForAuthUser(user));
+            userArray.add(json(user));
         });
         return ok(userArray);
     }
@@ -371,7 +371,7 @@ public class Admin extends AbstractApiBean {
         AuthenticatedUserDisplayInfo userDisplayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, position);
         boolean generateUniqueIdentifier = true;
         AuthenticatedUser authenticatedUser = authSvc.createAuthenticatedUser(userRecordId, proposedAuthenticatedUserIdentifier, userDisplayInfo, true);
-        return ok(jsonForAuthUser(authenticatedUser));
+        return ok(json(authenticatedUser));
     }
 
     /**
