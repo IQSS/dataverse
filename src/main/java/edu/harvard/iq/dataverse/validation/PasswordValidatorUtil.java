@@ -164,16 +164,13 @@ public class PasswordValidatorUtil {
         if(lowercase <= 1 && uppercase <= 1 && digit <= 1 && alphabetical <= 1 && special <= 1) {
             returnString = ((uppercase == 1) ? "uppercase" : "") 
                     + ((lowercase == 1) ? ", lowercase" : "") 
-                    + ((alphabetical == 1 && !(lowercase == 1 || uppercase == 1)) ? ", letter" : "") 
+                    + ((alphabetical == 1 ) ? ", letter" : "") 
                     + ((digit == 1) ? ", numeral" : "") 
                     + ((special == 1) ? ", special" : "");
             
-            int alphabeticalOffset = 0; //alphabetical only influences text if its without lower/upper
-            if(alphabetical > 0 && (lowercase > 0 || uppercase > 0)) {
-                alphabeticalOffset = 1;
-            } 
+
             
-            String eachOrSomeCharacteristics = ((characterRules.size() - alphabeticalOffset) > numberOfCharacteristics ) ? Integer.toString(numberOfCharacteristics) : "each";
+            String eachOrSomeCharacteristics = ((characterRules.size()) > numberOfCharacteristics ) ? Integer.toString(numberOfCharacteristics) : "each";
             return BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq" , Arrays.asList(eachOrSomeCharacteristics)) 
                     + " " + StringUtils.strip(returnString, " ,");
         } else {
@@ -181,7 +178,7 @@ public class PasswordValidatorUtil {
             //this could be made to look nicer, but we don't expect this to be utilized
             returnString = "Fufill " + numberOfCharacteristics + ": At least " + ((uppercase > 0) ? uppercase + " uppercase characters, " : "")
                     + ((lowercase > 0) ? lowercase + " lowercase characters, " : "")
-                    + ((alphabetical > 0 && !(lowercase > 0 || uppercase > 0)) ? " letter characters, " : "") 
+                    + ((alphabetical > 0 ) ? " letter characters, " : "") 
                     + ((digit > 0) ? digit + " numeral characters, " : "")
                     + ((special > 0) ? special + " special characters, " : ""); //then strip
             return StringUtils.strip(returnString, " ,");

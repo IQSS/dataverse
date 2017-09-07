@@ -1061,6 +1061,8 @@ By specifying "UpperCase:1,LowerCase:1,Digit:1,Special:1", for example, you can 
 
 If you have implemented 4 different character rules in this way, you can also optionally increase ``:PVNumberOfCharacteristics`` to as high as 4. However, please note that ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of rules or you will see the error, "Number of characteristics must be <= to the number of rules".
 
+Also note that Alphabetical should not be set along with UpperCase or LowerCase. It is a superset of both, and if you require both your password policy will be confusing if not easier to bypass.
+
 ``curl -X PUT -d 'UpperCase:1,LowerCase:1,Digit:1,Special:1' http://localhost:8080/api/admin/settings/:PVCharacterRules``
 
 ``curl -X PUT -d 3 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
