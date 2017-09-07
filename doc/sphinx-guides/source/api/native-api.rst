@@ -864,9 +864,9 @@ Get the default workflow for ``triggerType``. Returns a JSON representation of t
 
 Unset the default workflow for ``triggerType``. After this call, dataset releases are done with no workflow. ::
 
-  DELETE http://$SERVER/api/admin/workflows/default/triggerType
+  DELETE http://$SERVER/api/admin/workflows/default/$triggerType
 
-Set the whitelist of IP addresses allowed to resume workflows. Request body is a list of IP addresses allowed to send "resume workflow" messages to this Dataverse instance::
+Set the whitelist of IP addresses separated by a semicolon (``;``) allowed to resume workflows. Request body is a list of IP addresses allowed to send "resume workflow" messages to this Dataverse instance::
 
   PUT http://$SERVER/api/admin/workflows/ip-whitelist
 
