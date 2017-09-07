@@ -10,8 +10,20 @@ echo  "- Harvard Privacy Policy"
 curl -s -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html $SERVER/admin/settings/:ApplicationPrivacyPolicyUrl
 curl -s -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html $SERVER/admin/settings/:ApiTermsOfUse
 echo "- Configuring Harvard's password policy in Dataverse"
-#put harvard rules here
-
+# Min length is 10 because that is the minimum Harvard requires without periodic expiration
+curl -s -X PUT -d 10 $SERVER/admin/settings/:PVMinLength
+# If password 20+ characters, other rules do not apply
+curl -s -X PUT -d 20 $SERVER/admin/settings/:PVGoodStrength
+# The character classes users can choose between and the number of each needed
+curl -X PUT -d 'UpperCase:1,Digit:1,LowerCase:1,Special:1' $SERVER/admin/settings/:PVCharacterRules
+# The number of character classes a password needs to be valid
+curl -s -X PUT -d 3 $SERVER/admin/settings/:PVNumberOfCharacteristics
+# The number of character classes a password needs to be valid
+curl -s -X PUT -d 4 $SERVER/admin/settings/:PVNumberOfConsecutiveDigitsAllowed
+# Harvard requires a dictionary check on common words & names. We use the unix 'words' file, removing ones less than 4 characters.
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+sed '/^.\{,3\}$/d' /usr/share/dict/words > $DIR/data/pwdictionary
+curl -s -X PUT -d "$DIR/data/pwdictionary" $SERVER/admin/settings/:PVDictionaries
 echo "- Adjust Solr frag size"
 curl -s -X PUT -d 320 $SERVER/admin/settings/:SearchHighlightFragmentSize
 echo  "- Google Analytics setting"
