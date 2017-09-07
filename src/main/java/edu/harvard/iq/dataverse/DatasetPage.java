@@ -1701,6 +1701,10 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", Collections.singletonList(message)));
         }
         
+        /* 
+         The notifications below are redundant, since the ReturnDatasetToAuthorCommand
+         sends them already. - L.A. Sep. 7 2017
+         
         List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
         List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
 
@@ -1709,9 +1713,10 @@ public class DatasetPage implements java.io.Serializable {
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), 
                                                      UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId())
         );
+        */
 
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
-        FacesContext.getCurrentInstance().addMessage(null, message);
+        //FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
+        //FacesContext.getCurrentInstance().addMessage(null, message);
         return  returnToLatestVersion();
     }
 
