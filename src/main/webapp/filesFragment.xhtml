@@ -339,7 +339,7 @@
                 </div>
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
                                 type="button" styleClass="btn btn-default"                                   
-                                update="@form" action="#{DatasetPage.requestAccessMultipleFiles(DatasetPage.selectedFilesIdsString)}"
+                                update="@form" action="#{DatasetPage.requestAccessMultipleFiles()}"
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
@@ -368,6 +368,7 @@
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                     <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
+                    <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
                     <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
                     <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>

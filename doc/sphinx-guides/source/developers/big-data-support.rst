@@ -107,4 +107,36 @@ The following low level command should only be used when troubleshooting the "im
 Repository Storage Abstraction Layer (RSAL)
 -------------------------------------------
 
-For now, please see https://github.com/sbgrid/rsal
+Info for configuring the RSAL Mock: https://github.com/sbgrid/rsal/tree/master/mocks
+
+Also, to configure Dataverse to use the new workflow you must do the following:
+
+1. Configure the RSAL URL:
+
+``curl -X PUT -d 'http://<myipaddr>:5050' http://localhost:8080/api/admin/settings/:RepositoryStorageAbstractionLayerUrl``
+
+2. Update workflow json with correct URL information:
+
+Edit internal-httpSR-workflow.json and replace url and rollbackUrl to be the url of your RSAL mock.
+
+3. Create the workflow:
+
+``curl http://localhost:8080/api/admin/workflows -X POST --data-binary @internal-httpSR-workflow.json -H "Content-type: application/json"``
+
+4. List available workflows:
+
+``curl http://localhost:8080/api/admin/workflows``
+
+5. Set the workflow (id) as the default workflow for the appropriate trigger:
+
+``curl http://localhost:8080/api/admin/workflows/default/PrePublishDataset -X PUT -d 2``
+
+6. Check that the trigger has the appropriate default workflow set:
+
+``curl http://localhost:8080/api/admin/workflows/default/PrePublishDataset``
+
+7. Add RSAL to whitelist
+
+8. When finished testing, unset the workflow:
+
+``curl -X DELETE http://localhost:8080/api/admin/workflows/default/PrePublishDataset``

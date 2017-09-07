@@ -62,28 +62,28 @@
                                                             and DatasetPage.canUpdateDataset()
                                                             and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
                                     <!-- Publish Buttons -->
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('publishConfirm').show()"
+                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishConfirm').show()"
                                                    rendered="#{!DatasetPage.dataset.released
                                                                and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('releaseDraft').show()"
+                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('releaseDraft').show()"
                                                    rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
                                     <!-- 4.2.1:  replaced permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse') with DatasetPage.canPublishDataverse() -->
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('mayNotRelease').show()"
+                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('mayNotRelease').show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
                                                                and !DatasetPage.canPublishDataverse()}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('publishParent').show()"
+                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishParent').show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and DatasetPage.canPublishDataverse()
                                                                and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
@@ -91,7 +91,7 @@
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'disabled' : ''}"
+                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and DatasetPage.canPublishDataverse()
                                                                and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
@@ -102,7 +102,8 @@
                                     <!-- END: Publish Buttons -->
 
                                     <!-- Return to Author Button -->
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('sendBackToContributor').show()"
+                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)                                                                                                           
+                                                                                                          ? 'disabled' : ''}" onclick="PF('sendBackToContributor').show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                                    <span class="glyphicon glyphicon-repeat"/> #{bundle['dataset.rejectBtn']}
@@ -112,6 +113,7 @@
                                     <!-- Submit for Review Button -->
                                     <button type="button" class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('inreview').show()"
                                             jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                            and !DatasetPage.datasetLockedInWorkflow
                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                             and DatasetPage.canUpdateDataset()
                                                             and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
@@ -1164,7 +1166,7 @@
                         </div>
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
-
+                    
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
 
@@ -1176,6 +1178,19 @@
                             <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                             <ui:param name="twoRavensHelper" value="#{DatasetPage.twoRavensHelper}"/>
+                        </ui:include>
+
+                    </p:dialog>
+                    
+
+
+                    
+                    <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}" widgetVar="requestAccessPopup" modal="true">
+                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+                        <ui:include src="file-request-access-popup-fragment.xhtml">
+                            <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
+                            <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
+                            <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
 
                     </p:dialog>

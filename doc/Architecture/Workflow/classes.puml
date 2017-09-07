@@ -1,0 +1,116 @@
+@startuml
+' Macro to mark classes you've already implemented
+!define DONE(NAME) "NAME ✅" as NAME
+
+class DONE(DvObject) <<entity>>
+class DONE(DvObjectContainer) <<entity>>
+class DONE(Dataverse) <<entity>>
+class Dataset <<entity>>
+
+Dataset --|> DvObjectContainer
+DvObjectContainer --|>DvObject
+Dataverse -up-|> DvObjectContainer
+DvObject o--> DvObjectContainer: parent
+
+class DONE(Workflow) <<entity>> {
+  id
+  name
+  description
+}
+
+class DONE(WorkflowStepData) <<entity>> {
+  providerId: String
+  stepId: String
+  parameters: Map<String,String>
+}
+
+class WorkflowBean<In Progress> <<bean>> {
+  getWorkflows()
+  getWorkflow(id)
+  deleteWorkflow(id)
+  saveWorkflow(w)
+  resumeWorkflow(pwf)
+  ... not implemented ...
+  getStepProvider(id)
+}
+
+class DONE(WorkflowContext) {
+  r:DataverseRequest
+  d:Dataset
+  invocationId:UUID
+  versionData
+  isMinorRelease()
+}
+
+class DONE(PendingWorkflow) <<entity>> {
+  externalId: UUID
+  workflow: Workflow
+  pendingStepIdx: int
+  localData: DATA
+  request: DataverseRequest
+  dataset: Dataset
+}
+
+interface DONE(WorkflowStepSPI) {
+  id
+  getStep(stepId, parameters):Step
+}
+
+interface DONE(WorkflowStep) {
+  run( WorkflowContext ): WorkflowStepResult
+  resume( WorkflowContext ): WorkflowStepResult
+  rollback( WorkflowContext  )
+}
+
+class DONE(WorkflowStepResult) <<abstract>>
+class DONE(OK) <<singleton>>
+class DONE(Pending){
+  localData
+}
+class DONE(Failure) {
+  reason:Throwable
+}
+
+package engine.command {
+  class PublishDatasetCommand
+  class ResumeWorkflowCommand
+}
+
+package api {
+  class WorkflowStepResponse <<endpoint>> {
+    POST /step/${externalId}
+  }
+
+  class DONE(WorkflowManagementEndpoint) <<endpoint>> {
+    POST add
+    GET list
+    DELETE id
+    GET pendingWorkflows
+  }
+}
+
+OK -up-|> WorkflowStepResult
+Pending -up-|> WorkflowStepResult
+Failure -up-|> WorkflowStepResult
+
+PendingWorkflow o--> Workflow
+PendingWorkflow o--> WorkflowStepData
+PendingWorkflow o--> Dataset
+Workflow "1" *--> "1..*" WorkflowStepData: <<ordered>>
+WorkflowStepSPI ..> WorkflowStep: creates
+WorkflowStep ..> WorkflowStepResult: creates
+WorkflowStepResponse ..> PendingWorkflow : invokes
+WorkflowBean *--> WorkflowStepSPI
+WorkflowBean *--> Workflow
+
+PublishDatasetCommand ..> Workflow : uses
+PublishDatasetCommand ..> Dataset : uses
+PublishDatasetCommand ..> WorkflowBean : uses
+
+ResumeWorkflowCommand ..> Workflow : uses
+ResumeWorkflowCommand ..> Dataset : uses
+ResumeWorkflowCommand ..> WorkflowBean : uses
+
+PendingWorkflow  ..> WorkflowContext: <<contains>>
+
+@enduml

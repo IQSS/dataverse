@@ -8,7 +8,9 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -33,13 +35,53 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     @EJB
     FileDownloadServiceBean  fileDownloadService;
-
+    
+    @EJB
+    DataFileServiceBean datafileService;
     
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
+    public FileDownloadHelper() {
+        this.filesForRequestAccess = new ArrayList<>();
+    }
 
     
+    private List<DataFile> filesForRequestAccess;
+
+    public List<DataFile> getFilesForRequestAccess() {
+        return filesForRequestAccess;
+    }
+
+    public void setFilesForRequestAccess(List<DataFile> filesForRequestAccess) {
+        this.filesForRequestAccess = filesForRequestAccess;
+    }
     
+    public void addFileForRequestAccess(DataFile dataFile){
+        this.filesForRequestAccess.clear();
+        this.filesForRequestAccess.add(dataFile);
+    }
+    
+    public void clearRequestAccessFiles(){
+        this.filesForRequestAccess.clear();
+    }
+    
+    public void addMultipleFilesForRequestAccess(DataFile dataFile) {
+        this.filesForRequestAccess.add(dataFile);
+
+     }
+        
+    
+    
+    private String selectedFileId = null;
+
+    public String getSelectedFileId() {
+        return selectedFileId;
+    }
+
+    public void setSelectedFileId(String selectedFileId) {
+        this.selectedFileId = selectedFileId;
+    }
+   
     /**
      *  WARNING: Before calling this, make sure the user has download
      *  permission for the file!!  (See DatasetPage.canDownloadFile())
@@ -180,16 +222,49 @@ public class FileDownloadHelper implements java.io.Serializable {
     }
     
     
-    public void requestAccess(DataFile file) {
-        if (fileDownloadService.requestAccess(file.getId())) {
-            // update the local file object so that the page properly updates
-            file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
-            
-            // create notifications
-            fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId());           
-        }
-        
-    }    
+    public void requestAccess(DataFile file){   
+        //Called from download button fragment via either dataset page or file page
+        // when there's only one file for the access request and there's no pop-up
+        processRequestAccess(file, true);        
+    }
+    
+    public void requestAccessMultiple(List<DataFile> files) {
+
+         DataFile notificationFile = null;
+         for (DataFile file : files) {
+             //Not sending notification via request method so that
+             // we can bundle them up into one nofication at dataset level
+             processRequestAccess(file, false);
+             if (notificationFile == null){
+                 notificationFile = file;
+             }
+         }
+         if ( notificationFile != null){
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId()); 
+         }
+     }
+    
+     public void requestAccessIndirect() {
+         //Called when there are multiple files and no popup
+         // or there's a popup with sigular or multiple files
+         // The list of files for Request Access is set in the Dataset Page when
+         // user clicks the request access button in the files fragment
+         // (and has selected one or more files)
+         requestAccessMultiple(this.filesForRequestAccess);
+     }    
+    
+    
+     private void processRequestAccess(DataFile file, Boolean sendNotification) {
+         if (fileDownloadService.requestAccess(file.getId())) {
+             // update the local file object so that the page properly updates
+             file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
+             // create notification if necessary
+             if (sendNotification) {
+                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId());
+             }
+         }
+     } 
+    
     
     
     //todo: potential cleanup - are these methods needed?
