@@ -666,7 +666,7 @@ public class SystemConfig {
      * @return A string of one or more pipe (|) separated file paths.
      */
     public String getPVDictionaries() {
-        return System.getProperty("pv.dictionaries", settingsService.get(SettingsServiceBean.Key.PVDictionaries.toString()));
+        return settingsService.get(SettingsServiceBean.Key.PVDictionaries.toString());
     }
 
     /**
@@ -680,7 +680,8 @@ public class SystemConfig {
     public int getPVGoodStrength() {
         // FIXME: Change this to 21 to match Harvard's requirements or implement a way to disable the rule (0 or -1) and have the default be disabled.
         int goodStrengthLength = 20;
-        String _goodStrengthLength = System.getProperty("pv.goodstrength", settingsService.get(SettingsServiceBean.Key.PVGoodStrength.toString()));
+        //String _goodStrengthLength = System.getProperty("pv.goodstrength", settingsService.get(SettingsServiceBean.Key.PVGoodStrength.toString()));
+        String _goodStrengthLength = settingsService.get(SettingsServiceBean.Key.PVGoodStrength.toString());
         try {
             goodStrengthLength = Integer.parseInt(_goodStrengthLength);
         } catch (NumberFormatException nfe) {
@@ -736,7 +737,7 @@ public class SystemConfig {
      */
     public int getPVMinLength() {
         int passportValidatorMinLength = 6;
-        String _passportValidatorMinLength = System.getProperty("pv.minlength", settingsService.get(SettingsServiceBean.Key.PVMinLength.toString()));
+        String _passportValidatorMinLength = settingsService.get(SettingsServiceBean.Key.PVMinLength.toString());
         try {
             passportValidatorMinLength = Integer.parseInt(_passportValidatorMinLength);
         } catch (NumberFormatException nfe) {
@@ -754,7 +755,7 @@ public class SystemConfig {
      */
     public int getPVMaxLength() {
         int passportValidatorMaxLength = 0;
-        String _passportValidatorMaxLength = System.getProperty("pv.maxlength", settingsService.get(SettingsServiceBean.Key.PVMaxLength.toString()));
+        String _passportValidatorMaxLength = settingsService.get(SettingsServiceBean.Key.PVMaxLength.toString());
         try {
             passportValidatorMaxLength = Integer.parseInt(_passportValidatorMaxLength);
         } catch (NumberFormatException nfe) {
@@ -778,7 +779,7 @@ public class SystemConfig {
      * keeping the default the same.
      */
     public List<CharacterRule> getPVCharacterRules() {
-        String characterRulesString = System.getProperty("pv.characterrules", settingsService.get(SettingsServiceBean.Key.PVCharacterRules.toString()));
+        String characterRulesString = settingsService.get(SettingsServiceBean.Key.PVCharacterRules.toString());
         return PasswordValidatorUtil.getCharacterRules(characterRulesString);
     }
 
@@ -793,7 +794,7 @@ public class SystemConfig {
      */
     public int getPVNumberOfCharacteristics() {
         int numberOfCharacteristics = 2;
-        String _numberOfCharacteristics = System.getProperty("pv.numberofcharacteristics", settingsService.get(SettingsServiceBean.Key.PVNumberOfCharacteristics.toString()));
+        String _numberOfCharacteristics = settingsService.get(SettingsServiceBean.Key.PVNumberOfCharacteristics.toString());
         try {
             numberOfCharacteristics = Integer.parseInt(_numberOfCharacteristics);
         } catch (NumberFormatException nfe) {
@@ -808,7 +809,7 @@ public class SystemConfig {
      */
     public int getPVNumberOfConsecutiveDigitsAllowed() {
         int numConsecutiveDigitsAllowed = Integer.MAX_VALUE;
-        String _numberOfConsecutiveDigitsAllowed = System.getProperty("pv.numberofrepeatingdigitsallowed", settingsService.get(SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed.toString()));
+        String _numberOfConsecutiveDigitsAllowed = settingsService.get(SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed.toString());
         try {
             numConsecutiveDigitsAllowed = Integer.parseInt(_numberOfConsecutiveDigitsAllowed);
         } catch (NumberFormatException nfe) {
