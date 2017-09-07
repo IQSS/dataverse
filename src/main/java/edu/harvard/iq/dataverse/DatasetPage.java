@@ -3985,7 +3985,7 @@ public class DatasetPage implements java.io.Serializable {
         
         // If the script has been successfully downloaded, lock the dataset:
         lockInfoMessage = DCM_UPLOAD_IN_PROGRESS_MESSAGE;
-        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.Ingest, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
         if (lock != null) {
             dataset.setDatasetLock(lock);
         } else {
