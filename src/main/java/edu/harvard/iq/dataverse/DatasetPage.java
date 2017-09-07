@@ -2604,7 +2604,17 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
-
+    public boolean isDatasetLockedInWorkflow() {
+        if (dataset != null) {
+            if (dataset.isLocked()) {
+                if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public boolean isStillLocked() {
         if (dataset != null && dataset.getId() != null) {
             logger.fine("checking lock status of dataset " + dataset.getId());
