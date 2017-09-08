@@ -13,7 +13,7 @@ There's a chance your idea is already on our roadmap, which is available at http
 [#dataverse IRC channel]: http://chat.dataverse.org
 [logged]: http://irclog.iq.harvard.edu/dataverse/today
 [issue tracker]: https://github.com/IQSS/dataverse/issues
-[@dataverseorg]: http://twitter.com/dataverseorg
+[@dataverseorg]: https://twitter.com/dataverseorg
 [Functional Requirements Document (FRD for short)]: https://docs.google.com/document/d/1PRyAlP6zlUlUuHfgyUezzuaVQ4JnapvgtGWo0o7tLEs/edit?usp=sharing
 [Balsamiq]: https://iqssharvard.mybalsamiq.com/projects
 [Functional Requirements Document folder on Google Drive]: https://drive.google.com/folderview?id=0B3_V6vFxEcx-fl92ek92OG1nTmhQenBRX1Z4OVJBLXpURmh2d2RyX1NZRUp6YktaYUU5YTA&usp=sharing
@@ -44,7 +44,7 @@ You can attach certain files (images, screenshots, logs, etc.) by dragging and d
 
 ## Documentation
 
-The source for the documentation at http://guides.dataverse.org is in the GitHub repo under the "[doc][]" folder. If you find a typo or inaccuracy or something to clarify, please send us a pull request! For more on the tools used to write docs, please see the [documentation][] section of the Developer Guide.
+The source for the documentation at http://guides.dataverse.org/en/latest/ is in the GitHub repo under the "[doc][]" folder. If you find a typo or inaccuracy or something to clarify, please send us a pull request! For more on the tools used to write docs, please see the [documentation][] section of the Developer Guide.
 
 [doc]: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source
 [documentation]: http://guides.dataverse.org/en/latest/developers/documentation.html

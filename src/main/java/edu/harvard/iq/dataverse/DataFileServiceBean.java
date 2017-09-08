@@ -248,7 +248,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
-
+        
+        searchTerm=searchTerm.trim();
         String sortField = sortFieldAndOrder.getSortField();
         String sortOrder = sortFieldAndOrder.getSortOrder();
         String searchClause = "";
@@ -256,9 +257,12 @@ public class DataFileServiceBean implements java.io.Serializable {
             searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
         }
         
+        //the createNativeQuary takes persistant entities, which Integer.class is not,
+        //which is causing the exception. Hence, this query does not need an Integer.class
+        //as the second parameter. 
         return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
                 + searchClause
-                + " order by o." + sortField + " " + sortOrder, Integer.class)
+                + " order by o." + sortField + " " + sortOrder)
                 .getResultList();
     }
         

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -42,14 +43,18 @@ public class SubmitDatasetForReviewCommand extends AbstractCommand<Dataset> {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.inReview"), this);
         }
 
-        return save(ctxt);
+        //SEK 9-1 Add Lock before saving dataset
+        DatasetLock inReviewLock = new DatasetLock(DatasetLock.Reason.InReview, getRequest().getAuthenticatedUser());
+        ctxt.engine().submit(new AddLockCommand(getRequest(), theDataset, inReviewLock));       
+        Dataset updatedDataset = save(ctxt);
+        
+        return updatedDataset;
     }
 
     public Dataset save(CommandContext ctxt) throws CommandException {
 
         Timestamp updateTime = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
-        theDataset.getEditVersion().setInReview(true);
         theDataset.setModificationTime(updateTime);
 
         Dataset savedDataset = ctxt.em().merge(theDataset);

@@ -44,7 +44,10 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
              throw new IllegalCommandException("You must enter a reason for returning a dataset to the author(s).", this);
         }
          */
-        return save(ctxt);
+        ctxt.engine().submit( new RemoveLockCommand(getRequest(), theDataset));
+        Dataset updatedDataset = save(ctxt);
+        return updatedDataset;
+        
     }
 
     public Dataset save(CommandContext ctxt) throws CommandException {
@@ -52,9 +55,8 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
         Timestamp updateTime = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         // We set "in review" to false because now the ball is back in the author's court.
-        theDataset.getEditVersion().setInReview(false);
         theDataset.setModificationTime(updateTime);
-        
+        theDataset.setDatasetLock(null);
         Dataset savedDataset = ctxt.em().merge(theDataset);
         ctxt.em().flush();
 

@@ -1511,7 +1511,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // -----------------------------------------------------------
             if (this.isFileReplaceOperation()){
               this.handleReplaceFileUpload(event, dropBoxStream, fileName, FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT, null, event);
-              fileMetadataSelectedForTagsPopup = fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0);
+              this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
               return;
              }
             // -----------------------------------------------------------
@@ -2254,7 +2254,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     private FileMetadata fileMetadataSelectedForTagsPopup = null; 
 
     public void  setFileMetadataSelectedForTagsPopup(FileMetadata fm){
-       fileMetadataSelectedForTagsPopup = fm; 
+        fileMetadataSelectedForTagsPopup = fm;
+        fileMetadataSelectedForTagsPopup.setDatasetVersion(this.getDataset().getLatestVersion());
     }
     
     public FileMetadata getFileMetadataSelectedForTagsPopup() {
@@ -2430,6 +2431,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // 2. Tabular DataFile Tags: 
         if (selectedTags != null) {
             for (String selectedTag : selectedTags) {
+                
                 fileMetadataSelectedForTagsPopup.addCategoryByName(selectedTag);
             }
         }
