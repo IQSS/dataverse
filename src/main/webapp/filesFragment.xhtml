@@ -375,71 +375,65 @@
                 </ui:include>
             </div>
             <!-- Data Access for Rsync Download -->
-            <div class="column" jsf:rendered="#{settingsWrapper.rsyncDownload}" >
-                    <div class="form-group col-xs-12">
-                        <div class="row">
-                        <label class="col-sm-3 control-label" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">                                                   
-                           <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">
-                           #{bundle['file.dataFilesTab.dataAccess.local.label']}
-                           </span>
-                        </label>
-                        </div>
-                    <div class="row">
-                        <div class="col-sm-9">
-                           <code>
-                           <h:outputText value="/programs/datagrid/ABC123"/>
-                           </code>
-                        </div>
+            <div class="col-xs-12 text-left small" jsf:rendered="#{settingsWrapper.rsyncDownload}">
+                <div class="form-group row">
+                    <label class="col-xs-12 col-lg-3 control-label" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">                                                   
+                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">
+                            #{bundle['file.dataFilesTab.dataAccess.local.label']}
+                        </span>
+                    </label>
+                    <div class="col-sm-9">
+                        <code>
+                            <h:outputText value="/programs/datagrid/ABC123"/>
+                        </code>
                     </div>
-                    </div>
-                    <div class="form-group col-xs-12">
-                        <div class="col-sm-9">
-                        <label class="col-sm-3 control-label">                                                   
-                           <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.download.tooltip']}">
-                          #{bundle['file.dataFilesTab.dataAccess.download.label']}
-                           </span>
-                        </label>
-                            </div>
-                        <div class="row">
-                        <div class="col-sm-9">
-                           <code>
-                           <h:outputText value="rsync -av rsync://dv.sbgrid.org/10.0000/ABC123"/>                            
-                           </code>
-                           <h:outputText class="text-muted" value=" (Harvard Meedical School, USA)"/>
-                        </div>
-                          <div class="col-sm-9">
+                </div>
+                <div class="form-group row">
+                    <label class="col-xs-12 col-lg-3 control-label">                                                   
+                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.download.tooltip']}">
+                            #{bundle['file.dataFilesTab.dataAccess.download.label']}
+                        </span>
+                    </label>
+                    <div class="col-xs-12 col-lg-9 row">
+                        <div class="col-sm-12">
                             <code>
-                            <h:outputText value="rsync -av rsync://sbgrid.icm.uu.se/10.0000/ABC123"/>                            
+                                <h:outputText value="rsync -av rsync://dv.sbgrid.org/10.0000/ABC123"/>                            
+                            </code>
+                            <h:outputText class="text-muted" value=" (Harvard Meedical School, USA)"/>
+                        </div>
+                        <div class="col-sm-12">
+                            <code>
+                                <h:outputText value="rsync -av rsync://sbgrid.icm.uu.se/10.0000/ABC123"/>                            
                             </code>
                             <h:outputText class="text-muted" value=" (Uppsala University, Sweden)"/>
                         </div>
-                        <div class="col-sm-9" >
+                        <div class="col-sm-12">
                             <code>
-                            <h:outputText value="rsync -av rsync://sbgrid.pasteur.edu.uy/10.0000/ABC123"/>                            
+                                <h:outputText value="rsync -av rsync://sbgrid.pasteur.edu.uy/10.0000/ABC123"/>                            
                             </code>
                             <h:outputText class="text-muted" value=" (Institut Pasteur de Montevideo, Uruguay)"/>
                         </div>
-                        <div class="col-sm-9" >
+                        <div class="col-sm-12">
                             <code>
-                            <h:outputText value="rsync -av rsync://sbgrid.ncpss.org/10.0000/ABC123"/>                            
+                                <h:outputText value="rsync -av rsync://sbgrid.ncpss.org/10.0000/ABC123"/>                            
                             </code>
                             <h:outputText class="text-muted" value=" (Shanghai Institutes for Biological Sciences, China)"/>
                         </div>
                     </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-xs-12 col-lg-3 control-label">
+                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.verify.tooltip']}">
+                            #{bundle['file.dataFilesTab.dataAccess.verify.label']}
+                        </span>
+                    </label>
+                    <div class="col-sm-9">
+                        <code>
+                            <h:outputText value="cd ABC123 ; shasum -c files.sha"/>
+                        </code>
                     </div>
-                    <div class="form-group col-xs-12">
-                        <label class="col-sm-3 control-label">
-                           <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.verify.tooltip']}">
-                          #{bundle['file.dataFilesTab.dataAccess.verify.label']}
-                           </span>
-                        </label>
-                        <div class="col-sm-9">
-                           <code>
-                           <h:outputText value="cd ABC123 ; shasum -c files.sha"/>
-                           </code>
-                        </div>
-                    </div>
-             </div>
+                </div>
+            </div>
             <!-- END: button-block -->
         </p:column>
     </p:dataTable>

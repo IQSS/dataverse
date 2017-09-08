@@ -275,67 +275,66 @@
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
                                     rendered="#{settingsWrapper.rsyncDownload}">
-                                <p class="help-block">#{bundle['file.dataFilesTab.dataAccess.info']}</p>
                                 <div class="row">
-                                    <div class="form-group col-xs-12">
+                                    <div class="col-xs-12">
+                                        <p class="help-block">#{bundle['file.dataFilesTab.dataAccess.info']}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-xs-12 row">
                                         <label class="col-sm-3 control-label" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">                                                   
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">
-                                            #{bundle['file.dataFilesTab.dataAccess.local.label']}
+                                                #{bundle['file.dataFilesTab.dataAccess.local.label']}
                                             </span>
                                         </label>
-                                    
                                         <div class="col-sm-9">
                                             <code>
-                                            <h:outputText value="/programs/datagrid/ABC123"/>
+                                                <h:outputText value="/programs/datagrid/ABC123"/>
                                             </code>
                                         </div>
                                     </div>
-                                   
-                                    <div class="form-group col-md-12">
+                                    <div class="form-group col-xs-12 row">
                                         <label class="col-sm-3 control-label">                                                   
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.download.tooltip']}">
-                                           #{bundle['file.dataFilesTab.dataAccess.download.label']}
+                                                #{bundle['file.dataFilesTab.dataAccess.download.label']}
                                             </span>
                                         </label>
-                                    
-                                   
-                                        <div class="col-sm-9">
-                                            <code>
-                                            <h:outputText value="rsync -av rsync://dv.sbgrid.org/10.0000/ABC123"/>                            
-                                            </code>
-                                            <h:outputText class="text-muted" value=" (Harvard Medical School, USA)"/>
-                                        </div>
-                                        <div class="col-sm-9">
-                                            <code>
-                                            <h:outputText value="rsync -av rsync://sbgrid.icm.uu.se/10.0000/ABC123"/>                            
-                                            </code>
-                                            <h:outputText class="text-muted" value=" (Uppsala University, Sweden)"/>
-                                        </div>
-                                        <div class="col-sm-9" style="float:right;">
-                                            <code>
-                                            <h:outputText value="rsync -av rsync://sbgrid.pasteur.edu.uy/10.0000/ABC123"/>                            
-                                            </code>
-                                            <h:outputText class="text-muted" value=" (Institut Pasteur de Montevideo, Uruguay)"/>
-                                        </div>
-                                        <div class="col-sm-9" style="float:right;">
-                                            <code>
-                                            <h:outputText value="rsync -av rsync://sbgrid.ncpss.org/10.0000/ABC123"/>                            
-                                            </code>
-                                            <h:outputText class="text-muted" value=" (Shanghai Institutes for Biological Sciences, China)"/>
+                                        <div class="col-xs-12 col-sm-9 row">
+                                            <div class="col-sm-12">
+                                                <code>
+                                                    <h:outputText value="rsync -av rsync://dv.sbgrid.org/10.0000/ABC123"/>                            
+                                                </code>
+                                                <h:outputText class="text-muted" value=" (Harvard Medical School, USA)"/>
+                                            </div>
+                                            <div class="col-sm-12">
+                                                <code>
+                                                    <h:outputText value="rsync -av rsync://sbgrid.icm.uu.se/10.0000/ABC123"/>                            
+                                                </code>
+                                                <h:outputText class="text-muted" value=" (Uppsala University, Sweden)"/>
+                                            </div>
+                                            <div class="col-sm-12">
+                                                <code>
+                                                    <h:outputText value="rsync -av rsync://sbgrid.pasteur.edu.uy/10.0000/ABC123"/>                            
+                                                </code>
+                                                <h:outputText class="text-muted" value=" (Institut Pasteur de Montevideo, Uruguay)"/>
+                                            </div>
+                                            <div class="col-sm-12">
+                                                <code>
+                                                    <h:outputText value="rsync -av rsync://sbgrid.ncpss.org/10.0000/ABC123"/>                            
+                                                </code>
+                                                <h:outputText class="text-muted" value=" (Shanghai Institutes for Biological Sciences, China)"/>
+                                            </div>
                                         </div>
                                     </div>
-                                       
-                                
-                                    <div class="form-group col-xs-12">
+                                    <div class="form-group col-xs-12 row">
                                         <label class="col-sm-3 control-label">
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.verify.tooltip']}">
                                            #{bundle['file.dataFilesTab.dataAccess.verify.label']}
                                             </span>
                                         </label>
-                                    
                                         <div class="col-sm-9">
                                             <code>
-                                            <h:outputText value="cd ABC123 ; shasum -c files.sha"/>
+                                                <h:outputText value="cd ABC123 ; shasum -c files.sha"/>
                                             </code>
                                         </div>
                                     </div>
