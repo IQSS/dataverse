@@ -1060,7 +1060,7 @@ This setting can be overruled with VM argument ``pv.maxlength``
 :PVCharacterRules
 +++++++++++++++++
 
-Password policy setting for builtinuser accounts: dictates which types of characters can be required in a password. This setting goes hand in hand with :ref:`:PVNumberOfCharacteristics`. The default setting contains two rules:
+Password policy setting for builtinuser accounts: dictates which types of characters can be required in a password. This setting goes hand-in-hand with :ref:`:PVNumberOfCharacteristics`. The default setting contains two rules:
 
 - one letter
 - one digit
@@ -1074,9 +1074,9 @@ By specifying "UpperCase:1,LowerCase:1,Digit:1,Special:1", for example, you can 
 - one digit
 - one special character
 
-If you have implemented 4 different character rules in this way, you can also optionally increase ``:PVNumberOfCharacteristics`` to as high as 4. However, please note that ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of rules or you will see the error, "Number of characteristics must be <= to the number of rules".
+If you have implemented 4 different character rules in this way, you can also optionally increase ``:PVNumberOfCharacteristics`` to as high as 4. However, please note that ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of character rules or you will see the error, "Number of characteristics must be <= to the number of rules".
 
-Also note that Alphabetical should not be set along with UpperCase or LowerCase. It is a superset of both, and if you require both your password policy will be confusing if not easier to bypass.
+Also note that the Alphabetical setting should not be used in tandem with the UpperCase or LowerCase settings. The Alphabetical setting encompasses both of those more specific settings, so using it with them will cause your password policy to be unnecessarily confusing, and potentially easier to bypass.
 
 ``curl -X PUT -d 'UpperCase:1,LowerCase:1,Digit:1,Special:1' http://localhost:8080/api/admin/settings/:PVCharacterRules``
 
@@ -1093,12 +1093,12 @@ Password policy setting for builtin user accounts: the number indicates how many
 
 This setting can be overruled with VM argument ``pv.numberofcharacteristics``
 
-.. _:PVNumberOfConsecutiveDigitsAllowed
+.. _:PVNumberOfConsecutiveDigitsAllowed:
 
 :PVNumberOfConsecutiveDigitsAllowed
 +++++++++++++++++++++++++++++++++++
 
-By default, passwords can contain an unlimited number of digits in a row, but if your password policy specifies that only four digists in a row are allowed, for example, you can issue the following curl command:
+By default, passwords can contain an unlimited number of digits in a row. However, if your password policy specifies otherwise (e.g. only four digits in a row are allowed), then you can issue the following curl command to set the number of consecutive digits allowed (this example uses 4):
 
 ``curl -X PUT -d 4 http://localhost:8080/api/admin/settings/:PVNumberOfConsecutiveDigitsAllowed``
 
