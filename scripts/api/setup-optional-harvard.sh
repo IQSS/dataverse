@@ -20,10 +20,10 @@ curl -X PUT -d 'UpperCase:1,Digit:1,LowerCase:1,Special:1' $SERVER/admin/setting
 curl -s -X PUT -d 3 $SERVER/admin/settings/:PVNumberOfCharacteristics
 # The number of character classes a password needs to be valid
 curl -s -X PUT -d 4 $SERVER/admin/settings/:PVNumberOfConsecutiveDigitsAllowed
-# Harvard requires a dictionary check on common words & names. We use the unix 'words' file, removing ones less than 4 characters.
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-sed '/^.\{,3\}$/d' /usr/share/dict/words > $DIR/data/pwdictionary
-curl -s -X PUT -d "$DIR/data/pwdictionary" $SERVER/admin/settings/:PVDictionaries
+# Harvard requires a dictionary check on common words & names. We use the unix 'words' file, removing ones less than 4 characters. Policy clarification received by Harvard Key was no words 4 characters or longer.
+DIR="/usr/local/glassfish4/glassfish/domains/domain1/files" #this can be replaced with a different file path for storing the dictionary
+sed '/^.\{,3\}$/d' /usr/share/dict/words > $DIR/pwdictionary
+curl -s -X PUT -d "$DIR/pwdictionary" $SERVER/admin/settings/:PVDictionaries
 echo "- Adjust Solr frag size"
 curl -s -X PUT -d 320 $SERVER/admin/settings/:SearchHighlightFragmentSize
 echo  "- Google Analytics setting"
