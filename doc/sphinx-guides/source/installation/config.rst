@@ -1010,11 +1010,9 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 :PVDictionaries
 +++++++++++++++
 
-Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password. ``/usr/share/dict/words`` (modified to not contain short words) is suggested below but you are welcome to use dictionary files of your choosing. By default, no dictionary is checked.
+Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password. ``/usr/share/dict/words`` is suggested and shown modified below to not contain words 3 letters or less. You are free to choose a different dictionary. By default, no dictionary is checked.
 
-First, change directory to the directory you want your dictionary file to reside.
-
-``DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"``
+``DIR=THE_PATH_YOU_WANT_YOUR_DICTIONARY_TO_RESIDE``
 ``sed '/^.\{,3\}$/d' /usr/share/dict/words > $DIR/pwdictionary``
 ``curl -X PUT -d "$DIR/pwdictionary" http://localhost:8080/api/admin/settings/:PVDictionaries``
 
