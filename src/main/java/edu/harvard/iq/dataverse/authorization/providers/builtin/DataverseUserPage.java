@@ -124,10 +124,10 @@ public class DataverseUserPage implements java.io.Serializable {
     private EditMode editMode;
     private String redirectPage = "dataverse.xhtml";
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "The new password is blank: re-type it again.")
     private String inputPassword;
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "Please enter your current password.")
     private String currentPassword;
     private Long dataverseId;
     private List<UserNotification> notificationsList;
@@ -271,7 +271,7 @@ public class DataverseUserPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Password Error", "The new password is blank: re-type it again");
+                    "Password Error", "Please enter a new password for your account.");
             context.addMessage(toValidate.getClientId(context), message);
             return;
 
