@@ -522,9 +522,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-/*<<<<<<< HEAD
-    public DatasetLock addDatasetLock(Long datasetId, Long userId, String info) {
-=======*/
+
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
        dataset.setDatasetLock(lock);
        em.persist(lock);
@@ -533,7 +531,6 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW) /*?*/
     public DatasetLock addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
-/*>>>>>>> develop*/
 
         Dataset dataset = em.find(Dataset.class, datasetId);
         DatasetLock lock = new DatasetLock(reason, dvRequestService.getDataverseRequest().getAuthenticatedUser());
@@ -550,13 +547,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             user.getDatasetLocks().add(lock);
         }
 
-/*<<<<<<< HEAD
-        dataset.setDatasetLock(lock);
-        em.persist(lock);
-        return lock; 
-=======*/
         return addDatasetLock(dataset, lock);
-/*>>>>>>> develop*/
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
