@@ -36,6 +36,7 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NamedStoredProcedureQuery;
@@ -86,10 +87,13 @@ public class DatasetServiceBean implements java.io.Serializable {
     @EJB
     OAIRecordServiceBean recordService;
     
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    protected EntityManager em;
 
     public Dataset find(Object pk) {
         return em.find(Dataset.class, pk);
@@ -497,28 +501,24 @@ public class DatasetServiceBean implements java.io.Serializable {
         return ddu;
     }
 
-    public List<DatasetLock> getDatasetLocks() {
-        String query = "SELECT sl FROM DatasetLock sl";
-        return em.createQuery(query, DatasetLock.class).getResultList();
-    }
-
     public boolean checkDatasetLock(Long datasetId) {
-        String nativeQuery = "SELECT sl.id FROM DatasetLock sl WHERE sl.dataset_id = " + datasetId + " LIMIT 1;";
-        Integer lockId; 
-        try {
-            lockId = (Integer)em.createNativeQuery(nativeQuery).getSingleResult();
-        } catch (Exception ex) {
-            lockId = null; 
-        }
-        
-        return lockId != null;
+        TypedQuery<DatasetLock> lockCounter = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        lockCounter.setParameter("datasetId", datasetId);
+        lockCounter.setMaxResults(1);
+        List<DatasetLock> lock = lockCounter.getResultList();
+        return lock.size()>0;
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void addDatasetLock(Long datasetId, Long userId, String info) {
+    public void addDatasetLock(Dataset dataset, DatasetLock lock) {
+       dataset.setDatasetLock(lock);
+       em.persist(lock); 
+    }
+    
+    public void addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
 
         Dataset dataset = em.find(Dataset.class, datasetId);
-        DatasetLock lock = new DatasetLock();
+        DatasetLock lock = new DatasetLock(reason, dvRequestService.getDataverseRequest().getAuthenticatedUser());
         lock.setDataset(dataset);
         lock.setInfo(info);
         lock.setStartTime(new Date());
@@ -532,8 +532,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             user.getDatasetLocks().add(lock);
         }
 
-        dataset.setDatasetLock(lock);
-        em.persist(lock);
+        addDatasetLock(dataset, lock);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

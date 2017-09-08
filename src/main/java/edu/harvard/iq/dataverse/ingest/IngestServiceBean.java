@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -429,13 +430,12 @@ public class IngestServiceBean {
         }
 
         if (count > 0) {
-            String info = "Attempting to ingest " + count + " tabular data file(s).";
+            String info = "Ingest of " + count + " tabular data file(s) is in progress.";
             logger.info(info);
-            if (user != null) {
-                datasetService.addDatasetLock(dataset.getId(), user.getId(), info);
-            } else {
-                datasetService.addDatasetLock(dataset.getId(), null, info);
-            }
+            datasetService.addDatasetLock(dataset.getId(),
+                    DatasetLock.Reason.Ingest, 
+                    (user!=null)?user.getId():null,
+                    info);
 
             DataFile[] scheduledFilesArray = (DataFile[])scheduledFiles.toArray(new DataFile[count]);
             scheduledFiles = null; 

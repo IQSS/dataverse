@@ -348,7 +348,9 @@ Custom Homepage
 
 Dataverse allows you to use a custom homepage or welcome page in place of the default root dataverse page. This allows for complete control over the look and feel of your installation's homepage.
 
-Download this sample: :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``. Then run this curl command:
+Download this sample: :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
+
+Once you have the location of your custom homepage HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
@@ -363,30 +365,38 @@ Custom Navbar Logo
 
 Dataverse allows you to replace the default Dataverse icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
 
-Create a "navbar" folder in your Glassfish "logos" directory and place your custom logo there. By Glassfish default, it'll be located at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png``. Then run this curl command:
+The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Glassfish ``logos`` directory and place your custom logo there. By Glassfish default, your logo image file will be located at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
+
+Once you have the location of your custom logo image file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
-
-Note that the logo is expected to be small enough to fit comfortably in the navbar, perhaps only 30 pixels high.
 
 Custom Header
 +++++++++++++
 
-Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``. Then run this curl command:
+Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
+
+Once you have the location of your custom header HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
 
 Custom Footer
 +++++++++++++
 
-Download this sample: :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``. Then run this curl command:
+Download this sample: :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
+
+Once you have the location of your custom footer HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
 
-Custom CSS Stylesheet
-+++++++++++++++++++++
+Custom Stylesheet
++++++++++++++++++
 
-Download this sample: :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``. Then run this curl command:
+You can style your custom homepage, footer and header content with a custom CSS file. With advanced CSS know-how, you can achieve custom branding and page layouts by utilizing ``position``, ``padding`` or ``margin`` properties.
+
+Download this sample: :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``.
+
+Once you have the location of your custom CSS file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
@@ -646,6 +656,11 @@ Please note that if you're having any trouble sending email, you can refer to "T
 
 :HomePageCustomizationFile
 ++++++++++++++++++++++++++
+
+See :ref:`Branding Your Installation` above.
+
+:LogoCustomizationFile
+++++++++++++++++++++++++
 
 See :ref:`Branding Your Installation` above.
 

@@ -22,11 +22,11 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -155,6 +155,9 @@ public class EjbDataverseEngine {
     
     @EJB
     ActionLogServiceBean logSvc;
+    
+    @EJB
+    WorkflowServiceBean workflowService;
 
     private CommandContext ctxt;
     
@@ -417,6 +420,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DatasetVersionServiceBean datasetVersion() {
                     return datasetVersionService;
+                }
+                
+                @Override
+                public WorkflowServiceBean workflows() {
+                    return workflowService;
                 }
 
                 @Override
