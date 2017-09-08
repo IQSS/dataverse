@@ -1105,6 +1105,7 @@
                     
                     <p:dialog id="rsyncUploadInfoPopup" styleClass="smallPopUp" header="#{bundle['file.uploadFiles']}" widgetVar="rsyncUpload_popup" modal="true">
                         <!-- RSYNC UPLOAD POPUP -->
+                        <p:ajax event="close" update=":datasetForm,:messagePanel" listener="#{DatasetPage.closeRsyncScriptPopup}" />
                         <ui:fragment rendered="#{DatasetPage.workingVersion.fileMetadatas.size() > 0}">
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-warning-sign text-danger"></span>

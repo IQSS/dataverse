@@ -97,6 +97,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -3974,6 +3975,10 @@ public class DatasetPage implements java.io.Serializable {
             logger.warning("Failed to lock the dataset (dataset id="+dataset.getId()+")");
         }
         
+    }
+    
+    public void closeRsyncScriptPopup(CloseEvent event) {
+        finishRsyncScriptAction();
     }
     
     public String finishRsyncScriptAction() { 
