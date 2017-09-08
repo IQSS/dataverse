@@ -277,7 +277,12 @@
                                     rendered="#{settingsWrapper.rsyncDownload}">
                                 <div class="row">
                                     <div class="col-xs-12">
-                                        <p class="help-block">#{bundle['file.dataFilesTab.dataAccess.info']}</p>
+                                        <p class="help-block">
+                                            <h:outputFormat value=" #{bundle['file.dataFilesTab.dataAccess.info']}" escape="false">
+                                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                <f:param value="#{systemConfig.guidesVersion}"/>
+                                            </h:outputFormat>
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="row">
