@@ -36,10 +36,7 @@ public class EMailValidatorTest {
         assertEquals(false, EMailValidator.isEmailValid("lótus.gonçalves@example.cóm", null));
         assertEquals(false, EMailValidator.isEmailValid("dora@.com", null));
         assertEquals(false, EMailValidator.isEmailValid("", null));
-        /**
-         * @todo How can null as an email address be valid?!?
-         */
-        assertEquals(true, EMailValidator.isEmailValid(null, null));
+        assertEquals(false, EMailValidator.isEmailValid(null, null));
     }
 
 }

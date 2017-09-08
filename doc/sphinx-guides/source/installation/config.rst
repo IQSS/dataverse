@@ -278,8 +278,8 @@ Once you have acquired the keys, they need to be added to``credentials``. The fo
 | ``[default]``
 | ``aws_access_key_id = <insert key, no brackets>``
 | ``aws_secret_access_key = <insert secret key, no brackets>``
-|
-Place this file ina a folder named ``.aws`` under the home directory for the user running your dataverse installation.
+
+Place this file in a folder named ``.aws`` under the home directory for the user running your dataverse installation.
 
 Setup aws via command line tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

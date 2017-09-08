@@ -19,6 +19,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
@@ -736,8 +737,9 @@ public class FilesIT {
         // -------------------------
         // Delete file
         // -------------------------
-        UtilIT.deleteFile((int)origFileId, apiToken);
-        
+        Response deleteFileResp = UtilIT.deleteFile((int)origFileId, apiToken);
+        deleteFileResp.then().assertThat()
+                .statusCode(NO_CONTENT.getStatusCode());
         // -------------------------
         // Re-Publish dataset
         // -------------------------

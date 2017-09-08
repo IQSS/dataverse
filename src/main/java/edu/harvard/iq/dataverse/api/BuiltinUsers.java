@@ -25,9 +25,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonForAuthUser;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.Date;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  * REST API bean for managing {@link BuiltinUser}s.
@@ -158,7 +157,7 @@ public class BuiltinUsers extends AbstractApiBean {
 
             JsonObjectBuilder resp = Json.createObjectBuilder();
             resp.add("user", json(user));
-            resp.add("authenticatedUser", jsonForAuthUser(au));
+            resp.add("authenticatedUser", json(au));
             resp.add("apiToken", token.getTokenString());
             
             alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier() );

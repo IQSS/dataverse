@@ -19,6 +19,7 @@ These guides are for the most recent version of Dataverse. For the guides for **
   developers/index
   style/index
   admin/index
+  workflows
 
 How the Guides Are Organized
 =============================
@@ -65,7 +66,7 @@ The support email address is
 
 This is the same address as the Report Issue link. We try to respond
 within one business day.
-  
+
 
 Indices and tables
 ==================
