@@ -31,6 +31,11 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Glassfish might be a compelling enough reason to front Glassfish with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
+Privacy Considerations
+++++++++++++++++++++++
+
+Out of the box, Dataverse will list email addresses of the "contacts" for datasets when users visit a dataset page and click the "Export Metadata" button. If you prefer to exclude email addresses of dataset contacts from metadata export, set :ref:`:ExcludeEmailFromExport <:ExcludeEmailFromExport>` to true.
+
 Additional Recommendations
 ++++++++++++++++++++++++++
 
@@ -759,6 +764,9 @@ Specify a URL where users can read your Privacy Policy, linked from the bottom o
 Specify a URL where users can read your API Terms of Use.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
+
+
+.. _:ExcludeEmailFromExport:
 
 :ExcludeEmailFromExport
 +++++++++++++++++++++++

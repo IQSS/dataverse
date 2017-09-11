@@ -393,8 +393,8 @@ public class DatasetsIT {
                 .body("message", equalTo("Cannot publish as minor version. Re-try as major release."))
                 .statusCode(403);
 
-        Response setSequentialNumberAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
-        setSequentialNumberAsIdentifierGenerationStyle.then().assertThat()
+        Response setToExcludeEmailFromExport = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
+        setToExcludeEmailFromExport.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
