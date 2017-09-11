@@ -363,7 +363,7 @@
                 </ui:include>
             </ui:fragment>
 
-            <div class="btn-group" jsf:rendered="#{!settingsWrapper.rsyncDownload}" >
+            <div class="btn-group" jsf:rendered="#{!settingsWrapper.rsyncDownload}">
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
@@ -374,77 +374,14 @@
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                 </ui:include>
             </div>
-            <!-- Data Access for Rsync Download -->
+            
             <div class="col-xs-12 text-left small" jsf:rendered="#{settingsWrapper.rsyncDownload}">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <p class="help-block">
-                            <h:outputFormat value=" #{bundle['file.dataFilesTab.dataAccess.info']}" escape="false">
-                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                <f:param value="#{systemConfig.guidesVersion}"/>
-                            </h:outputFormat>
-                        </p>
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label class="col-xs-12 col-lg-3 control-label" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">                                                   
-                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">
-                            #{bundle['file.dataFilesTab.dataAccess.local.label']}
-                        </span>
-                    </label>
-                    <div class="col-sm-9">
-                        <code>
-                            <h:outputText value="/programs/datagrid/ABC123"/>
-                        </code>
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label class="col-xs-12 col-lg-3 control-label">                                                   
-                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.download.tooltip']}">
-                            #{bundle['file.dataFilesTab.dataAccess.download.label']}
-                        </span>
-                    </label>
-                    <div class="col-xs-12 col-lg-9 row">
-                        <div class="col-sm-12">
-                            <code>
-                                <h:outputText value="rsync -av rsync://dv.sbgrid.org/10.0000/ABC123"/>                            
-                            </code>
-                            <h:outputText class="text-muted" value=" (Harvard Meedical School, USA)"/>
-                        </div>
-                        <div class="col-sm-12">
-                            <code>
-                                <h:outputText value="rsync -av rsync://sbgrid.icm.uu.se/10.0000/ABC123"/>                            
-                            </code>
-                            <h:outputText class="text-muted" value=" (Uppsala University, Sweden)"/>
-                        </div>
-                        <div class="col-sm-12">
-                            <code>
-                                <h:outputText value="rsync -av rsync://sbgrid.pasteur.edu.uy/10.0000/ABC123"/>                            
-                            </code>
-                            <h:outputText class="text-muted" value=" (Institut Pasteur de Montevideo, Uruguay)"/>
-                        </div>
-                        <div class="col-sm-12">
-                            <code>
-                                <h:outputText value="rsync -av rsync://sbgrid.ncpss.org/10.0000/ABC123"/>                            
-                            </code>
-                            <h:outputText class="text-muted" value=" (Shanghai Institutes for Biological Sciences, China)"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label class="col-xs-12 col-lg-3 control-label">
-                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.verify.tooltip']}">
-                            #{bundle['file.dataFilesTab.dataAccess.verify.label']}
-                        </span>
-                    </label>
-                    <div class="col-sm-9">
-                        <code>
-                            <h:outputText value="cd ABC123 ; shasum -c files.sha"/>
-                        </code>
-                    </div>
-                </div>
+                <!-- Data Access for Rsync Download -->
+                <ui:include src="file-data-access-fragment.xhtml">
+                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+                    <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                </ui:include>
             </div>
-            <!-- END: button-block -->
         </p:column>
     </p:dataTable>
     
