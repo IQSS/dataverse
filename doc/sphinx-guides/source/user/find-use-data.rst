@@ -5,7 +5,7 @@ Finding and Using Data
 	:local:
 
 Finding Data
-=============
+============
 
 Without logging in to Dataverse, users can browse
 Dataverse, search for dataverses, datasets, and files, view dataset descriptions and files for
@@ -15,7 +15,7 @@ files. To view a unpublished dataverse, dataset, or file, a user will need to be
 A user can search the dataverses, datasets, and files within a particular dataverse by using the search bar found on a dataverse page. For example, if you are on the Murray Research Archive Dataverse page, you can search that specific dataverse's contents by using the search bar and/or facets displayed on the page.
 
 Basic Search
---------------
+------------
 From the Dataverse homepage, you can begin searching with an exact phrase search or entering a search term or query in the search box that says, "Search this dataverse" 
 
 **Search results features**
@@ -34,7 +34,7 @@ From the Dataverse homepage, you can begin searching with an exact phrase search
 
 
 Advanced Search 
------------------
+---------------
 
 In an advanced search, you can refine your criteria by choosing which Metadata fields to search. You can perform an 
 advanced search on Citation metadata fields as well as domain specific metadata fields depending on the metadata
@@ -48,39 +48,49 @@ out more about what each field searches, hover over the field name for a detaile
 
 
 Browsing Dataverse
---------------------
+------------------
 
 In Dataverse, browsing happens when a user hasn't entered a search term or query into the basic search bar. Browsing is the default for a user when they are on the Dataverse homepage or a specific dataverse's page. When browsing, only dataverses and datasets appear in the results list and the results can be sorted by Name (A-Z or Z-A) and by Newest or Oldest.
 
 Saved Search
---------------------
+------------
 
 Saved Search is currently an experimental feature only available to superusers. Please see the :doc:`/api/native-api` section of the API Guide for more information.
 
 Using Data
-=============
+==========
 
 View Dataverses + Datasets
-------------------------------
+--------------------------
 
 After performing a search and finding the dataverse or dataset you are looking for, click on the name of the dataverse or dataset or on the thumbnail image to be taken to the page for that dataverse or dataset. Once on a dataverse page, you can view the dataverses, datasets, and files within that dataverse.
 
 Once on a dataset page, you will see the title, citation, description, and several other fields as well as a button to email the dataset contact. Below that information, the files, metadata, and version information for the dataset are available. 
 
 Cite Data
---------------------------
+---------
 
 You can find the citation for the dataset at the top of the dataset page in a blue box. Additionally, there is a Cite Data button that offers the option to download the citation as EndNote XML, RIS Format, or BibTeX Format.
 
+.. _download_files:
+
 Download Files
------------------
+--------------
 
 Within the Files tab on a dataset page, a user can either Explore tabular data files using TwoRavens, Download All File Formats + Information or individually download the Original File Format, Tab Delimited Format, Variable Metadata, Data File Citation (EndNote XML, RIS Format, or BibTeX Format), or Subset (options appear depending on file format).
 
 To download more than one file at a time, select the files you would like to download and then click the Download button above the files. The selected files will download in zip format.
 
+.. _rsync_download:
+
+rsync Download
+~~~~~~~~~~~~~~
+
+rsync is typically used for synchronizing files and directories between two different systems, using SSH to connect rather than HTTP. Some Dataverse installations allow downloads using rsync, to facilitate large file transfers in a reliable and secure manner.
+
+Data accessible via rsync will not have a Download button displayed on the page, but instead can be accessed through a terminal window, using the commands provided by the system. Local and remote mirror location paths are listed, as well as a command to verify your data's checksum.
 
 Explore Data
-------------------
+------------
 
 Please see the :doc:`/user/data-exploration/index`.
