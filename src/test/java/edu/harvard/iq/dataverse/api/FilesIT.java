@@ -452,7 +452,9 @@ public class FilesIT {
         String pathToFile = "scripts/search/data/tabular/50by1000.dta";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        // As of 9d319bd on develop, we were seeing a 500 error when we pretty print the output and
+        // "IllegalArgumentException: Cannot lock a dataset for a null user" in server.log
+        addResponse.prettyPrint();
 
         addResponse.then().assertThat()
                 /**

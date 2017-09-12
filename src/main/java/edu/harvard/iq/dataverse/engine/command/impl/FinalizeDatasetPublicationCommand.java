@@ -106,7 +106,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         
 
-        exportMetadata();
+        exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
         ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
@@ -123,10 +123,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
      */
-    private void exportMetadata() {
+    private void exportMetadata(SettingsServiceBean settingsServiceBean) {
 
         try {
-            ExportService instance = ExportService.getInstance();
+            ExportService instance = ExportService.getInstance(settingsServiceBean);
             instance.exportAllFormats(theDataset);
 
         } catch (ExportException ex) {
