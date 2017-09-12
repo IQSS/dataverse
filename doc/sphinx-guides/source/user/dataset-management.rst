@@ -155,15 +155,6 @@ An rsync-enabled Dataverse installation has a file upload process that differs f
 
 **Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact Support.
 
-Downloading a Dataverse Package via rsync
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Rsync-enabled Dataverse installations have a new file download process that differs from traditional browser-based downloading. Instead of multiple files, each dataset contains a single "Dataverse Package". When you download this package you will receive a folder that contains all files from the dataset, arranged in the exact folder structure in which they were originally uploaded. 
-
-At the bottom of the dataset page, under the **Data Access** tab, you will find the information you need in order to download a Dataverse Package. If the data is locally available to you (on a shared drive, for example) then you can find it at the folder path under **Local Access**. Otherwise, to download the Dataverse Package you will have to use one of the rsync commands under **Download Access**. There may be multiple commands listed, each corresponding to a different mirror that hosts the Dataverse Package. Go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to run the command that corresponds with the mirror of your choice. It's usually best to choose the mirror that is geographically closest to you.
-
-After you've downloaded the Dataverse Package, you may want to double-check that your download went perfectly. Under **Verify Data**, you'll find a command that you can run in your terminal that will initiate a checksum to ensure that the data you downloaded matches the data in Dataverse precisely. This way, you can ensure the integrity of the data you're working with. 
-
 .. _cloud-storage:
 
 Cloud Storage + Computing
