@@ -859,7 +859,7 @@ public class DatasetsIT {
     @Test
     public void testCreateDatasetWithDcmDependency() {
 
-        boolean disabled = true;
+        boolean disabled = false;
 
         if (disabled) {
             return;
@@ -1138,7 +1138,7 @@ public class DatasetsIT {
          * "files.sha" and (if checksum validation succeeds) the DCM moves the
          * files and the "files.sha" file into the uploadFolder.
          */
-        boolean doExtraTesting = false;
+        boolean doExtraTesting = true;
 
         if (doExtraTesting) {
 

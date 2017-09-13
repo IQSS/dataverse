@@ -5,8 +5,6 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import java.util.List;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -17,6 +15,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         System.out.println("getRsalSites");
         Dataset dataset = new Dataset();
         dataset.setIdentifier("identifierPartOfPersistentID");
+        dataset.setAuthority("10.5072/FK2");
         FileMetadata fileMetadata = null;
         String replicationSitesInDB = "dv.sbgrid.org:Harvard Medical School:USA,sbgrid.icm.uu.se:Uppsala University:Sweden,sbgrid.ncpss.org:Institut Pasteur de Montevideo:Uruguay,sbgrid.ncpss.org:Shanghai Institutes for Biological Sciences:China";
         JsonArray myList = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(replicationSitesInDB);
@@ -25,8 +24,8 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         assertEquals("Harvard Medical School", result.get(0).getName());
         assertEquals("USA", result.get(0).getCountry());
         assertEquals("dv.sbgrid.org", result.get(0).getFqdn());
-        assertEquals("identifierPartOfPersistentID", result.get(0).getFullRemotePathToDirectory());
-        assertEquals("rsync -av rsync://dv.sbgrid.org/identifierPartOfPersistentID", result.get(0).getRsyncDownloadcommand());
+        assertEquals("10.5072/FK2/identifierPartOfPersistentID", result.get(0).getFullRemotePathToDirectory());
+        assertEquals("rsync -av rsync://dv.sbgrid.org/10.5072/FK2/identifierPartOfPersistentID", result.get(0).getRsyncDownloadcommand());
     }
 
     @Test
@@ -45,9 +44,10 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         String localDataAccessParentDir = "/opt/data";
         Dataset dataset = new Dataset();
         dataset.setIdentifier("identifierPartOfPersistentID");
+        dataset.setAuthority("10.5072/FK2");
         FileMetadata fileMetadata = null;
         String result = RepositoryStorageAbstractionLayerUtil.getLocalDataAccessDirectory(localDataAccessParentDir, dataset, fileMetadata);
-        assertEquals("/opt/data/identifierPartOfPersistentID", result);
+        assertEquals("/opt/data/10.5072/FK2/identifierPartOfPersistentID", result);
     }
 
     @Test

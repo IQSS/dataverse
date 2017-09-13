@@ -147,8 +147,16 @@ Edit internal-httpSR-workflow.json and replace url and rollbackUrl to be the url
 Configuring download via rsync
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+In order to see the rsync URLs, you must run this command:
+
+``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
+
 TODO: Document these in the Installation Guide once they're final.
 
+To specify replication sites that appear in rsync URLs:
+
 ``curl http://localhost:8080/api/admin/settings/:ReplicationSites -X PUT -d "dv.sbgrid.org:Harvard Medical School:USA,sbgrid.icm.uu.se:Uppsala University:Sweden,sbgrid.ncpss.org:Institut Pasteur de Montevideo:Uruguay,sbgrid.ncpss.org:Shanghai Institutes for Biological Sciences:China"``
+
+In the GUI, this is called "Local Access". It's where you can compute on files on your cluster.
 
 ``curl http://localhost:8080/api/admin/settings/:LocalDataAccessPath -X PUT -d "/programs/datagrid"``

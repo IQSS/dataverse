@@ -18,7 +18,8 @@ public class RepositoryStorageAbstractionLayerUtil {
 
     public static List<RsyncSite> getRsyncSites(Dataset dataset, FileMetadata fileMetadata, JsonArray rsalSitesAsJson) {
         List<RsyncSite> rsalSites = new ArrayList<>();
-        String fullRemotePathToDirectory = getDirectoryContainingTheData(dataset, fileMetadata);
+        boolean leafDirectoryOnly = false;
+        String fullRemotePathToDirectory = getDirectoryContainingTheData(dataset, fileMetadata, leafDirectoryOnly);
         for (JsonObject site : rsalSitesAsJson.getValuesAs(JsonObject.class)) {
             String name = site.getString("name");
             String fqdn = site.getString("fqdn");
@@ -34,25 +35,36 @@ public class RepositoryStorageAbstractionLayerUtil {
             localDataAccessParentDir = File.separator + "UNCONFIGURED ( " + SettingsServiceBean.Key.LocalDataAccessPath + " )";
         }
         dataset = findDatasetOrDie(dataset, fileMetadata);
-        return localDataAccessParentDir + File.separator + getDirectoryContainingTheData(dataset, fileMetadata);
+        boolean leafDirectoryOnly = false;
+        return localDataAccessParentDir + File.separator + getDirectoryContainingTheData(dataset, fileMetadata, leafDirectoryOnly);
     }
 
     static String getVerifyDataCommand(Dataset dataset, FileMetadata fileMetadata) {
+        boolean leafDirectoryOnly = true;
         // TODO: if "files.sha" is defined somewhere, use it.
-        return "cd " + getDirectoryContainingTheData(dataset, fileMetadata) + " ; shasum -c files.sha";
+        return "cd " + getDirectoryContainingTheData(dataset, fileMetadata, leafDirectoryOnly) + " ; shasum -c files.sha";
     }
 
-    private static String getDirectoryContainingTheData(Dataset dataset, FileMetadata fileMetadata) {
+    private static String getDirectoryContainingTheData(Dataset dataset, FileMetadata fileMetadata, boolean leafDirectoryOnly) {
         if (fileMetadata != null) {
             dataset = fileMetadata.getDatasetVersion().getDataset();
         }
         /**
          * FIXME: What if there is more than one package in the dataset?
          * Shouldn't the directory be based on the package rather than the
-         * "identifier" part of the persistent ID of the dataset? How will we
-         * support multiple packages in one dataset?
+         * "authority" and "identifier" values of the persistent ID of the
+         * dataset? How will we support multiple packages in one dataset?
+         *
+         * By "leaf" we mean "4LKKNW" rather than "10.5072/FK2/4LKKNW"
          */
-        return dataset.getIdentifier();
+        String leafDirectory = dataset.getIdentifier();
+        if (leafDirectoryOnly) {
+            return leafDirectory;
+        } else {
+            // The "authority" is something like "10.5072/FK2".
+            String relativePathToLeafDir = dataset.getAuthority();
+            return relativePathToLeafDir + File.separator + leafDirectory;
+        }
     }
 
     private static Dataset findDatasetOrDie(Dataset dataset, FileMetadata fileMetadata) {
