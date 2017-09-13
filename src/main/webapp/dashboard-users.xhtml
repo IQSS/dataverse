@@ -67,7 +67,10 @@
                         </p:column>
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.roles']}">
                             <h:outputText value="#{user.roles}" />
-                            <button class="btn btn-default">Remove All</button>
+                            <!-- TODO WIRE UP THIS removeRolesButton COMMAND BUTTON -->
+                            <button id="removeRolesButton" class="btn btn-default" onclick="PF('removeRoles').show();">
+                                <h:outputText value="#{bundle['dashboard.list_users.tbl_header.roles.removeAll']}"/>
+                            </button>
                         </p:column>
                         <p:column width="9%" class="text-center" headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
                             <!-- A simple implementation of the superuser status toggle - via a boolean checkbox with an immediate ajax update. -->
@@ -93,6 +96,8 @@
                             <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}"  update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
                         </div>
                     </p:dialog>
+                    <!-- TODO WIRE UP THIS removeRoles CONFIRM POPUP -->
+                    <p:confirmDialog id="removeRoles" message="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.confirmationText']}" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRoles"></p:confirmDialog>
                 </h:form>
             </ui:define>
         </ui:composition>
