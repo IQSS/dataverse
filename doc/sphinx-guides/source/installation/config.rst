@@ -47,13 +47,13 @@ Even if you are satisfied with the out-of-the-box password complexity rules Data
 
 Password complexity rules for "builtin" accounts can be adjusted with a variety of settings documented below. Here's a list:
 
-- :ref:`:PVDictionaries`
-- :ref:`:PVGoodStrength`
 - :ref:`:PVMinLength`
 - :ref:`:PVMaxLength`
+- :ref:`:PVNumberOfConsecutiveDigitsAllowed`
 - :ref:`:PVCharacterRules`
 - :ref:`:PVNumberOfCharacteristics`
-- :ref:`:PVNumberOfConsecutiveDigitsAllowed`
+- :ref:`:PVDictionaries`
+- :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
 
 
@@ -1005,32 +1005,6 @@ Dataverse calculates checksums for uploaded files so that users can determine if
 
 The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
 
-.. _:PVDictionaries:
-
-:PVDictionaries
-+++++++++++++++
-
-Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password. ``/usr/share/dict/words`` is suggested and shown modified below to not contain words 3 letters or less. You are free to choose a different dictionary. By default, no dictionary is checked.
-
-``DIR=THE_PATH_YOU_WANT_YOUR_DICTIONARY_TO_RESIDE``
-``sed '/^.\{,3\}$/d' /usr/share/dict/words > $DIR/pwdictionary``
-``curl -X PUT -d "$DIR/pwdictionary" http://localhost:8080/api/admin/settings/:PVDictionaries``
-
-This setting can be overruled with VM argument ``pv.dictionaries``
-
-.. _:PVGoodStrength:
-
-:PVGoodStrength
-+++++++++++++++
-
-Password policy setting for builtin user accounts: passwords of equal or greater character length than the :PVGoodStrength setting are always valid, regardless of other password constraints.
-
-``curl -X PUT -d 20 http://localhost:8080/api/admin/settings/:PVGoodStrength``
-
-This setting can be overruled with VM argument ``pv.goodstrength``
-
-Recommended setting: 20.
-
 .. _:PVMinLength:
 
 :PVMinLength
@@ -1052,6 +1026,15 @@ Password policy setting for builtin user accounts: a password's maximum valid ch
 ``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:PVMaxLength``
 
 This setting can be overruled with VM argument ``pv.maxlength``
+
+.. _:PVNumberOfConsecutiveDigitsAllowed:
+
+:PVNumberOfConsecutiveDigitsAllowed
++++++++++++++++++++++++++++++++++++
+
+By default, passwords can contain an unlimited number of digits in a row. However, if your password policy specifies otherwise (e.g. only four digits in a row are allowed), then you can issue the following curl command to set the number of consecutive digits allowed (this example uses 4):
+
+``curl -X PUT -d 4 http://localhost:8080/api/admin/settings/:PVNumberOfConsecutiveDigitsAllowed``
 
 .. _:PVCharacterRules:
 
@@ -1091,14 +1074,31 @@ Password policy setting for builtin user accounts: the number indicates how many
 
 This setting can be overruled with VM argument ``pv.numberofcharacteristics``
 
-.. _:PVNumberOfConsecutiveDigitsAllowed:
+.. _:PVDictionaries:
 
-:PVNumberOfConsecutiveDigitsAllowed
-+++++++++++++++++++++++++++++++++++
+:PVDictionaries
++++++++++++++++
 
-By default, passwords can contain an unlimited number of digits in a row. However, if your password policy specifies otherwise (e.g. only four digits in a row are allowed), then you can issue the following curl command to set the number of consecutive digits allowed (this example uses 4):
+Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password. ``/usr/share/dict/words`` is suggested and shown modified below to not contain words 3 letters or less. You are free to choose a different dictionary. By default, no dictionary is checked.
 
-``curl -X PUT -d 4 http://localhost:8080/api/admin/settings/:PVNumberOfConsecutiveDigitsAllowed``
+``DIR=THE_PATH_YOU_WANT_YOUR_DICTIONARY_TO_RESIDE``
+``sed '/^.\{,3\}$/d' /usr/share/dict/words > $DIR/pwdictionary``
+``curl -X PUT -d "$DIR/pwdictionary" http://localhost:8080/api/admin/settings/:PVDictionaries``
+
+This setting can be overruled with VM argument ``pv.dictionaries``
+
+.. _:PVGoodStrength:
+
+:PVGoodStrength
++++++++++++++++
+
+Password policy setting for builtin user accounts: passwords of equal or greater character length than the :PVGoodStrength setting are always valid, regardless of other password constraints.
+
+``curl -X PUT -d 20 http://localhost:8080/api/admin/settings/:PVGoodStrength``
+
+This setting can be overruled with VM argument ``pv.goodstrength``
+
+Recommended setting: 20.
 
 .. _:PVCustomPasswordResetAlertMessage:
 
