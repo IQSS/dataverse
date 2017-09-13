@@ -56,8 +56,6 @@ Password complexity rules for "builtin" accounts can be adjusted with a variety 
 - :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
 
-
-
 Solr
 ----
 
@@ -1014,7 +1012,6 @@ Password policy setting for builtin user accounts: a password's minimum valid ch
 
 ``curl -X PUT -d 6 http://localhost:8080/api/admin/settings/:PVMinLength``
 
-This setting can be overruled with VM argument ``pv.minlength``
 
 .. _:PVMaxLength:
 
@@ -1025,7 +1022,6 @@ Password policy setting for builtin user accounts: a password's maximum valid ch
 
 ``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:PVMaxLength``
 
-This setting can be overruled with VM argument ``pv.maxlength``
 
 .. _:PVNumberOfConsecutiveDigitsAllowed:
 
@@ -1072,7 +1068,6 @@ Password policy setting for builtin user accounts: the number indicates how many
 
 ``curl -X PUT -d 2 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
 
-This setting can be overruled with VM argument ``pv.numberofcharacteristics``
 
 .. _:PVDictionaries:
 
@@ -1085,7 +1080,6 @@ Password policy setting for builtin user accounts: set a comma separated list of
 ``sed '/^.\{,3\}$/d' /usr/share/dict/words > $DIR/pwdictionary``
 ``curl -X PUT -d "$DIR/pwdictionary" http://localhost:8080/api/admin/settings/:PVDictionaries``
 
-This setting can be overruled with VM argument ``pv.dictionaries``
 
 .. _:PVGoodStrength:
 
@@ -1095,8 +1089,6 @@ This setting can be overruled with VM argument ``pv.dictionaries``
 Password policy setting for builtin user accounts: passwords of equal or greater character length than the :PVGoodStrength setting are always valid, regardless of other password constraints.
 
 ``curl -X PUT -d 20 http://localhost:8080/api/admin/settings/:PVGoodStrength``
-
-This setting can be overruled with VM argument ``pv.goodstrength``
 
 Recommended setting: 20.
 
