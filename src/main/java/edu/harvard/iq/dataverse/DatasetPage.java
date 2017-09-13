@@ -241,6 +241,8 @@ public class DatasetPage implements java.io.Serializable {
     private boolean removeUnusedTags;
     
     private String thumbnailString = null; 
+    
+    private boolean thumbnailsEnabled = false;
 
     // This is the Dataset-level thumbnail; 
     // it's either the thumbnail of the designated datafile, 
@@ -660,7 +662,9 @@ public class DatasetPage implements java.io.Serializable {
     private Map<Long, String> datafileThumbnailsMap = new HashMap<>();
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
-        
+        if (!thumbnailsEnabled) {
+            return false;
+        }
         // new and optimized logic: 
         // - check download permission here (should be cached - so it's free!)
         // - only then ask the file service if the thumbnail is available/exists.
@@ -688,7 +692,6 @@ public class DatasetPage implements java.io.Serializable {
         String thumbnailAsBase64 = ImageThumbConverter.getImageThumbnailAsBase64(fileMetadata.getDataFile(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         
         
-        //if (datafileService.isThumbnailAvailable(fileMetadata.getDataFile())) {
         if (!StringUtil.isEmpty(thumbnailAsBase64)) {
             datafileThumbnailsMap.put(dataFileId, thumbnailAsBase64);
             return true;
@@ -702,6 +705,19 @@ public class DatasetPage implements java.io.Serializable {
     public String getDataFileThumbnailAsBase64(FileMetadata fileMetadata) {
         return datafileThumbnailsMap.get(fileMetadata.getDataFile().getId());
     }
+    
+    public void enableThumbnails() {
+        thumbnailsEnabled = true;
+    }
+    
+    public boolean isThumbnailsEnabled() {
+        return thumbnailsEnabled;
+    }
+    
+    public void setThumbnailsEnabled(boolean enabled) {
+        thumbnailsEnabled = enabled; 
+    }
+    
     
     // Another convenience method - to cache Update Permission on the dataset: 
     public boolean canUpdateDataset() {

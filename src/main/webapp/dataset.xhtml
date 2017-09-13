@@ -450,15 +450,21 @@
                         <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
                             <h:inputHidden value="#{DatasetPage.locked}" id="datasetLockedVariable" />
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
+                            <h:inputHidden value="#{DatasetPage.thumbnailsEnabled}" id="thumbnailsEnabled" />
 
                             <p:remoteCommand name="refreshLockCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshLock}"/>
                             <p:remoteCommand name="refreshAllCommand" process="@this" update="@all" actionListener="#{DatasetPage.refresh}"/>
+                            <p:remoteCommand name="enableThumbnails" process="@this" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.enableThumbnails}"/>
+                            
 
                             <!-- see the comment in the javascript below that explains what this button is for -->
                             <p:commandButton id="refreshButton" process="@this" widgetVar="refreshButton" update="@all" style="display:none"/>
 
                             <script type="text/javascript">
                                 $(this).ready(function () {
+                                    if ($('input[id$="thumbnailsEnabled"]').val() === 'false') {
+                                        enableThumbnails();
+                                    }
                                     refreshIfStillLocked();
                                 });
 
@@ -1543,6 +1549,7 @@
                     }
                 </script>
             </ui:define>
+                
         </ui:composition>
     </h:body>
 </html>
