@@ -45,7 +45,14 @@ public class RepositoryStorageAbstractionLayerUtil {
         return "cd " + getDirectoryContainingTheData(dataset, fileMetadata, leafDirectoryOnly) + " ; shasum -c files.sha";
     }
 
-    private static String getDirectoryContainingTheData(Dataset dataset, FileMetadata fileMetadata, boolean leafDirectoryOnly) {
+    /**
+     * @param leafDirectoryOnly By "leaf" directory, we mean "4LKKNW" rather
+     * than "10.5072/FK2/4LKKNW". On Unix if you run `basename /usr/local/bin`
+     * you get `bin`, which is what we want when we specify "true" for
+     * leafDirectoryOnly. See also
+     * http://www.gnu.org/software/coreutils/manual/html_node/basename-invocation.html
+     */
+    public static String getDirectoryContainingTheData(Dataset dataset, FileMetadata fileMetadata, boolean leafDirectoryOnly) {
         if (fileMetadata != null) {
             dataset = fileMetadata.getDatasetVersion().getDataset();
         }
@@ -57,13 +64,18 @@ public class RepositoryStorageAbstractionLayerUtil {
          *
          * By "leaf" we mean "4LKKNW" rather than "10.5072/FK2/4LKKNW"
          */
-        String leafDirectory = dataset.getIdentifier();
-        if (leafDirectoryOnly) {
-            return leafDirectory;
+        boolean onlyOnPackagePerDatasetIsSupported = true;
+        if (onlyOnPackagePerDatasetIsSupported) {
+            String leafDirectory = dataset.getIdentifier();
+            if (leafDirectoryOnly) {
+                return leafDirectory;
+            } else {
+                // The "authority" is something like "10.5072/FK2".
+                String relativePathToLeafDir = dataset.getAuthority();
+                return relativePathToLeafDir + File.separator + leafDirectory;
+            }
         } else {
-            // The "authority" is something like "10.5072/FK2".
-            String relativePathToLeafDir = dataset.getAuthority();
-            return relativePathToLeafDir + File.separator + leafDirectory;
+            throw new RuntimeException("Sorry, only one package per dataset is supported.");
         }
     }
 
