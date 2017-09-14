@@ -68,9 +68,21 @@
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.roles']}">
                             <h:outputText value="#{user.roles}" />
                             <!-- TODO WIRE UP THIS removeRolesButton COMMAND BUTTON -->
-                            <button id="removeRolesButton" class="btn btn-default" onclick="PF('removeRoles').show();">
-                                <h:outputText value="#{bundle['dashboard.list_users.tbl_header.roles.removeAll']}"/>
-                            </button>
+                            <p:commandButton 
+                                id="removeRolesButton"  
+                                value="#{bundle['dashboard.list_users.tbl_header.roles.removeAll']}" 
+                                styleClass="btn btn-default"
+                                disabled="#{empty user.roles}"
+                                type="button">
+                            
+                            
+                                <p:ajax event="click" 
+                                        oncomplete="PF('removeRolesConfirm').show();"
+                                        process="@this" 
+                                        listener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"
+                                        update=":dashboardUsersForm:removeRolesConfirm"/>
+                                
+                            </p:commandButton>
                         </p:column>
                         <p:column width="9%" class="text-center" headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
                             <!-- A simple implementation of the superuser status toggle - via a boolean checkbox with an immediate ajax update. -->
@@ -97,7 +109,10 @@
                         </div>
                     </p:dialog>
                     <!-- TODO WIRE UP THIS removeRoles CONFIRM POPUP -->
-                    <p:confirmDialog id="removeRoles" message="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.confirmationText']}" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRoles"></p:confirmDialog>
+                    <p:confirmDialog id="removeRolesConfirm" message="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.confirmationText']}" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRolesConfirm">
+                        <p:commandButton value="Yes" update="userTable,:messagePanel" oncomplete="PF('removeRolesConfirm').hide();" action="#{DashboardUsersPage.removeUserRoles()}" />
+                        <p:commandButton value="No" onclick="PF('removeRolesConfirm').hide();" type="button" />
+                    </p:confirmDialog>
                 </h:form>
             </ui:define>
         </ui:composition>

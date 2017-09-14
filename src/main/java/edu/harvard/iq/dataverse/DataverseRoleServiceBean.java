@@ -126,6 +126,15 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		}
 		em.refresh(assignee);
 	}
+        
+        // "nuclear" remove-all roles for a user: 
+        public void revokeAll(RoleAssignee assignee) {
+            em.createNamedQuery("RoleAssignment.deleteAllByAssigneeIdentifier")
+                    .setParameter("assigneeIdentifier", assignee.getIdentifier())
+                    .executeUpdate();
+            em.refresh(assignee);
+            
+        }
 	
 	public void revoke( RoleAssignment ra ) {
 		if ( ! em.contains(ra) ) {

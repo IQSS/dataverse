@@ -10,10 +10,12 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.impl.GrantSuperuserStatusCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeSuperuserStatusCommand;
 import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.logging.Level;
@@ -177,6 +179,7 @@ public class DashboardUsersPage implements java.io.Serializable {
     
     
     public void setUserToToggleSuperuserStatus(AuthenticatedUser user) {
+        logger.info("saving user "+user.getIdentifier());
         selectedUserDetached = user; 
     }
     
@@ -214,6 +217,25 @@ public class DashboardUsersPage implements java.io.Serializable {
     public void cancelSuperuserStatusChange(){
         selectedUserDetached.setSuperuser(!selectedUserDetached.isSuperuser());        
         selectedUserPersistent = null;
+    }
+    
+    // Methods for the removeAllRoles for a user : 
+    
+    public void removeUserRoles() {
+        logger.fine("Get persisent AuthenticatedUser for id: " + selectedUserDetached.getId());
+        selectedUserPersistent = userService.find(selectedUserDetached.getId());
+        
+        selectedUserDetached.setRoles(null); // for display
+        try {
+            commandEngine.submit(new RevokeAllRolesCommand(selectedUserPersistent, dvRequestService.getDataverseRequest()));
+        } catch (Exception ex) {
+            // error message to show on the page:
+            JsfHelper.addErrorMessage("Failed to clear roles for user "+selectedUserPersistent.getIdentifier());
+            return;
+        }
+        // success message: 
+        JsfHelper.addSuccessMessage("All roles cleared for user "+selectedUserPersistent.getIdentifier()); 
+        // TODO: add the 2 messages above to the bundle
     }
     
     public String getAuthProviderFriendlyName(String authProviderId){
