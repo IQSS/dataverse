@@ -9,11 +9,12 @@ This section focuses on user administration tools and tasks.
 Manage Users Table
 ------------------
 
-The Manage Users table gives the network administrator a list of all user accounts in table form. It lists username, full name, email address, and whether or not the user has Superuser status.
+The Manage Users table gives the network administrator a list of all user accounts in table form. You can access it by clicking the "Manage Users" button on the Dashboard, which is linked from the header of all Dataverse pages (if you're logged in as an administrator). It lists username, full name, email address, affiliation, the authentication method they use, the roles their account has been granted, and whether or not they have Superuser status.
 
-Usernames are listed alphabetically and clicking on a username takes you to the account page that contains detailed information on that account.
+Users are listed alphabetically by username. The search bar above the table allows you to search for a specific user. It performs a right-truncated wildcard search of the Username, Name, and Email columns. This means, if you search "baseba" then it will search those three columns for any string of text that begins with "baseba", e.g. "baseball" or "baseballfan".
 
-You can access the Manage Users table by clicking the "Manage Users" button on the Dashboard, which is linked from the header of all Dataverse pages (if you're loggied in as an administrator).
+If you would like to remove all roles/permissions from a user's account (in the event of their leaving your organization, for example) then you can do so by clicking the "Remove All" button under the Roles column. This will keep the user's account active, but will revert it to put the account on the level of a default user with default permissions.
+
 
 Confirm Email
 -------------
