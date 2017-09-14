@@ -14,6 +14,11 @@ We'll try to get you up and running as quickly as possible, but we thought you m
 Choose Your Own Installation Adventure
 --------------------------------------
 
+OpenShift (for Testing Only)
+++++++++++++++++++++++++++++
+
+If you would like to kick the tires on your own installation of Dataverse, you can install it for free on OpenShift Online, a platform as a service (PaaS) offering from Red Hat. For details, please see the :doc:`openshift` section.
+
 Vagrant (for Testing Only)
 ++++++++++++++++++++++++++
 

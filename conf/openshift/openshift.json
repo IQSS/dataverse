@@ -1,0 +1,40 @@
+{
+  "kind": "Project",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "dataverse",
+    "creationTimestamp": null,
+    "labels": {
+      "name": "dataverse"
+    },
+    "annotations": {
+      "openshift.io/description": "Dataverse is open source research data repository software: https://dataverse.org",
+      "openshift.io/display-name": "Dataverse"
+    }
+  },
+  "spec": {
+    "containers": [
+      {
+        "name": "dataverse-glassfish",
+        "image": "ndslabs/dataverse",
+        "ports": [
+          {
+            "containerPort": 8080,
+            "protocol": "TCP"
+          }
+        ]
+      },
+      {
+        "name": "dataverse-solr",
+        "image": "ndslabs/dataverse-solr",
+        "ports": [
+          {
+            "containerPort": 8983,
+            "protocol": "TCP"
+          }
+        ]
+      }
+    ]
+  },
+  "status": {}
+}
