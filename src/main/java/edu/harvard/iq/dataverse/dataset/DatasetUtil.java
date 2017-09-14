@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -383,6 +384,18 @@ public class DatasetUtil {
         } catch (IOException ioex) {
         }
         return false;
+    }
+
+    public static List<DatasetField> getCustomFieldsAboveTheFold(DatasetVersion datasetVersion, String customFields) {
+        List<DatasetField> datasetFields = new ArrayList<>();
+        for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
+            // FIXME: Do a more specific comparison rather than "contains".
+            // FIXME: the order of "customFields" is significant. Preserve the order.
+            if (customFields.contains(dsf.getDatasetFieldType().getName())) {
+                datasetFields.add(dsf);
+            }
+        }
+        return datasetFields;
     }
 
 }

@@ -33,6 +33,11 @@ public class SettingsServiceBean {
      */
     public enum Key {
         /**
+         * Ordered, comma-separated list of custom fields to show above the fold
+         * on dataset page such as "data_type,sample,pdb"
+         */
+        CustomFieldsAboveTheFold,
+        /**
          * Defines a public installation -- all datafiles are unrestricted
          */
         PublicInstall,

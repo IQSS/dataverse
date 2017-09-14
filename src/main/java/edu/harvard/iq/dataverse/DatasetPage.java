@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -3889,5 +3890,19 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
     }*/
+    public boolean isCustomFieldsAboveTheFold() {
+        String customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomFieldsAboveTheFold);
+        if (customFields == null || customFields.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
 
+    public List<DatasetField> getCustomFieldsAboveTheFold() {
+        String customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomFieldsAboveTheFold);
+        if (customFields == null || customFields.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
+        return DatasetUtil.getCustomFieldsAboveTheFold(workingVersion, customFields);
+    }
 }
