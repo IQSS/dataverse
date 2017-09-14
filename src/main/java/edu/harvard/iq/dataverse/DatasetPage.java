@@ -3890,7 +3890,7 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
     }*/
-    public boolean isCustomFieldsAboveTheFold() {
+    public boolean isCustomFieldsAboveTheFoldEnabled() {
         String customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomFieldsAboveTheFold);
         if (customFields == null || customFields.isEmpty()) {
             return false;
