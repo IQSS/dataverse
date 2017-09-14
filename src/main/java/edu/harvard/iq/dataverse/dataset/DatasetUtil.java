@@ -28,6 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 
@@ -388,12 +391,18 @@ public class DatasetUtil {
 
     public static List<DatasetField> getCustomFieldsAboveTheFold(DatasetVersion datasetVersion, String customFields) {
         List<DatasetField> datasetFields = new ArrayList<>();
+        
+        String[] customFieldList= customFields.split(",");
+        Map<String,DatasetField> DatasetFieldsSet=new HashMap<>(); 
+        
         for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
-            // FIXME: Do a more specific comparison rather than "contains".
-            // FIXME: the order of "customFields" is significant. Preserve the order.
-            if (customFields.contains(dsf.getDatasetFieldType().getName())) {
-                datasetFields.add(dsf);
-            }
+            DatasetFieldsSet.put(dsf.getDatasetFieldType().getName(),dsf); 
+            dsf.getDatasetFieldType().getListValues();
+        }
+        
+        for(String cfl : customFieldList)
+        {
+                datasetFields.add(DatasetFieldsSet.get(cfl));
         }
         return datasetFields;
     }
