@@ -326,53 +326,16 @@
                                     <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
                                 </ui:fragment>
                             </div>
-                            <!--BEGIN: ABOVE THE FOLD-->
-                            <div id="metadata-panel" class="row panel panel-default" jsf:rendered="#{DatasetPage.customFieldsAboveTheFoldEnabled}">
-                                <ui:repeat value="#{DatasetPage.customFieldsAboveTheFold}" var="dsf">
-                                    <!--TODO: This was copied from metadataFragment.xhtml so should we consolidate it?-->
-                                    <div class="form-group">
-                                        <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
-                                                    #{dsf.datasetFieldType.title}
-                                            </span>
-                                        </label>
-                                        <!-- Primitive datasetFields -->
-                                        <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">
-                                            <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
-                                                          escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                            <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                                <h:outputText value="#{loop.first?'':'; '}#{ value }"
-                                                              escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                            </ui:repeat>
-                                        </div>
-                                        <!-- Compound datasetFields -->
-                                        <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.compound}">
-                                            <ui:fragment rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
-                                                <p class="help-block">
-                                                    <span class="glyphicon glyphicon-info-sign"/>
-                                                    <h:outputText value=" #{bundle['dataset.contact.tip']}"/>
-                                                </p>
-                                            </ui:fragment>
-                                            <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
-                                                <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
-                                                    <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
-                                                    <h:outputText value="#{cvPart.value}"
-                                                                  escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
-                                                </ui:repeat>
-                                                <br/>
-                                            </ui:repeat>
-                                        </div>
-                                    </div>
-                                </ui:repeat>
-                            </div>
-                            <div id="metadata-panel" class="row panel panel-default"
-                                 jsf:rendered="#{!DatasetPage.customFieldsAboveTheFoldEnabled and !widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and
+                            <!-- BEGIN: DATASET SUMMARY -->
+                            <div id="dataset-summary-metadata" class="row panel panel-default"
+                                 jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned}">
+                                <!-- DEFAULT -->
+                                <div class="panel-body metadata-panel-body" jsf:rendered="#{!DatasetPage.customFieldsAboveTheFoldEnabled and
                                                  (!empty DatasetPage.datasetVersionUI.descriptionDisplay
                                                  or !empty DatasetPage.datasetVersionUI.keywordDisplay
                                                  or !empty DatasetPage.datasetVersionUI.subject.value
                                                  or !empty DatasetPage.datasetVersionUI.relPublicationCitation
                                                  or !empty DatasetPage.datasetVersionUI.notes.value)}">
-                                <div class="panel-body metadata-panel-body">
                                     <div id="description" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.descriptionDisplay}">
                                         <label class="col-sm-3 control-label">
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.description.datasetFieldType.description}">#{bundle['dataset.descriptionDisplay.title']}</span>
@@ -409,8 +372,47 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- CUSTOM -->
+                                <div class="panel-body metadata-panel-body" jsf:rendered="#{DatasetPage.customFieldsAboveTheFoldEnabled}">
+                                    <ui:repeat value="#{DatasetPage.customFieldsAboveTheFold}" var="dsf">
+                                        <!--TODO: This was copied from metadataFragment.xhtml so should we consolidate it?-->
+                                        <div class="form-group">
+                                            <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
+                                                        #{dsf.datasetFieldType.title}
+                                                </span>
+                                            </label>
+                                            <!-- Primitive datasetFields -->
+                                            <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">
+                                                <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
+                                                              escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
+                                                <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                                    <h:outputText value="#{loop.first?'':'; '}#{ value }"
+                                                                  escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
+                                                </ui:repeat>
+                                            </div>
+                                            <!-- Compound datasetFields -->
+                                            <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.compound}">
+                                                <ui:fragment rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
+                                                    <p class="help-block">
+                                                        <span class="glyphicon glyphicon-info-sign"/>
+                                                        <h:outputText value=" #{bundle['dataset.contact.tip']}"/>
+                                                    </p>
+                                                </ui:fragment>
+                                                <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
+                                                    <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
+                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
+                                                        <h:outputText value="#{cvPart.value}"
+                                                                      escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
+                                                    </ui:repeat>
+                                                    <br/>
+                                                </ui:repeat>
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
                             </div>
-                            <!--END: ABOVE THE FOLD-->
+                            <!-- END: DATASET SUMMARY -->
                         </div>
                     </div>
                     <!-- END View editMode -->
