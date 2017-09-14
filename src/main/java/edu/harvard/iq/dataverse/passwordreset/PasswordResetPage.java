@@ -147,7 +147,7 @@ public class PasswordResetPage implements java.io.Serializable {
         }
     }
 
-    //FIXME: This was ported from DataverseUserPage. Should it live on its own?
+    //Note: Ported from DataverseUserPage
     public void validateNewPassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
         if (StringUtils.isBlank(password)){

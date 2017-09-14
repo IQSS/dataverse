@@ -60,8 +60,7 @@ import org.passay.dictionary.sort.ArraysSort;
  * <p>
  * Rule 4. It will forgo all the above three requirements for passwords that have a minimum length of 20.
  * <p>
- * All presets can be tweaked by applying new settings via the admin API of VM arguments.
- * When set VM arguments always overrule admin API settings.
+ * All presets can be tweaked by applying new settings via the admin API.
  * <p>
  * Two validator types implement the rulesets.
  * GoodStrengthValidator: applies rule 4 for passwords with a length equal or greater than MIN_LENGTH_BIG_LENGTH
@@ -86,8 +85,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
 
     @SuppressWarnings("unchecked")
     private final static LinkedHashMap<ValidatorTypes, PasswordValidator> validators = new LinkedHashMap(2);
-//    private int expirationDays;
-//    private int expirationMaxLength;
     private int goodStrength;
     private int maxLength;
     private int minLength;
@@ -103,14 +100,12 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     public PasswordValidatorServiceBean() {
         final Properties properties = PropertiesMessageResolver.getDefaultProperties();
         properties.setProperty(GoodStrengthRule.ERROR_CODE_GOODSTRENGTH, GoodStrengthRule.ERROR_MESSAGE_GOODSTRENGTH);
-        properties.setProperty(ExpirationRule.ERROR_CODE_EXPIRED, ExpirationRule.ERROR_MESSAGE_EXPIRED);
-        messageResolver = new PropertiesMessageResolver(properties);
+         messageResolver = new PropertiesMessageResolver(properties);
     }
 
     public PasswordValidatorServiceBean(List<CharacterRule> characterRules) {
         final Properties properties = PropertiesMessageResolver.getDefaultProperties();
         properties.setProperty(GoodStrengthRule.ERROR_CODE_GOODSTRENGTH, GoodStrengthRule.ERROR_MESSAGE_GOODSTRENGTH);
-        properties.setProperty(ExpirationRule.ERROR_CODE_EXPIRED, ExpirationRule.ERROR_MESSAGE_EXPIRED);
         messageResolver = new PropertiesMessageResolver(properties);
         this.characterRules = characterRules;
     }
@@ -230,7 +225,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
                 lengthRule.setMinimumLength(minLength);
             }
             rules.add(lengthRule);
-//            rules.add(new ExpirationRule(getExpirationMaxLength(), getExpirationDays()));
             if (numberOfCharacteristics != 0) {
                 rules.add(characterRule(getCharacterRules()));
             }
@@ -408,7 +402,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         }
     }
 
-
     /**
      * getMaxLength
      * <p>
@@ -429,7 +422,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         }
     }
 
-
     /**
      * getMinLength
      * <p>
@@ -449,29 +441,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             validators.remove(ValidatorTypes.StandardValidator);
         }
     }
-
-
-//    /**
-//     * getExpirationDays
-//     * <p>
-//     * The number of days a passwords is good after its creation or modification date.
-//     * If set to zero, an expiration is not applied for the StandardValidator.
-//     *
-//     * @return A number
-//     */
-//    private int getExpirationDays() {
-//        int expirationDays = systemConfig == null ? this.expirationDays : systemConfig.getPVExpirationDays();
-//        setExpirationDays(expirationDays);
-//        return this.expirationDays;
-//    }
-//
-//    void setExpirationDays(int expirationDays) {
-//        if (this.expirationDays != expirationDays) {
-//            this.expirationDays = expirationDays;
-//            validators.remove(ValidatorTypes.StandardValidator);
-//        }
-//    }
-    
     
     public void setCharacterRules(List<CharacterRule> characterRules) {
         if(!characterRules.equals(this.characterRules)) {
@@ -499,26 +468,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         return this.numberOfCharacteristics;
     }
 
-//
-//    /**
-//     * getExpirationMaxLength
-//     * <p>
-//     * The upper limit of a password length for which an expiration date will be applicable.
-//     *
-//     * @return A length
-//     */
-//    private int getExpirationMaxLength() {
-//        int expirationMaxLength = systemConfig == null ? this.expirationMaxLength : systemConfig.getPVExpirationMaxLength();
-//        setExpirationMaxLength(expirationMaxLength);
-//        return this.expirationMaxLength;
-//    }
-//
-//    void setExpirationMaxLength(int expirationMaxLength) {
-//        if (this.expirationMaxLength != expirationMaxLength) {
-//            this.expirationMaxLength = expirationMaxLength;
-//            validators.remove(ValidatorTypes.StandardValidator);
-//        }
-//    }
     public int getNumberOfConsecutiveDigitsAllowed() {
         int numConsecutiveDigitsAllowed = systemConfig == null ? this.numberOfConsecutiveDigitsAllowed : systemConfig.getPVNumberOfConsecutiveDigitsAllowed();
         setNumberOfConsecutiveDigitsAllowed(numConsecutiveDigitsAllowed);

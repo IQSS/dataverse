@@ -720,8 +720,6 @@ public class AuthenticationServiceBean {
         builtinUser.setLastName(authenticatedUser.getLastName());
         // Bean Validation will check for null and invalid email addresses
         builtinUser.setEmail(newEmailAddress);
-//        Calendar c = Calendar.getInstance();
-//        builtinUser.setPasswordModificationTime(new Timestamp(c.getTimeInMillis()));
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(builtinUser);

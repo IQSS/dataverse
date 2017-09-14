@@ -690,44 +690,6 @@ public class SystemConfig {
         return goodStrengthLength;
     }
 
-//    /**
-//     * getPVExpirationDays
-//     *
-//     * Get the number of days a password is valid after it was set or changed.
-//     * Defaults to 365.
-//     *
-//     * @return The number.
-//     */
-//    public int getPVExpirationDays() {
-//        int expirationDays = 365;
-//        String _expirationDays = System.getProperty("pv.expirationdays", settingsService.get(SettingsServiceBean.Key.PVExpirationDays.toString()));
-//        try {
-//            expirationDays = Integer.parseInt(_expirationDays);
-//        } catch (NumberFormatException nfe) {
-//            logger.warning("Invalid value for PVExpirationDays: " + _expirationDays);
-//        }
-//        return expirationDays;
-//    }
-//
-//    /**
-//     * getPVExpirationMaxLength
-//     *
-//     * Get the maximum length of a password an expiration date is applicable to.
-//     * Defaults to 10.
-//     *
-//     * @return The length.
-//     */
-//    public int getPVExpirationMaxLength() {
-//        int expirationMaxLength = 10;
-//        String _expirationMaxLength = System.getProperty("pv.expirationmaxlength", settingsService.get(SettingsServiceBean.Key.PVValidatorExpirationMaxLength.toString()));
-//        try {
-//            expirationMaxLength = Integer.parseInt(_expirationMaxLength);
-//        } catch (NumberFormatException nfe) {
-//            logger.warning("Invalid value for PVValidatorExpirationMaxLength: " + _expirationMaxLength);
-//        }
-//        return expirationMaxLength;
-//    }
-
     /**
      * getPVMinLength
      *

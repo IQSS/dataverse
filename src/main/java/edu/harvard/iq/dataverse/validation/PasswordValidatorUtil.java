@@ -65,15 +65,14 @@ public class PasswordValidatorUtil {
     //TODO: Relocate this messaging to the bundle and refactor passwordreset.xhtml to use it accordingly.
     public static String getPasswordRequirements(int minLength, int maxLength, List<CharacterRule> characterRules, int numberOfCharacteristics, int numberOfConsecutiveDigitsAllowed, int goodStrength, boolean dictionaryEnabled, List<String> errors) {
         logger.info(errors.toString());
-        String message = BundleUtil.getStringFromBundle("passwdVal.passwdReq.title");//ResourceBundle.getBundle("Bundle").getString("passwdVal.passwdReq.title");
-    //DELETE   //BundleUtil.getStringFromBundle("notification.email.update.maplayer", rootDvNameAsList);
+        String message = BundleUtil.getStringFromBundle("passwdVal.passwdReq.title");
         message += "<ul>";
         String optionalGoodStrengthNote = "";
-        if (goodStrength > 0) {  //+ goodStrength + passwords of at least {0} characters are exempt from all other requirements
+        if (goodStrength > 0) { 
             optionalGoodStrengthNote = " (" + BundleUtil.getStringFromBundle("passwdVal.passwdReq.goodStrength" , Arrays.asList(Integer.toString(goodStrength))) +")";
         }
-        message += "<li " + getColor(errors, ErrorType.TOO_SHORT) + ">" + getOkOrFail(errors, ErrorType.TOO_SHORT) +  BundleUtil.getStringFromBundle("passwdVal.passwdReq.lengthReq" , Arrays.asList(Integer.toString(minLength))) + " " + optionalGoodStrengthNote+ "</li>";//"At least " + minLength + " characters" + optionalGoodStrengthNote + "</li>";
-        message += "<li " + getColor(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + ">" + getOkOrFail(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) +  getRequiredCharacters(characterRules, numberOfCharacteristics) + "</li>";//"At least " + numberOfCharacteristics + " of the following: " + 
+        message += "<li " + getColor(errors, ErrorType.TOO_SHORT) + ">" + getOkOrFail(errors, ErrorType.TOO_SHORT) +  BundleUtil.getStringFromBundle("passwdVal.passwdReq.lengthReq" , Arrays.asList(Integer.toString(minLength))) + " " + optionalGoodStrengthNote+ "</li>";
+        message += "<li " + getColor(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + ">" + getOkOrFail(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) +  getRequiredCharacters(characterRules, numberOfCharacteristics) + "</li>"; 
         message += "</ul>";
         boolean repeatingDigitRuleEnabled = Integer.MAX_VALUE != numberOfConsecutiveDigitsAllowed;
         boolean showMayNotBlock = repeatingDigitRuleEnabled || dictionaryEnabled;
@@ -85,13 +84,11 @@ public class PasswordValidatorUtil {
             message += "<li " + getColor(errors, ErrorType.ILLEGAL_MATCH) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_MATCH) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.consecutiveDigits" , Arrays.asList(Integer.toString(numberOfConsecutiveDigitsAllowed))) + "</li>";
         }
         if (dictionaryEnabled) {
-            message += "<li " + getColor(errors, ErrorType.ILLEGAL_WORD) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_WORD) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.dictionaryWords")+"</li>";//"Dictionary words</li>";
+            message += "<li " + getColor(errors, ErrorType.ILLEGAL_WORD) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_WORD) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.dictionaryWords")+"</li>";
         }
         if (showMayNotBlock) {
             message += "</ul>";
         }
-        // for debugging
-//        message += errors.toString();
         return message;
     }
 
@@ -99,7 +96,7 @@ public class PasswordValidatorUtil {
         if (errors.isEmpty()) {
             return "";
         }
-        // FIXME: Figure out how to put these icons on the screen nicely.
+
         if (errors.contains(errorState.toString())) {
             String fail = "<span class=\"glyphicon glyphicon-ban-circle\" style=\"color:#a94442\"/> ";
             return fail;
@@ -186,4 +183,3 @@ public class PasswordValidatorUtil {
     }
 
 }
-//
