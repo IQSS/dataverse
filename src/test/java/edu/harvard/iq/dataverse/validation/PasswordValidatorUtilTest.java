@@ -44,58 +44,6 @@ public class PasswordValidatorUtilTest {
     public void tearDown() {
     }
 
-//    /**
-//     * Test of getCharacterRules method, of class PasswordValidatorUtil.
-//     */
-//    @Test
-//    public void testGetCharacterRules() {
-//        System.out.println("getCharacterRules");
-//        String configString = "";
-//        List<CharacterRule> expResult = null;
-//        List<CharacterRule> result = PasswordValidatorUtil.getCharacterRules(configString);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getCharacterRulesDefault method, of class PasswordValidatorUtil.
-//     */
-//    @Test
-//    public void testGetCharacterRulesDefault() {
-//        System.out.println("getCharacterRulesDefault");
-//        List<CharacterRule> expResult = null;
-//        List<CharacterRule> result = PasswordValidatorUtil.getCharacterRulesDefault();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getCharacterRulesHarvardLevel3 method, of class PasswordValidatorUtil.
-//     */
-//    @Test
-//    public void testGetCharacterRulesHarvardLevel3() {
-//        System.out.println("getCharacterRulesHarvardLevel3");
-//        List<CharacterRule> expResult = null;
-//        List<CharacterRule> result = PasswordValidatorUtil.getCharacterRulesHarvardLevel3();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getCharacterRules4dot0 method, of class PasswordValidatorUtil.
-//     */
-//    @Test
-//    public void testGetCharacterRules4dot0() {
-//        System.out.println("getCharacterRules4dot0");
-//        List<CharacterRule> expResult = null;
-//        List<CharacterRule> result = PasswordValidatorUtil.getCharacterRules4dot0();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
     /**
      * Test of getPasswordRequirements method, of class PasswordValidatorUtil.
      */
@@ -104,7 +52,7 @@ public class PasswordValidatorUtilTest {
         System.out.println("getPasswordRequirements");
         int minLength = 6;
         int maxLength = 0;
-        List<CharacterRule> characterRules = PasswordValidatorUtil.getCharacterRules4dot0();
+        List<CharacterRule> characterRules = PasswordValidatorUtil.getCharacterRulesDefault();
         int numberOfCharacteristics = 2;
         int numberOfRepeatingCharactersAllowed = 4;
         int goodStrength = 21;
@@ -147,15 +95,9 @@ public class PasswordValidatorUtilTest {
     public void testGetRequiredCharacters() {
         int numberOfCharacteristics = 2; //influences use of # or "each" in text generation
         String textBeforeList = BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq" , Arrays.asList(Integer.toString(numberOfCharacteristics)))+ " " ;
-        List<CharacterRule> characterRules = PasswordValidatorUtil.getCharacterRules4dot0();
+        List<CharacterRule> characterRules = PasswordValidatorUtil.getCharacterRulesDefault();
         String reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
-        System.out.println("Character rules string for 4.0: ");
-        System.out.println(reqString);
-        assertEquals("At least 1 character from each of the following types: letter, numeral", reqString);
-        
-        characterRules = PasswordValidatorUtil.getCharacterRulesDefault();
-        reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules,numberOfCharacteristics);
-        System.out.println("Character rules string for default, same as 4.0: ");
+        System.out.println("Character rules string for default: ");
         System.out.println(reqString);
         assertEquals("At least 1 character from each of the following types: letter, numeral", reqString);
           
@@ -220,19 +162,4 @@ public class PasswordValidatorUtilTest {
         System.out.println(reqString);
         assertEquals("At least 1 character from 2 of the following types: uppercase, lowercase, letter, numeral, special", reqString);
     }
-
-    
-//    /**
-//     * Test of getRequiredCharacters method, of class PasswordValidatorUtil.
-//     */
-//    @Test
-//    public void testGetRequiredCharacters() {
-//        System.out.println("getRequiredCharacters");
-//        List<CharacterRule> characterRules = null;
-//        String expResult = "";
-//        String result = PasswordValidatorUtil.getRequiredCharacters(characterRules);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
 }

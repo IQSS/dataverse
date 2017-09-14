@@ -32,13 +32,6 @@ public class PasswordValidatorUtil {
      * The default out-of-the-box character rules for Dataverse.
      */
     public static List<CharacterRule> getCharacterRulesDefault() {
-        return getCharacterRules4dot0();
-    }
-
-    /**
-     * These are the character rules Dataverse 4.0 shipped with.
-     */
-    public static List<CharacterRule> getCharacterRules4dot0() {
         List<CharacterRule> characterRules = new ArrayList<>();
         characterRules.add(new CharacterRule(EnglishCharacterData.Alphabetical, 1));
         characterRules.add(new CharacterRule(EnglishCharacterData.Digit, 1));

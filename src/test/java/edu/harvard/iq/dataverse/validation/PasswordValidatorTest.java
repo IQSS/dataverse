@@ -153,9 +153,9 @@ public class PasswordValidatorTest {
         long DAY = 86400000L;
         final Date expired = new Date(new Date().getTime() - DAY * 400);
         final Date notExpired = new Date(new Date().getTime() - DAY * 300);
-        List<CharacterRule> characterRules4dot0 = PasswordValidatorUtil.getCharacterRules4dot0();
+        List<CharacterRule> characterRulesDefault = PasswordValidatorUtil.getCharacterRulesDefault();
         List<CharacterRule> characterRulesHarvardLevel3 = getCharacterRulesHarvardLevel3();
-        final int numberOfCharacters4dot0 = 2;
+        final int numberOfCharactersDefault = 2;
         final int numberOfCharacters = 3;
         final int numConsecutiveDigitsAllowed = 4;
         final int expirationDays = 365;
@@ -195,10 +195,10 @@ public class PasswordValidatorTest {
             new Params(0, "Repeated Potatoes:0000", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, 5), // Pass when repeating character maximum is 5
             new Params(0, "Repeated Potatoes:000", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), // Allow no more than 3 repeating characters (default)
             new Params(6, "          ", expired, expirationDays, expirationMinLength, 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed), //For some reason, whitespace doesn't count in the repeating rule?
-            new Params(0, "potat1", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numConsecutiveDigitsAllowed), // Good enough for Dataverse 4.0.
-            new Params(0, "potat000000000000000", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numConsecutiveDigitsAllowed), // Has repeating chars exceeding limit, but goodstrength waives it
-            new Params(2, "ma02138", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numConsecutiveDigitsAllowed), // 5 or more numbers in a row
-            new Params(2, "ma8312002138", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharacters4dot0, characterRules4dot0, numConsecutiveDigitsAllowed), // 5 or more numbers in a row
+            new Params(0, "potat1", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharactersDefault, characterRulesDefault, numConsecutiveDigitsAllowed), // Good enough for Dataverse 4.0.
+            new Params(0, "potat000000000000000", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharactersDefault, characterRulesDefault, numConsecutiveDigitsAllowed), // Has repeating chars exceeding limit, but goodstrength waives it
+            new Params(2, "ma02138", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharactersDefault, characterRulesDefault, numConsecutiveDigitsAllowed), // 5 or more numbers in a row
+            new Params(2, "ma8312002138", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharactersDefault, characterRulesDefault, numConsecutiveDigitsAllowed), // 5 or more numbers in a row
         }
         );
 
