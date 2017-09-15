@@ -1,1 +1,3 @@
-- Dataverse version (if known):
+Thank you for contributing an issue to the Dataverse Project! If this is a bug report, please let us know when the issue occurs, which page it occurs on, to whom it occurs, and which version of Dataverse you're using. If this is a feature request, please let us know the details of what you'd like to see and give us some context - what kind of user is the feature intended for, and what inspired the request? 
+
+We welcome screenshots and/or browser console log contents, when applicable.
