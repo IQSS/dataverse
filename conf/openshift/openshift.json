@@ -26,13 +26,86 @@
             "port": 8080,
             "targetPort": 8080
           }
-        ],
-        "containers": [
-          {
-            "name": "dataverse-glassfish",
-            "image": "ndslabs/dataverse"
-          }
         ]
+      }
+    },
+    {
+      "kind": "ImageStream",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "ndslabs-dataverse"
+      },
+      "spec": {
+        "dockerImageRepository": "ndslabs/dataverse"
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "dataverse-glassfish",
+        "annotations": {
+          "template.alpha.openshift.io/wait-for-ready": "true"
+        }
+      },
+      "spec": {
+        "template": {
+          "metadata": {
+            "labels": {
+              "name": "ndslabs-dataverse"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "ndslabs-dataverse",
+                "image": "ndslabs-dataverse",
+                "ports": [
+                  {
+                    "containerPort": 8080,
+                    "protocol": "TCP"
+                  }
+                ],
+                "imagePullPolicy": "IfNotPresent",
+                "securityContext": {
+                  "capabilities": {},
+                  "privileged": false
+                }
+              }
+            ]
+          }
+        },
+        "strategy": {
+          "type": "Rolling",
+          "rollingParams": {
+            "updatePeriodSeconds": 1,
+            "intervalSeconds": 1,
+            "timeoutSeconds": 120
+          },
+          "resources": {}
+        },
+        "triggers": [
+          {
+            "type": "ImageChange",
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "ndslabs-dataverse"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "ndslabs-dataverse:latest"
+              }
+            }
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "name": "ndslabs-dataverse"
+        }
       }
     }
   ]
