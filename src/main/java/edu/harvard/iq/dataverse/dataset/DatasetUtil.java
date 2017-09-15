@@ -397,13 +397,18 @@ public class DatasetUtil {
         
         for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
             DatasetFieldsSet.put(dsf.getDatasetFieldType().getName(),dsf); 
-            dsf.getDatasetFieldType().getListValues();
         }
         
         for(String cfl : customFieldList)
         {
-                datasetFields.add(DatasetFieldsSet.get(cfl));
+                DatasetField df = DatasetFieldsSet.get(cfl);
+                if(df!=null)
+                datasetFields.add(df);
         }
+        
+        //if(datasetFields.size()==0)
+            System.out.println("Dataset Size:"+datasetFields.size());
+        
         return datasetFields;
     }
 

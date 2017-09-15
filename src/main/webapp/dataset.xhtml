@@ -329,11 +329,11 @@
                             <!-- BEGIN: DATASET SUMMARY -->
                             <div id="dataset-summary-metadata" class="row panel panel-default"
                                  jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
-                                                   ( (!empty DatasetPage.datasetVersionUI.descriptionDisplay
+                                                   ( !empty DatasetPage.datasetVersionUI.descriptionDisplay
                                                  or !empty DatasetPage.datasetVersionUI.keywordDisplay
                                                  or !empty DatasetPage.datasetVersionUI.subject.value
                                                  or !empty DatasetPage.datasetVersionUI.relPublicationCitation
-                                                 or !empty DatasetPage.datasetVersionUI.notes.value) or !empty DatasetPage.customDatasetSummaryFields ) }">
+                                                 or !empty DatasetPage.datasetVersionUI.notes.value  ) and !empty DatasetPage.customDatasetSummaryFields }">
                                 <!-- DEFAULT -->
                                 <div class="panel-body metadata-panel-body" jsf:rendered="#{!DatasetPage.customDatasetSummaryFieldsEnabled and
                                                  (!empty DatasetPage.datasetVersionUI.descriptionDisplay
