@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexAsync;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -127,13 +129,21 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		em.refresh(assignee);
 	}
         
-        // "nuclear" remove-all roles for a user: 
+        // "nuclear" remove-all roles for a user or group: 
+        // (Note that in addition to deleting the explicit role assignments, 
+        // it also strips the assignee of membership in any groups!)
         public void revokeAll(RoleAssignee assignee) {
             em.createNamedQuery("RoleAssignment.deleteAllByAssigneeIdentifier")
                     .setParameter("assigneeIdentifier", assignee.getIdentifier())
                     .executeUpdate();
             em.refresh(assignee);
             
+            if (assignee instanceof AuthenticatedUser) {
+                em.createNativeQuery("DELETE FROM explicitgroup_authenticateduser WHERE containedauthenticatedusers_id="+((AuthenticatedUser)assignee).getId()).executeUpdate();
+            } else if (assignee instanceof ExplicitGroup) {
+                em.createNativeQuery("DELETE FROM explicitgroup_explicitgroup WHERE containedexplicitgroups_id="+((ExplicitGroup)assignee).getId()).executeUpdate();
+            }
+            em.refresh(assignee);
         }
 	
 	public void revoke( RoleAssignment ra ) {

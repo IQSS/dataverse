@@ -43,6 +43,8 @@ import javax.persistence.UniqueConstraint;
 				 query = "SELECT r FROM RoleAssignment r WHERE r.privateUrlToken=:privateUrlToken" ),
 	@NamedQuery( name  = "RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId",
 				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:userId AND r.role.id=:roleId AND r.definitionPoint.id=:definitionPointId"),
+        @NamedQuery( name = "RoleAssignment.deleteAllByAssigneeIdentifier",
+				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:userId")
 })
 public class RoleAssignment implements java.io.Serializable {
 	@Id
