@@ -15,8 +15,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.RevokeSuperuserStatusCommand
 import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -230,12 +232,18 @@ public class DashboardUsersPage implements java.io.Serializable {
             commandEngine.submit(new RevokeAllRolesCommand(selectedUserPersistent, dvRequestService.getDataverseRequest()));
         } catch (Exception ex) {
             // error message to show on the page:
-            JsfHelper.addErrorMessage("Failed to clear roles for user "+selectedUserPersistent.getIdentifier());
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.failure", Arrays.asList(selectedUserPersistent.getUserIdentifier())));
             return;
         }
         // success message: 
-        JsfHelper.addSuccessMessage("All roles cleared for user "+selectedUserPersistent.getIdentifier()); 
-        // TODO: add the 2 messages above to the bundle
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.success", Arrays.asList(selectedUserPersistent.getUserIdentifier()))); 
+    }
+    
+    public String getConfirmRemoveRolesMessage() {
+        if (selectedUserDetached != null) {
+            return BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles.removeAll.confirmationText", Arrays.asList(selectedUserDetached.getUserIdentifier()));
+        } 
+        return BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles.removeAll.confirmationText");
     }
     
     public String getAuthProviderFriendlyName(String authProviderId){

@@ -136,14 +136,12 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             em.createNamedQuery("RoleAssignment.deleteAllByAssigneeIdentifier")
                     .setParameter("assigneeIdentifier", assignee.getIdentifier())
                     .executeUpdate();
-            em.refresh(assignee);
             
             if (assignee instanceof AuthenticatedUser) {
                 em.createNativeQuery("DELETE FROM explicitgroup_authenticateduser WHERE containedauthenticatedusers_id="+((AuthenticatedUser)assignee).getId()).executeUpdate();
             } else if (assignee instanceof ExplicitGroup) {
                 em.createNativeQuery("DELETE FROM explicitgroup_explicitgroup WHERE containedexplicitgroups_id="+((ExplicitGroup)assignee).getId()).executeUpdate();
             }
-            em.refresh(assignee);
         }
 	
 	public void revoke( RoleAssignment ra ) {

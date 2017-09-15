@@ -107,8 +107,7 @@
                             <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}"  update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
                         </div>
                     </p:dialog>
-                    <!-- TODO WIRE UP THIS removeRoles CONFIRM POPUP -->
-                    <p:confirmDialog id="removeRolesConfirm" message="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.confirmationText']}" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRolesConfirm">
+                    <p:confirmDialog id="removeRolesConfirm" message="#{DashboardUsersPage.confirmRemoveRolesMessage}" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRolesConfirm">
                         <p:commandButton value="Yes" update="userTable,:messagePanel" oncomplete="PF('removeRolesConfirm').hide();" action="#{DashboardUsersPage.removeUserRoles()}" />
                         <p:commandButton value="No" onclick="PF('removeRolesConfirm').hide();" type="button" />
                     </p:confirmDialog>
