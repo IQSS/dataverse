@@ -211,6 +211,7 @@ public class DatasetPage implements java.io.Serializable {
     private String protocol = "";
     private String authority = "";
     private String separator = "";
+    private String customFields="";
 
     private boolean noDVsAtAll = false;
 
@@ -3899,10 +3900,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public List<DatasetField> getCustomDatasetSummaryFields() {
-        String customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
+       customFields  = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
         if (customFields == null || customFields.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
         return DatasetUtil.getCustomDatasetSummaryFields(workingVersion, customFields);
     }
+    
 }
