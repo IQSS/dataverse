@@ -328,6 +328,72 @@ If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400
 
 ``asadmin create-jvm-options '-Ddataverse.siteUrl=http\://demo.dataverse.org'``
 
+OpenShift
+---------
+
+From the Dataverse perspective, we are in the business of providing a "template" for OpenShift that describes how the various components we build our application on (Glassfish, PostgreSQL, Solr, the Dataverse war file itself, etc.) work together. We also plan to publish Docker images to DockerHub but for now we are trying to use the Dataverse images published to https://hub.docker.com/r/ndslabs/
+
+The OpenShift template for Dataverse can be found at ``conf/openshift/openshift.json`` and if you need to hack on the template or related files under ``conf/docker`` it is recommended that you iterate on them using Minishift.
+
+Install Minishift
+~~~~~~~~~~~~~~~~~
+
+Minishift requires a hypervisor and since we already use VirtualBox for Vagrant, you should install VirtualBox from http://virtualbox.org .
+
+Download the Minishift tarball from https://docs.openshift.org/latest/minishift/getting-started/installing.html and put the ``minishift`` binary in ``/usr/local/bin`` or somewhere in your ``$PATH``. This assumes Mac or Linux.
+
+At this point, you might want to consider going through the Minishift quickstart to get oriented: https://docs.openshift.org/latest/minishift/getting-started/quickstart.html
+
+Start Minishift
+~~~~~~~~~~~~~~~
+
+``minishift start --vm-driver=virtualbox``
+
+Make the oc Command Executable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``eval $(minishift oc-env)``
+
+Create a Minishift Project
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``oc new-project project1``
+
+Create a Dataverse App within the Minishift Project
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``oc new-app conf/openshift/openshift.json``
+
+Make the Dataverse App Available to Your Browser
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``oc expose svc/dataverse-glassfish-service``
+
+Log into Minishift and Visit Dataverse in your Browser
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+FIXME: This doesn't work yet. Rather than Dataverse running, for now you are expected to see "Application is not available".
+
+- https://192.168.99.100:8443
+- username: developer
+- password: developer
+
+Visit https://192.168.99.100:8443/console/project/project1/browse/routes and click http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/ or whatever is shows. This assumes you named your project ``project1``.
+
+Cleaning up
+~~~~~~~~~~~
+
+``oc delete project project1``
+
+Minishift Resources
+~~~~~~~~~~~~~~~~~~~
+
+The following resources might be helpful.
+
+- https://blog.openshift.com/part-1-from-app-to-openshift-runtimes-and-templates/
+- https://blog.openshift.com/part-2-creating-a-template-a-technical-walkthrough/
+- https://docs.openshift.com/enterprise/3.0/architecture/core_concepts/templates.html
+
 ----
 
 Previous: :doc:`intro` | Next: :doc:`version-control`

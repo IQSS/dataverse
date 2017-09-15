@@ -1,9 +1,8 @@
 {
-  "kind": "Project",
+  "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
     "name": "dataverse",
-    "creationTimestamp": null,
     "labels": {
       "name": "dataverse"
     },
@@ -12,29 +11,29 @@
       "openshift.io/display-name": "Dataverse"
     }
   },
-  "spec": {
-    "containers": [
-      {
-        "name": "dataverse-glassfish",
-        "image": "ndslabs/dataverse",
-        "ports": [
-          {
-            "containerPort": 8080,
-            "protocol": "TCP"
-          }
-        ]
+  "objects": [
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "dataverse-glassfish-service"
       },
-      {
-        "name": "dataverse-solr",
-        "image": "ndslabs/dataverse-solr",
+      "spec": {
         "ports": [
           {
-            "containerPort": 8983,
-            "protocol": "TCP"
+            "name": "web",
+            "protocol": "TCP",
+            "port": 8080,
+            "targetPort": 8080
+          }
+        ],
+        "containers": [
+          {
+            "name": "dataverse-glassfish",
+            "image": "ndslabs/dataverse"
           }
         ]
       }
-    ]
-  },
-  "status": {}
+    }
+  ]
 }
