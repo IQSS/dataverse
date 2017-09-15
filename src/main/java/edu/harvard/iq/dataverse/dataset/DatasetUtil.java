@@ -389,7 +389,7 @@ public class DatasetUtil {
         return false;
     }
 
-    public static List<DatasetField> getCustomFieldsAboveTheFold(DatasetVersion datasetVersion, String customFields) {
+    public static List<DatasetField> getCustomDatasetSummaryFields(DatasetVersion datasetVersion, String customFields) {
         List<DatasetField> datasetFields = new ArrayList<>();
         
         String[] customFieldList= customFields.split(",");

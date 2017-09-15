@@ -3890,19 +3890,19 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
     }*/
-    public boolean isCustomFieldsAboveTheFoldEnabled() {
-        String customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomFieldsAboveTheFold);
+    public boolean isCustomDatasetSummaryFieldsEnabled() {
+        String customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
         if (customFields == null || customFields.isEmpty()) {
             return false;
         }
         return true;
     }
 
-    public List<DatasetField> getCustomFieldsAboveTheFold() {
-        String customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomFieldsAboveTheFold);
+    public List<DatasetField> getCustomDatasetSummaryFields() {
+        String customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
         if (customFields == null || customFields.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
-        return DatasetUtil.getCustomFieldsAboveTheFold(workingVersion, customFields);
+        return DatasetUtil.getCustomDatasetSummaryFields(workingVersion, customFields);
     }
 }

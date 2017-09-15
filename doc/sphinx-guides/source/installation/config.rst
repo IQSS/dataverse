@@ -1065,9 +1065,9 @@ Limit on how many guestbook entries to display on the guestbook-responses page. 
 
 ``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
 
-:CustomFieldsAboveTheFold
+:CustomDatasetSummaryFields
 +++++++++++++++++++++++++
 
 "Above the fold" refers to the section of the dataset page just above the tabs for files, metadata, terms, etc. that contains Description, Subject, and a few other hard-coded fields. You can replace these fields with a custom list separated by commas using the curl command below.
 
-``curl http://localhost:8080/api/admin/settings/:CustomFieldsAboveTheFold -X PUT -d 'producer,subtitle,alternativeTitle'``
+``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``

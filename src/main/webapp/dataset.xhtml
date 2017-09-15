@@ -328,9 +328,14 @@
                             </div>
                             <!-- BEGIN: DATASET SUMMARY -->
                             <div id="dataset-summary-metadata" class="row panel panel-default"
-                                 jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned}">
+                                 jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
+                                                   ( (!empty DatasetPage.datasetVersionUI.descriptionDisplay
+                                                 or !empty DatasetPage.datasetVersionUI.keywordDisplay
+                                                 or !empty DatasetPage.datasetVersionUI.subject.value
+                                                 or !empty DatasetPage.datasetVersionUI.relPublicationCitation
+                                                 or !empty DatasetPage.datasetVersionUI.notes.value) or !empty DatasetPage.customDatasetSummaryFields ) }">
                                 <!-- DEFAULT -->
-                                <div class="panel-body metadata-panel-body" jsf:rendered="#{!DatasetPage.customFieldsAboveTheFoldEnabled and
+                                <div class="panel-body metadata-panel-body" jsf:rendered="#{!DatasetPage.customDatasetSummaryFieldsEnabled and
                                                  (!empty DatasetPage.datasetVersionUI.descriptionDisplay
                                                  or !empty DatasetPage.datasetVersionUI.keywordDisplay
                                                  or !empty DatasetPage.datasetVersionUI.subject.value
@@ -373,8 +378,8 @@
                                     </div>
                                 </div>
                                 <!-- CUSTOM -->
-                                <div class="panel-body metadata-panel-body" jsf:rendered="#{DatasetPage.customFieldsAboveTheFoldEnabled}">
-                                    <ui:repeat value="#{DatasetPage.customFieldsAboveTheFold}" var="dsf">
+                                <div class="panel-body metadata-panel-body" jsf:rendered="#{DatasetPage.customDatasetSummaryFieldsEnabled}">
+                                    <ui:repeat value="#{DatasetPage.customDatasetSummaryFields}" var="dsf">
                                         <!--TODO: This was copied from metadataFragment.xhtml so should we consolidate it?-->
                                         <div class="form-group">
                                             <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
