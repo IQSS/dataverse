@@ -67,20 +67,16 @@
                         </p:column>
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.roles']}">
                             <h:outputText value="#{user.roles}" />
-                            <!-- TODO WIRE UP THIS removeRolesButton COMMAND BUTTON -->
-                            <p:commandButton 
-                                id="removeRolesButton"  
-                                value="#{bundle['dashboard.list_users.tbl_header.roles.removeAll']}" 
-                                styleClass="btn btn-default"
-                                disabled="#{empty user.roles}"
-                                type="button">
-                            
+                            <p:commandButton id="removeRolesButton" 
+                                            rendered="#{!empty user.roles}" 
+                                            value="#{bundle['dashboard.list_users.tbl_header.roles.removeAll']}" 
+                                            styleClass="btn btn-default" 
+                                            type="button">
                                 <p:ajax event="click" 
                                         oncomplete="PF('removeRolesConfirm').show();"
                                         process="@this" 
                                         listener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"
                                         update=":dashboardUsersForm:removeRolesConfirm"/>
-                                
                             </p:commandButton>
                         </p:column>
                         <p:column width="9%" class="text-center" headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
@@ -107,10 +103,13 @@
                             <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}"  update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
                         </div>
                     </p:dialog>
-                    <p:confirmDialog id="removeRolesConfirm" message="#{DashboardUsersPage.confirmRemoveRolesMessage}" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRolesConfirm">
-                        <p:commandButton value="Yes" update="userTable,:messagePanel" oncomplete="PF('removeRolesConfirm').hide();" action="#{DashboardUsersPage.removeUserRoles()}" />
-                        <p:commandButton value="No" onclick="PF('removeRolesConfirm').hide();" type="button" />
-                    </p:confirmDialog>
+                    <p:dialog id="removeRolesConfirm" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRolesConfirm">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{DashboardUsersPage.confirmRemoveRolesMessage}</p>
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.yes}" update="userTable,:messagePanel" oncomplete="PF('removeRolesConfirm').hide();" action="#{DashboardUsersPage.removeUserRoles()}" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.no}" onclick="PF('removeRolesConfirm').hide();" type="button" />
+                        </div>
+                    </p:dialog>
                 </h:form>
             </ui:define>
         </ui:composition>

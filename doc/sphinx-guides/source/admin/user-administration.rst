@@ -6,8 +6,8 @@ This section focuses on user administration tools and tasks.
 .. contents:: Contents:
 	:local:
 
-Manage Users Table
-------------------
+Manage Users
+------------
 
 The Manage Users table gives the network administrator a list of all user accounts in table form. You can access it by clicking the "Manage Users" button on the Dashboard, which is linked from the header of all Dataverse pages (if you're logged in as an administrator). It lists username, full name, email address, affiliation, the authentication method they use, the roles their account has been granted, and whether or not they have Superuser status.
 
