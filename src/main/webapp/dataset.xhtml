@@ -337,7 +337,7 @@
                            
                                 <div class="panel-body metadata-panel-body" >
                                     <ui:repeat value="#{DatasetPage.customDatasetSummaryFields}" var="dsf">
-                                       <!-- FIXME: is there a way to not hard code the checks? i was thinking using the bundle titles-->
+                                       <!-- FIXME:i used the bundle titles to check for the special fields. Is there a better way to do this??-->
                                         <div id="subject" class="form-group" jsf:rendered="#{dsf.datasetFieldType.title==DatasetPage.datasetVersionUI.subject.datasetFieldType.title}">
                                             <div id="subject" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.subject.value}">
                                         <label class="col-sm-3 control-label">
