@@ -40,6 +40,16 @@
       }
     },
     {
+      "kind": "ImageStream",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "centos-postgresql-94-centos7"
+      },
+      "spec": {
+        "dockerImageRepository": "centos/postgresql-94-centos7"
+      }
+    },
+   {
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
@@ -71,6 +81,35 @@
                   "capabilities": {},
                   "privileged": false
                 }
+              },
+              {
+                "name": "centos-postgresql-94-centos7",
+                "image": "centos-postgresql-94-centos7",
+                "ports": [
+                  {
+                    "containerPort": 5432,
+                    "protocol": "TCP"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "POSTGRESQL_USER",
+                    "value": "pgUserValue"
+                  },
+                  {
+                    "name": "POSTGRESQL_PASSWORD",
+                    "value": "pgPasswordValue"
+                  },
+                  {
+                    "name": "POSTGRESQL_DATABASE",
+                    "value": "pgDatabaseValue"
+                  }
+                ],
+                "imagePullPolicy": "IfNotPresent",
+                "securityContext": {
+                  "capabilities": {},
+                  "privileged": false
+                }
               }
             ]
           }
@@ -95,6 +134,19 @@
               "from": {
                 "kind": "ImageStreamTag",
                 "name": "ndslabs-dataverse:latest"
+              }
+            }
+          },
+          {
+            "type": "ImageChange",
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "centos-postgresql-94-centos7"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "centos-postgresql-94-centos7:latest"
               }
             }
           },
