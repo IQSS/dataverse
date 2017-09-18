@@ -129,21 +129,6 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		em.refresh(assignee);
 	}
         
-        // "nuclear" remove-all roles for a user or group: 
-        // (Note that in addition to deleting the explicit role assignments, 
-        // it also strips the assignee of membership in any groups!)
-        public void revokeAll(RoleAssignee assignee) {
-            em.createNamedQuery("RoleAssignment.deleteAllByAssigneeIdentifier")
-                    .setParameter("assigneeIdentifier", assignee.getIdentifier())
-                    .executeUpdate();
-            
-            if (assignee instanceof AuthenticatedUser) {
-                em.createNativeQuery("DELETE FROM explicitgroup_authenticateduser WHERE containedauthenticatedusers_id="+((AuthenticatedUser)assignee).getId()).executeUpdate();
-            } else if (assignee instanceof ExplicitGroup) {
-                em.createNativeQuery("DELETE FROM explicitgroup_explicitgroup WHERE containedexplicitgroups_id="+((ExplicitGroup)assignee).getId()).executeUpdate();
-            }
-        }
-	
 	public void revoke( RoleAssignment ra ) {
 		if ( ! em.contains(ra) ) {
 			ra = em.merge(ra);
@@ -155,6 +140,27 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             indexAsync.indexRole(ra);
 	}
 	
+        // "nuclear" remove-all roles for a user or group: 
+        // (Note that all the "definition points" - i.e., the dvObjects
+        // on which the roles were assigned - need to be reindexed for permissions
+        // once the role assignments are removed!
+        public void revokeAll(RoleAssignee assignee) {
+            Set<DvObject> reindexSet = new HashSet<>();
+            
+            for (RoleAssignment ra : roleAssigneeService.getAssignmentsFor(assignee.getIdentifier())) {
+                if ( ! em.contains(ra) ) {
+			ra = em.merge(ra);
+		}
+                em.remove(ra);
+                
+                reindexSet.add(ra.getDefinitionPoint());
+            }
+            
+            indexAsync.indexRoles(reindexSet);
+        }
+	
+        
+        
 	public RoleAssignmentSet roleAssignments( User user, Dataverse dv ) {
 		RoleAssignmentSet retVal = new RoleAssignmentSet(user);
 		while ( dv != null ) {

@@ -181,7 +181,6 @@ public class DashboardUsersPage implements java.io.Serializable {
     
     
     public void setUserToToggleSuperuserStatus(AuthenticatedUser user) {
-        logger.info("saving user "+user.getIdentifier());
         selectedUserDetached = user; 
     }
     

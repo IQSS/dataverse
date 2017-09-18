@@ -243,4 +243,19 @@ public class ExplicitGroupServiceBean {
         return result;
     }
     
+    /**
+     * 
+     * Fully strips the assignee of membership in all the explicit groups.
+     * 
+     * @param assignee User or Group 
+     */
+    public void revokeAllGroupsForAssignee(RoleAssignee assignee) {
+        if (assignee instanceof AuthenticatedUser) {
+            em.createNativeQuery("DELETE FROM explicitgroup_authenticateduser WHERE containedauthenticatedusers_id=" + ((AuthenticatedUser) assignee).getId()).executeUpdate();
+        } else if (assignee instanceof ExplicitGroup) {
+            em.createNativeQuery("DELETE FROM explicitgroup_explicitgroup WHERE containedexplicitgroups_id=" + ((ExplicitGroup) assignee).getId()).executeUpdate();
+        }
+    }
+    
+    
 }
