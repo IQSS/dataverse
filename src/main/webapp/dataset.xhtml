@@ -336,26 +336,37 @@
                                                  or !empty DatasetPage.datasetVersionUI.notes.value  ) and !empty DatasetPage.customDatasetSummaryFields }">
                                 <div class="panel-body metadata-panel-body">
                                     <ui:repeat value="#{DatasetPage.customDatasetSummaryFields}" var="dsf">
-                                        <!-- FIXME:i used the bundle titles to check for the special fields. Is there a better way to do this??-->
-                                        <div id="subject" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.subject.value and dsf.datasetFieldType.title==DatasetPage.datasetVersionUI.subject.datasetFieldType.title}">
+                                        <!-- FIXME:This comment code is kept, in case we add/need formatting for these three fields, namely, subject, description and notes-->
+<!--                                        <div id="subject" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.subject.value and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.subject.datasetFieldType.id}">
                                             <label class="col-sm-3 control-label">
                                                 <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.subject.datasetFieldType.description}">#{DatasetPage.datasetVersionUI.subject.datasetFieldType.title}</span>
                                             </label>
                                             <div class="col-sm-9">#{DatasetPage.datasetVersionUI.subject.displayValue}</div>
                                         </div>
-                                        <div id="description" class="form-group" jsf:rendered="#{dsf.datasetFieldType.title==bundle['dataset.descriptionDisplay.title']}">
+                                        <div id="description" class="form-group" jsf:rendered="#{dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.description.datasetFieldType.id}">
                                             <label class="col-sm-3 control-label">
                                                 <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.description.datasetFieldType.description}">#{bundle['dataset.descriptionDisplay.title']}</span>
                                             </label>
                                             <div class="col-sm-9"><h:outputText value="#{DatasetPage.datasetVersionUI.descriptionDisplay}" escape="false"/></div>
                                         </div>
-                                        <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.title==bundle['dataset.keywordDisplay.title']}">
+                                         <div id="note" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.notes.value and dsf.datasetFieldType.title==DatasetPage.datasetVersionUI.notes.datasetFieldType.title}">
+                                            <label class="col-sm-3 control-label">
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}">#{DatasetPage.datasetVersionUI.notes.datasetFieldType.title}</span>
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.notes.value)}" escape="false"/>
+                                            </div>
+                                        </div>-->
+                                        
+                                        
+                                        
+                                        <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">
                                             <label class="col-sm-3 control-label">
                                                 <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}">#{bundle['dataset.keywordDisplay.title']}</span>
                                             </label>
                                             <div class="col-sm-9">#{DatasetPage.datasetVersionUI.keywordDisplay}</div>
                                         </div>
-                                        <div id="publication" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation and dsf.datasetFieldType.title==DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}">
+                                        <div id="publication" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation and dsf.datasetFieldType.name=='publication'}">
                                             <label class="col-sm-3 control-label">
                                                 <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}">#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}</span>
                                             </label>
@@ -364,15 +375,8 @@
                                                 <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
                                             </div>
                                         </div>
-                                        <div id="note" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.notes.value and dsf.datasetFieldType.title==DatasetPage.datasetVersionUI.notes.datasetFieldType.title}">
-                                            <label class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}">#{DatasetPage.datasetVersionUI.notes.datasetFieldType.title}</span>
-                                            </label>
-                                            <div class="col-sm-9">
-                                                <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.notes.value)}" escape="false"/>
-                                            </div>
-                                        </div>
-                                        <div class="form-group" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='subject' and dsf.datasetFieldType.name!='dsDescription' and dsf.datasetFieldType.name!='keyword' and dsf.datasetFieldType.name!='notesText' }">
+                                     
+                                        <div class="form-group" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'  }">
                                             <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
                                                 <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
                                                         #{dsf.datasetFieldType.title}
