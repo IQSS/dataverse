@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -390,7 +391,13 @@ public class DatasetUtil {
     }
 
     public static List<DatasetField> getCustomDatasetSummaryFields(DatasetVersion datasetVersion, String customFields) {
+        
         List<DatasetField> datasetFields = new ArrayList<>();
+        
+        //if customFields are empty, go with default fields. 
+        if(customFields==null || customFields.isEmpty()){
+               customFields="dsDescription,subject,keyword,publication,notesText";
+        }
         
         String[] customFieldList= customFields.split(",");
         Map<String,DatasetField> DatasetFieldsSet=new HashMap<>(); 
@@ -405,10 +412,7 @@ public class DatasetUtil {
                 if(df!=null)
                 datasetFields.add(df);
         }
-        
-        //if(datasetFields.size()==0)
-            System.out.println("Dataset Size:"+datasetFields.size());
-        
+            
         return datasetFields;
     }
 

@@ -3891,6 +3891,8 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
     }*/
+    
+    //TODO: Do we still need this? 
     public boolean isCustomDatasetSummaryFieldsEnabled() {
         String customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
         if (customFields == null || customFields.isEmpty()) {
@@ -3901,9 +3903,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public List<DatasetField> getCustomDatasetSummaryFields() {
        customFields  = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
-        if (customFields == null || customFields.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
+       
         return DatasetUtil.getCustomDatasetSummaryFields(workingVersion, customFields);
     }
     
