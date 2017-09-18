@@ -49,6 +49,16 @@
         "dockerImageRepository": "centos/postgresql-94-centos7"
       }
     },
+    {
+      "kind": "ImageStream",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "ndslabs-dataverse-solr"
+      },
+      "spec": {
+        "dockerImageRepository": "ndslabs/dataverse-solr"
+      }
+    },
    {
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
@@ -110,6 +120,21 @@
                   "capabilities": {},
                   "privileged": false
                 }
+              },
+              {
+                "name": "ndslabs-dataverse-solr",
+                "image": "ndslabs-dataverse-solr",
+                "ports": [
+                  {
+                    "containerPort": 8983,
+                    "protocol": "TCP"
+                  }
+                ],
+                "imagePullPolicy": "IfNotPresent",
+                "securityContext": {
+                  "capabilities": {},
+                  "privileged": false
+                }
               }
             ]
           }
@@ -147,6 +172,19 @@
               "from": {
                 "kind": "ImageStreamTag",
                 "name": "centos-postgresql-94-centos7:latest"
+              }
+            }
+          },
+          {
+            "type": "ImageChange",
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "ndslabs-dataverse-solr"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "ndslabs-dataverse-solr:latest"
               }
             }
           },
