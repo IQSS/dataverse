@@ -191,15 +191,8 @@ public class BuiltinUsersIT {
 
     }
 
-    /**
-     * testValidatePasswordCleanInstall
-     *
-     * Verify if the defaults kick in from
-     * {@link edu.harvard.iq.dataverse.util.SystemConfig} when running from a
-     * clean install where nothing was set with VM or admin API settings.
-     */
     @Test
-    public void testValidatePasswordCleanInstall() {
+    public void testValidatePasswordScrewsTightened() {
 
         Arrays.stream(SettingsServiceBean.Key.values())
                 .filter(key -> key.name().startsWith("PV"))
@@ -297,34 +290,12 @@ public class BuiltinUsersIT {
         );
     }
 
-    /**
-     * testValidatePasswordCleanInstall2
-     *
-     * Verify if the defaults kick in from
-     * {@link edu.harvard.iq.dataverse.util.SystemConfig} when running from a
-     * clean install where nothing was set with VM or admin API settings.
-     *
-     * Added to test password complexity that matches requirements for Dataverse
-     * 4.0.
-     */
-    @Ignore
     @Test
-    public void testValidatePasswordCleanInstall2() {
-        // FIXME: Figure out how to enable both "testValidatePasswordCleanInstall" tests. Once the character rules are set they can't be changed until Glassfish is restarted.
+    public void testValidatePasswordsOutOfBoxSettings() {
 
         Arrays.stream(SettingsServiceBean.Key.values())
                 .filter(key -> key.name().startsWith("PV"))
                 .forEach(key -> given().delete("/api/admin/settings/" + key));
-
-//        Response setCharRules = UtilIT.setSetting(SettingsServiceBean.Key.PVCharacterRules, "Alphabetical:1,Digit:1");
-//        setCharRules.then().assertThat()
-//                .statusCode(200);
-//        Response setMinLength = UtilIT.setSetting(SettingsServiceBean.Key.PVMinLength, "6");
-//        setMinLength.then().assertThat()
-//                .statusCode(200);
-//        Response setNumCharacteristics = UtilIT.setSetting(SettingsServiceBean.Key.PVNumberOfCharacteristics, "2");
-//        setNumCharacteristics.then().assertThat()
-//                .statusCode(200);
 
         Collections.unmodifiableMap(Stream.of(
                 new AbstractMap.SimpleEntry<>(" ", Arrays.asList( // All is wrong here:
