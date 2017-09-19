@@ -104,7 +104,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                         }
 
                         private FileVisitResult handleException(final IOException e) {
-                          e.printStackTrace(); // replace with more robust error handling
+                          logger.warning("Failed to delete file due to"+e.getMessage());
                           return FileVisitResult.TERMINATE;
                         }
 
