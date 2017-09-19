@@ -60,7 +60,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         if (theDataset.getPublicationDate() == null) {
             // First Release
             // Send notifications to users with download file permission
-            notifyUsers(ctxt, theDataset, UserNotification.Type.ASSIGNROLE);
+            notifyUsersDownload(ctxt, theDataset, UserNotification.Type.ASSIGNROLE);
             
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
@@ -116,7 +116,15 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset)
                 .ifPresent(wf -> ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset)));
         
-        return ctxt.em().merge(theDataset);
+        Dataset resultSet = ctxt.em().merge(theDataset);
+        
+        if(resultSet != null) {
+            notifyUsersPublishEdit(ctxt, theDataset, UserNotification.Type.PUBLISHEDDS);
+            //ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()
+            //userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.PUBLISHEDDS, dataset.getLatestVersion().getId());
+        }
+        
+        return resultSet;
     }
 
     /**
@@ -176,7 +184,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataFile.setPublicationDate(updateTime);
                 
                 // check if any prexisting roleassignments have file download and send notifications
-                notifyUsers(ctxt, dataFile, UserNotification.Type.GRANTFILEACCESS);
+                notifyUsersDownload(ctxt, dataFile, UserNotification.Type.GRANTFILEACCESS);
             }
             
             // set the files restriction flag to the same as the latest version's
@@ -234,13 +242,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
     
-    private void notifyUsers(CommandContext ctxt, DvObject subject, UserNotification.Type messageType ) {
+    private void notifyUsersDownload(CommandContext ctxt, DvObject subject, UserNotification.Type messageType ) {
         Timestamp timestamp = new Timestamp(new Date().getTime());
         ctxt.roles().directRoleAssignments(subject).stream()
             .filter(  ra -> ra.getRole().permissions().contains(Permission.DownloadFile) )
             .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
             .distinct() // prevent double-send
             .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) );
+    }
+    
+        private void notifyUsersPublishEdit(CommandContext ctxt, DvObject subject, UserNotification.Type messageType ) {
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        ctxt.roles().directRoleAssignments(subject).stream()
+            .filter(  ra -> ra.getRole().permissions().contains(Permission.PublishDataset) || ra.getRole().permissions().contains(Permission.EditDataset))
+            .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
+            .distinct() // prevent double-send
+            //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) );
+            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getLatestVersion().getId()) ); //not sure why the above line doesn't work instead
     }
     
     /**

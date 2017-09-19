@@ -1839,14 +1839,13 @@ public class DatasetPage implements java.io.Serializable {
 
     private String releaseDataset(boolean minor) {
         Command<PublishDatasetResult> cmd;
-        //SEK we want to notify concerned users if a DS in review has been published.
-        boolean notifyPublish = workingVersion.isInReview();
+
         if (session.getUser() instanceof AuthenticatedUser) {
             try {
-                if (editMode == EditMode.CREATE) {
-                    cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
+                if (editMode == EditMode.CREATE) { //FIXME: Why are we using the same commands?
+                    cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor); 
                 } else {
-                    cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
+                    cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor); 
                 }
                 dataset = commandEngine.submit(cmd).getDataset();
                 // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset 
@@ -1857,15 +1856,16 @@ public class DatasetPage implements java.io.Serializable {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
                 } else {
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
-                }
-                if (notifyPublish) {
-                    List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
-                    List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
-                    for (AuthenticatedUser au : authUsers) {
-                        editUsers.remove(au);
-                    }
-                    for (AuthenticatedUser au : editUsers) {
-                        userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.PUBLISHEDDS, dataset.getLatestVersion().getId());
+                    //SEK we want to notify concerned users if a DS in review has been published.
+                    if (workingVersion.isInReview()) {
+                        List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
+                        List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
+                        for (AuthenticatedUser au : authUsers) {
+                            editUsers.remove(au);
+                        }
+                        for (AuthenticatedUser au : editUsers) {
+                            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.PUBLISHEDDS, dataset.getLatestVersion().getId());
+                        }
                     }
                 }
             } catch (CommandException ex) {
