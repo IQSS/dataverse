@@ -17,9 +17,13 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitResult.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,9 +89,34 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 try { 
                     String datasetDirectory = doomed.getOwner().getFileSystemDirectory().toString();
                     Path datasetDirectoryPath = Paths.get(datasetDirectory, doomed.getStorageIdentifier());
-                    Files.walk(datasetDirectoryPath)
-                        .map(Path::toFile)
-                        .forEach(File::delete);
+                            
+                        Files.walkFileTree(datasetDirectoryPath, new SimpleFileVisitor<Path>(){
+                        @Override 
+                        public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs)
+                          throws IOException {
+                          Files.delete(file);
+                          return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override 
+                        public FileVisitResult visitFileFailed(final Path file, final IOException e) {
+                          return handleException(e);
+                        }
+
+                        private FileVisitResult handleException(final IOException e) {
+                          e.printStackTrace(); // replace with more robust error handling
+                          return FileVisitResult.TERMINATE;
+                        }
+
+                        @Override 
+                        public FileVisitResult postVisitDirectory(final Path dir, final IOException e)
+                          throws IOException {
+                          if(e!=null)return handleException(e);
+                          Files.delete(dir);
+                          return FileVisitResult.CONTINUE;
+                        }
+                        }
+                );
                     
                 } catch (IOException ioex) {
                     throw new CommandExecutionException("Failed to delete package file "+doomed.getStorageIdentifier(), ioex, this);
