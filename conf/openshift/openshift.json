@@ -91,6 +91,10 @@
                 ],
                 "env": [
                   {
+                    "name": "ADMIN_PASSWORD",
+                    "value": "admin"
+                  },
+                  {
                     "name": "SMTP_HOST",
                     "value": "localhost"
                   },

@@ -354,6 +354,13 @@ Make the oc Command Executable
 
 ``eval $(minishift oc-env)``
 
+Log in to Minishift
+~~~~~~~~~~~~~~~~~~~
+
+``oc login``
+
+Use "developer" as the username and a couple characters as the password.
+
 Create a Minishift Project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -397,6 +404,8 @@ Log into Minishift and Visit Dataverse in your Browser
 - password: developer
 
 Visit https://192.168.99.100:8443/console/project/project1/browse/routes and click http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/ or whatever is shows. This assumes you named your project ``project1``.
+
+You should be able to log in with username "dataverseAdmin" and password "admin".
 
 Cleaning up
 ~~~~~~~~~~~
