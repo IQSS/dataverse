@@ -364,6 +364,21 @@ Create a Dataverse App within the Minishift Project
 
 ``oc new-app conf/openshift/openshift.json``
 
+Check Status of Dataverse Deployment to Minishift
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``oc get all``
+
+Review Logs of Dataverse Deployment to Minishift
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``oc logs -c ndslabs-dataverse $(oc get po -o json | jq '.items[] | select(.kind=="Pod").metadata.name' -r | grep -v dataverse-glassfish-1-deploy)``
+
+Get a Shell (ssh/rsh) on Glassfish Server Deployed to Minishift
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``oc rsh $(oc get po -o json | jq '.items[] | select(.kind=="Pod").metadata.name' -r | grep -v dataverse-glassfish-1-deploy)``
+
 Make the Dataverse App Available to Your Browser
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
