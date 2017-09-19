@@ -479,9 +479,8 @@
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
                             <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' and DataverseUserPage.nonLocalLoginEnabled}">
-
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>
-                                    <h:outputText value=" #{bundle['user.signup.otherLogInOptions.tip']}" escape="false"/>
+                                <p class="help-block">
+                                    <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['user.signup.otherLogInOptions.tip']}" escape="false"/>
                                 </p>
                             </ui:fragment>
                             <div class="form-horizontal">
@@ -493,7 +492,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['user.username.valid']}</p>
+                                        <p class="help-block">#{bundle['user.username.valid']}</p>
                                     </div>
                                     <div class="col-sm-4 col-sm-offset-3">
                                         <p:inputText id="userName" styleClass="form-control" tabindex="1"
@@ -525,7 +524,11 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['user.updatePassword.password']}</p>
+                                        <div class="help-block">
+                                            <h:outputFormat value="#{bundle['user.updatePassword.password']}" escape="false">
+                                                <f:param value="#{DataverseUserPage.passwordRequirements}"/>
+                                            </h:outputFormat>
+                                        </div>
                                     </div>
                                     <div class="col-sm-4 col-sm-offset-3">
                                         <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
