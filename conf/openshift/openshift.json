@@ -19,6 +19,9 @@
         "name": "dataverse-glassfish-service"
       },
       "spec": {
+        "selector": {
+          "name": "ndslabs-dataverse"
+        },
         "ports": [
           {
             "name": "web",

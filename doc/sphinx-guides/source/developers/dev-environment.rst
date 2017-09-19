@@ -379,6 +379,11 @@ Get a Shell (ssh/rsh) on Glassfish Server Deployed to Minishift
 
 ``oc rsh $(oc get po -o json | jq '.items[] | select(.kind=="Pod").metadata.name' -r | grep -v dataverse-glassfish-1-deploy)``
 
+From the ``rsh`` prompt you could run something like the following to build confidence that Dataverse is running on port 8080:
+
+``curl -L localhost:8080``
+
+
 Make the Dataverse App Available to Your Browser
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -386,8 +391,6 @@ Make the Dataverse App Available to Your Browser
 
 Log into Minishift and Visit Dataverse in your Browser
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-FIXME: This doesn't work yet. Rather than Dataverse running, for now you are expected to see "Application is not available".
 
 - https://192.168.99.100:8443
 - username: developer
