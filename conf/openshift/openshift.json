@@ -59,7 +59,7 @@
         "dockerImageRepository": "ndslabs/dataverse-solr"
       }
     },
-   {
+    {
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
@@ -84,6 +84,24 @@
                   {
                     "containerPort": 8080,
                     "protocol": "TCP"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "SMTP_HOST",
+                    "value": "localhost"
+                  },
+                  {
+                    "name": "POSTGRES_USER",
+                    "value": "dvnapp"
+                  },
+                  {
+                    "name": "POSTGRES_PASSWORD",
+                    "value": "dvnappPassword"
+                  },
+                  {
+                    "name": "POSTGRES_DATABASE",
+                    "value": "dvndb"
                   }
                 ],
                 "imagePullPolicy": "IfNotPresent",
