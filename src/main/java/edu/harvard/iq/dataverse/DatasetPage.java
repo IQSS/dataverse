@@ -242,7 +242,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private String thumbnailString = null; 
     
-    private boolean thumbnailsEnabled = false;
+    private boolean pageLoadInProgress = true;
 
     // This is the Dataset-level thumbnail; 
     // it's either the thumbnail of the designated datafile, 
@@ -662,7 +662,7 @@ public class DatasetPage implements java.io.Serializable {
     private Map<Long, String> datafileThumbnailsMap = new HashMap<>();
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
-        if (!thumbnailsEnabled) {
+        if (pageLoadInProgress) {
             return false;
         }
         // new and optimized logic: 
@@ -707,15 +707,16 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void enableThumbnails() {
-        thumbnailsEnabled = true;
+        pageLoadInProgress = false;
+        logger.fine("ENABLED thumbnails on the page.");
     }
     
-    public boolean isThumbnailsEnabled() {
-        return thumbnailsEnabled;
+    public boolean isPageLoadInProgress() {
+        return pageLoadInProgress;
     }
     
-    public void setThumbnailsEnabled(boolean enabled) {
-        thumbnailsEnabled = enabled; 
+    public void setPageLoadInProgress(boolean enabled) {
+        pageLoadInProgress = enabled; 
     }
     
     
