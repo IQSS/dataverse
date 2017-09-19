@@ -90,9 +90,9 @@ Adding Widgets to an OpenScholar Website
 
 .. _dataverse-permissions:
 
-Permissions 
+Roles & Permissions 
 =======================================================
-When you access a dataverse's permissions page, you will see there are three sections: Permissions, Users/Groups, and Roles. 
+Admins of a Dataverse can assign roles and permissions to the users of that Dataverse. If you are an admin on a dataverse, then you will find the link to the Permissions page under the Edit dropdown on the dataverse page. 
 
 |image2|
 
@@ -100,19 +100,32 @@ Clicking on Permissions will bring you to this page:
 
 |image3|
 
-By clicking on the Edit Access button, you are able to change the settings allowing no one or anyone to add either dataverses or datasets to a dataverse.
+When you access a dataverse's permissions page, you will see three sections, which we will explain in detail after the following summaries:
+**Permissions:** Here you can decide the requirements that determine which types of users can add datasets and sub dataverses to your dataverse, and what permissions they'll be granted when they do so.
+**Users/Groups:** Here you can assign roles to specific users, determining which actions they are permitted to take on your dataverse.
+**Roles:** Here you can reference a full list of roles that can be assigned to users of your dataverse. Each role lists the permissions that it offers.
+
+Setting Access Configurations
+---------------------------------------------
+Under the Permissions tab, you can click the "Edit Access" button to open a box where you can add to your dataverse and what permissions are granted to those who add to your dataverse.
 
 |image4|
 
-The Edit Access pop up allows you to also select if someone adding a dataset to this dataverse should be allowed to publish it (Curator role) or if the dataset will be submitted to the administrator of this dataverse to be reviewed then published (Contributor role). These Access settings can be changed at any time.
+The first question on this page allows you to determine how open your dataverse is to new additions - you can set whether or not the entire userbase has the ability to add datasets or sub dataverses to your dataverse. 
 
-Assign Role
------------------------
-You can also give access to a Dataverse user to allow them to access an unpublished dataverse as well as other roles. To do this, click on the Assign Roles to Users/Groups button in the Users/Groups section. You can also give multiple users the same role at one time. This roles can be removed at any time.
+The second question on this page allows you to choose the role (and thus the permissions) granted to users who add a dataset to your dataverse. The role you select will be automatically granted to any user who creates a dataset on your dataverse, at the moment that he or she creates it. The role the user is given determines his or her permissions for the dataset they've created. The key difference between the two roles is this: curators can publish their own datasets, while contributors must submit the dataset to the administrator of the dataverse to be reviewed and then published.  Note that this setting does not retroactively apply roles to users who have previously added datasets to your dataverse; it only applies to users adding new datasets going forward.
+
+Both of these settings can be changed at any time.
+
+Assigning Roles to Users and Groups
+------------------------------------------
+Under the Users/Groups tab, you can add, edit, or remove the roles granted to users and groups on your dataverse. A role is a set of permissions granted to a user or group when they're using your dataverse. For example, giving your research assistant the "Contributor" role would give him the following self-explanatory permissions: "ViewUnpublishedDataset", "DownloadFile", "EditDataset", and "DeleteDatasetDraft". He would, however, lack the "PublishDataset" permission, and thus would be unable to publish datasets on your dataverse. If you wanted to give him that permission, you would give him a role with that permission, like the Curator role. Users and groups can hold multiple roles at the same time if needed. Roles can be removed at any time. All roles and their associated permissions are listed under the "Roles" tab of the same page.
 
 |image5|
 
 |image6|
+
+Note: If you need to assign a role to ALL Dataverse users, you can assign the role to the ":authenticated-users" group.
 
 .. _dataset-templates: 
 
