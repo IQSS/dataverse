@@ -111,7 +111,7 @@
                                     <!-- END: Return to Author Button -->
 
                                     <!-- Submit for Review Button -->
-                                    <button type="button" class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('inreview').show()"
+                                    <button type="button" class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" onclick="PF('inreview').show()"
                                             jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                             and !DatasetPage.datasetLockedInWorkflow
                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
