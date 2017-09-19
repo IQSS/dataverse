@@ -12,7 +12,7 @@ You **may** find it helpful to look at how the configuration is done automatical
 Java
 ----
 
-Dataverse requires Java 8 (also known as 1.8).
+Dataverse requires Java SE 8 (8u74/JDK 1.8.0u74 or higher).
 
 Installing Java
 ===============

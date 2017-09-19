@@ -65,6 +65,7 @@ import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
 import javax.ws.rs.QueryParam;
@@ -981,4 +982,24 @@ public class Admin extends AbstractApiBean {
         return ok(data);
     }
 
+    /**
+     * validatePassword
+     * <p>
+     * Validate a password with an API call
+     *
+     * @param password The password
+     * @return A response with the validation result.
+     */
+    @Path("validatePassword")
+    @POST
+    public Response validatePassword(String password) {
+
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        final JsonArrayBuilder errorArray = Json.createArrayBuilder();
+        errors.forEach(errorArray::add);
+        return ok(Json.createObjectBuilder()
+                .add("password", password)
+                .add("errors", errorArray)
+        );
+    }
 }
