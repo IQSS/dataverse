@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
 import org.passay.CharacterRule;
@@ -57,7 +56,7 @@ public class PasswordValidatorUtil {
 
     //TODO: Relocate this messaging to the bundle and refactor passwordreset.xhtml to use it accordingly.
     public static String getPasswordRequirements(int minLength, int maxLength, List<CharacterRule> characterRules, int numberOfCharacteristics, int numberOfConsecutiveDigitsAllowed, int goodStrength, boolean dictionaryEnabled, List<String> errors) {
-        logger.info(errors.toString());
+        logger.fine(errors.toString());
         String message = BundleUtil.getStringFromBundle("passwdVal.passwdReq.title");
         message += "<ul>";
         String optionalGoodStrengthNote = "";

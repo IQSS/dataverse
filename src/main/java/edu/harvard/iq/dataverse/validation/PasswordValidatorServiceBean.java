@@ -296,7 +296,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             }
         });
         if (fileReaders.size() == 0)
-            logger.warning(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryRead"));
+            logger.fine(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryRead"));
         return fileReaders.toArray(new FileReader[fileReaders.size()]);
     }
 
@@ -304,7 +304,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         if (dictionaries == null) {
             final URL url = PasswordValidatorServiceBean.class.getResource(DICTIONARY_FILES);
             if (url == null) {
-                logger.warning(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryObj")+" " + DICTIONARY_FILES);
+                logger.fine(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryObj")+" " + DICTIONARY_FILES);
                 dictionaries = DICTIONARY_FILES;
             } else
                 dictionaries = url.getPath() + File.pathSeparator + url.getFile();
@@ -361,11 +361,11 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     public String getGoodPasswordDescription(List<String> errors) {
         boolean dictionaryEnabled = false;
         String dictionariesSetting = systemConfig.getPVDictionaries();
-        logger.info("dictionariesSetting: " + dictionariesSetting);
+        logger.fine("dictionariesSetting: " + dictionariesSetting);
         if (dictionariesSetting != null && !dictionariesSetting.isEmpty()) {
             dictionaryEnabled = true;
         }
-        logger.info("dictionaryEnabled: " + dictionaryEnabled);
+        logger.fine("dictionaryEnabled: " + dictionaryEnabled);
         if (errors == null){
             errors = new ArrayList<>();
         }

@@ -685,7 +685,7 @@ public class SystemConfig {
         try {
             goodStrengthLength = Integer.parseInt(_goodStrengthLength);
         } catch (NumberFormatException nfe) {
-            logger.warning("Invalid value for PVGoodStrength: " + _goodStrengthLength);
+            logger.fine("Invalid value for PVGoodStrength: " + _goodStrengthLength);
         }
         return goodStrengthLength;
     }
@@ -703,7 +703,7 @@ public class SystemConfig {
         try {
             passportValidatorMinLength = Integer.parseInt(_passportValidatorMinLength);
         } catch (NumberFormatException nfe) {
-            logger.warning("Invalid value for PwMinLength: " + _passportValidatorMinLength);
+            logger.fine("Invalid value for PwMinLength: " + _passportValidatorMinLength);
         }
         return passportValidatorMinLength;
     }
@@ -721,7 +721,7 @@ public class SystemConfig {
         try {
             passportValidatorMaxLength = Integer.parseInt(_passportValidatorMaxLength);
         } catch (NumberFormatException nfe) {
-            logger.warning("Invalid value for PwMaxLength: " + _passportValidatorMaxLength);
+            logger.fine("Invalid value for PwMaxLength: " + _passportValidatorMaxLength);
         }
         return passportValidatorMaxLength;
     }
@@ -760,7 +760,7 @@ public class SystemConfig {
         try {
             numberOfCharacteristics = Integer.parseInt(_numberOfCharacteristics);
         } catch (NumberFormatException nfe) {
-            logger.warning("Invalid value for PVNumberOfCharacteristics: " + _numberOfCharacteristics);
+            logger.fine("Invalid value for PVNumberOfCharacteristics: " + _numberOfCharacteristics);
         }
         return numberOfCharacteristics;
     }
@@ -775,7 +775,7 @@ public class SystemConfig {
         try {
             numConsecutiveDigitsAllowed = Integer.parseInt(_numberOfConsecutiveDigitsAllowed);
         } catch (NumberFormatException nfe) {
-            logger.warning("Invalid value for " + SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed + ": " + _numberOfConsecutiveDigitsAllowed);
+            logger.fine("Invalid value for " + SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed + ": " + _numberOfConsecutiveDigitsAllowed);
         }
         return numConsecutiveDigitsAllowed;
     }
