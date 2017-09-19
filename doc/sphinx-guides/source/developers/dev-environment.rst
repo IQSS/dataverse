@@ -361,6 +361,13 @@ Log in to Minishift
 
 Use "developer" as the username and a couple characters as the password.
 
+Allow Containers to Run as Root in Minishift
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This isn't ideal, but for now we're allowing containers to run as root. FIXME: Eventually, we should create containers that don't require root.
+
+``oc adm policy add-scc-to-user anyuid -z default --as system:admin``
+
 Create a Minishift Project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
