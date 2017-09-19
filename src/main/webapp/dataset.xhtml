@@ -333,9 +333,9 @@
                                                  or !empty DatasetPage.datasetVersionUI.keywordDisplay
                                                  or !empty DatasetPage.datasetVersionUI.subject.value
                                                  or !empty DatasetPage.datasetVersionUI.relPublicationCitation
-                                                 or !empty DatasetPage.datasetVersionUI.notes.value  ) and !empty DatasetPage.customDatasetSummaryFields }">
+                                                 or !empty DatasetPage.datasetVersionUI.notes.value  ) and !empty DatasetPage.datasetSummaryFields }">
                                 <div class="panel-body metadata-panel-body">
-                                    <ui:repeat value="#{DatasetPage.customDatasetSummaryFields}" var="dsf">
+                                    <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">
                                         
                                         <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">
                                             <label class="col-sm-3 control-label">

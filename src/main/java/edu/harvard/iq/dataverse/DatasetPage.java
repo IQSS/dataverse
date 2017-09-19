@@ -3892,19 +3892,17 @@ public class DatasetPage implements java.io.Serializable {
         }
     }*/
     
-    //TODO: Do we still need this? 
-    public boolean isCustomDatasetSummaryFieldsEnabled() {
-        String customFields = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
-        if (customFields == null || customFields.isEmpty()) {
-            return false;
-        }
-        return true;
-    }
-
-    public List<DatasetField> getCustomDatasetSummaryFields() {
+    /**
+     * this method returns the dataset fields to be shown in the dataset summary 
+     * on the dataset page.
+     * It returns the default summary fields( subject, description, keywords, related publications and notes)
+     * if the custom summary datafields has not been set, otherwise will set the custom fields set by the sysadmins
+     * 
+     */
+    public List<DatasetField> getDatasetSummaryFields() {
        customFields  = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
        
-        return DatasetUtil.getCustomDatasetSummaryFields(workingVersion, customFields);
+        return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
     
 }
