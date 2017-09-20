@@ -56,10 +56,10 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "ndslabs-dataverse-solr"
+        "name": "iqss-dataverse-solr"
       },
       "spec": {
-        "dockerImageRepository": "ndslabs/dataverse-solr"
+        "dockerImageRepository": "iqss/dataverse-solr"
       }
     },
     {
@@ -147,8 +147,8 @@
                 }
               },
               {
-                "name": "ndslabs-dataverse-solr",
-                "image": "ndslabs-dataverse-solr",
+                "name": "iqss-dataverse-solr",
+                "image": "iqss-dataverse-solr",
                 "ports": [
                   {
                     "containerPort": 8983,
@@ -205,11 +205,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "ndslabs-dataverse-solr"
+                "iqss-dataverse-solr"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "ndslabs-dataverse-solr:latest"
+                "name": "iqss-dataverse-solr:4040-docker-openshift"
               }
             }
           },
