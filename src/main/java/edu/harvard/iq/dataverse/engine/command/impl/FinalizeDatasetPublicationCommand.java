@@ -57,14 +57,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public Dataset execute(CommandContext ctxt) throws CommandException {
         registerExternalIdentifier(theDataset, ctxt);        
 
+        boolean firstRelease = false;
         if (theDataset.getPublicationDate() == null) {
-            // First Release
-            // Send notifications to users with download file permission
-            notifyUsersDownload(ctxt, theDataset, UserNotification.Type.ASSIGNROLE);
-            
+            firstRelease = true;
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
-            
         } 
 
         // update metadata
@@ -119,9 +116,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         Dataset resultSet = ctxt.em().merge(theDataset);
         
         if(resultSet != null) {
-            notifyUsersPublishEdit(ctxt, theDataset, UserNotification.Type.PUBLISHEDDS);
-            //ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()
-            //userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.PUBLISHEDDS, dataset.getLatestVersion().getId());
+            notifyUsersDatasetPublish(ctxt, theDataset);
+            
+            if (firstRelease) {
+                // Send notifications to users with download file permission
+                notifyUsersRoleAdded(ctxt, theDataset);
+            }
         }
         
         return resultSet;
@@ -184,7 +184,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataFile.setPublicationDate(updateTime);
                 
                 // check if any prexisting roleassignments have file download and send notifications
-                notifyUsersDownload(ctxt, dataFile, UserNotification.Type.GRANTFILEACCESS);
+                notifyUsersFileDownload(ctxt, dataFile);
             }
             
             // set the files restriction flag to the same as the latest version's
@@ -242,23 +242,35 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
     
-    private void notifyUsersDownload(CommandContext ctxt, DvObject subject, UserNotification.Type messageType ) {
+   
+    //These notification methods are fairly similar, but it was cleaner to create a few copies.
+    //If more notifications are needed in this command, they should probably be collapsed.
+    private void notifyUsersFileDownload(CommandContext ctxt, DvObject subject) {
         Timestamp timestamp = new Timestamp(new Date().getTime());
         ctxt.roles().directRoleAssignments(subject).stream()
             .filter(  ra -> ra.getRole().permissions().contains(Permission.DownloadFile) )
             .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
             .distinct() // prevent double-send
-            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) );
+            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, UserNotification.Type.GRANTFILEACCESS, theDataset.getId()) );
     }
     
-        private void notifyUsersPublishEdit(CommandContext ctxt, DvObject subject, UserNotification.Type messageType ) {
+    private void notifyUsersRoleAdded(CommandContext ctxt, DvObject subject) {
         Timestamp timestamp = new Timestamp(new Date().getTime());
         ctxt.roles().directRoleAssignments(subject).stream()
-            .filter(  ra -> ra.getRole().permissions().contains(Permission.PublishDataset) || ra.getRole().permissions().contains(Permission.EditDataset))
+            .filter(  ra -> ra.getRole().permissions().contains(Permission.DownloadFile) )
             .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
             .distinct() // prevent double-send
-            //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) );
-            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getLatestVersion().getId()) ); //not sure why the above line doesn't work instead
+            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, UserNotification.Type.ASSIGNROLE, theDataset.getId()) );
+    }
+    
+    private void notifyUsersDatasetPublish(CommandContext ctxt, DvObject subject) {
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        ctxt.roles().rolesAssignments(subject).stream()
+            .filter(  ra -> ra.getRole().permissions().contains(Permission.ViewUnpublishedDataset) || ra.getRole().permissions().contains(Permission.DownloadFile))
+            .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
+            .distinct() // prevent double-send
+            //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) ); //not sure why this line doesn't work instead
+            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, UserNotification.Type.PUBLISHEDDS, theDataset.getLatestVersion().getId()) ); 
     }
     
     /**

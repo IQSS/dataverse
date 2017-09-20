@@ -1856,17 +1856,6 @@ public class DatasetPage implements java.io.Serializable {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
                 } else {
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
-                    //SEK we want to notify concerned users if a DS in review has been published.
-                    if (workingVersion.isInReview()) {
-                        List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
-                        List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
-                        for (AuthenticatedUser au : authUsers) {
-                            editUsers.remove(au);
-                        }
-                        for (AuthenticatedUser au : editUsers) {
-                            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.PUBLISHEDDS, dataset.getLatestVersion().getId());
-                        }
-                    }
                 }
             } catch (CommandException ex) {
                 
