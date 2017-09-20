@@ -92,7 +92,7 @@
                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
                                          and (DatasetPage.canUpdateDataset()
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                        <p:commandLink type="button" styleClass="btn btn-default btn-access  #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
+                        <p:commandLink type="button" styleClass="btn btn-default btn-access  #{DatasetPage.workingVersion.fileMetadatas.size() > 0 or DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
                                         rendered="#{DatasetPage.sessionUserAuthenticated 
                                                     and DatasetPage.canUpdateDataset()
                                                     and !widgetWrapper.widgetView and settingsWrapper.rsyncUpload}">
