@@ -14,7 +14,7 @@
     <div class="row">
         <div class="col-xs-12">
             <p class="help-block">
-                <h:outputFormat value=" #{bundle['file.dataFilesTab.dataAccess.info']}" escape="false">
+                <h:outputFormat value=" #{(!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT') ? bundle['file.dataFilesTab.dataAccess.info.draft'] : bundle['file.dataFilesTab.dataAccess.info']}" escape="false">
                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                     <f:param value="#{systemConfig.guidesVersion}"/>
                 </h:outputFormat>
