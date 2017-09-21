@@ -33,6 +33,11 @@ public class SettingsServiceBean {
      */
     public enum Key {
         /**
+         * Ordered, comma-separated list of custom fields to show above the fold
+         * on dataset page such as "data_type,sample,pdb"
+         */
+        CustomDatasetSummaryFields,
+        /**
          * Defines a public installation -- all datafiles are unrestricted
          */
         PublicInstall,
@@ -293,9 +298,50 @@ public class SettingsServiceBean {
         NavbarGuidesUrl,
         
         // Limit on how many guestbook entries to display on the guestbook-responses page:
-        GuestbookResponsesPageDisplayLimit; 
+        GuestbookResponsesPageDisplayLimit,
 
+        /**
+         * The dictionary filepaths separated by a pipe (|)
+         */
+        PVDictionaries,
+
+//        /**
+//         * The days and minimum length for when to apply an expiration date.
+//         */
+//        PVExpirationDays,
+//        PVValidatorExpirationMaxLength,
+
+        /**
+         * The minimum length of a good, long, strong password.
+         */
+        PVGoodStrength,
+
+        /**
+         * A password minimum and maximum length
+         */
+        PVMinLength,
+        PVMaxLength,
+
+        /**
+         * One letter, 2 special characters, etc.
+         */
+        PVCharacterRules,
+
+        /**
+         * The number of M characteristics
+         */
+        PVNumberOfCharacteristics,
         
+        /**
+         * The number of consecutive digits allowed for a password
+         */
+        PVNumberOfConsecutiveDigitsAllowed,
+        /**
+         * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
+         */
+        PVCustomPasswordResetAlertMessage
+        ;
+
         @Override
         public String toString() {
             return ":" + name();
