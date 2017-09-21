@@ -131,14 +131,12 @@
                                                     <h:outputText value="#{bundle['file.replace']}"/>
                                                 </p:commandLink>
                                             <!-- end replace file link --></li>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{!settingsWrapper.rsyncUpload or (settingsWrapper.rsyncUpload and !FilePage.fileMetadata.dataFile.released)}">                                         
+                                            </ui:fragment>                                      
                                             <li>
                                                 <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
                                                     <h:outputText value= "#{bundle['file.delete']}"/>
                                                 </p:commandLink>
                                             </li>
-                                            </ui:fragment>
                                         </ul>
                                     </div>
                                     <!-- END: Edit Button Group -->

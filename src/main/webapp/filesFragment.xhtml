@@ -283,13 +283,11 @@
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                        <ui:fragment rendered="#{!settingsWrapper.rsyncUpload or (settingsWrapper.rsyncUpload and !DatasetPage.dataset.released)}"> 
                         <li class="#{DatasetPage.locked ? 'disabled' : ''}">
                             <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
                                 <h:outputText value="#{bundle['file.delete']}"/> 
                             </p:commandLink>
                         </li>
-                        </ui:fragment>
                         <li class="#{DatasetPage.locked ? 'disabled' : ''}">
                             <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile" action="#{DatasetPage.editFileMetadata()}">                                         
                                 <h:outputText value="#{bundle['file.metadata']}"/>
