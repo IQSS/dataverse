@@ -1417,10 +1417,13 @@ public class DatasetPage implements java.io.Serializable {
                     try {
                         ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
                         logger.fine("script: " + scriptRequestResponse.getScript());
-                        if(!scriptRequestResponse.getScript().isEmpty()){
+                        if(scriptRequestResponse.getScript()!=null && !scriptRequestResponse.getScript().isEmpty()){
                             setHasRsyncScript(true);
                             setRsyncScript(scriptRequestResponse.getScript());
                             rsyncScriptFilename = "upload-"+ workingVersion.getDataset().getIdentifier() + ".bash";
+                        }
+                        else{
+                            setHasRsyncScript(false);
                         }
                     } catch (RuntimeException ex) {
                         logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
