@@ -163,7 +163,7 @@ mail.smtp.socketFactory.fallback		false
 mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 ======================================	==============================
 
-The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. And example of this is below.
+The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
 
 - Delete: ``asadmin delete-javamail-resource mail/MyMailSession``
 - Create (remove brackets and replace the variables inside): ``asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
