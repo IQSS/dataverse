@@ -2418,6 +2418,7 @@ public class DatasetPage implements java.io.Serializable {
                 // So below we are deleting the metadata from the version; we are 
                 // NOT adding the file to the filesToBeDeleted list that will be 
                 // passed to the UpdateDatasetCommand. -- L.A. Aug 2017
+                
                 Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
                     FileMetadata fmd = fmit.next();
@@ -2432,47 +2433,6 @@ public class DatasetPage implements java.io.Serializable {
                         break;
                     }
                 }
-                
-                Iterator<DataFile> dfIt = dataset.getFiles().iterator();
-                while (dfIt.hasNext()) {
-                    DataFile dfn = dfIt.next();
-                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
-                        
-                        // Before we remove the file from the list and forget about 
-                        // it:
-                        // The physical uploaded file is still sitting in the temporary
-                        // directory. If it were saved, it would be moved into its 
-                        // permanent location. But since the user chose not to save it,
-                        // we have to delete the temp file too. 
-                        // 
-                        // Eventually, we will likely add a dedicated mechanism
-                        // for managing temp files, similar to (or part of) the storage 
-                        // access framework, that would allow us to handle specialized
-                        // configurations - highly sensitive/private data, that 
-                        // has to be kept encrypted even in temp files, and such. 
-                        // But for now, we just delete the file directly on the 
-                        // local filesystem: 
-
-                        try {
-                            Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier()));
-                        } catch (IOException ioEx) {
-                            // safe to ignore - it's just a temp file. 
-                            logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier());
-                        }
-                        
-                        dfIt.remove();
-
-                    }
-                }
-                
-                Iterator<DataFile> nfIt = newFiles.iterator();
-                while (nfIt.hasNext()) {
-                    DataFile dfn = nfIt.next();
-                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
-                        nfIt.remove();
-                    }
-                }                
-                
             }
         }
 

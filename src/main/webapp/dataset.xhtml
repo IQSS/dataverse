@@ -708,18 +708,6 @@
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();" type="button" />
                         </div>
                     </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
-                        <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                            <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
-                        </ui:fragment>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);"
-                                             update=":#{p:component('filesTable')},:messagePanel" action="#{DatasetPage.deleteFiles()}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide();
-                                    PF('blockDatasetForm').hide();" type="button" />
-                        </div>
-                    </p:dialog>
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteSelectedFileConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.multiple.immediate']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.released}">
@@ -1528,12 +1516,6 @@
                     }
                     function registerDataset() {
                         $('button[id$="registerDataset"]').trigger('click');
-                    }
-                    function checkFilesSelected() {
-                        var count = PF('filesTable').getSelectedRowsCount();
-                        if (count > 0) {
-                            PF('deleteFileConfirmation').show();
-                        }
                     }
                     function checkNewlyRestricted() {
                         if ($('input[id$="showAccessPopup"]').val() === 'true') {
