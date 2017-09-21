@@ -126,9 +126,9 @@ If your mail host requires a username/password for access, continue to the next 
 Mail Host Configuration & Authentication
 ++++++++++++++++++++++++++++++++++++++++
 
-If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Glassfish admin console. 
+If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Glassfish admin console or via command line. 
 
-In a browser, with your domain online, navigate to http://localhost:4848 and on the side panel find JavaMail Sessions. By default, Dataverse uses a session named mail/notifyMailSession for routing outgoing emails. Click this mail session in the window to modify it.
+For the Glassfish console, load a browser with your domain online, navigate to http://localhost:4848 and on the side panel find JavaMail Sessions. By default, Dataverse uses a session named mail/notifyMailSession for routing outgoing emails. Click this mail session in the window to modify it.
 
 When fine tuning your JavaMail Session, there are a number of fields you can edit. The most important are:
 
@@ -162,6 +162,11 @@ mail.smtp.port							465
 mail.smtp.socketFactory.fallback		false
 mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 ======================================	==============================
+
+The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. And example of this is below.
+
+- Delete: ``asadmin delete-javamail-resource mail/MyMailSession``
+- Create (remove brackets and replace the variables inside): ``asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
 
 Be sure you save the changes made here and then restart your Glassfish server to test it out.
 

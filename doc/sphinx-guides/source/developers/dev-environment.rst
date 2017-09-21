@@ -236,7 +236,7 @@ You can check the current SMTP server with the ``asadmin`` command:
 
 ``asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
 
-This command helps verify what host your domain is using to send mail. Even if it's the correct hostname, you may still need to adjust settings. If all else fails, there are some free SMTP service options available such as Gmail and MailGun. Let's find where we can configure it.
+This command helps verify what host your domain is using to send mail. Even if it's the correct hostname, you may still need to adjust settings. If all else fails, there are some free SMTP service options available such as Gmail and MailGun. This can be configured from the GlassFish console or the command line.
 
 1. First, navigate to your Glassfish admin console: http://localhost:4848
 2. From the left-side panel, select **JavaMail Sessions**
@@ -269,6 +269,11 @@ mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 **\*WARNING**: Entering a password here will *not* conceal it on-screen. It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
 
 Save these changes at the top of the page and restart your Glassfish server to try it out.
+
+The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. And example of this is below.
+
+- Delete: ``asadmin delete-javamail-resource mail/MyMailSession``
+- Create (remove brackets and replace the variables inside): ``asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
 
 These properties can be tailored to your own preferred mail service, but if all else fails these settings work fine with Dataverse development environments for your localhost.
 
