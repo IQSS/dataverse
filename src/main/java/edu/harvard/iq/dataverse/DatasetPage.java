@@ -191,6 +191,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
+    private boolean bulkFileDeleteInProgress = false;
 
     private Long ownerId;
     private Long versionId;
@@ -2386,6 +2387,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
     
     public String  deleteFilesAndSave(){
+        bulkFileDeleteInProgress = true;
         if (bulkUpdateCheckVersion()){
            refreshSelectedFiles(); 
         }
@@ -2554,10 +2556,15 @@ public class DatasetPage implements java.io.Serializable {
 
         } else {
             // must have been a bulk file update or delete:
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileUpdateSuccess"));
+            if (bulkFileDeleteInProgress) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileDeleteSuccess"));
+            } else {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileUpdateSuccess"));
+            }
         }
 
         editMode = null;
+        bulkFileDeleteInProgress = false;
 
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
@@ -2569,13 +2576,16 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void populateDatasetUpdateFailureMessage(){
-            // null check would help here. :) -- L.A. 
-            if (editMode == null) {
-                // that must have been a bulk file update or delete:
+        if (editMode == null) {
+            // that must have been a bulk file update or delete:
+            if (bulkFileDeleteInProgress) {
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileDeleteFailure"));
+
+            } else {
                 JsfHelper.addErrorMessage(JH.localize("dataset.message.filesFailure"));
-                return;
             }
-            
+        } else {
+
             if (editMode.equals(EditMode.CREATE)) {
                 JsfHelper.addErrorMessage(JH.localize("dataset.message.createFailure"));
             }
@@ -2588,6 +2598,9 @@ public class DatasetPage implements java.io.Serializable {
             if (editMode.equals(EditMode.FILE)) {
                 JsfHelper.addErrorMessage(JH.localize("dataset.message.filesFailure"));
             }
+        }
+        
+        bulkFileDeleteInProgress = false;
     }
     
     private String returnToLatestVersion(){
