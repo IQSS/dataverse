@@ -92,7 +92,7 @@ Adding Widgets to an OpenScholar Website
 
 Roles & Permissions 
 =======================================================
-Admins of a Dataverse can assign roles and permissions to the users of that Dataverse. If you are an admin on a dataverse, then you will find the link to the Permissions page under the Edit dropdown on the dataverse page. 
+Admins of a dataverse can assign roles and permissions to the users of that dataverse. If you are an admin on a dataverse, then you will find the link to the Permissions page under the Edit dropdown on the dataverse page. 
 
 |image2|
 
@@ -100,9 +100,12 @@ Clicking on Permissions will bring you to this page:
 
 |image3|
 
-When you access a dataverse's permissions page, you will see three sections, which we will explain in detail after the following summaries:
+When you access a dataverse's permissions page, you will see three sections:
+
 **Permissions:** Here you can decide the requirements that determine which types of users can add datasets and sub dataverses to your dataverse, and what permissions they'll be granted when they do so.
-**Users/Groups:** Here you can assign roles to specific users, determining which actions they are permitted to take on your dataverse.
+
+**Users/Groups:** Here you can assign roles to specific users or groups of users, determining which actions they are permitted to take on your dataverse. You can also reference a list of all users who have roles assigned to them for your dataverse and remove their roles if you please.
+
 **Roles:** Here you can reference a full list of roles that can be assigned to users of your dataverse. Each role lists the permissions that it offers.
 
 Setting Access Configurations
@@ -131,7 +134,7 @@ Note: If you need to assign a role to ALL Dataverse users, you can assign the ro
 
 Dataset Templates
 ======================
-Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in, or if you want to use a custom set of Terms of Use and Access for multiple datasets in a dataverse. In Dataverse 4.0, templates are created at the dataverse level, can be deleted (so it does not show for future datasets), set to default (not required), or can be copied so you do not have to start over when creating a new template with similiar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
+Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in, or if you want to use a custom set of Terms of Use and Access for multiple datasets in a dataverse. In Dataverse 4.0, templates are created at the dataverse level, can be deleted (so it does not show for future datasets), set to default (not required), or can be copied so you do not have to start over when creating a new template with similar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
 
 How do you create a template? 
 
