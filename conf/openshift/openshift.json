@@ -20,7 +20,7 @@
       },
       "spec": {
         "selector": {
-          "name": "ndslabs-dataverse"
+          "name": "iqss-dataverse-glassfish"
         },
         "ports": [
           {
@@ -36,10 +36,10 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "ndslabs-dataverse"
+        "name": "dataverse-plus-glassfish"
       },
       "spec": {
-        "dockerImageRepository": "ndslabs/dataverse"
+        "dockerImageRepository": "iqss/dataverse-glassfish"
       }
     },
     {
@@ -66,7 +66,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "dataverse-glassfish",
+        "name": "deploy-dataverse-glassfish",
         "annotations": {
           "template.alpha.openshift.io/wait-for-ready": "true"
         }
@@ -75,14 +75,14 @@
         "template": {
           "metadata": {
             "labels": {
-              "name": "ndslabs-dataverse"
+              "name": "iqss-dataverse-glassfish"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "ndslabs-dataverse",
-                "image": "ndslabs-dataverse",
+                "name": "dataverse-plus-glassfish",
+                "image": "dataverse-plus-glassfish",
                 "ports": [
                   {
                     "containerPort": 8080,
@@ -169,7 +169,7 @@
           "rollingParams": {
             "updatePeriodSeconds": 1,
             "intervalSeconds": 1,
-            "timeoutSeconds": 120
+            "timeoutSeconds": 300
           },
           "resources": {}
         },
@@ -179,11 +179,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "ndslabs-dataverse"
+                "dataverse-plus-glassfish"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "ndslabs-dataverse:latest"
+                "name": "dataverse-plus-glassfish:4040-iqss-glassfish"
               }
             }
           },
@@ -219,7 +219,7 @@
         ],
         "replicas": 1,
         "selector": {
-          "name": "ndslabs-dataverse"
+          "name": "iqss-dataverse-glassfish"
         }
       }
     }

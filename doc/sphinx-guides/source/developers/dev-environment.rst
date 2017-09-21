@@ -331,7 +331,8 @@ If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400
 OpenShift
 ---------
 
-From the Dataverse perspective, we are in the business of providing a "template" for OpenShift that describes how the various components we build our application on (Glassfish, PostgreSQL, Solr, the Dataverse war file itself, etc.) work together. We also plan to publish Docker images to DockerHub but for now we are trying to use the Dataverse images published to https://hub.docker.com/r/ndslabs/
+From the Dataverse perspective, we are in the business of providing a "template" for OpenShift that describes how the various components we build our application on (Glassfish, PostgreSQL, Solr, the Dataverse war file itself, etc.) work together. We publish Docker images to DockerHub at https://hub.docker.com/u/iqss/ that are used in the OpenShift template. Dataverse's use of Docker is documented below in a separate section.
+
 
 The OpenShift template for Dataverse can be found at ``conf/openshift/openshift.json`` and if you need to hack on the template or related files under ``conf/docker`` it is recommended that you iterate on them using Minishift.
 
@@ -386,7 +387,7 @@ Check Status of Dataverse Deployment to Minishift
 Review Logs of Dataverse Deployment to Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``oc logs -c ndslabs-dataverse $(oc get po -o json | jq '.items[] | select(.kind=="Pod").metadata.name' -r | grep -v dataverse-glassfish-1-deploy)``
+``oc logs -c dataverse-plus-glassfish $(oc get po -o json | jq '.items[] | select(.kind=="Pod").metadata.name' -r | grep -v dataverse-glassfish-1-deploy)``
 
 Get a Shell (ssh/rsh) on Glassfish Server Deployed to Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -427,6 +428,25 @@ The following resources might be helpful.
 - https://blog.openshift.com/part-1-from-app-to-openshift-runtimes-and-templates/
 - https://blog.openshift.com/part-2-creating-a-template-a-technical-walkthrough/
 - https://docs.openshift.com/enterprise/3.0/architecture/core_concepts/templates.html
+
+Docker
+------
+
+Minishift makes use of Docker images on Docker Hub. To build new Docker images and push them to Docker Hub, you'll need to install Docker.
+
+Installing Docker
+~~~~~~~~~~~~~~~~~
+
+On Linux, you can probably get Docker from your package manager.
+
+On Mac, download the ``.dmg`` from https://www.docker.com and install it. As of this writing is it known as Docker Community Edition for Mac.
+
+We're working with Docker in the context of Minishift so if you haven't installed Minishift yet, follow the instructions above and make sure you get the Dataverse Docker images running in Minishift before you start messing with them.
+
+Get Set Up to Push Docker Images to Minishift Registry
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+FIXME https://docs.openshift.org/latest/minishift/openshift/openshift-docker-registry.html indicates that it should be possible to make use of the builtin registry in Minishift while iterating on Docker images but you may get "unauthorized: authentication required" when trying to push to it as reported at https://github.com/minishift/minishift/issues/817 so until we figure this out, you must push to Docker Hub instead. Run ``docker login`` and use the ``conf/docker/build.sh`` script to push Docker images you create to https://hub.docker.com/u/iqss/
 
 ----
 
