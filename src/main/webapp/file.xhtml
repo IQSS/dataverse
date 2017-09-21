@@ -277,6 +277,7 @@
                                     rendered="#{settingsWrapper.rsyncDownload}">
                                 <ui:include src="file-data-access-fragment.xhtml">
                                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+                                    <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                                 </ui:include>
                             </p:tab>

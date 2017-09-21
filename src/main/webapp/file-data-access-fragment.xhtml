@@ -11,53 +11,61 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    <div class="row">
-        <div class="col-xs-12">
-            <p class="help-block">
-                <h:outputFormat value=" #{(!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT') ? bundle['file.dataFilesTab.dataAccess.info.draft'] : bundle['file.dataFilesTab.dataAccess.info']}" escape="false">
-                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                    <f:param value="#{systemConfig.guidesVersion}"/>
-                </h:outputFormat>
-            </p>
-        </div>
+    <div jsf:rendered="#{datasetVersion.draft}">
+        <h:outputFormat value=" #{bundle['file.dataFilesTab.dataAccess.info.draft']}" escape="false">
+            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+            <f:param value="#{systemConfig.guidesVersion}"/>
+        </h:outputFormat>
     </div>
-    <div class="form-group row">
-        <label class="col-xs-12 col-lg-3 control-label" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">                                                   
-            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">
-                #{bundle['file.dataFilesTab.dataAccess.local.label']}
-            </span>
-        </label>
-        <div class="col-sm-9">
-            <code>
-                <h:outputText value="#{repositoryStorageAbstractionLayerPage.getLocalDataAccessDirectory(DatasetPage.dataset, FilePage.fileMetadata)}"/>
-            </code>
+    <div jsf:rendered="#{not datasetVersion.draft}">
+        <div class="row">
+            <div class="col-xs-12">
+                <p class="help-block">
+                    <h:outputFormat value=" #{bundle['file.dataFilesTab.dataAccess.info']}" escape="false">
+                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                        <f:param value="#{systemConfig.guidesVersion}"/>
+                    </h:outputFormat>
+                </p>
+            </div>
         </div>
-    </div>
-    <div class="form-group row">
-        <label class="col-xs-12 col-lg-3 control-label">                                                   
-            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.download.tooltip']}">
-                #{bundle['file.dataFilesTab.dataAccess.download.label']}
-            </span>
-        </label>
-        <div class="col-xs-12 col-lg-9 row">
-            <ui:repeat value="#{repositoryStorageAbstractionLayerPage.getRsyncSites(DatasetPage.dataset, FilePage.fileMetadata)}" var="site">
-                <div class="col-sm-12">
-                    <code><h:outputText value="#{site.rsyncDownloadcommand}"/></code>
-                    <h:outputText class="text-muted" value=" (#{site.name}, #{site.country})"/>
-                </div>
-            </ui:repeat>
+        <div class="form-group row">
+            <label class="col-xs-12 col-lg-3 control-label" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">
+                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">
+                    #{bundle['file.dataFilesTab.dataAccess.local.label']}
+                </span>
+            </label>
+            <div class="col-sm-9">
+                <code>
+                    <h:outputText value="#{repositoryStorageAbstractionLayerPage.getLocalDataAccessDirectory(datasetVersion)}"/>
+                </code>
+            </div>
         </div>
-    </div>
-    <div class="form-group row">
-        <label class="col-xs-12 col-lg-3 control-label">
-            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.verify.tooltip']}">
-                #{bundle['file.dataFilesTab.dataAccess.verify.label']}
-            </span>
-        </label>
-        <div class="col-sm-9">
-            <code>
-                <h:outputText value="#{repositoryStorageAbstractionLayerPage.getVerifyDataCommand(DatasetPage.dataset, FilePage.fileMetadata)}"/>
-            </code>
+        <div class="form-group row">
+            <label class="col-xs-12 col-lg-3 control-label">
+                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.download.tooltip']}">
+                    #{bundle['file.dataFilesTab.dataAccess.download.label']}
+                </span>
+            </label>
+            <div class="col-xs-12 col-lg-9 row">
+                <ui:repeat value="#{repositoryStorageAbstractionLayerPage.getRsyncSites(datasetVersion)}" var="site">
+                    <div class="col-sm-12">
+                        <code><h:outputText value="#{site.rsyncDownloadcommand}"/></code>
+                        <h:outputText class="text-muted" value=" (#{site.name}, #{site.country})"/>
+                    </div>
+                </ui:repeat>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-xs-12 col-lg-3 control-label">
+                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.verify.tooltip']}">
+                    #{bundle['file.dataFilesTab.dataAccess.verify.label']}
+                </span>
+            </label>
+            <div class="col-sm-9">
+                <code>
+                    <h:outputText value="#{repositoryStorageAbstractionLayerPage.getVerifyDataCommand(datasetVersion)}"/>
+                </code>
+            </div>
         </div>
     </div>
 </ui:composition>

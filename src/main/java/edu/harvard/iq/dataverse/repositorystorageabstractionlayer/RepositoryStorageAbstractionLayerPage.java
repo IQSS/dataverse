@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.List;
 import java.util.logging.Logger;
@@ -19,19 +18,19 @@ public class RepositoryStorageAbstractionLayerPage {
     @EJB
     SettingsServiceBean settingsService;
 
-    public String getLocalDataAccessDirectory(Dataset dataset, FileMetadata fileMetadata) {
+    public String getLocalDataAccessDirectory(DatasetVersion datasetVersion) {
         String localDataAccessParentDir = settingsService.getValueForKey(SettingsServiceBean.Key.LocalDataAccessPath);
-        return RepositoryStorageAbstractionLayerUtil.getLocalDataAccessDirectory(localDataAccessParentDir, dataset, fileMetadata);
+        return RepositoryStorageAbstractionLayerUtil.getLocalDataAccessDirectory(localDataAccessParentDir, datasetVersion.getDataset());
     }
 
-    public List<RsyncSite> getRsyncSites(Dataset dataset, FileMetadata fileMetadata) {
+    public List<RsyncSite> getRsyncSites(DatasetVersion datasetVersion) {
         String replicatationSitesSetting = settingsService.getValueForKey(SettingsServiceBean.Key.ReplicationSites);
         JsonArray replicationSites = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(replicatationSitesSetting);
-        return RepositoryStorageAbstractionLayerUtil.getRsyncSites(dataset, fileMetadata, replicationSites);
+        return RepositoryStorageAbstractionLayerUtil.getRsyncSites(datasetVersion.getDataset(), replicationSites);
     }
 
-    public String getVerifyDataCommand(Dataset dataset, FileMetadata fileMetadata) {
-        return RepositoryStorageAbstractionLayerUtil.getVerifyDataCommand(dataset, fileMetadata);
+    public String getVerifyDataCommand(DatasetVersion datasetVersion) {
+        return RepositoryStorageAbstractionLayerUtil.getVerifyDataCommand(datasetVersion.getDataset());
     }
 
 }

@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.File;
 import java.util.ArrayList;
@@ -16,10 +15,10 @@ public class RepositoryStorageAbstractionLayerUtil {
 
     private static final Logger logger = Logger.getLogger(RepositoryStorageAbstractionLayerUtil.class.getCanonicalName());
 
-    public static List<RsyncSite> getRsyncSites(Dataset dataset, FileMetadata fileMetadata, JsonArray rsalSitesAsJson) {
+    public static List<RsyncSite> getRsyncSites(Dataset dataset, JsonArray rsalSitesAsJson) {
         List<RsyncSite> rsalSites = new ArrayList<>();
         boolean leafDirectoryOnly = false;
-        String fullRemotePathToDirectory = getDirectoryContainingTheData(dataset, fileMetadata, leafDirectoryOnly);
+        String fullRemotePathToDirectory = getDirectoryContainingTheData(dataset, leafDirectoryOnly);
         for (JsonObject site : rsalSitesAsJson.getValuesAs(JsonObject.class)) {
             String name = site.getString("name");
             String fqdn = site.getString("fqdn");
@@ -30,19 +29,18 @@ public class RepositoryStorageAbstractionLayerUtil {
         return rsalSites;
     }
 
-    static String getLocalDataAccessDirectory(String localDataAccessParentDir, Dataset dataset, FileMetadata fileMetadata) {
+    static String getLocalDataAccessDirectory(String localDataAccessParentDir, Dataset dataset) {
         if (localDataAccessParentDir == null) {
             localDataAccessParentDir = File.separator + "UNCONFIGURED ( " + SettingsServiceBean.Key.LocalDataAccessPath + " )";
         }
-        dataset = findDatasetOrDie(dataset, fileMetadata);
         boolean leafDirectoryOnly = false;
-        return localDataAccessParentDir + File.separator + getDirectoryContainingTheData(dataset, fileMetadata, leafDirectoryOnly);
+        return localDataAccessParentDir + File.separator + getDirectoryContainingTheData(dataset, leafDirectoryOnly);
     }
 
-    static String getVerifyDataCommand(Dataset dataset, FileMetadata fileMetadata) {
+    static String getVerifyDataCommand(Dataset dataset) {
         boolean leafDirectoryOnly = true;
         // TODO: if "files.sha" is defined somewhere, use it.
-        return "cd " + getDirectoryContainingTheData(dataset, fileMetadata, leafDirectoryOnly) + " ; shasum -c files.sha";
+        return "cd " + getDirectoryContainingTheData(dataset, leafDirectoryOnly) + " ; shasum -c files.sha";
     }
 
     /**
@@ -52,10 +50,7 @@ public class RepositoryStorageAbstractionLayerUtil {
      * leafDirectoryOnly. See also
      * http://www.gnu.org/software/coreutils/manual/html_node/basename-invocation.html
      */
-    public static String getDirectoryContainingTheData(Dataset dataset, FileMetadata fileMetadata, boolean leafDirectoryOnly) {
-        if (fileMetadata != null) {
-            dataset = fileMetadata.getDatasetVersion().getDataset();
-        }
+    public static String getDirectoryContainingTheData(Dataset dataset, boolean leafDirectoryOnly) {
         /**
          * FIXME: What if there is more than one package in the dataset?
          * Shouldn't the directory be based on the package rather than the
@@ -77,17 +72,6 @@ public class RepositoryStorageAbstractionLayerUtil {
         } else {
             throw new RuntimeException("Sorry, only one package per dataset is supported.");
         }
-    }
-
-    private static Dataset findDatasetOrDie(Dataset dataset, FileMetadata fileMetadata) {
-        if (dataset != null) {
-            return dataset;
-        }
-        if (fileMetadata != null) {
-            dataset = fileMetadata.getDatasetVersion().getDataset();
-            return dataset;
-        }
-        throw new RuntimeException("Cannot find dataset!");
     }
 
     /**

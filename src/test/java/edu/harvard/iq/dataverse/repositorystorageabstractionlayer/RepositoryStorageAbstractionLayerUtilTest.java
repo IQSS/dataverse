@@ -16,10 +16,9 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         Dataset dataset = new Dataset();
         dataset.setIdentifier("identifierPartOfPersistentID");
         dataset.setAuthority("10.5072/FK2");
-        FileMetadata fileMetadata = null;
         String replicationSitesInDB = "dv.sbgrid.org:Harvard Medical School:USA,sbgrid.icm.uu.se:Uppsala University:Sweden,sbgrid.ncpss.org:Institut Pasteur de Montevideo:Uruguay,sbgrid.ncpss.org:Shanghai Institutes for Biological Sciences:China";
         JsonArray myList = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(replicationSitesInDB);
-        List<RsyncSite> result = RepositoryStorageAbstractionLayerUtil.getRsyncSites(dataset, fileMetadata, myList);
+        List<RsyncSite> result = RepositoryStorageAbstractionLayerUtil.getRsyncSites(dataset, myList);
         System.out.println(result.get(0).getName());
         assertEquals("Harvard Medical School", result.get(0).getName());
         assertEquals("USA", result.get(0).getCountry());
@@ -45,8 +44,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         Dataset dataset = new Dataset();
         dataset.setIdentifier("identifierPartOfPersistentID");
         dataset.setAuthority("10.5072/FK2");
-        FileMetadata fileMetadata = null;
-        String result = RepositoryStorageAbstractionLayerUtil.getLocalDataAccessDirectory(localDataAccessParentDir, dataset, fileMetadata);
+        String result = RepositoryStorageAbstractionLayerUtil.getLocalDataAccessDirectory(localDataAccessParentDir, dataset);
         assertEquals("/opt/data/10.5072/FK2/identifierPartOfPersistentID", result);
     }
 
@@ -55,8 +53,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         System.out.println("getVerifyDataCommand");
         Dataset dataset = new Dataset();
         dataset.setIdentifier("identifierPartOfPersistentID");
-        FileMetadata fileMetadata = null;
-        String result = RepositoryStorageAbstractionLayerUtil.getVerifyDataCommand(dataset, fileMetadata);
+        String result = RepositoryStorageAbstractionLayerUtil.getVerifyDataCommand(dataset);
         assertEquals("cd identifierPartOfPersistentID ; shasum -c files.sha", result);
     }
 

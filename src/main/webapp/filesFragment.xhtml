@@ -379,6 +379,7 @@
                 <!-- Data Access for Rsync Download -->
                 <ui:include src="file-data-access-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+                    <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                 </ui:include>
             </div>
