@@ -293,7 +293,6 @@
                                                 <ui:fragment rendered="#{item.type == 'FILESYSTEMIMPORT'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.import.filesystem']}" escape="false">
-                                                        <f:param value="#{systemConfig.dataverseSiteUrl}"/>
                                                         <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>

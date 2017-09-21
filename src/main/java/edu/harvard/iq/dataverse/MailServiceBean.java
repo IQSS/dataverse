@@ -480,7 +480,7 @@ public class MailServiceBean implements java.io.Serializable {
 
             case FILESYSTEMIMPORT:
                 version =  (DatasetVersion) targetObject;
-                String fileImportMsg = BundleUtil.getStringFromBundle("notification.import.filesystem", Arrays.asList(
+                String fileImportMsg = BundleUtil.getStringFromBundle("notification.mail.import.filesystem", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         version.getDataset().getGlobalId(),
                         version.getDataset().getDisplayName()
