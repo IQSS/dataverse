@@ -139,7 +139,7 @@
                             </ul>
                         </div>
                         <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
-                            <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
+                            <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']} 
                         </p:commandLink>
                     </div>
                     <div id="sortBlock" class="button-block btn-group pull-right" jsf:rendered="#{DatasetPage.sortButtonEnabled and DatasetPage.fileMetadatas.size() gt 1}">
@@ -283,11 +283,13 @@
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                        <ui:fragment rendered="#{!settingsWrapper.rsyncUpload or (settingsWrapper.rsyncUpload and !DatasetPage.dataset.released)}"> 
                         <li class="#{DatasetPage.locked ? 'disabled' : ''}">
                             <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
-                                <h:outputText value="#{bundle['file.delete']}"/>
+                                <h:outputText value="#{bundle['file.delete']}"/> 
                             </p:commandLink>
                         </li>
+                        </ui:fragment>
                         <li class="#{DatasetPage.locked ? 'disabled' : ''}">
                             <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile" action="#{DatasetPage.editFileMetadata()}">                                         
                                 <h:outputText value="#{bundle['file.metadata']}"/>
