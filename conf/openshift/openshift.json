@@ -183,7 +183,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "dataverse-plus-glassfish:4040-iqss-glassfish"
+                "name": "dataverse-plus-glassfish:4040-docker-openshift"
               }
             }
           },
