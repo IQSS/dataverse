@@ -211,7 +211,7 @@ This is where you will enable a particular Guestbook for your dataset, which is 
 
 .. _permissions:
 
-Permissions
+Roles & Permissions
 ===========
 
 Dataset-Level 
@@ -228,11 +228,11 @@ When you access a dataset's permissions page, you will see two sections:
 File-Level
 ----------
 
-If you have restricted access to specific files in your dataset, you can grant specific users or groups access to those files while still keeping them restricted to the general public. If you are an admin or curator of a dataset, then you can get file-level permissions page by clicking the "Edit" button, highlighting "Permissions" from the dropdown list, and clicking "File".
+If you have restricted access to specific files in your dataset, you can grant specific users or groups access to those files while still keeping them restricted to the general public. If you are an admin or curator of a dataset, then you can get to the file-level permissions page by clicking the "Edit" button, highlighting "Permissions" from the dropdown list, and clicking "File".
 
 When you access a dataset's file-level permissions page, you will see two sections:
 
-**Users/Groups:** Here you can see which users or groups have been granted access to which files. You can click the "Grant Access to Users/Groups" button to see a box where you can grant access to specific files within your dataset to specific users or groups.
+**Users/Groups:** Here you can see which users or groups have been granted access to which files. You can click the "Grant Access to Users/Groups" button to see a box where you can grant access to specific files within your dataset to specific users or groups. If any users have requested access to a file in your dataset, you can grant or reject their access request here.
 
 **Restricted Files:** In this section, you can see the same information, but broken down by each individual file in your dataset. For each file, you can click the "Assign Access" button to see a box where you can grant access to that file to specific users.
 
