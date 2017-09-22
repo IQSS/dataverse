@@ -374,16 +374,17 @@
     
     
         <h:inputHidden value="#{DatasetPage.pageLoadInProgress}" id="pageLoadInProgress" />
+        
 
-        <p:remoteCommand name="enableThumbnails" immediate="true" process="@this" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.enableThumbnails}"/>
+        <p:remoteCommand name="enableThumbnails" immediate="true" process="@this" update=":datasetForm:tabView:filesTable,:datasetForm:tabView:pageLoadInProgress" actionListener="#{DatasetPage.enableThumbnails}"/>
 
     
     <script type="text/javascript">
-                                $(document).ready(function () {
-                                    if ($('input[id$="pageLoadInProgress"]').val() === 'true') {
-                                        enableThumbnails();
-                                    }
-                                });
+        $(this).ready(function () {
+            //if ($('input[id$="pageLoadInProgress"]').val() === 'true') {
+            enableThumbnails();
+            //}
+        });
     </script>
    
 </ui:composition>

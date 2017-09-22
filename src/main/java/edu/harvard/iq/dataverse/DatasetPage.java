@@ -687,8 +687,8 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
      
-        
-        
+        //logger.info("isThumbnailAvailable() called on file "+dataFileId);
+        //try{Thread.sleep(1000L);}catch(Exception e){}
         String thumbnailAsBase64 = ImageThumbConverter.getImageThumbnailAsBase64(fileMetadata.getDataFile(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         
         
@@ -703,12 +703,13 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String getDataFileThumbnailAsBase64(FileMetadata fileMetadata) {
+        //logger.info("THUMBNAIL REQUESTED FOR DATAFILE "+fileMetadata.getDataFile().getId());
         return datafileThumbnailsMap.get(fileMetadata.getDataFile().getId());
     }
     
     public void enableThumbnails() {
         pageLoadInProgress = false;
-        logger.fine("ENABLED thumbnails on the page.");
+        //logger.info("ENABLED thumbnails on the page.");
     }
     
     public boolean isPageLoadInProgress() {
