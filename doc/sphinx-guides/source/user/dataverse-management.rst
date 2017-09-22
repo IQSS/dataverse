@@ -116,7 +116,7 @@ Under the Permissions tab, you can click the "Edit Access" button to open a box 
 
 The first question on this page allows you to determine how open your dataverse is to new additions - you can set whether or not the entire userbase (all logged in users) has the ability to add datasets or sub dataverses to your dataverse. 
 
-The second question on this page allows you to choose the role (and thus the permissions) granted to users who add a dataset to your dataverse. The role you select will be automatically granted to any user who creates a dataset on your dataverse, on that dataset, at the moment that he or she creates it. The role the user is given determines his or her permissions for the dataset they've created. The key difference between the two roles is this: curators can publish their own datasets, while contributors must submit the dataset to be reviewed before publication. Additionally, curators can manage permissions, but contributors can not. Note that this setting does not retroactively apply roles to users who have previously added datasets to your dataverse; it only applies to users adding new datasets going forward.
+The second question on this page allows you to choose the role (and thus the permissions) granted to users who add a dataset to your dataverse. The role you select will be automatically granted to any user who creates a dataset on your dataverse, on that dataset, at the moment that he or she creates it. The role the user is given determines his or her permissions for the dataset they've created. The key difference between the two roles is that curators can publish their own datasets, while contributors must submit the dataset to be reviewed before publication. Additionally, curators can manage dataset permissions. Note that this setting does not retroactively apply roles to users who have previously added datasets to your dataverse; it only applies to users adding new datasets going forward.
 
 Both of these settings can be changed at any time.
 
@@ -126,7 +126,7 @@ Under the Users/Groups tab, you can add, edit, or remove the roles granted to us
 
 |image5|
 
-Note that the Dataset Creator role and Contributor role are sometimes confused - a Dataset Creator *only* has the permission to create new datasets in your dataverse. If you want to grant a user the ability to edit datasets, then the Contributor or Curator roles are better choices.
+Note that the Dataset Creator role and Contributor role are sometimes confused. The Dataset Creator role is assigned at the dataverse level and allows a user to create new datasets in that dataverse. The Contributor role can be assigned at the dataset level, granting a user the ability to edit *that specific* dataset. Alternatively, the Contributor role can be assigned at the dataverse level, granting the user the ability to edit *all* datasets in that dataverse.
 
 |image6|
 
