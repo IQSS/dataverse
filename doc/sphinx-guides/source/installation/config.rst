@@ -1185,7 +1185,7 @@ Limit on how many guestbook entries to display on the guestbook-responses page. 
 ``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
 
 :CustomDatasetSummaryFields
-+++++++++++++++++++++++++
++++++++++++++++++++++++++++++
 
 You can replace the default dataset metadata fields that are displayed above files table on the dataset page with a custom list separated by commas using the curl command below.
 

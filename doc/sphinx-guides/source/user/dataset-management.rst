@@ -212,7 +212,7 @@ This is where you will enable a particular Guestbook for your dataset, which is 
 .. _permissions:
 
 Roles & Permissions
-===========
+=====================
 
 Dataset-Level 
 -------------
