@@ -57,9 +57,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public Dataset execute(CommandContext ctxt) throws CommandException {
         registerExternalIdentifier(theDataset, ctxt);        
 
-        boolean firstRelease = false;
         if (theDataset.getPublicationDate() == null) {
-            firstRelease = true;
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
         } 
@@ -117,11 +115,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         if(resultSet != null) {
             notifyUsersDatasetPublish(ctxt, theDataset);
-            
-            if (firstRelease) {
-                // Send notifications to users with download file permission
-                notifyUsersRoleAdded(ctxt, theDataset);
-            }
         }
         
         return resultSet;
@@ -252,15 +245,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
             .distinct() // prevent double-send
             .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, UserNotification.Type.GRANTFILEACCESS, theDataset.getId()) );
-    }
-    
-    private void notifyUsersRoleAdded(CommandContext ctxt, DvObject subject) {
-        Timestamp timestamp = new Timestamp(new Date().getTime());
-        ctxt.roles().directRoleAssignments(subject).stream()
-            .filter(  ra -> ra.getRole().permissions().contains(Permission.DownloadFile) )
-            .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
-            .distinct() // prevent double-send
-            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, UserNotification.Type.ASSIGNROLE, theDataset.getId()) );
     }
     
     private void notifyUsersDatasetPublish(CommandContext ctxt, DvObject subject) {
