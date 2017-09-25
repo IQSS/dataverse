@@ -183,7 +183,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "dataverse-plus-glassfish:4040-docker-openshift"
+                "name": "dataverse-plus-glassfish:kick-the-tires"
               }
             }
           },
@@ -209,7 +209,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "iqss-dataverse-solr:4040-docker-openshift"
+                "name": "iqss-dataverse-solr:kick-the-tires"
               }
             }
           },
