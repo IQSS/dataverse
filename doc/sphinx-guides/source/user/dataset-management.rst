@@ -243,26 +243,30 @@ This is where you will enable a particular Guestbook for your dataset, which is 
 
 .. _permissions:
 
-Permissions
-===========
+Roles & Permissions
+=====================
 
 Dataset-Level 
 -------------
 
-Dataset permissions can be found from the dataset by clicking the "Edit" button and from the dropdown list selecting "Permissions".
+Admins or curators of a dataset can assign roles and permissions to the users of that dataset. If you are an admin or curator of a dataset, then you can get to the dataset permissions page by clicking the "Edit" button, highlighting "Permissions" from the dropdown list, and clicking "Dataset".
 
-The dataset permissions page has two sections: Users/Groups and Roles. In the top, "Users/Groups" panel, you can find all the users and groups that have access to your dataset. To give someone access to view your unpublished dataset or edit your published or unpublished dataset, click on the "Assign Roles to Users/Groups" button in the Users/Groups section.
+When you access a dataset's permissions page, you will see two sections:
 
-The panel below that is "Roles", where you can find all the roles set up in your dataverse, which you can assign to users and groups. These roles are set at your dataverse-level and are displayed here at the dataset-level as a reference for when you are granting permission to users and/or groups.
+**Users/Groups:** Here you can assign roles to specific users or groups of users, determining which actions they are permitted to take on your dataset. You can also reference a list of all users who have roles assigned to them for your dataset and remove their roles if you please. Some of the users listed may have roles assigned at the dataverse level, in which case those roles can only be removed from the dataverse permissions page.
+
+**Roles:** Here you can reference a full list of roles that can be assigned to users of your dataset. Each role lists the permissions that it offers.
 
 File-Level
 ----------
 
-If you have restricted specific files, the file-level permissions is where you will need to go to grant users/groups access to
-specific restricted files. Dataset file permissions are located under Permissions in the Edit button on a dataset page. 
-The file permissions page has two sections: Users/Groups and Files.
+If you have restricted access to specific files in your dataset, you can grant specific users or groups access to those files while still keeping them restricted to the general public. If you are an admin or curator of a dataset, then you can get to the file-level permissions page by clicking the "Edit" button, highlighting "Permissions" from the dropdown list, and clicking "File".
 
-To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
+When you access a dataset's file-level permissions page, you will see two sections:
+
+**Users/Groups:** Here you can see which users or groups have been granted access to which files. You can click the "Grant Access to Users/Groups" button to see a box where you can grant access to specific files within your dataset to specific users or groups. If any users have requested access to a file in your dataset, you can grant or reject their access request here.
+
+**Restricted Files:** In this section, you can see the same information, but broken down by each individual file in your dataset. For each file, you can click the "Assign Access" button to see a box where you can grant access to that file to specific users.
 
 .. _thumbnails-widgets:
 
