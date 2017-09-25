@@ -2,12 +2,14 @@ package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -27,6 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 
@@ -383,6 +388,32 @@ public class DatasetUtil {
         } catch (IOException ioex) {
         }
         return false;
+    }
+
+    public static List<DatasetField> getDatasetSummaryFields(DatasetVersion datasetVersion, String customFields) {
+        
+        List<DatasetField> datasetFields = new ArrayList<>();
+        
+        //if customFields are empty, go with default fields. 
+        if(customFields==null || customFields.isEmpty()){
+               customFields="dsDescription,subject,keyword,publication,notesText";
+        }
+        
+        String[] customFieldList= customFields.split(",");
+        Map<String,DatasetField> DatasetFieldsSet=new HashMap<>(); 
+        
+        for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
+            DatasetFieldsSet.put(dsf.getDatasetFieldType().getName(),dsf); 
+        }
+        
+        for(String cfl : customFieldList)
+        {
+                DatasetField df = DatasetFieldsSet.get(cfl);
+                if(df!=null)
+                datasetFields.add(df);
+        }
+            
+        return datasetFields;
     }
 
 }

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -210,6 +211,7 @@ public class DatasetPage implements java.io.Serializable {
     private String protocol = "";
     private String authority = "";
     private String separator = "";
+    private String customFields="";
 
     private boolean noDVsAtAll = false;
 
@@ -3889,5 +3891,18 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
     }*/
-
+    
+    /**
+     * this method returns the dataset fields to be shown in the dataset summary 
+     * on the dataset page.
+     * It returns the default summary fields( subject, description, keywords, related publications and notes)
+     * if the custom summary datafields has not been set, otherwise will set the custom fields set by the sysadmins
+     * 
+     */
+    public List<DatasetField> getDatasetSummaryFields() {
+       customFields  = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
+       
+        return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
+    }
+    
 }
