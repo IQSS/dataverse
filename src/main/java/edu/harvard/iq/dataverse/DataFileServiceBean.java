@@ -68,6 +68,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final String FILE_CLASS_GEO = "geodata";
     private static final String FILE_CLASS_TABULAR = "tabular";
     private static final String FILE_CLASS_VIDEO = "video";
+    private static final String FILE_CLASS_PACKAGE = "package";
     private static final String FILE_CLASS_OTHER = "other";
 
     // Assorted useful mime types:
@@ -1172,6 +1173,9 @@ public class DataFileServiceBean implements java.io.Serializable {
             return FILE_CLASS_TABULAR;
         }
         
+        if (isFileClassPackage(file)) {
+            return FILE_CLASS_PACKAGE;
+        }
         
         return FILE_CLASS_OTHER;
     }
@@ -1349,6 +1353,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         return (contentType != null && (contentType.toLowerCase().startsWith("video/")));    
         
+    }
+    
+    public boolean isFileClassPackage (DataFile file) {
+        if (file == null) {
+            return false;
+        }
+        
+        String contentType = file.getContentType();
+       
+        return MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
     }
     
     public void populateFileSearchCard(SolrSearchResult solrSearchResult) {

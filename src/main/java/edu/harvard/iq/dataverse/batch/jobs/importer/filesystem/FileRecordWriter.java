@@ -331,6 +331,7 @@ public class FileRecordWriter extends AbstractItemWriter {
             jobContext.setExitStatus("FAILED");
             return null;
         }
+   
             
         packageFile.setFilesize(totalSize);
         packageFile.setModificationTime(new Timestamp(new Date().getTime()));

@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -97,7 +98,10 @@ public class AuthenticationServiceBean {
     PasswordResetServiceBean passwordResetServiceBean;
 
     @EJB
-    UserServiceBean userService; 
+    UserServiceBean userService;
+
+    @EJB
+    PasswordValidatorServiceBean passwordValidatorService;
         
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -107,7 +111,7 @@ public class AuthenticationServiceBean {
         
         // First, set up the factories
         try {
-            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean) );
+            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService) );
             registerProviderFactory( new ShibAuthenticationProviderFactory() );
             registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
         } catch (AuthorizationSetupException ex) {

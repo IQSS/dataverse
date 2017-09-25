@@ -10,7 +10,7 @@ More advanced features of the Access API include format-specific transformations
 Basic File Access
 -----------------
 
-Basic acces URI: 
+Basic access URI: 
 
 ``/api/access/datafile/$id``
 

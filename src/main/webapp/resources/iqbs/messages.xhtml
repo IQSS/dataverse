@@ -58,7 +58,7 @@
                 <ui:fragment rendered="#{cc.attrs.collapsible}">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                 </ui:fragment>
-                <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{msg.summary}</strong> – <h:outputText value="#{msg.detail}" rendered="#{!empty msg.detail and (msg.detail != msg.summary)}"/>
+                <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{msg.summary}</strong>&#160;<h:outputText value="#{msg.detail}" rendered="#{!empty msg.detail and (msg.detail != msg.summary)}"/>
                 <ui:fragment rendered="#{level eq 'FATAL'}">
                     Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact #{settingsWrapper.supportTeamName}">#{settingsWrapper.supportTeamName}</a> for assistance.
                     <strong>Date/Time: </strong>

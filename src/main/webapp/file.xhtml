@@ -29,7 +29,7 @@
                     <div id="topDatasetBlock" class="row">
                         <div id="actionButtonBlock" class="col-xs-12">
                             <!-- Metrics -->
-                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{!widgetWrapper.widgetView and !FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{!(widgetWrapper.widgetView or settingsWrapper.rsyncDownload or FilePage.fileMetadata.datasetVersion.deaccessioned)}">
                                 <div id="metrics-label" class="col-xs-4 small text-center">
                                     <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                 </div>
@@ -118,20 +118,20 @@
                                                     </li>
                                                 </ui:fragment>     
                                             </ui:fragment>
-                                            <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == false}">                                        
+                                            <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == false and !settingsWrapper.rsyncUpload}">                                        
                                             <li><!-- start: replace file link -->
                                                 <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}&#38;version=#{FilePage.version}">
                                                      <h:outputText value="#{bundle['file.replace']}"/>
                                                 </h:outputLink>
                                             <!-- end replace file link --></li>
                                             </ui:fragment>
-                                            <ui:fragment rendered="#{(FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == true) or (!FilePage.fileMetadata.dataFile.released and FilePage.fileMetadata.datasetVersion.dataset.released) }">                                        
+                                            <ui:fragment rendered="#{ !settingsWrapper.rsyncUpload and ((FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == true) or (!FilePage.fileMetadata.dataFile.released and FilePage.fileMetadata.datasetVersion.dataset.released)) }">                                        
                                             <li><!-- start: already replaced replace file link -->
                                                 <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplacedDraft').show();">
                                                     <h:outputText value="#{bundle['file.replace']}"/>
                                                 </p:commandLink>
                                             <!-- end replace file link --></li>
-                                            </ui:fragment>
+                                            </ui:fragment>                                      
                                             <li>
                                                 <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
                                                     <h:outputText value= "#{bundle['file.delete']}"/>
@@ -144,7 +144,8 @@
                                 
                                 <!-- Explore/Download/Request Button Block -->
                                 <div class="button-container btn-group" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
-                                                                                            (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
+                                                                                            (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
+                                                                                            and !settingsWrapper.rsyncDownload}">
                                     <ui:include src="file-download-button-fragment.xhtml">
                                         <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
                                         <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
@@ -272,6 +273,14 @@
                         <!-- Metadata -->
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+                            <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
+                                    rendered="#{settingsWrapper.rsyncDownload}">
+                                <ui:include src="file-data-access-fragment.xhtml">
+                                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+                                    <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                                    <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                                </ui:include>
+                            </p:tab>
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                               (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">

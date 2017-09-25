@@ -153,7 +153,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
     @Path("/ip-whitelist")
     @GET
     public Response getIpWhitelist() {
-        return ok( settingsSvc.get(IP_WHITELIST_KEY, "120.0.0.1;::1") );
+        return ok( settingsSvc.get(IP_WHITELIST_KEY, "127.0.0.1;::1") );
     }
     
     @Path("/ip-whitelist")
@@ -171,7 +171,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
         } );
         if (allIpsOk) {
             settingsSvc.set(IP_WHITELIST_KEY, ipList);
-            return ok( settingsSvc.get(IP_WHITELIST_KEY, "120.0.0.1;::1") );
+            return ok( settingsSvc.get(IP_WHITELIST_KEY, "127.0.0.1;::1") );
         } else {
             return badRequest("Request contains illegal IP addresses.");
         }
@@ -182,7 +182,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
     @DELETE
     public Response deleteIpWhitelist() {
         settingsSvc.delete(IP_WHITELIST_KEY);
-        return ok( "Restored whitelist to default (120.0.0.1;::1)" );
+        return ok( "Restored whitelist to default (127.0.0.1;::1)" );
     }
     
 }

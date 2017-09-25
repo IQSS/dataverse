@@ -51,6 +51,52 @@ Here's the syntax for sending the JSON.
 
 ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST -H 'Content-type: application/json' --upload-file checksumValidationSuccess.json $DV_BASE_URL/api/datasets/:persistentId/dataCaptureModule/checksumValidation?persistentId=$PERSISTENT_ID``
 
+
+Steps to set up a DCM mock for Development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install Flask.
+
+
+Download and run the mock. You will be cloning the https://github.com/sbgrid/data-capture-module repo.
+
+- ``git clone git://github.com/sbgrid/data-capture-module.git``
+- ``cd data-capture-module/api``
+- ``./dev_mock.sh``
+
+If you see an error about not having Flask installed, install it as explained below.
+
+On Mac, you can install Flask with:
+
+- ``mkvirtualenv mockdcm``
+- ``pip install -r requirements-mock.txt``
+
+On Ubuntu/Debian, you can install Flask with:
+
+- ``sudo apt install python-pip`` (will install python as well)
+- ``pip install flask``
+
+Once you have Flask installed, try running the dev mock script again:
+
+- ``./dev_mock.sh``
+
+This should spin up the DCM mock on port 5000.
+
+Add Dataverse settings to use mock (same as using DCM, noted above):
+
+- ``curl http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl -X PUT -d "http://localhost:5000"``
+- ``curl http://localhost:8080/api/admin/settings/:UploadMethods -X PUT -d "dcm/rsync+ssh"``
+
+At this point you should be able to download a placeholder rsync script. Dataverse is then waiting for new from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment.
+
+- ``mkdir /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
+- ``mkdir /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
+- ``cd /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
+- ``echo "hello" > file1.txt``
+- ``shasum file1.txt > files.sha``
+
+Now the files are in place and you need to send JSON to Dataverse with a success or failure message as described above. Make a copy of ``doc/sphinx-guides/source/_static/installation/files/root/big-data-support/checksumValidationSuccess.json`` and put the identifier in place such as "X1METO" under "uploadFolder"). Then use curl as described above to send the JSON.
+
 Troubleshooting
 ~~~~~~~~~~~~~~~
 
@@ -60,6 +106,9 @@ The following low level command should only be used when troubleshooting the "im
 
 Repository Storage Abstraction Layer (RSAL)
 -------------------------------------------
+
+Configuring the RSAL Mock
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Info for configuring the RSAL Mock: https://github.com/sbgrid/rsal/tree/master/mocks
 
@@ -94,3 +143,20 @@ Edit internal-httpSR-workflow.json and replace url and rollbackUrl to be the url
 8. When finished testing, unset the workflow:
 
 ``curl -X DELETE http://localhost:8080/api/admin/workflows/default/PrePublishDataset``
+
+Configuring download via rsync
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to see the rsync URLs, you must run this command:
+
+``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
+
+TODO: Document these in the Installation Guide once they're final.
+
+To specify replication sites that appear in rsync URLs:
+
+``curl http://localhost:8080/api/admin/settings/:ReplicationSites -X PUT -d "dv.sbgrid.org:Harvard Medical School:USA,sbgrid.icm.uu.se:Uppsala University:Sweden,sbgrid.ncpss.org:Institut Pasteur de Montevideo:Uruguay,sbgrid.ncpss.org:Shanghai Institutes for Biological Sciences:China"``
+
+In the GUI, this is called "Local Access". It's where you can compute on files on your cluster.
+
+``curl http://localhost:8080/api/admin/settings/:LocalDataAccessPath -X PUT -d "/programs/datagrid"``
