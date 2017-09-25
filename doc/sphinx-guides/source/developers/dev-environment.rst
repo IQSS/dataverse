@@ -358,16 +358,24 @@ Make the oc Command Executable
 Log in to Minishift
 ~~~~~~~~~~~~~~~~~~~
 
-``oc login``
+Note that if you just installed Minishift, you are probably logged in already, but it doesn't hurt to log in again.
+
+``oc login --username developer --password=whatever``
 
 Use "developer" as the username and a couple characters as the password.
 
 Allow Containers to Run as Root in Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This isn't ideal, but for now we're allowing containers to run as root. FIXME: Eventually, we should create containers that don't require root.
+For now we're allowing containers to run as root. Until the images are fixed to run as non-root, run the following command:
 
 ``oc adm policy add-scc-to-user anyuid -z default --as system:admin``
+
+FIXME: Eventually, we should create containers that don't require root. When we do. Make sure Dataverse still runs on Minishift after you've stopped allowing containers to run as root by issuing the following command:
+
+``oc adm policy remove-scc-from-user anyuid -z default --as system:admin``
+
+For more information on improving Docker images to run as non-root, see "Support Arbitrary User IDs" at https://docs.openshift.org/latest/creating_images/guidelines.html#openshift-origin-specific-guidelines
 
 Create a Minishift Project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -420,6 +428,12 @@ Cleaning up
 
 ``oc delete project project1``
 
+Making Changes
+~~~~~~~~~~~~~~
+
+If you're interested in using Minishift for development and want to change the Dataverse code, you will need to get set up to create Docker images based on your changes and push them to a Docker registry such as Docker Hub. See the section below on Docker for details.
+
+
 Minishift Resources
 ~~~~~~~~~~~~~~~~~~~
 
@@ -441,7 +455,57 @@ On Linux, you can probably get Docker from your package manager.
 
 On Mac, download the ``.dmg`` from https://www.docker.com and install it. As of this writing is it known as Docker Community Edition for Mac.
 
+On Windows, FIXME ("Docker Community Edition for Windows" maybe???).
+
 We're working with Docker in the context of Minishift so if you haven't installed Minishift yet, follow the instructions above and make sure you get the Dataverse Docker images running in Minishift before you start messing with them.
+
+Editing Dataverse Docker Images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As of this writing, the Dataverse Docker images we publish under https://hub.docker.com/u/iqss/ are highly experimental. They're tagged with branch names like ``kick-the-tires`` rather than release numbers.
+
+Change to the docker directory:
+
+``cd conf/docker``
+
+Edit one of the files:
+
+``vim dataverse-glassfish/Dockerfile``
+
+At this point you want to build the image and run it. We are assuming you want to run it in your Minishift environment. We will be building your image and pushing it to Docker Hub. Then you will be pulling the image down from Docker Hub to run in your Minishift installation. If this sounds inefficient, you're right, but we haven't been able to figure out how to make use of Minishift's built in registry (see below) so we're pushing to Docker Hub instead.
+
+Log in to Docker Hub with an account that has access to push to the ``iqss`` organization:
+
+``docker login``
+
+(If you don't have access to push to the ``iqss`` organization, you can push elsewhere and adjust your ``openshift.json`` file accordingly.)
+
+Build and push the images to Docker Hub:
+
+``./build.sh``
+
+Note that you will see output such as ``digest: sha256:213b6380e6ee92607db5d02c9e88d7591d81f4b6d713224d47003d5807b93d4b`` that should later be reflected in Minishift to indicate that you are using the latest image you just pushed to Docker Hub.
+
+You can get a list of all repos under the ``iqss`` organization with this:
+
+``curl https://hub.docker.com/v2/repositories/iqss/``
+
+To see a specific repo:
+
+``curl https://hub.docker.com/v2/repositories/iqss/dataverse-glassfish/``
+
+Known issues with Dataverse Docker images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Again, Dataverse Docker images are highly experimental at this point. As of this writing, their purpose is primarily for kicking the tires on Dataverse. Here are some known issues:
+
+- The Dataverse installer is run in the entrypoint script every time you run the image. Ideally, Dataverse would be installed in the Dockerfile instead. Dataverse is being installed in the entrypoint script because it needs PosgreSQL to be up already so that database tables can be created when the war file is deployed.
+- The Docker images have to be run as root. See the discussion above.
+- The storage should be abstracted. Storage of data files and PostgreSQL data. Probably Solr data.
+- Better tuning of memory by examining ``/sys/fs/cgroup/memory/memory.limit_in_bytes`` and incorporating this into the Dataverse installation script.
+- Only a single Glassfish server can be used. See "Dedicated timer server in a Dataverse server cluster" in the :doc:`/admin/timers` section of the Installation Guide.
+- Only a single PostgreSQL server can be used.
+- Only a single Solr server can be used.
 
 Get Set Up to Push Docker Images to Minishift Registry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
