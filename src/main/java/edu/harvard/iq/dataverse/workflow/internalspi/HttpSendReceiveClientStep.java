@@ -54,7 +54,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
             }
             
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "Error communicating with remote server: " + ex.getMessage(), ex );
+            logger.log(Level.SEVERE, "Error communicating with remote server: " + ex.getMessage(), ex);
             return new Failure("Error executing request: " + ex.getLocalizedMessage(), "Cannot communicate with remote server.");
         }
     }
@@ -66,6 +66,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
         if ( pat.matcher(response).matches() ) {
             return OK;
         } else {
+            logger.log(Level.WARNING, "Remote system returned a bad reposonse: {0}", externalData);
             return new Failure("Response from remote server did not match expected one (response:" + response + ")");
         }
     }

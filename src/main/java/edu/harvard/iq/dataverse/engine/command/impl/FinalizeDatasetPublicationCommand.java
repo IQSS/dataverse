@@ -21,7 +21,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
@@ -29,7 +28,6 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -111,10 +109,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
         ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
 
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset));
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
+        final Optional<Workflow> postPubWorkflow = ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset);
         
-        ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset)
-                .ifPresent(wf -> ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset)));
+        if ( postPubWorkflow.isPresent() ) {
+            ctxt.workflows().start(postPubWorkflow.get(), buildContext(doiProvider, TriggerType.PostPublishDataset));
+        }
         
         return ctxt.em().merge(theDataset);
     }

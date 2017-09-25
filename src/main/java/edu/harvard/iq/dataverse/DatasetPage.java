@@ -78,10 +78,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
-import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
@@ -1445,9 +1442,10 @@ public class DatasetPage implements java.io.Serializable {
             // when we sync up with the rsync-upload branch, there will be a merge
             // conflict here; once resolved, there will also be code here for 
             // rsync upload in progress, and maybe other kinds of locks. 
-            if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
-            } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)) {
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
             }
         }
@@ -1798,7 +1796,7 @@ public class DatasetPage implements java.io.Serializable {
                 // has been published. If a publishing workflow is configured, this may have sent the 
                 // dataset into a workflow limbo, potentially waiting for a third party system to complete 
                 // the process. So it may be premature to show the "success" message at this point. 
-                if (dataset.isLocked() && dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
+                if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
                 } else {
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
@@ -2596,7 +2594,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isLockedInProgress() {
         if (dataset != null) {
-            logger.fine("checking lock status of dataset " + dataset.getId());
+            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
             if (dataset.isLocked()) {
                 return true;
             }
@@ -2605,19 +2603,14 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isDatasetLockedInWorkflow() {
-        if (dataset != null) {
-            if (dataset.isLocked()) {
-                if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return (dataset != null) 
+                ? dataset.isLockedFor(DatasetLock.Reason.Workflow) 
+                : false;
     }
     
     public boolean isStillLocked() {
         if (dataset != null && dataset.getId() != null) {
-            logger.fine("checking lock status of dataset " + dataset.getId());
+            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
             if (datasetService.checkDatasetLock(dataset.getId())) {
                 return true;
             }

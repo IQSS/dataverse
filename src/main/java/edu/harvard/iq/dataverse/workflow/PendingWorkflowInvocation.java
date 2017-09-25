@@ -20,7 +20,7 @@ import javax.persistence.OneToOne;
 
 /**
  * A workflow whose current step waits for an external system to complete a
- * (probably lengthy) process. Meanwhile, it sits in the database, pending.
+ * (probably lengthy) process. Meanwhile, it sits in the database, pending away.
  * 
  * @author michael
  */
@@ -38,6 +38,7 @@ public class PendingWorkflowInvocation implements Serializable {
     
     @OneToOne
     Dataset dataset;
+    
     long nextVersionNumber;
     long nextMinorVersionNumber;
     
@@ -165,5 +166,4 @@ public class PendingWorkflowInvocation implements Serializable {
     public void setTypeOrdinal(int typeOrdinal) {
         this.typeOrdinal = typeOrdinal;
     }
-    
 }

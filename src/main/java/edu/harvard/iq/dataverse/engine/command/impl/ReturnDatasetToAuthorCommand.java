@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -44,7 +45,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
              throw new IllegalCommandException("You must enter a reason for returning a dataset to the author(s).", this);
         }
          */
-        ctxt.engine().submit( new RemoveLockCommand(getRequest(), theDataset));
+        ctxt.engine().submit( new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview));
         Dataset updatedDataset = save(ctxt);
         return updatedDataset;
         
@@ -56,7 +57,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         // We set "in review" to false because now the ball is back in the author's court.
         theDataset.setModificationTime(updateTime);
-        theDataset.setDatasetLock(null);
+        theDataset.addLock(null);
         Dataset savedDataset = ctxt.em().merge(theDataset);
         ctxt.em().flush();
 

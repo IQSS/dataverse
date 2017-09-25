@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -24,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,11 +35,8 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
-import javax.persistence.NamedStoredProcedureQuery;
-import javax.persistence.ParameterMode;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.StoredProcedureParameter;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
 import javax.xml.stream.XMLOutputFactory;
@@ -511,8 +504,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void addDatasetLock(Dataset dataset, DatasetLock lock) {
-       dataset.setDatasetLock(lock);
-       em.persist(lock); 
+        lock.setDataset(dataset);
+        dataset.addLock(lock);
+        em.merge(dataset); 
     }
     
     public void addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
@@ -536,28 +530,21 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void removeDatasetLock(Long datasetId) {
+    public void removeDatasetLock(Long datasetId, DatasetLock.Reason aReason) {
         Dataset dataset = em.find(Dataset.class, datasetId);
-        //em.refresh(dataset); (?)
-        DatasetLock lock = dataset.getDatasetLock();
-        if (lock != null) {
-            AuthenticatedUser user = lock.getUser();
-            dataset.setDatasetLock(null);
-            user.getDatasetLocks().remove(lock);
-            /* 
-             * TODO - ?
-             * throw an exception if for whatever reason we can't remove the lock?
-             try {
-             */
-            em.remove(lock);
-            /*
-             } catch (TransactionRequiredException te) {
-             ...
-             } catch (IllegalArgumentException iae) {
-             ...
-             }
-             */
-        }
+        Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.INFO, "Removing locks from dataset " + dataset.getId());
+        Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.INFO, dataset.getLocks().toString() );
+        new HashSet<>(dataset.getLocks()).stream()
+                .filter( l -> l.getReason() == aReason )
+                .forEach( lock -> {
+                    Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.INFO, "Removing lock " + lock);
+                    dataset.removeLock(lock);
+                    
+                    AuthenticatedUser user = lock.getUser();
+                    user.getDatasetLocks().remove(lock);
+                    
+                    em.remove(lock);
+                });
     }
     
     /*
@@ -594,7 +581,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 + ";").getSingleResult();
 
         } catch (Exception ex) {
-            logger.info("exception trying to get title from latest version: " + ex);
+            logger.log(Level.INFO, "exception trying to get title from latest version: {0}", ex);
             return "";
         }
 

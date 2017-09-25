@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLock;
+import static java.util.stream.Collectors.joining;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.UriRegistry;
 
@@ -12,7 +12,7 @@ public class SwordUtil {
 
     static String DCTERMS = "http://purl.org/dc/terms/";
 
-    /**
+    /*
      * @todo get rid of this method
      */
     public static SwordError throwSpecialSwordErrorWithoutStackTrace(String SwordUriRegistryError, String error) {
@@ -28,7 +28,7 @@ public class SwordUtil {
         return swordError;
     }
 
-    /**
+    /*
      * @todo get rid of this method
      */
     public static SwordError throwRegularSwordErrorWithoutStackTrace(String error) {
@@ -42,9 +42,9 @@ public class SwordUtil {
     }
 
     public static void datasetLockCheck(Dataset dataset) throws SwordError {
-        DatasetLock datasetLock = dataset.getDatasetLock();
-        if (datasetLock != null) {
-            String message = "Please try again later. Unable to perform operation due to dataset lock: " + datasetLock.getInfo();
+        if ( dataset.isLocked() ) {
+            String message = "Please try again later. Unable to perform operation due to dataset lock: " 
+                    + dataset.getLocks().stream().map(l->l.getReason().name() + ": " + l.getInfo()).collect( joining(",") );
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
         }
     }

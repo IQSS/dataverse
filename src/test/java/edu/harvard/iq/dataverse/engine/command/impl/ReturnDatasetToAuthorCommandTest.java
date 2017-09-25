@@ -89,7 +89,7 @@ public class ReturnDatasetToAuthorCommandTest {
                     }
                     
                     @Override
-                    public void removeDatasetLock(Long datasetId) {
+                    public void removeDatasetLock(Long datasetId, DatasetLock.Reason aReason) {
                         
                     }
                 };

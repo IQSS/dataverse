@@ -20,6 +20,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import static edu.harvard.iq.dataverse.DatasetLock.Reason.Workflow;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.Date;
 import java.io.Serializable;
@@ -33,7 +34,6 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -52,7 +52,7 @@ import javax.persistence.NamedQuery;
 @Table(indexes = {@Index(columnList="user_id"), @Index(columnList="dataset_id")})
 @NamedQueries(
         @NamedQuery(name="DatasetLock.getLocksByDatasetId",
-                    query="SELECT l FROM DatasetLock l WHERE l.dataset.id=:datasetId")
+                    query="SELECT lock FROM DatasetLock lock WHERE lock.dataset.id=:datasetId")
 )
 public class DatasetLock implements Serializable {
     
@@ -76,13 +76,13 @@ public class DatasetLock implements Serializable {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date startTime;    
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable=false)
     private Dataset dataset;
 
     @ManyToOne
     @JoinColumn(nullable=false)
-    private AuthenticatedUser user;    
+    private AuthenticatedUser user;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable=false)
@@ -116,7 +116,7 @@ public class DatasetLock implements Serializable {
         startTime = new Date();
         user = aUser;
         info = infoMessage;
-        
+     
     }
     
     /**

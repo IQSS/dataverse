@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse.workflow;
 
+import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -17,15 +20,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 /**
  * Service bean for managing and executing {@link Workflow}s
@@ -38,8 +42,11 @@ public class WorkflowServiceBean {
     private static final Logger logger = Logger.getLogger(WorkflowServiceBean.class.getName());
     private static final String WORKFLOW_ID_KEY = "WorkflowServiceBean.WorkflowId:";
 
-    @PersistenceContext
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
+    
+    @EJB
+    DatasetServiceBean datasets;
 
     @EJB
     SettingsServiceBean settings;
@@ -76,9 +83,13 @@ public class WorkflowServiceBean {
      *
      * @param wf the workflow to execute.
      * @param ctxt the context in which the workflow is executed.
+     * @throws CommandException If the dataset could not be locked.
      */
-    public void start(Workflow wf, WorkflowContext ctxt) {
-        forward(wf, ctxt, 0);
+    @Asynchronous
+    public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
+        ctxt = refresh(ctxt);
+        lockDataset(ctxt);
+        forward(wf, ctxt);
     }
 
     /**
@@ -92,37 +103,22 @@ public class WorkflowServiceBean {
      * #doResume(edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation,
      * java.lang.String)
      */
+    @Asynchronous
     public void resume(PendingWorkflowInvocation pending, String body) {
         em.remove(em.merge(pending));
         doResume(pending, body);
     }
     
-    @Asynchronous
-    private void forward(Workflow wf, WorkflowContext ctxt, int idx) {
-        WorkflowStepData wsd = wf.getSteps().get(idx);
-        WorkflowStep step = createStep(wsd);
-        WorkflowStepResult res = step.run(ctxt);
-        
-        if (res == WorkflowStepResult.OK) {
-            if (idx == wf.getSteps().size() - 1) {
-                workflowCompleted(wf, ctxt);
-            } else {
-                forward(wf, ctxt, ++idx);
-            }
-
-        } else if (res instanceof Failure) {
-            logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure) res).getReason()});
-            rollback(wf, ctxt, (Failure) res, idx - 1);
-
-        } else if (res instanceof Pending) {
-            pauseAndAwait(wf, ctxt, (Pending) res, idx);
-        }
-    }
     
     @Asynchronous
+    private void forward(Workflow wf, WorkflowContext ctxt) {
+        executeSteps(wf, ctxt, 0);
+    }
+    
     private void doResume(PendingWorkflowInvocation pending, String body) {
         Workflow wf = pending.getWorkflow();
         List<WorkflowStepData> stepsLeft = wf.getSteps().subList(pending.getPendingStepIdx(), wf.getSteps().size());
+        
         WorkflowStep pendingStep = createStep(stepsLeft.get(0));
         final WorkflowContext ctxt = pending.reCreateContext(roleAssignees);
 
@@ -132,37 +128,116 @@ public class WorkflowServiceBean {
         } else if (res instanceof Pending) {
             pauseAndAwait(wf, ctxt, (Pending) res, pending.getPendingStepIdx());
         } else {
-            forward(wf, ctxt, pending.getPendingStepIdx() + 1);
+            executeSteps(wf, ctxt, pending.getPendingStepIdx() + 1);
         }
     }
 
     @Asynchronous
-    private void rollback(Workflow wf, WorkflowContext ctxt, Failure failure, int idx) {
-        WorkflowStepData wsd = wf.getSteps().get(idx);
-        logger.log(Level.INFO, "{0} rollback of step {1}", new Object[]{ctxt.getInvocationId(), idx});
-        try {
-            createStep(wsd).rollback(ctxt, failure);
-        } finally {
-            if (idx > 0) {
-                rollback(wf, ctxt, failure, --idx);
-            } else {
-                unlockDataset(ctxt);
+    private void rollback(Workflow wf, WorkflowContext ctxt, Failure failure, int lastCompletedStepIdx) {
+        ctxt = refresh(ctxt);
+        final List<WorkflowStepData> steps = wf.getSteps();
+        
+        for ( int stepIdx = lastCompletedStepIdx; stepIdx >= 0; --stepIdx ) {
+            WorkflowStepData wsd = steps.get(stepIdx);
+            WorkflowStep step = createStep(wsd);
+            
+            try {
+                logger.log(Level.INFO, "Workflow {0} step {1}: Rollback", new Object[]{ctxt.getInvocationId(), stepIdx});
+                rollbackStep(step, ctxt, failure);
+                
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Workflow " + ctxt.getInvocationId() 
+                                          + " step " + stepIdx + ": Rollback error: " + e.getMessage(), e);
             }
+
+        }
+        
+        logger.log( Level.INFO, "Removing workflow lock");
+        try {
+            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
+            
+            // Corner case - delete locks generated within this same transaction.
+            Query deleteQuery = em.createQuery("DELETE from DatasetLock l WHERE l.dataset.id=:id AND l.reason=:reason");
+            deleteQuery.setParameter("id", ctxt.getDataset().getId() );
+            deleteQuery.setParameter("reason", DatasetLock.Reason.Workflow );
+            deleteQuery.executeUpdate();
+            
+        } catch (CommandException ex) {
+            logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
         }
     }
     
     /**
-     * Unlocks the dataset after the workflow is over. 
-     * @param ctxt 
+     * Execute the passed workflow, starting from {@code initialStepIdx}.
+     * @param wf    The workflow to run.
+     * @param ctxt  Execution context to run the workflow in.  
+     * @param initialStepIdx 0-based index of the first step to run.
      */
-    @Asynchronous
-    private void unlockDataset( WorkflowContext ctxt ) {
-        try {
-            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset()) );
-        } catch (CommandException ex) {
-            logger.log(Level.SEVERE, "Cannot unlock dataset after rollback: " + ex.getMessage(), ex);
+    private void executeSteps(Workflow wf, WorkflowContext ctxt, int initialStepIdx ) {
+        final List<WorkflowStepData> steps = wf.getSteps();
+        
+        for ( int stepIdx = initialStepIdx; stepIdx < steps.size(); stepIdx++ ) {
+            WorkflowStepData wsd = steps.get(stepIdx);
+            WorkflowStep step = createStep(wsd);
+            WorkflowStepResult res = runStep(step, ctxt);
+            
+            try {
+                if (res == WorkflowStepResult.OK) {
+                    logger.log(Level.INFO, "Workflow {0} step {1}: OK", new Object[]{ctxt.getInvocationId(), stepIdx});
+
+                } else if (res instanceof Failure) {
+                    logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure) res).getReason()});
+                    rollback(wf, ctxt, (Failure) res, stepIdx-1 );
+                    return;
+
+                } else if (res instanceof Pending) {
+                    pauseAndAwait(wf, ctxt, (Pending) res, stepIdx);
+                    return;
+                }
+                
+            } catch ( Exception e ) {
+                logger.log(Level.WARNING, "Workflow {0} step {1}: Uncought exception:", new Object[]{ctxt.getInvocationId(), e.getMessage()});
+                logger.log(Level.WARNING, "Trace:", e);
+                rollback(wf, ctxt, (Failure) res, stepIdx-1 );
+                return;
+            }
         }
+        
+        workflowCompleted(wf, ctxt);
+        
     }
+    
+    //////////////////////////////////////////////////////////////
+    // Internal methods to run each step in its own transaction.
+    //
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    WorkflowStepResult runStep( WorkflowStep step, WorkflowContext ctxt ) {
+        return step.run(ctxt);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    WorkflowStepResult resumeStep( WorkflowStep step, WorkflowContext ctxt, Map<String,String> localData, String externalData ) {
+        return step.resume(ctxt, localData, externalData);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    void rollbackStep( WorkflowStep step, WorkflowContext ctxt, Failure reason ) {
+        step.rollback(ctxt, reason);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    void lockDataset( WorkflowContext ctxt ) throws CommandException {
+        final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
+//        engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
+        datasetLock.setDataset(ctxt.getDataset());
+        em.persist(datasetLock);
+        em.flush();
+    }
+    
+    //
+    //
+    //////////////////////////////////////////////////////////////
     
     private void pauseAndAwait(Workflow wf, WorkflowContext ctxt, Pending pendingRes, int idx) {
         PendingWorkflowInvocation pending = new PendingWorkflowInvocation(wf, ctxt, pendingRes);
@@ -170,14 +245,12 @@ public class WorkflowServiceBean {
         em.persist(pending);
     }
 
-    @Asynchronous
     private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
         if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
             try {
                 engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getDoiProvider(), ctxt.getRequest()) );
-                unlockDataset(ctxt);
-                
+                                
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
@@ -272,6 +345,12 @@ public class WorkflowServiceBean {
             throw new IllegalArgumentException("Bad WorkflowStepSPI id: '" + wsd.getProviderId() + "'");
         }
         return provider.getStep(wsd.getStepType(), wsd.getStepParameters());
+    }
+    
+    private WorkflowContext refresh( WorkflowContext ctxt ) {
+        return new WorkflowContext( ctxt.getRequest(), 
+                       datasets.find( ctxt.getDataset().getId() ), ctxt.getNextVersionNumber(), 
+                       ctxt.getNextMinorVersionNumber(), ctxt.getType(), ctxt.getDoiProvider() );
     }
 
 }

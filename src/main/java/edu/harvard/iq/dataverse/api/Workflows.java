@@ -1,14 +1,17 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -49,6 +52,16 @@ public class Workflows extends AbstractApiBean {
         workflows.resume( pending, body );
         
         return Response.accepted("/api/datasets/" + pending.getDataset().getId() ).build();
+    }
+    
+    @Path("lock/{dsId}")
+    @GET
+    public Response lockDataset( @PathParam("dsId") String dsId ) {
+        return response( req -> {
+            DatasetLock dl = new DatasetLock(DatasetLock.Reason.Workflow, findAuthenticatedUserOrDie());
+            execCommand( new AddLockCommand( req, findDatasetOrDie(dsId), dl) ) ;
+            return ok("locked dataset " + dsId);
+        });
     }
     
     private boolean isAllowed(IpAddress addr) {
