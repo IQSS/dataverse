@@ -10,11 +10,15 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.impl.GrantSuperuserStatusCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeSuperuserStatusCommand;
 import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -214,6 +218,31 @@ public class DashboardUsersPage implements java.io.Serializable {
     public void cancelSuperuserStatusChange(){
         selectedUserDetached.setSuperuser(!selectedUserDetached.isSuperuser());        
         selectedUserPersistent = null;
+    }
+    
+    // Methods for the removeAllRoles for a user : 
+    
+    public void removeUserRoles() {
+        logger.fine("Get persisent AuthenticatedUser for id: " + selectedUserDetached.getId());
+        selectedUserPersistent = userService.find(selectedUserDetached.getId());
+        
+        selectedUserDetached.setRoles(null); // for display
+        try {
+            commandEngine.submit(new RevokeAllRolesCommand(selectedUserPersistent, dvRequestService.getDataverseRequest()));
+        } catch (Exception ex) {
+            // error message to show on the page:
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.failure", Arrays.asList(selectedUserPersistent.getUserIdentifier())));
+            return;
+        }
+        // success message: 
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.success", Arrays.asList(selectedUserPersistent.getUserIdentifier()))); 
+    }
+    
+    public String getConfirmRemoveRolesMessage() {
+        if (selectedUserDetached != null) {
+            return BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles.removeAll.confirmationText", Arrays.asList(selectedUserDetached.getUserIdentifier()));
+        } 
+        return BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles.removeAll.confirmationText");
     }
     
     public String getAuthProviderFriendlyName(String authProviderId){
