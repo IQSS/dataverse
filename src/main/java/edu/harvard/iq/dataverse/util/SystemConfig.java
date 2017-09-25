@@ -806,11 +806,52 @@ public class SystemConfig {
         public String toString() {
             return text;
         }
+        
+        
+    }
+    
+    public enum FileDownloadMethods {
+        RSYNC("rsal/rsync"),
+        NATIVE("NATIVE");
+        private final String text;
+
+        private FileDownloadMethods(final String text) {
+            this.text = text;
+        }
+
+        public static FileUploadMethods fromString(String text) {
+            if (text != null) {
+                for (FileUploadMethods fileUploadMethods : FileUploadMethods.values()) {
+                    if (text.equals(fileUploadMethods.text)) {
+                        return fileUploadMethods;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("FileDownloadMethods must be one of these values: " + Arrays.asList(FileDownloadMethods.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+        
     }
 
     public boolean isPublicInstall(){
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
     }
+    
+    public boolean isRsyncUpload(){
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        return uploadMethods != null &&  uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+    }
+    
+    public boolean isRsyncDownload()
+    {
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        return downloadMethods !=null && downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString());
+    }
+    
 
 }

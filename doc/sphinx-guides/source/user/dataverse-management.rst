@@ -172,7 +172,7 @@ Linked Dataverses + Linked Datasets
 
 Currently, the ability to link a dataverse to another dataverse or a dataset to a dataverse is a super user only feature. 
 
-If you need to have a dataverse or dataset linked in the Harvard Dataverse installation, please contact support@dataverse.org. 
+If you need to have a dataverse or dataset linked to your dataverse, please contact the support team for the Dataverse installation you are using.
 
 Publish Your Dataverse
 =================================================================

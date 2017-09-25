@@ -115,7 +115,7 @@ public class ConfirmEmailServiceBean {
                     // FIXME: consider refactoring this into MailServiceBean.sendNotificationEmail. CONFIRMEMAIL may be the only type where we don't want an in-app notification.
                     UserNotification userNotification = new UserNotification();
                     userNotification.setType(UserNotification.Type.CONFIRMEMAIL);
-                    String subject = MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName);
+                    String subject = MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null);
                     logger.fine("sending email to " + toAddress + " with this subject: " + subject);
                     mailService.sendSystemEmail(toAddress, subject, messageBody);
                 }

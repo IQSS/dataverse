@@ -31,6 +31,13 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Glassfish might be a compelling enough reason to front Glassfish with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
+Privacy Considerations
+++++++++++++++++++++++
+
+Out of the box, Dataverse will list email addresses of the "contacts" for datasets when users visit a dataset page and click the "Export Metadata" button. If you prefer to exclude email addresses of dataset contacts from metadata export, set :ref:`:ExcludeEmailFromExport <:ExcludeEmailFromExport>` to true.
+
+Additional Recommendations
+++++++++++++++++++++++++++
 Run Glassfish as a User Other Than Root
 +++++++++++++++++++++++++++++++++++++++
 
@@ -294,7 +301,7 @@ Once you have acquired the keys, they need to be added to``credentials``. The fo
 | ``aws_access_key_id = <insert key, no brackets>``
 | ``aws_secret_access_key = <insert secret key, no brackets>``
 
-Place this file ina a folder named ``.aws`` under the home directory for the user running your dataverse installation.
+Place this file in a folder named ``.aws`` under the home directory for the user running your dataverse installation.
 
 Setup aws via command line tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -775,6 +782,9 @@ Specify a URL where users can read your API Terms of Use.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
+
+.. _:ExcludeEmailFromExport:
+
 :ExcludeEmailFromExport
 +++++++++++++++++++++++
 
@@ -1175,20 +1185,13 @@ This setting is experimental and to be used with the Data Capture Module (DCM). 
 :DownloadMethods
 ++++++++++++++++
 
-This setting is experimental and related to Repository Storage Abstraction Layer (RSAL). As of this writing it has no effect.
+This setting is experimental and related to Repository Storage Abstraction Layer (RSAL).
+
+``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
 
 :GuestbookResponsesPageDisplayLimit
 +++++++++++++++++++++++++++++++++++
 
 Limit on how many guestbook entries to display on the guestbook-responses page. By default, only the 5000 most recent entries will be shown. Use the standard settings API in order to change the limit. For example, to set it to 10,000, make the following API call: 
 
-``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
-
-:CustomDatasetSummaryFields
-+++++++++++++++++++++++++
-
-You can replace the default dataset metadata fields that are displayed above files table on the dataset page with a custom list separated by commas using the curl command below.
-
-``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
-
-You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work. 
+``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit`` 

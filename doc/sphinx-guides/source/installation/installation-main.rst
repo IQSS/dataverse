@@ -82,7 +82,7 @@ Logging In
 Out of the box, Glassfish runs on port 8080 and 8181 rather than 80 and 443, respectively, so visiting http://localhost:8080 (substituting your hostname) should bring up a login page. See the :doc:`shibboleth` page for more on ports, but for now, let's confirm we can log in by using port 8080. Poke a temporary hole in your firewall, if needed. 
 
 Superuser Account
-+++++++++++++++++
+^^^^^^^^^^^^^^^^^
 
 We'll use the superuser account created by the installer to make sure you can log into Dataverse. For more on the difference between being a superuser and having the "Admin" role, read about configuring the root dataverse in the :doc:`config` section.
 
@@ -106,12 +106,12 @@ Troubleshooting
 If the following doesn't apply, please get in touch as explained in the :doc:`intro`. You may be asked to provide ``glassfish4/glassfish/domains/domain1/logs/server.log`` for debugging.
 
 Dataset Cannot Be Published
-+++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check to make sure you used a fully qualified domain name when installing Dataverse. You can change the ``dataverse.fqdn`` JVM option after the fact per the :doc:`config` section.
 
 Problems Sending Email
-++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^
 
 If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Glassfish asadmin command:
 
@@ -124,7 +124,7 @@ If the command returns a host you don't want to use, you can modify your notifyM
 If your mail host requires a username/password for access, continue to the next section.
 
 Mail Host Configuration & Authentication
-++++++++++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Glassfish admin console. 
 
@@ -166,7 +166,7 @@ mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 Be sure you save the changes made here and then restart your Glassfish server to test it out.
 
 UnknownHostException While Deploying
-++++++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or service not known" in server.log and your hostname is "myhost" the problem is likely that "myhost" doesn't appear in ``/etc/hosts``. See also http://stackoverflow.com/questions/21817809/glassfish-exception-during-deployment-project-with-stateful-ejb/21850873#21850873
 
@@ -176,7 +176,7 @@ Fresh Reinstall
 Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Glassfish, PostgreSQL and Solr, but you should be conscious of how to clear out their data.
 
 Drop database
-+++++++++++++
+^^^^^^^^^^^^^
 
 In order to drop the database, you have to stop Glassfish, which will have open connections. Before you stop Glassfish, you may as well undeploy the war file. First, find the name like this:
 
@@ -195,22 +195,22 @@ With Glassfish down, you should now be able to drop your database and recreate i
 ``psql -U dvnapp -c 'DROP DATABASE "dvndb"' template1``
 
 Clear Solr
-++++++++++
+^^^^^^^^^^
 
 The database is fresh and new but Solr has stale data it in. Clear it out with this command:
 
 ``curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
 
 
-Deleting uploaded files
-+++++++++++++++++++++++
+Deleting Uploaded Files
+^^^^^^^^^^^^^^^^^^^^^^^
 
 The path below will depend on the value for ``dataverse.files.directory`` as described in the :doc:`config` section:
 
 ``rm -rf /usr/local/glassfish4/glassfish/domains/domain1/files``
 
 Rerun Installer
-+++++++++++++++
+^^^^^^^^^^^^^^^
 
 With all the data cleared out, you should be ready to rerun the installer per above.
 
