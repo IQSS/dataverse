@@ -169,9 +169,11 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         
         uploadFolder = jobParams.getProperty("uploadFolder");
         
+        /*
         // lock the dataset
         jobLogger.log(Level.INFO, "Locking dataset");
         String info = "Starting batch file import job.";
+        */
         
         // TODO: 
         // In the current #3348 implementation, we are no longer locking the 
@@ -216,6 +218,14 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      */
     @Override
     public void afterJob() throws Exception {
+
+        //TODO add notifications to job failure?
+        if (jobContext.getExitStatus() != null && jobContext.getExitStatus().equals("FAILED")) {
+            getJobLogger().log(Level.SEVERE, "Job Failed. See Log for more information.");
+            closeJobLoggerHandlers();
+            return;
+        }
+        
         // run reporting and notifications
         doReport();
 
@@ -238,6 +248,11 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         getJobLogger().log(Level.INFO, "Job end   = " + step.getEndTime());
         getJobLogger().log(Level.INFO, "Job exit status = " + step.getExitStatus());
         
+        closeJobLoggerHandlers();
+
+    }
+    
+    private void closeJobLoggerHandlers(){
         // close the job logger handlers
         for (Handler h:getJobLogger().getHandlers()) {
             h.close();

@@ -58,13 +58,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         registerExternalIdentifier(theDataset, ctxt);        
 
         if (theDataset.getPublicationDate() == null) {
-            // First Release
-            // Send notifications to users with download file permission
-            notifyUsers(ctxt, theDataset, UserNotification.Type.ASSIGNROLE);
-            
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
-            
         } 
 
         // update metadata
@@ -106,7 +101,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         
 
-        exportMetadata();
+        exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
         ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
@@ -116,17 +111,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset)
                 .ifPresent(wf -> ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset)));
         
-        return ctxt.em().merge(theDataset);
+        Dataset resultSet = ctxt.em().merge(theDataset);
+        
+        if(resultSet != null) {
+            notifyUsersDatasetPublish(ctxt, theDataset);
+        }
+        
+        return resultSet;
     }
 
     /**
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
      */
-    private void exportMetadata() {
+    private void exportMetadata(SettingsServiceBean settingsServiceBean) {
 
         try {
-            ExportService instance = ExportService.getInstance();
+            ExportService instance = ExportService.getInstance(settingsServiceBean);
             instance.exportAllFormats(theDataset);
 
         } catch (ExportException ex) {
@@ -176,7 +177,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataFile.setPublicationDate(updateTime);
                 
                 // check if any prexisting roleassignments have file download and send notifications
-                notifyUsers(ctxt, dataFile, UserNotification.Type.GRANTFILEACCESS);
+                notifyUsersFileDownload(ctxt, dataFile);
             }
             
             // set the files restriction flag to the same as the latest version's
@@ -234,13 +235,26 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
     
-    private void notifyUsers(CommandContext ctxt, DvObject subject, UserNotification.Type messageType ) {
+   
+    //These notification methods are fairly similar, but it was cleaner to create a few copies.
+    //If more notifications are needed in this command, they should probably be collapsed.
+    private void notifyUsersFileDownload(CommandContext ctxt, DvObject subject) {
         Timestamp timestamp = new Timestamp(new Date().getTime());
         ctxt.roles().directRoleAssignments(subject).stream()
             .filter(  ra -> ra.getRole().permissions().contains(Permission.DownloadFile) )
             .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
             .distinct() // prevent double-send
-            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) );
+            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, UserNotification.Type.GRANTFILEACCESS, theDataset.getId()) );
+    }
+    
+    private void notifyUsersDatasetPublish(CommandContext ctxt, DvObject subject) {
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        ctxt.roles().rolesAssignments(subject).stream()
+            .filter(  ra -> ra.getRole().permissions().contains(Permission.ViewUnpublishedDataset) || ra.getRole().permissions().contains(Permission.DownloadFile))
+            .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
+            .distinct() // prevent double-send
+            //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) ); //not sure why this line doesn't work instead
+            .forEach( au -> ctxt.notifications().sendNotification(au, timestamp, UserNotification.Type.PUBLISHEDDS, theDataset.getLatestVersion().getId()) ); 
     }
     
     /**

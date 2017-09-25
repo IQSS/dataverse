@@ -211,7 +211,7 @@ public class MailServiceBean implements java.io.Serializable {
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification);
                String rootDataverseName = dataverseService.findRootDataverse().getName();
-               String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, rootDataverseName);
+               String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, rootDataverseName, objectOfNotification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                     retval = sendSystemEmail(emailAddress, subjectText, messageText); 
                } else {
@@ -480,7 +480,7 @@ public class MailServiceBean implements java.io.Serializable {
 
             case FILESYSTEMIMPORT:
                 version =  (DatasetVersion) targetObject;
-                String fileImportMsg = BundleUtil.getStringFromBundle("notification.import.filesystem", Arrays.asList(
+                String fileImportMsg = BundleUtil.getStringFromBundle("notification.mail.import.filesystem", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         version.getDataset().getGlobalId(),
                         version.getDataset().getDisplayName()
