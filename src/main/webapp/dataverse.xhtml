@@ -436,7 +436,7 @@
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
                                                 </h:link>
                                             </li>
-                                            <li>
+                                            <li jsf:rendered="#{!settingsWrapper.rsyncDownload}">
                                                 <h:link id="manageGuestbooks" styleClass="ui-commandlink ui-widget" outcome="manage-guestbooks">
                                                     <h:outputText value="#{bundle['dataverse.option.datasetGuestbooks']}" />
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
@@ -493,7 +493,7 @@
                             </p:dialog>
                             <!-- END: Email/Link/Share Button Group -->
                             <!-- Metrics for Root Dataverse -->
-                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{DataversePage.isRootDataverse()}">
+                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncDownload}">
                                 <div id="metrics-label" class="col-xs-4 small text-center">
                                     <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{systemConfig.metricsUrl != null}">
                                         <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}

@@ -710,8 +710,9 @@ Sample output appears below.
                     "createdTime":"2000-01-01 00:00:00.0",
                     "lastLoginTime":"2017-07-03 12:22:35.926",
                     "lastApiUseTime":"2017-07-03 12:55:57.186"
-                },
-                **... 22 more user documents ...**
+                }
+                
+                // ... 22 more user documents ...
             ]
         }
     }

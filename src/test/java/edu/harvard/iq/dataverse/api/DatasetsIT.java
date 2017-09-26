@@ -393,8 +393,8 @@ public class DatasetsIT {
                 .body("message", equalTo("Cannot publish as minor version. Re-try as major release."))
                 .statusCode(403);
 
-        Response setSequentialNumberAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
-        setSequentialNumberAsIdentifierGenerationStyle.then().assertThat()
+        Response setToExcludeEmailFromExport = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
+        setToExcludeEmailFromExport.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
@@ -859,15 +859,19 @@ public class DatasetsIT {
     @Test
     public void testCreateDatasetWithDcmDependency() {
 
-        boolean disabled = true;
+        boolean disabled = false;
 
         if (disabled) {
             return;
         }
 
         // TODO: Test this with a value like "junk" rather than a valid URL which would give `java.net.MalformedURLException: no protocol`.
-//        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888/ur.py");
-        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
+        // The DCM Vagrant box runs on port 8888: https://github.com/sbgrid/data-capture-module/blob/master/Vagrantfile
+        String dcmVagrantUrl = "http://localhost:8888";
+        // The DCM mock runs on port 5000: https://github.com/sbgrid/data-capture-module/blob/master/doc/mock.md
+        String dcmMockUrl = "http://localhost:5000";
+        String dcmUrl = dcmMockUrl;
+        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, dcmUrl);
         setDcmUrl.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -966,7 +970,7 @@ public class DatasetsIT {
         String rsyncScript = getRsyncScript.body().asString();
         System.out.println("script:\n" + rsyncScript);
         assertTrue(rsyncScript.startsWith("#!"));
-        assertTrue(rsyncScript.contains(datasetId.toString()));
+        assertTrue(rsyncScript.contains("placeholder")); // The DCM mock script has the word "placeholder" in it.
 
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
         removeUploadMethods.then().assertThat()
@@ -1002,7 +1006,13 @@ public class DatasetsIT {
     @Test
     public void testDcmChecksumValidationMessages() throws IOException, InterruptedException {
 
-        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
+        // The DCM Vagrant box runs on port 8888: https://github.com/sbgrid/data-capture-module/blob/master/Vagrantfile
+        String dcmVagrantUrl = "http://localhost:8888";
+        // The DCM mock runs on port 5000: https://github.com/sbgrid/data-capture-module/blob/master/doc/mock.md
+        String dcmMockUrl = "http://localhost:5000";
+        String dcmUrl = dcmMockUrl;
+
+        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, dcmUrl);
         setDcmUrl.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -1088,8 +1098,11 @@ public class DatasetsIT {
         JsonObjectBuilder wrongDataset = Json.createObjectBuilder();
         String fakeDatasetId = "78921457982457921";
         wrongDataset.add("status", "validation passed");
-        UtilIT.makeSuperUser(username);
-        Response datasetNotFound = UtilIT.dataCaptureModuleChecksumValidation(fakeDatasetId, wrongDataset.build(), apiToken);
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        UtilIT.makeSuperUser(superuserUsername);
+        Response datasetNotFound = UtilIT.dataCaptureModuleChecksumValidation(fakeDatasetId, wrongDataset.build(), superuserApiToken);
         datasetNotFound.prettyPrint();
 
         datasetNotFound.then().assertThat()
@@ -1099,7 +1112,7 @@ public class DatasetsIT {
         JsonObjectBuilder badNews = Json.createObjectBuilder();
         // Status options are documented at https://github.com/sbgrid/data-capture-module/blob/master/doc/api.md#post-upload
         badNews.add("status", "validation failed");
-        Response uploadFailed = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, badNews.build(), apiToken);
+        Response uploadFailed = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, badNews.build(), superuserApiToken);
         uploadFailed.prettyPrint();
 
         uploadFailed.then().assertThat()
@@ -1125,7 +1138,7 @@ public class DatasetsIT {
          * "files.sha" and (if checksum validation succeeds) the DCM moves the
          * files and the "files.sha" file into the uploadFolder.
          */
-        boolean doExtraTesting = false;
+        boolean doExtraTesting = true;
 
         if (doExtraTesting) {
 
@@ -1155,7 +1168,7 @@ public class DatasetsIT {
         goodNews.add("status", "validation passed");
         goodNews.add("uploadFolder", uploadFolder);
         goodNews.add("totalSize", totalSize);
-        Response uploadSuccessful = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, goodNews.build(), apiToken);
+        Response uploadSuccessful = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, goodNews.build(), superuserApiToken);
         /**
          * Errors here are expected unless you've set doExtraTesting to true to
          * do the jobs of the rsync script and the DCM to create the files.sha
@@ -1187,6 +1200,7 @@ public class DatasetsIT {
                         .statusCode(OK.getStatusCode());
             }
         }
+        logger.info("username/password: " + username);
     }
 
 }

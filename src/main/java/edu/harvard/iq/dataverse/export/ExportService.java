@@ -54,8 +54,13 @@ public class ExportService {
     }
 
     /**
-     * TODO: Audit all calls to this getInstance method that doesn't take a SettingsServiceBean as an argument to make sure nothing broke.
+     * @deprecated Use `getInstance(SettingsServiceBean settingsService)`
+     * instead. For privacy reasons, we need to pass in settingsService so that
+     * we can make a decision whether not not to exclude email addresses. No new
+     * code should call this method and it would be nice to remove calls from
+     * existing code.
      */
+    @Deprecated
     public static synchronized ExportService getInstance() {
         return getInstance(null);
     }
