@@ -32,11 +32,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Iterator; 
 
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileNotFoundException;
 import java.nio.channels.Channel;
 import java.nio.file.DirectoryStream;
@@ -44,49 +47,32 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
 
-public class FileAccessIO extends DataFileIO {
+public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
-    public FileAccessIO () throws IOException {
+    public FileAccessIO () {
         this(null);
     }
 
-    public FileAccessIO(DataFile dataFile) throws IOException {
-        this (dataFile, null);
+    public FileAccessIO(T dvObject) {
+        this (dvObject, null);
         
     }
 
-    public FileAccessIO(DataFile dataFile, DataAccessRequest req) throws IOException {
+    public FileAccessIO(T dvObject, DataAccessRequest req) {
 
-        super(dataFile, req);
+        super(dvObject, req);
 
         this.setIsLocalFile(true);
     }
     
-    private boolean isReadAccess = false;
-    private boolean isWriteAccess = false; 
     private Path physicalPath = null; 
     
     @Override
-    public boolean canRead () {
-        return isReadAccess;
-    }
-    
-    @Override
-    public boolean canWrite () {
-        return isWriteAccess; 
-    }
-
-
-    @Override
     public void open (DataAccessOption... options) throws IOException {
-
-        DataFile dataFile = this.getDataFile();
-        DataAccessRequest req = this.getRequest(); 
-
-
-        if (req != null && req.getParameter("noVarHeader") != null) {
-            this.setNoVarHeader(true);
-        }
+        DataFile dataFile;
+        Dataset dataset;
+        Dataverse dataverse = null;
+        DataAccessRequest req = this.getRequest();
         
         if (isWriteAccessRequested(options)) {
             isWriteAccess = true;
@@ -96,46 +82,87 @@ public class FileAccessIO extends DataFileIO {
             isReadAccess = true;
         }
         
-        
-        if (isReadAccess) {
-            FileInputStream fin = openLocalFileAsInputStream();
+        if (dvObject instanceof DataFile) {
+            dataFile = this.getDataFile();
 
-            if (fin == null) {
-                throw new IOException ("Failed to open local file "+getStorageLocation());
+            if (req != null && req.getParameter("noVarHeader") != null) {
+                this.setNoVarHeader(true);
             }
 
-            this.setInputStream(fin);
-            setChannel(fin.getChannel());
-            this.setSize(getLocalFileSize());
-            
-            if (dataFile.getContentType() != null
-                    && dataFile.getContentType().equals("text/tab-separated-values")
-                    && dataFile.isTabularData()
-                    && dataFile.getDataTable() != null
-                    && (!this.noVarHeader())) {
-
-                List datavariables = dataFile.getDataTable().getDataVariables();
-                String varHeaderLine = generateVariableHeader(datavariables);
-                this.setVarHeader(varHeaderLine);
-            }
-        } else if (isWriteAccess) {
-            FileOutputStream fout = openLocalFileAsOutputStream();
-
-            if (fout == null) {
-                throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
+            if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
+                throw new IOException("Data Access: No local storage identifier defined for this datafile.");
             }
 
-            this.setOutputStream(fout);
-            setChannel(fout.getChannel());
+            if (isReadAccess) {
+                FileInputStream fin = openLocalFileAsInputStream();
+
+                if (fin == null) {
+                    throw new IOException ("Failed to open local file "+getStorageLocation());
+                }
+
+                this.setInputStream(fin);
+                setChannel(fin.getChannel());
+                this.setSize(getLocalFileSize());
+
+                if (dataFile.getContentType() != null
+                        && dataFile.getContentType().equals("text/tab-separated-values")
+                        && dataFile.isTabularData()
+                        && dataFile.getDataTable() != null
+                        && (!this.noVarHeader())) {
+
+                    List<DataVariable> datavariables = dataFile.getDataTable().getDataVariables();
+                    String varHeaderLine = generateVariableHeader(datavariables);
+                    this.setVarHeader(varHeaderLine);
+                }
+            } else if (isWriteAccess) {
+                // Creates a new directory as needed for a dataset.
+                if (dataFile.getOwner().getFileSystemDirectory() != null && !Files.exists(dataFile.getOwner().getFileSystemDirectory())) {
+                Files.createDirectories(dataFile.getOwner().getFileSystemDirectory());
+                }
+                FileOutputStream fout = openLocalFileAsOutputStream();
+
+                if (fout == null) {
+                    throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
+                }
+
+                this.setOutputStream(fout);
+                setChannel(fout.getChannel());
+            }
+
+            this.setMimeType(dataFile.getContentType());
+
+            try {
+                this.setFileName(dataFile.getFileMetadata().getLabel());
+            } catch (Exception ex) {
+                this.setFileName("unknown");
+            }
+        } else if (dvObject instanceof Dataset) {
+            //This case is for uploading a dataset related auxiliary file 
+            //e.g. image thumbnails/metadata exports
+            //TODO: do we really need to do anything here? should we return the dataset directory?
+            dataset = this.getDataset();
+            if (isReadAccess) {
+                //TODO: Not necessary for dataset as there is no files associated with this
+              //  FileInputStream fin = openLocalFileAsInputStream();
+//                Path path= dataset.getFileSystemDirectory();                    
+//                if (path == null) {
+//                    throw new IOException("Failed to locate Dataset"+dataset.getIdentifier());
+//                }
+//
+//                this.setInputStream(fin);  
+              } else if (isWriteAccess) {
+                //this checks whether a directory for a dataset exists 
+                if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
+                Files.createDirectories(dataset.getFileSystemDirectory());
+                dataset.setStorageIdentifier("file://"+dataset.getAuthority()+dataset.getDoiSeparator()+dataset.getIdentifier());
+                }
+            }
+
+        } else if (dvObject instanceof Dataverse) {
+            dataverse = this.getDataverse();
+        } else {
+            throw new IOException("Data Access: Invalid DvObject type");
         }
-
-        this.setMimeType(dataFile.getContentType());
-        try {
-            this.setFileName(dataFile.getFileMetadata().getLabel());
-        } catch (Exception ex) {
-            this.setFileName("unknown");
-        }
-
         // This "status" is a leftover from 3.6; we don't have a use for it 
         // in 4.0 yet; and we may not need it at all. 
         // -- L.A. 4.0.2
@@ -144,7 +171,6 @@ public class FileAccessIO extends DataFileIO {
     
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
-        long newFileSize = -1;
         // Since this is a local fileystem file, we can use the
         // quick NIO Files.copy method: 
 
@@ -154,11 +180,16 @@ public class FileAccessIO extends DataFileIO {
             throw new FileNotFoundException("FileAccessIO: Could not locate aux file for writing.");
         }
         Files.copy(fileSystemPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
-        newFileSize = outputPath.toFile().length();
+        long newFileSize = outputPath.toFile().length();
 
         // if it has worked successfully, we also need to reset the size
         // of the object. 
         setSize(newFileSize);
+    }
+    
+    @Override
+    public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
+        saveInputStream(inputStream);
     }
     
     @Override
@@ -172,14 +203,13 @@ public class FileAccessIO extends DataFileIO {
             throw new FileNotFoundException("FileAccessIO: Could not locate file for writing.");
         }
         
-        OutputStream outputStream = new FileOutputStream(outputFile);
-        int read = 0;
-        byte[] bytes = new byte[1024];
-        while ((read = inputStream.read(bytes)) != -1) {
-            outputStream.write(bytes, 0, read);
+        try (OutputStream outputStream = new FileOutputStream(outputFile)) {
+            int read;
+            byte[] bytes = new byte[1024];
+            while ((read = inputStream.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, read);
+            }
         }
-        
-        outputStream.close();
         inputStream.close();
 
         // if it has worked successfully, we also need to reset the size
@@ -196,7 +226,7 @@ public class FileAccessIO extends DataFileIO {
             FileOutputStream auxOut = new FileOutputStream(auxPath.toFile());
 
             if (auxOut == null) {
-                throw new IOException("Failed to open Auxiliary File " + this.getDataFile().getStorageIdentifier() + "." + auxItemTag + " for writing.");
+                throw new IOException("Failed to open Auxiliary File " + dvObject.getStorageIdentifier() + "." + auxItemTag + " for writing.");
             }
 
             return auxOut.getChannel();
@@ -206,13 +236,13 @@ public class FileAccessIO extends DataFileIO {
         // Check if this Aux object is cached; and if so, open for reading:
 
         if (!auxPath.toFile().exists()) {
-            throw new FileNotFoundException("Auxiliary File " + this.getDataFile().getStorageIdentifier() + "." + auxItemTag + " does not exist.");
+            throw new FileNotFoundException("Auxiliary File " + dvObject.getStorageIdentifier() + "." + auxItemTag + " does not exist.");
         }
 
         FileInputStream auxIn = new FileInputStream(auxPath.toFile());
 
         if (auxIn == null) {
-            throw new IOException("Failed to open Auxiliary File " + this.getDataFile().getStorageIdentifier() + "." + auxItemTag + " for reading");
+            throw new IOException("Failed to open Auxiliary File " + dvObject.getStorageIdentifier() + "." + auxItemTag + " for reading");
         }
 
         return auxIn.getChannel();
@@ -225,11 +255,7 @@ public class FileAccessIO extends DataFileIO {
         
         Path auxPath = getAuxObjectAsPath(auxItemTag);
         
-        if (auxPath.toFile().exists()) {
-            return true;
-        }
-        
-        return false; 
+        return auxPath.toFile().exists();
     }
     
     @Override
@@ -252,14 +278,21 @@ public class FileAccessIO extends DataFileIO {
 
         String datasetDirectory = getDatasetDirectory();
 
-        if (this.getDataFile().getStorageIdentifier() == null || "".equals(this.getDataFile().getStorageIdentifier())) {
+        if (dvObject.getStorageIdentifier() == null || "".equals(dvObject.getStorageIdentifier())) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
         }
-
-        Path auxPath = Paths.get(datasetDirectory, this.getDataFile().getStorageIdentifier() + "." + auxItemTag);
+        Path auxPath = null;
+        if (dvObject instanceof DataFile) {
+            auxPath = Paths.get(datasetDirectory, dvObject.getStorageIdentifier() + "." + auxItemTag);
+        } else if (dvObject instanceof Dataset) {
+            auxPath = Paths.get(datasetDirectory, auxItemTag);
+        } else if (dvObject instanceof Dataverse) {
+        } else {
+            throw new IOException("Aux path could not be generated for " + auxItemTag);
+        } 
         
         if (auxPath == null) {
-            throw new IOException("Invalid Path location for the auxiliary file " + this.getDataFile().getStorageIdentifier() + "." + auxItemTag);
+            throw new IOException("Invalid Path location for the auxiliary file " + dvObject.getStorageIdentifier() + "." + auxItemTag);
         }
         
         return auxPath;
@@ -276,16 +309,16 @@ public class FileAccessIO extends DataFileIO {
     @Override
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
         // quick Files.copy method: 
-        Path auxPath = null;
         try {
-            auxPath = getAuxObjectAsPath(auxItemTag);
-        } catch (IOException ex) {
-            return;
-        }
-
-        if (auxPath != null) {
+            Path auxPath = getAuxObjectAsPath(auxItemTag);
             Files.copy(fileSystemPath, auxPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
         }
+    }
+    
+    @Override
+    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
+        saveInputStreamAsAux(inputStream, auxItemTag);
     }
     
     @Override
@@ -300,14 +333,13 @@ public class FileAccessIO extends DataFileIO {
             throw new FileNotFoundException("FileAccessIO: Could not locate aux file for writing.");
         }
         
-        OutputStream outputStream = new FileOutputStream(outputFile);
-        int read = 0;
-        byte[] bytes = new byte[1024];
-        while ((read = inputStream.read(bytes)) != -1) {
-            outputStream.write(bytes, 0, read);
+        try (OutputStream outputStream = new FileOutputStream(outputFile)) {
+            int read;
+            byte[] bytes = new byte[1024];
+            while ((read = inputStream.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, read);
+            }
         }
-        
-        outputStream.close();
         inputStream.close();
     }
     
@@ -378,11 +410,11 @@ public class FileAccessIO extends DataFileIO {
         
         String datasetDirectory = getDatasetDirectory(); 
         
-        if (this.getDataFile().getStorageIdentifier() == null || "".equals(this.getDataFile().getStorageIdentifier())) {
+        if (dvObject.getStorageIdentifier() == null || "".equals(dvObject.getStorageIdentifier())) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
         }
 
-        physicalPath = Paths.get(datasetDirectory, this.getDataFile().getStorageIdentifier());
+        physicalPath = Paths.get(datasetDirectory, dvObject.getStorageIdentifier());
         return physicalPath;
 
     }
@@ -411,18 +443,17 @@ public class FileAccessIO extends DataFileIO {
     
     private long getLocalFileSize () {
         long fileSize = -1;
-        File testFile = null;
 
         try {
-            testFile = getFileSystemPath().toFile();
+            File testFile = getFileSystemPath().toFile();
             if (testFile != null) {
                 fileSize = testFile.length();
             }
-        } catch (Exception ex) {
+            return fileSize;
+        } catch (IOException ex) {
             return -1;
         }
 
-        return fileSize;
     }
 
     public FileInputStream openLocalFileAsInputStream () {
@@ -430,7 +461,7 @@ public class FileAccessIO extends DataFileIO {
 
         try {
             in = new FileInputStream(getFileSystemPath().toFile());
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             // We don't particularly care what the reason why we have
             // failed to access the file was.
             // From the point of view of the download subsystem, it's a
@@ -450,7 +481,7 @@ public class FileAccessIO extends DataFileIO {
 
         try {
             out = new FileOutputStream(getFileSystemPath().toFile());
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             // We don't particularly care what the reason why we have
             // failed to access the file was.
             // From the point of view of the download subsystem, it's a
@@ -466,47 +497,30 @@ public class FileAccessIO extends DataFileIO {
     }
     
     private String getDatasetDirectory() throws IOException {
-        if (this.getDataFile() == null) {
-            throw new IOException("No datafile defined in the Data Access Object");
+        if (dvObject == null) {
+            throw new IOException("No DvObject defined in the Data Access Object");
         }
 
-        if (this.getDataFile().getOwner() == null) {
-            throw new IOException("Data Access: no parent dataset defined for this datafile");
+        Path datasetDirectoryPath=null;
+        
+        if (dvObject instanceof Dataset) {
+            datasetDirectoryPath = this.getDataset().getFileSystemDirectory();
+        } else if (dvObject instanceof DataFile) {
+            datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+        } else if (dvObject instanceof Dataverse) {
+            throw new IOException("FileAccessIO: Dataverses are not a supported dvObject");
         }
-
-        Path datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
-
+            
         if (datasetDirectoryPath == null) {
             throw new IOException("Could not determine the filesystem directory of the parent dataset.");
         }
         String datasetDirectory = datasetDirectoryPath.toString();
 
-        if (this.getDataFile().getStorageIdentifier() == null || "".equals(this.getDataFile().getStorageIdentifier())) {
+        if (dvObject.getStorageIdentifier() == null || dvObject.getStorageIdentifier().isEmpty()) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
         }
 
         return datasetDirectory;
-    }
-    
-    private boolean isWriteAccessRequested (DataAccessOption... options) throws IOException {
-
-        
-        for (DataAccessOption option: options) {
-            // In the future we may need to be able to open read-write 
-            // Channels; no support, or use case for that as of now. 
-            
-            if (option == DataAccessOption.READ_ACCESS) {
-                return false;
-            }
-
-            if (option == DataAccessOption.WRITE_ACCESS) {
-                return true;
-            }
-        }
-        
-        // By default, we open the file in read mode:
-        
-        return false; 
     }
     
     private List<Path> listCachedFiles() throws IOException {
@@ -516,7 +530,7 @@ public class FileAccessIO extends DataFileIO {
         // as <filesystemname>.*; for example, <filename>.thumb64 or 
         // <filename>.RData.
         
-        if (this.getDataFile() == null || this.getDataFile().getStorageIdentifier() == null || this.getDataFile().getStorageIdentifier().equals("")) {
+        if (this.getDataFile() == null || this.getDataFile().getStorageIdentifier() == null || this.getDataFile().getStorageIdentifier().isEmpty()) {
             throw new IOException("Null or invalid DataFile in FileAccessIO object.");
         }
         
@@ -545,6 +559,18 @@ public class FileAccessIO extends DataFileIO {
         }   
 
         return auxItems;
+    }
+
+    @Override
+    public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
+        InputStream in = null;
+
+        if(this.isAuxObjectCached(auxItemTag))
+        {
+            Path path=getAuxObjectAsPath(auxItemTag);
+            in=Files.newInputStream(path);
+        }
+        return in;
     }
 
 }

@@ -64,7 +64,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     @EJB
     UserNotificationServiceBean userNotificationService;
     
-    List<Breadcrumb> breadcrumbs = new ArrayList();
+    List<Breadcrumb> breadcrumbs = new ArrayList<>();
 
     private Long unreadNotificationCount = null;
     
@@ -231,7 +231,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }
 
         logger.log(Level.INFO, "Sending user to = " + redirectPage);
-        return redirectPage + (redirectPage.indexOf("?") == -1 ? "?" : "&") + "faces-redirect=true";
+        return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
     }
 
     private Boolean signupAllowed = null;

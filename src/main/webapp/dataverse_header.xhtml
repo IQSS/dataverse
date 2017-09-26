@@ -13,30 +13,22 @@
     
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
-        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
+        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}" role="navigation">
             <div class="container">
                 <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-pressed="false">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
-                    </button>
-                    
-                    
-                    <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
-                        <a href="/">
-                            <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
-                        </a>
-                    </ui:fragment>
-
-                    <ui:fragment rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}">                       
-                        <a href="/">
-                            <h:graphicImage url="#{settingsWrapper.get(':LogoCustomizationFile')}"/>
-                        </a>
-                    </ui:fragment>
-                    
-                    
+                    </button>                       
+                    <a href="/">
+                        <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
+                            <span class="navbar-brand" tabindex="1"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
+                        </ui:fragment>
+                        <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
+                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo"/>
+                    </a>
                     <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
                         <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
                     </h:outputLink>
@@ -46,8 +38,8 @@
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a id="navbar-search-toggle" title="#{bundle['header.search.title']}">
+                         <li>
+                            <a href="#" id="navbar-search-toggle" title="#{bundle['header.search.title']}">
                                 <span class="glyphicon glyphicon-search"></span>
                             </a>
                         </li>
@@ -56,7 +48,7 @@
                                 <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
                                 <input id="navbarsearch" type="text" class="search-input ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"/>            
                             </div>                            
-                            <button type="submit" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}?q=' + document.getElementById('navbarsearch').value;
+                            <button type="submit" class="btn btn-default" onclick="window.location = '/dataverse.xhtml?alias=#{dataverseServiceBean.findRootDataverse().alias}&#38;q=' + document.getElementById('navbarsearch').value;
                                     return false;">
                                 <span class="glyphicon glyphicon-search"/> #{bundle.find}
                             </button>
@@ -103,22 +95,22 @@
                         </ui:fragment>
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
-                                <span id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown">
+                                <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
                                     <ui:fragment rendered="#{dataverseSession.user.superuser}">
                                         <span class="glyphicon glyphicon-user text-danger"></span>
                                     </ui:fragment>
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
                                     <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
                                                   value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />                                    <b class="caret"></b>
-                                </span>
+                                </a>
                                 <ul class="dropdown-menu">
-                                    <li>
+                                    <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="dataRelatedToMe" />
                                             <h:outputText value="#{bundle['header.user.selectTab.dataRelated']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li>
+                                    <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="notifications" />
                                             <h:outputText value="#{bundle['header.user.selectTab.notifications']}" />
@@ -127,27 +119,27 @@
                                         </h:outputLink>
                                     </li>
                                     <ui:remove>
-                                        <li>
+                                        <li tabindex="-1">
                                             <h:outputLink value="/dataverseuser.xhtml">
                                                 <f:param name="selectTab" value="groupsRoles" />
                                                 <h:outputText value="#{bundle['header.user.selectTab.groupsAndRoles']}" />
                                             </h:outputLink>
                                         </li>
                                     </ui:remove>
-                                    <li>
+                                    <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="accountInfo" />
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li>
+                                    <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="apiTokenTab" />
                                             <h:outputText value="#{bundle['header.user.selectTab.apiToken']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li class="divider"></li>
-                                    <li class="logout">
+                                    <li class="divider" tabindex="-1"></li>
+                                    <li class="logout" tabindex="-1">
                                         <o:form useRequestURI="true" styleClass="navbar-form navbar-left" pt:role="logout">
                                             <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout">
                                                 <h:outputText value="#{bundle['header.logOut']}" />
@@ -161,14 +153,12 @@
                 </div>
             </div>
         </nav>
-        <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
-
         <!-- Header Panel -->
         <div id="dataverseHeader" class="container bg-muted"
                 style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};"
                 jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView}">
              <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils"/>
-            <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};; background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};"
+            <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};"
                  jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
             </div>
@@ -177,7 +167,7 @@
                     <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
                 </div>
                 <div class="dataverseHeaderCell dataverseHeaderName" jsf:rendered="#{!empty dataverse.name}">
-                    <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name}</a>
+                    <a href="/dataverse.xhtml?alias=#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name}</a>
                     <h:outputText style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                     <h:outputText value="#{bundle.unpublished}" styleClass="label label-warning label-unpublished" rendered="#{!dataverse.released}"/>
                 </div>
@@ -209,7 +199,7 @@
                             </a>
                         </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">
-                            <c:set var="dvUrl" value="/dataverse/#{breadcrumb.dvObject.alias}"/>
+                            <c:set var="dvUrl" value="/dataverse.xhtml?alias=#{breadcrumb.dvObject.alias}"/>
                             <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dvUrl) : dvUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
@@ -237,13 +227,13 @@
             <div class="dropdown #{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'dropdown-toggle keep-on' : ''}" data-delay="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? '800' : ''}" data-hover="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'dropdown' : ''}" data-target="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? '#' : ''}" data-close-others="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'true' : ''}">
                 <h:outputText value="#{dv.name}" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" rendered="#{dataverse.id == dv.id and dataset == null}"/>
                 <ui:fragment rendered="#{dataverse.id != dv.id or dataset != null}" >
-                    <a id="breadcrumbLnk#{status.index}" href="/dataverse/#{dv.alias}">
+                    <a id="breadcrumbLnk#{status.index}" href="/dataverse.xhtml?alias=#{dv.alias}">
                         <h:outputText value="#{dv.name}"/>
                     </a>
                 </ui:fragment>
 
                 <ui:fragment rendered="#{dataverseHeaderFragment.hasVisibleChildren(dv)}">
-                    <a id="taverse" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" role="button">
+                    <a id="dataverse" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" role="button">
                         <span class="glyphicon glyphicon-chevron-down"></span>
                     </a>
                 </ui:fragment>
@@ -252,7 +242,7 @@
                 <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node"  cache="true" id="tree">
                     <p:treeNode>
                         <h:outputText value="#{node.name}" styleClass="breadcrumbActive" rendered="#{dataverse.id == node.id and dataset == null}"/>
-                        <h:outputLink value="/dataverse/#{node.alias}" rendered="#{dataverse.id != node.id or dataset != null}">
+                        <h:outputLink value="/dataverse.xhtml?alias=#{node.alias}" rendered="#{dataverse.id != node.id or dataset != null}">
                             <h:outputText value="#{node.name}"/>
                         </h:outputLink>
                     </p:treeNode>

@@ -20,4 +20,3 @@ Installation Guide
    geoconnect
    shibboleth
    oauth2
-   data-capture-module

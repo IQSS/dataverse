@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.7.1</version>
+    <version>4.8</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -13,6 +13,7 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<additionalparam>-Xdoclint:none</additionalparam>
+        <aws.version>1.11.172</aws.version>
     </properties>
 
     <repositories>
@@ -52,8 +53,21 @@
         </repository>
 
     </repositories>
-
+  
+    <!--            Due to our old version of glassfish and its version of jackson,
+                we are pointing to an aws sdk with unique references to needed libraries.
+                If we update glassfish, we should return to the normal sdk as well. -->  
     <dependencies>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-bundle</artifactId>
+            <version>${aws.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.passay</groupId>
+            <artifactId>passay</artifactId>
+            <version>1.1.0</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -198,7 +212,7 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.4.0</version>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -319,10 +333,10 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>0.7.5.201505241946</version>
         </dependency>
-        <!-- Added specific versionf of SLF4J jars; otherwise we end up with 
+        <!-- Added specific versionf of SLF4J jars; otherwise we end up with
         conflicting versions of slf4j-api and slf4j-log4j12, loaded as
         dependencies for different packages; which was causing some incompatibility
-        issues -L.A. 4.3 -->  
+        issues -L.A. 4.3 -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -435,7 +449,7 @@
            <groupId>org.glassfish.jersey.containers</groupId>
            <artifactId>jersey-container-servlet</artifactId>
            <version>2.23.2</version>
-       </dependency>                
+       </dependency>
         <!-- For API File Upload: 2 of 2 -->
        <dependency>
            <groupId>org.glassfish.jersey.media</groupId>
@@ -562,6 +576,46 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.0.0</version>
+            </plugin>
+            <!-- v4.8: The truezip-maven-plugin below deletes two copies of a file that the AWS SDK bundle
+            includes called javamail.providers which breaks system emails. TODO: make our own AWS SDK without Amazon SES.
+            - bsilverstein 8/8/2017 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>truezip-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>remove-javamail-providers-from-exploded</id>
+                        <goals>
+                            <goal>remove</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <fileset>
+                                <directory>target/dataverse-${project.version}/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
+                                <includes>
+                                    <include>javamail.providers</include>
+                                </includes>
+                            </fileset>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>remove-javamail-providers-from-war</id>
+                        <goals>
+                            <goal>remove</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <fileset>
+                                <directory>target/dataverse-${project.version}.war/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
+                                <includes>
+                                    <include>javamail.providers</include>
+                                </includes>
+                            </fileset>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

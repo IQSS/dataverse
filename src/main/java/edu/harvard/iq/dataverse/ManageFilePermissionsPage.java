@@ -231,7 +231,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
     
     public void initViewRemoveDialogByFile(DataFile file, List<RoleAssignmentRow> raRows) {
-        setSelectedRoleAssignmentRows(new ArrayList());
+        setSelectedRoleAssignmentRows(new ArrayList<>());
         this.selectedFile = file;
         this.selectedRoleAssignee = null;
         this.roleAssignments = raRows;
@@ -239,7 +239,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
     
     public void initViewRemoveDialogByRoleAssignee(RoleAssignee ra, List<RoleAssignmentRow> raRows) {
-        setSelectedRoleAssignmentRows(new ArrayList());
+        setSelectedRoleAssignmentRows(new ArrayList<>());
         this.selectedFile = null;
         this.selectedRoleAssignee = ra;
         this.roleAssignments = raRows;

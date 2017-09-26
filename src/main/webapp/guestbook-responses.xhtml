@@ -23,19 +23,51 @@
 
             <ui:define name="body">
                 <h:form id="manageGuestbooksForm">
-                        <div class="form-group clearfix">
-                            <label for="guestbookNameStatic" class="col-sm-2 control-label">
-                                <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</span>
-                            </label>
-                            <div class="col-sm-9">
-                                #{guestbookResponsesPage.guestbook.name}
-                            </div>
-                            <div class="pull-right">
-                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.downloadResponsesByDataverseAndGuestbook()}"  >
-                                     #{bundle['dataset.manageGuestbooks.download.responses']}
-                                </button>  
+                    <p:fragment id="tooManyEntries" rendered="#{guestbookResponsesPage.guestbook.responseCount gt systemConfig.guestbookResponsesPageDisplayLimit}">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div id="no-clients-message" class="alert alert-warning" role="alert">
+                                    <span class="glyphicon glyphicon-warning-sign"/>
+                                    <h:outputFormat value=" #{bundle['dataset.guestbooksResponses.tooManyResponses.message']}" escape="false">
+                                        <f:param value="#{systemConfig.guestbookResponsesPageDisplayLimit}"/>
+                                        <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
+                                    </h:outputFormat>
+                                </div>
                             </div>
                         </div>
+                    </p:fragment>
+                    <div class="row">
+                        <label for="guestbookNameStatic" class="col-sm-2 control-label">
+                            <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</span>
+                        </label>
+                        <div class="col-sm-9">
+                            #{guestbookResponsesPage.guestbook.name}
+                        </div>
+                    </div>
+                    <div class="row" id="resultsCountPaginatorBlock">
+                        <div class="col-xs-6">
+                            <!-- number of results -->
+                            <div class="results-count margin-top">
+                                <h:outputFormat rendered="#{guestbookResponsesPage.guestbook.responseCount lt systemConfig.guestbookResponsesPageDisplayLimit}"
+                                                styleClass="highlightBold" value="#{bundle['dataset.guestbooksResponses.count.responses']}">
+                                    <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
+                                </h:outputFormat>
+                                <h:outputFormat rendered="#{guestbookResponsesPage.guestbook.responseCount gt systemConfig.guestbookResponsesPageDisplayLimit}"
+                                                styleClass="highlightBold" value="#{bundle['dataset.guestbooksResponses.count.toofresults']}">
+                                    <f:param value="#{guestbookResponsesPage.guestbook.responseCount - 5000}"/>
+                                    <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
+                                    <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
+                                </h:outputFormat>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <p class="button-block text-right">
+                                <button class="btn btn-default" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.streamResponsesByDataverseAndGuestbook()}">
+                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle['dataset.manageGuestbooks.download.responses']}
+                                </button>
+                            </p>
+                        </div>
+                    </div>
                     <p:dataTable id="responsesGuestbook" value="#{guestbookResponsesPage.responsesAsArray}" var="response">
                         <p:column sortBy="#{response[0]}" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">
                             <h:outputText value="#{response[0]}"/>
@@ -52,7 +84,6 @@
                         <p:column sortBy="#{response[4]}" headerText="User">
                             <h:outputText value="#{response[4]}"/>
                         </p:column>
-
                         <p:column headerText="Custom Questions" >
                             <ui:repeat value="#{response[5]}" var="customQResponse"><b>#{customQResponse[0]}: </b>#{customQResponse[1]} <br></br></ui:repeat>
                         </p:column> 

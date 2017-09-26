@@ -170,7 +170,7 @@ public class DatasetField implements Serializable {
 
     @OneToMany(mappedBy = "parentDatasetField", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList();
+    private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList<>();
 
     public List<DatasetFieldCompoundValue> getDatasetFieldCompoundValues() {
         return datasetFieldCompoundValues;
@@ -182,7 +182,7 @@ public class DatasetField implements Serializable {
 
     @OneToMany(mappedBy = "datasetField", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private List<DatasetFieldValue> datasetFieldValues = new ArrayList();
+    private List<DatasetFieldValue> datasetFieldValues = new ArrayList<>();
 
     public List<DatasetFieldValue> getDatasetFieldValues() {
         return this.datasetFieldValues;
@@ -194,7 +194,7 @@ public class DatasetField implements Serializable {
 
     @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(indexes = {@Index(columnList="datasetfield_id"),@Index(columnList="controlledvocabularyvalues_id")})
-    private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
+    private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList<>();
 
     public List<ControlledVocabularyValue> getControlledVocabularyValues() {
         return controlledVocabularyValues;
@@ -250,8 +250,10 @@ public class DatasetField implements Serializable {
     public String getDisplayValue() {
         String returnString = "";
         for (String value : getValues()) {
-            if(value == null) value="";
-            returnString += (returnString.equals("") ? "" : "; ") + value.trim();
+            if(value == null) {
+                value="";
+            }
+            returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
         }
         return returnString;
     }
@@ -262,7 +264,7 @@ public class DatasetField implements Serializable {
             for (DatasetField dsf : dscv.getChildDatasetFields()) {
                 for (String value : dsf.getValues()) {
                     if (!(value == null)) {
-                        returnString += (returnString.equals("") ? "" : "; ") + value.trim();
+                        returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
                     }
                 }
             }
@@ -270,8 +272,11 @@ public class DatasetField implements Serializable {
         return returnString;
     }
 
+    /**
+     * despite the name, this returns a list of display values; not a list of values
+     */
     public List<String> getValues() {
-        List returnList = new ArrayList();
+        List<String> returnList = new ArrayList<>();
         if (!datasetFieldValues.isEmpty()) {
             for (DatasetFieldValue dsfv : datasetFieldValues) {
                 returnList.add(dsfv.getDisplayValue());
@@ -285,9 +290,33 @@ public class DatasetField implements Serializable {
         }
         return returnList;
     }
+    /**
+     * list of values (as opposed to display values).
+     * used for passing to solr for indexing
+     */
+    public List<String> getValues_nondisplay()
+    {
+        List returnList = new ArrayList();
+        if (!datasetFieldValues.isEmpty()) {
+            for (DatasetFieldValue dsfv : datasetFieldValues) {
+                returnList.add(dsfv.getValue());
+            }
+        } else {
+            for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
+                if (cvv != null && cvv.getStrValue() != null) {
+                    returnList.add(cvv.getStrValue());
+                }
+            }
+        }
+        return returnList;
+    }
 
+    /**
+     * appears to be only used for sending info to solr; changed to return values
+     * instead of display values
+     */
     public List<String> getValuesWithoutNaValues() {
-        List<String> returnList = getValues();
+        List<String> returnList = getValues_nondisplay();
         returnList.removeAll(Arrays.asList(NA_VALUE));
         return returnList;
     }
@@ -418,10 +447,7 @@ public class DatasetField implements Serializable {
             return false;
         }
         DatasetField other = (DatasetField) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
     @Override

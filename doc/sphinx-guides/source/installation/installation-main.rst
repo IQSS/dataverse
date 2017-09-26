@@ -27,15 +27,23 @@ Execute the installer script like this::
         # cd dvinstall
         # ./install
 
-**NEW in Dataverse 4.3:** It is no longer necessary to run the installer as root!
-Just make sure the user that runs the installer has the write permission in the Glassfish directory. For example, if your Glassfish directory is owned by root, and you try to run the installer as a regular user, it's not going to work. 
-(Do note, that you want the Glassfish directory to be owned by the same user that will be running Glassfish. And you most likely won't need to run it as root. The only reason to run Glassfish as root would be to have a convenient way to run the application on the default HTTP(S) ports 80 and 443, instead of 8080 and 8181. However, an easier, and more secure way to achieve that would be to instead keep Glassfish running on a high port, and hide it behind an Apache Proxy, via AJP, running on port 80. This configuration is in fact required if you choose to have your Dataverse support Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
+**It is no longer necessary to run the installer as root!**
+
+Just make sure the user running the installer has write permission to:
+
+- /usr/local/glassfish4/glassfish/lib
+- /usr/local/glassfish4/glassfish/domains/domain1
+- the current working directory of the installer (it currently writes its logfile there), and
+- your jvm-option specified files.dir
+
+The only reason to run Glassfish as root would be to allow Glassfish itself to listen on the default HTTP(S) ports 80 and 443, or any other port below 1024. However, it is simpler and more secure to run Glassfish run on its default port of 8080 and hide it behind an Apache Proxy, via AJP, running on port 80 or 443. This configuration is required if you're going to use Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
 
 
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
 
 - Internet Address of your host: localhost
 - Glassfish Directory: /usr/local/glassfish4
+- Glassfish User: current user running the installer script
 - Administrator email address for this Dataverse: (none)
 - SMTP (mail) server to relay notification messages: localhost
 - Postgres Server Address: [127.0.0.1]
@@ -74,7 +82,7 @@ Logging In
 Out of the box, Glassfish runs on port 8080 and 8181 rather than 80 and 443, respectively, so visiting http://localhost:8080 (substituting your hostname) should bring up a login page. See the :doc:`shibboleth` page for more on ports, but for now, let's confirm we can log in by using port 8080. Poke a temporary hole in your firewall, if needed. 
 
 Superuser Account
-+++++++++++++++++
+^^^^^^^^^^^^^^^^^
 
 We'll use the superuser account created by the installer to make sure you can log into Dataverse. For more on the difference between being a superuser and having the "Admin" role, read about configuring the root dataverse in the :doc:`config` section.
 
@@ -98,12 +106,12 @@ Troubleshooting
 If the following doesn't apply, please get in touch as explained in the :doc:`intro`. You may be asked to provide ``glassfish4/glassfish/domains/domain1/logs/server.log`` for debugging.
 
 Dataset Cannot Be Published
-+++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check to make sure you used a fully qualified domain name when installing Dataverse. You can change the ``dataverse.fqdn`` JVM option after the fact per the :doc:`config` section.
 
 Problems Sending Email
-++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^
 
 If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Glassfish asadmin command:
 
@@ -116,11 +124,11 @@ If the command returns a host you don't want to use, you can modify your notifyM
 If your mail host requires a username/password for access, continue to the next section.
 
 Mail Host Configuration & Authentication
-++++++++++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Glassfish admin console. 
+If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Glassfish admin console or via command line. 
 
-In a browser, with your domain online, navigate to http://localhost:4848 and on the side panel find JavaMail Sessions. By default, Dataverse uses a session named mail/notifyMailSession for routing outgoing emails. Click this mail session in the window to modify it.
+For the Glassfish console, load a browser with your domain online, navigate to http://localhost:4848 and on the side panel find JavaMail Sessions. By default, Dataverse uses a session named mail/notifyMailSession for routing outgoing emails. Click this mail session in the window to modify it.
 
 When fine tuning your JavaMail Session, there are a number of fields you can edit. The most important are:
 
@@ -155,10 +163,15 @@ mail.smtp.socketFactory.fallback		false
 mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 ======================================	==============================
 
+The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
+
+- Delete: ``asadmin delete-javamail-resource mail/MyMailSession``
+- Create (remove brackets and replace the variables inside): ``asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
+
 Be sure you save the changes made here and then restart your Glassfish server to test it out.
 
 UnknownHostException While Deploying
-++++++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or service not known" in server.log and your hostname is "myhost" the problem is likely that "myhost" doesn't appear in ``/etc/hosts``. See also http://stackoverflow.com/questions/21817809/glassfish-exception-during-deployment-project-with-stateful-ejb/21850873#21850873
 
@@ -168,7 +181,7 @@ Fresh Reinstall
 Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Glassfish, PostgreSQL and Solr, but you should be conscious of how to clear out their data.
 
 Drop database
-+++++++++++++
+^^^^^^^^^^^^^
 
 In order to drop the database, you have to stop Glassfish, which will have open connections. Before you stop Glassfish, you may as well undeploy the war file. First, find the name like this:
 
@@ -187,22 +200,22 @@ With Glassfish down, you should now be able to drop your database and recreate i
 ``psql -U dvnapp -c 'DROP DATABASE "dvndb"' template1``
 
 Clear Solr
-++++++++++
+^^^^^^^^^^
 
 The database is fresh and new but Solr has stale data it in. Clear it out with this command:
 
 ``curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
 
 
-Deleting uploaded files
-+++++++++++++++++++++++
+Deleting Uploaded Files
+^^^^^^^^^^^^^^^^^^^^^^^
 
 The path below will depend on the value for ``dataverse.files.directory`` as described in the :doc:`config` section:
 
 ``rm -rf /usr/local/glassfish4/glassfish/domains/domain1/files``
 
 Rerun Installer
-+++++++++++++++
+^^^^^^^^^^^^^^^
 
 With all the data cleared out, you should be ready to rerun the installer per above.
 

@@ -50,7 +50,7 @@ public class UserNotification implements Serializable {
     
     @Transient 
     String roleString;
-    
+
     private boolean emailed;
 
     public Long getId() {

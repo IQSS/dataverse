@@ -22,3 +22,4 @@ Developer Guide
    unf/index
    geospatial
    selinux
+   big-data-support

@@ -115,6 +115,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
      * @param dataset the Dataset whose metadata needs to be modified
      * @param metadata the new metadata for the Dataset
      * @return the Dataset identifier, or null if the modification failed
+     * @throws java.lang.Exception
      */
     @Override
     public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception {
@@ -168,7 +169,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     public void deleteIdentifier(Dataset datasetIn) throws Exception {
         logger.log(Level.FINE,"deleteIdentifier");
         String identifier = getIdentifierFromDataset(datasetIn);
-        HashMap<String, String> doiMetadata = new HashMap();
+        HashMap<String, String> doiMetadata = new HashMap<>();
         try {
             doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {
@@ -179,7 +180,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
             logger.log(Level.WARNING, "message {0}", e.getMessage());
         }
 
-        String idStatus = (String) doiMetadata.get("_status");
+        String idStatus = doiMetadata.get("_status");
 
         if (idStatus != null && idStatus.equals("reserved")) {
             logger.log(Level.INFO, "Delete status is reserved..");
@@ -200,6 +201,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
         }
     }
 
+    @Override
     protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
         HashMap<String, String> metadata = super.getUpdateMetadataFromDataset(datasetIn);

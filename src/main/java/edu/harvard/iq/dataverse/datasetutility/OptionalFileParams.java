@@ -45,10 +45,12 @@ public class OptionalFileParams {
     
     private List<String> dataFileTags;
     public static final String FILE_DATA_TAGS_ATTR_NAME = "dataFileTags";
+    
+    private boolean restrict = false;
+    public static final String RESTRICT_ATTR_NAME = "restrict";
 
 
-    
-    
+     
     public OptionalFileParams(String jsonData) throws DataFileTagException{
         
         if (jsonData != null){
@@ -66,6 +68,20 @@ public class OptionalFileParams {
         this.addFileDataTags(potentialFileDataTags);
     }
 
+
+    
+    public OptionalFileParams(String description,
+            List<String> newCategories,
+            List<String> potentialFileDataTags, 
+            boolean restrict) throws DataFileTagException {
+
+        this.description = description;
+        setCategories(newCategories);
+        this.addFileDataTags(potentialFileDataTags);
+        this.restrict = restrict;
+    }
+
+
     /**
      *  Set description
      *  @param description
@@ -80,6 +96,14 @@ public class OptionalFileParams {
      */
     public String getDescription(){
         return this.description;
+    }
+    
+    public void setRestriction(boolean restrict){
+        this.restrict = restrict;
+    }
+    
+    public boolean getRestriction(){
+        return this.restrict;
     }
     
     public boolean hasCategories(){
@@ -102,7 +126,7 @@ public class OptionalFileParams {
         }
         return true;
     }
-
+    
     /**
      *  Set tags
      *  @param tags
@@ -167,6 +191,13 @@ public class OptionalFileParams {
             this.description = jsonObj.get(DESCRIPTION_ATTR_NAME).getAsString();
         }
         
+        // -------------------------------
+        // get restriction as boolean
+        // -------------------------------
+        if ((jsonObj.has(RESTRICT_ATTR_NAME)) && (!jsonObj.get(RESTRICT_ATTR_NAME).isJsonNull())){
+            
+            this.restrict = Boolean.valueOf(jsonObj.get(RESTRICT_ATTR_NAME).getAsString());
+        }
         
         // -------------------------------
         // get tags 
@@ -262,6 +293,7 @@ public class OptionalFileParams {
         if (hasDescription()){
             fm.setDescription(this.getDescription());
         }
+        
         
         // ---------------------------
         // Add categories

@@ -48,14 +48,13 @@ public class RequestRsyncScriptCommandTest {
                     }
 
                     @Override
-                    public ScriptRequestResponse retreiveRequestedRsyncScript(long datasetId, String dcmBaseUrl) {
+                    public ScriptRequestResponse retreiveRequestedRsyncScript(String datasetIdentifier, String dcmBaseUrl) {
                         int httpStatusCode = 200;
                         long userId = 123l;
                         String script = "theScript";
-                        ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetId, userId, script);
+                        ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetIdentifier, userId, script);
                         return scriptRequestResponse;
                     }
-
                 };
 
             }
@@ -74,7 +73,7 @@ public class RequestRsyncScriptCommandTest {
     @Test
     public void testHappyPath() throws Exception {
         dataset = new Dataset();
-        dataset.setId(42l);
+        dataset.setIdentifier("42");
         HttpServletRequest aHttpServletRequest = null;
         DataverseRequest dataverseRequest = new DataverseRequest(MocksFactory.makeAuthenticatedUser("First", "Last"), aHttpServletRequest);
         ScriptRequestResponse scriptRequestResponse = testEngine.submit(new RequestRsyncScriptCommand(dataverseRequest, dataset));

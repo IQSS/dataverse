@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -59,9 +60,12 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
 import javax.ws.rs.QueryParam;
@@ -83,6 +87,10 @@ public class Admin extends AbstractApiBean {
     AuthTestDataServiceBean authTestDataService;
     @EJB
     UserServiceBean userService;
+    @EJB
+    IngestServiceBean ingestService;
+    @EJB
+    DataFileServiceBean fileService;
 
     // Make the session available
     @Inject
@@ -258,7 +266,7 @@ public class Admin extends AbstractApiBean {
     public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
         AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
         if (authenticatedUser != null) {
-            return ok(jsonForAuthUser(authenticatedUser));
+            return ok(json(authenticatedUser));
         }
         return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
     }
@@ -304,7 +312,7 @@ public class Admin extends AbstractApiBean {
         }
         JsonArrayBuilder userArray = Json.createArrayBuilder();
         authSvc.findAllAuthenticatedUsers().stream().forEach((user) -> {
-            userArray.add(jsonForAuthUser(user));
+            userArray.add(json(user));
         });
         return ok(userArray);
     }
@@ -364,7 +372,7 @@ public class Admin extends AbstractApiBean {
         AuthenticatedUserDisplayInfo userDisplayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, position);
         boolean generateUniqueIdentifier = true;
         AuthenticatedUser authenticatedUser = authSvc.createAuthenticatedUser(userRecordId, proposedAuthenticatedUserIdentifier, userDisplayInfo, true);
-        return ok(jsonForAuthUser(authenticatedUser));
+        return ok(json(authenticatedUser));
     }
 
     /**
@@ -925,6 +933,27 @@ public class Admin extends AbstractApiBean {
         JsonObjectBuilder info = datasetVersionSvc.fixMissingUnf(datasetVersionId, forceRecalculate);
         return ok(info);
     }
+    
+    @Path("datafiles/integrity/fixmissingoriginaltypes")
+    @GET
+    public Response fixMissingOriginalTypes() {
+        JsonObjectBuilder info = Json.createObjectBuilder();
+        
+        List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalTypes(); 
+        
+        if (affectedFileIds.isEmpty()) {
+            info.add("message", "All the tabular files in the database already have the original types set correctly; exiting.");
+        } else {
+            for (Long fileid : affectedFileIds) {
+                logger.info("found file id: "+fileid);
+            }
+            info.add("message", "Found "+affectedFileIds.size()+" tabular files with missing original types. Kicking off an async job that will repair the files in the background.");
+        }
+        
+        ingestService.fixMissingOriginalTypes(affectedFileIds);
+        
+        return ok(info);
+    }
 
     /**
      * This method is used in API tests, called from UtilIt.java.
@@ -953,4 +982,24 @@ public class Admin extends AbstractApiBean {
         return ok(data);
     }
 
+    /**
+     * validatePassword
+     * <p>
+     * Validate a password with an API call
+     *
+     * @param password The password
+     * @return A response with the validation result.
+     */
+    @Path("validatePassword")
+    @POST
+    public Response validatePassword(String password) {
+
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        final JsonArrayBuilder errorArray = Json.createArrayBuilder();
+        errors.forEach(errorArray::add);
+        return ok(Json.createObjectBuilder()
+                .add("password", password)
+                .add("errors", errorArray)
+        );
+    }
 }

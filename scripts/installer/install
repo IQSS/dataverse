@@ -9,6 +9,7 @@ use File::Copy;
 my $verbose;
 my $pg_only;
 my $hostname;
+my $gfuser;
 my $gfdir;
 my $mailserver;
 my $yes;
@@ -21,6 +22,7 @@ my ($rez) = GetOptions(
     "verbose"      => \$verbose,
     "pg_only"      => \$pg_only,
     "hostname=s"   => \$hostname,
+    "gfuser=s"     => \$gfuser,
     "gfdir=s"      => \$gfdir,
     "mailserver=s" => \$mailserver,
     "y|yes"        => \$yes,
@@ -45,6 +47,7 @@ else
 
     @CONFIG_VARIABLES = (
 	'HOST_DNS_ADDRESS',
+	'GLASSFISH_USER',
 	'GLASSFISH_DIRECTORY',
 	'ADMIN_EMAIL',
 	'MAIL_SERVER',
@@ -70,7 +73,9 @@ else
 
 my %CONFIG_DEFAULTS = (
     'HOST_DNS_ADDRESS',    'localhost',
+    'GLASSFISH_USER',	   '',
     'GLASSFISH_DIRECTORY', '/usr/local/glassfish4',
+    'GLASSFISH_USER',	   '',
     'ADMIN_EMAIL',         '',
     'MAIL_SERVER',         'mail.hmdc.harvard.edu',
 
@@ -93,6 +98,7 @@ my %CONFIG_DEFAULTS = (
 );
 my %CONFIG_PROMPTS = (
     'HOST_DNS_ADDRESS',    'Fully Qualified Domain Name of your host',
+    'GLASSFISH_USER',	   'Glassfish service account username',
     'GLASSFISH_DIRECTORY', 'Glassfish Directory',
     'ADMIN_EMAIL',         'Administrator email address for this Dataverse',
     'MAIL_SERVER',         'SMTP (mail) server to relay notification messages',
@@ -118,6 +124,7 @@ my %CONFIG_PROMPTS = (
 
 my %CONFIG_COMMENTS = (
     'HOST_DNS_ADDRESS',    ":\n(enter numeric IP address, if FQDN is unavailable) ",
+    'GLASSFISH_USER',      ":\nThis user will be running Glassfish service on your system.\n - If this is a dev. environment, this should be your own username; \n - In production, we suggest \"glassfish\" or another unprivileged user\n: ",
     'GLASSFISH_DIRECTORY', '',
     'ADMIN_EMAIL',         ":\n(please enter a valid email address!) ",
     'MAIL_SERVER',         '',
@@ -202,6 +209,37 @@ else
 	print("using hard-coded default configuration values ($config_default_file not found)\n");
 }
 
+# get current user. first one wins.
+my $current_user = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
+
+if (!$CONFIG_DEFAULTS{'GLASSFISH_USER'}) {
+   $CONFIG_DEFAULTS{'GLASSFISH_USER'} = $current_user;
+   print "No pre-configured user found; using $current_user.\n";
+}
+
+# command-line argument takes precendence
+if ($gfuser) {
+    print "Using CLI-specified user $gfuser.\n";
+    $CONFIG_DEFAULTS{'GLASSFISH_USER'} = $gfuser;
+}
+
+# prefer that we not install as root.
+unless ( $< != 0 ) {
+print "####################################################################\n";
+print "     It is recommended that this script not be run as root.\n";
+print " Consider creating a glassfish service account, giving it ownership\n";
+print "  on the glassfish/domains/domain1/ and glassfish/lib/ directories,\n";
+print "    along with the JVM-specified files.dir location, and running\n";
+print "       this installer as the user who will launch Glassfish.\n";
+print "####################################################################\n";
+}
+
+# ensure $gfuser exists or bail
+my $gfidcmd="id $CONFIG_DEFAULTS{'GLASSFISH_USER'}";
+my $gfreturncode=system($gfidcmd);
+if ($gfreturncode != 0) {
+   die "Couldn't find user $gfuser. Please ensure the account exists and is readable by the user running this installer.\n";
+}
 
 if ($mailserver) {
     $CONFIG_DEFAULTS{'MAIL_SERVER'} = $mailserver;
@@ -358,6 +396,15 @@ for my $ENTRY (@CONFIG_VARIABLES)
 		# TODO: 
 		# verify that we can write in the Glassfish directory 
 		# (now that we are no longer requiring to run the installer as root)
+
+		my $g_testdir = $g_dir . "/glassfish/domains/domain1";
+		my $g_libdir = $g_dir . "/glassfish/lib";
+		if (!(-w $g_testdir)) {
+		   die("$g_testdir not writable. Have you created a glassfish user, and given it write permission on $g_testdir?\n");
+		} elsif (!(-w $g_libdir)) {
+		   die("$g_libdir not writable. Have you created a glassfish user, and given it write permission on $g_libdir?\n");
+		}
+
 	    }
 
 	    print "OK!\n";
@@ -1011,7 +1058,7 @@ my $DOMAIN_DOWN =
 print STDERR $DOMAIN_DOWN . "\n";
 if ($DOMAIN_DOWN) {
     print "Trying to start domain up...\n";
-    system( $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
+    system( "sudo -u $CONFIG_DEFAULTS{'GLASSFISH_USER'} " . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
 
     # TODO: (?) - retest that the domain is running now? 
 }

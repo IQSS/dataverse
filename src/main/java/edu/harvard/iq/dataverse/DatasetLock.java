@@ -23,7 +23,10 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.Date;
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -34,19 +37,40 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 
 /**
  *
+ * Holds the reason a dataset is locked, and possibly the user that created the lock.
+ * 
  * @author Leonid Andreev
+ * @author Michael Bar-Sinai
+ * 
  */
 @Entity
 @Table(indexes = {@Index(columnList="user_id"), @Index(columnList="dataset_id")})
+@NamedQueries(
+        @NamedQuery(name="DatasetLock.getLocksByDatasetId",
+                    query="SELECT l FROM DatasetLock l WHERE l.dataset.id=:datasetId")
+)
 public class DatasetLock implements Serializable {
-    private static final long serialVersionUID = 1L;
     
-    public DatasetLock() {
+    public enum Reason {
+        /** Data being ingested */
+        Ingest,
+        
+        /** Waits for a {@link Workflow} to end */
+        Workflow,
+        
+        /** Waiting for a curator to approve/send back to author */
+        InReview, 
+        
+        /** DCM (rsync) upload in progress */
+        DcmUpload
     }
-
+    
+    private static final long serialVersionUID = 1L;
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,9 +86,50 @@ public class DatasetLock implements Serializable {
     @ManyToOne
     @JoinColumn(nullable=false)
     private AuthenticatedUser user;    
-
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false)
+    private Reason reason;
+    
     private String info;
 
+     /**
+     * Constructing a lock for the given reason.
+     * @param aReason Why the dataset gets locked.  Cannot be {@code null}.
+     * @param aUser The user causing the lock. Cannot be {@code null}.
+     * @throws IllegalArgumentException if any of the parameters are null. That's
+     *         because JPA would throw an exception later anyway.
+     */
+    public DatasetLock( Reason aReason, AuthenticatedUser aUser ) {
+        this(aReason, aUser, null);
+    }
+    
+    /**
+     * Constructing a lock for the given reason, with the specified descriptive info message.
+     * @param aReason Why the dataset gets locked.  Cannot be {@code null}.
+     * @param aUser The user causing the lock. Cannot be {@code null}.
+     * @param infoMessage Descriptive message.
+     * @throws IllegalArgumentException if any of the parameters are null. That's
+     *         because JPA would throw an exception later anyway.
+     */
+    public DatasetLock(Reason aReason, AuthenticatedUser aUser, String infoMessage) {
+        if ( aReason == null ) throw new IllegalArgumentException("Cannot lock a dataset for a null reason");
+        if ( aUser == null ) throw new IllegalArgumentException("Cannot lock a dataset for a null user");
+        reason = aReason;
+        startTime = new Date();
+        user = aUser;
+        info = infoMessage;
+        
+    }
+    
+    /**
+     * JPA no-args constructor. Client code should use the public constructor
+     * and not this one.
+     * 
+     * @see #DatasetLock(edu.harvard.iq.dataverse.DatasetLock.Reason) 
+     */
+    protected DatasetLock(){}
+    
     public Long getId() {
         return id;
     }
@@ -81,7 +146,6 @@ public class DatasetLock implements Serializable {
         this.startTime = startTime;
     }
     
-    
     public Dataset getDataset() {
         return dataset;
     }
@@ -89,7 +153,6 @@ public class DatasetLock implements Serializable {
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
     }
-    
     
     public AuthenticatedUser getUser() {
         return user;
@@ -99,7 +162,6 @@ public class DatasetLock implements Serializable {
         this.user = user;
     }
 
-
     public String getInfo() {
         return info;
     }
@@ -107,22 +169,31 @@ public class DatasetLock implements Serializable {
     public void setInfo(String info) {
         this.info = info;
     }
-    
+
+    public Reason getReason() {
+        return reason;
+    }
+
+    public void setReason(Reason reason) {
+        this.reason = reason;
+    }
     
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+        return (id != null ? id.hashCode() : 0);
     }
 
     @Override
     public boolean equals(Object object) {
+        if ( object == null ) return false;
+        if ( object == this ) return true;
+        
         if (!(object instanceof DatasetLock)) {
             return false;
         }
         DatasetLock other = (DatasetLock) object;
-        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
+        
+        return (id==null && other.id==null) || (id!=null && id.equals(other.getId()));
     }
 
     @Override

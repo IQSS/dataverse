@@ -38,9 +38,9 @@ public class DataCaptureModuleUtilTest {
         System.out.println("generateJsonForUploadRequest");
         AuthenticatedUser user = makeAuthenticatedUser("Ralph", "Rsync");
         Dataset dataset = new Dataset();
-        dataset.setId(42l);
+        dataset.setIdentifier("42");
         JsonObject result = DataCaptureModuleUtil.generateJsonForUploadRequest(user, dataset);
-        assertEquals(42, result.getInt("datasetIdentifier"));
+        assertEquals("42", result.getString("datasetIdentifier") );
         int userId = result.getInt("userId");
         assertTrue(Integer.MIN_VALUE <= userId && userId <= Integer.MAX_VALUE);
     }
@@ -52,13 +52,13 @@ public class DataCaptureModuleUtilTest {
         org.apache.http.HttpResponse response = factory.newHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, null), null);
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("userId", 42);
-        jab.add("datasetIdentifier", 123);
+        jab.add("datasetIdentifier", "123");
         jab.add("script", "#!/bin/sh");
         response.setEntity(new StringEntity(jab.build().toString()));
         HttpResponse<JsonNode> httpResponse = new HttpResponse<>(response, JsonNode.class);
         ScriptRequestResponse result = DataCaptureModuleUtil.getScriptFromRequest(httpResponse);
         assertEquals(200, result.getHttpStatusCode());
-        assertEquals(123, result.getDatasetId());
+        assertEquals("123", result.getDatasetIdentifier() );
         assertEquals(42, result.getUserId());
         assertEquals("#!/bin/sh", result.getScript());
     }
@@ -70,7 +70,7 @@ public class DataCaptureModuleUtilTest {
         org.apache.http.HttpResponse response = factory.newHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_NOT_FOUND, null), null);
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("userId", 42);
-        jab.add("datasetIdentifier", 123);
+        jab.add("datasetIdentifier", "123");
         jab.add("script", "#!/bin/sh");
         response.setEntity(new StringEntity(jab.build().toString()));
         HttpResponse<JsonNode> httpResponse = new HttpResponse<>(response, JsonNode.class);

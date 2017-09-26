@@ -31,15 +31,37 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Glassfish might be a compelling enough reason to front Glassfish with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
+Privacy Considerations
+++++++++++++++++++++++
+
+Out of the box, Dataverse will list email addresses of the "contacts" for datasets when users visit a dataset page and click the "Export Metadata" button. If you prefer to exclude email addresses of dataset contacts from metadata export, set :ref:`:ExcludeEmailFromExport <:ExcludeEmailFromExport>` to true.
+
 Additional Recommendations
 ++++++++++++++++++++++++++
+Run Glassfish as a User Other Than Root
++++++++++++++++++++++++++++++++++++++++
 
-To further enhance the security of your installation, we recommend taking the following specific actions:
+See the Glassfish section of :doc:`prerequisites` for details and init scripts for running Glassfish as non-root.
 
-- Configure Glassfish to run as a user other than root.
-- Remove /root/.glassfish/pass password files.
-- Store passwords as a hash rather than base64 encoded. Ideally this will be a salted hash, and use a strong hashing algorithm.
-- Use a strong administrator password so the hash cannot easily be cracked through dictionary attacks.
+Related to this is that you should remove ``/root/.glassfish/pass`` to ensure that Glassfish isn't ever accidentally started as root. Without the password, Glassfish won't be able to start as root, which is a good thing.
+
+Enforce Strong Passwords for User Accounts
+++++++++++++++++++++++++++++++++++++++++++
+
+Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the "Auth Modes: Local vs. Remote vs. Both" section below for more on login options.
+
+Even if you are satisfied with the out-of-the-box password complexity rules Dataverse ships with, for the "dataverseAdmin" account you should use a strong password so the hash cannot easily be cracked through dictionary attacks.
+
+Password complexity rules for "builtin" accounts can be adjusted with a variety of settings documented below. Here's a list:
+
+- :ref:`:PVMinLength`
+- :ref:`:PVMaxLength`
+- :ref:`:PVNumberOfConsecutiveDigitsAllowed`
+- :ref:`:PVCharacterRules`
+- :ref:`:PVNumberOfCharacteristics`
+- :ref:`:PVDictionaries`
+- :ref:`:PVGoodStrength`
+- :ref:`:PVCustomPasswordResetAlertMessage`
 
 Solr
 ----
@@ -189,16 +211,17 @@ Enabling a second authentication provider will result in the Log In page showing
 - ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. 
 - The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work. This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to builtin. Then the user initiates a conversion from builtin to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
-File Storage: Local Filesystem vs. Swift
-----------------------------------------
+File Storage: Local Filesystem vs. Swift vs. S3
+-----------------------------------------------
 
 By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
 
-Alternatively, rather than storing data files on the filesystem, you can opt for a experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
+Swift Storage
++++++++++++++
 
-**Note:** At present, any file restrictions that users apply in Dataverse will not be honored in Swift. This means that a user without proper permissions **could bypass intended restrictions** by accessing the restricted file through Swift. 
+Rather than storing data files on the filesystem, you can opt for an experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
 
-In order to configure a Swift installation, there are two steps you need to complete:
+**In order to configure a Swift installation,** there are two steps you need to complete:
 
 First, create a file named ``swift.properties`` as follows in the ``config`` directory for your installation of Glassfish (by default, this would be ``/usr/local/glassfish4/glassfish/domains/domain1/config/swift.properties``):
 
@@ -222,6 +245,92 @@ Then run the create command:
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
 
+You also have the option to set a **custom container name separator.** It is initialized to ``_``, but you can change it by running the create command:
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-folder-path-separator=-"``
+
+By default, your Swift installation will be public-only, meaning users will be unable to put access restrictions on their data. If you are comfortable with this level of privacy, the final step in your setup is to set the  :ref:`:PublicInstall` setting to `true`.
+
+In order to **enable file access restrictions**, you must enable Swift to use temporary URLs for file access. To enable usage of temporary URLs, set a hash key both on your swift endpoint and in your swift.properties file. You can do so by adding 
+
+.. code-block:: none
+
+    swift.hash_key.endpoint1=your-hash-key
+
+to your swift.properties file.
+
+You also have the option to set a custom expiration length for a generated temporary URL. It is initalized to 60 seconds, but you can change it by running the create command:
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.temp_url_expire=3600"``
+
+In this example, you would be setting the expiration length for one hour.
+
+
+Setting up Compute
++++++++++++++++++++
+
+Once you have configured a Swift Object Storage backend, you also have the option of enabling a connection to a computing environment. To do so, you need to configure the database settings for :ref:`:ComputeBaseUrl` and  :ref:`:CloudEnvironmentName`.
+
+Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your cloud environment, the compute button on dataset and file pages will link validated users to your computing environment. Depending on the configuration of your installation, the compute button will either redirect to: 
+
+``:ComputeBaseUrl?containerName=yourContainer&objectName=yourObject``
+
+if your installation's :ref:`:PublicInstall` setting is true, or:
+
+``:ComputeBaseUrl?containerName=yourContainer&objectName=yourObject&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
+
+You can configure this redirect properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
+
+Amazon S3 Storage
++++++++++++++++++
+
+For institutions and organizations looking to use Amazon's S3 cloud storage for their installation, this can be set up manually through creation of a credentials file or automatically via the aws console commands. 
+
+You'll need an AWS account with an associated S3 bucket for your installation to use. From the S3 management console (e.g. `<https://console.aws.amazon.com/>`_), you can poke around and get familiar with your bucket. We recommend using IAM (Identity and Access Management) to create a user with full S3 access and nothing more, for security reasons. See `<http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_ for more info on this process.
+
+Make note of the bucket's name and the region its data is hosted in. Dataverse and the aws SDK rely on the placement of a key file located in ``~/.aws/credentials``, which can be generated via either of these two methods.
+
+Setup aws manually
+^^^^^^^^^^^^^^^^^^
+
+To create ``credentials`` manually, you will need to generate a key/secret key. The first step is to log onto your aws web console (e.g. `<https://console.aws.amazon.com/>`_). If you have created a user in AWS IAM, you can click on that user and generate the keys needed for dataverse. 
+
+Once you have acquired the keys, they need to be added to``credentials``. The format for credentials is as follows:
+
+| ``[default]``
+| ``aws_access_key_id = <insert key, no brackets>``
+| ``aws_secret_access_key = <insert secret key, no brackets>``
+
+Place this file in a folder named ``.aws`` under the home directory for the user running your dataverse installation.
+
+Setup aws via command line tools
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
+
+First, we'll get our access keys set up. If you already have your access keys configured, skip this step. From the command line, run:
+
+``pip install awscli``
+
+``aws configure``
+
+You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account. The subsequent config steps after the access keys are up to you. For reference, these keys are stored in ``~/.aws/credentials``.
+
+Configure dataverse to use aws/S3
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With your access to your bucket in place, we'll want to navigate to ``/usr/local/glassfish4/glassfish/bin/`` and execute the following ``asadmin`` commands to set up the proper JVM options. Recall that out of the box, Dataverse is configured to use local file storage. You'll need to delete the existing storage driver before setting the new one.
+
+``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
+
+``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"``
+
+Then, we'll need to identify which S3 bucket we're using. Replace ``your_bucket_name`` with, of course, your bucket:
+
+``./asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=your_bucket_name"``
+
+Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
+
 .. _Branding Your Installation:
 
 Branding Your Installation
@@ -244,7 +353,9 @@ Custom Homepage
 
 Dataverse allows you to use a custom homepage or welcome page in place of the default root dataverse page. This allows for complete control over the look and feel of your installation's homepage.
 
-Download this sample: :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``. Then run this curl command:
+Download this sample: :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
+
+Once you have the location of your custom homepage HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
@@ -259,30 +370,38 @@ Custom Navbar Logo
 
 Dataverse allows you to replace the default Dataverse icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
 
-Create a "navbar" folder in your Glassfish "logos" directory and place your custom logo there. By Glassfish default, it'll be located at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png``. Then run this curl command:
+The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Glassfish ``logos`` directory and place your custom logo there. By Glassfish default, your logo image file will be located at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
+
+Once you have the location of your custom logo image file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
-
-Note that the logo is expected to be small enough to fit comfortably in the navbar, perhaps only 30 pixels high.
 
 Custom Header
 +++++++++++++
 
-Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``. Then run this curl command:
+Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
+
+Once you have the location of your custom header HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
 
 Custom Footer
 +++++++++++++
 
-Download this sample: :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``. Then run this curl command:
+Download this sample: :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
+
+Once you have the location of your custom footer HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
 
-Custom CSS Stylesheet
-+++++++++++++++++++++
+Custom Stylesheet
++++++++++++++++++
 
-Download this sample: :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``. Then run this curl command:
+You can style your custom homepage, footer and header content with a custom CSS file. With advanced CSS know-how, you can achieve custom branding and page layouts by utilizing ``position``, ``padding`` or ``margin`` properties.
+
+Download this sample: :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``.
+
+Once you have the location of your custom CSS file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
@@ -421,6 +540,14 @@ While the above two options are recommended because they have been tested by the
 
 For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite and EZID must be tested with Dataverse to establish whether or not it will function properly.
 
+Out of the box, Dataverse is configured to use base URL string from EZID. You can delete it like this:
+
+``asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://ezid.cdlib.org'``
+
+Then, to switch to DataCite, you can issue the following command:
+
+``asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
+
 See also these related database settings below:
 
 - :ref:`:DoiProvider`
@@ -435,12 +562,28 @@ doi.username
 
 Used in conjuction with ``doi.baseurlstring``.
 
+Out of the box, Dataverse is configured with a test username from EZID. You can delete it with the following command:
+
+``asadmin delete-jvm-options '-Ddoi.username=apitest'``
+
+Once you have a username from your provider, you can enter it like this:
+
+``asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
+
 .. _doi.password:
 
 doi.password
 ++++++++++++
 
+Out of the box, Dataverse is configured with a test password from EZID. You can delete it with the following command:
+
 Used in conjuction with ``doi.baseurlstring``.
+
+``asadmin delete-jvm-options '-Ddoi.password=apitest'``
+
+Once you have a password from your provider, you can enter it like this:
+
+``asadmin create-jvm-options '-Ddoi.password=YOUR_PASSWORD_HERE'``
 
 .. _dataverse.handlenet.admcredfile:
 
@@ -518,6 +661,11 @@ Please note that if you're having any trouble sending email, you can refer to "T
 
 :HomePageCustomizationFile
 ++++++++++++++++++++++++++
+
+See :ref:`Branding Your Installation` above.
+
+:LogoCustomizationFile
+++++++++++++++++++++++
 
 See :ref:`Branding Your Installation` above.
 
@@ -633,6 +781,9 @@ Specify a URL where users can read your Privacy Policy, linked from the bottom o
 Specify a URL where users can read your API Terms of Use.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
+
+
+.. _:ExcludeEmailFromExport:
 
 :ExcludeEmailFromExport
 +++++++++++++++++++++++
@@ -862,6 +1013,110 @@ Dataverse calculates checksums for uploaded files so that users can determine if
 
 The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
 
+.. _:PVMinLength:
+
+:PVMinLength
+++++++++++++
+
+Password policy setting for builtin user accounts: a password's minimum valid character length. The default is 6.
+
+``curl -X PUT -d 6 http://localhost:8080/api/admin/settings/:PVMinLength``
+
+
+.. _:PVMaxLength:
+
+:PVMaxLength
+++++++++++++
+
+Password policy setting for builtin user accounts: a password's maximum valid character length.
+
+``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:PVMaxLength``
+
+
+.. _:PVNumberOfConsecutiveDigitsAllowed:
+
+:PVNumberOfConsecutiveDigitsAllowed
++++++++++++++++++++++++++++++++++++
+
+By default, passwords can contain an unlimited number of digits in a row. However, if your password policy specifies otherwise (e.g. only four digits in a row are allowed), then you can issue the following curl command to set the number of consecutive digits allowed (this example uses 4):
+
+``curl -X PUT -d 4 http://localhost:8080/api/admin/settings/:PVNumberOfConsecutiveDigitsAllowed``
+
+.. _:PVCharacterRules:
+
+:PVCharacterRules
++++++++++++++++++
+
+Password policy setting for builtinuser accounts: dictates which types of characters can be required in a password. This setting goes hand-in-hand with :ref:`:PVNumberOfCharacteristics`. The default setting contains two rules:
+
+- one letter
+- one digit
+
+The default setting above is equivalent to specifying "Alphabetical:1,Digit:1".
+
+By specifying "UpperCase:1,LowerCase:1,Digit:1,Special:1", for example, you can put the following four rules in place instead:
+
+- one uppercase letter
+- one lowercase letter
+- one digit
+- one special character
+
+If you have implemented 4 different character rules in this way, you can also optionally increase ``:PVNumberOfCharacteristics`` to as high as 4. However, please note that ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of character rules or you will see the error, "Number of characteristics must be <= to the number of rules".
+
+Also note that the Alphabetical setting should not be used in tandem with the UpperCase or LowerCase settings. The Alphabetical setting encompasses both of those more specific settings, so using it with them will cause your password policy to be unnecessarily confusing, and potentially easier to bypass.
+
+``curl -X PUT -d 'UpperCase:1,LowerCase:1,Digit:1,Special:1' http://localhost:8080/api/admin/settings/:PVCharacterRules``
+
+``curl -X PUT -d 3 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
+
+.. _:PVNumberOfCharacteristics:
+
+:PVNumberOfCharacteristics
+++++++++++++++++++++++++++
+
+Password policy setting for builtin user accounts: the number indicates how many of the character rules defined by ``:PVCharacterRules`` are required as part of a password. The default is 2. ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of rules or you will see the error, "Number of characteristics must be <= to the number of rules".
+
+``curl -X PUT -d 2 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
+
+
+.. _:PVDictionaries:
+
+:PVDictionaries
++++++++++++++++
+
+Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password. ``/usr/share/dict/words`` is suggested and shown modified below to not contain words 3 letters or less. You are free to choose a different dictionary. By default, no dictionary is checked.
+
+``DIR=THE_PATH_YOU_WANT_YOUR_DICTIONARY_TO_RESIDE``
+``sed '/^.\{,3\}$/d' /usr/share/dict/words > $DIR/pwdictionary``
+``curl -X PUT -d "$DIR/pwdictionary" http://localhost:8080/api/admin/settings/:PVDictionaries``
+
+
+.. _:PVGoodStrength:
+
+:PVGoodStrength
++++++++++++++++
+
+Password policy setting for builtin user accounts: passwords of equal or greater character length than the :PVGoodStrength setting are always valid, regardless of other password constraints.
+
+``curl -X PUT -d 20 http://localhost:8080/api/admin/settings/:PVGoodStrength``
+
+Recommended setting: 20.
+
+.. _:PVCustomPasswordResetAlertMessage:
+
+:PVCustomPasswordResetAlertMessage
+++++++++++++++++++++++++++++++++++
+
+Changes the default info message displayed when a user is required to change their password on login. The default is:
+
+``{0} Reset Password{1} – Our password requirements have changed. Please pick a strong password that matches the criteria below.``
+
+Where the {0} and {1} denote surrounding HTML **bold** tags. It's recommended to put a single space before your custom message for better appearance (as in the default message above). Including the {0} and {1} to bolden part of your message is optional.
+
+Customize the message using the following curl command's syntax:
+
+``curl -X PUT -d '{0} Action Required:{1} Your current password does not meet all requirements. Please enter a new password meeting the criteria below.' http://localhost:8080/api/admin/settings/:PVCustomPasswordResetAlertMessage``
+
 :ShibPassiveLoginEnabled
 ++++++++++++++++++++++++
 
@@ -877,12 +1132,16 @@ You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
 
+.. _:ComputeBaseUrl:
+
 :ComputeBaseUrl
 +++++++++++++++
 
 Set the base URL for the "Compute" button for a dataset.
 
-``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse?containerName=' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
+``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
+
+.. _:CloudEnvironmentName:
 
 :CloudEnvironmentName
 +++++++++++++++++++++
@@ -890,6 +1149,17 @@ Set the base URL for the "Compute" button for a dataset.
 Set the name of the cloud environment you've integrated with your Dataverse installation.
 
 ``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
+
+.. _:PublicInstall:
+
+:PublicInstall
++++++++++++++++++++++
+
+Setting an installation to public will remove the ability to restrict data files or datasets. This functionality of Dataverse will be disabled from your installation.
+
+This is useful for specific cases where an installation's files are stored in public access. Because files stored this way do not obey Dataverse's file restrictions, users would still be able to access the files even when they're restricted. In these cases it's best to use :PublicInstall to disable the feature altogether.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:PublicInstall``
 
 :DataCaptureModuleUrl
 +++++++++++++++++++++
@@ -915,4 +1185,22 @@ This setting is experimental and to be used with the Data Capture Module (DCM). 
 :DownloadMethods
 ++++++++++++++++
 
-This setting is experimental and related to Repository Storage Abstraction Layer (RSAL). As of this writing it has no effect.
+This setting is experimental and related to Repository Storage Abstraction Layer (RSAL).
+
+``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
+
+:GuestbookResponsesPageDisplayLimit
++++++++++++++++++++++++++++++++++++
+
+Limit on how many guestbook entries to display on the guestbook-responses page. By default, only the 5000 most recent entries will be shown. Use the standard settings API in order to change the limit. For example, to set it to 10,000, make the following API call: 
+
+``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
+
+:CustomDatasetSummaryFields
++++++++++++++++++++++++++++
+
+You can replace the default dataset metadata fields that are displayed above files table on the dataset page with a custom list separated by commas using the curl command below.
+
+``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
+
+You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work. 

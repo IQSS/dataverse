@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
@@ -182,14 +182,14 @@ public class MapLayerMetadataServiceBean {
 
         
         try {
-            DataFileIO dataFileIO = dataFile.getDataFileIO();
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
 
-            if (dataFileIO == null) {
-                logger.warning("Null DataFileIO in deleteOlderMapThumbnails()");
+            if (storageIO == null) {
+                logger.warning("Null storageIO in deleteOlderMapThumbnails()");
                 return false;
             }
-            dataFileIO.open();
-            List<String> cachedObjectsTags = dataFileIO.listAuxObjects();
+            storageIO.open();
+            List<String> cachedObjectsTags = storageIO.listAuxObjects();
             
             if (cachedObjectsTags != null) {
                 String iconBaseTag = "img";
@@ -198,13 +198,13 @@ public class MapLayerMetadataServiceBean {
                     logger.info("found AUX tag: "+cachedFileTag);
                     if (iconBaseTag.equals(cachedFileTag) || cachedFileTag.startsWith(iconThumbTagPrefix)) {
                         logger.info("deleting cached AUX object "+cachedFileTag);
-                        dataFileIO.deleteAuxObject(cachedFileTag);
+                        storageIO.deleteAuxObject(cachedFileTag);
                     }
                 }
             }
             /*
              * Below is the old-style code that was assuming that all the files are 
-             * stored on a local filesystem. The DataFileIO code, above, should 
+             * stored on a local filesystem. The StorageIO code, above, should 
              * be used instead for all the operations on the physical files associated
              * with DataFiles. 
             // Get the parent directory
@@ -289,9 +289,9 @@ public class MapLayerMetadataServiceBean {
         imageUrl = imageUrl.replace("https:", "http:");
         logger.info("Attempt to retrieve map image: " + imageUrl);
         
-        DataFileIO dataAccess = null;
+        StorageIO<DataFile> dataAccess = null;
         try {
-            dataAccess = mapLayerMetadata.getDataFile().getDataFileIO();
+            dataAccess = mapLayerMetadata.getDataFile().getStorageIO();
         } catch (IOException ioEx) {
             dataAccess = null;
         }

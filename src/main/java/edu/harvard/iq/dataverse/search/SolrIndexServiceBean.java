@@ -367,10 +367,8 @@ public class SolrIndexServiceBean {
 
     private void persistToSolr(Collection<SolrInputDocument> docs) throws SolrServerException, IOException {
         if (docs.isEmpty()) {
-            /**
-             * @todo Throw an exception here? "DvObject id 9999 does not exist."
-             */
-            logger.info("nothing to persist");
+            // This method is routinely called with an empty list of docs.
+            logger.fine("nothing to persist");
             return;
         }
         logger.fine("persisting to Solr...");

@@ -23,15 +23,20 @@ public class DataCaptureModuleUtil {
         }
     }
 
+    /**
+     * generate JSON to send to DCM
+     */
     public static JsonObject generateJsonForUploadRequest(AuthenticatedUser user, Dataset dataset) {
         JsonObjectBuilder jab = Json.createObjectBuilder();
-//        // The general rule should be to always pass the user id and dataset id to the DCM.
+        // The general rule should be to always pass the user id and dataset identifier to the DCM.
         jab.add("userId", user.getId());
-        // FIXME: It would make more sense for the key to be "datasetId" since we're sending the primary key.
-        jab.add("datasetIdentifier", dataset.getId());
+        jab.add("datasetIdentifier", dataset.getIdentifier());
         return jab.build();
     }
 
+    /**
+     * transfer script from DCM
+     */
     public static ScriptRequestResponse getScriptFromRequest(HttpResponse<JsonNode> uploadRequest) {
         int status = uploadRequest.getStatus();
         JsonNode body = uploadRequest.getBody();
@@ -41,9 +46,9 @@ public class DataCaptureModuleUtil {
         }
         int httpStatusCode = uploadRequest.getStatus();
         String script = body.getObject().getString("script");
-        long datasetId = body.getObject().getLong("datasetIdentifier");
+        String datasetIdentifier = body.getObject().getString("datasetIdentifier");
         long userId = body.getObject().getLong("userId");
-        ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetId, userId, script);
+        ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetIdentifier, userId, script);
         return scriptRequestResponse;
     }
 

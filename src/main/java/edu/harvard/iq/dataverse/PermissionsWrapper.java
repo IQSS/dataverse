@@ -34,7 +34,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
-    private final Map<Long, Map<Class<? extends Command>, Boolean>> commandMap = new HashMap<>();
+    private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> commandMap = new HashMap<>();
 
     // Maps for caching permissions lookup results:
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
@@ -47,7 +47,7 @@ public class PermissionsWrapper implements java.io.Serializable {
      * @param command The command to execute
      * @return {@code true} if the user can issue the command on the object.
      */
-    public boolean canIssueCommand(DvObject dvo, Class<? extends Command> command) {
+    public boolean canIssueCommand(DvObject dvo, Class<? extends Command<?>> command) {
         if ((dvo==null) || (dvo.getId()==null)){
             return false;
         }
@@ -56,7 +56,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
 
         if (commandMap.containsKey(dvo.getId())) {
-            Map<Class<? extends Command>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
+            Map<Class<? extends Command<?>>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
             if (dvoCommandMap.containsKey(command)) {
                 return dvoCommandMap.get(command);
             } else {
@@ -64,13 +64,13 @@ public class PermissionsWrapper implements java.io.Serializable {
             }
 
         } else {
-            Map newDvoCommandMap = new HashMap();
+            Map<Class<? extends Command<?>>, Boolean> newDvoCommandMap = new HashMap<>();
             commandMap.put(dvo.getId(), newDvoCommandMap);
             return addCommandtoDvoCommandMap(dvo, command, newDvoCommandMap);
         }
     }
 
-    private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command> command, Map<Class<? extends Command>, Boolean> dvoCommandMap) {
+    private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command<?>> command, Map<Class<? extends Command<?>>, Boolean> dvoCommandMap) {
         if ( dvo==null || (dvo.getId()==null) ){
             return false;
         }

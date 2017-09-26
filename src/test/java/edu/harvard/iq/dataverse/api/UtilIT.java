@@ -32,6 +32,7 @@ import static com.jayway.restassured.path.xml.XmlPath.from;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import org.apache.commons.lang3.math.NumberUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -62,9 +63,9 @@ public class UtilIT {
 
     /**
      * Begin each username with a prefix
-     * 
+     *
      * @param usernamePrefix
-     * @return 
+     * @return
      */
     public static Response createRandomUser(String usernamePrefix) {
         String randomString = getRandomUsername(usernamePrefix);
@@ -78,10 +79,8 @@ public class UtilIT {
         return response;
     }
 
-    
-    
     public static Response createRandomUser() {
-        
+
         return createRandomUser("user");
     }
 
@@ -131,17 +130,17 @@ public class UtilIT {
 
     private static String getRandomUsername(String usernamePrefix) {
 
-        if (usernamePrefix == null){
+        if (usernamePrefix == null) {
             return getRandomUsername();
         }
         return usernamePrefix + getRandomIdentifier().substring(0, 8);
     }
 
     public static String getRandomString(int length) {
-        if (length < 0){
+        if (length < 0) {
             length = 3;
         }
-        return getRandomIdentifier().substring(0, length+1);
+        return getRandomIdentifier().substring(0, length + 1);
     }
 
     private static String getRandomUsername() {
@@ -295,6 +294,11 @@ public class UtilIT {
 
     static Response createDatasetViaSwordApi(String dataverseToCreateDatasetIn, String title, String apiToken) {
         String xmlIn = getDatasetXml(title, "Lastname, Firstname", getRandomIdentifier());
+        return createDatasetViaSwordApiFromXML(dataverseToCreateDatasetIn, xmlIn, apiToken);
+    }
+
+    static Response createDatasetViaSwordApi(String dataverseToCreateDatasetIn, String title, String description, String apiToken) {
+        String xmlIn = getDatasetXml(title, "Lastname, Firstname", description);
         return createDatasetViaSwordApiFromXML(dataverseToCreateDatasetIn, xmlIn, apiToken);
     }
 
@@ -568,11 +572,20 @@ public class UtilIT {
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
     }
 
-    static Response publishDatasetViaNativeApi(String persistentId, String majorOrMinor, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .urlEncodingEnabled(false)
-                .post("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
+    static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken) {
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .urlEncodingEnabled(false)
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.post("/api/datasets/" + idInPath + "/actions/:publish?type=" + majorOrMinor + optionalQueryParam);
     }
 
     static Response publishDatasetViaNativeApiDeprecated(String persistentId, String majorOrMinor, String apiToken) {
@@ -602,6 +615,44 @@ public class UtilIT {
                 .auth().basic(apiToken, EMPTY_STRING)
                 .header("In-Progress", "false")
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/dataverse/" + alias);
+    }
+
+    static Response publishDataverseViaNativeApi(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .post("/api/dataverses/" + dataverseAlias + "/actions/:publish");
+    }
+
+    static Response submitDatasetForReview(String datasetPersistentId, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.post("/api/datasets/:persistentId/submitForReview?persistentId=" + datasetPersistentId);
+    }
+
+    static Response returnDatasetToAuthor(String datasetPersistentId, JsonObject jsonObject, String apiToken) {
+        String jsonIn = jsonObject.toString();
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                    .body(jsonIn)
+                    .contentType("application/json");
+        }
+        return requestSpecification
+                .post("/api/datasets/:persistentId/returnToAuthor?persistentId=" + datasetPersistentId);
+    }
+
+    static Response getNotifications(String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/notifications/all");
     }
 
     static Response nativeGetUsingPersistentId(String persistentId, String apiToken) {
@@ -644,45 +695,44 @@ public class UtilIT {
 
     /**
      * Used to the test the filter Authenticated Users API endpoint
-     * 
-     * Note 1 : All params are optional for endpoint to work EXCEPT superUserApiToken
-     * Note 2 : sortKey exists in API call but not currently used
-     * 
+     *
+     * Note 1 : All params are optional for endpoint to work EXCEPT
+     * superUserApiToken Note 2 : sortKey exists in API call but not currently
+     * used
+     *
      * @param apiToken
-     * @return 
+     * @return
      */
     static Response filterAuthenticatedUsers(String superUserApiToken,
-                                             String searchTerm,
-                                             Integer selectedPage,
-                                             Integer itemsPerPage
+            String searchTerm,
+            Integer selectedPage,
+            Integer itemsPerPage
     //                                         String sortKey
     ) {
 
-       
         List<String> queryParams = new ArrayList<String>();
-        if (searchTerm != null){
+        if (searchTerm != null) {
             queryParams.add("searchTerm=" + searchTerm);
         }
-        if (selectedPage != null){
+        if (selectedPage != null) {
             queryParams.add("selectedPage=" + selectedPage.toString());
         }
-        if (itemsPerPage != null){
+        if (itemsPerPage != null) {
             queryParams.add("itemsPerPage=" + itemsPerPage.toString());
         }
 
         String queryString = "";
-        if (queryParams.size() > 0){
+        if (queryParams.size() > 0) {
             queryString = "?" + String.join("&", queryParams);
         }
-               
+
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, superUserApiToken)
                 .get("/api/admin/list-users" + queryString);
-        
+
         return response;
     }
 
-    
     static Response getAuthProviders(String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -719,6 +769,14 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(data)
                 .put("/api/admin/authenticatedUsers/convert/builtin2oauth");
+        return response;
+    }
+
+    static Response restrictFile(Long datafileId, boolean restrict, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(restrict)
+                .put("/api/files/" + datafileId + "/restrict");
         return response;
     }
 
@@ -802,6 +860,15 @@ public class UtilIT {
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
         return requestSpecification.get("/api/search?q=" + query);
+    }
+
+    static Response searchAndShowFacets(String query, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/search?q=" + query + "&show_facets=true");
     }
 
     static Response indexClear() {
@@ -1001,6 +1068,23 @@ public class UtilIT {
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
         return requestSpecification.get("/api/datasets/:persistentId/dataCaptureModule/rsync?persistentId=" + datasetPersistentId);
+    }
+
+    static Response dataCaptureModuleChecksumValidation(String datasetPersistentId, JsonObject jsonObject, String apiToken) {
+        String persistentIdInPath = datasetPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If datasetPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(datasetPersistentId)) {
+            persistentIdInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .body(jsonObject.toString())
+                    .contentType(ContentType.JSON)
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.post("/api/datasets/" + persistentIdInPath + "/dataCaptureModule/checksumValidation" + optionalQueryParam);
     }
 
     @Test

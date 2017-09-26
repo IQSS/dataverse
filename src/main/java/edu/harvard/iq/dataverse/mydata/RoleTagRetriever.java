@@ -115,13 +115,13 @@ public class RoleTagRetriever {
         this.errorFound = false;
         this.errorMessage = null;
         
-        this.idToRoleListHash = new HashMap();    // { dvobject id : [role id, role id] }
+        this.idToRoleListHash = new HashMap<>();    // { dvobject id : [role id, role id] }
 
-        this.childToParentIdHash = new HashMap();     // { dvobject id : parent id }
+        this.childToParentIdHash = new HashMap<>();     // { dvobject id : parent id }
 
-        this.idToDvObjectType = new HashMap();     // { dvobject id : dvobject type }
+        this.idToDvObjectType = new HashMap<>();     // { dvobject id : dvobject type }
 
-        this.finalIdToRolesHash = new HashMap();  
+        this.finalIdToRolesHash = new HashMap<>();  
 
         this.datasetIdsNeedingParentIds = new ArrayList<>();
 
@@ -136,7 +136,7 @@ public class RoleTagRetriever {
         // initialize with dvObject id and empty list of role ids
         //
         if (!this.idToRoleListHash.containsKey(dvObjectId)){
-            this.idToRoleListHash.put(dvObjectId, new ArrayList<Long>());
+            this.idToRoleListHash.put(dvObjectId, new ArrayList<>());
         }
     }
     
@@ -277,7 +277,7 @@ public class RoleTagRetriever {
             // initialize final hash of dvObject id and empty list of role names
             //          { dvObject id : [ (empty list for role nams) ] } 
             // -------------------------------------------------
-            this.finalIdToRolesHash.put(doc.getEntityId(), new ArrayList<String>());
+            this.finalIdToRolesHash.put(doc.getEntityId(), new ArrayList<>());
 
         }
         
@@ -407,7 +407,7 @@ public class RoleTagRetriever {
             return null;
         }
         
-        List<String> roleNames = new ArrayList();
+        List<String> roleNames = new ArrayList<>();
         for (Long roleId : this.idToRoleListHash.get(dvId) ){
             String roleName = this.rolePermissionHelper.getRoleName(roleId);
             if (roleName != null){
@@ -429,7 +429,7 @@ public class RoleTagRetriever {
             return null;
         }
         
-        List<String> roleNames = new ArrayList();
+        List<String> roleNames = new ArrayList<>();
         for (Long roleId : this.idToRoleListHash.get(dvId) ){
             if ((withDatasetPerms && this.rolePermissionHelper.hasDatasetPermissions(roleId))
                 || (withFilePerms && this.rolePermissionHelper.hasFilePermissions(roleId)))
@@ -498,7 +498,7 @@ public class RoleTagRetriever {
             // -------------------------------------------------
             // (a) Make a new array with the role names for the card
             // -------------------------------------------------
-            finalRoleNames = new ArrayList();
+            finalRoleNames = new ArrayList<>();
             if (!this.idToDvObjectType.containsKey(dvIdForCard)){
                 throw new IllegalStateException("All dvObject ids from solr should have their dvObject types in this hash");                 
             }
