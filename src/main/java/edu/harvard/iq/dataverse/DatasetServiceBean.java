@@ -532,12 +532,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLock(Long datasetId, DatasetLock.Reason aReason) {
         Dataset dataset = em.find(Dataset.class, datasetId);
-        Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.INFO, "Removing locks from dataset " + dataset.getId());
-        Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.INFO, dataset.getLocks().toString() );
         new HashSet<>(dataset.getLocks()).stream()
                 .filter( l -> l.getReason() == aReason )
                 .forEach( lock -> {
-                    Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.INFO, "Removing lock " + lock);
                     dataset.removeLock(lock);
                     
                     AuthenticatedUser user = lock.getUser();

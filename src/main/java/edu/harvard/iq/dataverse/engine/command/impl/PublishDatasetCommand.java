@@ -63,10 +63,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
 
         theDataset = ctxt.em().merge(theDataset);
         
-        //Move remove lock to after merge... SEK 9/1/17 (why? -- L.A.)
-        ctxt.engine().submit( new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
-        ctxt.engine().submit( new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Ingest) );
-
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         if ( prePubWf.isPresent() ) {
             // We start a workflow
@@ -92,7 +88,8 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
         }
         
-        if ( theDataset.isLocked() ) {
+        if ( theDataset.isLockedFor(DatasetLock.Reason.Workflow)
+                || theDataset.isLockedFor(DatasetLock.Reason.Ingest) ) {
             throw new IllegalCommandException("This dataset is locked. Reason: " 
                     + theDataset.getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
                     + ". Please try publishing later.", this);

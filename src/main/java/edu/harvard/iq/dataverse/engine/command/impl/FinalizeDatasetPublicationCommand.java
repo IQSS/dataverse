@@ -103,18 +103,25 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         
-
         exportMetadata();
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
         ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
 
+        // Remove locks
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
-        final Optional<Workflow> postPubWorkflow = ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset);
-        
-        if ( postPubWorkflow.isPresent() ) {
-            ctxt.workflows().start(postPubWorkflow.get(), buildContext(doiProvider, TriggerType.PostPublishDataset));
+        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
+            ctxt.engine().submit( 
+                    new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
         }
+        
+        ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
+            try {
+                ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset));
+            } catch (CommandException ex) {
+                logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
+            }
+        });
         
         return ctxt.em().merge(theDataset);
     }
