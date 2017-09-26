@@ -33,6 +33,11 @@ public class SettingsServiceBean {
      */
     public enum Key {
         /**
+         * Ordered, comma-separated list of custom fields to show above the fold
+         * on dataset page such as "data_type,sample,pdb"
+         */
+        CustomDatasetSummaryFields,
+        /**
          * Defines a public installation -- all datafiles are unrestricted
          */
         PublicInstall,
@@ -53,6 +58,17 @@ public class SettingsServiceBean {
         RepositoryStorageAbstractionLayerUrl,
         UploadMethods,
         DownloadMethods,
+        /**
+         * Sites around the world to which data has been replicated using RSAL
+         * (Repository Storage Abstraction Layer).
+         */
+        ReplicationSites,
+        /**
+         * If the data replicated around the world using RSAL (Repository
+         * Storage Abstraction Layer) is locally available, this is its file
+         * path, such as "/programs/datagrid".
+         */
+        LocalDataAccessPath,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,

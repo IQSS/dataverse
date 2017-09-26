@@ -79,10 +79,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     OAIRecordServiceBean recordService;
-    
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
-    
+
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -502,23 +499,43 @@ public class DatasetServiceBean implements java.io.Serializable {
         return lock.size()>0;
     }
     
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void addDatasetLock(Dataset dataset, DatasetLock lock) {
-        lock.setDataset(dataset);
-        dataset.addLock(lock);
-        em.merge(dataset); 
+    public String checkDatasetLockInfo(Long datasetId) {
+        String nativeQuery = "SELECT sl.info FROM DatasetLock sl WHERE sl.dataset_id = " + datasetId + " LIMIT 1;";
+        String infoMessage; 
+        try {
+            infoMessage = (String)em.createNativeQuery(nativeQuery).getSingleResult();
+        } catch (Exception ex) {
+            infoMessage = null; 
+        }
+        
+        return infoMessage;
     }
     
-    public void addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
+        lock.setDataset(dataset);
+        dataset.addLock(lock);
+        em.persist(lock);
+        em.merge(dataset); 
+        return lock;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW) /*?*/
+    public DatasetLock addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
 
         Dataset dataset = em.find(Dataset.class, datasetId);
-        DatasetLock lock = new DatasetLock(reason, dvRequestService.getDataverseRequest().getAuthenticatedUser());
+
+        AuthenticatedUser user = null;
+        if (userId != null) {
+            user = em.find(AuthenticatedUser.class, userId);
+        }
+
+        DatasetLock lock = new DatasetLock(reason, user);
         lock.setDataset(dataset);
         lock.setInfo(info);
         lock.setStartTime(new Date());
 
         if (userId != null) {
-            AuthenticatedUser user = em.find(AuthenticatedUser.class, userId);
             lock.setUser(user);
             if (user.getDatasetLocks() == null) {
                 user.setDatasetLocks(new ArrayList<>());
@@ -526,7 +543,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             user.getDatasetLocks().add(lock);
         }
 
-        addDatasetLock(dataset, lock);
+        return addDatasetLock(dataset, lock);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

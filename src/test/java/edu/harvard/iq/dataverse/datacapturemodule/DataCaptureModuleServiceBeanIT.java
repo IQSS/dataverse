@@ -7,6 +7,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
+import java.io.StringReader;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Logger;
@@ -18,11 +19,12 @@ import javax.json.JsonObject;
 import static java.lang.Thread.sleep;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 
 /**
  * These tests are not expected to pass unless you have a Data Capture Module
- * (DCM) installed and configured properly. They are intended to help a
- * developer get set up for DCM development.
+ * (DCM) installed and configured properly or a mock version of the DCM. They
+ * are intended to help a developer get set up for DCM development.
  */
 public class DataCaptureModuleServiceBeanIT {
 
@@ -30,7 +32,11 @@ public class DataCaptureModuleServiceBeanIT {
 
     @Test
     public void testUploadRequestAndScriptRequest() throws InterruptedException, DataCaptureModuleException {
-        String dcmBaseUrl = "http://localhost:8888";
+        // The DCM Vagrant box runs on port 8888: https://github.com/sbgrid/data-capture-module/blob/master/Vagrantfile
+        String dcmVagrantUrl = "http://localhost:8888";
+        // The DCM mock runs on port 5000: https://github.com/sbgrid/data-capture-module/blob/master/doc/mock.md
+        String dcmMockUrl = "http://localhost:5000";
+        String dcmBaseUrl = dcmMockUrl;
         DataCaptureModuleServiceBean dataCaptureModuleServiceBean = new DataCaptureModuleServiceBean();
 
         // Step 1: Upload request
@@ -43,9 +49,12 @@ public class DataCaptureModuleServiceBeanIT {
         String jsonString = DataCaptureModuleUtil.generateJsonForUploadRequest(authenticatedUser, dataset).toString();
         logger.info("jsonString: " + jsonString);
         UploadRequestResponse uploadRequestResponse = dataCaptureModuleServiceBean.requestRsyncScriptCreation(jsonString, dcmBaseUrl + DataCaptureModuleServiceBean.uploadRequestPath);
+        System.out.println("out: " + uploadRequestResponse.getResponse());
         assertEquals(200, uploadRequestResponse.getHttpStatusCode());
-        assertTrue(uploadRequestResponse.getResponse().contains("recieved"));
-        assertEquals("\nrecieved\n", uploadRequestResponse.getResponse());
+        String uploadRequestResponseString = uploadRequestResponse.getResponse();
+        JsonReader jsonReader = Json.createReader(new StringReader((String) uploadRequestResponseString));
+        JsonObject jsonObject = jsonReader.readObject();
+        assertEquals("OK", jsonObject.getString("status"));
 
         // If you comment this out, expect to see a 404 when you try to download the script.
         sleep(DataCaptureModuleServiceBean.millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls);

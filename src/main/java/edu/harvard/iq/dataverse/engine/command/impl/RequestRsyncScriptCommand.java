@@ -88,7 +88,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
         }
         String script = scriptRequestResponse.getScript();
         if (script == null || script.isEmpty()) {
-            throw new RuntimeException(errorPreamble + " The script was null or empty.");
+            logger.warning("There was a problem getting the script. DCM returned status code: "+scriptRequestResponse.getHttpStatusCode());
         }
         logger.fine("script for dataset " + dataset.getId() + ": " + script);
         return scriptRequestResponse;

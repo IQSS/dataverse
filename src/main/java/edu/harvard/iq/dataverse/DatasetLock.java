@@ -64,7 +64,10 @@ public class DatasetLock implements Serializable {
         Workflow,
         
         /** Waiting for a curator to approve/send back to author */
-        InReview
+        InReview, 
+        
+        /** DCM (rsync) upload in progress */
+        DcmUpload
     }
     
     private static final long serialVersionUID = 1L;

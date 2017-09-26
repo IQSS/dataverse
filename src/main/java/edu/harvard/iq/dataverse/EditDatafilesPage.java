@@ -829,6 +829,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     public void deleteFiles() {
+        logger.info("entering bulk file delete (EditDataFilesPage)");
         if (isFileReplaceOperation()){
             try {
                 deleteReplacementFile();
@@ -911,7 +912,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // removing it from the fileMetadatas list, we also remove it from 
                 // the newFiles list and the dataset's files, so it never gets saved.
                 
-                if (mode != FileEditMode.CREATE) {
+                //if (mode != FileEditMode.CREATE) {
                     // If the bean is in the 'CREATE' mode, the page is using
                     // dataset.getEditVersion().getFileMetadatas() directly, 
                     // so there's no need to delete this meta from the local
@@ -921,15 +922,15 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // fileMetadatas.remove(markedForDelete);
                     // - because the filemetadata doesn't have the id yet!)
                     
-                    Iterator<FileMetadata> fmit = fileMetadatas.iterator();
-                    while (fmit.hasNext()) {
-                        FileMetadata fmd = fmit.next();
+                    Iterator<FileMetadata> fmitlocal = fileMetadatas.iterator();
+                    while (fmitlocal.hasNext()) {
+                        FileMetadata fmd = fmitlocal.next();
                         if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                            fmit.remove();
+                            fmitlocal.remove();
                             break;
                         }
                     }
-                }
+                //}
                 
                 Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
