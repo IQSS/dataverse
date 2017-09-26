@@ -54,16 +54,6 @@ public class Workflows extends AbstractApiBean {
         return Response.accepted("/api/datasets/" + pending.getDataset().getId() ).build();
     }
     
-    @Path("lock/{dsId}")
-    @GET
-    public Response lockDataset( @PathParam("dsId") String dsId ) {
-        return response( req -> {
-            DatasetLock dl = new DatasetLock(DatasetLock.Reason.Workflow, findAuthenticatedUserOrDie());
-            execCommand( new AddLockCommand( req, findDatasetOrDie(dsId), dl) ) ;
-            return ok("locked dataset " + dsId);
-        });
-    }
-    
     private boolean isAllowed(IpAddress addr) {
         if ( System.currentTimeMillis()-lastWhitelistUpdate > 60*1000 ) {
             updateWhitelist();
