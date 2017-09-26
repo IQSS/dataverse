@@ -22,12 +22,10 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -251,7 +249,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     }
     
     /**
-     * Whether it's EZID or DataCiteif, if the registration is 
+     * Whether it's EZID or DataCite, if the registration is 
      * refused because the identifier already exists, we'll generate another one
      * and try to register again... but only up to some
      * reasonably high number of times - so that we don't 
