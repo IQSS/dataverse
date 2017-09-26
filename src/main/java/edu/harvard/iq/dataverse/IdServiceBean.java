@@ -13,14 +13,20 @@ public interface IdServiceBean {
     static final Logger logger = Logger.getLogger(IdServiceBean.class.getCanonicalName());
 
     boolean alreadyExists(Dataset dataset) throws Exception;
+    
+    boolean alreadyExists(DvObject dvObject) throws Exception;
 
     boolean registerWhenPublished();
     
     List<String> getProviderInformation();
 
     String createIdentifier(Dataset dataset) throws Throwable;
+    
+    String createIdentifier(DvObject dvObject) throws Throwable;
 
     HashMap getIdentifierMetadata(Dataset dataset);
+    
+    HashMap getIdentifierMetadata(DvObject dvObject);
 
     HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier);
 
@@ -35,16 +41,28 @@ public interface IdServiceBean {
     String getIdentifierForLookup(String protocol, String authority, String separator, String identifier);
 
     String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception;
+    
+    String modifyIdentifier(DvObject dvObject, HashMap<String, String> metadata) throws Exception;
 
     void deleteIdentifier(Dataset datasetIn) throws Exception;
 
+    void deleteIdentifier(DvObject dvObject) throws Exception;
+        
     HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn);
+    
+    HashMap getMetadataForCreateIndicator(DvObject dvObject);
 
     HashMap getMetadataFromDatasetForTargetURL(Dataset datasetIn);
+    
+    HashMap getMetadataForTargetURL(DvObject dvObject);
 
     String getIdentifierFromDataset(Dataset dataset);
+    
+    String getIdentifierFromDvObject(DvObject dvObject);
 
     boolean publicizeIdentifier(Dataset studyIn);
+    
+    boolean publicizeIdentifier(DvObject dvObject);
 
     static IdServiceBean getBean(String protocol, CommandContext ctxt) {
         logger.log(Level.FINE,"getting bean, protocol=" + protocol);
