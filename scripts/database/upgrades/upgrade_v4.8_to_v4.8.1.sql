@@ -1,4 +1,4 @@
-
+﻿
 /**
  * Author:  skraffmi
  * Created: Sep 25, 2017
@@ -10,11 +10,12 @@
 
 ALTER TABLE dvobject ADD COLUMN   
   authority character varying(255),
-  doiseparator character varying(255),
-  globalidcreatetime timestamp without time zone,
-  identifierRegistered boolean,
-  identifier character varying(255),
-  protocol character varying(255);
+  ADD COLUMN doiseparator character varying(255),
+  ADD COLUMN globalidcreatetime timestamp without time zone,
+  ADD COLUMN identifierRegistered boolean,
+  ADD COLUMN identifier character varying(255),
+  ADD COLUMN protocol character varying(255);
+
 
 UPDATE dvobject
 SET authority=(SELECT dataset.authority
