@@ -1209,4 +1209,3 @@ You can replace the default dataset metadata fields that are displayed above fil
 ``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
 
 You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work. 
->>>>>>> develop
