@@ -123,6 +123,38 @@ There are several advanced options available for certain file types.
 - Image files: .jpg, .png, and .tif files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
 - SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
 
+.. _rsync_upload:
+
+rsync Upload
+------------
+
+rsync is typically used for synchronizing files and directories between two different systems, using SSH to connect rather than HTTP. Some Dataverse installations allow uploads using rsync, to facilitate large file transfers in a reliable and secure manner.
+
+File Upload Script
+~~~~~~~~~~~~~~~~~~
+
+An rsync-enabled Dataverse installation has a file upload process that differs from the traditional browser-based upload process you may be used to. In order to transfer your data to Dataverse's storage, you will need to complete the following steps:
+
+1. Create your dataset. In rsync-enabled Dataverse installations, you cannot upload files until the dataset creation process is complete. After you hit "Save Dataset" on the Dataset Creation page, you will be taken to the page for your dataset.
+
+2. On the dataset page, click the "+ Upload Files" button. This will open a box with instructions and a link to the file upload script.
+
+3. Make sure your files are ready for upload. You will need to have one directory that you can point the upload script to. All files in this directory and in any subdirectories will be uploaded. The directory structure will be preserved, and will be reproduced when your dataset is downloaded from Dataverse. Note that your data will be uploaded in the form of a data package, and each dataset can only host one such package. Be sure that all files you want to include are present before you upload.
+
+4. Download the rsync file upload script by clicking the "Download Script" button in the Upload Files instruction box. There are no requirements for where you save the script; put it somewhere you can find it. Downloading the upload script will put a temporary lock on your dataset to prepare it for upload. While your dataset is locked, you will not be able to delete or publish your dataset, or edit its metadata. Once you upload your files and Dataverse processes them, your dataset will be automatically unlocked and these disabled functions will be enabled again. If you have downloaded the script and locked your dataset, but you have then changed your mind and decided *not* to upload files, please contact Support about unlocking your dataset.
+
+5. To begin the upload process, you will need to run the script you downloaded. For this, you will have to go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to navigate to the directory where you saved the upload script, and run the command that the Upload Files instruction box provides. This will begin the upload script. Please note that this upload script will expire 7 days after you downloaded it. If it expires and you still need to use it, simply download the script from Dataverse again.
+
+**Note:** Unlike other operating systems, Windows does not come with rsync supported by default. We have not optimized this feature for Windows users, but you may be able to get it working if you install the right Unix utilities. (If you have found a way to get this feature working for you on Windows, you can contribute it to our project. Please reference our `Contributing to Dataverse <https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md>`_ document in the root of the source tree.)
+
+6. Follow the instructions provided by the upload script running in your terminal. It will direct you to enter the full path of the directory where your dataset files are located, and then it will start the upload process. Once you've initiated the upload, if you need to cancel it then you can do so by canceling the script running in your terminal window. If your upload gets interrupted, you can resume it from the same point later.
+
+7. Once the upload script completes its job, Dataverse will begin processing your data upload and running a checksum validation. This may take some time depending on the file size of your upload. During processing, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..." 
+
+8. Once processing is complete, you will be notified. At this point you can publish your dataset and your data will be available for download on the dataset page. **Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact Support.
+
+**Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact Support.
+
 .. _cloud-storage:
 
 Cloud Storage + Computing
@@ -211,26 +243,30 @@ This is where you will enable a particular Guestbook for your dataset, which is 
 
 .. _permissions:
 
-Permissions
-===========
+Roles & Permissions
+=====================
 
 Dataset-Level 
 -------------
 
-Dataset permissions can be found from the dataset by clicking the "Edit" button and from the dropdown list selecting "Permissions".
+Admins or curators of a dataset can assign roles and permissions to the users of that dataset. If you are an admin or curator of a dataset, then you can get to the dataset permissions page by clicking the "Edit" button, highlighting "Permissions" from the dropdown list, and clicking "Dataset".
 
-The dataset permissions page has two sections: Users/Groups and Roles. In the top, "Users/Groups" panel, you can find all the users and groups that have access to your dataset. To give someone access to view your unpublished dataset or edit your published or unpublished dataset, click on the "Assign Roles to Users/Groups" button in the Users/Groups section.
+When you access a dataset's permissions page, you will see two sections:
 
-The panel below that is "Roles", where you can find all the roles set up in your dataverse, which you can assign to users and groups. These roles are set at your dataverse-level and are displayed here at the dataset-level as a reference for when you are granting permission to users and/or groups.
+**Users/Groups:** Here you can assign roles to specific users or groups of users, determining which actions they are permitted to take on your dataset. You can also reference a list of all users who have roles assigned to them for your dataset and remove their roles if you please. Some of the users listed may have roles assigned at the dataverse level, in which case those roles can only be removed from the dataverse permissions page.
+
+**Roles:** Here you can reference a full list of roles that can be assigned to users of your dataset. Each role lists the permissions that it offers.
 
 File-Level
 ----------
 
-If you have restricted specific files, the file-level permissions is where you will need to go to grant users/groups access to
-specific restricted files. Dataset file permissions are located under Permissions in the Edit button on a dataset page. 
-The file permissions page has two sections: Users/Groups and Files.
+If you have restricted access to specific files in your dataset, you can grant specific users or groups access to those files while still keeping them restricted to the general public. If you are an admin or curator of a dataset, then you can get to the file-level permissions page by clicking the "Edit" button, highlighting "Permissions" from the dropdown list, and clicking "File".
 
-To give someone access to your restricted files, click on the Grant Access to Users/Groups button in the Users/Groups section. 
+When you access a dataset's file-level permissions page, you will see two sections:
+
+**Users/Groups:** Here you can see which users or groups have been granted access to which files. You can click the "Grant Access to Users/Groups" button to see a box where you can grant access to specific files within your dataset to specific users or groups. If any users have requested access to a file in your dataset, you can grant or reject their access request here.
+
+**Restricted Files:** In this section, you can see the same information, but broken down by each individual file in your dataset. For each file, you can click the "Assign Access" button to see a box where you can grant access to that file to specific users.
 
 .. _thumbnails-widgets:
 

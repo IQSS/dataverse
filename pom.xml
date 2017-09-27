@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.7.1</version>
+    <version>4.8</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -62,6 +62,11 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-bundle</artifactId>
             <version>${aws.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.passay</groupId>
+            <artifactId>passay</artifactId>
+            <version>1.1.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

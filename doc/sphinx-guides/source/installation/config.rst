@@ -31,15 +31,37 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Glassfish might be a compelling enough reason to front Glassfish with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
+Privacy Considerations
+++++++++++++++++++++++
+
+Out of the box, Dataverse will list email addresses of the "contacts" for datasets when users visit a dataset page and click the "Export Metadata" button. If you prefer to exclude email addresses of dataset contacts from metadata export, set :ref:`:ExcludeEmailFromExport <:ExcludeEmailFromExport>` to true.
+
 Additional Recommendations
 ++++++++++++++++++++++++++
+Run Glassfish as a User Other Than Root
++++++++++++++++++++++++++++++++++++++++
 
-To further enhance the security of your installation, we recommend taking the following specific actions:
+See the Glassfish section of :doc:`prerequisites` for details and init scripts for running Glassfish as non-root.
 
-- Configure Glassfish to run as a user other than root.
-- Remove /root/.glassfish/pass password files.
-- Store passwords as a hash rather than base64 encoded. Ideally this will be a salted hash, and use a strong hashing algorithm.
-- Use a strong administrator password so the hash cannot easily be cracked through dictionary attacks.
+Related to this is that you should remove ``/root/.glassfish/pass`` to ensure that Glassfish isn't ever accidentally started as root. Without the password, Glassfish won't be able to start as root, which is a good thing.
+
+Enforce Strong Passwords for User Accounts
+++++++++++++++++++++++++++++++++++++++++++
+
+Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the "Auth Modes: Local vs. Remote vs. Both" section below for more on login options.
+
+Even if you are satisfied with the out-of-the-box password complexity rules Dataverse ships with, for the "dataverseAdmin" account you should use a strong password so the hash cannot easily be cracked through dictionary attacks.
+
+Password complexity rules for "builtin" accounts can be adjusted with a variety of settings documented below. Here's a list:
+
+- :ref:`:PVMinLength`
+- :ref:`:PVMaxLength`
+- :ref:`:PVNumberOfConsecutiveDigitsAllowed`
+- :ref:`:PVCharacterRules`
+- :ref:`:PVNumberOfCharacteristics`
+- :ref:`:PVDictionaries`
+- :ref:`:PVGoodStrength`
+- :ref:`:PVCustomPasswordResetAlertMessage`
 
 Solr
 ----
@@ -278,8 +300,8 @@ Once you have acquired the keys, they need to be added to``credentials``. The fo
 | ``[default]``
 | ``aws_access_key_id = <insert key, no brackets>``
 | ``aws_secret_access_key = <insert secret key, no brackets>``
-|
-Place this file ina a folder named ``.aws`` under the home directory for the user running your dataverse installation.
+
+Place this file in a folder named ``.aws`` under the home directory for the user running your dataverse installation.
 
 Setup aws via command line tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -648,7 +670,7 @@ Please note that if you're having any trouble sending email, you can refer to "T
 See :ref:`Branding Your Installation` above.
 
 :LogoCustomizationFile
-++++++++++++++++++++++++
+++++++++++++++++++++++
 
 See :ref:`Branding Your Installation` above.
 
@@ -764,6 +786,9 @@ Specify a URL where users can read your Privacy Policy, linked from the bottom o
 Specify a URL where users can read your API Terms of Use.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
+
+
+.. _:ExcludeEmailFromExport:
 
 :ExcludeEmailFromExport
 +++++++++++++++++++++++
@@ -993,6 +1018,110 @@ Dataverse calculates checksums for uploaded files so that users can determine if
 
 The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
 
+.. _:PVMinLength:
+
+:PVMinLength
+++++++++++++
+
+Password policy setting for builtin user accounts: a password's minimum valid character length. The default is 6.
+
+``curl -X PUT -d 6 http://localhost:8080/api/admin/settings/:PVMinLength``
+
+
+.. _:PVMaxLength:
+
+:PVMaxLength
+++++++++++++
+
+Password policy setting for builtin user accounts: a password's maximum valid character length.
+
+``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:PVMaxLength``
+
+
+.. _:PVNumberOfConsecutiveDigitsAllowed:
+
+:PVNumberOfConsecutiveDigitsAllowed
++++++++++++++++++++++++++++++++++++
+
+By default, passwords can contain an unlimited number of digits in a row. However, if your password policy specifies otherwise (e.g. only four digits in a row are allowed), then you can issue the following curl command to set the number of consecutive digits allowed (this example uses 4):
+
+``curl -X PUT -d 4 http://localhost:8080/api/admin/settings/:PVNumberOfConsecutiveDigitsAllowed``
+
+.. _:PVCharacterRules:
+
+:PVCharacterRules
++++++++++++++++++
+
+Password policy setting for builtinuser accounts: dictates which types of characters can be required in a password. This setting goes hand-in-hand with :ref:`:PVNumberOfCharacteristics`. The default setting contains two rules:
+
+- one letter
+- one digit
+
+The default setting above is equivalent to specifying "Alphabetical:1,Digit:1".
+
+By specifying "UpperCase:1,LowerCase:1,Digit:1,Special:1", for example, you can put the following four rules in place instead:
+
+- one uppercase letter
+- one lowercase letter
+- one digit
+- one special character
+
+If you have implemented 4 different character rules in this way, you can also optionally increase ``:PVNumberOfCharacteristics`` to as high as 4. However, please note that ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of character rules or you will see the error, "Number of characteristics must be <= to the number of rules".
+
+Also note that the Alphabetical setting should not be used in tandem with the UpperCase or LowerCase settings. The Alphabetical setting encompasses both of those more specific settings, so using it with them will cause your password policy to be unnecessarily confusing, and potentially easier to bypass.
+
+``curl -X PUT -d 'UpperCase:1,LowerCase:1,Digit:1,Special:1' http://localhost:8080/api/admin/settings/:PVCharacterRules``
+
+``curl -X PUT -d 3 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
+
+.. _:PVNumberOfCharacteristics:
+
+:PVNumberOfCharacteristics
+++++++++++++++++++++++++++
+
+Password policy setting for builtin user accounts: the number indicates how many of the character rules defined by ``:PVCharacterRules`` are required as part of a password. The default is 2. ``:PVNumberOfCharacteristics`` cannot be set to a number higher than the number of rules or you will see the error, "Number of characteristics must be <= to the number of rules".
+
+``curl -X PUT -d 2 http://localhost:8080/api/admin/settings/:PVNumberOfCharacteristics``
+
+
+.. _:PVDictionaries:
+
+:PVDictionaries
++++++++++++++++
+
+Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password. ``/usr/share/dict/words`` is suggested and shown modified below to not contain words 3 letters or less. You are free to choose a different dictionary. By default, no dictionary is checked.
+
+``DIR=THE_PATH_YOU_WANT_YOUR_DICTIONARY_TO_RESIDE``
+``sed '/^.\{,3\}$/d' /usr/share/dict/words > $DIR/pwdictionary``
+``curl -X PUT -d "$DIR/pwdictionary" http://localhost:8080/api/admin/settings/:PVDictionaries``
+
+
+.. _:PVGoodStrength:
+
+:PVGoodStrength
++++++++++++++++
+
+Password policy setting for builtin user accounts: passwords of equal or greater character length than the :PVGoodStrength setting are always valid, regardless of other password constraints.
+
+``curl -X PUT -d 20 http://localhost:8080/api/admin/settings/:PVGoodStrength``
+
+Recommended setting: 20.
+
+.. _:PVCustomPasswordResetAlertMessage:
+
+:PVCustomPasswordResetAlertMessage
+++++++++++++++++++++++++++++++++++
+
+Changes the default info message displayed when a user is required to change their password on login. The default is:
+
+``{0} Reset Password{1} – Our password requirements have changed. Please pick a strong password that matches the criteria below.``
+
+Where the {0} and {1} denote surrounding HTML **bold** tags. It's recommended to put a single space before your custom message for better appearance (as in the default message above). Including the {0} and {1} to bolden part of your message is optional.
+
+Customize the message using the following curl command's syntax:
+
+``curl -X PUT -d '{0} Action Required:{1} Your current password does not meet all requirements. Please enter a new password meeting the criteria below.' http://localhost:8080/api/admin/settings/:PVCustomPasswordResetAlertMessage``
+
 :ShibPassiveLoginEnabled
 ++++++++++++++++++++++++
 
@@ -1061,11 +1190,23 @@ This setting is experimental and to be used with the Data Capture Module (DCM). 
 :DownloadMethods
 ++++++++++++++++
 
-This setting is experimental and related to Repository Storage Abstraction Layer (RSAL). As of this writing it has no effect.
+This setting is experimental and related to Repository Storage Abstraction Layer (RSAL).
+
+``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
 
 :GuestbookResponsesPageDisplayLimit
 +++++++++++++++++++++++++++++++++++
 
 Limit on how many guestbook entries to display on the guestbook-responses page. By default, only the 5000 most recent entries will be shown. Use the standard settings API in order to change the limit. For example, to set it to 10,000, make the following API call: 
 
-``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit`` 
+``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
+
+:CustomDatasetSummaryFields
++++++++++++++++++++++++++++
+
+You can replace the default dataset metadata fields that are displayed above files table on the dataset page with a custom list separated by commas using the curl command below.
+
+``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
+
+You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work. 
+>>>>>>> develop

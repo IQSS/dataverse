@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -81,6 +82,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     boolean authenticationFailed = false;
     private AuthenticationProvider authProvider;
+    private PasswordValidatorServiceBean passwordValidatorService;
 
     /**
      * Attempts to init the page. Redirects the user to {@code /} in case the
@@ -188,7 +190,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String convertExistingAccount() {
-        BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc);
+        BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc, passwordValidatorService);
         AuthenticationRequest auReq = new AuthenticationRequest();
         final List<CredentialsAuthenticationProvider.Credential> creds = biap.getRequiredCredentials();
         auReq.putCredential(creds.get(0).getTitle(), getUsername());

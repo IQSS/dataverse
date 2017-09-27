@@ -99,8 +99,8 @@ public class SubmitDatasetForReviewCommandTest {
                     }
 
                     @Override
-                    public void addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
-                        
+                    public DatasetLock addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
+                        return null;
                     }
                     
                 };

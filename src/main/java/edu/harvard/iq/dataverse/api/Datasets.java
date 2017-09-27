@@ -796,6 +796,14 @@ public class Datasets extends AbstractApiBean {
                     ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
                     );
         }
+        //---------------------------------------
+        // (1A) Make sure that the upload type is not rsync
+        // ------------------------------------- 
+        
+        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+            return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " contains " + SystemConfig.FileUploadMethods.RSYNC + ". Please use rsync file upload.");
+        }
+        
         
         // -------------------------------------
         // (2) Get the Dataset Id
