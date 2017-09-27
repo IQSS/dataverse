@@ -390,6 +390,14 @@ Create a Dataverse App within the Minishift Project
 Check Status of Dataverse Deployment to Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+``oc status``
+
+Once images have been downloaded from Docker Hub, the output below will change from ``Pulling`` to ``Pulled``.
+
+``oc get events | grep Pull``
+
+This is a deep dive:
+
 ``oc get all``
 
 Review Logs of Dataverse Deployment to Minishift
@@ -406,11 +414,23 @@ From the ``rsh`` prompt you could run something like the following to build conf
 
 ``curl -L localhost:8080``
 
+Make the Dataverse App Available Via HTTP
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Make the Dataverse App Available to Your Browser
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The following curl command is expected to fail until you "expose" the HTTP service.
+
+``curl http://dataverse-glassfish-service-project1.192.168.99.102.nip.io/api/info/version``
+
+Expose the Dataverse web service:
 
 ``oc expose svc/dataverse-glassfish-service``
+
+Make Sure the Dataverse API is Working
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This should show a version number:
+
+``curl http://dataverse-glassfish-service-project1.192.168.99.102.nip.io/api/info/version``
 
 Log into Minishift and Visit Dataverse in your Browser
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -425,6 +445,8 @@ You should be able to log in with username "dataverseAdmin" and password "admin"
 
 Cleaning up
 ~~~~~~~~~~~
+
+Note that it can take a few minutes for the deletion of a project to be complete and there doesn't seem to be a great way to know when it's safe to run ``oc new-project project1`` again, slowing down the development feedback loop. FIXME: Find a way to iterate faster.
 
 ``oc delete project project1``
 

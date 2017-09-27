@@ -34,19 +34,26 @@ RUN find /tmp
 #RUN exitEarly
 
 # Install Glassfish 4.1
+
 RUN cd /tmp \ 
     && unzip glassfish-4.1.zip \
     && mv glassfish4 /usr/local \
     && cd /usr/local/glassfish4/glassfish/modules \
     && rm weld-osgi-bundle.jar \
-    #&& rm weld-osgi-bundle.jar
-    #&& wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.10.SP1/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar \
-    #&& cp /tmp/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar . \
     && cp /tmp/weld-osgi-bundle-2.2.10.Final-glassfish4.jar . \
-    #&& cp /tmp/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar .
-    #&& echo "$GLASSFISH_DOWNLOAD_SHA1 weld-osgi-bundle-2.2.10.SP1-glassfish4.jar" | sha1sum -c - \
-    #&& rm -rf /usr/local/glassfish4/glassfish/domains/domain1 \
-    && rm /tmp/glassfish-4.1.zip 
+    #FIXME: Patch Grizzly too!
+    && echo "Done installing and patching Glassfish"
+
+RUN chmod g=u /etc/passwd
+
+RUN mkdir -p /home/glassfish
+RUN chgrp -R 0 /home/glassfish && \
+    chmod -R g=u /home/glassfish
+
+RUN mkdir -p /usr/local/glassfish4
+RUN chgrp -R 0 /usr/local/glassfish4 && \
+    chmod -R g=u /usr/local/glassfish4
+
 
 #RUN exitEarlyBeforeJq
 RUN yum -y install epel-release
@@ -62,14 +69,6 @@ RUN yum install -y jq
 # Customized persistence xml to avoid database recreation
 #RUN mkdir -p /tmp/WEB-INF/classes/META-INF/ 
 #COPY WEB-INF/classes/META-INF/persistence.xml /tmp/WEB-INF/classes/META-INF/
-
-# Install Dataverse WAR
-RUN cd ~ \
-#    && wget https://github.com/IQSS/dataverse/releases/download/v4.7/dvinstall.zip \
-    && cp /tmp/dvinstall.zip . \
-    && unzip dvinstall.zip
-    #&& unzip dvinstall.zip \
-    #&& jar -uf dvinstall/dataverse.war -C /tmp/ /WEB-INF/classes/META-INF/persistence.xml
 
 # Install iRods iCommands
 #RUN  cd /tmp \

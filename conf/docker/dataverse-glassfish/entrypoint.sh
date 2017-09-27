@@ -4,7 +4,17 @@
 # for dependent services (Rserve, Postgres, Solr) to start before
 # initializing Glassfish.
 
-
+echo "whoami before..."
+whoami
+if ! whoami &> /dev/null; then
+  if [ -w /etc/passwd ]; then
+    # Make `whoami` return the glassfish user.  # See https://docs.openshift.org/3.6/creating_images/guidelines.html#openshift-origin-specific-guidelines
+    # Fancy bash magic from https://github.com/RHsyseng/container-rhel-examples/blob/1208dcd7d4f431fc6598184dba6341b9465f4197/starter-arbitrary-uid/bin/uid_entrypoint#L4
+    echo "${USER_NAME:-glassfish}:x:$(id -u):0:${USER_NAME:-glassfish} user:/home/glassfish:/bin/bash" >> /etc/passwd
+  fi
+fi
+echo "whoami after"
+whoami
 
 set -e
 
@@ -98,8 +108,11 @@ if [ "$1" = 'dataverse' ]; then
         exit 1 
     fi
     
-    echo changing to dvinstall directory
-    cd ~/dvinstall
+    GLASSFISH_INSTALL_DIR="/usr/local/glassfish4"
+    cd $GLASSFISH_INSTALL_DIR
+    cp /tmp/dvinstall.zip $GLASSFISH_INSTALL_DIR
+    unzip dvinstall.zip
+    cd dvinstall
     echo Copying the non-interactive file into place
     cp /tmp/default.config .
     echo Looking at first few lines of default.config
