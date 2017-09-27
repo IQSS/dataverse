@@ -21,11 +21,6 @@ The National Data Service (NDS) is community-driven effort guided by the Nationa
 
 Please note that the version of Dataverse in NDS Labs Workbench may lag behind the latest release. Craig Willis from NDS Labs did an excellent job of adding Dataverse 4 to NDS Labs Workbench and the Dataverse team hopes to some day take over the creation of Docker images so the latest version of Dataverse can be evaluated in the workbench.
 
-OpenShift (for Testing Only)
-++++++++++++++++++++++++++++
-
-If you would like to kick the tires on your own installation of Dataverse, you can install it for free on OpenShift Online, a platform as a service (PaaS) offering from Red Hat. For details, please see the :doc:`openshift` section.
-
 Vagrant (for Testing Only)
 ++++++++++++++++++++++++++
 

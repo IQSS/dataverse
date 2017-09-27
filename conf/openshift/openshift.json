@@ -140,6 +140,11 @@
                     "value": "pgDatabaseValue"
                   }
                 ],
+                "resources": {
+                  "limits": {
+                    "memory": "256Mi"
+                  }
+                },
                 "imagePullPolicy": "IfNotPresent",
                 "securityContext": {
                   "capabilities": {},
@@ -155,6 +160,11 @@
                     "protocol": "TCP"
                   }
                 ],
+                "resources": {
+                  "limits": {
+                    "memory": "256Mi"
+                  }
+                },
                 "imagePullPolicy": "IfNotPresent",
                 "securityContext": {
                   "capabilities": {},
