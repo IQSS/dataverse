@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
@@ -1087,7 +1088,17 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
                 
         // Save the NEW files permanently: 
-        ingestService.addFiles(workingVersion, newFiles);
+        try{
+        for(DataFile dataFile : newFiles){
+            
+        commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest()));
+        }
+        }
+        catch(CommandException cmdex)
+        {
+            logger.info("Command exception:"+cmdex.getMessage());
+        }
+        //ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false; 
         
         if (workingVersion.getId() == null  || datasetUpdateRequired) {

@@ -124,6 +124,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         dsv.setLastUpdateTime(createDate);
         theDataset.setModificationTime(createDate);
         for (DataFile dataFile: theDataset.getFiles() ){
+            dataFile.setOwner(theDataset);
             dataFile.setCreator((AuthenticatedUser)  getRequest().getUser());
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
@@ -163,7 +164,11 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             
         }
         logger.fine("Saving the files permanently.");
-        ctxt.ingest().addFiles(dsv, theDataset.getFiles());
+        //ctxt.ingest().addFiles(dsv, theDataset.getFiles());
+        for(DataFile dataFile: theDataset.getFiles()){
+        ctxt.engine().submit(new CreateDataFileCommand(dataFile,dsv,getRequest()));
+        
+        }
         logger.log(Level.FINE,"doiProvider={0} protocol={1}  importType={2}  GlobalIdCreateTime=={3}", new Object[]{doiProvider, protocol,  importType, theDataset.getGlobalIdCreateTime()});
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
         if ((importType == null || importType.equals(ImportType.NEW))
