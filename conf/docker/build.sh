@@ -10,6 +10,7 @@ echo Images will be pushed to Docker Hub with the tag $TAG
 docker build -t iqss/dataverse-solr:$TAG -f solr/Dockerfile ../../conf
 docker push iqss/dataverse-solr:$TAG
 # TODO: Think about if we really need dataverse.war because it's in dvinstall.zip.
+# FIXME: Automate the building of dataverse.war and dvinstall.zip. Think about https://github.com/IQSS/dataverse/issues/3974 and https://github.com/IQSS/dataverse/pull/3975
 cp ../../target/dataverse*.war dataverse-glassfish/dataverse.war
 cp ../../scripts/installer/dvinstall.zip dataverse-glassfish
 cp ../../doc/sphinx-guides/source/_static/util/default.config dataverse-glassfish
