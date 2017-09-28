@@ -949,15 +949,6 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
     
-    
-    public String getThumbnailString() {
-        DatasetThumbnail datasetThumbnail = FileUtil.getThumbnail(this);
-        if (datasetThumbnail == null) {
-            return null;
-        }
-        return datasetThumbnail.getBase64image();
-    }
-    
 
 } // end of class
     

@@ -278,6 +278,8 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String thumbnailString = null; 
+    
+    private boolean pageLoadInProgress = true;
 
     // This is the Dataset-level thumbnail; 
     // it's either the thumbnail of the designated datafile, 
@@ -697,7 +699,9 @@ public class DatasetPage implements java.io.Serializable {
     private Map<Long, String> datafileThumbnailsMap = new HashMap<>();
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
-        
+        if (pageLoadInProgress) {
+            return false;
+        }
         // new and optimized logic: 
         // - check download permission here (should be cached - so it's free!)
         // - only then ask the file service if the thumbnail is available/exists.
@@ -720,12 +724,11 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
      
-        
-        
+        //logger.info("isThumbnailAvailable() called on file "+dataFileId);
+        //try{Thread.sleep(1000L);}catch(Exception e){}
         String thumbnailAsBase64 = ImageThumbConverter.getImageThumbnailAsBase64(fileMetadata.getDataFile(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         
         
-        //if (datafileService.isThumbnailAvailable(fileMetadata.getDataFile())) {
         if (!StringUtil.isEmpty(thumbnailAsBase64)) {
             datafileThumbnailsMap.put(dataFileId, thumbnailAsBase64);
             return true;
@@ -737,8 +740,23 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String getDataFileThumbnailAsBase64(FileMetadata fileMetadata) {
+        //logger.info("THUMBNAIL REQUESTED FOR DATAFILE "+fileMetadata.getDataFile().getId());
         return datafileThumbnailsMap.get(fileMetadata.getDataFile().getId());
     }
+    
+    public void enableThumbnails() {
+        pageLoadInProgress = false;
+        //logger.info("ENABLED thumbnails on the page.");
+    }
+    
+    public boolean isPageLoadInProgress() {
+        return pageLoadInProgress;
+    }
+    
+    public void setPageLoadInProgress(boolean enabled) {
+        pageLoadInProgress = enabled; 
+    }
+    
     
     // Another convenience method - to cache Update Permission on the dataset: 
     public boolean canUpdateDataset() {

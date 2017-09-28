@@ -23,6 +23,7 @@
                 style="border-right:0;" 
                 class="btn btn-default" 
                 data-target="#map-modal-#{fileMetadata.id}"
+                disabled="#{DatasetPage.pageLoadInProgress ? 'disabled' : ''}"
                 data-toggle="modal">
             <span class="glyphicon glyphicon-map-marker"/> #{bundle['preview']}
         </button>
@@ -55,8 +56,8 @@
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <li><!-- Two Ravens -->
                 <h:commandLink rendered="#{!downloadPopupRequired}"
-                               styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                               styleClass="#{(fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress) ? 'disabled' : ''}"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress) ? 'disabled' : ''}"
                                action="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
                     #{bundle['file.explore.twoRavens']} 
                 </h:commandLink>
@@ -64,20 +65,21 @@
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
                                process="@this"
                                update="@widgetVar(downloadPopup)"
+                               disabled="#{DatasetPage.pageLoadInProgress}"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                     #{bundle['file.explore.twoRavens']} 
                 </p:commandLink>                          
             </li>
             <li><!-- WorldMap Explore -->
                 <h:commandLink rendered="#{!downloadPopupRequired}"
-                               styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                               styleClass="#{(fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress) ? 'disabled' : ''}"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress) ? 'disabled' : ''}"
                                action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
                     #{bundle['file.mapData.worldMap']}
                 </h:commandLink>
                 <p:commandLink rendered="#{downloadPopupRequired}"
-                               styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                               disabled="#{fileMetadata.dataFile.ingestInProgress}"
+                               styleClass="#{(fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress) ? 'disabled' : ''}"
+                               disabled="#{fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress}"
                                process="@this"
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
                                update="@widgetVar(downloadPopup)"
@@ -92,8 +94,8 @@
         <!-- TwoRavens Explore button ONLY ... not WorldMap -->
         <h:commandLink rendered="#{!downloadPopupRequired}"
                        type="button" 
-                       styleClass="btn btn-default #{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                       disabled="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                       styleClass="btn btn-default #{(fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress) ? 'disabled' : ''}"
+                       disabled="#{(fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress) ? 'disabled' : ''}"
                        action="#{fileDownloadService.startExploreDownloadLink( guestbookResponse, fileMetadata )}" target="_blank">
             <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
         </h:commandLink>
@@ -102,7 +104,7 @@
                        process="@this"
                        action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
                        update="@widgetVar(downloadPopup)"
-                       disabled="#{fileMetadata.dataFile.ingestInProgress}"
+                       disabled="#{fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress}"
                        oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
         </p:commandLink>
@@ -112,8 +114,8 @@
         <!-- WorldMap Explore button ONLY ... not TwoRavens -->
         <h:commandLink pt:role="button" rendered="#{!downloadPopupRequired}"
                        type="button" 
-                       styleClass="btn btn-default #{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}" 
-                       disabled="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}" 
+                       styleClass="btn btn-default #{(fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress) ? 'disabled' : ''}" 
+                       disabled="#{(fileMetadata.dataFile.ingestInProgress  or DatasetPage.pageLoadInProgress) ? 'disabled' : ''}" 
                        title="Explore" action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
         </h:commandLink>
@@ -122,7 +124,7 @@
                        process="@this"
                        action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
                        update="@widgetVar(downloadPopup)"
-                       disabled="#{fileMetadata.dataFile.ingestInProgress}"
+                       disabled="#{fileMetadata.dataFile.ingestInProgress or DatasetPage.pageLoadInProgress}"
                        oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
         </p:commandLink>
@@ -139,6 +141,7 @@
                
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) }"
                    type="button" styleClass="btn btn-default"
+                   disabled="#{DatasetPage.pageLoadInProgress}"
                    process="@this"
                    actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'Download')}">
         <!-- non-tabular data file: -->
@@ -148,6 +151,7 @@
 
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and downloadPopupRequired }"
                    type="button" styleClass="btn btn-default"
+                   disabled="#{DatasetPage.pageLoadInProgress}"
                    process="@this"
                    action="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata)}"
                    update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
@@ -157,7 +161,7 @@
 
     <div class="btn-group" jsf:rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and fileMetadata.dataFile.tabularData }">
         <!-- Download Dropdown -->
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+        <button type="button" disabled="#{DatasetPage.pageLoadInProgress ? 'disabled' : ''}" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
         </button>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
@@ -285,7 +289,7 @@
                    process="@this"
                    actionListener="#{fileDownloadHelper.requestAccess(fileMetadata.dataFile)}"
                    update="@this"
-                   disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+                   disabled="#{DatasetPage.pageLoadInProgress or fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
     </p:commandLink>                        
     
@@ -298,11 +302,12 @@
                    actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
                    onclick="PF('requestAccessPopup').show()"
                    id="requestAccessPopupButton"
-                   disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+                   disabled="#{DatasetPage.pageLoadInProgress or fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
         <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
     </p:commandLink>       
     <p:commandLink type="button" 
                    styleClass="btn btn-default"
+                   disabled="#{DatasetPage.pageLoadInProgress}"
                    process="@this"
                    rendered="#{!fileDownloadHelper.session.user.authenticated 
                                                                           and !fileMetadata.datasetVersion.deaccessioned
