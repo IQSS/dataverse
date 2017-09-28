@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
+import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
@@ -71,11 +73,10 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
        
-       // IngestUtil.checkForDuplicateFileNamesFinal(theDataFile.getOwner().get,theDataFile);
+                IngestUtil.checkForDuplicateFileNamesFinal(version,Collections.singletonList(theDataFile));
 //                DatasetVersion version= theDataFile.getOwner().getLatestVersion();
                 Dataset dataset = version.getDataset();
-//                     IngestUtil.checkForDuplicateFileNamesFinal(version,theDataFile);
-                //for (DataFile dataFile : newFiles) {
+                
                     String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + theDataFile.getStorageIdentifier();
 
                     // These are all brand new files, so they should all have 
@@ -83,8 +84,6 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
                     FileMetadata fileMetadata = theDataFile.getFileMetadatas().get(0);
                     String fileName = fileMetadata.getLabel();
                     
-                    // temp dbug line
-                    //System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());                    
                     
                     // Make sure the file is attached to the dataset and to the version, if this 
                     // hasn't been done yet:
@@ -149,40 +148,10 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
                         }
 
                         logger.fine("Successfully created a new storageIO object.");
-                        /* 
-                         This commented-out code demonstrates how to copy bytes
-                         from a local InputStream (or a readChannel) into the
-                         writable byte channel of a Dataverse DataAccessIO object:
-                        */
-                        /*
-                        storageIO.open(DataAccessOption.WRITE_ACCESS);
-                                                
-                        writeChannel = storageIO.getWriteChannel();
-                        readChannel = new FileInputStream(tempLocationPath.toFile()).getChannel();
-                                                
-                        long bytesPerIteration = 16 * 1024; // 16K bytes
-                        long start = 0;
-                        while ( start < readChannel.size() ) {
-                            readChannel.transferTo(start, bytesPerIteration, writeChannel);
-                            start += bytesPerIteration;
-                        }
-                        */
-                        
-                        /* 
-                            But it's easier to use this convenience method from the
-                            DataAccessIO: 
-                            
-                            (if the underlying storage method for this file is 
-                            local filesystem, the DataAccessIO will simply copy 
-                            the file using Files.copy, like this:
-                        
-                            Files.copy(tempLocationPath, storageIO.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-                        */
                         
                         dataAccess.savePath(tempLocationPath);
 
-                        // Set filesize in bytes
-                        // 
+                        // Set filesize in bytes 
                         theDataFile.setFilesize(dataAccess.getSize());
                         savedSuccess = true;
                         logger.fine("Success: permanently saved file "+theDataFile.getFileMetadata().getLabel());
