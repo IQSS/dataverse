@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.sql.Timestamp;
@@ -32,7 +33,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
+import org.apache.commons.lang.RandomStringUtils;
 
 /**
  *
@@ -53,7 +56,9 @@ public class DataFileServiceBean implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     UserServiceBean userService; 
-
+    @EJB
+    SettingsServiceBean settingsService;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -1444,6 +1449,75 @@ public class DataFileServiceBean implements java.io.Serializable {
         } catch (Exception ex) {
             return new ArrayList<>();
         }
+    }
+    
+    
+    
+    public String generateDatasetIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        switch (doiIdentifierType) {
+            case "randomString":
+                return generateIdentifierAsRandomString(datafile, idServiceBean);
+            case "sequentialNumber":
+                return generateIdentifierAsSequentialNumber(datafile, idServiceBean);
+            default:
+                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
+                return generateIdentifierAsRandomString(datafile, idServiceBean);
+        }
+    }
+    
+    private String generateIdentifierAsRandomString(DataFile datafile, IdServiceBean idServiceBean) {
+
+        String identifier = null;
+        do {
+            identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+
+        return identifier;
+    }
+
+    private String generateIdentifierAsSequentialNumber(DataFile datafile, IdServiceBean idServiceBean) {
+        
+        String identifier; 
+        do {
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
+            query.execute();
+            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // because the stored procedure hasn't been created in the database?
+            if (identifierNumeric == null) {
+                return null; 
+            }
+            identifier = identifierNumeric.toString();
+        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+        
+        return identifier;
+    }
+
+    /**
+     * Check that a identifier entered by the user is unique (not currently used
+     * for any other study in this Dataverse Network) alos check for duplicate
+     * in EZID if needed
+     * @param userIdentifier
+     * @param datafile
+     * @param idServiceBean
+     * @return   */
+    public boolean isIdentifierUniqueInDatabase(String userIdentifier, DataFile datafile, IdServiceBean idServiceBean) {
+        String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
+        query += " and d.protocol ='" + datafile.getProtocol() + "'";
+        query += " and d.authority = '" + datafile.getAuthority() + "'";
+        boolean u = em.createQuery(query).getResultList().isEmpty();
+            
+        try{
+            if (idServiceBean.alreadyExists(datafile)) {
+                u = false;
+            }
+        } catch (Exception e){
+            //we can live with failure - means identifier not found remotely
+        }
+
+       
+        return u;
     }
     
 }

@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -24,6 +25,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -94,6 +96,22 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
                         theDataFile.getFileMetadata().setDatasetVersion(version);
                         dataset.getFiles().add(theDataFile);
                     }
+                    
+                    IdServiceBean idServiceBean = IdServiceBean.getBean(theDataFile.getProtocol(),ctxt);
+                    if(theDataFile.getIdentifier()==null || theDataFile.getIdentifier().isEmpty())
+                    {
+                        theDataFile.setIdentifier(ctxt.files().generateDatasetIdentifier(theDataFile, idServiceBean));
+                    }
+                    String nonNullDefaultIfKeyNotFound = "";
+                    String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+                    String    authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+                    String  doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
+                    String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+                    if (theDataFile.getProtocol()==null) theDataFile.setProtocol(protocol);
+                    if (theDataFile.getAuthority()==null) theDataFile.setAuthority(authority);
+                    if (theDataFile.getDoiSeparator()==null) theDataFile.setDoiSeparator(doiSeparator);
+                    
+                    
                     
                     boolean metadataExtracted = false;
                     

@@ -42,10 +42,17 @@ public class GlobalId implements java.io.Serializable {
         this.identifier = identifier;
     }
 
-    public GlobalId(Dataset dataset){
-        this.authority = dataset.getAuthority();
-        this.protocol = dataset.getProtocol();
-        this.identifier = dataset.getIdentifier();
+//    public GlobalId(Dataset dataset){
+//        this.authority = dataset.getAuthority();
+//        this.protocol = dataset.getProtocol();
+//        this.identifier = dataset.getIdentifier();
+//    }
+    
+    public GlobalId(DvObject dvObject)
+    {
+        this.authority = dvObject.getAuthority();
+        this.protocol = dvObject.getProtocol();
+        this.identifier = dvObject.getIdentifier(); 
     }
         
     private String protocol;
