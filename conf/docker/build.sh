@@ -1,11 +1,32 @@
 #!/bin/sh
 # Creates images and pushes them to Docker Hub.
-GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-# FIXME: Make this script dynamic so you can switch the tag to the branch you're on or a tagged release.
-TAG=kick-the-tires
-# kick-the-tires should be relatively stable. Push to tags with branch names to iterate on the images.
-#TAG=$GIT_BRANCH
-echo Images will be pushed to Docker Hub with the tag $TAG
+# The "kick-the-tires" tag should be relatively stable. No breaking changes.
+# Push to custom tags or tags based on branch names to iterate on the images.
+if [ -z "$1" ]; then
+  echo "No argument supplied. Please specify \"branch\" or \"custom my-custom-tag\" for experiments or \"stable\" if your change won't break anything."
+  exit 1
+fi
+
+if [ "$1" == 'branch' ]; then
+  echo "We'll push a tag to the branch you're on."
+  GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  TAG=$GIT_BRANCH
+elif [ "$1" == 'stable' ]; then
+  echo "We'll push a tag to the most stable tag (which isn't saying much!)."
+  TAG=kick-the-tires
+elif [ "$1" == 'custom' ]; then
+  if [ -z "$1" ]; then
+    echo "You must provide a custom tag as the second argument."
+    exit 1
+  else
+    echo "We'll push a custom tag."
+    TAG=$2
+  fi
+else
+  echo "Unexpected argument: $1. Exiting. Run with no arguments for help."
+  exit 1
+fi
+echo Images will be pushed to Docker Hub with the tag \"$TAG\".
 # Use "conf" directory as context so we can copy schema.xml into Solr image.
 docker build -t iqss/dataverse-solr:$TAG -f solr/Dockerfile ../../conf
 docker push iqss/dataverse-solr:$TAG
