@@ -38,6 +38,17 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         metadata.put("_target", getTargetUrl(datasetIn));
         return metadata;
     }
+    
+//     @Override
+//    public HashMap<String, String> getMetadataFromStudyForCreateIndicator(DvObject dvObjectIn) {
+//        logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
+//        HashMap<String, String> metadata = new HashMap<>();
+//
+//        metadata = addBasicMetadata(dvObjectIn, metadata);
+//        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
+//        metadata.put("_target", getTargetUrl(dvObjectIn));
+//        return metadata;
+//    }
 
     protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
@@ -65,6 +76,39 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         
         return metadata;
     }
+    
+//    protected HashMap<String, String> addBasicMetadata(DvObject dvObject, HashMap<String, String> metadata){
+//        
+//        DataFile df=null;
+//        Dataset ds=null;
+//        if(dvObject instanceof DataFile ){
+//            df=(DataFile)dvObject;
+//            String authorString= df.getOwner().getLatestVersion().getAuthorsStr();
+//        }
+//        else if(dvObject instanceof Dataset)
+//        {
+//            
+//        }
+//              
+// 
+//                datasetIn.getLatestVersion().getAuthorsStr();
+//
+//        if (authorString.isEmpty()) {
+//            authorString = ":unav";
+//        }
+//
+//        String producerString = dataverseService.findRootDataverse().getName();
+//
+//        if(producerString.isEmpty()) {
+//            producerString = ":unav";
+//        }
+//        metadata.put("datacite.creator", authorString);
+//        metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
+//        metadata.put("datacite.publisher", producerString);
+//        
+//        
+//        return metadata;
+//    }
 
     @Override
     public HashMap<String, String> getMetadataFromDatasetForTargetURL(Dataset datasetIn) {
@@ -78,11 +122,17 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         logger.log(Level.FINE,"getTargetUrl");
         return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalId();
     }
-
-    @Override
+//
+//    @Override
     public String getIdentifierFromDataset(Dataset dataset) {
         logger.log(Level.FINE,"getIdentifierFromDataset");
         return dataset.getGlobalId();
+    }
+    
+    @Override
+    public String getIdentifierFromDvObject(DvObject dvObject)
+    {
+        return dvObject.getGlobalId();
     }
     
     protected String generateYear (Dataset datasetIn){

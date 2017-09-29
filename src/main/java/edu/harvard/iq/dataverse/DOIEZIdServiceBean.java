@@ -244,11 +244,46 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
 
     @Override
     public boolean alreadyExists(DvObject dvObject) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        logger.log(Level.FINE,"alreadyExists");
+        try {
+            HashMap<String, String> result = ezidService.getMetadata(getIdentifierFromDvObject(dvObject));            
+            return result != null && !result.isEmpty();
+            // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
+        } catch (EZIDException e ){
+            //No such identifier is treated as an exception
+            //but if that is the case then we want to just return false
+            if (e.getLocalizedMessage().contains("no such identifier")){
+                return false;
+            }
+            logger.log(Level.WARNING, "alreadyExists failed");
+            logger.log(Level.WARNING, "String {0}", e.toString());
+            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.WARNING, "cause", e.getCause());
+            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public String createIdentifier(DvObject dvObject) throws Throwable {
+//         logger.log(Level.FINE,"createIdentifier");
+//        String identifier = getIdentifierFromDvObject(dvObject);
+//        HashMap<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
+//        metadata.put("datacite.resourcetype", "Dataset");
+//        metadata.put("_status", "reserved");
+//        try {
+//            String retString = ezidService.createIdentifier(identifier, metadata);
+//            logger.log(Level.FINE, "create DOI identifier retString : " + retString);
+//            return retString;
+//        } catch (EZIDException e) {
+//            logger.log(Level.WARNING, "Identifier not created: create failed");
+//            logger.log(Level.WARNING, "String {0}", e.toString());
+//            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+//            logger.log(Level.WARNING, "cause", e.getCause());
+//            logger.log(Level.WARNING, "message {0}", e.getMessage());
+//            throw e;
+//        }
+        
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
