@@ -480,6 +480,11 @@ dataverse.files.directory
 
 This is how you configure the path to which files uploaded by users are stored.
 
+dataverse.files.s3-encrypt-on-upload
+++++++++++++++++++++++++++++++++++++
+
+Set this to ``false`` if you don't want to encrypt files Dataverse uploads to S3. If thie setting is not set ``true`` is assumed.
+
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
