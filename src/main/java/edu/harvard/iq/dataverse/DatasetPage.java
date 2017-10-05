@@ -49,8 +49,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -82,10 +80,7 @@ import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
-import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
@@ -286,7 +281,7 @@ public class DatasetPage implements java.io.Serializable {
     public String getThumbnailString() {
         // This method gets called 30 (!) times, just to load the page!
         // - so let's cache that string the first time it's called. 
-    
+            
         if (thumbnailString != null) {
             if ("".equals(thumbnailString)) {
                 return null;
@@ -439,19 +434,9 @@ public class DatasetPage implements java.io.Serializable {
         this.dataverseSiteUrl = dataverseSiteUrl;
     }
     
-    public List<FileMetadata> getDatasetFileMetadatas() {
-        Long datasetVersion = workingVersion.getId();
-        if (datasetVersion != null) {
-                int unlimited = 0;
-                int maxResults = unlimited;
-            return datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);     
-        } 
-        return null; 
-    }
-    
     public DataFile getInitialDataFile() {
-        if (getDatasetFileMetadatas() != null && getDatasetFileMetadatas().size() > 0) {
-            return getDatasetFileMetadatas().get(0).getDataFile();
+        if (workingVersion.getFileMetadatas() != null && workingVersion.getFileMetadatas().size() > 0) {
+            return workingVersion.getFileMetadatas().get(0).getDataFile();
         }
         return null;
     }
@@ -488,10 +473,10 @@ public class DatasetPage implements java.io.Serializable {
         
     }
     //This function applies to an entire dataset
-    public boolean isSwiftStorage() {
+    private boolean isSwiftStorage() {
         //containers without datafiles will not be stored in swift storage
         if (getInitialDataFile() != null){
-            for (FileMetadata fmd : getDatasetFileMetadatas()) {
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 //if any of the datafiles are stored in swift
                 if (fmd.getDataFile().getStorageIdentifier().startsWith("swift://")) {
                     return true;
@@ -502,31 +487,46 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     //This function applies to a single datafile
-    public boolean isSwiftStorage(FileMetadata metadata){
+    private boolean isSwiftStorage(FileMetadata metadata){
         if (metadata.getDataFile().getStorageIdentifier().startsWith("swift://")) {
             return true;
         }
         return false;
     }
     
+    
+    private Boolean showComputeButtonForDataset = null;
     //This function applies to an entire dataset
     public boolean showComputeButton() {
-        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
-            return true;
+        if (showComputeButtonForDataset != null) {
+            return showComputeButtonForDataset;
         }
-        return false;
+        
+        if (isSwiftStorage() && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
+            showComputeButtonForDataset = true;
+        } else {
+            showComputeButtonForDataset = false;
+        }
+        return showComputeButtonForDataset;
     }
     
+    private Boolean showComputeButtonForFile = null; 
     //this function applies to a single datafile
     public boolean showComputeButton(FileMetadata metadata) {
-        if (isSwiftStorage(metadata) && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
-            return true;
+        if (showComputeButtonForFile != null) {
+            return showComputeButtonForFile;
         }
-        return false;
+        
+        if (isSwiftStorage(metadata) && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
+            showComputeButtonForFile = true;
+        } else {
+            showComputeButtonForFile = false;
+        }
+        return showComputeButtonForFile;
     }
 
     public boolean canDownloadAllFiles(){
-       for (FileMetadata fmd : getDatasetFileMetadatas()) {
+       for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (!fileDownloadHelper.canDownloadFile(fmd)) {
                 return false;
             }
@@ -548,8 +548,8 @@ public class DatasetPage implements java.io.Serializable {
         SwiftAccessIO swiftObject = getSwiftObject();
         if (swiftObject != null) {
             swiftObject.open();
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName();
+            if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+                return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName();
             }
             //assuming we are able to get a temp url for a dataset
             return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
@@ -571,8 +571,8 @@ public class DatasetPage implements java.io.Serializable {
         } catch (IOException e) {
             logger.info("DatasetPage: Failed to get storageIO");
         }
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName();
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName();
         }
         
         return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
@@ -1416,7 +1416,7 @@ public class DatasetPage implements java.io.Serializable {
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(dataset, null, session);
                 logger.fine("Checking if rsync support is enabled.");
-                if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+                if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
                     try {
                         ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
                         logger.fine("script: " + scriptRequestResponse.getScript());
@@ -1472,7 +1472,7 @@ public class DatasetPage implements java.io.Serializable {
                 updateDatasetFieldInputLevels();
             }
             
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
+            if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.message.publicInstall"));
             }
 
@@ -1482,7 +1482,7 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return permissionsWrapper.notFound();
         }
-       try {
+        try {
             privateUrl = commandEngine.submit(new GetPrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
             if (privateUrl != null) {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor", Arrays.asList(getPrivateUrlLink(privateUrl))));
@@ -3516,13 +3516,21 @@ public class DatasetPage implements java.io.Serializable {
         fileMetadataSelectedForIngestOptionsPopup = null;
     }
 
+    private Boolean downloadButtonAvailable = null; 
     
     public boolean isDownloadButtonAvailable(){
+        
+        if (downloadButtonAvailable != null) {
+            return downloadButtonAvailable;
+        }
+
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (this.fileDownloadHelper.canDownloadFile(fmd)) {
+                downloadButtonAvailable = true;
                 return true;
             }
         }
+        downloadButtonAvailable = false;
         return false;
     }
     
@@ -3968,7 +3976,7 @@ public class DatasetPage implements java.io.Serializable {
      * 
      */
     public List<DatasetField> getDatasetSummaryFields() {
-       customFields  = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
+       customFields  = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
