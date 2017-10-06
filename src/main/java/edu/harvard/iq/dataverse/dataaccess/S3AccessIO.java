@@ -109,7 +109,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             String storageIdentifier = dvObject.getStorageIdentifier();
 
             DataFile dataFile = this.getDataFile();
-            key = dataFile.getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
 
             if (req != null && req.getParameter("noVarHeader") != null) {
                 this.setNoVarHeader(true);
@@ -120,7 +119,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
             if (isReadAccess) {
-                key = getBaseKey();
+                key = getMainFileKey();
                 S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, key));
                 InputStream in = s3object.getObjectContent();
 
@@ -145,6 +144,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 }
 
             } else if (isWriteAccess) {
+                key = dataFile.getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+
                 if (storageIdentifier.startsWith(S3_IDENTIFIER_PREFIX + "://")) {
                     key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
                 } else {
@@ -531,7 +532,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private String getDestinationKey(String auxItemTag) throws IOException {
         if (dvObject instanceof DataFile) {
-            return getBaseKey() + "." + auxItemTag;
+            return getMainFileKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
             return key + "/" + auxItemTag;
         } else {
@@ -539,7 +540,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    private String getBaseKey() throws IOException {
+    private String getMainFileKey() throws IOException {
         if (key == null) {
             String baseKey = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
             String storageIdentifier = dvObject.getStorageIdentifier();

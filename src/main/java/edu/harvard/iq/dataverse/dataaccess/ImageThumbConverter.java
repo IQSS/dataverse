@@ -362,7 +362,7 @@ public class ImageThumbConverter {
             outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             logger.fine("Opened an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + storageIO.getDataFile().getStorageIdentifier());
         } catch (IOException ioex) {
-            logger.warning("Failed to open an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + storageIO.getDataFile().getStorageIdentifier());
+            logger.fine("Failed to open an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + storageIO.getDataFile().getStorageIdentifier());
             tempFileRequired = true;
         }
 
