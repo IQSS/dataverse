@@ -533,7 +533,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (dvObject instanceof DataFile) {
             return getBaseKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
-            return getBaseKey() + "/" + auxItemTag;
+            return key + "/" + auxItemTag;
         } else {
             throw new IOException("S3AccessIO: This operation is only supported for Datasets and DataFiles.");
         }
