@@ -78,6 +78,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
+    public static String S3_IDENTIFIER_PREFIX = "s3";
+    
     private AWSCredentials awsCredentials = null;
     private AmazonS3 s3 = null;
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
@@ -118,12 +120,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
             if (isReadAccess) {
-                if (storageIdentifier.startsWith("s3://")) {
-                    bucketName = storageIdentifier.substring(storageIdentifier.indexOf(":") + 3, storageIdentifier.lastIndexOf(":"));
-                    key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
-                } else {
-                    throw new IOException("IO driver mismatch: S3AccessIO called on a non-s3 stored object.");
-                }
+                key = getBaseKey();
                 S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, key));
                 InputStream in = s3object.getObjectContent();
 
@@ -148,11 +145,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 }
 
             } else if (isWriteAccess) {
-                if (storageIdentifier.startsWith("s3://")) {
+                if (storageIdentifier.startsWith(S3_IDENTIFIER_PREFIX + "://")) {
                     key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
                 } else {
                     key += "/" + storageIdentifier;
-                    dvObject.setStorageIdentifier("s3://" + bucketName + ":" + storageIdentifier);
+                    dvObject.setStorageIdentifier(S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + storageIdentifier);
                 }
 
             }
@@ -167,7 +164,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = this.getDataset();
             key = dataset.getAuthority() + "/" + dataset.getIdentifier();
-            dataset.setStorageIdentifier("s3://" + key);
+            dataset.setStorageIdentifier(S3_IDENTIFIER_PREFIX + "://" + key);
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Invalid DvObject type : Dataverse");
         } else {
@@ -534,27 +531,31 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private String getDestinationKey(String auxItemTag) throws IOException {
         if (dvObject instanceof DataFile) {
-            if (key == null) {
-                String baseKey = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
-                String storageIdentifier = dvObject.getStorageIdentifier();
-
-                if (storageIdentifier == null || "".equals(storageIdentifier)) {
-                    throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
-                }
-
-                if (storageIdentifier.startsWith("s3://")) {
-                    bucketName = storageIdentifier.substring(storageIdentifier.indexOf(":") + 3, storageIdentifier.lastIndexOf(":"));
-                    key = baseKey + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
-                } else {
-                    throw new IOException("S3AccessIO: DataFile (storage identifier "+storageIdentifier+") does not appear to be an S3 object.");
-                }
-            }
-            
-            return key + "." + auxItemTag;
+            return getBaseKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
-            return key + "/" + auxItemTag;
+            return getBaseKey() + "/" + auxItemTag;
         } else {
             throw new IOException("S3AccessIO: This operation is only supported for Datasets and DataFiles.");
         }
+    }
+    
+    private String getBaseKey() throws IOException {
+        if (key == null) {
+            String baseKey = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+            String storageIdentifier = dvObject.getStorageIdentifier();
+
+            if (storageIdentifier == null || "".equals(storageIdentifier)) {
+                throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
+            }
+
+            if (storageIdentifier.startsWith(S3_IDENTIFIER_PREFIX + "://")) {
+                bucketName = storageIdentifier.substring((S3_IDENTIFIER_PREFIX + "://").length(), storageIdentifier.lastIndexOf(":"));
+                key = baseKey + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
+            } else {
+                throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") does not appear to be an S3 object.");
+            }
+        }
+        
+        return key;
     }
 }

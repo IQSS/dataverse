@@ -510,19 +510,24 @@ public class DatasetPage implements java.io.Serializable {
         return showComputeButtonForDataset;
     }
     
-    private Boolean showComputeButtonForFile = null; 
+    private Map<Long, Boolean> showComputeButtonForFile = new HashMap<>();
     //this function applies to a single datafile
     public boolean showComputeButton(FileMetadata metadata) {
-        if (showComputeButtonForFile != null) {
-            return showComputeButtonForFile;
+        Long fileId = metadata.getDataFile().getId();
+        
+        if (fileId == null) {
+            return false;
         }
         
-        if (isSwiftStorage(metadata) && (settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null)) {
-            showComputeButtonForFile = true;
-        } else {
-            showComputeButtonForFile = false;
+        if (showComputeButtonForFile.containsKey(fileId)) {
+            return showComputeButtonForFile.get(fileId);
         }
-        return showComputeButtonForFile;
+        
+        boolean result = isSwiftStorage(metadata) 
+                && settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) != null;
+        
+        showComputeButtonForFile.put(fileId, result);
+        return result;
     }
 
     public boolean canDownloadAllFiles(){
@@ -700,9 +705,8 @@ public class DatasetPage implements java.io.Serializable {
         
         // new and optimized logic: 
         // - check download permission here (should be cached - so it's free!)
-        // - only then ask the file service if the thumbnail is available/exists.
-        // the service itself no longer checks download permissions.  
-        // plus, cache the results!
+        // - only then check if the thumbnail is available/exists.
+        // then cache the results!
         
         Long dataFileId = fileMetadata.getDataFile().getId();
         
