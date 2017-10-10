@@ -92,7 +92,7 @@ public class Dataset extends DvObjectContainer {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastExportTime;
 
-    @NotBlank(message = "Please enter an identifier for your dataset.")
+    //@NotBlank(message = "Please enter an identifier for your dataset.")
     @Column(nullable = false)
     private String identifier;
     
@@ -154,6 +154,8 @@ public class Dataset extends DvObjectContainer {
         datasetVersion.setMinorVersionNumber((long) 0);
         versions.add(datasetVersion);
     }
+/*
+    
 
     public String getProtocol() {
         return protocol;
@@ -170,12 +172,15 @@ public class Dataset extends DvObjectContainer {
     public void setAuthority(String authority) {
         this.authority = authority;
     }
-
+    */
     /**
      * @return dataset identifier.
      *         For example, a dataset with database id (primary key) 3, persistent ID
      *         doi:10.5072/FK2/abcde, this should return "abcde".
      */
+    /*
+    
+
     public String getIdentifier() {
         return identifier;
     }
@@ -199,7 +204,7 @@ public class Dataset extends DvObjectContainer {
     public void setGlobalIdCreateTime(Date globalIdCreateTime) {
         this.globalIdCreateTime = globalIdCreateTime;
     }
-
+    */
     public Date getLastExportTime() {
         return lastExportTime;
     }

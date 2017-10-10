@@ -45,6 +45,8 @@ SET protocol=(SELECT dataset.protocol
 FROM dataset
 WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
 
+ALTER TABLE dataset ALTER identifier DROP NOT NULL;
+
 /*
 Run drop column after verifying proper transfer of datapoints 
 Only dvObjects that are datasets will have these columns filled in 
