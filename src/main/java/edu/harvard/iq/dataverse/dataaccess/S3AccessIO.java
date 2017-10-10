@@ -14,7 +14,6 @@ import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.MultiObjectDeleteException;
@@ -36,6 +35,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
@@ -67,17 +67,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         super(dvObject, req);
         this.setIsLocalFile(false);
         try {
-        awsCredentials = new ProfileCredentialsProvider().getCredentials();
-        s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).withRegion(Regions.US_EAST_1).build();
-        } catch (Exception e){
-                throw new AmazonClientException(
-                        "Cannot load the credentials from the credential profiles file. "
-                        + "Please make sure that your credentials file is at the correct "
-                        + "location (~/.aws/credentials), and is in valid format.",
-                        e);
-            }
+            awsCredentials = new ProfileCredentialsProvider().getCredentials();
+            s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).withRegion(Regions.US_EAST_1).build();
+        } catch (Exception e) {
+            throw new AmazonClientException(
+                    "Cannot load the credentials from the credential profiles file. "
+                    + "Please make sure that your credentials file is at the correct "
+                    + "location (~/.aws/credentials), and is in valid format.",
+                    e);
+        }
     }
 
+    public static String S3_IDENTIFIER_PREFIX = "s3";
+    
     private AWSCredentials awsCredentials = null;
     private AmazonS3 s3 = null;
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
@@ -107,7 +109,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             String storageIdentifier = dvObject.getStorageIdentifier();
 
             DataFile dataFile = this.getDataFile();
-            key = dataFile.getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
 
             if (req != null && req.getParameter("noVarHeader") != null) {
                 this.setNoVarHeader(true);
@@ -118,12 +119,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
             if (isReadAccess) {
-                if (storageIdentifier.startsWith("s3://")) {
-                    bucketName = storageIdentifier.substring(storageIdentifier.indexOf(":") + 3, storageIdentifier.lastIndexOf(":"));
-                    key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
-                } else {
-                    throw new IOException("IO driver mismatch: S3AccessIO called on a non-s3 stored object.");
-                }
+                key = getMainFileKey();
                 S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, key));
                 InputStream in = s3object.getObjectContent();
 
@@ -148,11 +144,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 }
 
             } else if (isWriteAccess) {
-                if (storageIdentifier.startsWith("s3://")) {
+                key = dataFile.getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+
+                if (storageIdentifier.startsWith(S3_IDENTIFIER_PREFIX + "://")) {
                     key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
                 } else {
                     key += "/" + storageIdentifier;
-                    dvObject.setStorageIdentifier("s3://" + bucketName + ":" + storageIdentifier);
+                    dvObject.setStorageIdentifier(S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + storageIdentifier);
                 }
 
             }
@@ -167,7 +165,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = this.getDataset();
             key = dataset.getAuthority() + "/" + dataset.getIdentifier();
-            dataset.setStorageIdentifier("s3://" + key);
+            dataset.setStorageIdentifier(S3_IDENTIFIER_PREFIX + "://" + key);
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Invalid DvObject type : Dataverse");
         } else {
@@ -291,6 +289,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public boolean isAuxObjectCached(String auxItemTag) throws IOException {
         open();
+        logger.fine("Inside isAuxObjectCached");
         String destinationKey = getDestinationKey(auxItemTag);
         try {
             return s3.doesObjectExist(bucketName, destinationKey);
@@ -521,29 +520,43 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
-        open();
         String destinationKey = getDestinationKey(auxItemTag);
         try {
-            if (this.isAuxObjectCached(auxItemTag)) {
-                S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, destinationKey));
-                return s3object.getObjectContent();
-            } else {
-                logger.fine("S3AccessIO: Aux object is not cached, unable to get aux object as input stream.");
-                return null;
-            }
+            S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, destinationKey));
+            return s3object.getObjectContent();
         } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonServiceException in S3AccessIO.getAuxFileAsInputStream():    " + ase.getMessage());
-            throw new IOException("S3AccessIO: Failed to get aux file as input stream");
+            logger.fine("Caught an AmazonServiceException in S3AccessIO.getAuxFileAsInputStream() (object not cached?):    " + ase.getMessage());
+            return null;
         }
     }
 
     private String getDestinationKey(String auxItemTag) throws IOException {
         if (dvObject instanceof DataFile) {
-            return key + "." + auxItemTag;
+            return getMainFileKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
             return key + "/" + auxItemTag;
         } else {
-            throw new IOException("S2AccessIO: This operation is only supported for Datasets and DataFiles.");
+            throw new IOException("S3AccessIO: This operation is only supported for Datasets and DataFiles.");
         }
+    }
+    
+    private String getMainFileKey() throws IOException {
+        if (key == null) {
+            String baseKey = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+            String storageIdentifier = dvObject.getStorageIdentifier();
+
+            if (storageIdentifier == null || "".equals(storageIdentifier)) {
+                throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
+            }
+
+            if (storageIdentifier.startsWith(S3_IDENTIFIER_PREFIX + "://")) {
+                bucketName = storageIdentifier.substring((S3_IDENTIFIER_PREFIX + "://").length(), storageIdentifier.lastIndexOf(":"));
+                key = baseKey + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
+            } else {
+                throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") does not appear to be an S3 object.");
+            }
+        }
+        
+        return key;
     }
 }
