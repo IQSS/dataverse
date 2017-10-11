@@ -72,6 +72,30 @@
                                             </div>
                                         </div>
                                     </ui:repeat>
+                                    
+                                    <!-- validation -->
+                                    <div class="form-group" jsf:rendered="#{false}">
+                                        <div class="col-sm-offset-4 col-sm-8">
+                                            <p>
+                                                <h:outputText styleClass="highlightBold" value="#{bundle['contact.question']}"/> <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                            </p>
+                                            
+                                            <!-- TODO - remove static placeholders -->
+                                            <h:outputFormat rendered="#{true}" value="#{'X'} + #{'Y'} = "/>
+                                            
+                                            <!-- TODO - fix these values -->
+                                            <h:outputFormat rendered="#{false}" value="#{sendFeedbackDialog.op1} + #{sendFeedbackDialog.op2} = "/>
+                                            
+                                            
+                                            <p:inputText id="messageSum" label="Sum" size="4" value="#{sendFeedbackDialog.userSum}" converterMessage="#{bundle['contact.sum.converterMessage']}"
+                                                         required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['contact.sum.required']}"
+                                                         validatorMessage="#{bundle['contact.sum.invalid']}" validator="#{sendFeedbackDialog.validateUserSum}">
+                                                <f:convertNumber integerOnly="true" type="number"/>
+                                            </p:inputText>
+                                            <h:message for="messageSum" styleClass="bg-danger text-danger"/>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="form-group">
                                         <div class="col-sm-offset-4 col-sm-9 button-block">
                                             <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
