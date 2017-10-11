@@ -29,7 +29,7 @@ As a `Java Enterprise Edition <http://en.wikipedia.org/wiki/Java_Platform,_Enter
 
 Glassfish 4.1 is required (not any earlier or later versions until https://github.com/IQSS/dataverse/issues/2628 is resolved), which can be downloaded from http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip . If you have downloaded Glassfish as part of a Netbeans bundle, you can manually add the proper version by clicking "Tools", "Servers", "Add Server".
 
-By default, Glassfish reports analytics information.  The administration guide suggests this can be disabled with ``asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes.
+By default, Glassfish reports analytics information. The administration guide suggests this can be disabled with ``asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes.
 
 PostgreSQL
 ~~~~~~~~~~
@@ -94,7 +94,7 @@ From the terminal, ``ssh-keygen`` will create new ssh keys for you:
 Clone Project from GitHub
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before cloning the repo, you are invited to read about our branching strategy in the  :doc:`version-control` section but we'll explain the basics here.
+Before cloning the repo, you are invited to read about our branching strategy in the :doc:`version-control` section but we'll explain the basics here.
 
 Determine Which Repo To Push To
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -355,7 +355,7 @@ Start Minishift
 
 ``minishift start --vm-driver=virtualbox``
 
-Make the oc Command Executable
+Make the OpenShift Client Binary (oc) Executable
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``eval $(minishift oc-env)``
@@ -376,7 +376,7 @@ For now we're allowing containers to run as root. Until the images are fixed to 
 
 ``oc adm policy add-scc-to-user anyuid -z default --as system:admin``
 
-FIXME: Eventually, we should create containers that don't require root. When we do. Make sure Dataverse still runs on Minishift after you've stopped allowing containers to run as root by issuing the following command:
+FIXME: Eventually, we should create containers that don't require root. When we do, run the following command to ensure Dataverse still runs on Minishift after you've stopped allowing containers to run as root:
 
 ``oc adm policy remove-scc-from-user anyuid -z default --as system:admin``
 
@@ -389,6 +389,8 @@ Create a Minishift Project
 
 Create a Dataverse App within the Minishift Project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Running this command will download images from Docker Hub and use them to create a Dataverse application.
 
 ``oc new-app conf/openshift/openshift.json``
 
@@ -422,9 +424,13 @@ From the ``rsh`` prompt you could run something like the following to build conf
 Make the Dataverse App Available Via HTTP
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+First, check the IP address of your minishift cluster. If this differs from the IP address used below, replace it.
+
+``minishift ip``
+
 The following curl command is expected to fail until you "expose" the HTTP service.
 
-``curl http://dataverse-glassfish-service-project1.192.168.99.102.nip.io/api/info/version``
+``curl http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/api/info/version``
 
 Expose the Dataverse web service:
 
@@ -435,7 +441,7 @@ Make Sure the Dataverse API is Working
 
 This should show a version number:
 
-``curl http://dataverse-glassfish-service-project1.192.168.99.102.nip.io/api/info/version``
+``curl http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/api/info/version``
 
 Log into Minishift and Visit Dataverse in your Browser
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -444,7 +450,7 @@ Log into Minishift and Visit Dataverse in your Browser
 - username: developer
 - password: developer
 
-Visit https://192.168.99.100:8443/console/project/project1/browse/routes and click http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/ or whatever is shows. This assumes you named your project ``project1``.
+Visit https://192.168.99.100:8443/console/project/project1/browse/routes and click http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/ or whatever is shows under "Routes External Traffic". This assumes you named your project ``project1``.
 
 You should be able to log in with username "dataverseAdmin" and password "admin".
 
