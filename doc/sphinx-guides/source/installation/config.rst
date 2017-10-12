@@ -1204,3 +1204,10 @@ You can replace the default dataset metadata fields that are displayed above fil
 ``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
 
 You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work. 
+
+:AllowApiTokenLookupViaApi
+++++++++++++++++++++++++++
+
+Dataverse 4.8.1 and below allowed API Token lookup via API but for better security this has been disabled by default. Set this to true if you really want the old behavior.
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:AllowApiTokenLookupViaApi``
