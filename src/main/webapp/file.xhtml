@@ -442,7 +442,7 @@
                             <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
                         </ui:include>
                     </p:dialog>
-                    <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
+                    <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="#{bundle['file.download.subset.header']}" widgetVar="downloadDataSubsetPopup"
                                modal="true">
                         <div class="form-inline clearfix" jsf:rendered="#{!(empty FilePage.fileMetadata) and FilePage.fileMetadata.dataFile.tabularData}">
                             <ui:include src="/subset/gui_subset.xhtml">
