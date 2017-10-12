@@ -356,7 +356,7 @@ Start Minishift
 ``minishift start --vm-driver=virtualbox``
 
 Make the OpenShift Client Binary (oc) Executable
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``eval $(minishift oc-env)``
 
@@ -368,19 +368,6 @@ Note that if you just installed Minishift, you are probably logged in already, b
 ``oc login --username developer --password=whatever``
 
 Use "developer" as the username and a couple characters as the password.
-
-Allow Containers to Run as Root in Minishift
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For now we're allowing containers to run as root. Until the images are fixed to run as non-root, run the following command:
-
-``oc adm policy add-scc-to-user anyuid -z default --as system:admin``
-
-FIXME: Eventually, we should create containers that don't require root. When we do, run the following command to ensure Dataverse still runs on Minishift after you've stopped allowing containers to run as root:
-
-``oc adm policy remove-scc-from-user anyuid -z default --as system:admin``
-
-For more information on improving Docker images to run as non-root, see "Support Arbitrary User IDs" at https://docs.openshift.org/latest/creating_images/guidelines.html#openshift-origin-specific-guidelines
 
 Create a Minishift Project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -428,7 +415,7 @@ First, check the IP address of your minishift cluster. If this differs from the 
 
 ``minishift ip``
 
-The following curl command is expected to fail until you "expose" the HTTP service.
+The following curl command is expected to fail until you "expose" the HTTP service. Please note that the IP address may be different.
 
 ``curl http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/api/info/version``
 
@@ -439,7 +426,7 @@ Expose the Dataverse web service:
 Make Sure the Dataverse API is Working
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This should show a version number:
+This should show a version number but please note that the IP address may be different:
 
 ``curl http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/api/info/version``
 
@@ -450,7 +437,7 @@ Log into Minishift and Visit Dataverse in your Browser
 - username: developer
 - password: developer
 
-Visit https://192.168.99.100:8443/console/project/project1/browse/routes and click http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/ or whatever is shows under "Routes External Traffic". This assumes you named your project ``project1``.
+Visit https://192.168.99.100:8443/console/project/project1/browse/routes and click http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/ or whatever is shows under "Routes External Traffic" (the IP address may be different). This assumes you named your project ``project1``.
 
 You should be able to log in with username "dataverseAdmin" and password "admin".
 
@@ -466,6 +453,20 @@ Making Changes
 
 If you're interested in using Minishift for development and want to change the Dataverse code, you will need to get set up to create Docker images based on your changes and push them to a Docker registry such as Docker Hub. See the section below on Docker for details.
 
+Runnning Containers to Run as Root in Minishift
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is **not** recommended to run containers as root in Minishift because for security reasons OpenShift doesn't support running containers as root. However, it's good to know how to allow containers to run as root in case you need to work on a Docker image to make it run as non-root.
+
+For more information on improving Docker images to run as non-root, see "Support Arbitrary User IDs" at https://docs.openshift.org/latest/creating_images/guidelines.html#openshift-origin-specific-guidelines
+
+Let's say you have a container that you suspect works fine when it runs as root. You want to see it working as-is before you start hacking on the Dockerfile and entrypoint file. You can configure Minishift to allow containers to run as root with this command:
+
+``oc adm policy add-scc-to-user anyuid -z default --as system:admin``
+
+Once you are done testing you can revert Minishift back to not allowing containers to run as root with this command:
+
+``oc adm policy remove-scc-from-user anyuid -z default --as system:admin``
 
 Minishift Resources
 ~~~~~~~~~~~~~~~~~~~
