@@ -74,22 +74,15 @@
                                     </ui:repeat>
                                     
                                     <!-- validation -->
-                                    <div class="form-group" jsf:rendered="#{false}">
+                                    <div class="form-group" jsf:rendered="#{LoginPage.requireExtraValidation}">
                                         <div class="col-sm-offset-4 col-sm-8">
                                             <p>
                                                 <h:outputText styleClass="highlightBold" value="#{bundle['contact.question']}"/> <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                             </p>
-                                            
-                                            <!-- TODO - remove static placeholders -->
-                                            <h:outputFormat rendered="#{true}" value="#{'X'} + #{'Y'} = "/>
-                                            
-                                            <!-- TODO - fix these values -->
-                                            <h:outputFormat rendered="#{false}" value="#{sendFeedbackDialog.op1} + #{sendFeedbackDialog.op2} = "/>
-                                            
-                                            
-                                            <p:inputText id="messageSum" label="Sum" size="4" value="#{sendFeedbackDialog.userSum}" converterMessage="#{bundle['contact.sum.converterMessage']}"
+                                            <h:outputFormat value="#{LoginPage.op1} + #{LoginPage.op2} = "/>
+                                            <p:inputText id="messageSum" label="Sum" size="4" value="#{LoginPage.userSum}" converterMessage="#{bundle['contact.sum.converterMessage']}"
                                                          required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['contact.sum.required']}"
-                                                         validatorMessage="#{bundle['contact.sum.invalid']}" validator="#{sendFeedbackDialog.validateUserSum}">
+                                                         validatorMessage="#{bundle['contact.sum.invalid']}" validator="#{LoginPage.validateUserSum}">
                                                 <f:convertNumber integerOnly="true" type="number"/>
                                             </p:inputText>
                                             <h:message for="messageSum" styleClass="bg-danger text-danger"/>

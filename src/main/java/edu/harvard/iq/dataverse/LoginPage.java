@@ -21,12 +21,15 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -101,6 +104,11 @@ public class LoginPage implements java.io.Serializable {
     
     private String redirectPage = "dataverse.xhtml";
     private AuthenticationProvider authProvider;
+    private int numFailedLoginAttempts;
+    Random random;
+    long op1;
+    long op2;
+    long userSum;
 
     public void init() {
         Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator();
@@ -109,6 +117,7 @@ public class LoginPage implements java.io.Serializable {
         }
         resetFilledCredentials(null);
         authProvider = authSvc.getAuthenticationProvider(systemConfig.getDefaultAuthProvider());
+        random = new Random();
     }
 
     public List<AuthenticationProviderDisplayInfo> listCredentialsAuthenticationProviders() {
@@ -179,6 +188,9 @@ public class LoginPage implements java.io.Serializable {
 
             
         } catch (AuthenticationFailedException ex) {
+            numFailedLoginAttempts++;
+            op1 = new Long(random.nextInt(10));
+            op2 = new Long(random.nextInt(10));
             AuthenticationResponse response = ex.getResponse();
             switch ( response.getStatus() ) {
                 case FAIL:
@@ -256,4 +268,42 @@ public class LoginPage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("login.button", Arrays.asList("???"));
         }
     }
+
+    public int getNumFailedLoginAttempts() {
+        return numFailedLoginAttempts;
+    }
+
+    public boolean isRequireExtraValidation() {
+        if (numFailedLoginAttempts > 2) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public long getOp1() {
+        return op1;
+    }
+
+    public long getOp2() {
+        return op2;
+    }
+
+    public long getUserSum() {
+        return userSum;
+    }
+
+    public void setUserSum(long userSum) {
+        this.userSum = userSum;
+    }
+
+    // TODO: Consolidate with SendFeedbackDialog.validateUserSum?
+    public void validateUserSum(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        if (op1 + op2 != (Long) value) {
+            // The FacesMessage text is on the xhtml side.
+            FacesMessage msg = new FacesMessage("");
+            throw new ValidatorException(msg);
+        }
+    }
+
 }
