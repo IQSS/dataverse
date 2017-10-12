@@ -108,7 +108,7 @@ public class LoginPage implements java.io.Serializable {
     Random random;
     long op1;
     long op2;
-    long userSum;
+    Long userSum;
 
     public void init() {
         Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator();
@@ -289,20 +289,24 @@ public class LoginPage implements java.io.Serializable {
         return op2;
     }
 
-    public long getUserSum() {
+    public Long getUserSum() {
         return userSum;
     }
 
-    public void setUserSum(long userSum) {
+    public void setUserSum(Long userSum) {
         this.userSum = userSum;
     }
 
     // TODO: Consolidate with SendFeedbackDialog.validateUserSum?
     public void validateUserSum(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        // The FacesMessage text is on the xhtml side.
+        FacesMessage msg = new FacesMessage("");
+        ValidatorException validatorException = new ValidatorException(msg);
+        if (value == null) {
+            throw validatorException;
+        }
         if (op1 + op2 != (Long) value) {
-            // The FacesMessage text is on the xhtml side.
-            FacesMessage msg = new FacesMessage("");
-            throw new ValidatorException(msg);
+            throw validatorException;
         }
     }
 
