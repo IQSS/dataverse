@@ -345,7 +345,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
-        if (filesize == null || filesize <= 0) {
+        if (filesize == null || filesize < 0) {
             saveInputStreamAsAux(inputStream, auxItemTag);
         } else {
             if (!this.canWrite()) {
@@ -379,7 +379,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         byte[] bytes = IOUtils.toByteArray(inputStream);
         long length = bytes.length;
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(length);
+        //metadata.setContentLength(length);
         try {
             s3.putObject(bucketName, destinationKey, inputStream, metadata);
         } catch (SdkClientException ioex) {
