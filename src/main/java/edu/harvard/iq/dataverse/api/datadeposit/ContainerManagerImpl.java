@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -129,11 +130,18 @@ public class ContainerManagerImpl implements ContainerManager {
                 String globalId = urlManager.getTargetIdentifier();
                 Dataset dataset = datasetService.findByGlobalId(globalId);
                 if (dataset != null) {
-                    SwordUtil.datasetLockCheck(dataset);
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
                     UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq);
                     if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
+                    }
+                    DatasetLock datasetLock = SwordUtil.getDatasetLock(dataset);
+                    if (datasetLock != null) {
+                        // TODO: This logic to allow only curators to edit datasets should be consolidated into a command.
+                        PublishDatasetCommand publishDatasetCommand = new PublishDatasetCommand(dataset, dvReq, true);
+                        if (!permissionService.isUserAllowedOn(user, publishDatasetCommand, dataset)) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is unable to edit metadata due to dataset lock (" + datasetLock.getReason() + ").");
+                        }
                     }
                     DatasetVersion datasetVersion = dataset.getEditVersion();
                     // erase all metadata before creating populating dataset version

@@ -152,25 +152,29 @@ public class InReviewWorkflowIT {
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
         // BEGIN https://github.com/IQSS/dataverse/issues/4139
-        /**
-         * FIXME: We are capturing the current "unable to perform operation due
-         * to dataset lock" (odd null error and all) for curators trying to make
-         * changes but for issue 4139 we intend to let curators make edits while
-         * the dataset is in review, which was the pre-4.8 behavior.
-         */
-        // The curator tries to update the title while the dataset is in review.
-        Response updateTitleResponse = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "A Better Title", curatorApiToken);
-        updateTitleResponse.prettyPrint();
-        updateTitleResponse.then().assertThat()
-                .body("error.summary", equalTo("Please try again later. Unable to perform operation due to dataset lock: null"))
+        // The author tries to edit the title after submitting the dataset for review. This is not allowed because the dataset is locked.
+        Response updateTitleResponseAuthor = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "New Title from Author", authorApiToken);
+        updateTitleResponseAuthor.prettyPrint();
+        updateTitleResponseAuthor.then().assertThat()
+                .body("error.summary", equalTo("User " + authorUsername + " " + authorUsername + " is unable to edit metadata due to dataset lock (InReview)."))
                 .statusCode(BAD_REQUEST.getStatusCode());
+
+        // The curator tries to update the title while the dataset is in review.
+        Response updateTitleResponseCurator = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "A Better Title", curatorApiToken);
+        updateTitleResponseCurator.prettyPrint();
+        updateTitleResponseCurator.then().assertThat()
+                .statusCode(OK.getStatusCode());
         Response atomEntry = UtilIT.getSwordAtomEntry(datasetPersistentId, curatorApiToken);
         atomEntry.prettyPrint();
         atomEntry.then().assertThat()
                 .statusCode(OK.getStatusCode());
         String citation = XmlPath.from(atomEntry.body().asString()).getString("bibliographicCitation");
         System.out.println("citation: " + citation);
-        Assert.assertTrue(citation.contains("Darwin's Finches"));
+        Assert.assertTrue(citation.contains("A Better Title"));
+        // TODO: Can curator add files via SWORD?
+        // TODO: Can curator edit metadata via native API?
+        // TODO: Can curator add files via native API?
+        // TODO: Can curator make edits via GUI?
         // END https://github.com/IQSS/dataverse/issues/4139
 
         // TODO: test where curator neglecting to leave a comment. Should fail with "reason for return" required.

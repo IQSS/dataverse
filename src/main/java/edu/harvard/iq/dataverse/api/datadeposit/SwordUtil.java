@@ -41,13 +41,21 @@ public class SwordUtil {
         return swordError;
     }
 
+    // TODO: Review usages of this datasetLockCheck method to see if there's a better way. Should this check be in commands?
     public static void datasetLockCheck(Dataset dataset) throws SwordError {
         DatasetLock datasetLock = dataset.getDatasetLock();
         if (datasetLock != null) {
-            // FIXME: Why is datasetLock.getInfo() sometimes null?
-            String message = "Please try again later. Unable to perform operation due to dataset lock: " + datasetLock.getInfo();
+            String message = "Please try again later. Unable to perform operation due to dataset lock: " + datasetLock.getReason();
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
         }
+    }
+
+    public static DatasetLock getDatasetLock(Dataset dataset) throws SwordError {
+        DatasetLock datasetLock = dataset.getDatasetLock();
+        if (datasetLock != null) {
+            return datasetLock;
+        }
+        return null;
     }
 
 }
