@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
+import com.jayway.restassured.path.xml.XmlPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.util.logging.Logger;
@@ -12,7 +13,9 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -147,6 +150,28 @@ public class InReviewWorkflowIT {
         returnToAuthorFail.then().assertThat()
                 .body("message", equalTo("User @" + joeRandomUsername + " is not permitted to perform requested action."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // BEGIN https://github.com/IQSS/dataverse/issues/4139
+        /**
+         * FIXME: We are capturing the current "unable to perform operation due
+         * to dataset lock" (odd null error and all) for curators trying to make
+         * changes but for issue 4139 we intend to let curators make edits while
+         * the dataset is in review, which was the pre-4.8 behavior.
+         */
+        // The curator tries to update the title while the dataset is in review.
+        Response updateTitleResponse = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "A Better Title", curatorApiToken);
+        updateTitleResponse.prettyPrint();
+        updateTitleResponse.then().assertThat()
+                .body("error.summary", equalTo("Please try again later. Unable to perform operation due to dataset lock: null"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+        Response atomEntry = UtilIT.getSwordAtomEntry(datasetPersistentId, curatorApiToken);
+        atomEntry.prettyPrint();
+        atomEntry.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String citation = XmlPath.from(atomEntry.body().asString()).getString("bibliographicCitation");
+        System.out.println("citation: " + citation);
+        Assert.assertTrue(citation.contains("Darwin's Finches"));
+        // END https://github.com/IQSS/dataverse/issues/4139
 
         // TODO: test where curator neglecting to leave a comment. Should fail with "reason for return" required.
         String noComments = "";

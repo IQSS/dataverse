@@ -44,6 +44,7 @@ public class SwordUtil {
     public static void datasetLockCheck(Dataset dataset) throws SwordError {
         DatasetLock datasetLock = dataset.getDatasetLock();
         if (datasetLock != null) {
+            // FIXME: Why is datasetLock.getInfo() sometimes null?
             String message = "Please try again later. Unable to perform operation due to dataset lock: " + datasetLock.getInfo();
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
         }
