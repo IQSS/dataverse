@@ -32,7 +32,6 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -499,18 +498,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         return lock.size()>0;
     }
     
-    public String checkDatasetLockInfo(Long datasetId) {
-        String nativeQuery = "SELECT sl.info FROM DatasetLock sl WHERE sl.dataset_id = " + datasetId + " LIMIT 1;";
-        String infoMessage; 
-        try {
-            infoMessage = (String)em.createNativeQuery(nativeQuery).getSingleResult();
-        } catch (Exception ex) {
-            infoMessage = null; 
-        }
-        
-        return infoMessage;
-    }
-    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
@@ -546,8 +533,14 @@ public class DatasetServiceBean implements java.io.Serializable {
         return addDatasetLock(dataset, lock);
     }
 
+    /**
+     * Removes all {@link DatasetLock}s for the dataset whose id is passed and reason
+     * is {@code aReason}.
+     * @param datasetId Id of the dataset whose locks will b removed.
+     * @param aReason The reason of the locks that will be removed.
+     */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void removeDatasetLock(Long datasetId, DatasetLock.Reason aReason) {
+    public void removeDatasetLocks(Long datasetId, DatasetLock.Reason aReason) {
         Dataset dataset = em.find(Dataset.class, datasetId);
         new HashSet<>(dataset.getLocks()).stream()
                 .filter( l -> l.getReason() == aReason )

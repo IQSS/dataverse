@@ -128,7 +128,7 @@ public class IngestMessageBean implements MessageListener {
                 if (datafile != null) {
                     Dataset dataset = datafile.getOwner();
                     if (dataset != null && dataset.getId() != null) {
-                        datasetService.removeDatasetLock(dataset.getId(), DatasetLock.Reason.Ingest);
+                        datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.Ingest);
                     }
                 } 
             } 
