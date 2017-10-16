@@ -328,6 +328,17 @@ public class UtilIT {
         return updateDatasetResponse;
     }
 
+    // https://github.com/IQSS/dataverse/issues/3777
+    static Response updateDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
+       String jsonIn = getDatasetJson(pathToJsonFile);
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/:draft?persistentId=" + persistentId);
+        return response;
+    }
+
     static private String getDatasetXml(String title, String author, String description) {
         String xmlIn = "<?xml version=\"1.0\"?>\n"
                 + "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:dcterms=\"http://purl.org/dc/terms/\">\n"

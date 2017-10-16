@@ -159,10 +159,10 @@ public class InReviewWorkflowIT {
                 .body("error.summary", equalTo("User " + authorUsername + " " + authorUsername + " is unable to edit metadata due to dataset lock (InReview)."))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
-        // The curator tries to update the title while the dataset is in review.
-        Response updateTitleResponseCurator = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "A Better Title", curatorApiToken);
-        updateTitleResponseCurator.prettyPrint();
-        updateTitleResponseCurator.then().assertThat()
+        // The curator tries to update the title while the dataset is in review via SWORD.
+        Response updateTitleResponseCuratorViaSword = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "A Better Title", curatorApiToken);
+        updateTitleResponseCuratorViaSword.prettyPrint();
+        updateTitleResponseCuratorViaSword.then().assertThat()
                 .statusCode(OK.getStatusCode());
         Response atomEntry = UtilIT.getSwordAtomEntry(datasetPersistentId, curatorApiToken);
         atomEntry.prettyPrint();
@@ -171,8 +171,37 @@ public class InReviewWorkflowIT {
         String citation = XmlPath.from(atomEntry.body().asString()).getString("bibliographicCitation");
         System.out.println("citation: " + citation);
         Assert.assertTrue(citation.contains("A Better Title"));
+
+        // The author tries to update the title while the dataset is in review via native.
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
+        Response updateTitleResponseAuthorViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, authorApiToken);
+        updateTitleResponseAuthorViaNative.prettyPrint();
+        updateTitleResponseAuthorViaNative.then().assertThat()
+                // FIXME: This should fail with "unauthorized" or whatever.
+                .statusCode(OK.getStatusCode());
+        Response atomEntryAuthorNative = UtilIT.getSwordAtomEntry(datasetPersistentId, authorApiToken);
+        atomEntryAuthorNative.prettyPrint();
+        atomEntryAuthorNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String citationAuthorNative = XmlPath.from(atomEntryAuthorNative.body().asString()).getString("bibliographicCitation");
+        System.out.println("citation: " + citationAuthorNative);
+        // The author was unable to change the title.
+        // FIXME: The author *is* able to change the title! This should say "A Better Title";
+        Assert.assertTrue(citationAuthorNative.contains("newTitle"));
+
+        // The curator tries to update the title while the dataset is in review via native.
+        Response updateTitleResponseCuratorViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, curatorApiToken);
+        updateTitleResponseCuratorViaNative.prettyPrint();
+        updateTitleResponseCuratorViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response atomEntryCuratorNative = UtilIT.getSwordAtomEntry(datasetPersistentId, curatorApiToken);
+        atomEntryCuratorNative.prettyPrint();
+        atomEntryCuratorNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String citationCuratorNative = XmlPath.from(atomEntryCuratorNative.body().asString()).getString("bibliographicCitation");
+        System.out.println("citation: " + citationCuratorNative);
+        Assert.assertTrue(citationCuratorNative.contains("newTitle"));
         // TODO: Can curator add files via SWORD?
-        // TODO: Can curator edit metadata via native API?
         // TODO: Can curator add files via native API?
         // TODO: Can curator make edits via GUI?
         // END https://github.com/IQSS/dataverse/issues/4139
