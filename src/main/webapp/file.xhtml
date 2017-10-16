@@ -328,14 +328,14 @@
                                     </div>
                                     <div id="panelCollapseFMD" class="collapse in">
                                         <div class="panel-body">
-                                            <div class="form-group">
+                                            <div class="form-group" jsf:rendered="#{FilePage.file.identifier != null}">
                                                 <label for="metadata_persistentId" class="col-sm-3 control-label">
                                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.metadata.persistentId.tip']}">
                                                         #{bundle['file.metadata.persistentId']}
                                                     </span>
                                                 </label>
                                                 <div class="col-sm-9">
-                                                    doi:10.5072/FK2/XXXXXX/YYY
+                                                    #{FilePage.file.getGlobalId()}
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable}">
