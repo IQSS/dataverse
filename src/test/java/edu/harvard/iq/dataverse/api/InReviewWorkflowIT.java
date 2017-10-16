@@ -13,7 +13,6 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -103,18 +102,19 @@ public class InReviewWorkflowIT {
                 .body("message", equalTo("User @" + joeRandomUsername + " is not permitted to perform requested action."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
-//        boolean returnEarlyToTest = true;
-//        if (returnEarlyToTest) {
-//            System.out.println("Curator username/password and API token: " + curatorUsername + " and " + curatorApiToken);
-//            System.out.println("Author username/password and API token: " + authorUsername + " and " + authorApiToken);
-//            return;
-//        }
         // The author submits the dataset for review.
         Response submitForReview = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
         submitForReview.prettyPrint();
         submitForReview.then().assertThat()
                 .body("data.inReview", equalTo(true))
                 .statusCode(OK.getStatusCode());
+
+        boolean returnEarlyToTestEditButton = false;
+        if (returnEarlyToTestEditButton) {
+            System.out.println("Curator username/password and API token: " + curatorUsername + " and " + curatorApiToken);
+            System.out.println("Author username/password and API token: " + authorUsername + " and " + authorApiToken);
+            return;
+        }
 
         Response submitForReviewAlreadySubmitted = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
         submitForReviewAlreadySubmitted.prettyPrint();
@@ -143,8 +143,7 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[1].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
-        // Joe Random - a real jerk - tries returning a dataset unrightfully with some mean comments.
-        // Despite being somewhere he already shouldn't be, he is not authorized to return it, thankfully.
+        // Joe Random, a user with no perms on dataset, tries returning the dataset as if he's a curator and fails.
         Response returnToAuthorFail = UtilIT.returnDatasetToAuthor(datasetPersistentId, joeRandObj.build(), joeRandomApiToken);
         returnToAuthorFail.prettyPrint();
         returnToAuthorFail.then().assertThat()
@@ -156,7 +155,7 @@ public class InReviewWorkflowIT {
         Response updateTitleResponseAuthor = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "New Title from Author", authorApiToken);
         updateTitleResponseAuthor.prettyPrint();
         updateTitleResponseAuthor.then().assertThat()
-                .body("error.summary", equalTo("User " + authorUsername + " " + authorUsername + " is unable to edit metadata due to dataset lock (InReview)."))
+                .body("error.summary", equalTo("problem updating dataset: edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException: Dataset cannot be edited due to In Review dataset lock."))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // The curator tries to update the title while the dataset is in review via SWORD.
@@ -177,7 +176,7 @@ public class InReviewWorkflowIT {
         Response updateTitleResponseAuthorViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, authorApiToken);
         updateTitleResponseAuthorViaNative.prettyPrint();
         updateTitleResponseAuthorViaNative.then().assertThat()
-                .body("message", equalTo("User does not have permission to edit due to dataset lock InReview."))
+                .body("message", equalTo("Dataset cannot be edited due to In Review dataset lock."))
                 .statusCode(FORBIDDEN.getStatusCode());
         Response atomEntryAuthorNative = UtilIT.getSwordAtomEntry(datasetPersistentId, authorApiToken);
         atomEntryAuthorNative.prettyPrint();
@@ -202,7 +201,6 @@ public class InReviewWorkflowIT {
         Assert.assertTrue(citationCuratorNative.contains("newTitle"));
         // TODO: Can curator add files via SWORD?
         // TODO: Can curator add files via native API?
-        // TODO: Can curator make edits via GUI?
         // END https://github.com/IQSS/dataverse/issues/4139
 
         // TODO: test where curator neglecting to leave a comment. Should fail with "reason for return" required.

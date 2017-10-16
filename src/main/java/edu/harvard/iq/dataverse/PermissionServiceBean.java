@@ -26,6 +26,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -538,7 +541,16 @@ public class PermissionServiceBean {
         }
         return dataversesUserHasPermissionOn;
     }
-    
-    
-    
+
+    public void checkInReviewEditLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
+        DatasetLock datasetLock = dataset.getDatasetLock();
+        if (datasetLock != null) {
+            if (DatasetLock.Reason.InReview.equals(datasetLock.getReason())) {
+                if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
+                }
+            }
+        }
+    }
+
 }

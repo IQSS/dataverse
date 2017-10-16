@@ -50,12 +50,4 @@ public class SwordUtil {
         }
     }
 
-    public static DatasetLock getDatasetLock(Dataset dataset) throws SwordError {
-        DatasetLock datasetLock = dataset.getDatasetLock();
-        if (datasetLock != null) {
-            return datasetLock;
-        }
-        return null;
-    }
-
 }
