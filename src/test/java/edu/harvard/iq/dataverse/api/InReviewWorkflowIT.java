@@ -177,8 +177,8 @@ public class InReviewWorkflowIT {
         Response updateTitleResponseAuthorViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, authorApiToken);
         updateTitleResponseAuthorViaNative.prettyPrint();
         updateTitleResponseAuthorViaNative.then().assertThat()
-                // FIXME: This should fail with "unauthorized" or whatever.
-                .statusCode(OK.getStatusCode());
+                .body("message", equalTo("User does not have permission to edit due to dataset lock InReview."))
+                .statusCode(FORBIDDEN.getStatusCode());
         Response atomEntryAuthorNative = UtilIT.getSwordAtomEntry(datasetPersistentId, authorApiToken);
         atomEntryAuthorNative.prettyPrint();
         atomEntryAuthorNative.then().assertThat()
@@ -186,8 +186,7 @@ public class InReviewWorkflowIT {
         String citationAuthorNative = XmlPath.from(atomEntryAuthorNative.body().asString()).getString("bibliographicCitation");
         System.out.println("citation: " + citationAuthorNative);
         // The author was unable to change the title.
-        // FIXME: The author *is* able to change the title! This should say "A Better Title";
-        Assert.assertTrue(citationAuthorNative.contains("newTitle"));
+        Assert.assertTrue(citationAuthorNative.contains("A Better Title"));
 
         // The curator tries to update the title while the dataset is in review via native.
         Response updateTitleResponseCuratorViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, curatorApiToken);

@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -78,6 +79,17 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
+        // TODO: Figure out why UpdateDatasetCommand is used by the GUI but UpdateDatasetVersionCommand is used by the API.
+        DatasetLock datasetLock = theDataset.getDatasetLock();
+        if (datasetLock != null) {
+            if (DatasetLock.Reason.InReview.equals(datasetLock.getReason())) {
+                User user = getUser();
+                if (!ctxt.permissions().isUserAllowedOn(user, new PublishDatasetCommand(theDataset, getRequest(), true), theDataset)) {
+                    throw new IllegalCommandException("User does not have permission to edit due to dataset lock " + datasetLock.getReason() + ".", this);
+                }
+            }
+        }
+
         // first validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
