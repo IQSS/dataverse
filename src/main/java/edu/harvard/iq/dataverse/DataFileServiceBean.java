@@ -73,6 +73,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final String FILE_CLASS_GEO = "geodata";
     private static final String FILE_CLASS_TABULAR = "tabular";
     private static final String FILE_CLASS_VIDEO = "video";
+    private static final String FILE_CLASS_PACKAGE = "package";
     private static final String FILE_CLASS_OTHER = "other";
 
     // Assorted useful mime types:
@@ -157,6 +158,59 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (DataFile)query.getSingleResult();
         
     }*/
+    
+    public DataFile findByGlobalId(String globalId){
+        String protocol = "";
+        String authority = "";
+        String identifier = "";
+        int index1 = globalId.indexOf(':');
+        String nonNullDefaultIfKeyNotFound = ""; 
+        String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);        
+        int index2 = globalId.indexOf(separator, index1 + 1);
+        int index3;
+        if (index1 == -1) {            
+            logger.info("Error parsing identifier: " + globalId + ". ':' not found in string");
+            return null;
+        } else {
+            protocol = globalId.substring(0, index1);
+        }
+        if (index2 == -1 ) {
+            logger.info("Error parsing identifier: " + globalId + ". Second separator not found in string");
+            return null;
+        } else {
+            authority = globalId.substring(index1 + 1, index2);
+        }
+        if (protocol.equals("doi")) {
+
+            index3 = globalId.indexOf(separator, index2 + 1);
+            if (index3 == -1 ) { 
+                identifier = globalId.substring(index2 + 1); //.toUpperCase();
+            } else {
+                if (index3 > -1) {
+                    authority = globalId.substring(index1 + 1, index3);
+                    identifier = globalId.substring(index3 + 1).toUpperCase();
+                }
+            }
+        } else {
+            identifier = globalId.substring(index2 + 1).toUpperCase();
+        }
+        String queryStr = "SELECT s from DataFile s where s.identifier = :identifier  and s.protocol= :protocol and s.authority= :authority";
+        DataFile file = null;
+        try {
+            Query query = em.createQuery(queryStr);
+            query.setParameter("identifier", identifier);
+            query.setParameter("protocol", protocol);
+            query.setParameter("authority", authority);
+            file = (DataFile) query.getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            // (set to .info, this can fill the log file with thousands of 
+            // these messages during a large harvest run)
+            logger.fine("no file found: " + globalId);
+            // DO nothing, just return null.
+        }
+        return file;
+        
+    }
     
     public DataFile findReplacementFile(Long previousFileId){
         Query query = em.createQuery("select object(o) from DataFile as o where o.previousDataFileId = :previousFileId");
@@ -1177,6 +1231,9 @@ public class DataFileServiceBean implements java.io.Serializable {
             return FILE_CLASS_TABULAR;
         }
         
+        if (isFileClassPackage(file)) {
+            return FILE_CLASS_PACKAGE;
+        }
         
         return FILE_CLASS_OTHER;
     }
@@ -1354,6 +1411,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         return (contentType != null && (contentType.toLowerCase().startsWith("video/")));    
         
+    }
+    
+    public boolean isFileClassPackage (DataFile file) {
+        if (file == null) {
+            return false;
+        }
+        
+        String contentType = file.getContentType();
+       
+        return MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
     }
     
     public void populateFileSearchCard(SolrSearchResult solrSearchResult) {

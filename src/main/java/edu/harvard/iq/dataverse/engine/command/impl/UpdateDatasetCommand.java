@@ -195,8 +195,8 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         
         IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
         boolean registerWhenPublished = idServiceBean.registerWhenPublished();
-        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, tempDataset.getProtocol(), tempDataset.getGlobalIdCreateTime()});
-        if ( !registerWhenPublished && tempDataset.getGlobalIdCreateTime() == null) {
+        logger.log(Level.FINE,"doiProvider={0} protocol={1} IdentifierRegistered=={2}", new Object[]{doiProvider, tempDataset.getProtocol(), tempDataset.isIdentifierRegistered()});
+        if ( !registerWhenPublished && !tempDataset.isIdentifierRegistered()) {
             try {
                 logger.fine("creating identifier");
                

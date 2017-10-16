@@ -62,7 +62,7 @@ public class FilePage implements java.io.Serializable {
     private Dataset dataset;
     private List<DatasetVersion> datasetVersionsForTab;
     private List<FileMetadata> fileMetadatasForTab;
-
+    private String persistentId;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -110,10 +110,11 @@ public class FilePage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
+    private boolean fileDeleteInProgress = false;
     public String init() {
      
         
-        if ( fileId != null ) { 
+         if ( fileId != null || persistentId != null ) { 
            
             // ---------------------------------------
             // Set the file and datasetVersion 
@@ -121,11 +122,13 @@ public class FilePage implements java.io.Serializable {
             if (fileId != null) {
                file = datafileService.find(fileId);   
 
-            }  else if (fileId == null){
-               return permissionsWrapper.notFound();
-            }
+            }  else if (persistentId != null){
+               file = datafileService.findByGlobalId(persistentId);
+               if (file != null){
+                                  fileId = file.getId();
+               }
 
-            if (file == null){
+            } else if (fileId == null){
                return permissionsWrapper.notFound();
             }
 
@@ -273,7 +276,7 @@ public class FilePage implements java.io.Serializable {
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public String deleteFile() {
-
+        
         String fileNames = this.getFileMetadata().getLabel();
 
         editDataset = this.getFileMetadata().getDataFile().getOwner();
@@ -306,13 +309,7 @@ public class FilePage implements java.io.Serializable {
 
     
 
-     
-        if (fileNames != null) {
-            String successMessage = JH.localize("file.deleted.success");
-            successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);
-        }
-        
+        fileDeleteInProgress = true;
         save();
         return returnToDatasetOnly();
         
@@ -331,7 +328,7 @@ public class FilePage implements java.io.Serializable {
     public void tabChanged(TabChangeEvent event) {
         TabView tv = (TabView) event.getComponent();
         this.activeTabIndex = tv.getActiveIndex();
-        if (this.activeTabIndex == 1) {
+        if (this.activeTabIndex == 1 || this.activeTabIndex == 2 ) {
             setFileMetadatasForTab(loadFileMetadataTabList());
         } else {
             setFileMetadatasForTab( new ArrayList<>());         
@@ -449,6 +446,14 @@ public class FilePage implements java.io.Serializable {
         this.fileMetadatasForTab = fileMetadatasForTab;
     }
     
+    public String getPersistentId() {
+        return persistentId;
+    }
+
+    public void setPersistentId(String persistentId) {
+        this.persistentId = persistentId;
+    }
+    
     
     public List<DatasetVersion> getDatasetVersionsForTab() {
         return datasetVersionsForTab;
@@ -463,6 +468,7 @@ public class FilePage implements java.io.Serializable {
         Set<ConstraintViolation> constraintViolations = this.fileMetadata.getDatasetVersion().validate();
         if (!constraintViolations.isEmpty()) {
              //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
+             fileDeleteInProgress = false;
              JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
@@ -489,12 +495,19 @@ public class FilePage implements java.io.Serializable {
             }
             return null;
         } catch (CommandException ex) {
+            fileDeleteInProgress = false;
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
             return null;
         }
 
 
-        JsfHelper.addSuccessMessage(JH.localize("file.message.editSuccess"));
+        if (fileDeleteInProgress) {
+            JsfHelper.addSuccessMessage(JH.localize("file.message.deleteSuccess"));
+            fileDeleteInProgress = false;
+        } else {
+            JsfHelper.addSuccessMessage(JH.localize("file.message.editSuccess"));
+        }
+        
         setVersion("DRAFT");
         return "";
     }

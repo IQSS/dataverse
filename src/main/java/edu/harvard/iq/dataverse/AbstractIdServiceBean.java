@@ -28,37 +28,34 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         return protocol + ":" + authority + separator + identifier;
     }
 
+    
     @Override
-    public HashMap<String, String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
-        logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
+    public HashMap<String, String> getMetadataForCreateIndicator(DvObject dvObjectIn) {
+        logger.log(Level.FINE,"getMetadataForCreateIndicator(DvObject)");
         HashMap<String, String> metadata = new HashMap<>();
-
-        metadata = addBasicMetadata(datasetIn, metadata);
-        metadata.put("datacite.publicationyear", generateYear(datasetIn));
-        metadata.put("_target", getTargetUrl(datasetIn));
+        metadata = addBasicMetadata(dvObjectIn, metadata);
+        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
+        metadata.put("_target", getTargetUrl(dvObjectIn));
         return metadata;
     }
-    
-//     @Override
-//    public HashMap<String, String> getMetadataFromStudyForCreateIndicator(DvObject dvObjectIn) {
-//        logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
-//        HashMap<String, String> metadata = new HashMap<>();
-//
-//        metadata = addBasicMetadata(dvObjectIn, metadata);
-//        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
-//        metadata.put("_target", getTargetUrl(dvObjectIn));
-//        return metadata;
-//    }
 
-    protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
+    protected HashMap<String, String> getUpdateMetadata(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
         HashMap<String, String> metadata = new HashMap<>();
-        metadata = addBasicMetadata(datasetIn, metadata);
+        metadata = addBasicMetadata(dvObjectIn, metadata);
         return metadata;
     }
     
-    protected HashMap<String, String> addBasicMetadata(Dataset datasetIn, HashMap<String, String> metadata){
-        String authorString = datasetIn.getLatestVersion().getAuthorsStr();
+    protected HashMap<String, String> addBasicMetadata(DvObject dvObjectIn, HashMap<String, String> metadata) {
+
+        Dataset dataset;
+        if (dvObjectIn.isInstanceofDataset()) {
+            dataset = (Dataset) dvObjectIn;
+        } else {
+            dataset = (Dataset) dvObjectIn.getOwner();
+        }
+
+        String authorString = dataset.getLatestVersion().getAuthorsStr();
 
         if (authorString.isEmpty()) {
             authorString = ":unav";
@@ -66,80 +63,61 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
 
         String producerString = dataverseService.findRootDataverse().getName();
 
-        if(producerString.isEmpty()) {
+        if (producerString.isEmpty()) {
             producerString = ":unav";
         }
         metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
+        metadata.put("datacite.title", dvObjectIn.getDisplayName());
         metadata.put("datacite.publisher", producerString);
-        
-        
         return metadata;
-    }
-    
-//    protected HashMap<String, String> addBasicMetadata(DvObject dvObject, HashMap<String, String> metadata){
-//        
-//        DataFile df=null;
-//        Dataset ds=null;
-//        if(dvObject instanceof DataFile ){
-//            df=(DataFile)dvObject;
-//            String authorString= df.getOwner().getLatestVersion().getAuthorsStr();
-//        }
-//        else if(dvObject instanceof Dataset)
-//        {
-//            
-//        }
-//              
-// 
-//                datasetIn.getLatestVersion().getAuthorsStr();
-//
-//        if (authorString.isEmpty()) {
-//            authorString = ":unav";
-//        }
-//
-//        String producerString = dataverseService.findRootDataverse().getName();
-//
-//        if(producerString.isEmpty()) {
-//            producerString = ":unav";
-//        }
-//        metadata.put("datacite.creator", authorString);
-//        metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
-//        metadata.put("datacite.publisher", producerString);
-//        
-//        
-//        return metadata;
-//    }
+    }   
 
-    @Override
-    public HashMap<String, String> getMetadataFromDatasetForTargetURL(Dataset datasetIn) {
-        logger.log(Level.FINE,"getMetadataFromDatasetForTargetURL");
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("_target", getTargetUrl(datasetIn));
-        return metadata;
-    }
-
-    protected String getTargetUrl(Dataset datasetIn) {
+    protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");
-        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalId();
-    }
-//
-//    @Override
-    public String getIdentifierFromDataset(Dataset dataset) {
-        logger.log(Level.FINE,"getIdentifierFromDataset");
-        return dataset.getGlobalId();
+        System.out.print("Before If statement tartget url: " + systemConfig.getDataverseSiteUrl() + DataFile.TARGET_URL + dvObjectIn.getGlobalId());
+        if (dvObjectIn.isInstanceofDataset()){
+            System.out.print("Dataset tartget url: " + systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + dvObjectIn.getGlobalId());
+              return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + dvObjectIn.getGlobalId();
+        }
+        
+        if (dvObjectIn.isInstanceofDataFile()){
+            System.out.print("File tartget url: " + systemConfig.getDataverseSiteUrl() + DataFile.TARGET_URL + dvObjectIn.getGlobalId());
+              return systemConfig.getDataverseSiteUrl() + DataFile.TARGET_URL + dvObjectIn.getGlobalId();
+        }       
+        return null;
     }
     
     @Override
-    public String getIdentifierFromDvObject(DvObject dvObject)
+    public String getIdentifier(DvObject dvObject)
     {
         return dvObject.getGlobalId();
     }
     
-    protected String generateYear (Dataset datasetIn){
-        if (datasetIn.isReleased()) {
-            return datasetIn.getPublicationDateFormattedYYYYMMDD().substring(0, 4);
+    protected String generateYear (DvObject dvObjectIn){
+        Dataset dataset;
+        if(dvObjectIn.isInstanceofDataset()){
+            dataset = (Dataset) dvObjectIn;
+        } else {
+            dataset = (Dataset) dvObjectIn.getOwner();
         }
-        return new SimpleDateFormat("yyyy").format(datasetIn.getCreateDate()); 
+        if (dataset.isReleased()) {
+            return dataset.getPublicationDateFormattedYYYYMMDD().substring(0, 4);
+        }
+        return new SimpleDateFormat("yyyy").format(dataset.getCreateDate()); 
+    }
+    
+     @Override
+    public HashMap getIdentifierMetadata(DvObject dvObject) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    
+    @Override
+    public HashMap<String, String> getMetadataForTargetURL(DvObject dvObject) {
+        logger.log(Level.FINE,"getMetadataForTargetURL");
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("_target", getTargetUrl(dvObject));
+        return metadata;
     }
 
 }

@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.util.*;
@@ -11,20 +10,14 @@ import java.util.logging.Logger;
 public interface IdServiceBean {
 
     static final Logger logger = Logger.getLogger(IdServiceBean.class.getCanonicalName());
-
-    boolean alreadyExists(Dataset dataset) throws Exception;
     
     boolean alreadyExists(DvObject dvObject) throws Exception;
 
     boolean registerWhenPublished();
     
     List<String> getProviderInformation();
-
-    String createIdentifier(Dataset dataset) throws Throwable;
     
     String createIdentifier(DvObject dvObject) throws Throwable;
-
-    HashMap getIdentifierMetadata(Dataset dataset);
     
     HashMap getIdentifierMetadata(DvObject dvObject);
 
@@ -39,28 +32,16 @@ public interface IdServiceBean {
      * @return the Global Identifier, e.g. "doi:10.12345/67890"
      */
     String getIdentifierForLookup(String protocol, String authority, String separator, String identifier);
-
-    String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception;
     
-    String modifyIdentifier(DvObject dvObject, HashMap<String, String> metadata) throws Exception;
-
-    void deleteIdentifier(Dataset datasetIn) throws Exception;
+    String modifyIdentifierTargetURL(DvObject dvObject) throws Exception;
 
     void deleteIdentifier(DvObject dvObject) throws Exception;
-        
-    HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn);
     
     HashMap getMetadataForCreateIndicator(DvObject dvObject);
-
-    HashMap getMetadataFromDatasetForTargetURL(Dataset datasetIn);
     
     HashMap getMetadataForTargetURL(DvObject dvObject);
-
-    String getIdentifierFromDataset(Dataset dataset);
     
-    String getIdentifierFromDvObject(DvObject dvObject);
-
-    boolean publicizeIdentifier(Dataset studyIn);
+    String getIdentifier(DvObject dvObject);
     
     boolean publicizeIdentifier(DvObject dvObject);
 

@@ -58,6 +58,17 @@ public class SettingsServiceBean {
         RepositoryStorageAbstractionLayerUrl,
         UploadMethods,
         DownloadMethods,
+        /**
+         * Sites around the world to which data has been replicated using RSAL
+         * (Repository Storage Abstraction Layer).
+         */
+        ReplicationSites,
+        /**
+         * If the data replicated around the world using RSAL (Repository
+         * Storage Abstraction Layer) is locally available, this is its file
+         * path, such as "/programs/datagrid".
+         */
+        LocalDataAccessPath,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,

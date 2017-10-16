@@ -15,11 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PreDestroy;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -37,26 +36,107 @@ public class DOIDataCiteRegisterService {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    @EJB
+    DataverseServiceBean dataverseService;
 
     private DataCiteRESTfullClient openClient() throws IOException {
         return new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
     }
+    
+    public String createIdentifierLocal(String identifier, HashMap<String, String> metadata, DvObject dvObject) {
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        String status = metadata.get("_status").trim();
+        String target = metadata.get("_target");
+        String retString = "";
+        DOIDataCiteRegisterCache rc = findByDOI(identifier);
+        if (rc == null) {
+            rc = new DOIDataCiteRegisterCache();
+            rc.setDoi(identifier);
+            rc.setXml(xmlMetadata);
+            rc.setStatus("reserved");
+            rc.setUrl(target);
+            em.persist(rc);
+        } else {
+            rc.setDoi(identifier);
+            rc.setXml(xmlMetadata);
+            rc.setStatus("reserved");
+            rc.setUrl(target);
+        }
+        retString = "success to reserved " + identifier;
+        return retString;
+    }
+    
+    public String registerIdentifier(String identifier, HashMap<String, String> metadata, DvObject dvObject) throws IOException {
+        String retString = "";
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        DOIDataCiteRegisterCache rc = findByDOI(identifier);
+        String target = metadata.get("_target");
+        if (rc != null) {
+            rc.setDoi(identifier);
+            rc.setXml(xmlMetadata);
+            rc.setStatus("public");
+            if (target == null || target.trim().length() == 0) {
+                target = rc.getUrl();
+            } else {
+                rc.setUrl(target);
+            }
+            try (DataCiteRESTfullClient client = openClient()) {
+                retString = client.postMetadata(xmlMetadata);
+                client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return retString;
+    }
+    
+    public String deactivateIdentifier (String identifier, HashMap<String, String> metadata, DvObject dvObject){
+        String retString = "";
+                    DOIDataCiteRegisterCache rc = findByDOI(identifier);
+            try (DataCiteRESTfullClient client = openClient()) {
+                if (rc != null) {
+                    rc.setStatus("unavailable");
+                    retString = client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
+                }
+            } catch (IOException io) {
 
-    public String createIdentifier(String identifier, HashMap<String, String> metadata, Dataset dataset) throws IOException {
+            }
+            return retString;
+    }
+     
+    private String getMetadataFromDvObject(String identifier, HashMap<String, String> metadata,DvObject dvObject) {
+        
+        Dataset dataset = null;
+        
+        if (dvObject.isInstanceofDataset()){
+            dataset = (Dataset) dvObject;
+        } else {
+            dataset = (Dataset) dvObject.getOwner();
+        }        
+        
         DataCiteMetadataTemplate metadataTemplate = new DataCiteMetadataTemplate();
-        metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
+        metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));       
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
-        // For debugging, set description to an unclosed tag, to make XML not well formed.
-//        metadataTemplate.setDescription("<br>");
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dataset.getLatestVersion().getTitle());
-        metadataTemplate.setPublisher(metadata.get("datacite.publisher"));
+        String producerString =  dataverseService.findRootDataverse().getName();
+        if (producerString.isEmpty()) {
+            producerString = ":unav";
+        }
+        metadataTemplate.setPublisher(producerString);
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
-
         String xmlMetadata = metadataTemplate.generateXML();
+        return xmlMetadata;
+    }
+
+    public String modifyIdentifier(String identifier, HashMap<String, String> metadata, DvObject dvObject) throws IOException {
+
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+
         logger.fine("XML to send to DataCite: " + xmlMetadata);
 
         String status = metadata.get("_status").trim();

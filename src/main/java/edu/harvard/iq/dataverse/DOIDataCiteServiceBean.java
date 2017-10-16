@@ -34,10 +34,10 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(Dataset dataset) {
+    public boolean alreadyExists(DvObject dvObject) {
         logger.log(Level.FINE,"alreadyExists");
         boolean alreadyExists;
-        String identifier = getIdentifierFromDataset(dataset);
+        String identifier = getIdentifier(dvObject);
         try{
             alreadyExists = doiDataCiteRegisterService.testDOIExists(identifier); 
         } catch (Exception e){
@@ -46,15 +46,17 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
         }
         return  alreadyExists;
     }
+    
+    
 
     @Override
-    public String createIdentifier(Dataset dataset) throws Exception {
+    public String createIdentifier(DvObject dvObject) throws Exception {
         logger.log(Level.FINE,"createIdentifier");
-        String identifier = getIdentifierFromDataset(dataset);
-        HashMap<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
+            String identifier = getIdentifier(dvObject);
+            HashMap<String, String> metadata = getMetadataForCreateIndicator(dvObject);
         metadata.put("_status", "reserved");
         try {
-            String retString = doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
+            String retString = doiDataCiteRegisterService.createIdentifierLocal(identifier, metadata, dvObject);
             logger.log(Level.FINE, "create DOI identifier retString : " + retString);
             return retString;
         } catch (Exception e) {
@@ -66,11 +68,11 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
             throw e;
         }
     }
-
-    @Override
-    public HashMap<String, String> getIdentifierMetadata(Dataset dataset) {
-        logger.log(Level.FINE,"getIdentifierMetadata");
-        String identifier = getIdentifierFromDataset(dataset);
+    
+        @Override
+    public HashMap getIdentifierMetadata(DvObject dvObject) {
+                logger.log(Level.FINE,"getIdentifierMetadata");
+        String identifier = getIdentifier(dvObject);
         HashMap<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifier);
@@ -83,7 +85,8 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
             return metadata;
         }
         return metadata;
-    }
+}
+    
 
     /**
      * Looks up the metadata for a Global Identifier
@@ -111,18 +114,18 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
 
 
     /**
-     * Modifies the EZID metadata for a Dataset
-     * @param dataset the Dataset whose metadata needs to be modified
-     * @param metadata the new metadata for the Dataset
+     * Modifies the DOI metadata for a Dataset
+     * @param dvObject the dvObject whose metadata needs to be modified
      * @return the Dataset identifier, or null if the modification failed
      * @throws java.lang.Exception
      */
     @Override
-    public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception {
+    public String modifyIdentifierTargetURL(DvObject dvObject) throws Exception {
         logger.log(Level.FINE,"modifyIdentifier");
-        String identifier = getIdentifierFromDataset(dataset);
+        String identifier = getIdentifier(dvObject);
         try {
-            doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
+           HashMap<String, String> metadata = doiDataCiteRegisterService.getMetadata(identifier);
+            doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject);
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
             logger.log(Level.WARNING, "String " + e.toString());
@@ -136,7 +139,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     
     public void deleteRecordFromCache(Dataset datasetIn){
         logger.log(Level.FINE,"deleteRecordFromCache");
-        String identifier = getIdentifierFromDataset(datasetIn);
+        String identifier = getIdentifier(datasetIn);
         HashMap doiMetadata = new HashMap();
         try {
             doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
@@ -166,9 +169,9 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    public void deleteIdentifier(Dataset datasetIn) throws Exception {
+    public void deleteIdentifier(DvObject dvObject) throws Exception {
         logger.log(Level.FINE,"deleteIdentifier");
-        String identifier = getIdentifierFromDataset(datasetIn);
+        String identifier = getIdentifier(dvObject);
         HashMap<String, String> doiMetadata = new HashMap<>();
         try {
             doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
@@ -197,40 +200,27 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
         }
         if (idStatus != null && idStatus.equals("public")) {
             //if public then it has been released set to unavailable and reset target to n2t url
-            updateIdentifierStatus(datasetIn, "unavailable");
+            doiDataCiteRegisterService.deactivateIdentifier(identifier, doiMetadata, dvObject);
         }
     }
 
-    @Override
     protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
-        HashMap<String, String> metadata = super.getUpdateMetadataFromDataset(datasetIn);
+        HashMap<String, String> metadata = super.getMetadataForCreateIndicator(datasetIn);
         metadata.put("datacite.publicationyear", generateYear(datasetIn));
         return metadata;
     }
 
+    
     @Override
-    public HashMap<String, String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
-        logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
-        HashMap<String, String> metadata = super.getMetadataFromStudyForCreateIndicator(datasetIn);
-        metadata.put("datacite.resourcetype", "Dataset");
-        return metadata;
-    }
-
-    @Override
-    public boolean publicizeIdentifier(Dataset dataset) {
-        logger.log(Level.FINE,"publicizeIdentifier");
-        return updateIdentifierStatus(dataset, "public");
-    }
-
-    private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
-        logger.log(Level.FINE,"updateIdentifierStatus");
-        String identifier = getIdentifierFromDataset(dataset);
-        HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
-        metadata.put("_status", statusIn);
-        metadata.put("_target", getTargetUrl(dataset));
+    public boolean publicizeIdentifier(DvObject dvObject) {
+                logger.log(Level.FINE,"updateIdentifierStatus");
+        String identifier = getIdentifier(dvObject);
+        HashMap<String, String> metadata = getUpdateMetadata(dvObject);
+        metadata.put("_status", "public");
+        metadata.put("_target", getTargetUrl(dvObject));
         try {
-            doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
+            doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
             return true;
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
@@ -241,6 +231,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
             return false;
         }
     }
+
     
     @Override
     public List<String> getProviderInformation(){
@@ -252,48 +243,5 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
         return providerInfo;
     }
 
-    @Override
-    public boolean alreadyExists(DvObject dvObject) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
-    @Override
-    public String createIdentifier(DvObject dvObject) throws Throwable {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public HashMap getIdentifierMetadata(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String modifyIdentifier(DvObject dvObject, HashMap<String, String> metadata) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void deleteIdentifier(DvObject dvObject) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public HashMap getMetadataForCreateIndicator(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public HashMap getMetadataForTargetURL(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getIdentifierFromDvObject(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean publicizeIdentifier(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }

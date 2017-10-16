@@ -79,13 +79,13 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         return false; // TODO current value plays safe, can we loosen up?
     }
 
-    public void reRegisterHandle(Dataset dataset) {
+    public void reRegisterHandle(DvObject dvObject) {
         logger.log(Level.FINE,"reRegisterHandle");
-        if (!HANDLE_PROTOCOL_TAG.equals(dataset.getProtocol())) {
-            logger.warning("reRegisterHandle called on a dataset with the non-handle global id: "+dataset.getId());
+        if (!HANDLE_PROTOCOL_TAG.equals(dvObject.getProtocol())) {
+            logger.warning("reRegisterHandle called on a dvObject with the non-handle global id: "+dvObject.getId());
         }
         
-        String handle = getDatasetHandle(dataset);
+        String handle = getDvObjectHandle(dvObject);
 
         boolean handleRegistered = isHandleRegistered(handle);
         
@@ -94,15 +94,15 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
             
             logger.info("Re-registering an existing handle id "+handle);
             
-            String authHandle = getHandleAuthority(dataset);
+            String authHandle = getHandleAuthority(dvObject);
 
             HandleResolver resolver = new HandleResolver();
 
-            String datasetUrl = getRegistrationUrl(dataset);
+            String datasetUrl = getRegistrationUrl(dvObject);
             
             logger.info("New registration URL: "+datasetUrl);
 
-            PublicKeyAuthenticationInfo auth = getAuthInfo(dataset.getAuthority());
+            PublicKeyAuthenticationInfo auth = getAuthInfo(dvObject.getAuthority());
             
             try {
 
@@ -135,19 +135,19 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         } else {
             // Create a new handle from scratch:
             logger.info("Handle " + handle + " not registered. Registering (creating) from scratch.");
-            registerNewHandle(dataset);
+            registerNewHandle(dvObject);
         }
     }
     
-    public Throwable registerNewHandle(Dataset dataset) {
+    public Throwable registerNewHandle(DvObject dvObject) {
         logger.log(Level.FINE,"registerNewHandle");
-        String handlePrefix = dataset.getAuthority();
-        String handle = getDatasetHandle(dataset);
-        String datasetUrl = getRegistrationUrl(dataset);
+        String handlePrefix = dvObject.getAuthority();
+        String handle = getDvObjectHandle(dvObject);
+        String datasetUrl = getRegistrationUrl(dvObject);
 
         logger.info("Creating NEW handle " + handle);
 
-        String authHandle = getHandleAuthority(dataset);
+        String authHandle = getHandleAuthority(dvObject);
 
         PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
         HandleResolver resolver = new HandleResolver();
@@ -242,13 +242,13 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
                 new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), 300, privkey);
         return auth;
     }
-    private String getRegistrationUrl(Dataset dataset) {
+    private String getRegistrationUrl(DvObject dvObject) {
         logger.log(Level.FINE,"getRegistrationUrl");
         String siteUrl = systemConfig.getDataverseSiteUrl();
                 
         //String targetUrl = siteUrl + "/dataset.xhtml?persistentId=hdl:" + dataset.getAuthority() 
-        String targetUrl = siteUrl + Dataset.TARGET_URL + "hdl:" + dataset.getAuthority()         
-                + "/" + dataset.getIdentifier();  
+        String targetUrl = siteUrl + Dataset.TARGET_URL + "hdl:" + dvObject.getAuthority()         
+                + "/" + dvObject.getIdentifier();  
         return targetUrl;
     }
  
@@ -305,17 +305,17 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         return privkey;
     }
     
-    private String getDatasetHandle(Dataset dataset) {
+    private String getDvObjectHandle(DvObject dvObject) {
         /* 
          * This is different from dataset.getGlobalId() in that we don't 
          * need the "hdl:" prefix.
          */
-        String handle = dataset.getAuthority() + "/" + dataset.getIdentifier();
+        String handle = dvObject.getAuthority() + "/" + dvObject.getIdentifier();
         return handle;
     }
     
-    private String getHandleAuthority(Dataset dataset){
-        return getHandleAuthority(dataset.getAuthority());
+    private String getHandleAuthority(DvObject dvObject){
+        return getHandleAuthority(dvObject.getAuthority());
     }
     
     private String getHandleAuthority(String handlePrefix) {
@@ -324,22 +324,13 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(Dataset dataset) throws Exception {
-        String handle = getDatasetHandle(dataset);
+    public boolean alreadyExists(DvObject dvObject) throws Exception {
+        String handle = getDvObjectHandle(dvObject);
         return isHandleRegistered(handle);
     }
-
+    
     @Override
-    public String createIdentifier(Dataset dataset) throws Throwable  {
-        Throwable result = registerNewHandle(dataset);
-        if (result != null)
-            throw result;
-        // TODO get exceptions from under the carpet
-        return getDatasetHandle(dataset);
-    }
-
-    @Override
-    public HashMap getIdentifierMetadata(Dataset dataset)  {
+    public HashMap getIdentifierMetadata(DvObject dvObject) {
         throw new NotImplementedException();
     }
 
@@ -349,16 +340,22 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception  {
+    public String modifyIdentifierTargetURL(DvObject dvObject) throws Exception  {
         logger.log(Level.FINE,"modifyIdentifier");
-        reRegisterHandle(dataset);
-        return getIdentifierFromDataset(dataset);
+        reRegisterHandle(dvObject);
+        if(dvObject.isInstanceofDataset()){
+            Dataset dataset = (Dataset) dvObject;
+            dataset.getFiles().forEach((df) -> {
+                reRegisterHandle(df);
+            });            
+        }
+        return getIdentifier(dvObject);
     }
 
     @Override
-    public void deleteIdentifier(Dataset datasetIn) throws Exception  {
-        String handle = getDatasetHandle(datasetIn);
-        String authHandle = getAuthHandle(datasetIn);
+    public void deleteIdentifier(DvObject dvObject) throws Exception  {
+        String handle = getDvObjectHandle(dvObject);
+        String authHandle = getAuthHandle(dvObject);
 
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
 
@@ -386,21 +383,15 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         }
     }
 
-    @Override
-    public boolean publicizeIdentifier(Dataset dataset)  {
-        logger.log(Level.FINE,"publicizeIdentifier");
-        return updateIdentifierStatus(dataset, "public");
-    }
-
-    private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
+    private boolean updateIdentifierStatus(DvObject dvObject, String statusIn) {
         logger.log(Level.FINE,"updateIdentifierStatus");
-        reRegisterHandle(dataset); // No Need to register new - this is only called when a handle exists
+        reRegisterHandle(dvObject); // No Need to register new - this is only called when a handle exists
         return true;
     }
 
-    private String getAuthHandle(Dataset datasetIn) {
+    private String getAuthHandle(DvObject dvObject) {
         // TODO hack: GNRSServiceBean retrieved this from vdcNetworkService
-        return "0.NA/" + datasetIn.getAuthority();
+        return "0.NA/" + dvObject.getAuthority();
     }
     
     @Override
@@ -413,50 +404,25 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         return providerInfo;
     }
 
-    @Override
-    public boolean alreadyExists(DvObject dvObject) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public String createIdentifier(DvObject dvObject) throws Throwable {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Throwable result = registerNewHandle(dvObject);
+        if (result != null)
+            throw result;
+        // TODO get exceptions from under the carpet
+        return getDvObjectHandle(dvObject);
+
     }
 
-    @Override
-    public HashMap getIdentifierMetadata(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String modifyIdentifier(DvObject dvObject, HashMap<String, String> metadata) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void deleteIdentifier(DvObject dvObject) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public HashMap getMetadataForCreateIndicator(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public HashMap getMetadataForTargetURL(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getIdentifierFromDvObject(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        return updateIdentifierStatus(dvObject, "public");
+
     }
+
 }
 
 

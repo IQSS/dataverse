@@ -11,12 +11,11 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    <!-- Upload (removed - L.A. 4.2) -->
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
                  scrollRows="25" scrollable="true" liveScroll="true"
                  scrollHeight="92%" scrollWidth="100%" style="margin-right:1px;"
-                 value="#{DatasetPage.sortButtonEnabled ? DatasetPage.fileMetadatas : DatasetPage.fileMetadatasSearch}"
+                 value="#{DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
@@ -62,7 +61,7 @@
                     </div>
                 </div>
             </div>
-            <div jsf:id="filesHeaderBlock" class="row">
+            <div jsf:id="filesHeaderBlock" class="row" jsf:rendered="#{DatasetPage.fileMetadatasSearch.size() gt 1}">
                 <div class="col-xs-6">
                     <!-- dataset file search -->
                     <div class="input-group">
@@ -78,7 +77,7 @@
                             </p:commandLink>
                         </span>
                     </div>
-                </div>                
+                </div>
             </div>
             <div class="row" style="margin-bottom:6px;">
                 <div id="filesHeaderCount" class="col-xs-2 text-left">
@@ -87,18 +86,25 @@
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                     </h:outputFormat>
                 </div>
-                <div class="col-xs-10">
-                    <!-- Button Panels -->
+                <div id="filesButtons" class="col-xs-10">
                     <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
-                    <div jsf:id="zipDownloadPanel" class="button-block tab-header pull-right text-right"
+                    <div jsf:id="uploadComputeBlock" class="button-block tab-header pull-right text-right"
                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
                                          and (DatasetPage.canUpdateDataset()
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
+                        <p:commandLink type="button" styleClass="btn btn-default btn-access  #{DatasetPage.workingVersion.fileMetadatas.size() > 0 or DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
+                                        rendered="#{DatasetPage.sessionUserAuthenticated 
+                                                    and DatasetPage.canUpdateDataset()
+                                                    and !widgetWrapper.widgetView and settingsWrapper.rsyncUpload}">
+                            <!-- RSYNC UPLOAD FILES BUTTON -->
+                            <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['file.uploadFiles']}"/>
+                        </p:commandLink>
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                       type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'ui-state-disabled' : ''}"
                                       disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated 
                                                                                     and DatasetPage.canUpdateDataset()
-                                                                                    and !widgetWrapper.widgetView}">
+                                                                                    and !widgetWrapper.widgetView and !settingsWrapper.rsyncUpload}">
+                            <!-- UPLOAD FILES BUTTON -->
                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
 <!--                        <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.showComputeButton()}">
@@ -113,7 +119,7 @@
                         </h:outputLink>-->
 
                     </div>
-                    <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
+                    <div jsf:id="restrictDeleteBlock" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
                         <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -133,13 +139,12 @@
                             </ul>
                         </div>
                         <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
-                            <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
+                            <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']} 
                         </p:commandLink>
                     </div>
-                    
-                    <!--SORT BUTTON-->
-                    <div class="button-block btn-group pull-right" jsf:rendered="#{DatasetPage.sortButtonEnabled and DatasetPage.fileMetadatas.size() gt 1}">
+                    <div id="sortBlock" class="button-block btn-group pull-right" jsf:rendered="#{DatasetPage.sortButtonEnabled and DatasetPage.fileMetadatas.size() gt 1}">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <!--SORT BUTTON-->
                             <span class="glyphicon glyphicon-sort"/> #{bundle['file.results.btn.sort']} <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
@@ -183,7 +188,6 @@
         <p:column class="col-file-thumb" style="width:64px !important;">
             <div class="thumbnail-block text-center">
                 <!-- Thumbnail Preview -->
-                <!-- 4.2.1 optimization: replaced dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession.user) with DatasetPage.isThumbnailAvailable(fileMetadata); see comments in the bean -->
                 <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and DatasetPage.isThumbnailAvailable(fileMetadata)}"
                       data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
                     
@@ -231,7 +235,7 @@
 
                 <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
 
-                <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' or settingsWrapper.rsyncDownload)}">
                     <f:param value="#{DatasetPage.getGuestbookResponseCount(fileMetadata)}"/>
                 </h:outputFormat>
 
@@ -268,11 +272,11 @@
             </ui:fragment>
 
         </p:column>
-        <p:column class="col-file-action text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+        <p:column class="col-file-action text-right #{settingsWrapper.rsyncDownload ? 'col-file-access' : ''}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
             <f:facet name="header" class="col-file-action text-right">
                 <!-- EDIT -->
                 <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
-                                             and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView}">
+                                             and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and (DatasetPage.fileMetadatasSearch.size() gt 0)}">
                     <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
                             disabled="#{DatasetPage.locked ? 'disabled' : ''}">
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
@@ -280,7 +284,7 @@
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                         <li class="#{DatasetPage.locked ? 'disabled' : ''}">
                             <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
-                                <h:outputText value="#{bundle['file.delete']}"/>
+                                <h:outputText value="#{bundle['file.delete']}"/> 
                             </p:commandLink>
                         </li>
                         <li class="#{DatasetPage.locked ? 'disabled' : ''}">
@@ -358,7 +362,7 @@
                 </ui:include>
             </ui:fragment>
 
-            <div class="btn-group">
+            <div class="btn-group" jsf:rendered="#{!settingsWrapper.rsyncDownload}">
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
@@ -369,7 +373,15 @@
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                 </ui:include>
             </div>
-            <!-- END: button-block -->
+            
+            <div class="col-xs-12 text-left small" jsf:rendered="#{settingsWrapper.rsyncDownload}">
+                <!-- Data Access for Rsync Download -->
+                <ui:include src="file-data-access-fragment.xhtml">
+                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+                    <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>
+                    <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                </ui:include>
+            </div>
         </p:column>
     </p:dataTable>
     

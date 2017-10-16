@@ -5,9 +5,7 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.emory.mathcs.backport.java.util.Collections;
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -36,6 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -110,6 +109,22 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
                     if (theDataFile.getProtocol()==null) theDataFile.setProtocol(protocol);
                     if (theDataFile.getAuthority()==null) theDataFile.setAuthority(authority);
                     if (theDataFile.getDoiSeparator()==null) theDataFile.setDoiSeparator(doiSeparator);
+                    
+        if (!theDataFile.isIdentifierRegistered()) {
+            String doiRetString = "";
+            idServiceBean = IdServiceBean.getBean(ctxt);
+            try {
+                logger.log(Level.FINE, "creating identifier");
+                doiRetString = idServiceBean.createIdentifier(theDataFile);
+            } catch (Throwable e) {
+                logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
+            }
+
+            // Check return value to make sure registration succeeded
+            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataFile.getIdentifier())) {
+                theDataFile.setIdentifierRegistered(true);
+            }
+        }
                     
                     
                     
