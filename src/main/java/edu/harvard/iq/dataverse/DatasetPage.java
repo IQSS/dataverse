@@ -79,6 +79,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
@@ -2662,13 +2663,16 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
+    /**
+     * Authors are not allowed to edit but curators are allowed.
+     */
     public boolean isLockedFromEdits() {
-        // Authors are not allowed to edit but curators are allowed.
-        if (permissionsWrapper.canIssuePublishDatasetCommand(dataset)) {
-            return false;
-        } else {
+        try {
+            permissionService.checkInReviewEditLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+        } catch (IllegalCommandException ex) {
             return true;
         }
+        return false;
     }
 
     public void setLocked(boolean locked) {
