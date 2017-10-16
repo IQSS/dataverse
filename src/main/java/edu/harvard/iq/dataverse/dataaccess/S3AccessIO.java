@@ -27,7 +27,9 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,6 +37,7 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -376,14 +379,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
+        Path tempPath = getTempPath(auxItemTag);
+        File tempFile = createTempFile(tempPath, inputStream);
+        
         String destinationKey = getDestinationKey(auxItemTag);
-        byte[] bytes = IOUtils.toByteArray(inputStream);
-        InputStream savedStream = new ByteArrayInputStream(bytes);
-        long length = bytes.length;
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(length);
+
         try {
-            s3.putObject(bucketName, destinationKey, savedStream, metadata);
+            s3.putObject(bucketName, destinationKey, tempFile);
+            tempFile.delete();
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
 
@@ -393,6 +396,85 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException(failureMsg);
         }
     }
+    
+    //Helper method for supporting saving streams with unknown length to S3
+    //We save those streams to a file and then upload the file
+    private Path getTempPath(String tempFileName) {
+        Path tempPath = null;
+
+        String filesRootDirectory = System.getProperty("dataverse.files.directory");
+        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
+            filesRootDirectory = "/tmp/files";
+        }
+
+        tempPath = Paths.get(filesRootDirectory, tempFileName);
+
+        return tempPath;
+    }
+    
+    //Helper method for supporting saving streams with unknown length to S3
+    //We save those streams to a file and then upload the file
+    private File createTempFile(Path path, InputStream inputStream) throws IOException {
+
+        File targetFile = new File(path.toUri()); //File needs a name
+        OutputStream outStream = new FileOutputStream(targetFile);
+
+        byte[] buffer = new byte[8 * 1024];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            outStream.write(buffer, 0, bytesRead);
+        }
+        IOUtils.closeQuietly(inputStream);
+        IOUtils.closeQuietly(outStream);
+        return targetFile;
+    } 
+    
+    
+//  File outputFile = getAuxObjectAsPath(auxItemTag).toFile();
+//
+//        if (outputFile == null) {
+//            throw new FileNotFoundException("FileAccessIO: Could not locate aux file for writing.");
+//        }
+//        
+//        try (OutputStream outputStream = new FileOutputStream(outputFile)) {
+//            int read;
+//            byte[] bytes = new byte[1024];
+//            while ((read = inputStream.read(bytes)) != -1) {
+//                outputStream.write(bytes, 0, read);
+//            }
+//        }
+//        inputStream.close();
+    
+    
+    
+//    @Override
+//    public Path getAuxObjectAsPath(String auxItemTag) throws IOException {
+//
+//        if (auxItemTag == null || "".equals(auxItemTag)) {
+//            throw new IOException("Null or invalid Auxiliary Object Tag.");
+//        }
+//
+//        String datasetDirectory = getDatasetDirectory();
+//
+//        if (dvObject.getStorageIdentifier() == null || "".equals(dvObject.getStorageIdentifier())) {
+//            throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+//        }
+//        Path auxPath = null;
+//        if (dvObject instanceof DataFile) {
+//            auxPath = Paths.get(datasetDirectory, dvObject.getStorageIdentifier() + "." + auxItemTag);
+//        } else if (dvObject instanceof Dataset) {
+//            auxPath = Paths.get(datasetDirectory, auxItemTag);
+//        } else if (dvObject instanceof Dataverse) {
+//        } else {
+//            throw new IOException("Aux path could not be generated for " + auxItemTag);
+//        } 
+//        
+//        if (auxPath == null) {
+//            throw new IOException("Invalid Path location for the auxiliary file " + dvObject.getStorageIdentifier() + "." + auxItemTag);
+//        }
+//        
+//        return auxPath;
+//    }
 
     @Override
     public List<String> listAuxObjects() throws IOException {
