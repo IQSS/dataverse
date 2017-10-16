@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -377,11 +378,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         String destinationKey = getDestinationKey(auxItemTag);
         byte[] bytes = IOUtils.toByteArray(inputStream);
+        InputStream savedStream = new ByteArrayInputStream(bytes);
         long length = bytes.length;
         ObjectMetadata metadata = new ObjectMetadata();
-        //metadata.setContentLength(length);
+        metadata.setContentLength(length);
         try {
-            s3.putObject(bucketName, destinationKey, inputStream, metadata);
+            s3.putObject(bucketName, destinationKey, savedStream, metadata);
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
 
