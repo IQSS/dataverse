@@ -2661,7 +2661,16 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    
+
+    public boolean isLockedFromEdits() {
+        // Authors are not allowed to edit but curators are allowed.
+        if (permissionsWrapper.canIssuePublishDatasetCommand(dataset)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     public void setLocked(boolean locked) {
         // empty method, so that we can use DatasetPage.locked in a hidden 
         // input on the page. 
