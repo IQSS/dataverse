@@ -2664,9 +2664,15 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     /**
-     * Authors are not allowed to edit but curators are allowed.
+     * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
+     * For all other locks edit should be locked for all editors.
      */
     public boolean isLockedFromEdits() {
+        
+        if (dataset.isLocked() && !dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)){
+            return true;           
+        }
+        
         try {
             permissionService.checkInReviewEditLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
         } catch (IllegalCommandException ex) {
