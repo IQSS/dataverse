@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -123,6 +124,7 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
             // Check return value to make sure registration succeeded
             if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataFile.getIdentifier())) {
                 theDataFile.setIdentifierRegistered(true);
+                theDataFile.setGlobalIdCreateTime(new Date());
             }
         }
                     
