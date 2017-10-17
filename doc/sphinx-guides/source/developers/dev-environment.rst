@@ -377,7 +377,7 @@ Create a Minishift Project
 Create a Dataverse App within the Minishift Project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Running this command will download images from Docker Hub and use them to create a Dataverse application.
+Run this command from inside the vanilla Dataverse application to download images from Docker Hub and use them to create a Dataverse Minishift application. Alternatively, the ``openshift.json`` file can be downloaded directly from our github repo.
 
 ``oc new-app conf/openshift/openshift.json``
 
