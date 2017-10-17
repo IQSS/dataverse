@@ -13,7 +13,10 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.endsWith;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -29,7 +32,7 @@ public class InReviewWorkflowIT {
     }
 
     @Test
-    public void testCuratorSendsCommentsToAuthor() {
+    public void testCuratorSendsCommentsToAuthor() throws InterruptedException {
         Response createCurator = UtilIT.createRandomUser();
         createCurator.prettyPrint();
         createCurator.then().assertThat()
@@ -203,7 +206,7 @@ public class InReviewWorkflowIT {
         Response authorAttemptsToAddFileWhileInReviewViaSword = UtilIT.uploadRandomFile(datasetPersistentId, authorApiToken);
         authorAttemptsToAddFileWhileInReviewViaSword.prettyPrint();
         authorAttemptsToAddFileWhileInReviewViaSword.then().assertThat()
-                .body("error.summary", equalTo("Please try again later. Unable to perform operation due to dataset lock: InReview"))
+                .body("error.summary", equalTo("Couldn't update dataset edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException: Dataset cannot be edited due to In Review dataset lock."))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // The curator adds the file himself while
@@ -213,15 +216,30 @@ public class InReviewWorkflowIT {
         curatorAttemptsToAddFileWhileInReviewViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // The curator adds a second file himself while
-        // the dataset is in review via SWORD.
-        Response curatorAttemptsToAddFileWhileInReviewViaSword = UtilIT.uploadRandomFile(datasetPersistentId, authorApiToken);
-        curatorAttemptsToAddFileWhileInReviewViaSword.prettyPrint();
-        curatorAttemptsToAddFileWhileInReviewViaSword.then().assertThat()
-                // FIXME: The curator should be able to upload files via SWORD
-                // when the dataset is in review.
-                .body("error.summary", equalTo("Please try again later. Unable to perform operation due to dataset lock: InReview"))
-                .statusCode(BAD_REQUEST.getStatusCode());
+        // FIXME: It sure seems like if a dataset is in review and then
+        // you upload a tabular file, when the ingest completes the dataset
+        // is no longer in review.
+        boolean testMultipleLocks = false;
+        if (testMultipleLocks) {
+            // The curator adds a second file himself while
+            // the dataset is in review via SWORD.
+            String pathToFileThatGoesThroughIngest = "scripts/search/data/tabular/50by1000.dta.zip";
+            Response curatorAttemptsToAddFileWhileInReviewViaSword = UtilIT.uploadZipFileViaSword(datasetPersistentId, pathToFileThatGoesThroughIngest, curatorApiToken);
+            curatorAttemptsToAddFileWhileInReviewViaSword.prettyPrint();
+            curatorAttemptsToAddFileWhileInReviewViaSword.then().assertThat()
+                    .statusCode(CREATED.getStatusCode());
+
+            // Whoops! The curator accidentally tries to delete the dataset but it fails because a file is being ingested. Phew!
+            Response deleteDatasetShouldFail = UtilIT.deleteLatestDatasetVersionViaSwordApi(datasetPersistentId, curatorApiToken);
+            deleteDatasetShouldFail.prettyPrint();
+            deleteDatasetShouldFail.then().assertThat()
+                    // TODO: Investigate this "null". The logs say:
+                    // PSQLException: ERROR: update or delete on table "dvobject" violates foreign key constraint "fk_ingestreport_datafile_id" on table "ingestreport"
+                    .body("error.summary", startsWith("Can't delete dataset: Command edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand"))
+                    .body("error.summary", endsWith("failed: null"))
+                    .statusCode(BAD_REQUEST.getStatusCode());
+            Thread.sleep(2000); // let file finish ingesting
+        }
 
         // The author changes his mind and figures this is a teaching moment to
         // have the author upload the file herself. He deletes the file and will
@@ -235,9 +253,7 @@ public class InReviewWorkflowIT {
         Response deleteFile = UtilIT.deleteFile(fileId, curatorApiToken);
         deleteFile.prettyPrint();
         deleteFile.then().assertThat()
-                // FIXME: The curator should be able to delete files while the dataset is in review.
-                .body("error.summary", equalTo("Please try again later. Unable to perform operation due to dataset lock: InReview"))
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .statusCode(NO_CONTENT.getStatusCode());
 
         // The curator tries to update the title while the dataset is in review via native.
         Response updateTitleResponseCuratorViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, curatorApiToken);

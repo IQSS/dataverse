@@ -29,6 +29,7 @@ import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -355,6 +356,11 @@ public class UtilIT {
         return uploadFile(persistentId, zipfilename, apiToken);
     }
 
+    /**
+     * @deprecated switch to uploadZipFileViaSword where the path isn't hard
+     * coded.
+     */
+    @Deprecated
     public static Response uploadFile(String persistentId, String zipfilename, String apiToken) {
         String pathToFileName = "scripts/search/data/binary/" + zipfilename;
         byte[] bytes = null;
@@ -363,6 +369,33 @@ public class UtilIT {
             logger.info("Number of bytes to upload: " + bytes.length);
         } catch (IOException ex) {
             throw new RuntimeException("Problem getting bytes from " + pathToFileName + ": " + ex);
+        }
+        Response swordStatementResponse = given()
+                .body(bytes)
+                .header("Packaging", "http://purl.org/net/sword/package/SimpleZip")
+                .header("Content-Disposition", "filename=" + zipfilename)
+                /**
+                 * It's unclear why we need to add "preemptive" to auth but
+                 * without it we can't use send bytes using the body/content
+                 * method. See
+                 * https://github.com/jayway/rest-assured/issues/507#issuecomment-162963787
+                 */
+                .auth().preemptive().basic(apiToken, EMPTY_STRING)
+                .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/study/" + persistentId);
+        return swordStatementResponse;
+
+    }
+
+    public static Response uploadZipFileViaSword(String persistentId, String pathToZipFile, String apiToken) {
+        File file = new File(pathToZipFile);
+        String zipfilename = file.getName();
+        byte[] bytes = null;
+        try {
+            Path path = Paths.get(pathToZipFile);
+            bytes = Files.readAllBytes(path);
+            logger.info("Number of bytes to upload: " + bytes.length);
+        } catch (IOException ex) {
+            throw new RuntimeException("Problem getting bytes from " + pathToZipFile + ": " + ex);
         }
         Response swordStatementResponse = given()
                 .body(bytes)
