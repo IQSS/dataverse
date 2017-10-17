@@ -77,7 +77,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        ctxt.permissions().checkInReviewEditLock(theDataset, getRequest(), this);
+        ctxt.permissions().checkEditDatasetLock(theDataset, getRequest(), this);
         // first validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required

@@ -2669,12 +2669,8 @@ public class DatasetPage implements java.io.Serializable {
      */
     public boolean isLockedFromEdits() {
         
-        if (dataset.isLocked() && !dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)){
-            return true;           
-        }
-        
         try {
-            permissionService.checkInReviewEditLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+            permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
         } catch (IllegalCommandException ex) {
             return true;
         }

@@ -541,15 +541,18 @@ public class PermissionServiceBean {
         }
         return dataversesUserHasPermissionOn;
     }
-
-    public void checkInReviewEditLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
+    
+    public void checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         DatasetLock datasetLock = dataset.getDatasetLock();
         if (datasetLock != null) {
             if (DatasetLock.Reason.InReview.equals(datasetLock.getReason())) {
                 if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
                     throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
                 }
+            } else {
+                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
             }
+            
         }
     }
 
