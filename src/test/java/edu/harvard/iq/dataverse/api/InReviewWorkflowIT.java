@@ -228,17 +228,6 @@ public class InReviewWorkflowIT {
             curatorAttemptsToAddFileWhileInReviewViaSword.prettyPrint();
             curatorAttemptsToAddFileWhileInReviewViaSword.then().assertThat()
                     .statusCode(CREATED.getStatusCode());
-
-            // Whoops! The curator accidentally tries to delete the dataset but it fails because a file is being ingested. Phew!
-            Response deleteDatasetShouldFail = UtilIT.deleteLatestDatasetVersionViaSwordApi(datasetPersistentId, curatorApiToken);
-            deleteDatasetShouldFail.prettyPrint();
-            deleteDatasetShouldFail.then().assertThat()
-                    // TODO: Investigate this "null". The logs say:
-                    // PSQLException: ERROR: update or delete on table "dvobject" violates foreign key constraint "fk_ingestreport_datafile_id" on table "ingestreport"
-                    .body("error.summary", startsWith("Can't delete dataset: Command edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand"))
-                    .body("error.summary", endsWith("failed: null"))
-                    .statusCode(BAD_REQUEST.getStatusCode());
-            Thread.sleep(2000); // let file finish ingesting
         }
 
         // The author changes his mind and figures this is a teaching moment to

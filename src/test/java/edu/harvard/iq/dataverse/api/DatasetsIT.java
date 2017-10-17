@@ -883,9 +883,8 @@ public class DatasetsIT {
         Response deleteDataset = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDataset.prettyPrint();
         deleteDataset.then().assertThat()
-                // FIXME: Rather than a 500 error, this should say something like "Please try again after ingest is complete."
-                // PSQLException: ERROR: update or delete on table "dvobject" violates foreign key constraint "fk_ingestreport_datafile_id" on table "ingestreport"
-                .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
+                .body("message", equalTo("Dataset cannot be edited due to dataset lock."))
+                .statusCode(FORBIDDEN.getStatusCode());
 
     }
 
