@@ -1509,7 +1509,7 @@ public class DatasetPage implements java.io.Serializable {
             } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
             } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.inReview.message"), BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
             }
         }
         
