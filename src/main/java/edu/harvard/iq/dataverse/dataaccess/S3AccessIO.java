@@ -41,6 +41,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
@@ -190,6 +191,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             File inputFile = fileSystemPath.toFile();
             if (dvObject instanceof DataFile) {
                 s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
+                
                 newFileSize = inputFile.length();
             } else {
                 throw new IOException("DvObject type other than datafile is not yet supported");
@@ -257,6 +259,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             throw new IOException(failureMsg);
         }
+        
         setSize(s3.getObjectMetadata(bucketName, key).getContentLength());
     }
 
@@ -340,7 +343,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String destinationKey = getDestinationKey(auxItemTag);
         try {
             File inputFile = fileSystemPath.toFile();
-            s3.putObject(new PutObjectRequest(bucketName, destinationKey, inputFile));
+            s3.putObject(new PutObjectRequest(bucketName, destinationKey, inputFile));            
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.savePathAsAux():    " + ase.getMessage());
             throw new IOException("S3AccessIO: Failed to save path as an auxiliary object.");
@@ -371,30 +374,33 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    //todo: add new method with size?
-    //or just check the data file content size?
-    // this method copies a local InputStream into this DataAccess Auxiliary location:
+    //S3 cannot save streams with an unknown length. We save the stream to a temp file
+    // and then upload the temp file. This solution is acceptable as we only use
+    // this method in conjunction with worldmap.
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
-        Path tempPath = getTempPath(auxItemTag);
-        File tempFile = createTempFile(tempPath, inputStream);
-        
+
         String destinationKey = getDestinationKey(auxItemTag);
 
+        Random rand = new Random();
+        Path tempPath = getTempPath(auxItemTag+rand.nextInt(Integer.MAX_VALUE));
+        File tempFile = createTempFile(tempPath, inputStream);
+        
         try {
             s3.putObject(bucketName, destinationKey, tempFile);
-            tempFile.delete();
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
 
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Unknown exception occured while saving a local InputStream as S3Object";
             }
+            tempFile.delete();
             throw new IOException(failureMsg);
         }
+        tempFile.delete();
     }
     
     //Helper method for supporting saving streams with unknown length to S3
@@ -429,53 +435,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return targetFile;
     } 
     
-    
-//  File outputFile = getAuxObjectAsPath(auxItemTag).toFile();
-//
-//        if (outputFile == null) {
-//            throw new FileNotFoundException("FileAccessIO: Could not locate aux file for writing.");
-//        }
-//        
-//        try (OutputStream outputStream = new FileOutputStream(outputFile)) {
-//            int read;
-//            byte[] bytes = new byte[1024];
-//            while ((read = inputStream.read(bytes)) != -1) {
-//                outputStream.write(bytes, 0, read);
-//            }
-//        }
-//        inputStream.close();
-    
-    
-    
-//    @Override
-//    public Path getAuxObjectAsPath(String auxItemTag) throws IOException {
-//
-//        if (auxItemTag == null || "".equals(auxItemTag)) {
-//            throw new IOException("Null or invalid Auxiliary Object Tag.");
-//        }
-//
-//        String datasetDirectory = getDatasetDirectory();
-//
-//        if (dvObject.getStorageIdentifier() == null || "".equals(dvObject.getStorageIdentifier())) {
-//            throw new IOException("Data Access: No local storage identifier defined for this datafile.");
-//        }
-//        Path auxPath = null;
-//        if (dvObject instanceof DataFile) {
-//            auxPath = Paths.get(datasetDirectory, dvObject.getStorageIdentifier() + "." + auxItemTag);
-//        } else if (dvObject instanceof Dataset) {
-//            auxPath = Paths.get(datasetDirectory, auxItemTag);
-//        } else if (dvObject instanceof Dataverse) {
-//        } else {
-//            throw new IOException("Aux path could not be generated for " + auxItemTag);
-//        } 
-//        
-//        if (auxPath == null) {
-//            throw new IOException("Invalid Path location for the auxiliary file " + dvObject.getStorageIdentifier() + "." + auxItemTag);
-//        }
-//        
-//        return auxPath;
-//    }
-
     @Override
     public List<String> listAuxObjects() throws IOException {
         if (!this.canWrite()) {
