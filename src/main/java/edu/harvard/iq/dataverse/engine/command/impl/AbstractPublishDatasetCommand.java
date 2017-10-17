@@ -21,11 +21,7 @@ public abstract class AbstractPublishDatasetCommand<T> extends AbstractCommand<T
     }
     
     protected WorkflowContext buildContext( String doiProvider, WorkflowContext.TriggerType triggerType) {
-        return new WorkflowContext(getRequest(), theDataset, 
-                theDataset.getLatestVersion().getVersionNumber(), 
-                theDataset.getLatestVersion().getMinorVersionNumber(),
-                triggerType, 
-                doiProvider);
+        return new WorkflowContext(getRequest(), theDataset, doiProvider, triggerType);
     }
     
 }

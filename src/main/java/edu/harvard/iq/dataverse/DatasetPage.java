@@ -1503,12 +1503,20 @@ public class DatasetPage implements java.io.Serializable {
                 
         // Various info messages, when the dataset is locked (for various reasons):
         if (dataset.isLocked()) {
-            if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.DcmUpload)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"), BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
-            } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
-            } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
+            // when we sync up with the rsync-upload branch, there will be a merge
+            // conflict here; once resolved, there will also be code here for 
+            // rsync upload in progress, and maybe other kinds of locks. 
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), 
+                                BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), 
+                                BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
+                                BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
         }
         
@@ -1862,7 +1870,7 @@ public class DatasetPage implements java.io.Serializable {
                 // has been published. If a publishing workflow is configured, this may have sent the 
                 // dataset into a workflow limbo, potentially waiting for a third party system to complete 
                 // the process. So it may be premature to show the "success" message at this point. 
-                if (dataset.isLocked() && dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
+                if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
                 } else {
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
@@ -2620,7 +2628,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isLockedInProgress() {
         if (dataset != null) {
-            logger.fine("checking lock status of dataset " + dataset.getId());
+            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
             if (dataset.isLocked()) {
                 return true;
             }
@@ -2629,19 +2637,14 @@ public class DatasetPage implements java.io.Serializable {
     }*/
     
     public boolean isDatasetLockedInWorkflow() {
-        if (dataset != null) {
-            if (dataset.isLocked()) {
-                if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return (dataset != null) 
+                ? dataset.isLockedFor(DatasetLock.Reason.Workflow) 
+                : false;
     }
     
     public boolean isStillLocked() {
         if (dataset != null && dataset.getId() != null) {
-            logger.fine("checking lock status of dataset " + dataset.getId());
+            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
             if (datasetService.checkDatasetLock(dataset.getId())) {
                 return true;
             }
@@ -3949,9 +3952,9 @@ public class DatasetPage implements java.io.Serializable {
         String lockInfoMessage = "script downloaded";
         DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
         if (lock != null) {
-            dataset.setDatasetLock(lock);
+            dataset.addLock(lock);
         } else {
-            logger.warning("Failed to lock the dataset (dataset id="+dataset.getId()+")");
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
         }
         
     }
@@ -3978,6 +3981,7 @@ public class DatasetPage implements java.io.Serializable {
      * It returns the default summary fields( subject, description, keywords, related publications and notes)
      * if the custom summary datafields has not been set, otherwise will set the custom fields set by the sysadmins
      * 
+     * @return the dataset fields to be shown in the dataset summary
      */
     public List<DatasetField> getDatasetSummaryFields() {
        customFields  = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
