@@ -187,6 +187,58 @@ public class InReviewWorkflowIT {
         // The author was unable to change the title.
         Assert.assertTrue(citationAuthorNative.contains("A Better Title"));
 
+        // The author remembers she forgot to add a file and tries to upload it while
+        // the dataset is in review via native API but this fails.
+        String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
+        Response authorAttemptsToAddFileWhileInReviewViaNative = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, authorApiToken);
+        authorAttemptsToAddFileWhileInReviewViaNative.prettyPrint();
+        authorAttemptsToAddFileWhileInReviewViaNative.then().assertThat()
+                // TODO: It would be nice to reveal the message AddReplaceFileHelper puts in server.log:
+                // "Dataset cannot be edited due to In Review dataset lock."
+                .body("message", equalTo("Failed to add file to dataset."))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // The author tries adding a random file via SWORD and this also fails due
+        // to the dataset being in review.
+        Response authorAttemptsToAddFileWhileInReviewViaSword = UtilIT.uploadRandomFile(datasetPersistentId, authorApiToken);
+        authorAttemptsToAddFileWhileInReviewViaSword.prettyPrint();
+        authorAttemptsToAddFileWhileInReviewViaSword.then().assertThat()
+                .body("error.summary", equalTo("Please try again later. Unable to perform operation due to dataset lock: InReview"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // The curator adds the file himself while
+        // the dataset is in review via native API.
+        Response curatorAttemptsToAddFileWhileInReviewViaNative = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, curatorApiToken);
+        curatorAttemptsToAddFileWhileInReviewViaNative.prettyPrint();
+        curatorAttemptsToAddFileWhileInReviewViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // The curator adds a second file himself while
+        // the dataset is in review via SWORD.
+        Response curatorAttemptsToAddFileWhileInReviewViaSword = UtilIT.uploadRandomFile(datasetPersistentId, authorApiToken);
+        curatorAttemptsToAddFileWhileInReviewViaSword.prettyPrint();
+        curatorAttemptsToAddFileWhileInReviewViaSword.then().assertThat()
+                // FIXME: The curator should be able to upload files via SWORD
+                // when the dataset is in review.
+                .body("error.summary", equalTo("Please try again later. Unable to perform operation due to dataset lock: InReview"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // The author changes his mind and figures this is a teaching moment to
+        // have the author upload the file herself. He deletes the file and will
+        // ask her to upload it.
+        Response getFileIdRequest = UtilIT.nativeGet(datasetId, curatorApiToken);
+        getFileIdRequest.prettyPrint();
+        getFileIdRequest.then().assertThat()
+                .statusCode(OK.getStatusCode());;
+
+        int fileId = JsonPath.from(getFileIdRequest.getBody().asString()).getInt("data.latestVersion.files[0].dataFile.id");
+        Response deleteFile = UtilIT.deleteFile(fileId, curatorApiToken);
+        deleteFile.prettyPrint();
+        deleteFile.then().assertThat()
+                // FIXME: The curator should be able to delete files while the dataset is in review.
+                .body("error.summary", equalTo("Please try again later. Unable to perform operation due to dataset lock: InReview"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
         // The curator tries to update the title while the dataset is in review via native.
         Response updateTitleResponseCuratorViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, curatorApiToken);
         updateTitleResponseCuratorViaNative.prettyPrint();
@@ -199,8 +251,6 @@ public class InReviewWorkflowIT {
         String citationCuratorNative = XmlPath.from(atomEntryCuratorNative.body().asString()).getString("bibliographicCitation");
         System.out.println("citation: " + citationCuratorNative);
         Assert.assertTrue(citationCuratorNative.contains("newTitle"));
-        // TODO: Can curator add files via SWORD?
-        // TODO: Can curator add files via native API?
         // END https://github.com/IQSS/dataverse/issues/4139
 
         // TODO: test where curator neglecting to leave a comment. Should fail with "reason for return" required.
