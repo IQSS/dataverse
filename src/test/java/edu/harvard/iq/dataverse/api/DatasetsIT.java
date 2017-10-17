@@ -19,6 +19,7 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -848,6 +849,43 @@ public class DatasetsIT {
                 .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"))
                 .body("data.latestVersion.files[0].dataFile.checksum.value", equalTo("17ea9225aa0e96ae6ff61c256237d6add6c197d1"))
                 .statusCode(OK.getStatusCode());
+
+    }
+
+    @Test
+    public void testDeleteDatasetWhileFileIngesting() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        logger.info("Dataset created with id " + datasetId + " and persistent id " + persistentId);
+
+        String pathToFileThatGoesThroughIngest = "scripts/search/data/tabular/50by1000.dta";
+        Response uploadIngestableFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFileThatGoesThroughIngest, apiToken);
+        uploadIngestableFile.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response deleteDataset = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDataset.prettyPrint();
+        deleteDataset.then().assertThat()
+                // FIXME: Rather than a 500 error, this should say something like "Please try again after ingest is complete."
+                // PSQLException: ERROR: update or delete on table "dvobject" violates foreign key constraint "fk_ingestreport_datafile_id" on table "ingestreport"
+                .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
 
     }
 
