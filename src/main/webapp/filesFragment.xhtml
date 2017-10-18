@@ -278,7 +278,7 @@
                 <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                              and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and (DatasetPage.fileMetadatasSearch.size() gt 0)}">
                     <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
-                            disabled="#{DatasetPage.locked ? 'disabled' : ''}">
+                            disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
