@@ -133,7 +133,27 @@ public abstract class StorageIO<T extends DvObject> {
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     public abstract void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException;
     
-    // this method copies a local InputStream into this DataAccess Auxiliary location:
+    
+    /**
+     * This method copies a local InputStream into this DataAccess Auxiliary location.
+     * Note that the S3 driver implementation of this abstract method is problematic, 
+     * because S3 cannot save an object of an unknown length. This effectively 
+     * nullifies any benefits of streaming; as we cannot start saving until we 
+     * have read the entire stream. 
+     * One way of solving this would be to buffer the entire stream as byte[], 
+     * in memory, then save it... Which of course would be limited by the amount 
+     * of memory available, and thus would not work for streams larger than that. 
+     * So we have eventually decided to save save the stream to a temp file, then 
+     * save to S3. This is slower, but guaranteed to work on any size stream. 
+     * An alternative we may want to consider is to not implement this method 
+     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException, 
+     * similarly to how we handle attempts to open OutputStreams, in this and the 
+     * Swift driver. 
+     * 
+     * @param inputStream InputStream we want to save
+     * @param auxItemTag String representing this Auxiliary type ("extension")
+     * @throws IOException if anything goes wrong.
+    */
     public abstract void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException; 
     public abstract void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException;
     
