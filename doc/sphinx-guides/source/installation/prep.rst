@@ -14,6 +14,13 @@ We'll try to get you up and running as quickly as possible, but we thought you m
 Choose Your Own Installation Adventure
 --------------------------------------
 
+NDS Labs Workbench (for Testing Only)
++++++++++++++++++++++++++++++++++++++
+
+The National Data Service (NDS) is community-driven effort guided by the National Data Service Consortium. NDS Labs has packaged Dataverse as `one of many data management tools <https://github.com/nds-org/ndslabs-specs>`_ that can be quickly deployed for evaluation purposes in their tool based on Kubernetes called NDS Labs Workbench. To get started, visit http://www.nationaldataservice.org/projects/labs.html .
+
+Please note that the version of Dataverse in NDS Labs Workbench may lag behind the latest release. Craig Willis from NDS Labs did an excellent job of adding Dataverse 4 to NDS Labs Workbench and the Dataverse team hopes to some day take over the creation of Docker images so the latest version of Dataverse can be evaluated in the workbench.
+
 Vagrant (for Testing Only)
 ++++++++++++++++++++++++++
 
