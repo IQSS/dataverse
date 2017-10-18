@@ -79,6 +79,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
@@ -1508,7 +1509,7 @@ public class DatasetPage implements java.io.Serializable {
             } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
             } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.inReview.message"), BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
             }
         }
         
@@ -2661,7 +2662,21 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    
+
+    /**
+     * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
+     * For all other locks edit should be locked for all editors.
+     */
+    public boolean isLockedFromEdits() {
+        
+        try {
+            permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+        } catch (IllegalCommandException ex) {
+            return true;
+        }
+        return false;
+    }
+
     public void setLocked(boolean locked) {
         // empty method, so that we can use DatasetPage.locked in a hidden 
         // input on the page. 

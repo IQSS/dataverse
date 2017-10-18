@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLock;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.UriRegistry;
 
@@ -39,14 +37,6 @@ public class SwordUtil {
         StackTraceElement[] emptyStackTrace = new StackTraceElement[0];
         swordError.setStackTrace(emptyStackTrace);
         return swordError;
-    }
-
-    public static void datasetLockCheck(Dataset dataset) throws SwordError {
-        DatasetLock datasetLock = dataset.getDatasetLock();
-        if (datasetLock != null) {
-            String message = "Please try again later. Unable to perform operation due to dataset lock: " + datasetLock.getInfo();
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
-        }
     }
 
 }
