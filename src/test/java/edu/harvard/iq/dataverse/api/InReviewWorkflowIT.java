@@ -226,7 +226,16 @@ public class InReviewWorkflowIT {
             curatorAttemptsToAddFileWhileInReviewViaSword.then().assertThat()
                     .statusCode(CREATED.getStatusCode());
             // Give file time to ingest. The lock needs to go away before any edits can happen.
-            Thread.sleep(2000);
+            boolean exerciseConcurrentModificationException = false;
+            if (exerciseConcurrentModificationException) {
+                String comments = "How do we feel about concurrency?";
+                JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+                jsonObjectBuilder.add("reasonForReturn", comments);
+                Response returnToAuthor = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
+                returnToAuthor.prettyPrint();
+            } else {
+                Thread.sleep(2000);
+            }
         }
 
         // The author changes his mind and figures this is a teaching moment to
