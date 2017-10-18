@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
+import com.jayway.restassured.path.xml.XmlPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.util.logging.Logger;
@@ -12,7 +13,11 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.endsWith;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -27,7 +32,7 @@ public class InReviewWorkflowIT {
     }
 
     @Test
-    public void testCuratorSendsCommentsToAuthor() {
+    public void testCuratorSendsCommentsToAuthor() throws InterruptedException {
         Response createCurator = UtilIT.createRandomUser();
         createCurator.prettyPrint();
         createCurator.then().assertThat()
@@ -100,18 +105,19 @@ public class InReviewWorkflowIT {
                 .body("message", equalTo("User @" + joeRandomUsername + " is not permitted to perform requested action."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
-//        boolean returnEarlyToTest = true;
-//        if (returnEarlyToTest) {
-//            System.out.println("Curator username/password and API token: " + curatorUsername + " and " + curatorApiToken);
-//            System.out.println("Author username/password and API token: " + authorUsername + " and " + authorApiToken);
-//            return;
-//        }
         // The author submits the dataset for review.
         Response submitForReview = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
         submitForReview.prettyPrint();
         submitForReview.then().assertThat()
                 .body("data.inReview", equalTo(true))
                 .statusCode(OK.getStatusCode());
+
+        boolean returnEarlyToTestEditButton = false;
+        if (returnEarlyToTestEditButton) {
+            System.out.println("Curator username/password and API token: " + curatorUsername + " and " + curatorApiToken);
+            System.out.println("Author username/password and API token: " + authorUsername + " and " + authorApiToken);
+            return;
+        }
 
         Response submitForReviewAlreadySubmitted = UtilIT.submitDatasetForReview(datasetPersistentId, authorApiToken);
         submitForReviewAlreadySubmitted.prettyPrint();
@@ -140,13 +146,120 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[1].reasonForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
-        // Joe Random - a real jerk - tries returning a dataset unrightfully with some mean comments.
-        // Despite being somewhere he already shouldn't be, he is not authorized to return it, thankfully.
+        // Joe Random, a user with no perms on dataset, tries returning the dataset as if he's a curator and fails.
         Response returnToAuthorFail = UtilIT.returnDatasetToAuthor(datasetPersistentId, joeRandObj.build(), joeRandomApiToken);
         returnToAuthorFail.prettyPrint();
         returnToAuthorFail.then().assertThat()
                 .body("message", equalTo("User @" + joeRandomUsername + " is not permitted to perform requested action."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // BEGIN https://github.com/IQSS/dataverse/issues/4139
+        // The author tries to edit the title after submitting the dataset for review. This is not allowed because the dataset is locked.
+        Response updateTitleResponseAuthor = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "New Title from Author", authorApiToken);
+        updateTitleResponseAuthor.prettyPrint();
+        updateTitleResponseAuthor.then().assertThat()
+                .body("error.summary", equalTo("problem updating dataset: edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException: Dataset cannot be edited due to In Review dataset lock."))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // The curator tries to update the title while the dataset is in review via SWORD.
+        Response updateTitleResponseCuratorViaSword = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "A Better Title", curatorApiToken);
+        updateTitleResponseCuratorViaSword.prettyPrint();
+        updateTitleResponseCuratorViaSword.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response atomEntry = UtilIT.getSwordAtomEntry(datasetPersistentId, curatorApiToken);
+        atomEntry.prettyPrint();
+        atomEntry.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String citation = XmlPath.from(atomEntry.body().asString()).getString("bibliographicCitation");
+        System.out.println("citation: " + citation);
+        Assert.assertTrue(citation.contains("A Better Title"));
+
+        // The author tries to update the title while the dataset is in review via native.
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
+        Response updateTitleResponseAuthorViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, authorApiToken);
+        updateTitleResponseAuthorViaNative.prettyPrint();
+        updateTitleResponseAuthorViaNative.then().assertThat()
+                .body("message", equalTo("Dataset cannot be edited due to In Review dataset lock."))
+                .statusCode(FORBIDDEN.getStatusCode());
+        Response atomEntryAuthorNative = UtilIT.getSwordAtomEntry(datasetPersistentId, authorApiToken);
+        atomEntryAuthorNative.prettyPrint();
+        atomEntryAuthorNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String citationAuthorNative = XmlPath.from(atomEntryAuthorNative.body().asString()).getString("bibliographicCitation");
+        System.out.println("citation: " + citationAuthorNative);
+        // The author was unable to change the title.
+        Assert.assertTrue(citationAuthorNative.contains("A Better Title"));
+
+        // The author remembers she forgot to add a file and tries to upload it while
+        // the dataset is in review via native API but this fails.
+        String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
+        Response authorAttemptsToAddFileWhileInReviewViaNative = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, authorApiToken);
+        authorAttemptsToAddFileWhileInReviewViaNative.prettyPrint();
+        authorAttemptsToAddFileWhileInReviewViaNative.then().assertThat()
+                // TODO: It would be nice to reveal the message AddReplaceFileHelper puts in server.log:
+                // "Dataset cannot be edited due to In Review dataset lock."
+                .body("message", equalTo("Failed to add file to dataset."))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // The author tries adding a random file via SWORD and this also fails due
+        // to the dataset being in review.
+        Response authorAttemptsToAddFileWhileInReviewViaSword = UtilIT.uploadRandomFile(datasetPersistentId, authorApiToken);
+        authorAttemptsToAddFileWhileInReviewViaSword.prettyPrint();
+        authorAttemptsToAddFileWhileInReviewViaSword.then().assertThat()
+                .body("error.summary", equalTo("Couldn't update dataset edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException: Dataset cannot be edited due to In Review dataset lock."))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // The curator adds the file himself while
+        // the dataset is in review via native API.
+        Response curatorAttemptsToAddFileWhileInReviewViaNative = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, curatorApiToken);
+        curatorAttemptsToAddFileWhileInReviewViaNative.prettyPrint();
+        curatorAttemptsToAddFileWhileInReviewViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        boolean testMultipleLocks = true;
+        if (testMultipleLocks) {
+            // The curator adds a second file himself while
+            // the dataset is in review via SWORD.
+            String pathToFileThatGoesThroughIngest = "scripts/search/data/tabular/50by1000.dta.zip";
+            Response curatorAttemptsToAddFileWhileInReviewViaSword = UtilIT.uploadZipFileViaSword(datasetPersistentId, pathToFileThatGoesThroughIngest, curatorApiToken);
+            curatorAttemptsToAddFileWhileInReviewViaSword.prettyPrint();
+            curatorAttemptsToAddFileWhileInReviewViaSword.then().assertThat()
+                    .statusCode(CREATED.getStatusCode());
+            // Give file time to ingest. The lock needs to go away before any edits can happen.
+            Thread.sleep(2000);
+        }
+
+        // The author changes his mind and figures this is a teaching moment to
+        // have the author upload the file herself. He deletes the files and will
+        // ask her to upload files on her own.
+        Response getFileIdRequest = UtilIT.nativeGet(datasetId, curatorApiToken);
+        getFileIdRequest.prettyPrint();
+        getFileIdRequest.then().assertThat()
+                .statusCode(OK.getStatusCode());;
+        int fileId1 = JsonPath.from(getFileIdRequest.getBody().asString()).getInt("data.latestVersion.files[0].dataFile.id");
+        Response deleteFile1 = UtilIT.deleteFile(fileId1, curatorApiToken);
+        deleteFile1.prettyPrint();
+        deleteFile1.then().assertThat()
+                .statusCode(NO_CONTENT.getStatusCode());
+        int fileId2 = JsonPath.from(getFileIdRequest.getBody().asString()).getInt("data.latestVersion.files[1].dataFile.id");
+        Response deleteFile2 = UtilIT.deleteFile(fileId2, curatorApiToken);
+        deleteFile2.prettyPrint();
+        deleteFile2.then().assertThat()
+                .statusCode(NO_CONTENT.getStatusCode());
+
+        // The curator tries to update the title while the dataset is in review via native.
+        Response updateTitleResponseCuratorViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, curatorApiToken);
+        updateTitleResponseCuratorViaNative.prettyPrint();
+        updateTitleResponseCuratorViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response atomEntryCuratorNative = UtilIT.getSwordAtomEntry(datasetPersistentId, curatorApiToken);
+        atomEntryCuratorNative.prettyPrint();
+        atomEntryCuratorNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String citationCuratorNative = XmlPath.from(atomEntryCuratorNative.body().asString()).getString("bibliographicCitation");
+        System.out.println("citation: " + citationCuratorNative);
+        Assert.assertTrue(citationCuratorNative.contains("newTitle"));
+        // END https://github.com/IQSS/dataverse/issues/4139
 
         // TODO: test where curator neglecting to leave a comment. Should fail with "reason for return" required.
         String noComments = "";
@@ -286,8 +399,7 @@ public class InReviewWorkflowIT {
         Response authorsChecksForCommentsPostPublication = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPostPublication.prettyPrint();
         authorsChecksForCommentsPostPublication.then().assertThat()
-                // FIXME: Why is this ASSIGNROLE and not "your dataset has been published"?
-                .body("data.notifications[0].type", equalTo("ASSIGNROLE"))
+                .body("data.notifications[0].type", equalTo("PUBLISHEDDS"))
                 .body("data.notifications[1].type", equalTo("RETURNEDDS"))
                 // .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //  .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
@@ -295,7 +407,7 @@ public class InReviewWorkflowIT {
                 // Yes, it's a little weird that the reason for return on the first "RETURNEDDS" changed. For now we are always showing the most recent reason for return.
                 //  .body("data.notifications[2].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //.body("data.notifications[2].reasonsForReturn[1].message", equalTo("A README is required."))
-                    .body("data.notifications[3].type", equalTo("CREATEACC"))
+                .body("data.notifications[3].type", equalTo("CREATEACC"))
                 //   .body("data.notifications[3].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 

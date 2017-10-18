@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 @RequiredPermissions(Permission.PublishDataset)
@@ -57,9 +58,21 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         // We set "in review" to false because now the ball is back in the author's court.
         theDataset.setModificationTime(updateTime);
-        theDataset.addLock(null);
+        // TODO: ctxt.datasets().removeDatasetLocks() doesn't work. Try RemoveLockCommand?
+        AuthenticatedUser authenticatedUser = null;
+        for (DatasetLock lock : theDataset.getLocks()) {
+            if (DatasetLock.Reason.InReview.equals(lock.getReason())) {
+                theDataset.removeLock(lock);
+                authenticatedUser = lock.getUser();
+                authenticatedUser.getDatasetLocks().remove(lock);
+            }
+        }
         Dataset savedDataset = ctxt.em().merge(theDataset);
         ctxt.em().flush();
+        if (authenticatedUser != null) {
+            // Remove lock from user.
+            ctxt.em().merge(authenticatedUser);
+        }
 
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), this.getUser());
         
