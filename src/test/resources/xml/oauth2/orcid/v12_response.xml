@@ -26,7 +26,7 @@
             <contact-details>
                 <email primary="false" current="true" verified="false" visibility="limited" source="0000-0002-3283-0661">pete2@mailinator.com</email>
                 <email primary="true" current="true" verified="false" visibility="public" source="0000-0002-3283-0661">pete@mailinator.com</email>
-            </contact-details>"
+            </contact-details>
         </orcid-bio>
     </orcid-profile>
 </orcid-message>
