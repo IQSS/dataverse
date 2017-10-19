@@ -426,9 +426,9 @@
                     </div>
 
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.immediate']}</p>
+                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.immediate']}</p>
                         <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.owner.released}">
-                            <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
+                            <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
                         </ui:fragment>
                         <div class="button-block">
                             <p:commandButton value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
@@ -508,7 +508,7 @@
                     </p:dialog>
                     <p:dialog id="fileAlreadyReplacedDraft" styleClass="smallPopUp"
                               header="#{bundle['file.replaced.warning.header']}" widgetVar="fileAlreadyReplacedDraft" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.replaced.warning.draft.warningMessage']}</p>
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.replaced.warning.draft.warningMessage']}</p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedDraft').hide();"/>
                         </div>
@@ -516,10 +516,10 @@
                     <p:dialog id="fileAlreadyReplacedPrevious" styleClass="smallPopUp"
                               header="#{bundle['file.replaced.warning.header']}" widgetVar="fileAlreadyReplacedPrevious" modal="true">
                         <ui:fragment rendered="#{dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) }">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.replaced.warning.previous.warningMessage']}</p>
+                            <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.replaced.warning.previous.warningMessage']}</p>
                         </ui:fragment>
                         <ui:fragment rendered="#{!dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile)}">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.alreadyDeleted.previous.warningMessage']}</p>
+                            <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.alreadyDeleted.previous.warningMessage']}</p>
                         </ui:fragment>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedPrevious').hide();"/>
@@ -534,7 +534,7 @@
                         </ui:include>
                     </p:dialog>                   
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.compute.fileRestricted']}" widgetVar="computeAccessDeniedPopup" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.compute.fileAccessDenied']}</p>
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.compute.fileAccessDenied']}</p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('computeAccessDeniedPopup').hide();" type="button" />
                         </div>

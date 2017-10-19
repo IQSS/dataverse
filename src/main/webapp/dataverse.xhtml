@@ -587,9 +587,9 @@
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('browseOptsForm').hide()"/>
                         </div>
                         </ui:fragment>
-                         <ui:fragment rendered="#{empty DataversePage.featuredDataverses.source and empty DataversePage.featuredDataverses.target}">
-                                                <p class="text-danger">
-                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.nopublished.tip']}
+                        <ui:fragment rendered="#{empty DataversePage.featuredDataverses.source and empty DataversePage.featuredDataverses.target}">
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataverse.nopublished.tip']}
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('browseOptsForm').hide()"/>
@@ -599,7 +599,7 @@
 
                     <!-- Publish Confirmation Popup -->
                     <p:dialog header="#{bundle['dataverse.publish.header']}" widgetVar="confirmation" modal="true">
-                        <p class="text-danger">
+                        <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.publish.tip']}
                         </p>
                         <div class="button-block">
@@ -608,9 +608,9 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataverse.publish.failed']}" widgetVar="mayNotRelease" modal="true">
+                    <p:dialog header="#{bundle['dataverse.publish.header']}" widgetVar="mayNotRelease" modal="true">
                         <p class="text-danger">
-                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.publish.failed.tip']}
+                            <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataverse.publish.failed.tip']}
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('mayNotRelease').hide();" type="button" />
@@ -618,7 +618,7 @@
                     </p:dialog>
 
                     <p:dialog header="#{bundle['dataverse.delete']}" widgetVar="deleteConfirmation" modal="true">
-                        <p class="text-danger">
+                        <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.delete.tip']}
                         </p>
                         <div class="button-block">
@@ -721,7 +721,7 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 0}">
                         <p class="text-danger">
-                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.link.no.linkable']}
+                            <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataverse.link.no.linkable']}
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('linkDataverseForm').hide()"/>
@@ -731,7 +731,7 @@
 
                 <!-- Metadata Resest Modifications Popup -->
                 <p:dialog id="resetModifications" header="#{bundle['dataverse.resetModifications']}" widgetVar="resetModifications" modal="true" closable="false">
-                    <p class="text-danger">
+                    <p class="text-warning">
                         <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.resetModifications.text']}
                     </p>
                     <div class="button-block">
