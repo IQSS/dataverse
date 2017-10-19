@@ -212,6 +212,25 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         setSize(newFileSize);
     }
 
+    /**
+     * Implements the StorageIO saveInputStream() method. 
+     * This implementation is somewhat problematic, because S3 cannot save an object of 
+     * an unknown length. This effectively nullifies any benefits of streaming; 
+     * as we cannot start saving until we have read the entire stream. 
+     * One way of solving this would be to buffer the entire stream as byte[], 
+     * in memory, then save it... Which of course would be limited by the amount 
+     * of memory available, and thus would not work for streams larger than that. 
+     * So we have eventually decided to save save the stream to a temp file, then 
+     * save to S3. This is slower, but guaranteed to work on any size stream. 
+     * An alternative we may want to consider is to not implement this method 
+     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException, 
+     * similarly to how we handle attempts to open OutputStreams, in this and the 
+     * Swift driver. 
+     * 
+     * @param inputStream InputStream we want to save
+     * @param auxItemTag String representing this Auxiliary type ("extension")
+     * @throws IOException if anything goes wrong.
+    */
     @Override
     public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
         if (filesize == null || filesize < 0) {
@@ -373,9 +392,25 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    //S3 cannot save streams with an unknown length. We save the stream to a temp file
-    // and then upload the temp file. This solution is acceptable as we only use
-    // this method in conjunction with worldmap.
+    /**
+     * Implements the StorageIO saveInputStreamAsAux() method. 
+     * This implementation is problematic, because S3 cannot save an object of 
+     * an unknown length. This effectively nullifies any benefits of streaming; 
+     * as we cannot start saving until we have read the entire stream. 
+     * One way of solving this would be to buffer the entire stream as byte[], 
+     * in memory, then save it... Which of course would be limited by the amount 
+     * of memory available, and thus would not work for streams larger than that. 
+     * So we have eventually decided to save save the stream to a temp file, then 
+     * save to S3. This is slower, but guaranteed to work on any size stream. 
+     * An alternative we may want to consider is to not implement this method 
+     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException, 
+     * similarly to how we handle attempts to open OutputStreams, in this and the 
+     * Swift driver. 
+     * 
+     * @param inputStream InputStream we want to save
+     * @param auxItemTag String representing this Auxiliary type ("extension")
+     * @throws IOException if anything goes wrong.
+    */
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
         if (!this.canWrite()) {
