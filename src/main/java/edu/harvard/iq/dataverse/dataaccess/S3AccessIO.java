@@ -18,6 +18,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.MultiObjectDeleteException;
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.DataFile;
@@ -83,6 +84,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private AWSCredentials awsCredentials = null;
     private AmazonS3 s3 = null;
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
+    public static final String encryptOnUploadKey = "dataverse.files.s3-encrypt-on-upload";
+
     private String key;
 
     @Override
@@ -185,7 +188,15 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             File inputFile = fileSystemPath.toFile();
             if (dvObject instanceof DataFile) {
-                s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
+                ObjectMetadata metadata = new ObjectMetadata();
+                if (encryptFile()) {
+                    metadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
+                }
+                PutObjectRequest por = new PutObjectRequest(bucketName, key, inputFile);
+                por.setMetadata(metadata);
+                
+                s3.putObject(por);
+              
                 newFileSize = inputFile.length();
             } else {
                 throw new IOException("DvObject type other than datafile is not yet supported");
@@ -353,6 +364,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
             String destinationKey = getDestinationKey(auxItemTag);
             ObjectMetadata metadata = new ObjectMetadata();
+            if (encryptFile()) {
+                metadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
+            }
             metadata.setContentLength(filesize);
             try {
                 s3.putObject(bucketName, destinationKey, inputStream, metadata);
@@ -379,6 +393,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         byte[] bytes = IOUtils.toByteArray(inputStream);
         long length = bytes.length;
         ObjectMetadata metadata = new ObjectMetadata();
+        if (encryptFile()) {
+            metadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
+        }
         metadata.setContentLength(length);
         try {
             s3.putObject(bucketName, destinationKey, inputStream, metadata);
@@ -558,5 +575,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         
         return key;
+    }
+
+    public static boolean encryptFile() {
+        String encryptOnUploadValue;
+        try {
+            encryptOnUploadValue = System.getProperty(encryptOnUploadKey);
+        } catch (IllegalArgumentException ex) {
+            logger.fine(encryptOnUploadKey + " is null! Encrypting to be safe. Exception caught: " + ex);
+            return true;
+        }
+        if ("false".equals(encryptOnUploadValue)) {
+            return false;
+        }
+        return true;
     }
 }

@@ -293,7 +293,7 @@ Make note of the bucket's name and the region its data is hosted in. Dataverse a
 Setup aws manually
 ^^^^^^^^^^^^^^^^^^
 
-To create ``credentials`` manually, you will need to generate a key/secret key. The first step is to log onto your aws web console (e.g. `<https://console.aws.amazon.com/>`_). If you have created a user in AWS IAM, you can click on that user and generate the keys needed for dataverse. 
+To create ``credentials`` manually, you will need to generate a key/secret key. The first step is to log onto your aws web console (e.g. `<https://console.aws.amazon.com/>`_). We recommend creating a user in AWS IAM and generating keys for that user (documentation available here https://aws.amazon.com/documentation/iam/). 
 
 Once you have acquired the keys, they need to be added to``credentials``. The format for credentials is as follows:
 
@@ -479,6 +479,11 @@ dataverse.files.directory
 +++++++++++++++++++++++++
 
 This is how you configure the path to which files uploaded by users are stored.
+
+dataverse.files.s3-encrypt-on-upload
+++++++++++++++++++++++++++++++++++++
+
+Set this to ``false`` if you don't want to encrypt files Dataverse uploads to S3. If thie setting is not set ``true`` is assumed.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
