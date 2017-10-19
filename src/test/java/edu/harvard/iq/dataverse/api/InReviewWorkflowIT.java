@@ -286,8 +286,7 @@ public class InReviewWorkflowIT {
         Response authorsChecksForCommentsPostPublication = UtilIT.getNotifications(authorApiToken);
         authorsChecksForCommentsPostPublication.prettyPrint();
         authorsChecksForCommentsPostPublication.then().assertThat()
-                // FIXME: Why is this ASSIGNROLE and not "your dataset has been published"?
-                .body("data.notifications[0].type", equalTo("ASSIGNROLE"))
+                .body("data.notifications[0].type", equalTo("PUBLISHEDDS"))
                 .body("data.notifications[1].type", equalTo("RETURNEDDS"))
                 // .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //  .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
