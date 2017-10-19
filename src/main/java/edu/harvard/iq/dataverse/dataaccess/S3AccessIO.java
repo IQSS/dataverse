@@ -261,59 +261,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         tempFile.delete();
         setSize(s3.getObjectMetadata(bucketName, key).getContentLength());
     }
-//    @Override
-//    public void saveInputStream(InputStream inputStream) throws IOException {
-//        if (!this.canWrite()) {
-//            open(DataAccessOption.WRITE_ACCESS);
-//        }
-//        //TODO? Copying over the object to a byte array is farily inefficient.
-//        // We need the length of the data to upload inputStreams (see our putObject calls).
-//        // There may be ways to work around this, see https://github.com/aws/aws-sdk-java/issues/474 to start.
-//        // This is out of scope of creating the S3 driver and referenced in issue #4064!
-//        byte[] bytes = IOUtils.toByteArray(inputStream);
-//        long length = bytes.length;
-//        ObjectMetadata metadata = new ObjectMetadata();
-//        metadata.setContentLength(length);
-//        try {
-//            s3.putObject(bucketName, key, inputStream, metadata);
-//        } catch (SdkClientException ioex) {
-//            String failureMsg = ioex.getMessage();
-//            if (failureMsg == null) {
-//                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3 Storage.";
-//            }
-//
-//            throw new IOException(failureMsg);
-//        }
-//        
-//        setSize(s3.getObjectMetadata(bucketName, key).getContentLength());
-//    }
-    
-//    @Override
-//    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
-//        if (!this.canWrite()) {
-//            open(DataAccessOption.WRITE_ACCESS);
-//        }
-//
-//        String directoryString = FileUtil.getFilesTempDirectory();
-//
-//        Random rand = new Random();
-//        Path tempPath = Paths.get(directoryString, Integer.toString(rand.nextInt(Integer.MAX_VALUE)));
-//        File tempFile = createTempFile(tempPath, inputStream);
-//        
-//        String destinationKey = getDestinationKey(auxItemTag);
-//        
-//        try {
-//            s3.putObject(bucketName, destinationKey, tempFile);
-//        } catch (SdkClientException ioex) {
-//            String failureMsg = ioex.getMessage();
-//
-//            if (failureMsg == null) {
-//                failureMsg = "S3AccessIO: Unknown exception occured while saving a local InputStream as S3Object";
-//            }
-//            tempFile.delete();
-//            throw new IOException(failureMsg);
-//        }
-//    }
 
     @Override
     public void delete() throws IOException {
@@ -438,7 +385,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String directoryString = FileUtil.getFilesTempDirectory();
 
         Random rand = new Random();
-        Path tempPath = Paths.get(directoryString, Integer.toString(rand.nextInt(Integer.MAX_VALUE)));
+        String pathNum = Integer.toString(rand.nextInt(Integer.MAX_VALUE));
+        Path tempPath = Paths.get(directoryString, pathNum);
         File tempFile = createTempFile(tempPath, inputStream);
         
         String destinationKey = getDestinationKey(auxItemTag);
