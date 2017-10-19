@@ -162,7 +162,8 @@ public class Dataverse extends DvObjectContainer {
    
     private boolean metadataBlockRoot;
     private boolean facetRoot;
-    private boolean themeRoot;
+    // By default, themeRoot should be true, as new dataverses should start with the default theme
+    private boolean themeRoot = true;
     private boolean templateRoot;    
 
     
