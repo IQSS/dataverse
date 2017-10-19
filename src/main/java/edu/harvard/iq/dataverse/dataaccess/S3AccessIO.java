@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -241,27 +242,78 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
-        //TODO? Copying over the object to a byte array is farily inefficient.
-        // We need the length of the data to upload inputStreams (see our putObject calls).
-        // There may be ways to work around this, see https://github.com/aws/aws-sdk-java/issues/474 to start.
-        // This is out of scope of creating the S3 driver and referenced in issue #4064!
-        byte[] bytes = IOUtils.toByteArray(inputStream);
-        long length = bytes.length;
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(length);
+        String directoryString = FileUtil.getFilesTempDirectory();
+
+        Random rand = new Random();
+        Path tempPath = Paths.get(directoryString, Integer.toString(rand.nextInt(Integer.MAX_VALUE)));
+        File tempFile = createTempFile(tempPath, inputStream);
+        
         try {
-            s3.putObject(bucketName, key, inputStream, metadata);
+            s3.putObject(bucketName, key, tempFile);
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3 Storage.";
             }
-
+            tempFile.delete();
             throw new IOException(failureMsg);
         }
-        
+        tempFile.delete();
         setSize(s3.getObjectMetadata(bucketName, key).getContentLength());
     }
+//    @Override
+//    public void saveInputStream(InputStream inputStream) throws IOException {
+//        if (!this.canWrite()) {
+//            open(DataAccessOption.WRITE_ACCESS);
+//        }
+//        //TODO? Copying over the object to a byte array is farily inefficient.
+//        // We need the length of the data to upload inputStreams (see our putObject calls).
+//        // There may be ways to work around this, see https://github.com/aws/aws-sdk-java/issues/474 to start.
+//        // This is out of scope of creating the S3 driver and referenced in issue #4064!
+//        byte[] bytes = IOUtils.toByteArray(inputStream);
+//        long length = bytes.length;
+//        ObjectMetadata metadata = new ObjectMetadata();
+//        metadata.setContentLength(length);
+//        try {
+//            s3.putObject(bucketName, key, inputStream, metadata);
+//        } catch (SdkClientException ioex) {
+//            String failureMsg = ioex.getMessage();
+//            if (failureMsg == null) {
+//                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3 Storage.";
+//            }
+//
+//            throw new IOException(failureMsg);
+//        }
+//        
+//        setSize(s3.getObjectMetadata(bucketName, key).getContentLength());
+//    }
+    
+//    @Override
+//    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
+//        if (!this.canWrite()) {
+//            open(DataAccessOption.WRITE_ACCESS);
+//        }
+//
+//        String directoryString = FileUtil.getFilesTempDirectory();
+//
+//        Random rand = new Random();
+//        Path tempPath = Paths.get(directoryString, Integer.toString(rand.nextInt(Integer.MAX_VALUE)));
+//        File tempFile = createTempFile(tempPath, inputStream);
+//        
+//        String destinationKey = getDestinationKey(auxItemTag);
+//        
+//        try {
+//            s3.putObject(bucketName, destinationKey, tempFile);
+//        } catch (SdkClientException ioex) {
+//            String failureMsg = ioex.getMessage();
+//
+//            if (failureMsg == null) {
+//                failureMsg = "S3AccessIO: Unknown exception occured while saving a local InputStream as S3Object";
+//            }
+//            tempFile.delete();
+//            throw new IOException(failureMsg);
+//        }
+//    }
 
     @Override
     public void delete() throws IOException {
@@ -374,36 +426,22 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    /**
-     * Implements the StorageIO saveInputStreamAsAux() method. 
-     * The S3 implementation is problematic, because S3 cannot save an object of 
-     * an unknown length. This effectively nullifies any benefits of streaming; 
-     * as we cannot start saving until we have read the entire stream. 
-     * One way of solving this would be to buffer the entire stream as byte[], 
-     * in memory, then save it... Which of course would be limited by the amount 
-     * of memory available, and thus would not work for streams larger than that. 
-     * So we have eventually decided to save save the stream to a temp file, then 
-     * save to S3. This is slower, but guaranteed to work on any size stream. 
-     * An alternative we may want to consider is to not implement this method 
-     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException, 
-     * similarly to how we handle attempts to open OutputStreams, in this and the 
-     * Swift driver. 
-     * 
-     * @param inputStream InputStream we want to save
-     * @param auxItemTag String representing this Auxiliary type ("extension")
-     * @throws IOException if anything goes wrong.
-    */
+    //S3 cannot save streams with an unknown length. We save the stream to a temp file
+    // and then upload the temp file. This solution is acceptable as we only use
+    // this method in conjunction with worldmap.
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
 
-        String destinationKey = getDestinationKey(auxItemTag);
+        String directoryString = FileUtil.getFilesTempDirectory();
 
         Random rand = new Random();
-        Path tempPath = getTempPath(auxItemTag+rand.nextInt(Integer.MAX_VALUE));
+        Path tempPath = Paths.get(directoryString, Integer.toString(rand.nextInt(Integer.MAX_VALUE)));
         File tempFile = createTempFile(tempPath, inputStream);
+        
+        String destinationKey = getDestinationKey(auxItemTag);
         
         try {
             s3.putObject(bucketName, destinationKey, tempFile);
@@ -417,21 +455,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException(failureMsg);
         }
         tempFile.delete();
-    }
-    
-    //Helper method for supporting saving streams with unknown length to S3
-    //We save those streams to a file and then upload the file
-    private Path getTempPath(String tempFileName) {
-        Path tempPath = null;
-
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
-
-        tempPath = Paths.get(filesRootDirectory, tempFileName);
-
-        return tempPath;
     }
     
     //Helper method for supporting saving streams with unknown length to S3
