@@ -65,14 +65,14 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 
         assertEquals("0000-0003-2591-1698", actual.userIdInProvider);
         //assertEquals("bob", actual.username);
-        //assertEquals("bdoc", actual.username);
-        assertEquals("Bob.Doc", actual.username);
+        assertEquals("bdoc", actual.username);
+        //assertEquals("Bob.Doc", actual.username);
         assertEquals("Bob T.", actual.displayInfo.getFirstName());
         assertEquals("Doc", actual.displayInfo.getLastName());
-        assertEquals("bdoc@mailinator.com", actual.displayInfo.getEmailAddress());//FIXME - failing
+        assertEquals("bdoc@mailinator.com", actual.displayInfo.getEmailAddress());
         assertEquals("", actual.displayInfo.getAffiliation());
         assertEquals("", actual.displayInfo.getPosition());
-        assertEquals(Arrays.asList("bdoc@mailinator.com", "bdoc2@mailinator.com"), actual.emails); //FIXME - failing
+        assertEquals(Arrays.asList("bdoc@mailinator.com", "bdoc2@mailinator.com"), actual.emails);
 
     }
 

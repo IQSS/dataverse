@@ -91,7 +91,8 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             String affiliation = getNodes(doc, "record:record", "activities:activities-summary", "activities:employments", "employment:employment-summary", "employment:organization", "common:name")
                                 .stream().findFirst().map( Node::getTextContent )
                                     .map( String::trim ).orElse("");
-            List<String> emails = new ArrayList<>();
+            //List<String> emails = new ArrayList<>();
+            List<String> emails = getAllEmails(doc);
 	    /*
             getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio","contact-details","email").forEach( n ->{
                String email = n.getTextContent().trim();
@@ -108,10 +109,12 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             String primaryEmail = (emails.size()>1) ? emails.get(0) : "";
 	    */
 	    String primaryEmail = getPrimaryEmail(doc);
+	    /*
 	    if ( "" != primaryEmail )
 	    {
 		    emails.add( primaryEmail );
 	    }
+	    */
             
             // make the username up
             String username;
@@ -168,25 +171,46 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
      */
     private String getPrimaryEmail(Document doc)
     {
-	    String xp_pattern = "/record/person/emails/email[@primary='true']/email/text()";
+	    String p = "/record/person/emails/email[@primary='true']/email/text()";
+	    NodeList emails = xpath_matches( doc, p );
 	    String primary_email  = "";
+	    if ( 1 == emails.getLength() )
+	    {
+		    primary_email = emails.item(0).getTextContent();
+	    }
+	    // if there are no (or somehow more than 1) primary email(s), then we've already at failure value
+	    return primary_email;
+    }
+    private List<String> getAllEmails(Document doc)
+    {
+	    String p = "/record/person/emails/email/email/text()";
+	    NodeList emails = xpath_matches( doc, p );
+	    List<String> rs = new ArrayList<String>();
+	    for(int i=0;i<emails.getLength(); ++i) // no iterator in NodeList
+	    {
+		    rs.add( emails.item(i).getTextContent() );
+	    }
+	    return rs;
+    }
+    /**
+     * xpath search wrapper; return list of nodes matching an xpath expression (or null, 
+     * if there are no matches)
+     */
+    private NodeList xpath_matches(Document doc, String pattern)
+    {
 	    XPathFactory xpf = XPathFactory.newInstance();
 	    XPath xp = xpf.newXPath();
+	    NodeList matches = null;
 	    try
 	    {
-	    	XPathExpression srch = xp.compile( xp_pattern );
-		    NodeList emails = (NodeList) srch.evaluate(doc, XPathConstants.NODESET);
-		    if ( 1 == emails.getLength() )
-		    {
-			    primary_email = emails.item(0).getTextContent();
-		    }
-		    // if there are no (or somehow more than 1) primary email(s), then we've already at failure value
+		    XPathExpression srch = xp.compile( pattern );
+		    matches = (NodeList) srch.evaluate(doc, XPathConstants.NODESET);
 	    }
 	    catch( javax.xml.xpath.XPathExpressionException xpe )
 	    {
-		    //no-op; already at failure value (and this shouldn't happen with hard-coded xpath expression anyway)
+		    //no-op; intended for hard-coded xpath expressions that won't change at runtime
 	    }
-	    return primary_email;
+	    return matches;
     }
 
     @Override
