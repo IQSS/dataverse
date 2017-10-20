@@ -4,6 +4,7 @@ import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -20,6 +21,11 @@ public class UsersIT {
     @BeforeClass
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+        
+        Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
+        removeAllowApiTokenLookupViaApi.then().assertThat()
+                .statusCode(200);
+
     }
 
     @Test
@@ -41,9 +47,17 @@ public class UsersIT {
         convertToSha1.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        Response setAllowApiTokenLookupViaApi = UtilIT.setSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi, "true");
+        setAllowApiTokenLookupViaApi.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
         password = "sha-1Pass";
         Response getApiTokenUsingUsername = getApiTokenUsingUsername(usernameOfNonBcryptUserToConvert, password);
         assertEquals(200, getApiTokenUsingUsername.getStatusCode());
+        
+        Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
+        removeAllowApiTokenLookupViaApi.then().assertThat()
+                .statusCode(200);
 
         String data = emailOfNonBcryptUserToConvert + ":" + password + ":" + newEmailAddressToUse;
         System.out.println("data: " + data);
