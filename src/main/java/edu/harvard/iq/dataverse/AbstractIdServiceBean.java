@@ -74,14 +74,10 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
 
     protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");
-        System.out.print("Before If statement tartget url: " + systemConfig.getDataverseSiteUrl() + DataFile.TARGET_URL + dvObjectIn.getGlobalId());
         if (dvObjectIn.isInstanceofDataset()){
-            System.out.print("Dataset tartget url: " + systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + dvObjectIn.getGlobalId());
               return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + dvObjectIn.getGlobalId();
-        }
-        
+        }       
         if (dvObjectIn.isInstanceofDataFile()){
-            System.out.print("File tartget url: " + systemConfig.getDataverseSiteUrl() + DataFile.TARGET_URL + dvObjectIn.getGlobalId());
               return systemConfig.getDataverseSiteUrl() + DataFile.TARGET_URL + dvObjectIn.getGlobalId();
         }       
         return null;
