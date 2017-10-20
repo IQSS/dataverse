@@ -68,18 +68,22 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         try ( StringReader reader = new StringReader(responseBody)) {
             DocumentBuilder db = dbFact.newDocumentBuilder();
             Document doc = db.parse( new InputSource(reader) );
-            List<Node> orcidIdNodeList = getNodes(doc, "orcid-message", "orcid-profile","orcid-identifier","path");
+            //List<Node> orcidIdNodeList = getNodes(doc, "orcid-message", "orcid-profile","orcid-identifier","path");
+            List<Node> orcidIdNodeList = getNodes(doc, "record:record", "common:orcid-identifier","common:path");
             if ( orcidIdNodeList.size() != 1 ) {
                 throw new OAuth2Exception(0, responseBody, "Cannot find ORCiD id in response.");
             }
             String orcidId = orcidIdNodeList.get(0).getTextContent().trim();
-            String firstName = getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio", "personal-details", "given-names" )
+            //String firstName = getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio", "personal-details", "given-names" )
+            String firstName = getNodes(doc, "record:record", "person:person", "person:name", "personal-details:given-names" )
                                 .stream().findFirst().map( Node::getTextContent )
                                     .map( String::trim ).orElse("");
-            String familyName = getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio", "personal-details", "family-name" )
+            //String familyName = getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio", "personal-details", "family-name" )
+            String familyName = getNodes(doc, "record:record", "person:person", "person:name", "personal-details:family-name")
                                 .stream().findFirst().map( Node::getTextContent )
                                     .map( String::trim ).orElse("");
-            String affiliation = getNodes(doc, "orcid-message", "orcid-profile", "orcid-activities", "affiliations", "affiliation", "organization", "name" )
+            //String affiliation = getNodes(doc, "orcid-message", "orcid-profile", "orcid-activities", "affiliations", "affiliation", "organization", "name" )
+            String affiliation = getNodes(doc, "record:record", "activities:activities-summary", "activities:employments", "employment:employment-summary", "employment:organization", "common:name")
                                 .stream().findFirst().map( Node::getTextContent )
                                     .map( String::trim ).orElse("");
             List<String> emails = new ArrayList<>();
