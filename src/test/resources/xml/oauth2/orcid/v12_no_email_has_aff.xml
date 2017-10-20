@@ -3,8 +3,8 @@
     <message-version>1.2</message-version>
     <orcid-profile type="user">
         <orcid-identifier>
-            <uri>http://orcid.org/0000-0002-3283-0661</uri>
-            <path>0000-0002-3283-0661</path>
+            <uri>http://orcid.org/0000-0003-2591-1698</uri>
+            <path>0000-0003-2591-1698</path>
             <host>orcid.org</host>
         </orcid-identifier>
         <orcid-preferences>
@@ -20,34 +20,29 @@
         </orcid-history>
         <orcid-bio>
             <personal-details>
-                <given-names>Pete K.</given-names>
-                <family-name>Dataversky</family-name>
+                <given-names>Bob T.</given-names>
+                <family-name>Doc</family-name>
             </personal-details>
         </orcid-bio>
         <orcid-activities>
             <affiliations>
                 <affiliation visibility="public" put-code="1378745">
                     <type>employment</type>
-                    <department-name>BCMP</department-name>
                     <organization>
-                        <name>Harvard Medical School</name>
+                        <name>Miskatonic University</name>
                         <address>
-                            <city>Boston</city>
+                            <city>Arkham</city>
                             <region>MA</region>
                             <country>US</country>
                         </address>
-                        <disambiguated-organization>
-                            <disambiguated-organization-identifier>1811</disambiguated-organization-identifier>
-                            <disambiguation-source>RINGGOLD</disambiguation-source>
-                        </disambiguated-organization>
                     </organization>
                     <source>
                         <source-orcid>
-                            <uri>http://orcid.org/0000-0002-3283-0661</uri>
-                            <path>0000-0002-3283-0661</path>
+                            <uri>http://orcid.org/0000-0003-2591-1698</uri>
+                            <path>0000-0003-2591-1698</path>
                             <host>orcid.org</host>
                         </source-orcid>
-                        <source-name>Pete K. Dataversky</source-name>
+                        <source-name>Bob T. Doc</source-name>
                         <source-date>2015-11-30T23:18:22.764Z</source-date>
                     </source>
                     <created-date>2015-11-30T23:18:22.764Z</created-date>
