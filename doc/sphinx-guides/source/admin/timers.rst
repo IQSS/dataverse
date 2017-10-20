@@ -49,4 +49,4 @@ This job is automatically scheduled to run at 2AM local time every night. If rea
 Known Issues
 ------------
  
-We've got several reports of an intermittent issue where the applicaiton fails to deploy with the error message "EJB Timer Service is not available." Please see the :doc:`/admin/troubleshooting` section of this guide for a workaround. 
+We've received several reports of an intermittent issue where the applicaiton fails to deploy with the error message "EJB Timer Service is not available." Please see the :doc:`/admin/troubleshooting` section of this guide for a workaround. 
