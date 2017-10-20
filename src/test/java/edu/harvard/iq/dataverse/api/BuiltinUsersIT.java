@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
@@ -37,6 +38,11 @@ public class BuiltinUsersIT {
     @BeforeClass
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
+        removeIdentifierGenerationStyle.then().assertThat()
+                .statusCode(200);
+
     }
 
     @Test
@@ -171,6 +177,15 @@ public class BuiltinUsersIT {
         String createdToken = createdUser.getString("data.apiToken");
         logger.info(createdToken);
 
+        Response getApiTokenShouldFail = getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
+        getApiTokenShouldFail.then().assertThat()
+                .body("message", equalTo("This API endpoint has been disabled."))
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        Response setAllowApiTokenLookupViaApi = UtilIT.setSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi, "true");
+        setAllowApiTokenLookupViaApi.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         Response getApiTokenUsingUsername = getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
         getApiTokenUsingUsername.prettyPrint();
         assertEquals(200, getApiTokenUsingUsername.getStatusCode());
@@ -188,6 +203,10 @@ public class BuiltinUsersIT {
             String retrievedTokenUsingEmail = JsonPath.from(getApiTokenUsingEmail.asString()).getString("data.message");
             assertEquals(createdToken, retrievedTokenUsingEmail);
         }
+
+        Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
+        removeIdentifierGenerationStyle.then().assertThat()
+                .statusCode(200);
 
     }
 
