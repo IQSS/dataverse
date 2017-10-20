@@ -3,8 +3,8 @@
     <message-version>1.2</message-version>
     <orcid-profile type="user">
         <orcid-identifier>
-            <uri>http://sandbox.orcid.org/0000-0002-3283-0661</uri>
-            <path>0000-0002-3283-0661</path>
+            <uri>http://sandbox.orcid.org/0000-0003-2591-1698</uri>
+            <path>0000-0003-2591-1698</path>
             <host>sandbox.orcid.org</host>
         </orcid-identifier>
         <orcid-preferences>
@@ -20,12 +20,12 @@
         </orcid-history>
         <orcid-bio>
             <personal-details>
-                <given-names>Pete K.</given-names>
-                <family-name>Dataversky</family-name>
+                <given-names>Bob T.</given-names>
+                <family-name>Doc</family-name>
             </personal-details>
             <contact-details>
-                <email primary="false" current="true" verified="false" visibility="limited" source="0000-0002-3283-0661">pete2@mailinator.com</email>
-                <email primary="true" current="true" verified="false" visibility="public" source="0000-0002-3283-0661">pete@mailinator.com</email>
+                <email primary="false" current="true" verified="false" visibility="limited" source="0000-0003-2591-1698">bdoc2@mailinator.com</email>
+                <email primary="true" current="true" verified="false" visibility="public" source="0000-0003-2591-1698">bdoc@mailinator.com</email>
             </contact-details>
         </orcid-bio>
     </orcid-profile>
