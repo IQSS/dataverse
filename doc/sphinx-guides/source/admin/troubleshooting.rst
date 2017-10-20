@@ -41,7 +41,7 @@ Note that it may or may not work on your system, so it is provided as an example
 Timer not working 
 -----------------
 
-Dataverse relies on the EJB timer to perform scheduled tasks: harvesting from remote servers, updating the local OAI sets and running metadata exports. If these scheduled jobs are not running on your server, this may be the result of the incompatibility between the version of PostgresQL database you are using, and PostgresQL JDBC driver in use by your instance of Glassfish. The symptoms: 
+Dataverse relies on the EJB timer to perform scheduled tasks: harvesting from remote servers, updating the local OAI sets and running metadata exports. If these scheduled jobs are not running on your server, this may be the result of the incompatibility between the version of PostgreSQL database you are using, and PostgreSQL JDBC driver in use by your instance of Glassfish. The symptoms:
 
 If you seeing the following in your server.log: 
 
@@ -55,6 +55,6 @@ followed by an Exception stack trace with these lines in it:
 
 
 it most likely means that it is the JDBC driver incompatibility that's preventing the timer from working correctly. 
-Make sure you install the correct version of the driver. For example, if you are running the version 9.3 of PostgresQL, make sure you have the driver postgresql-9.3-1104.jdbc4.jar in your :fixedwidthplain:`<GLASSFISH FOLDER>/glassfish/lib` directory. Go `here <https://jdbc.postgresql.org/download.html>`_ 
+Make sure you install the correct version of the driver. For example, if you are running the version 9.3 of PostgreSQL, make sure you have the driver postgresql-9.3-1104.jdbc4.jar in your :fixedwidthplain:`<GLASSFISH FOLDER>/glassfish/lib` directory. Go `here <https://jdbc.postgresql.org/download.html>`_
 to download the correct version of the driver. If you have an older driver in glassfish/lib, make sure to remove it, replace it with the new version and restart Glassfish. (You may need to remove the entire contents of :fixedwidthplain:`<GLASSFISH FOLDER>/glassfish/domains/domain1/generated` before you start Glassfish). 
 

@@ -24,7 +24,7 @@ The following JVM option instructs the application to act as the dedicated timer
 
 **IMPORTANT:** Note that this option is automatically set by the Dataverse installer script. That means that when **configuring a multi-server cluster**, it will be the responsibility of the installer to remove the option from the :fixedwidthplain:`domain.xml` of every node except the one intended to be the timer server. We also recommend that the following entry in the :fixedwidthplain:`domain.xml`: ``<ejb-timer-service timer-datasource="jdbc/VDCNetDS">`` is changed back to ``<ejb-timer-service>`` on all the non-timer server nodes. Similarly, this option is automatically set by the installer script. Changing it back to the default setting on a server that doesn't need to run the timer will prevent a potential race condition, where multiple servers try to get a lock on the timer database. 
 
-**Note** that for the timer to work, the version of the PostgresQL JDBC driver your instance is using must match the version of your PostgresQL database. See the 'Timer not working' section of the :doc:`/admin/troubleshooting` guide.
+**Note** that for the timer to work, the version of the PostgreSQL JDBC driver your instance is using must match the version of your PostgreSQL database. See the 'Timer not working' section of the :doc:`/admin/troubleshooting` guide.
 
 Harvesting Timers 
 -----------------
