@@ -437,13 +437,6 @@ Place this ``user-add.json`` file in your current directory and run the followin
 
   curl -d @user-add.json -H "Content-type:application/json" "$SERVER_URL/api/builtin-users?password=$NEWUSER_PASSWORD&key=$BUILTIN_USERS_KEY"
 
-Retrieving the API Token of a Builtin User
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To retrieve the API token of a builtin user, given that user's password, use the curl command below::
-
-  curl "$SERVER_URL/api/builtin-users/$DV_USER_NAME/api-token?password=$DV_USER_PASSWORD"
-
 Roles
 ~~~~~
 
