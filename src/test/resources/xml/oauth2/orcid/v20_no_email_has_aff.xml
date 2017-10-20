@@ -21,7 +21,7 @@
         <person:name visibility="public" path="0000-0003-2591-1698">
             <common:created-date>2017-08-08T16:49:27.162Z</common:created-date>
             <common:last-modified-date>2017-08-08T16:49:27.421Z</common:last-modified-date>
-            <personal-details:given-names>Bob</personal-details:given-names>
+            <personal-details:given-names>Bob T.</personal-details:given-names>
             <personal-details:family-name>Doc</personal-details:family-name>
         </person:name>
         <other-name:other-names path="/0000-0003-2591-1698/other-names"/>
