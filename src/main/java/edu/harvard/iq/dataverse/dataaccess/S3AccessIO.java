@@ -470,7 +470,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         List<S3ObjectSummary> storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
         try {
             while (storedAuxFilesList.isTruncated()) {
-                logger.fine("S3 listAuxObjects: going to second page of list");
+                logger.fine("S3 listAuxObjects: going to next page of list");
                 storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
                 storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
             }
@@ -481,7 +481,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         for (S3ObjectSummary item : storedAuxFilesSummary) {
             String destinationKey = item.getKey();
-            String fileName = destinationKey.substring(destinationKey.lastIndexOf("/"));
+            String fileName = destinationKey.substring(destinationKey.lastIndexOf(".") + 1);
             logger.fine("S3 cached aux object fileName: " + fileName);
             ret.add(fileName);
         }
