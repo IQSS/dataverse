@@ -41,6 +41,7 @@ import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -51,6 +52,26 @@ public class DatasetsIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
+        removeIdentifierGenerationStyle.then().assertThat()
+                .statusCode(200);
+
+        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
+        removeExcludeEmail.then().assertThat()
+                .statusCode(200);
+
+        Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
+        removeDcmUrl.then().assertThat()
+                .statusCode(200);
+
+        Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
+        removeUploadMethods.then().assertThat()
+                .statusCode(200);
+    }
+
+    @AfterClass
+    public static void afterClass() {
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
         removeIdentifierGenerationStyle.then().assertThat()
@@ -1171,6 +1192,10 @@ public class DatasetsIT {
         authorsGetsBadNews.then().assertThat()
                 .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
                 .statusCode(OK.getStatusCode());
+
+        Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
+        removeUploadMethods.then().assertThat()
+                .statusCode(200);
 
         String uploadFolder = identifier;
 
