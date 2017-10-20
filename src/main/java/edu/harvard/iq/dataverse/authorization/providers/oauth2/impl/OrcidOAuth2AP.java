@@ -28,6 +28,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 
 /**
  * OAuth2 identity provider for ORCiD. Note that ORCiD has two systems: sandbox
@@ -87,6 +92,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
                                 .stream().findFirst().map( Node::getTextContent )
                                     .map( String::trim ).orElse("");
             List<String> emails = new ArrayList<>();
+	    /*
             getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio","contact-details","email").forEach( n ->{
                String email = n.getTextContent().trim();
                Node primaryAtt = n.getAttributes().getNamedItem("primary");
@@ -100,6 +106,12 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
                }
             });
             String primaryEmail = (emails.size()>1) ? emails.get(0) : "";
+	    */
+	    String primaryEmail = getPrimaryEmail(doc);
+	    if ( "" != primaryEmail )
+	    {
+		    emails.add( primaryEmail );
+	    }
             
             // make the username up
             String username;
@@ -149,6 +161,32 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
                              .orElse( Collections.<Node>emptyList() );
         }
         
+    }
+	    // xmlstarlet sel -t -c "/record:record/person:person/email:emails/email:email[@primary='true']/email:email"
+    /**
+     * retrieve email from ORCID 2.0 response document, or empty string if no primary email is present
+     */
+    private String getPrimaryEmail(Document doc)
+    {
+	    String xp_pattern = "/record/person/emails/email[@primary='true']/email/text()";
+	    String primary_email  = "";
+	    XPathFactory xpf = XPathFactory.newInstance();
+	    XPath xp = xpf.newXPath();
+	    try
+	    {
+	    	XPathExpression srch = xp.compile( xp_pattern );
+		    NodeList emails = (NodeList) srch.evaluate(doc, XPathConstants.NODESET);
+		    if ( 1 == emails.getLength() )
+		    {
+			    primary_email = emails.item(0).getTextContent();
+		    }
+		    // if there are no (or somehow more than 1) primary email(s), then we've already at failure value
+	    }
+	    catch( javax.xml.xpath.XPathExpressionException xpe )
+	    {
+		    //no-op; already at failure value (and this shouldn't happen with hard-coded xpath expression anyway)
+	    }
+	    return primary_email;
     }
 
     @Override
