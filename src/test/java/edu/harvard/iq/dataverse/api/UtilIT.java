@@ -1131,6 +1131,13 @@ public class UtilIT {
         return requestSpecification.post("/api/datasets/" + persistentIdInPath + "/dataCaptureModule/checksumValidation" + optionalQueryParam);
     }
 
+    static Response getApiTokenUsingUsername(String username, String password) {
+        Response response = given()
+                .contentType(ContentType.JSON)
+                .get("/api/builtin-users/" + username + "/api-token?username=" + username + "&password=" + password);
+        return response;
+    }
+
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"

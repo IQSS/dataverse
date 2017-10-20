@@ -177,7 +177,7 @@ public class BuiltinUsersIT {
         String createdToken = createdUser.getString("data.apiToken");
         logger.info(createdToken);
 
-        Response getApiTokenShouldFail = getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
+        Response getApiTokenShouldFail = UtilIT.getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
         getApiTokenShouldFail.then().assertThat()
                 .body("message", equalTo("This API endpoint has been disabled."))
                 .statusCode(FORBIDDEN.getStatusCode());
@@ -186,13 +186,13 @@ public class BuiltinUsersIT {
         setAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response getApiTokenUsingUsername = getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
+        Response getApiTokenUsingUsername = UtilIT.getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
         getApiTokenUsingUsername.prettyPrint();
         assertEquals(200, getApiTokenUsingUsername.getStatusCode());
         String retrievedTokenUsingUsername = JsonPath.from(getApiTokenUsingUsername.asString()).getString("data.message");
         assertEquals(createdToken, retrievedTokenUsingUsername);
 
-        Response failExpected = getApiTokenUsingUsername("junk", "junk");
+        Response failExpected = UtilIT.getApiTokenUsingUsername("junk", "junk");
         failExpected.prettyPrint();
         assertEquals(400, failExpected.getStatusCode());
 
@@ -355,13 +355,6 @@ public class BuiltinUsersIT {
                 .body(userAsJson)
                 .contentType(ContentType.JSON)
                 .post("/api/builtin-users?key=" + builtinUserKey + "&password=" + password);
-        return response;
-    }
-
-    private Response getApiTokenUsingUsername(String username, String password) {
-        Response response = given()
-                .contentType(ContentType.JSON)
-                .get("/api/builtin-users/" + username + "/api-token?username=" + username + "&password=" + password);
         return response;
     }
 

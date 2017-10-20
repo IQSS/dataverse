@@ -52,7 +52,7 @@ public class UsersIT {
                 .statusCode(OK.getStatusCode());
         
         password = "sha-1Pass";
-        Response getApiTokenUsingUsername = getApiTokenUsingUsername(usernameOfNonBcryptUserToConvert, password);
+        Response getApiTokenUsingUsername = UtilIT.getApiTokenUsingUsername(usernameOfNonBcryptUserToConvert, password);
         assertEquals(200, getApiTokenUsingUsername.getStatusCode());
         
         Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
@@ -82,13 +82,6 @@ public class UsersIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.affiliation", equalTo("TestShib Test IdP"));
 
-    }
-
-    private Response getApiTokenUsingUsername(String username, String password) {
-        Response response = given()
-                .contentType(ContentType.JSON)
-                .get("/api/builtin-users/" + username + "/api-token?username=" + username + "&password=" + password);
-        return response;
     }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {
