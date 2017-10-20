@@ -39,8 +39,8 @@ public class BuiltinUsersIT {
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
-        Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
-        removeIdentifierGenerationStyle.then().assertThat()
+        Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
+        removeAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(200);
 
     }
@@ -72,18 +72,18 @@ public class BuiltinUsersIT {
                 .statusCode(OK.getStatusCode());
 
     }
-    
+
     @Test
     public void testLastApiUse() {
         Response createApiUser = UtilIT.createRandomUser();
         String apiUsername = UtilIT.getUsernameFromResponse(createApiUser);
         String secondApiToken = UtilIT.getApiTokenFromResponse(createApiUser);
-        
+
         Response createDataverse = UtilIT.createRandomDataverse(secondApiToken);
         String alias = UtilIT.getAliasFromResponse(createDataverse);
         Response createDatasetViaApi = UtilIT.createRandomDatasetViaNativeApi(alias, secondApiToken);
         Response getApiUserAsJson = UtilIT.getAuthenticatedUser(apiUsername, secondApiToken);
-        
+
         getApiUserAsJson.prettyPrint();
         getApiUserAsJson.then().assertThat()
                 // Checking that it's 2017 or whatever. Not y3k compliant! 
@@ -142,8 +142,8 @@ public class BuiltinUsersIT {
         createUserResponse.prettyPrint();
         assertEquals(400, createUserResponse.statusCode());
     }
-    
-    @Test 
+
+    @Test
     public void testBadCharacterInUsername() {
         String randomUsername = getRandomUsername() + "/";
         String email = randomUsername + "@mailinator.com";
@@ -151,7 +151,7 @@ public class BuiltinUsersIT {
         createUserResponse.prettyPrint();
         assertEquals(400, createUserResponse.statusCode());
     }
-    
+
     @Test
     public void testAccentInUsername() {
         String randomUsername = getRandomUsername();
@@ -204,8 +204,8 @@ public class BuiltinUsersIT {
             assertEquals(createdToken, retrievedTokenUsingEmail);
         }
 
-        Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
-        removeIdentifierGenerationStyle.then().assertThat()
+        Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
+        removeAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(200);
 
     }
