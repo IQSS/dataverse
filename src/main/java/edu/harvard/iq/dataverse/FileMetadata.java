@@ -35,6 +35,7 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import org.apache.commons.lang.StringEscapeUtils;
 
 
 /**
@@ -319,12 +320,38 @@ public class FileMetadata implements Serializable {
          ", #{FilePage.fileMetadata.label} [fileName]"
          <h:outputText value=", #{FilePage.file.unf}" rendered="#{FilePage.file.tabularData and !(empty FilePage.file.unf)}"/>
          */
-         citation += "; " + this.getLabel() + " [fileName]" ;
+         citation += "; " + this.getFileDOI(dataFile, html) + " " + this.getLabel() + " [fileName]" ;
          if (this.dataFile.isTabularData() && this.dataFile.getUnf() != null && !this.dataFile.getUnf().isEmpty()){
              citation += ", " + this.dataFile.getUnf() + " [fileUNF]";                    
          }
          return citation;
      }
+    
+    private String getFileDOI (DataFile dataFile, boolean html){
+        
+        String retVal = "";
+        GlobalId globalId = new GlobalId(dataFile);
+        if (globalId != null ){
+            
+            return formatURL(globalId.toString(), globalId.toURL().toString(), html);
+        }
+        
+        return retVal;
+        
+    }
+    
+    private String formatURL(String text, String url, boolean html) {
+        if (text == null) {
+            return null;
+        }
+
+        if (html && url != null) {
+            return "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml(text) + "</a>";
+        } else {
+            return text;
+        }
+
+    }
         
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
