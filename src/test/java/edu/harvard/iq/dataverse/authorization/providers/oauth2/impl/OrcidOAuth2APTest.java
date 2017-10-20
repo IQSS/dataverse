@@ -12,15 +12,13 @@ import org.junit.Before;
 /**
  *
  * @author michael
+ * later changes by pameyer
  */
 public class OrcidOAuth2APTest extends OrcidOAuth2AP {
-	//private final String response_file="src/test/resources/xml/oauth2/orcid/v12_response.xml";
 	private final String response_file="src/test/resources/xml/oauth2/orcid/v20_response.xml";
 	private static String RESPONSE = null;
-	//private final String no_email_has_affiliation_file="src/test/resources/xml/oauth2/orcid/v12_no_email_has_aff.xml";
 	private final String no_email_has_affiliation_file="src/test/resources/xml/oauth2/orcid/v20_no_email_has_aff.xml";
 	private static String NO_EMAIL_HAS_AFFILIATION = null;
-	//private final String no_email_file="src/test/resources/xml/oauth2/orcid/v12_no_email.xml";
 	private final String no_email_file="src/test/resources/xml/oauth2/orcid/v20_no_email.xml";
 	private static String NO_EMAIL = null;
     public OrcidOAuth2APTest() {
@@ -46,7 +44,6 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 	    try
 	    {
 		    java.io.File inp = new java.io.File( fname );
-		    //java.io.InputStream inp = new java.io.FileInputStream( new java.io.File( fname ) );
 		    txt = org.apache.commons.io.FileUtils.readFileToString( inp );
 	    }
 	    catch( java.io.IOException ie )
@@ -64,9 +61,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(RESPONSE);
 
         assertEquals("0000-0003-2591-1698", actual.userIdInProvider);
-        //assertEquals("bob", actual.username);
         assertEquals("bdoc", actual.username);
-        //assertEquals("Bob.Doc", actual.username);
         assertEquals("Bob T.", actual.displayInfo.getFirstName());
         assertEquals("Doc", actual.displayInfo.getLastName());
         assertEquals("bdoc@mailinator.com", actual.displayInfo.getEmailAddress());

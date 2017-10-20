@@ -38,6 +38,7 @@ import javax.xml.xpath.XPathExpressionException;
  * OAuth2 identity provider for ORCiD. Note that ORCiD has two systems: sandbox
  * and production. Hence having the user endpoint as a parameter.
  * @author michael
+ * But don't blame michael for pameyer's later changes
  */
 public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
@@ -73,48 +74,23 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         try ( StringReader reader = new StringReader(responseBody)) {
             DocumentBuilder db = dbFact.newDocumentBuilder();
             Document doc = db.parse( new InputSource(reader) );
-            //List<Node> orcidIdNodeList = getNodes(doc, "orcid-message", "orcid-profile","orcid-identifier","path");
             List<Node> orcidIdNodeList = getNodes(doc, "record:record", "common:orcid-identifier","common:path");
             if ( orcidIdNodeList.size() != 1 ) {
                 throw new OAuth2Exception(0, responseBody, "Cannot find ORCiD id in response.");
             }
             String orcidId = orcidIdNodeList.get(0).getTextContent().trim();
-            //String firstName = getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio", "personal-details", "given-names" )
             String firstName = getNodes(doc, "record:record", "person:person", "person:name", "personal-details:given-names" )
                                 .stream().findFirst().map( Node::getTextContent )
                                     .map( String::trim ).orElse("");
-            //String familyName = getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio", "personal-details", "family-name" )
             String familyName = getNodes(doc, "record:record", "person:person", "person:name", "personal-details:family-name")
                                 .stream().findFirst().map( Node::getTextContent )
                                     .map( String::trim ).orElse("");
-            //String affiliation = getNodes(doc, "orcid-message", "orcid-profile", "orcid-activities", "affiliations", "affiliation", "organization", "name" )
             String affiliation = getNodes(doc, "record:record", "activities:activities-summary", "activities:employments", "employment:employment-summary", "employment:organization", "common:name")
                                 .stream().findFirst().map( Node::getTextContent )
                                     .map( String::trim ).orElse("");
-            //List<String> emails = new ArrayList<>();
-            List<String> emails = getAllEmails(doc);
-	    /*
-            getNodes(doc, "orcid-message", "orcid-profile", "orcid-bio","contact-details","email").forEach( n ->{
-               String email = n.getTextContent().trim();
-               Node primaryAtt = n.getAttributes().getNamedItem("primary");
-               boolean isPrimary = (primaryAtt!=null) && 
-                                   (primaryAtt.getTextContent()!=null) &&
-                                   (primaryAtt.getTextContent().trim().toLowerCase().equals("true"));
-               if ( isPrimary ) {
-                   emails.add(0, email);
-               } else {
-                   emails.add(email);
-               }
-            });
-            String primaryEmail = (emails.size()>1) ? emails.get(0) : "";
-	    */
+	    //switch to XPath based methods here for (debatable) clarity, and structural changes with email on 1.2 orcid message -> 2.0 orcid response.
 	    String primaryEmail = getPrimaryEmail(doc);
-	    /*
-	    if ( "" != primaryEmail )
-	    {
-		    emails.add( primaryEmail );
-	    }
-	    */
+            List<String> emails = getAllEmails(doc);
             
             // make the username up
             String username;
@@ -165,12 +141,12 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         }
         
     }
-	    // xmlstarlet sel -t -c "/record:record/person:person/email:emails/email:email[@primary='true']/email:email"
     /**
      * retrieve email from ORCID 2.0 response document, or empty string if no primary email is present
      */
     private String getPrimaryEmail(Document doc)
     {
+	    // `xmlstarlet sel -t -c "/record:record/person:person/email:emails/email:email[@primary='true']/email:email"`, if you're curious
 	    String p = "/record/person/emails/email[@primary='true']/email/text()";
 	    NodeList emails = xpath_matches( doc, p );
 	    String primary_email  = "";
@@ -181,6 +157,9 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 	    // if there are no (or somehow more than 1) primary email(s), then we've already at failure value
 	    return primary_email;
     }
+    /**
+     * retrieve all emails (including primary) from ORCID 2.0 response document
+     */
     private List<String> getAllEmails(Document doc)
     {
 	    String p = "/record/person/emails/email/email/text()";
