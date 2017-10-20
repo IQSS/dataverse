@@ -97,10 +97,10 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         System.out.println("noEmailResponse = " + NO_EMAIL );
         final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(NO_EMAIL);
 
-        assertEquals("0000-0002-3283-0661", actual.userIdInProvider);
-        assertEquals("Pete.Dataversky", actual.username);
-        assertEquals("Pete K.", actual.displayInfo.getFirstName());
-        assertEquals("Dataversky", actual.displayInfo.getLastName());
+        assertEquals("0000-0003-2591-1698", actual.userIdInProvider);
+        assertEquals("Bob.Doc", actual.username);
+        assertEquals("Bob T.", actual.displayInfo.getFirstName());
+        assertEquals("Doc", actual.displayInfo.getLastName());
         assertEquals("", actual.displayInfo.getEmailAddress());
         assertEquals("", actual.displayInfo.getAffiliation());
         assertEquals("", actual.displayInfo.getPosition());

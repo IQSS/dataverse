@@ -3,8 +3,8 @@
     <message-version>1.2</message-version>
     <orcid-profile type="user">
         <orcid-identifier>
-            <uri>http://sandbox.orcid.org/0000-0002-3283-0661</uri>
-            <path>0000-0002-3283-0661</path>
+            <uri>http://sandbox.orcid.org/0000-0003-2591-1698</uri>
+            <path>0000-0003-2591-1698</path>
             <host>sandbox.orcid.org</host>
         </orcid-identifier>
         <orcid-preferences>
@@ -20,8 +20,8 @@
         </orcid-history>
         <orcid-bio>
             <personal-details>
-                <given-names>Pete K.</given-names>
-                <family-name>Dataversky</family-name>
+                <given-names>Bob T.</given-names>
+                <family-name>Doc</family-name>
             </personal-details>
         </orcid-bio>
     </orcid-profile>
