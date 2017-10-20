@@ -1970,7 +1970,7 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
         }
             JsfHelper.addSuccessMessage(JH.localize("dataset.message.deleteSuccess"));
-        return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
+        return SystemConfig.HOMEPAGE + dataset.getOwner().getAlias() + "&faces-redirect=true";
     }
     
     public String editFileMetadata(){

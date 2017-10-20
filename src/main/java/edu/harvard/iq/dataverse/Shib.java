@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -441,16 +442,16 @@ public class Shib implements java.io.Serializable {
         String rootDvAlias = getRootDataverseAlias();
         if (includeFacetDashRedirect) {
             if (rootDvAlias != null) {
-                return plainHomepageString + "?alias=" + rootDvAlias + "&faces-redirect=true";
+                return SystemConfig.HOMEPAGE + rootDvAlias + "&faces-redirect=true";
             } else {
-                return plainHomepageString + "?faces-redirect=true";
+                return  SystemConfig.HOMEPAGE + "?faces-redirect=true";
             }
         } else if (rootDvAlias != null) {
             /**
              * @todo Is there a constant for "/dataverse/" anywhere? I guess
              * we'll just hard-code it here.
              */
-            return "/dataverse/" + rootDvAlias;
+            return SystemConfig.HOMEPAGE  + rootDvAlias;
         } else {
             return plainHomepageString;
         }

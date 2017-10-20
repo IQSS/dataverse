@@ -340,14 +340,14 @@ public class DataverseUserPage implements java.io.Serializable {
 
             // go back to where user came from
             if ("dataverse.xhtml".equals(redirectPage)) {
-                redirectPage = redirectPage + "&alias=" + dataverseService.findRootDataverse().getAlias();
+                redirectPage = SystemConfig.HOMEPAGE + dataverseService.findRootDataverse().getAlias();
             }
 
             try {
                 redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 logger.log(Level.SEVERE, "Server does not support 'UTF-8' encoding.", ex);
-                redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
+                redirectPage = SystemConfig.HOMEPAGE  + dataverseService.findRootDataverse().getAlias();
             }
 
             logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
@@ -391,7 +391,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public String cancel() {
         if (editMode == EditMode.CREATE) {
-            return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "&faces-redirect=true";
+            return SystemConfig.HOMEPAGE  + dataverseService.findRootDataverse().getAlias() + "&faces-redirect=true";
         }
 
         editMode = null;

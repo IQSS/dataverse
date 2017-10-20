@@ -42,6 +42,8 @@ public class SystemConfig {
 
     @EJB
     AuthenticationServiceBean authenticationService;
+    
+    public static final String HOMEPAGE = "/dataverse/";
 
     /**
      * A JVM option for the advertised fully qualified domain name (hostname) of
