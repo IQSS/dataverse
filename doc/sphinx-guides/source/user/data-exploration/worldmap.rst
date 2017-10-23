@@ -9,7 +9,7 @@ WorldMap: Geospatial Data Exploration
 Dataverse and WorldMap
 ======================
 
-`WorldMap <http://worldmap.harvard.edu/>`_ is developed by the Center for Geographic Analysis (CGA) at Harvard and is open source software that helps researchers visualize and explore their data in maps. The WorldMap and Dataverse collaboration allows researchers to upload shapefiles or tabular files to Dataverse for long term storage and receive a persistent identifier (through DOI), then easily navigate into WorldMap to interact with the data and save to WorldMap as well.
+`WorldMap <http://worldmap.harvard.edu/>`_ is developed by the Center for Geographic Analysis (CGA) at Harvard and is open source software that helps researchers visualize and explore their data in maps. The WorldMap and Dataverse collaboration allows researchers to upload shapefiles or tabular files to Dataverse for long term storage and receive a persistent identifier (through DOI), then easily navigate into WorldMap to interact with the data.
 
 Note: WorldMap hosts their own `user guide <http://worldmap.harvard.edu/static/docs/WorldMap_Help_en.pdf>`_ that covers some of the same material as this page.
 
@@ -33,11 +33,15 @@ Once you have uploaded your .zip shapefile, a Map Data button will appear next t
 
 To get started with visualizing your shapefile, click on the blue "Visualize on WorldMap" button in Geoconnect. It may take up to 45 seconds for the data to be sent to WorldMap and then back to Geoconnect.
 
-Once this process has finished, you will be taken to a new page where you can style your map through Attribute, Classification Method, Number of Intervals, and Colors. Clicking "View on WorldMap" will open WorldMap in a new tab, allowing you to see how your map will be displayed there.
+Once this process has finished, you will be taken to a new page where you can style your map through Attribute, Classification Method, Number of Intervals, and Colors. Clicking "Apply Changes" will send your map to both Dataverse and WorldMap, creating a preview of your map that will be visible on your file page and your dataset page. 
 
-After styling your map, you can either save it by clicking "Return to Dataverse" or delete it with the "Delete" button. If you decide to delete the map, it will no longer appear on WorldMap. Returning to Dataverse will send the styled map layer to both Dataverse and WorldMap. A preview of your map will now be visible on your file page and your dataset page.
+Clicking "View on WorldMap" will open WorldMap in a new tab, allowing you to see how your map will be displayed there.
 
-To replace your shapefile's map with a new one, simply click the Map Data button again. 
+You can delete your map with the "Delete" button. If you decide to delete the map, it will no longer appear on WorldMap, and your dataset in Dataverse will no longer display the map preview.
+
+When you're satisfied with your map, you may click "Return to the Dataverse" to go back to Dataverse.
+
+In the future, to replace your shapefile's map with a new one, simply click the Map Data button on the dataset or file page to return to the Geoconnect edit map page. 
 
 Mapping tabular files with Geoconnect
 =====================================
@@ -121,9 +125,9 @@ Now that you have created your map:
 
 - Dataverse will contain a preview of the map and links to the larger version on WorldMap.
 
-The map editor (pictured above) provides a set of options you can use to style your map. The "Return to the Dataverse" button saves your map and brings you back to Dataverse. "View on WorldMap" takes you to the map's page on WorldMap, which offers additional views and options. 
+The map editor (pictured above) provides a set of options you can use to style your map. Clicking "Apply Changes" saves the current version of your map to Dataverse and Worldmap. The "Return to the Dataverse" button brings you back to Dataverse. "View on WorldMap" takes you to the map's page on WorldMap, which offers additional views and options. 
 
-If you'd like to make future changes to your map, you can return to the editor by clicking the "Map Data" button on your file.
+If you'd like to make further changes to your map in the future, you can return to the editor by clicking the "Map Data" button on your file.
 
 Removing your map
 =================
