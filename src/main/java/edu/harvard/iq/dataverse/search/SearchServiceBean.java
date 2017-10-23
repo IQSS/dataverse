@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,12 +43,15 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionRolledbackLocalException;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
-import org.apache.solr.client.solrj.SolrServer;
+//import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
+//import org.apache.solr.client.solrj.impl.HttpSolrServer;
+//import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.RangeFacet;
@@ -80,17 +84,22 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
 
     public static final JsfHelper JH = new JsfHelper();
-    private SolrServer solrServer;
+    private SolrClient solrServer;
     
     @PostConstruct
     public void init(){
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr";
+        solrServer = new HttpSolrClient.Builder(urlString).build();
     }
     
     @PreDestroy
     public void close(){
         if(solrServer != null){
-            solrServer.shutdown();
+            try {
+                solrServer.close();
+            } catch (IOException e) {
+                logger.warning("Solr closing error: " + e);
+            }
             solrServer = null;
         }
     }
@@ -301,7 +310,7 @@ public class SearchServiceBean {
         // -----------------------------------  
         // Make the solr query
         // -----------------------------------
-        QueryResponse queryResponse;
+        QueryResponse queryResponse = null;
         try {
             queryResponse = solrServer.query(solrQuery);
         } catch (RemoteSolrException ex) {
@@ -333,6 +342,8 @@ public class SearchServiceBean {
             return exceptionSolrQueryResponse;
         } catch (SolrServerException ex) {
             throw new SearchException("Internal Dataverse Search Engine Error", ex);
+        } catch (IOException e) {
+            logger.warning("Solr query error: " + e);
         }
 
         SolrDocumentList docs = queryResponse.getResults();

@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
+//import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -21,10 +22,10 @@ public class BatchIndex {
 private static final Logger logger = Logger.getLogger(BatchIndex.class.getCanonicalName());
     private Collection<SolrInputDocument> docs;
     long batchsize;
-    private SolrServer server;
+    private SolrClient server;
 
     
-    public BatchIndex(long size, SolrServer serv){
+    public BatchIndex(long size, SolrClient serv){
         batchsize = size;
         docs = new ArrayList<>();
         server = serv;
@@ -75,7 +76,7 @@ private static final Logger logger = Logger.getLogger(BatchIndex.class.getCanoni
     /**
      * @return the server
      */
-    public SolrServer getServer() {
+    public SolrClient getServer() {
         return server;
     }
 

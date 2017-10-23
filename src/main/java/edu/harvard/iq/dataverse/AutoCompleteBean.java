@@ -1,15 +1,18 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Named;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
+//import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+//import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.TermsResponse;
 import org.apache.solr.client.solrj.response.TermsResponse.Term;
@@ -25,11 +28,12 @@ public class AutoCompleteBean implements java.io.Serializable {
     @EJB
     SystemConfig systemConfig;
     
-    private static SolrServer solrServer;
+    private static SolrClient solrServer;
     
-    public SolrServer getSolrServer(){
+    public SolrClient getSolrServer(){
         if(solrServer == null){
-            solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+            String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr";
+            solrServer = new HttpSolrClient.Builder(urlString).build();
         }
         return solrServer;
     }
@@ -59,6 +63,8 @@ public class AutoCompleteBean implements java.io.Serializable {
 //            items = resp.getTerms(solrFieldDatasetFieldDescription);
         } catch (SolrServerException e) {
             items = null;
+        } catch (IOException e) {
+            logger.warning("Solr query error: " + e);
         }
 
         if (items != null) {

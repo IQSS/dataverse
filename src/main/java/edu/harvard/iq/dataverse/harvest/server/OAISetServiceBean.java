@@ -31,11 +31,14 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
+//import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
+//import org.apache.solr.client.solrj.impl.HttpSolrServer;
+//import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -115,12 +118,13 @@ public class OAISetServiceBean implements java.io.Serializable {
        return em.find(OAISet.class,id);
     }   
     
-    private SolrServer solrServer = null;
+    private SolrClient solrServer = null;
     
-    private SolrServer getSolrServer () {
+    private SolrClient getSolrServer () {
         if (solrServer == null) {
         }
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr";
+        solrServer = new HttpSolrClient.Builder(urlString).build();
         
         return solrServer;
         
@@ -266,6 +270,8 @@ public class OAISetServiceBean implements java.io.Serializable {
         } catch (SolrServerException ex) {
             logger.fine("Internal Dataverse Search Engine Error");
             throw new OaiSetException("Internal Dataverse Search Engine Error");
+        } catch (IOException e) {
+            logger.warning("Solr query error: " + e);
         }
         
         SolrDocumentList docs = queryResponse.getResults();

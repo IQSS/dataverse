@@ -51,10 +51,12 @@ import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
+//import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+//import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -108,18 +110,24 @@ public class IndexServiceBean {
     public static final String HARVESTED = "Harvested";
     private String rootDataverseName;
     private Dataverse rootDataverseCached; 
-    private SolrServer solrServer;
+    private SolrClient solrServer;
     
     @PostConstruct
     public void init(){
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr";
+        solrServer = new HttpSolrClient.Builder(urlString).build();
+
         rootDataverseName = findRootDataverseCached().getName();
     }
     
     @PreDestroy
     public void close(){
         if(solrServer != null){
-            solrServer.shutdown();
+            try {
+                solrServer.close();
+            } catch (IOException e) {
+                logger.warning("Solr closing error: " + e);
+            }
             solrServer = null;
         }
     }
@@ -1387,6 +1395,8 @@ public class IndexServiceBean {
             queryResponse = solrServer.query(solrQuery);
         } catch (SolrServerException ex) {
             throw new SearchException("Error searching Solr for " + type, ex);
+        } catch (IOException e) {
+            logger.warning("Solr query error: " + e);
         }
         SolrDocumentList results = queryResponse.getResults();
         for (SolrDocument solrDocument : results) {
@@ -1421,6 +1431,8 @@ public class IndexServiceBean {
             queryResponse = solrServer.query(solrQuery);
         } catch (SolrServerException ex) {
             throw new SearchException("Error searching Solr for dataset parent id " + parentDatasetId, ex);
+        } catch (IOException e) {
+            logger.warning("Solr query error: " + e);
         }
         SolrDocumentList results = queryResponse.getResults();
         for (SolrDocument solrDocument : results) {
