@@ -512,17 +512,28 @@ public class FilePage implements java.io.Serializable {
         return "";
     }
     
+    private Boolean thumbnailAvailable = null; 
+    
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
         // new and optimized logic: 
         // - check download permission here (should be cached - so it's free!)
         // - only then ask the file service if the thumbnail is available/exists.
-        // the service itself no longer checks download permissions.  
+        // the service itself no longer checks download permissions.
+        // (Also, cache the result the first time the check is performed... 
+        // remember - methods referenced in "rendered=..." attributes are 
+        // called *multiple* times as the page is loading!)
         
-        if (!fileDownloadHelper.canDownloadFile(fileMetadata)) {
-            return false;
+        if (thumbnailAvailable != null) {
+            return thumbnailAvailable;
         }
-     
-        return datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
+                
+        if (!fileDownloadHelper.canDownloadFile(fileMetadata)) {
+            thumbnailAvailable = false;
+        } else {
+            thumbnailAvailable = datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
+        }
+        
+        return thumbnailAvailable;
     }
     
     private String returnToDatasetOnly(){
