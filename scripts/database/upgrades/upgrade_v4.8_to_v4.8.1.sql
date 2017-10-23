@@ -47,15 +47,8 @@ WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype=
 
 ALTER TABLE dataset ALTER identifier DROP NOT NULL;
 
-/*
-Run drop column after verifying proper transfer of datapoints 
-Only dvObjects that are datasets will have these columns filled in 
-on migration.
-
 ALTER TABLE dataset DROP COLUMN authority;
 ALTER TABLE dataset DROP COLUMN doiseparator;
 ALTER TABLE dataset DROP COLUMN globalidcreatetime;
 ALTER TABLE dataset DROP COLUMN identifier;
 ALTER TABLE dataset DROP COLUMN protocol;
-
-*/
