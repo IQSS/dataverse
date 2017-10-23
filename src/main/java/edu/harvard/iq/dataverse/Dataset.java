@@ -156,7 +156,7 @@ public class Dataset extends DvObjectContainer {
     }
     
     /**
-     * Tests whether {@code this} dataset is locked for a given reason.
+     * Checks whether {@code this} dataset is locked for a given reason.
      * @param reason the reason we test for.
      * @return {@code true} iff the data set is locked for {@code reason}.
      */
