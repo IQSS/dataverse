@@ -92,7 +92,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.em().merge(ddu);
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
-        publicizeExternalIdentifier(theDataset, ctxt);
+        publicizeExternalIdentifier(ctxt);
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
@@ -159,14 +159,18 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
 
-    private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
+    private void publicizeExternalIdentifier(CommandContext ctxt) throws CommandException {
         String protocol = theDataset.getProtocol();
         IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
         if (idServiceBean!= null )
         try {
-            idServiceBean.publicizeIdentifier(dataset);
-            for (DataFile df: dataset.getFiles()){
+            idServiceBean.publicizeIdentifier(theDataset);
+            theDataset.setGlobalIdCreateTime(new Date());
+            theDataset.setIdentifierRegistered(true);
+            for (DataFile df: theDataset.getFiles()){
                 idServiceBean.publicizeIdentifier(df);
+                df.setGlobalIdCreateTime(new Date());
+                df.setIdentifierRegistered(true);
             }
             
         } catch (Throwable e) {

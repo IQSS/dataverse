@@ -218,6 +218,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
         String identifier = getIdentifier(dvObject);
         HashMap<String, String> metadata = getUpdateMetadata(dvObject);
         metadata.put("_status", "public");
+        metadata.put("datacite.publicationyear", generateYear(dvObject));
         metadata.put("_target", getTargetUrl(dvObject));
         try {
             doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);

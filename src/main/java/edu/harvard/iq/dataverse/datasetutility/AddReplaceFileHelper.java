@@ -95,10 +95,6 @@ import org.ocpsoft.common.util.Strings;
 public class AddReplaceFileHelper{
     
     private static final Logger logger = Logger.getLogger(AddReplaceFileHelper.class.getCanonicalName());
-
-    
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
     
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
@@ -1419,12 +1415,12 @@ public class AddReplaceFileHelper{
         
         try{
         for(DataFile dataFile : finalFileList){
-            commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest() ));
+            commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequest ));
             }
         }
         catch(CommandException cmdex)
         {
-             logger.info("error in saving files:"+cmdex.getMessage());
+            logger.info("error in saving files:"+cmdex.getMessage());
         }
 //        ingestService.addFiles(workingVersion, finalFileList);
 
