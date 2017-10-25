@@ -311,8 +311,8 @@ public class FileMetadata implements Serializable {
          return getFileCitation(false);
      }
      
-     
-     
+
+    
      
     public String getFileCitation(boolean html){
          String citation = this.getDatasetVersion().getCitation(html);
@@ -320,7 +320,7 @@ public class FileMetadata implements Serializable {
          ", #{FilePage.fileMetadata.label} [fileName]"
          <h:outputText value=", #{FilePage.file.unf}" rendered="#{FilePage.file.tabularData and !(empty FilePage.file.unf)}"/>
          */
-         citation += "; " + this.getFileDOI(dataFile, html) + " " + this.getLabel() + " [fileName]" ;
+         citation += "; " + this.getLabel() + " [fileName]" ;
          if (this.dataFile.isTabularData() && this.dataFile.getUnf() != null && !this.dataFile.getUnf().isEmpty()){
              citation += ", " + this.dataFile.getUnf() + " [fileUNF]";                    
          }
