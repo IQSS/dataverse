@@ -223,11 +223,11 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
-            redirectPage = SystemConfig.HOMEPAGE + dataverseService.findRootDataverse().getAlias();
+            redirectPage = redirectToRoot();
         }
 
         if (StringUtils.isEmpty(redirectPage)) {
-            redirectPage = SystemConfig.HOMEPAGE  + dataverseService.findRootDataverse().getAlias();
+            redirectPage = redirectToRoot();
         }
 
         logger.log(Level.INFO, "Sending user to = " + redirectPage);
@@ -235,6 +235,10 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
 
     private Boolean signupAllowed = null;
+    
+    private String redirectToRoot(){
+        return "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
+    }
     
     public boolean isSignupAllowed() {
         if (signupAllowed != null) {

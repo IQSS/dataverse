@@ -442,16 +442,16 @@ public class Shib implements java.io.Serializable {
         String rootDvAlias = getRootDataverseAlias();
         if (includeFacetDashRedirect) {
             if (rootDvAlias != null) {
-                return SystemConfig.HOMEPAGE + rootDvAlias + "&faces-redirect=true";
+                return plainHomepageString + "?alias="  + rootDvAlias + "&faces-redirect=true";
             } else {
-                return  SystemConfig.HOMEPAGE + "?faces-redirect=true";
+                return  plainHomepageString + "?faces-redirect=true";
             }
         } else if (rootDvAlias != null) {
             /**
              * @todo Is there a constant for "/dataverse/" anywhere? I guess
              * we'll just hard-code it here.
              */
-            return SystemConfig.HOMEPAGE  + rootDvAlias;
+            return "/dataverse/" + rootDvAlias;
         } else {
             return plainHomepageString;
         }

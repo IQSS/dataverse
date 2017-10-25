@@ -173,14 +173,14 @@ public class LoginPage implements java.io.Serializable {
             session.setUser(r);
             
             if ("dataverse.xhtml".equals(redirectPage)) {
-                redirectPage = SystemConfig.HOMEPAGE + dataverseService.findRootDataverse().getAlias();
+                redirectPage = redirectToRoot();
             }
             
             try {            
                 redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
-                redirectPage = SystemConfig.HOMEPAGE + dataverseService.findRootDataverse().getAlias();
+                redirectPage = redirectToRoot();
             }
 
             logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
@@ -213,6 +213,10 @@ public class LoginPage implements java.io.Serializable {
             }
         }
         
+    }
+    
+    private String redirectToRoot(){
+        return "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
     }
 
     public String getCredentialsAuthProviderId() {

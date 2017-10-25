@@ -889,7 +889,7 @@ public class DataversePage implements java.io.Serializable {
             logger.log(Level.SEVERE, "Unexpected Exception calling  delete dataverse command", ex);
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.delete.failure"));
         }
-        return SystemConfig.HOMEPAGE + dataverse.getOwner().getAlias() + "&faces-redirect=true";
+        return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
     }
 
     public String getMetadataBlockPreview(MetadataBlock mdb, int numberOfItems) {
@@ -1018,7 +1018,7 @@ public class DataversePage implements java.io.Serializable {
     }
     
     private String returnRedirect(){
-        return SystemConfig.HOMEPAGE + dataverse.getAlias() + "&faces-redirect=true";  
+        return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";  
     }
 
 }

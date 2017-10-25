@@ -141,7 +141,7 @@ public class PasswordResetPage implements java.io.Serializable {
             String builtinAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
             AuthenticatedUser au = authSvc.lookupUser(builtinAuthProviderId, user.getUserName());
             session.setUser(au);
-            return SystemConfig.HOMEPAGE  + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true";
+            return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true";
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, response.getMessageSummary(), response.getMessageDetail()));
             return null;
