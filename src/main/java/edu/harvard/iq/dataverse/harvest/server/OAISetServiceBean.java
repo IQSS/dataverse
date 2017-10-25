@@ -123,7 +123,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     private SolrClient getSolrServer () {
         if (solrServer == null) {
         }
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr";
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
         solrServer = new HttpSolrClient.Builder(urlString).build();
         
         return solrServer;

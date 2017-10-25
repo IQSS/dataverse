@@ -32,7 +32,7 @@ public class AutoCompleteBean implements java.io.Serializable {
     
     public SolrClient getSolrServer(){
         if(solrServer == null){
-            String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr";
+            String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
             solrServer = new HttpSolrClient.Builder(urlString).build();
         }
         return solrServer;

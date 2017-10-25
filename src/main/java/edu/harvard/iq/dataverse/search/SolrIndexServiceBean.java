@@ -63,7 +63,7 @@ public class SolrIndexServiceBean {
     
     @PostConstruct
     public void init(){
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr";
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
         solrServer = new HttpSolrClient.Builder(urlString).build();
         
     }
