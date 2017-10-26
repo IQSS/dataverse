@@ -1,0 +1,6 @@
+#!/bin/sh
+/usr/local/glassfish5/glassfish/bin/asadmin stop-domain
+rm -rf /usr/local/glassfish5/glassfish/domains/domain1/generated
+psql -c 'DROP DATABASE "dvndb"' template1
+../search/clear
+rm -rf ~/dataverse/files

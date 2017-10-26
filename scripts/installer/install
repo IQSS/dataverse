@@ -54,6 +54,7 @@ else
 
 	'POSTGRES_SERVER',
 	'POSTGRES_PORT',
+	'POSTGRES_ADMIN_USERNAME',
 	'POSTGRES_ADMIN_PASSWORD',
 	'POSTGRES_DATABASE',
 	'POSTGRES_USER',
@@ -79,6 +80,7 @@ my %CONFIG_DEFAULTS = (
     'ADMIN_EMAIL',         '',
     'MAIL_SERVER',         'mail.hmdc.harvard.edu',
 
+    'POSTGRES_ADMIN_USERNAME', 'postgres',
     'POSTGRES_ADMIN_PASSWORD', 'secret',
     'POSTGRES_SERVER',   '127.0.0.1',
     'POSTGRES_PORT',     5432,
@@ -105,6 +107,7 @@ my %CONFIG_PROMPTS = (
 
     'POSTGRES_SERVER',   'Postgres Server Address',
     'POSTGRES_PORT',     'Postgres Server Port',
+    'POSTGRES_ADMIN_USERNAME', 'Postgres ADMIN username',
     'POSTGRES_ADMIN_PASSWORD', 'Postgres ADMIN password',
     'POSTGRES_DATABASE', 'Name of the Postgres Database',
     'POSTGRES_USER',     'Name of the Postgres User',
@@ -131,6 +134,7 @@ my %CONFIG_COMMENTS = (
 
     'POSTGRES_SERVER',   '',
     'POSTGRES_PORT',     '',
+    'POSTGRES_ADMIN_USERNAME', ":\n - We will need this to create the user and database that the Dataverse application will be using.\n (Hit RETURN if access control is set to \"trust\" for this connection in pg_hba.conf)\n: ",
     'POSTGRES_ADMIN_PASSWORD', ":\n - We will need this to create the user and database that the Dataverse application will be using.\n (Hit RETURN if access control is set to \"trust\" for this connection in pg_hba.conf)\n: ",
     'POSTGRES_USER',     ":\n - This is the Postgres user that the Dataverse app will be using to talk to the database\n: ",
     'POSTGRES_DATABASE', '',
@@ -713,14 +717,20 @@ if ( $psql_exec eq "" )
     $psql_admin_exec = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec; 
     $psql_exec = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec; 
 
-    print "Checking if we can talk to Postgres as the admin user...\n";
+    print "Checking if we can talk to Postgres as the admin user (" . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_USERNAME'} . ")...\n";
 }
 
 # 4. CONFIGURE POSTGRES:
 
 # 4a. BUT FIRST, CHECK IF WE CAN TALK TO POSTGRES AS THE ADMIN:
 
-if ( $psql_admin_exec eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
+print "\$psql_admin_exec: $psql_admin_exec\n";
+
+my $foo = $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_USERNAME'} . " -d postgres -c 'SELECT * FROM pg_roles'";
+
+print "\$foo: $foo\n";
+
+if ( $psql_admin_exec eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_USERNAME'} . " -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
 {
     # No, we can't. :(
     if ($pg_local_connection) 
@@ -1087,6 +1097,7 @@ my $DOMAIN_DOWN =
 print STDERR $DOMAIN_DOWN . "\n";
 if ($DOMAIN_DOWN) {
     print "Trying to start domain up...\n";
+    # FIXME: After this point the script is no longer non-interactive. You have to hit enter when you see "Enter admin user name [Enter to accept default]>".
     system( "sudo -u $CONFIG_DEFAULTS{'GLASSFISH_USER'} " . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
 
     # TODO: (?) - retest that the domain is running now? 

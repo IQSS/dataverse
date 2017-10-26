@@ -1,7 +1,7 @@
 FROM centos:7.2.1511
 MAINTAINER Dataverse (support@dataverse.org)
 
-COPY glassfish-4.1.zip /tmp
+COPY glassfish-5.0.zip /tmp
 COPY weld-osgi-bundle-2.2.10.Final-glassfish4.jar /tmp
 COPY default.config /tmp
 COPY dvinstall.zip /tmp
@@ -33,16 +33,12 @@ RUN find /tmp
 #
 #RUN exitEarly
 
-# Install Glassfish 4.1
+# Install Glassfish 5.0
 
 RUN cd /tmp \ 
-    && unzip glassfish-4.1.zip \
-    && mv glassfish4 /usr/local \
-    && cd /usr/local/glassfish4/glassfish/modules \
-    && rm weld-osgi-bundle.jar \
-    && cp /tmp/weld-osgi-bundle-2.2.10.Final-glassfish4.jar . \
-    #FIXME: Patch Grizzly too!
-    && echo "Done installing and patching Glassfish"
+    && unzip glassfish-5.0.zip \
+    && mv glassfish5 /usr/local \
+    && echo "Done installing Glassfish"
 
 RUN chmod g=u /etc/passwd
 

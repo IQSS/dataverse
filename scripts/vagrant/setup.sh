@@ -28,6 +28,7 @@ GLASSFISH_USER=glassfish
 echo "Ensuring Unix user '$GLASSFISH_USER' exists"
 useradd $GLASSFISH_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
+# FIXME: update to Glassfish 5
 GLASSFISH_ZIP="$DOWNLOAD_DIR/glassfish-4.1.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-4.6.0.tgz"
 WELD_PATCH="$DOWNLOAD_DIR/weld-osgi-bundle-2.2.10.Final-glassfish4.jar"
@@ -37,6 +38,7 @@ if [ ! -f $GLASSFISH_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Done running download script."
 fi
 GLASSFISH_USER_HOME=~glassfish
+# FIXME: update to Glassfish 5
 GLASSFISH_ROOT=$GLASSFISH_USER_HOME/glassfish4
 if [ ! -d $GLASSFISH_ROOT ]; then
   echo "Copying $GLASSFISH_ZIP to $GLASSFISH_USER_HOME and unzipping"

@@ -45,6 +45,8 @@ Installing Glassfish
 
 **Note:** The Dataverse installer need not be run as root, and it is recommended that Glassfish not run as root either. We suggest the creation of a glassfish service account for this purpose.
 
+FIXME: Update to Glassfish 5
+
 - Download and install Glassfish (installed in ``/usr/local/glassfish4`` in the example commands below)::
 
 	# wget http://dlc-cdn.sun.com/glassfish/4.1/release/glassfish-4.1.zip
