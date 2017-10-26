@@ -216,7 +216,7 @@ public class LoginPage implements java.io.Serializable {
     }
     
     private String redirectToRoot(){
-        return "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
+        return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
     }
 
     public String getCredentialsAuthProviderId() {
