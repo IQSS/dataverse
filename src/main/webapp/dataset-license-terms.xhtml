@@ -69,17 +69,13 @@
                            </div>
                        </div>
 
-                       <!-- Additional Information -->
-                       <div jsf:rendered="#{!empty editMode or empty editMode and (!empty termsOfUseAndAccess.confidentialityDeclaration 
+                       <!-- Additional Information
+                       <ui:fragment rendered="# {!empty editMode or empty editMode and (!empty termsOfUseAndAccess.confidentialityDeclaration 
                                             or !empty termsOfUseAndAccess.specialPermissions or !empty termsOfUseAndAccess.restrictions or !empty termsOfUseAndAccess.citationRequirements 
                                             or !empty termsOfUseAndAccess.depositorRequirements
-                                            or !empty termsOfUseAndAccess.conditions or !empty termsOfUseAndAccess.disclaimer)}">
-                           <p>
-                               <a data-toggle="collapse" href="#collapseTOUAdditional" aria-expanded="false" aria-controls="collapseExample">
-                                   #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo']} [+]
-                               </a>
-                           </p>
-                           <div class="collapse" id="collapseTOUAdditional" jsf:rendered="#{empty editMode}">
+                                            or !empty termsOfUseAndAccess.conditions or !empty termsOfUseAndAccess.disclaimer)}"> -->
+                       
+                           <ui:fragment rendered="#{empty editMode}">
                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.confidentialityDeclaration}">
                                    <label for="confidentialityDeclaration" class="col-sm-3 control-label">
                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
@@ -150,8 +146,8 @@
                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.disclaimer)}" escape="false"/>
                                    </div>
                                </div>
-                           </div>
-                           <div class="collapse" id="collapseTOUAdditional" jsf:rendered="#{!empty editMode}">
+                           </ui:fragment>
+                           <ui:fragment rendered="#{!empty editMode}">
                                <div class="form-group">
                                    <label for="confidentialityDeclaration" class="col-sm-3 control-label">
                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
@@ -222,9 +218,10 @@
                                        <p:inputTextarea id="disclaimer" value="#{termsOfUseAndAccess.disclaimer}" rows="5" cols="60" styleClass="form-control" />
                                    </div>
                                </div>
-                           </div>
-                       </div>
-                       <!-- END: Additional Information -->
+                           </ui:fragment>
+                       
+                       <!-- </ui:fragment>
+                       END: Additional Information -->
                    </div>
                </p:fragment>
            </div>
@@ -303,17 +300,13 @@
                        </div>
                    </ui:fragment>
 
-                   <!-- Additional Information -->
-                   <div jsf:rendered="#{!empty editMode or empty editMode and (!empty termsOfUseAndAccess.dataAccessPlace 
+                   <!-- Additional Information
+                   <ui:fragment rendered="# {!empty editMode or empty editMode and (!empty termsOfUseAndAccess.dataAccessPlace 
                                         or !empty termsOfUseAndAccess.originalArchive or !empty termsOfUseAndAccess.availabilityStatus 
                                         or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
-                                        or !empty termsOfUseAndAccess.studyCompletion)}">
-                       <p>
-                           <a data-toggle="collapse" href="#collapseRestrictedFilesAdditional" aria-expanded="false" aria-controls="collapseExample">
-                               #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo']} [+]
-                           </a>
-                       </p>
-                       <div class="collapse" id="collapseRestrictedFilesAdditional">
+                                        or !empty termsOfUseAndAccess.studyCompletion)}"> -->
+                       
+                       
                            <ui:fragment rendered="#{empty editMode}">
                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.dataAccessPlace}">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
@@ -438,9 +431,9 @@
                                    </div>
                                </div>
                            </ui:fragment>
-                       </div>
-                   </div>
-                   <!-- END: Additional Information -->
+                       
+                   <!-- </ui:fragment>
+                   END: Additional Information -->
                </div>
            </div>
        </div>
