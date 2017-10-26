@@ -1,0 +1,6 @@
+{
+  "displayNameBundleKey": "psi.displayName",
+  "descriptionBundleKey": "psi.description",
+  "toolUrl": "https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/",
+  "toolParameters": {}
+}

@@ -60,9 +60,11 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -246,7 +248,7 @@ public class Admin extends AbstractApiBean {
             return ok(Boolean.toString(prvs.get(0).isEnabled()));
         }
     }
-    
+
     @DELETE
     @Path("authenticationProviders/{id}/")
     public Response deleteAuthenticationProvider( @PathParam("id") String id ) {
@@ -259,6 +261,37 @@ public class Admin extends AbstractApiBean {
         return ok("AuthenticationProvider " + id + " deleted. "
             + ( authSvc.getAuthenticationProviderIds().isEmpty() 
                             ? "WARNING: no enabled authentication providers left." : ""));
+    }
+
+    @Path("externalTools")
+    @POST
+    public Response addExternalTool(String userInput) {
+        ExternalTool externalTool = new ExternalTool();
+        JsonReader jsonReader = Json.createReader(new StringReader(userInput));
+        JsonObject jsonObject = jsonReader.readObject();
+        // Get display name.
+        String displayNameBundleKey = jsonObject.getString("displayNameBundleKey");
+        externalTool.setDisplayNameBundleKey(displayNameBundleKey);
+        String displayName = BundleUtil.getStringFromBundle(externalTool.getDisplayNameBundleKey());
+        // Get description.
+        String descriptionBundleKey = jsonObject.getString("descriptionBundleKey");
+        externalTool.setDescriptionBundleKey(descriptionBundleKey);
+        String description = BundleUtil.getStringFromBundle(externalTool.getDescriptionBundleKey());
+        // Get URL
+        String toolUrlString = "toolUrl";
+        String toolUrl = jsonObject.getString(toolUrlString);
+        externalTool.setToolUrl(toolUrl);
+        // Get parameters
+        String toolParametersString = "toolParameters";
+        JsonObject toolParameters = jsonObject.getJsonObject(toolParametersString);
+        externalTool.setToolParameters(toolParameters.toString());
+        JsonObjectBuilder jab = Json.createObjectBuilder();
+        jab.add("displayName", displayName);
+        jab.add("description", description);
+        jab.add(toolUrlString, toolUrl);
+        jab.add(toolParametersString, toolParameters);
+        em.persist(externalTool);
+        return ok(jab);
     }
 
     @GET
