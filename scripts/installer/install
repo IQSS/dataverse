@@ -15,6 +15,7 @@ my $mailserver;
 my $yes;
 my $force;
 my $nogfpasswd;
+my $insecure;
 my $admin_email;
 my ($rez) = GetOptions(
     #"length=i" => \$length,    # numeric
@@ -28,6 +29,7 @@ my ($rez) = GetOptions(
     "y|yes"        => \$yes,
     "f|force"      => \$force,
     "nogfpasswd"   => \$nogfpasswd,
+    "insecure"     => \$insecure,
     "admin_email=s" => \$admin_email,
 );
 
@@ -1299,10 +1301,15 @@ for my $script ( "setup-all.sh" ) {
     #    $run_script = "tmpscript.sh";
     #}
     #else {
-    $run_script = $script;
+    #    $run_script = $script;
     #}
+    if ($insecure) {
+        $run_script = "$script --insecure";
+    } else {
+        $run_script = $script;
+    }
 
-    unless ( my $exit_code = system( "./" . $run_script . " > $run_script.$$.log 2>&1") == 0 ) 
+    unless ( my $exit_code = system( "./" . $run_script . " > $script.$$.log 2>&1") == 0 )
     {
         print "\nERROR executing script " . $script . "!\n";
         exit 1;
