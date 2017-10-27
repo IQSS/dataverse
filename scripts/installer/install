@@ -1097,7 +1097,6 @@ my $DOMAIN_DOWN =
 print STDERR $DOMAIN_DOWN . "\n";
 if ($DOMAIN_DOWN) {
     print "Trying to start domain up...\n";
-    # FIXME: After this point the script is no longer non-interactive. You have to hit enter when you see "Enter admin user name [Enter to accept default]>".
     system( "sudo -u $CONFIG_DEFAULTS{'GLASSFISH_USER'} " . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
 
     # TODO: (?) - retest that the domain is running now? 
@@ -1110,7 +1109,11 @@ else {
 # the username and password for every asadmin command, if
 # access to :4848 is password-protected:
 
-system( $glassfish_dir. "/bin/asadmin login" );
+# If you you have a "default.config" file in place and run `./install -y -f -nogfpasswd`
+# you can keep the installation process non-interactive.
+unless ($nogfpasswd) {
+    system( $glassfish_dir. "/bin/asadmin login" );
+}
 
 # NEW: configure glassfish using ASADMIN commands:
 
