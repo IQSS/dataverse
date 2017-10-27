@@ -18,7 +18,11 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
-                    <f:viewParam name="alias" value="#{DataversePage.dataverse.alias}"/>
+                    <!--Commenting out this "DataversePage.dataverse.alias" line because Glassfish 5 doesn't like it.
+                    No error message appears in server.log, DataversePage.init never fires, and the page shows this error:
+                    "Validation Error – Required fields were missed or there was a validation error. Please scroll down to see details."
+                    -->
+                    <!--<f:viewParam name="alias" value="# {DataversePage.dataverse.alias}"/>-->
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
                     <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
