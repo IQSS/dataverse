@@ -84,6 +84,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
@@ -167,6 +169,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
+    @EJB
+    ExternalToolServiceBean externalToolService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -244,6 +248,7 @@ public class DatasetPage implements java.io.Serializable {
     private boolean removeUnusedTags;
     
     private Boolean hasRsyncScript = false;
+    private List<ExternalTool> externalTools;
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -1511,7 +1516,9 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
             }
         }
-        
+
+        externalTools = externalToolService.findAll();
+
         return null;
     }
     
@@ -3984,5 +3991,9 @@ public class DatasetPage implements java.io.Serializable {
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
-    
+
+    public List<ExternalTool> getExternalTools() {
+        return externalTools;
+    }
+
 }

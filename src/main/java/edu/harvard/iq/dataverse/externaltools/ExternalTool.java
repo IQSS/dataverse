@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -78,6 +79,10 @@ public class ExternalTool implements Serializable {
 
     public void setToolParameters(String toolParameters) {
         this.toolParameters = toolParameters;
+    }
+
+    public String getButtonLabel() {
+        return BundleUtil.getStringFromBundle(displayNameBundleKey);
     }
 
 }
