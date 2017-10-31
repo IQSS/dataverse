@@ -34,6 +34,11 @@
             <meta name="DC.subject" content="#{subject}"/>
 	    </ui:repeat>
 	    </ui:define>
+	    <ui:define name="jsonld_header">
+                <script type="application/ld+json">
+                    <h:outputText value="#{DatasetPage.jsonLd}"/>
+                </script>
+	    </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>

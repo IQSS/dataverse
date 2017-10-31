@@ -3984,5 +3984,8 @@ public class DatasetPage implements java.io.Serializable {
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
-    
+
+    public String getJsonLd() {
+        return DatasetUtil.getJsonLd(workingVersion);
+    }
 }

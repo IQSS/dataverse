@@ -2,9 +2,13 @@ package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -33,6 +37,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import javax.imageio.ImageIO;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import org.apache.commons.io.IOUtils;
 
 public class DatasetUtil {
@@ -414,6 +421,88 @@ public class DatasetUtil {
         }
             
         return datasetFields;
+    }
+
+/*
+{
+  "@context": "http://schema.org",
+  "@type": "Dataset",
+  "@id": "https://doi.org/10.7910/dvn/icfngt",
+  "additionalType": "Dataset",
+  "name": "Replication Data for: Parties, Legislators, and the Origins of Proportional Representation",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Gary W. Cox",
+      "givenName": "Gary W.",
+      "familyName": "Cox"
+    },
+    {
+      "@type": "Person",
+      "name": "Jon H. Fiva",
+      "givenName": "Jon H.",
+      "familyName": "Fiva"
+    },
+    {
+      "@type": "Person",
+      "name": "Daniel M. Smith",
+      "givenName": "Daniel M.",
+      "familyName": "Smith"
+    }
+  ],
+  "datePublished": "2017",
+  "schemaVersion": "http://datacite.org/schema/kernel-4",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Harvard Dataverse"
+  },
+  "provider": {
+    "@type": "Organization",
+    "name": "DataCite"
+  }
+}
+*/
+    public static String getJsonLd(DatasetVersion workingVersion) {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("@context", "http://schema.org");
+        job.add("@type", "Dataset");
+        // FIXME
+        job.add("@id", "https://doi.org/10.7910/dvn/icfngt");
+        job.add("additionalType", "Dataset");
+        job.add("name", workingVersion.getTitle());
+        job.add("@context", "http://schema.org");
+        JsonArrayBuilder authors = Json.createArrayBuilder();
+        for (DatasetAuthor datasetAuthor : workingVersion.getDatasetAuthors()) {
+            JsonObjectBuilder author = Json.createObjectBuilder();
+            author.add("@type", "Person");
+            ShibUserNameFields shibUserNameFields = ShibUtil.findBestFirstAndLastName(null, null, datasetAuthor.getName().getValue().replaceAll(",", ""));
+            AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
+                    shibUserNameFields.getFirstName(),
+                    shibUserNameFields.getLastName(),
+                    "",
+                    "",
+                    ""
+            );
+            author.add("name", displayInfo.getFirstName() + " " + displayInfo.getLastName());
+            author.add("givenName", displayInfo.getFirstName());
+            author.add("familyName", displayInfo.getLastName());
+            authors.add(author);
+        }
+        job.add("author", authors);
+        // FIXME
+        job.add("datePublished", "2017");
+        job.add("schemaVersion", "http://datacite.org/schema/kernel-4");
+        job.add("publisher", Json.createObjectBuilder()
+                .add("@type", "Organization")
+                // FIXME
+                .add("name", "Harvard Dataverse")
+        );
+        job.add("provider", Json.createObjectBuilder()
+                .add("@type", "Organization")
+                // FIXME
+                .add("name", "DataCite")
+        );
+        return job.build().toString();
     }
 
 }
