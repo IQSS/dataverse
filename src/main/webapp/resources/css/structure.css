@@ -357,6 +357,7 @@ form.btn-form {display:inline-block;}
 .button-block .btn:only-child, .button-block div.btn-group:only-child {margin-right:0;}
 
 .button-block ul.dropdown-menu li.disabled span.ui-commandlink.ui-state-disabled {display: block; padding: 3px 20px; color: #777; background: none; opacity:1.0;}
+.button-single {display: block; padding: 3px 3px; color: #777; background: none; opacity:1.0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}

@@ -363,6 +363,10 @@
    <field name="authorIdentifier" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="authorIdentifierScheme" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="authorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   
+   <field name="cloudDataset" type="boolean" multiValued="true" stored="true" indexed="true"/>
+   
+   
    <field name="characteristicOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="city" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="classificationSchemaCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>

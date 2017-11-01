@@ -74,13 +74,23 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import javax.faces.context.ExternalContext;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+//import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.json.JSONObject;
 
 /**
  *
@@ -153,6 +163,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
+    @EJB
+    Cart cart;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -243,6 +255,62 @@ public class DatasetPage implements java.io.Serializable {
         this.lazyModel = lazyModel;
     }
     
+    public List<String> getItems() {
+        return cart.getContents();
+    }
+
+    public void addItemtoCart(String title) {
+        cart.addItem(title);
+    }
+    
+    public void removeCartItem(String title) {
+        cart.removeItem(title);
+    }
+    
+    public String launchCompute() throws IOException{
+        
+        String url = BundleUtil.getStringFromBundle("dataset.compute.link")+BundleUtil.getStringFromBundle("dataset.compute.linkapi");
+        CloseableHttpClient client = HttpClients.createDefault();
+        Header[] cookies;
+        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+        
+        HttpPost post = new HttpPost(url);
+        
+        JSONObject json = new JSONObject();
+        json.put("containerid", getItems());
+        System.out.println(json.toString());
+        
+        StringEntity input = new StringEntity(json.toString());
+        input.setContentType("application/json");
+        post.setEntity(input);
+        
+        
+        HttpResponse response = client.execute(post);
+        if (response.getStatusLine().getStatusCode() != 200) {
+//            throw new RuntimeException("Failed : HTTP error code : "
+//                    + response.getStatusLine().getStatusCode());
+            System.out.println("HTTP error code : "
+                    + response.getStatusLine().getStatusCode());
+             JsfHelper.addErrorMessage(JH.localize("dataset.compute.failure"));
+            return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
+            
+        } else {
+            cookies = response.getHeaders("Set-Cookie") == null ? null:
+                     response.getHeaders("Set-Cookie");
+            
+            for (Header cookie:cookies){
+                String cookieContent=cookie.getValue();
+                System.out.println(cookieContent);
+                String[] parts = cookieContent.split(";")[0].split("=");
+                externalContext.addResponseCookie(parts[0], parts[1], null);
+            }
+            
+            
+            externalContext.redirect(BundleUtil.getStringFromBundle("dataset.compute.link"));
+        }
+        return null;
+        
+    }
     private String fileLabelSearchTerm;
 
     public String getFileLabelSearchTerm() {
@@ -258,7 +326,7 @@ public class DatasetPage implements java.io.Serializable {
     public List<FileMetadata> getFileMetadatasSearch() {
         return fileMetadatasSearch;
     }
-
+    
     public void setFileMetadatasSearch(List<FileMetadata> fileMetadatasSearch) {
         this.fileMetadatasSearch = fileMetadatasSearch;
     }
@@ -389,6 +457,12 @@ public class DatasetPage implements java.io.Serializable {
         
         setReleasedVersionTabList(resetReleasedVersionTabList());
         
+    }
+    
+    //@author anuj
+    public void changeCloudDataset(ValueChangeEvent e) {
+    logger.info("Dataset id: "+dataset.getDisplayName());
+        datasetService.toggleCloudDataset(dataset.getId());
     }
 
     public void updateLinkableDataverses() {
@@ -1010,7 +1084,6 @@ public class DatasetPage implements java.io.Serializable {
     
     private String init(boolean initFull) {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-               
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
         /**
@@ -1086,21 +1159,27 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.isHarvested()) {
                 // if so, we'll simply forward to the remote URL for the original
                 // source of this harvested dataset:
-                String originalSourceURL = dataset.getRemoteArchiveURL();
-                if (originalSourceURL != null && !originalSourceURL.equals("")) {
-                    logger.fine("redirecting to "+originalSourceURL);
+                originalSourceUrl = dataset.getRemoteArchiveURL();
+                /*
+                if (originalSourceUrl != null && !originalSourceUrl.equals("")) {
+                    logger.fine("redirecting to "+originalSourceUrl);
                     try {
-                        FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceUrl);
                     } catch (IOException ioex) {
                         // must be a bad URL...
                         // we don't need to do anything special here - we'll redirect
                         // to the local 404 page, below.
-                        logger.warning("failed to issue a redirect to "+originalSourceURL);
+                        logger.warning("failed to issue a redirect to "+originalSourceUrl);
                     }
-                    return originalSourceURL;
+                    return originalSourceUrl;
                 }
 
                 return permissionsWrapper.notFound();
+                */
+                datafileService.findFileMetadataOptimizedExperimental(dataset);
+                fileMetadatasSearch = workingVersion.getFileMetadatas();
+                
+                JsfHelper.addWarningMessage(dataset.getHarvestedFrom().getArchiveDescription()+" <b>Note that the physical files have been cached locally</b>, and can be downloaded from THIS dataverse node. You can see the dataset at the original source here: <A HREF=\""+originalSourceUrl+"\">"+originalSourceUrl+"</A>");
             }
 
             // Check permisisons           

@@ -193,6 +193,14 @@
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link/Share Button Group -->
                             <div class="btn-group pull-right" id="datasetButtonBar" role="group">
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{( DatasetPage.sessionUserAuthenticated
+                                             and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and 
+                                             !(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 0)}"
+                                               title="#{bundle['dataset.compute.computeBatchBtn']}"
+                                               value="#{bundle['dataset.compute.computeBatchBtn']}"
+                                               oncomplete="PF('cartDatasetForm').show();bind_bsui_components();"
+                                               update="cartDatasetForm">
+                                </p:commandLink>
                                 <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -226,7 +234,7 @@
                                 </div>
                             </p:dialog>
                             <!-- END: Email/Link/Share Button Group -->
-
+                            
                             <!-- View Dataset Versions Button -->
                             <!-- 4.2.1: replaced permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset') with DatasetPage.canViewUnpublishedDataset() -->
                             <div class="btn-group pull-left" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1 or (DatasetPage.releasedVersionTabList.size() == 1 and DatasetPage.dataset.latestVersion.draft and DatasetPage.canViewUnpublishedDataset())}">
@@ -1153,6 +1161,33 @@
                                            value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"
                                            rendered="#{DatasetPage.dataversesForLinking.size() == 1}" />
                             <button type="button" class="btn btn-default" onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    
+                    <p:dialog id="cartDatasetForm" header="#{bundle['dataset.compute.computeBatchBtn']}" widgetVar="cartDatasetForm" modal="true">
+                        <h:dataTable id="computeBatch" class="table table-striped" value="#{DatasetPage.getItems()}" var='o'>
+                            <h:column>
+                                <f:facet name = "header">Dataset</f:facet>
+                                <p:outputLabel value="#{o}" />
+                            </h:column>
+                            <h:column>
+                                <!--<f:facet name = "header">Delete</f:facet>-->
+                                <p:commandLink type="button" class="btn btn-default"
+                                                 value = "Delete" 
+                                                 action = "#{DatasetPage.removeCartItem(o)}" update="@form"/>     
+                              
+                            </h:column>
+                        </h:dataTable>
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.compute.computeBtn']}"
+                                           action="#{DatasetPage.launchCompute()}"
+                                           rendered="#{DatasetPage.getItems().size() > 0}" />
+                            <p:dialog header="Compute" id="computefail" widgetVar="computefail" >
+                                <h:outputText value="#{bundle['dataset.compute.error']}" />
+                            </p:dialog>
+                            <button type="button" class="btn btn-default" onclick="PF('cartDatasetForm').hide();PF('blockDatasetForm').hide();">
                                 #{bundle.cancel}
                             </button>
                         </div>
