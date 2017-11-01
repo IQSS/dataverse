@@ -2676,6 +2676,17 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
+    
+    public boolean isLockedFromDownload(){
+        
+        try {
+            permissionService.checkDownloadFileLock(dataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+        } catch (IllegalCommandException ex) {
+            return true;
+        }
+        return false;
+        
+    }
 
     public void setLocked(boolean locked) {
         // empty method, so that we can use DatasetPage.locked in a hidden 

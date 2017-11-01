@@ -157,6 +157,7 @@
                                         <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                                         <ui:param name="isFilePg" value="true"/>
+                                        <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                                     </ui:include>
                                 </div>
                                 <!-- END: Explore/Download/Request Button Block -->
@@ -444,6 +445,7 @@
                             <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                             <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
+                            <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                         </ui:include>
                     </p:dialog>
                     <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="#{bundle['file.download.subset.header']}" widgetVar="downloadDataSubsetPopup"

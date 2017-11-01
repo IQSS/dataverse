@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -707,6 +708,18 @@ public class FilePage implements java.io.Serializable {
             return true;
         }
         return false;
+    }
+    
+    public boolean isLockedFromDownload(){
+        Dataset testDataset = fileMetadata.getDataFile().getOwner();
+        try {
+            permissionService.checkDownloadFileLock(testDataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(testDataset, dvRequestService.getDataverseRequest()));
+        } catch (IllegalCommandException ex) {
+            return true;
+        }
+        System.out.print("returning false from is locked from Download....");
+        return false;
+        
     }
 
     public String getPublicDownloadUrl() {
