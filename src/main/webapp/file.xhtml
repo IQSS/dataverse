@@ -290,7 +290,8 @@
                                 
                                 <!-- Add + Edit Metadata Button -->
                                 <div class="button-block tab-header margin-bottom text-right">
-                                    <h:outputLink class="btn btn-default btn-access" value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
+                                    <h:outputLink styleClass="btn btn-default btn-access #{(FilePage.lockedFromEdits) ? 'disabled' : ''}"
+                                                  value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
                                                   rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                      and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
                                                      and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}"
