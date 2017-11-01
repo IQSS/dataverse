@@ -6,9 +6,6 @@ import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -474,18 +471,25 @@ public class DatasetUtil {
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : workingVersion.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();
-            author.add("@type", "Person");
-            ShibUserNameFields shibUserNameFields = ShibUtil.findBestFirstAndLastName(null, null, datasetAuthor.getName().getValue().replaceAll(",", ""));
-            AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
-                    shibUserNameFields.getFirstName(),
-                    shibUserNameFields.getLastName(),
-                    "",
-                    "",
-                    ""
-            );
-            author.add("name", displayInfo.getFirstName() + " " + displayInfo.getLastName());
-            author.add("givenName", displayInfo.getFirstName());
-            author.add("familyName", displayInfo.getLastName());
+            // "We expect dataset depositors to put personal names and organizational names in the author field." For example, "Gallup Organization".
+            String personOrOrganization = datasetAuthor.getName().getValue();
+            // TODO: Make this more robust. What if people or orgs have more than one comma in the name? For example,
+            // "Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA"
+            String[] parts = personOrOrganization.split(",");
+            String name = "";
+            String firstName = null;
+            String lastName = null;
+            if (parts.length == 1) {
+                name = personOrOrganization;
+            } else {
+                author.add("@type", "Person");
+                lastName = parts[0];
+                firstName = parts[1];
+                author.add("givenName", firstName);
+                author.add("familyName", lastName);
+                name = firstName + " " + lastName;
+            }
+            author.add("name", name);
             authors.add(author);
         }
         job.add("author", authors);
