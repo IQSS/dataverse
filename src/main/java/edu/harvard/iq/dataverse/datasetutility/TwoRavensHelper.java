@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -32,7 +33,7 @@ import javax.inject.Named;
 @Named
 public class TwoRavensHelper implements java.io.Serializable {
     
-    @Inject SettingsServiceBean settingsService;
+    @Inject SettingsWrapper settingsWrapper;
     @Inject PermissionServiceBean permissionService;
     @Inject AuthenticationServiceBean authService;
     
@@ -125,7 +126,7 @@ public class TwoRavensHelper implements java.io.Serializable {
         // (1) Is TwoRavens active via the "setting" table?
         //      Nope: get out
         //      
-        if (!settingsService.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
+        if (!settingsWrapper.isTrueForKey(SettingsServiceBean.Key.TwoRavensTabularView, false)){
             this.fileMetadataTwoRavensExploreMap.put(fm.getId(), false);
             return false;
         }
@@ -207,7 +208,7 @@ public class TwoRavensHelper implements java.io.Serializable {
      * @return 
      */
     public String getDataExploreURL() {
-        String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl);
+        String TwoRavensUrl = settingsWrapper.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl);
 
         if (TwoRavensUrl != null && !TwoRavensUrl.equals("")) {
             return TwoRavensUrl;
@@ -230,7 +231,7 @@ public class TwoRavensHelper implements java.io.Serializable {
         }
             
         
-        String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl);
+        String TwoRavensUrl = settingsWrapper.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl);
         String TwoRavensDefaultLocal = "/dataexplore/gui.html?dfId=";
 
         if (TwoRavensUrl != null && !TwoRavensUrl.equals("")) {

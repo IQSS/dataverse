@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
@@ -9,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.logging.Level;
@@ -24,9 +26,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonForAuthUser;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.Date;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  * REST API bean for managing {@link BuiltinUser}s.
@@ -53,6 +54,14 @@ public class BuiltinUsers extends AbstractApiBean {
     @GET
     @Path("{username}/api-token")
     public Response getApiToken( @PathParam("username") String username, @QueryParam("password") String password ) {
+        boolean disabled = true;
+        boolean lookupAllowed = settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowApiTokenLookupViaApi, false);
+        if (lookupAllowed) {
+            disabled = false;
+        }
+        if (disabled) {
+            return error(Status.FORBIDDEN, "This API endpoint has been disabled.");
+        }
         BuiltinUser u = null;
         if (retrievingApiTokenViaEmailEnabled) {
             u = builtinUserSvc.findByUsernameOrEmail(username);
@@ -129,9 +138,20 @@ public class BuiltinUsers extends AbstractApiBean {
              * @todo Move this to
              * AuthenticationServiceBean.createAuthenticatedUser
              */
-            userNotificationSvc.sendNotification(au,
-                    new Timestamp(new Date().getTime()),
-                    UserNotification.Type.CREATEACC, null);
+            boolean rootDataversePresent = false;
+            try {
+                Dataverse rootDataverse = dataverseSvc.findRootDataverse();
+                if (rootDataverse != null) {
+                    rootDataversePresent = true;
+                }
+            } catch (Exception e) {
+                logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
+            }
+            if (rootDataversePresent) {
+                userNotificationSvc.sendNotification(au,
+                        new Timestamp(new Date().getTime()),
+                        UserNotification.Type.CREATEACC, null);
+            }
 
             ApiToken token = new ApiToken();
 
@@ -146,7 +166,7 @@ public class BuiltinUsers extends AbstractApiBean {
 
             JsonObjectBuilder resp = Json.createObjectBuilder();
             resp.add("user", json(user));
-            resp.add("authenticatedUser", jsonForAuthUser(au));
+            resp.add("authenticatedUser", json(au));
             resp.add("apiToken", token.getTokenString());
             
             alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier() );

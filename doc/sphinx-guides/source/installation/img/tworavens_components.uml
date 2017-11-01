@@ -1,0 +1,26 @@
+//http://plantuml.com/component.html#Component
+@startuml
+
+node "Server" {
+  component "Apache" {
+    component "TwoRavens (static content)" as Static {
+    }   
+    component "rApache" {
+    }
+  }
+  component "Glassfish" as Glassfish {
+    component "Dataverse" {
+    }
+  }
+  rApache <-- Dataverse
+  component "Rserve" {
+  }
+}
+
+Browser <-- Static
+Browser <--> rApache
+Browser <-- Dataverse
+
+Dataverse <--> Rserve
+
+@enduml

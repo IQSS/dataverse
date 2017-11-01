@@ -69,7 +69,7 @@ public class ExplicitGroupServiceBean {
     }
     
     public List<ExplicitGroup> findByOwner( Long dvObjectId ) {
-        return provider.updateProvider(em.createNamedQuery( "ExplicitGroup.findByOwnerId" )
+        return provider.updateProvider(em.createNamedQuery( "ExplicitGroup.findByOwnerId", ExplicitGroup.class)
                  .setParameter("ownerId", dvObjectId )
                  .getResultList());
     }
@@ -183,7 +183,9 @@ public class ExplicitGroupServiceBean {
      * @return All the groups ra belongs to in the context of o.
      */
     public Set<ExplicitGroup> findDirectGroups( RoleAssignee ra, DvObject o ) {
-        if ( o == null ) return Collections.emptySet();
+        if ( o == null ) {
+            return Collections.emptySet();
+        }
         List<ExplicitGroup> groupList = new LinkedList<>();
         
         if ( ra instanceof ExplicitGroup ) {
@@ -223,7 +225,7 @@ public class ExplicitGroupServiceBean {
      * @return Transitive closure (based on group  containment) of the groups in {@code seed}.
      */
     protected Set<ExplicitGroup> findClosure( Set<ExplicitGroup> seed ) {
-        Set result = new HashSet<>();
+        Set<ExplicitGroup> result = new HashSet<>();
         
         // The set of groups whose parents were not visited yet.
         Set<ExplicitGroup> fringe = new HashSet<>(seed);
@@ -240,5 +242,20 @@ public class ExplicitGroupServiceBean {
 
         return result;
     }
+    
+    /**
+     * 
+     * Fully strips the assignee of membership in all the explicit groups.
+     * 
+     * @param assignee User or Group 
+     */
+    public void revokeAllGroupsForAssignee(RoleAssignee assignee) {
+        if (assignee instanceof AuthenticatedUser) {
+            em.createNativeQuery("DELETE FROM explicitgroup_authenticateduser WHERE containedauthenticatedusers_id=" + ((AuthenticatedUser) assignee).getId()).executeUpdate();
+        } else if (assignee instanceof ExplicitGroup) {
+            em.createNativeQuery("DELETE FROM explicitgroup_explicitgroup WHERE containedexplicitgroups_id=" + ((ExplicitGroup) assignee).getId()).executeUpdate();
+        }
+    }
+    
     
 }

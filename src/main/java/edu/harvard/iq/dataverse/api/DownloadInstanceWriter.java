@@ -22,13 +22,13 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -63,52 +63,70 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             
             
             
-            DataFile sf = di.getDownloadInfo().getDataFile();
-            DataFileIO accessObject = DataAccess.getDataFileIO(sf, daReq);
+
+            DataFile dataFile = di.getDownloadInfo().getDataFile();
+            StorageIO<DataFile> storageIO = DataAccess.getStorageIO(dataFile, daReq);
                         
-            if (accessObject != null) {
-                accessObject.open();
+            if (storageIO != null) {
+                storageIO.open();
                 
                 if (di.getConversionParam() != null) {
                     // Image Thumbnail and Tabular data conversion: 
                     // NOTE: only supported on local files, as of 4.0.2!
+                    // NOTE: should be supported on all files for which StorageIO drivers
+                    // are available (but not on harvested files1) -- L.A. 4.6.2
                     
-                    if (di.getConversionParam().equals("imageThumb") && accessObject.isLocalFile()) {
+                    if (di.getConversionParam().equals("imageThumb") && !dataFile.isHarvested()) { 
                         if ("".equals(di.getConversionParamValue())) {
-                            accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject); 
+                            storageIO = ImageThumbConverter.getImageThumbnailAsInputStream(storageIO, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE); 
                         } else {
                             try {
-                                int size = new Integer(di.getConversionParamValue()).intValue();
-                                if (size > 0) {
-                                    accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject, size);
+                                int size = new Integer(di.getConversionParamValue());
+                                if (size > 0) {                                    
+                                    storageIO = ImageThumbConverter.getImageThumbnailAsInputStream(storageIO, size);
                                 }
                             } catch (java.lang.NumberFormatException ex) {
-                                accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject);
+                                storageIO = ImageThumbConverter.getImageThumbnailAsInputStream(storageIO, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
                             }
+                            
+                            // and, since we now have tabular data files that can 
+                            // have thumbnail previews... obviously, we don't want to 
+                            // add the variable header to the image stream!
+                            
+                            storageIO.setNoVarHeader(Boolean.TRUE);
+                            storageIO.setVarHeader(null);
                         }
-                    }
-                    
-                    
-                    if (sf.isTabularData()) {
+                    } else if (dataFile.isTabularData()) {
+                        logger.fine("request for tabular data download;");
+                        // We can now generate thumbnails for some tabular data files (specifically, 
+                        // tab files tagged as "geospatial"). We are going to assume that you can 
+                        // do only ONE thing at a time - request the thumbnail for the file, or 
+                        // request any tabular-specific services. 
+                        
                         if (di.getConversionParam().equals("noVarHeader")) {
-                            accessObject.setNoVarHeader(Boolean.TRUE);
-                            accessObject.setVarHeader(null);
-                        } else if (di.getConversionParam().equals("format")  && accessObject.isLocalFile()) {
+                            logger.fine("tabular data with no var header requested");
+                            storageIO.setNoVarHeader(Boolean.TRUE);
+                            storageIO.setVarHeader(null);
+                        } else if (di.getConversionParam().equals("format")) {
+                            // Conversions, and downloads of "stored originals" are 
+                            // now supported on all DataFiles for which StorageIO 
+                            // access drivers are available.
                             
                             if ("original".equals(di.getConversionParamValue())) {
-                                accessObject = StoredOriginalFile.retreive(accessObject);
+                                logger.fine("stored original of an ingested file requested");
+                                storageIO = StoredOriginalFile.retreive(storageIO);
                             } else {
                                 // Other format conversions: 
+                                logger.fine("format conversion on a tabular file requested ("+di.getConversionParamValue()+")");
                                 String requestedMimeType = di.getServiceFormatType(di.getConversionParam(), di.getConversionParamValue()); 
                                 if (requestedMimeType == null) {
                                     // default mime type, in case real type is unknown;
                                     // (this shouldn't happen in real life - but just in case): 
                                     requestedMimeType = "application/octet-stream";
                                 } 
-                                accessObject = 
-                                        DataFileConverter.performFormatConversion(
-                                        sf, 
-                                        (FileAccessIO)accessObject, 
+                                storageIO = 
+                                        DataConverter.performFormatConversion(dataFile, 
+                                        storageIO, 
                                         di.getConversionParamValue(), requestedMimeType);
                             } 
                         } else if (di.getConversionParam().equals("subset")) {
@@ -120,18 +138,17 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // the datafile referenced - I simply skip them; 
                             // perhaps I should throw an invalid argument exception 
                             // instead. 
-                            // -- L.A. 4.0 beta 9
                             
                             if (di.getExtraArguments() != null && di.getExtraArguments().size() > 0) {
                                 logger.fine("processing extra arguments list of length "+di.getExtraArguments().size());
-                                List <DataVariable> variableList = new ArrayList<>();
+                                List <Integer> variablePositionIndex = new ArrayList<>();
                                 String subsetVariableHeader = null;
                                 for (int i = 0; i < di.getExtraArguments().size(); i++) {
                                     DataVariable variable = (DataVariable)di.getExtraArguments().get(i);
                                     if (variable != null) {
-                                        if (variable.getDataTable().getDataFile().getId().equals(sf.getId())) {
+                                        if (variable.getDataTable().getDataFile().getId().equals(dataFile.getId())) {
                                             logger.fine("adding variable id "+variable.getId()+" to the list.");
-                                            variableList.add(variable);
+                                            variablePositionIndex.add(variable.getFileOrder());
                                             if (subsetVariableHeader == null) {
                                                 subsetVariableHeader = variable.getName();
                                             } else {
@@ -143,35 +160,41 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         }
                                     }  
                                 }
-                                if (variableList.size() > 0) {
-                                    TabularSubsetInputStream subsetInputStream = null; 
                                 
+                                if (variablePositionIndex.size() > 0) {
+
                                     try {
-                                        subsetInputStream = new TabularSubsetInputStream(sf, variableList);
-                                    } catch (IOException ioe) {
-                                        subsetInputStream = null; 
-                                    }
-                                
-                                    if (subsetInputStream != null) {
-                                        logger.fine("successfully created subset output stream.");
-                                        accessObject.closeInputStream();
-                                        accessObject.setInputStream(subsetInputStream);
-                                        accessObject.setIsLocalFile(true);
-                                        // TODO: make noVarHeader option work for subsets too!
-                                        subsetVariableHeader = subsetVariableHeader.concat("\n");
-                                        accessObject.setVarHeader(subsetVariableHeader);
-                                        
-                                        String tabularFileName = accessObject.getFileName();
-                                        
-                                        if (tabularFileName != null && tabularFileName.endsWith(".tab")) {
-                                            tabularFileName = tabularFileName.replaceAll("\\.tab$", "-subset.tab");
-                                        } else if (tabularFileName != null && !"".equals(tabularFileName)) {
-                                            tabularFileName = tabularFileName.concat("-subset.tab");
+                                        File tempSubsetFile = File.createTempFile("tempSubsetFile", ".tmp");
+                                        TabularSubsetGenerator tabularSubsetGenerator = new TabularSubsetGenerator();
+                                        tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), tempSubsetFile.getAbsolutePath(), variablePositionIndex, dataFile.getDataTable().getCaseQuantity(), "\t");
+
+                                        if (tempSubsetFile.exists()) {
+                                            FileInputStream subsetStream = new FileInputStream(tempSubsetFile);
+                                            long subsetSize = tempSubsetFile.length();
+
+                                            InputStreamIO subsetStreamIO = new InputStreamIO(subsetStream, subsetSize);
+                                            logger.fine("successfully created subset output stream.");
+                                            subsetVariableHeader = subsetVariableHeader.concat("\n");
+                                            subsetStreamIO.setVarHeader(subsetVariableHeader);
+
+                                            String tabularFileName = storageIO.getFileName();
+
+                                            if (tabularFileName != null && tabularFileName.endsWith(".tab")) {
+                                                tabularFileName = tabularFileName.replaceAll("\\.tab$", "-subset.tab");
+                                            } else if (tabularFileName != null && !"".equals(tabularFileName)) {
+                                                tabularFileName = tabularFileName.concat("-subset.tab");
+                                            } else {
+                                                tabularFileName = "subset.tab";
+                                            }
+
+                                            subsetStreamIO.setFileName(tabularFileName);
+                                            subsetStreamIO.setMimeType(storageIO.getMimeType());
+                                            storageIO = subsetStreamIO;
                                         } else {
-                                            tabularFileName = "subset.tab";
+                                            storageIO = null;
                                         }
-                                        
-                                        accessObject.setFileName(tabularFileName);
+                                    } catch (IOException ioex) {
+                                        storageIO = null;
                                     }
                                 }
                             } else {
@@ -181,17 +204,17 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
                     
                     
-                    if (accessObject == null) {
+                    if (storageIO == null) {
                         throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
                     }
                 }
                 
-                InputStream instream = accessObject.getInputStream();
+                InputStream instream = storageIO.getInputStream();
                 if (instream != null) {
                     // headers:
                     
-                    String fileName = accessObject.getFileName(); 
-                    String mimeType = accessObject.getMimeType(); 
+                    String fileName = storageIO.getFileName(); 
+                    String mimeType = storageIO.getMimeType(); 
                     
                     // Provide both the "Content-disposition" and "Content-Type" headers,
                     // to satisfy the widest selection of browsers out there. 
@@ -201,8 +224,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     long contentSize; 
                     boolean useChunkedTransfer = false; 
-                    //if ((contentSize = getFileSize(di, accessObject.getVarHeader())) > 0) {
-                    if ((contentSize = getContentSize(accessObject)) > 0) {
+                    //if ((contentSize = getFileSize(di, storageIO.getVarHeader())) > 0) {
+                    if ((contentSize = getContentSize(storageIO)) > 0) {
                         logger.fine("Content size (retrieved from the AccessObject): "+contentSize);
                         httpHeaders.add("Content-Length", contentSize); 
                     } else {
@@ -219,15 +242,15 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     // before writing out any bytes from the input stream, flush
                     // any extra content, such as the variable header for the 
-                    // subsettable files: (??)4
+                    // subsettable files: 
                     
-                    if (accessObject.getVarHeader() != null) {
-                        if (accessObject.getVarHeader().getBytes().length > 0) {
+                    if (storageIO.getVarHeader() != null) {
+                        if (storageIO.getVarHeader().getBytes().length > 0) {
                             if (useChunkedTransfer) {
-                                String chunkSizeLine = String.format("%x\r\n", accessObject.getVarHeader().getBytes().length);
+                                String chunkSizeLine = String.format("%x\r\n", storageIO.getVarHeader().getBytes().length);
                                 outstream.write(chunkSizeLine.getBytes());
                             }
-                            outstream.write(accessObject.getVarHeader().getBytes());
+                            outstream.write(storageIO.getVarHeader().getBytes());
                             if (useChunkedTransfer) {
                                 outstream.write(chunkClose);
                             }
@@ -260,7 +283,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     if (di.getGbr() != null && !(isThumbnailDownload(di) || isPreprocessedMetadataDownload(di))) {
                         try {
                             logger.fine("writing guestbook response.");
-                            Command cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
+                            Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                             di.getCommand().submit(cmd);
                         } catch (CommandException e) {
                             //if an error occurs here then download won't happen no need for response recs...
@@ -299,7 +322,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         return downloadInstance.getConversionParam().equals("format") && downloadInstance.getConversionParamValue().equals("prep");
     }
     
-    private long getContentSize(DataFileIO accessObject) {
+    private long getContentSize(StorageIO<?> accessObject) {
         long contentSize = 0; 
         
         if (accessObject.getSize() > -1) {

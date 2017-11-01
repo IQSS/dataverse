@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -14,9 +15,11 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SettingsWrapper;
+import edu.harvard.iq.dataverse.UserNameValidator;
 import edu.harvard.iq.dataverse.UserNotification;
 import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEDV;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -38,6 +41,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Timestamp;
@@ -82,6 +86,8 @@ public class DataverseUserPage implements java.io.Serializable {
     @EJB
     UserNotificationServiceBean userNotificationService;
     @EJB
+    UserServiceBean userService;
+    @EJB
     DatasetServiceBean datasetService;
     @EJB
     DataFileServiceBean fileService;
@@ -99,6 +105,8 @@ public class DataverseUserPage implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     GroupServiceBean groupService;
+    @EJB
+    PasswordValidatorServiceBean passwordValidatorService;
     @Inject
     SettingsWrapper settingsWrapper;
     @Inject
@@ -116,10 +124,10 @@ public class DataverseUserPage implements java.io.Serializable {
     private EditMode editMode;
     private String redirectPage = "dataverse.xhtml";
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "The new password is blank: re-type it again.")
     private String inputPassword;
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "Please enter your current password.")
     private String currentPassword;
     private Long dataverseId;
     private List<UserNotification> notificationsList;
@@ -130,7 +138,8 @@ public class DataverseUserPage implements java.io.Serializable {
     
     private String username;
     boolean nonLocalLoginEnabled;
-    
+    private List<String> passwordErrors;
+
     public String init() {
 
         // prevent creating a user if signup not allowed.
@@ -204,9 +213,19 @@ public class DataverseUserPage implements java.io.Serializable {
         String userName = (String) value;
         boolean userNameFound = authenticationService.identifierExists(userName);
         
+        // SF fix for issue 3752
+        // checks if username has any invalid characters 
+        boolean userNameValid = userName != null && UserNameValidator.isUserNameValid(userName, null);
+        
         if (editMode == EditMode.CREATE && userNameFound) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+        
+        if (editMode == EditMode.CREATE && !userNameValid) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.invalid"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -252,41 +271,32 @@ public class DataverseUserPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Password Error", "The new password is blank: re-type it again");
+                    "Password Error", "Please enter a new password for your account.");
             context.addMessage(toValidate.getClientId(context), message);
             return;
 
         } 
 
-        int minPasswordLength = 6;
-        boolean forceNumber = true;
-        boolean forceSpecialChar = false;
-        boolean forceCapitalLetter = false;
-        int maxPasswordLength = 255;
-
-        PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
-        boolean passwordIsComplexEnough = password!= null && validator.validatePassword(password);
-        if (!passwordIsComplexEnough) {
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        this.passwordErrors = errors;
+        if (!errors.isEmpty()) {
             ((UIInput) toValidate).setValid(false);
-            String messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", messageDetail);
-            context.addMessage(toValidate.getClientId(context), message);
         }
     }
 
     public String save() {
         boolean passwordChanged = false;
-        if ( editMode == EditMode.CHANGE_PASSWORD ) {
+        if (editMode == EditMode.CHANGE_PASSWORD) {
             final AuthenticationProvider prv = getUserAuthProvider();
-            if ( prv.isPasswordUpdateAllowed() ) {
-                if ( ! prv.verifyPassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), currentPassword) ) {
-                    FacesContext.getCurrentInstance().addMessage("currentPassword", 
-                            new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.error.wrongPassword"),null));
+            if (prv.isPasswordUpdateAllowed()) {
+                if (!prv.verifyPassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), currentPassword)) {
+                    FacesContext.getCurrentInstance().addMessage("currentPassword",
+                                                                 new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.error.wrongPassword"), null));
                     return null;
                 }
                 prv.updatePassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), inputPassword);
                 passwordChanged = true;
-                
+
             } else {
                 // erroneous state - we can't change the password for this user, so should not have gotten here. Log and bail out.
                 logger.log(Level.WARNING, "Attempt to change a password on {0}, whose provider ({1}) does not support password change", new Object[]{currentUser.getIdentifier(), prv});
@@ -294,7 +304,6 @@ public class DataverseUserPage implements java.io.Serializable {
                 return null;
             }
         }
-        
         if (editMode == EditMode.CREATE) {
             // Create a new built-in user.
             BuiltinUser builtinUser = new BuiltinUser();
@@ -307,13 +316,16 @@ public class DataverseUserPage implements java.io.Serializable {
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
                     builtinUser.getUserName(), builtinUser.getDisplayInfo(), false);
             if ( au == null ) {
-                // username exists
+                // Username already exists, show an error message
                 getUsernameField().setValid(false);
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
                 FacesContext context = FacesContext.getCurrentInstance();
                 context.addMessage(getUsernameField().getClientId(context), message);
                 return null;
             }
+            
+            // The Authenticated User was just created via the UI, add an initial login timestamp
+            au = userService.updateLastLogin(au);
             
             // Authenticated user registered. Save the new bulitin, and log in.
             builtinUserService.save(builtinUser);
@@ -342,8 +354,12 @@ public class DataverseUserPage implements java.io.Serializable {
 
 
             return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";            
-            
-        } else {
+
+        //Happens if user is logged out while editing
+        } else if (!session.getUser().isAuthenticated()) {
+            logger.info("Redirecting");
+            return permissionsWrapper.notAuthorized() + "faces-redirect=true";
+        }else {
             String emailBeforeUpdate = currentUser.getEmail();
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
@@ -406,7 +422,7 @@ public class DataverseUserPage implements java.io.Serializable {
     private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
         // Find user's role(s) for given dataverse/dataset
         Set<RoleAssignment> roles = permissionService.assignmentsFor(au, dvObj);
-        List<String> roleNames = new ArrayList();
+        List<String> roleNames = new ArrayList<>();
 
         // Include roles derived from a user's groups
         Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
@@ -464,6 +480,10 @@ public class DataverseUserPage implements java.io.Serializable {
                 case PUBLISHEDDS:
                 case RETURNEDDS:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    break;
+                    
+                case MAPLAYERDELETEFAILED:
+                    userNotification.setTheObject(fileService.findFileMetadata(userNotification.getObjectId()));
                     break;
 
                 case CREATEACC:
@@ -617,7 +637,7 @@ public class DataverseUserPage implements java.io.Serializable {
         return notificationsList;
     }
 
-    public void setNotificationsList(List notificationsList) {
+    public void setNotificationsList(List<UserNotification> notificationsList) {
         this.notificationsList = notificationsList;
     }
 
@@ -657,4 +677,12 @@ public class DataverseUserPage implements java.io.Serializable {
         return AuthUtil.isNonLocalLoginEnabled(authenticationService.getAuthenticationProviders());
     }
 
+    public String getReasonForReturn(DatasetVersion datasetVersion) {
+        // TODO: implement me! See getReasonsForReturn in api/Notifications.java
+        return "";
+    }
+
+    public String getPasswordRequirements() {
+        return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
+    }
 }

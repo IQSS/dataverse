@@ -81,13 +81,13 @@ public class IngestMessageBean implements MessageListener {
             while (iter.hasNext()) {
                 datafile_id = (Long) iter.next();
 
-                logger.info("Start ingest job;");
+                logger.fine("Start ingest job;");
                 try {
                     if (ingestService.ingestAsTabular(datafile_id)) {
                         //Thread.sleep(10000);
-                        logger.info("Finished ingest job;");
+                        logger.fine("Finished ingest job;");
                     } else {
-                        logger.info("Error occurred during ingest job!");
+                        logger.warning("Error occurred during ingest job!");
                     }
                 } catch (Exception ex) {
                     //ex.printStackTrace();
@@ -98,7 +98,7 @@ public class IngestMessageBean implements MessageListener {
                     // -- L.A. Aug. 13 2014; 
                     logger.info("Unknown exception occurred  during ingest (supressed stack trace); re-setting ingest status.");
                     if (datafile_id != null) {
-                        logger.info("looking up datafile for id " + datafile_id);
+                        logger.fine("looking up datafile for id " + datafile_id);
                         DataFile datafile = datafileService.find(datafile_id);
                         if (datafile != null) {
                             datafile.SetIngestProblem();
@@ -113,7 +113,7 @@ public class IngestMessageBean implements MessageListener {
                             datafile.setIngestReport(errorReport);
                             datafile.setDataTables(null);
 
-                            logger.info("trying to save datafile " + datafile_id);
+                            logger.info("trying to save datafile and the failed ingest report, id=" + datafile_id);
                             datafile = datafileService.save(datafile);
 
                             Dataset dataset = datafile.getOwner();

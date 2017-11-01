@@ -1,0 +1,21 @@
+{
+    "name": "Internal steps only, no with pause",
+    "steps": [
+        {
+            "provider":":internal",
+            "stepType":"log",
+            "parameters": {
+                "step":1,
+                "stepName":"first step"
+            }
+        },
+        {
+            "provider":":internal",
+            "stepType":"log",
+            "parameters": {
+                "number":42,
+                "anotherMessage": "This is the last step before releasing."
+            }
+        }
+    ]
+}

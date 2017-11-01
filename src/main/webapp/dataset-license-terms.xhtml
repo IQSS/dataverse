@@ -10,7 +10,7 @@
    <div class="text-right margin-bottom" 
         jsf:rendered="#{dataverseSession.user.authenticated and empty editMode and !widgetWrapper.widgetView
                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
-       <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('LICENSE')}" 
+       <p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('LICENSE')}" 
                       update="@form,:messagePanel" oncomplete="javascript:post_edit_terms()" disabled="#{DatasetPage.locked}">
            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
            <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editTermsBtn']}
@@ -236,13 +236,13 @@
                                         or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
                                         or !empty termsOfUseAndAccess.studyCompletion)}" >
            <div data-toggle="collapse" data-target="#panelCollapseTOA" class="panel-heading text-info">
-               #{bundle['file.dataFilesTab.terms.list.termsOfAccess.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
+               <h:outputText value="#{settingsWrapper.publicInstall ? bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.header']}"/>
+               &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
            <div id="panelCollapseTOA" class="collapse in">
                <div class="panel-body">
                    <ui:fragment rendered="#{empty editMode}">
-                       <ui:fragment rendered="#{empty editMode and datasetPage}">
-                       <div class="form-group">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                            <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
@@ -256,7 +256,6 @@
                                </p>
                            </div>
                        </div>
-                       </ui:fragment>
                        <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.termsOfAccess}">
                            <label for="metadata_TermsAccess" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
@@ -267,8 +266,7 @@
                                <p><h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfAccess)}" escape="false"/></p>
                            </div>
                        </div>
-                       <ui:fragment rendered="#{empty editMode and datasetPage}">
-                       <div class="form-group" jsf:rendered="#{DatasetPage.restrictedFileCount > 0}">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall and (DatasetPage.restrictedFileCount > 0)}">
                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
@@ -281,7 +279,6 @@
                                </p>
                            </div>
                        </div>
-                       </ui:fragment>
                    </ui:fragment>
                    <ui:fragment rendered="#{!empty editMode}">
                        <div class="form-group">
@@ -294,7 +291,7 @@
                                <p:inputTextarea value="#{termsOfUseAndAccess.termsOfAccess}" rows="5" styleClass="form-control" />
                        </div>
                        </div>
-                       <div class="form-group">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
@@ -448,8 +445,7 @@
            </div>
        </div>
 
-        <ui:fragment rendered="#{managePage==false or datasetPage == true}" >  
-       <div class="panel panel-default" >
+       <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncDownload and (managePage==false or datasetPage == true)}">
            <div data-toggle="collapse" data-target="#panelCollapseGuestbook" class="panel-heading text-info">
                #{bundle['file.dataFilesTab.terms.list.guestbook']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
@@ -529,69 +525,66 @@
                    </div>
                </div>
            </div>
-       </div>
-       </ui:fragment>   
+       </div> 
     </div>
     <!-- / TERMS -->
 
-    <!-- View Guest Book -->
-    <p:dialog id="viewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
+    <!-- Preview Guestbook -->
+    <p:dialog id="previewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
         <div class="form-horizontal">
+            <p class="help-block">
+                #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}
+            </p>
             <div class="form-group">
-                <label class="col-sm-4 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">
-                       #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
-                    </span>
+                <label class="col-sm-3 control-label">
+                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
                 </label>
                 <div class="col-sm-8">
                     <p class="form-control-static">
-                     #{DatasetPage.selectedGuestbook.name}
+                        #{DatasetPage.selectedGuestbook.name}
                     </p>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-4 control-label">
+                <label class="col-sm-3 control-label">
                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}">
                        #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
                     </span>
                 </label>
-                <div class="col-sm-8" style="padding-top:8px">
-                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformation}">  
-                     #{bundle['dataset.manageGuestbooks.guestbook.requiredAccountInformation']}                                         
-                        <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredAccountInformation}" var="q">
-                            <li  style="padding-left:20px" >
-                                <h:outputText value="#{q}"/>
-                            </li>
-                        </ui:repeat>
-                        <br/>
-                    </div>
+                <div class="col-sm-8">
+                    <p class="form-control-static">
+                        <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.accountInformation']}"/>
+                        <ul>
+                            <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredAccountInformation}" var="ai">
+                                <li>
+                                    <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
+                                </li>
+                            </ui:repeat>
+                            <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalAccountInformation}" var="ai">
+                                <li>
+                                    <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </p>
                     
-                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformation}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.optionalAccountInformation']} 
-                        <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalAccountInformation}" var="q">
-                            <li  style="padding-left:20px" >
-                                <h:outputText value="#{q}"/>
-                            </li>
-                        </ui:repeat>
-                        <br/>
-                    </div>                                    
-                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredQuestionsList}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.requiredCustomQuestions']} 
-                        <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredQuestionsList}" var="q">
-                            <li  style="padding-left:20px" >
-                                <h:outputText value="#{q}"/>
-                            </li>
-                        </ui:repeat>
-                        <br/>
-                    </div>
-                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalQuestionsList}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.optionalCustomQuestions']} 
-                        <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalQuestionsList}" var="q">
-                            <li  style="padding-left:20px" >
-                                <h:outputText value="#{q}"/>
-                            </li>
-                        </ui:repeat>
-                    </div>
+                    <ui:fragment rendered="#{!empty DatasetPage.selectedGuestbook.requiredQuestionsList or !empty DatasetPage.selectedGuestbook.optionalQuestionsList}">
+                    <p class="form-control-static">
+                        <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}"/>
+                        <ul>
+                            <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredQuestionsList}" var="q">
+                                <li>
+                                    <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
+                                </li>
+                            </ui:repeat>
+                            <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalQuestionsList}" var="q">
+                                <li>
+                                    <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </p>
+                    </ui:fragment>
                 </div>
             </div>
         </div>
@@ -601,5 +594,5 @@
             </button>
         </div>
     </p:dialog>
-    <!-- / View Guest Book -->
+    <!-- / Preview Guestbook -->
 </ui:composition>

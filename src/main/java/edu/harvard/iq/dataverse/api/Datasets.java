@@ -1,29 +1,43 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
+import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
@@ -37,33 +51,42 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionComman
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import java.io.ByteArrayOutputStream;
+import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.Collections;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -89,21 +112,25 @@ public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
     
-    private static final String PERSISTENT_ID_KEY=":persistentId";
-    
     @Inject DataverseSession session;    
 
     @EJB
     DatasetServiceBean datasetService;
 
     @EJB
-    DOIEZIdServiceBean doiEZIdServiceBean;
-
-    @EJB
-    DDIExportServiceBean ddiExportService;
+    DataverseServiceBean dataverseService;
     
     @EJB
-    SystemConfig systemConfig;
+    UserNotificationServiceBean userNotificationService;
+    
+    @EJB
+    PermissionServiceBean permissionService;
+    
+    @EJB
+    AuthenticationServiceBean authenticationServiceBean;
+    
+    @EJB
+    DDIExportServiceBean ddiExportService;
     
     @EJB
     DatasetFieldServiceBean datasetfieldService;
@@ -112,13 +139,7 @@ public class Datasets extends AbstractApiBean {
     MetadataBlockServiceBean metadataBlockService;
     
     @EJB
-    SettingsServiceBean settingsService;
-    
-    @EJB
     DataFileServiceBean fileService;
-    
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
 
     @EJB
     IngestServiceBean ingestService;
@@ -166,7 +187,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
             }
             
-            ExportService instance = ExportService.getInstance();
+            ExportService instance = ExportService.getInstance(settingsSvc);
             
             String xml = instance.getExportAsString(dataset, exporter);
             // I'm wondering if this going to become a performance problem 
@@ -289,7 +310,7 @@ public class Datasets extends AbstractApiBean {
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
                 if ( p.getKey().getName().equals(blockName) ) {
-                    return ok( json(p.getKey(), p.getValue()) );
+                    return ok(json(p.getKey(), p.getValue()));
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
@@ -384,6 +405,26 @@ public class Datasets extends AbstractApiBean {
         return publishDataset(id, type);
     }
 
+    // TODO SBG: Delete me
+    @EJB
+    WorkflowServiceBean workflows;
+    
+    @PUT
+    @Path("{id}/actions/wf/{wfid}")
+    public Response DELETEME(@PathParam("id") String id, @PathParam("wfid") String wfid) {
+        try {
+            Workflow wf = workflows.getWorkflow(Long.parseLong(wfid)).get();
+            Dataset ds = findDatasetOrDie(id);
+            WorkflowContext ctxt = new WorkflowContext(createDataverseRequest(findUserOrDie()), ds, 0, 0, WorkflowContext.TriggerType.PostPublishDataset, "DataCite");
+            workflows.start(wf, ctxt);
+            return ok("Started workflow " + wf.getName() + " on dataset " + ds.getId() );
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    // TODO SBG: /Delete me
+    
     @POST
     @Path("{id}/actions/:publish")
     public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {
@@ -406,10 +447,10 @@ public class Datasets extends AbstractApiBean {
             }
 
             Dataset ds = findDatasetOrDie(id);
-
-            return ok(json(execCommand(new PublishDatasetCommand(ds,
+            PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
                     createDataverseRequest(findAuthenticatedUserOrDie()),
-                    isMinor))));
+                    isMinor));
+            return res.isCompleted() ? ok(json(res.getDataset())) : accepted(json(res.getDataset()));
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -440,55 +481,6 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    /**
-     * @todo Implement this for real as part of
-     * https://github.com/IQSS/dataverse/issues/2579
-     */
-    @GET
-    @Path("ddi")
-    @Produces({"application/xml", "application/json"})
-    @Deprecated
-    public Response getDdi(@QueryParam("id") long id, @QueryParam("persistentId") String persistentId, @QueryParam("dto") boolean dto) {
-        boolean ddiExportEnabled = systemConfig.isDdiExportEnabled();
-        if (!ddiExportEnabled) {
-            return error(Response.Status.FORBIDDEN, "Disabled");
-        }
-        try {
-            User u = findUserOrDie();
-            if (!u.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Not a superuser");
-            }
-
-            logger.fine("looking up " + persistentId);
-            Dataset dataset = datasetService.findByGlobalId(persistentId);
-            if (dataset == null) {
-                return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
-            }
-
-            String xml = "<codeBook>XML_BEING_COOKED</codeBook>";
-            if (dto) {
-                /**
-                 * @todo We can only assume that this should not be hard-coded
-                 * to getLatestVersion
-                 */
-                final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
-                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.toString());
-            } else {
-                OutputStream outputStream = new ByteArrayOutputStream();
-                ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);
-                xml = outputStream.toString();
-            }
-            logger.fine("xml to return: " + xml);
-
-            return Response.ok()
-                    .entity(xml)
-                    .type(MediaType.APPLICATION_XML).
-                    build();
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-    }
-    
     /**
      * @todo Make this real. Currently only used for API testing. Copied from
      * the equivalent API endpoint for dataverses and simplified with values
@@ -558,9 +550,219 @@ public class Datasets extends AbstractApiBean {
             }
         });
     }
+
+    @GET
+    @Path("{id}/thumbnail/candidates")
+    public Response getDatasetThumbnailCandidates(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            boolean canUpdateThumbnail = false;
+            try {
+                canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
+            } catch (WrappedResponse ex) {
+                logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+            }
+            if (!canUpdateThumbnail) {
+                return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
+            }
+            JsonArrayBuilder data = Json.createArrayBuilder();
+            boolean considerDatasetLogoAsCandidate = true;
+            for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate)) {
+                JsonObjectBuilder candidate = Json.createObjectBuilder();
+                String base64image = datasetThumbnail.getBase64image();
+                if (base64image != null) {
+                    logger.fine("found a candidate!");
+                    candidate.add("base64image", base64image);
+                }
+                DataFile dataFile = datasetThumbnail.getDataFile();
+                if (dataFile != null) {
+                    candidate.add("dataFileId", dataFile.getId());
+                }
+                data.add(candidate);
+            }
+            return ok(data);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
+        }
+    }
+
+    @GET
+    @Produces({"image/png"})
+    @Path("{id}/thumbnail")
+    public InputStream getDatasetThumbnail(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            return DatasetUtil.getThumbnailAsInputStream(dataset);
+        } catch (WrappedResponse ex) {
+            return null;
+        }
+    }
+
+    @POST
+    @Path("{id}/thumbnail/{dataFileId}")
+    public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
+        try {
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, dataFileIdSupplied, null));
+            return ok("Thumbnail set to " + datasetThumbnail.getBase64image());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @POST
+    @Path("{id}/thumbnail")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream
+    ) {
+        try {
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, inputStream));
+            return ok("Thumbnail is now " + datasetThumbnail.getBase64image());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @DELETE
+    @Path("{id}/thumbnail")
+    public Response removeDatasetLogo(@PathParam("id") String idSupplied) {
+        try {
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, null, null));
+            return ok("Dataset thumbnail removed.");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @GET
+    @Path("{identifier}/dataCaptureModule/rsync")
+    public Response getRsync(@PathParam("identifier") String id) {
+	    //TODO - does it make sense to switch this to dataset identifier for consistency with the rest of the DCM APIs?
+        if (!DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+            return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC + ".");
+        }
+        Dataset dataset = null;
+        try {
+            dataset = findDatasetOrDie(id);
+            ScriptRequestResponse scriptRequestResponse = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(findUserOrDie()), dataset));
+            return ok(scriptRequestResponse.getScript(), MediaType.valueOf(MediaType.TEXT_PLAIN));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        } catch (EJBException ex) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Something went wrong attempting to download rsync script: " + EjbUtil.ejbExceptionToString(ex));
+        }
+    }
     
+    @POST
+    @Path("{identifier}/dataCaptureModule/checksumValidation")
+    public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
+        logger.fine("jsonFromDcm: " + jsonFromDcm);
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!authenticatedUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        String statusMessageFromDcm = jsonFromDcm.getString("status");
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+            if ("validation passed".equals(statusMessageFromDcm)) {
+                String uploadFolder = jsonFromDcm.getString("uploadFolder");
+                int totalSize = jsonFromDcm.getInt("totalSize");
+                ImportMode importMode = ImportMode.MERGE;
+                try {
+                    JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(findUserOrDie()), dataset, uploadFolder, new Long(totalSize), importMode));
+                    long jobId = jsonFromImportJobKickoff.getInt("executionId");
+                    String message = jsonFromImportJobKickoff.getString("message");
+                    JsonObjectBuilder job = Json.createObjectBuilder();
+                    job.add("jobId", jobId);
+                    job.add("message", message);
+                    return ok(job);
+                } catch (WrappedResponse wr) {
+                    String message = wr.getMessage();
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
+                }
+            } else if ("validation failed".equals(statusMessageFromDcm)) {
+                Map<String, AuthenticatedUser> distinctAuthors = permissionService.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
+                distinctAuthors.values().forEach((value) -> {
+                    userNotificationService.sendNotification((AuthenticatedUser) value, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
+                });
+                List<AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
+                if (superUsers != null && !superUsers.isEmpty()) {
+                    superUsers.forEach((au) -> {
+                        userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
+                    });
+                }
+                return ok("User notified about checksum validation failure.");
+            } else {
+                return error(Response.Status.BAD_REQUEST, "Unexpected status cannot be processed: " + statusMessageFromDcm);
+            }
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
     
-    
+
+    @POST
+    @Path("{id}/submitForReview")
+    public Response submitForReview(@PathParam("id") String idSupplied) {
+        try {
+            Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
+            JsonObjectBuilder result = Json.createObjectBuilder();
+            
+            boolean inReview = false;
+            try{
+                inReview = updatedDataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview);
+            } catch (Exception e){
+                System.out.print("submit exception: " + e.getMessage());
+                // if there's no lock then it can't be in review by definition
+            }
+            
+            result.add("inReview", inReview);
+            result.add("message", "Dataset id " + updatedDataset.getId() + " has been submitted for review.");
+            return ok(result);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @POST
+    @Path("{id}/returnToAuthor")
+    public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
+        
+        if (jsonBody == null || jsonBody.isEmpty()) {
+            return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset.");
+        }
+        StringReader rdr = new StringReader(jsonBody);
+        JsonObject json = Json.createReader(rdr).readObject();
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            String reasonForReturn = null;           
+            reasonForReturn = json.getString("reasonForReturn");
+            // TODO: Once we add a box for the curator to type into, pass the reason for return to the ReturnDatasetToAuthorCommand and delete this check and call to setReturnReason on the API side.
+            if (reasonForReturn == null || reasonForReturn.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
+            }
+            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
+            boolean inReview = false;
+            try{
+                inReview = updatedDataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview);
+            } catch (Exception e){
+                // if there's no lock then it can't be in review by definition
+            }
+
+            JsonObjectBuilder result = Json.createObjectBuilder();
+            result.add("inReview", inReview);
+            result.add("message", "Dataset id " + updatedDataset.getId() + " has been sent back to the author(s).");
+            return ok(result);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
     /**
      * Add a File to an existing Dataset
      * 
@@ -594,6 +796,14 @@ public class Datasets extends AbstractApiBean {
                     ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
                     );
         }
+        //---------------------------------------
+        // (1A) Make sure that the upload type is not rsync
+        // ------------------------------------- 
+        
+        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+            return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " contains " + SystemConfig.FileUploadMethods.RSYNC + ". Please use rsync file upload.");
+        }
+        
         
         // -------------------------------------
         // (2) Get the Dataset Id
@@ -689,36 +899,6 @@ public class Datasets extends AbstractApiBean {
     }
     private void msgt(String m){
         dashes(); msg(m); dashes();
-    }
-    
-
-   
-    private Dataset findDatasetOrDie(String id) throws WrappedResponse {
-        Dataset dataset;
-        if (id.equals(PERSISTENT_ID_KEY)) {
-            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
-            if (persistentId == null) {
-                throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
-            }
-            dataset = datasetService.findByGlobalId(persistentId);
-            if (dataset == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
-            }
-            return dataset;
-
-        } else {
-            try {
-                dataset = datasetService.find(Long.parseLong(id));
-                if (dataset == null) {
-                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
-                }
-                return dataset;
-            } catch (NumberFormatException nfe) {
-                throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
-            }
-        }
     }
     
     

@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.harvest.client.datafiletransfer.DataFileDownload;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -65,7 +66,8 @@ public class CacheDataFile extends Thread{
         
         String fileUrl = harvestedFile.getStorageIdentifier();
         String fileName = harvestedFile.getFileMetadata().getLabel();
-        DataFileIO dataAccess;
+        StorageIO<DataFile> storageIO = null;
+
         Path tempFilePath;
         
         logger.info("Downloading "+fileUrl+" "+available.getQueueLength() + " " +available.availablePermits());
@@ -78,8 +80,8 @@ public class CacheDataFile extends Thread{
             synchronized (this) {
                 fileService.generateStorageIdentifier(harvestedFile);
             
-            
-                dataAccess = DataAccess.createNewDataFileIO(harvestedFile, harvestedFile.getStorageIdentifier());
+                
+                storageIO = DataAccess.createNewStorageIO(harvestedFile, harvestedFile.getStorageIdentifier());
                 tempFilePath = Paths.get(dirName, fileName);
                 
                 try {
@@ -105,7 +107,7 @@ public class CacheDataFile extends Thread{
             }
             // Copies the file from tmp location to the permanent 
             // directory i.e swift service endpoint.
-            dataAccess.copyPath(tempFilePath);
+            storageIO.copyPath(tempFilePath);
             //logger.info("Dataaccess object: "+dataAccess);
             
             available.release();

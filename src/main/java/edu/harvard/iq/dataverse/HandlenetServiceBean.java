@@ -47,8 +47,8 @@ import net.handle.hdllib.HandleValue;
 import net.handle.hdllib.ModifyValueRequest;
 import net.handle.hdllib.PublicKeyAuthenticationInfo;
 import net.handle.hdllib.ResolutionRequest;
-import net.handle.hdllib.ResolutionResponse;
 import net.handle.hdllib.Util;
+import org.apache.commons.lang.NotImplementedException;
 
 /**
  *
@@ -60,19 +60,27 @@ import net.handle.hdllib.Util;
  * the modifyRegistration datasets API sub-command.
  */
 @Stateless
-public class HandlenetServiceBean {
+public class HandlenetServiceBean extends AbstractIdServiceBean {
+
     @EJB
     DataverseServiceBean dataverseService;
     @EJB 
     SettingsServiceBean settingsService;    
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.HandlenetServiceBean");
+    private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
     private static final String HANDLE_PROTOCOL_TAG = "hdl";
     
     public HandlenetServiceBean() {
+        logger.log(Level.FINE,"Constructor");
     }
-    
+
+    @Override
+    public boolean registerWhenPublished() {
+        return false; // TODO current value plays safe, can we loosen up?
+    }
+
     public void reRegisterHandle(Dataset dataset) {
+        logger.log(Level.FINE,"reRegisterHandle");
         if (!HANDLE_PROTOCOL_TAG.equals(dataset.getProtocol())) {
             logger.warning("reRegisterHandle called on a dataset with the non-handle global id: "+dataset.getId());
         }
@@ -131,7 +139,8 @@ public class HandlenetServiceBean {
         }
     }
     
-    public void registerNewHandle(Dataset dataset) {
+    public Throwable registerNewHandle(Dataset dataset) {
+        logger.log(Level.FINE,"registerNewHandle");
         String handlePrefix = dataset.getAuthority();
         String handle = getDatasetHandle(dataset);
         String datasetUrl = getRegistrationUrl(dataset);
@@ -142,8 +151,6 @@ public class HandlenetServiceBean {
 
         PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
         HandleResolver resolver = new HandleResolver();
-
-        int index = 300;
 
         try {
 
@@ -168,15 +175,24 @@ public class HandlenetServiceBean {
             AbstractResponse response = resolver.processRequest(req);
             if (response.responseCode == AbstractMessage.RC_SUCCESS) {
                 logger.info("Success! Response: \n" + response);
+                return null;
             } else {
+                logger.log(Level.WARNING, "registerNewHandle failed");
                 logger.warning("Error response: \n" + response);
+                return new Exception("registerNewHandle failed: " + response);
             }
         } catch (Throwable t) {
-            logger.warning("\nError (caught exception): " + t);
+            logger.log(Level.WARNING, "registerNewHandle failed");
+            logger.log(Level.WARNING, "String {0}", t.toString());
+            logger.log(Level.WARNING, "localized message {0}", t.getLocalizedMessage());
+            logger.log(Level.WARNING, "cause", t.getCause());
+            logger.log(Level.WARNING, "message {0}", t.getMessage());
+            return t;
         }
     }
     
     public boolean isHandleRegistered(String handle){
+        logger.log(Level.FINE,"isHandleRegistered");
         boolean handleRegistered = false;
         ResolutionRequest req = buildResolutionRequest(handle);
         AbstractResponse response = null;
@@ -195,6 +211,7 @@ public class HandlenetServiceBean {
     }
     
     private ResolutionRequest buildResolutionRequest(final String handle) {
+        logger.log(Level.FINE,"buildResolutionRequest");
         String handlePrefix = handle.substring(0,handle.indexOf("/"));
         
         PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
@@ -213,6 +230,7 @@ public class HandlenetServiceBean {
     }
     
     private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
+        logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
 
@@ -225,15 +243,17 @@ public class HandlenetServiceBean {
         return auth;
     }
     private String getRegistrationUrl(Dataset dataset) {
-        String siteUrl = getSiteUrl();
-        
+        logger.log(Level.FINE,"getRegistrationUrl");
+        String siteUrl = systemConfig.getDataverseSiteUrl();
+                
         //String targetUrl = siteUrl + "/dataset.xhtml?persistentId=hdl:" + dataset.getAuthority() 
         String targetUrl = siteUrl + Dataset.TARGET_URL + "hdl:" + dataset.getAuthority()         
                 + "/" + dataset.getIdentifier();  
         return targetUrl;
     }
-    
+ 
     public String getSiteUrl() {
+        logger.log(Level.FINE,"getSiteUrl");
         String hostUrl = System.getProperty("dataverse.siteUrl");
         if (hostUrl != null && !"".equals(hostUrl)) {
             return hostUrl;
@@ -251,6 +271,7 @@ public class HandlenetServiceBean {
     }
     
     private byte[] readKey(final String file) {
+        logger.log(Level.FINE,"readKey");
         byte[] key = null;
         try {
             File f = new File(file);
@@ -267,6 +288,7 @@ public class HandlenetServiceBean {
     }
     
     private PrivateKey readPrivKey(byte[] key, final String file) {
+        logger.log(Level.FINE,"readPrivKey");
         PrivateKey privkey=null;
         
         String secret = System.getProperty("dataverse.handlenet.admprivphrase");
@@ -297,7 +319,98 @@ public class HandlenetServiceBean {
     }
     
     private String getHandleAuthority(String handlePrefix) {
+        logger.log(Level.FINE,"getHandleAuthority");
         return "0.NA/" + handlePrefix;
+    }
+
+    @Override
+    public boolean alreadyExists(Dataset dataset) throws Exception {
+        String handle = getDatasetHandle(dataset);
+        return isHandleRegistered(handle);
+    }
+
+    @Override
+    public String createIdentifier(Dataset dataset) throws Throwable  {
+        Throwable result = registerNewHandle(dataset);
+        if (result != null)
+            throw result;
+        // TODO get exceptions from under the carpet
+        return getDatasetHandle(dataset);
+    }
+
+    @Override
+    public HashMap getIdentifierMetadata(Dataset dataset)  {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier)  {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception  {
+        logger.log(Level.FINE,"modifyIdentifier");
+        reRegisterHandle(dataset);
+        return getIdentifierFromDataset(dataset);
+    }
+
+    @Override
+    public void deleteIdentifier(Dataset datasetIn) throws Exception  {
+        String handle = getDatasetHandle(datasetIn);
+        String authHandle = getAuthHandle(datasetIn);
+
+        String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
+
+        byte[] key = readKey(adminCredFile);
+        PrivateKey privkey = readPrivKey(key, adminCredFile);
+
+        HandleResolver resolver = new HandleResolver();
+        resolver.setSessionTracker(new ClientSessionTracker());
+
+        PublicKeyAuthenticationInfo auth =
+                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), 300, privkey);
+
+        DeleteHandleRequest req =
+                new DeleteHandleRequest(Util.encodeString(handle), auth);
+        AbstractResponse response=null;
+        try {
+            response = resolver.processRequest(req);
+        } catch (HandleException ex) {
+            ex.printStackTrace();
+        }
+        if(response==null || response.responseCode!=AbstractMessage.RC_SUCCESS) {
+            logger.fine("error deleting '"+handle+"': "+response);
+        } else {
+            logger.fine("deleted "+handle);
+        }
+    }
+
+    @Override
+    public boolean publicizeIdentifier(Dataset dataset)  {
+        logger.log(Level.FINE,"publicizeIdentifier");
+        return updateIdentifierStatus(dataset, "public");
+    }
+
+    private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
+        logger.log(Level.FINE,"updateIdentifierStatus");
+        reRegisterHandle(dataset); // No Need to register new - this is only called when a handle exists
+        return true;
+    }
+
+    private String getAuthHandle(Dataset datasetIn) {
+        // TODO hack: GNRSServiceBean retrieved this from vdcNetworkService
+        return "0.NA/" + datasetIn.getAuthority();
+    }
+    
+    @Override
+    public List<String> getProviderInformation(){
+        ArrayList <String> providerInfo = new ArrayList<>();
+        String providerName = "Handle";
+        String providerLink = "https://hdl.handle.net";
+        providerInfo.add(providerName);
+        providerInfo.add(providerLink);
+        return providerInfo;
     }
 }
 

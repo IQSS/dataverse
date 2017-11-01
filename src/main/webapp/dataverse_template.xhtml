@@ -5,13 +5,15 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:c="http://java.sun.com/jsp/jstl/core"      
       lang="en">
     <h:head>
         <f:facet name="first">
             <title><h:outputText value="#{pageTitle}"/></title>
-            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	    <ui:insert name="dc_meta_header"></ui:insert>
             <meta http-equiv="Content-Language" content="en"/>
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -32,10 +34,16 @@
                 if (window !== top) top.location = window.location;
             </script>
         </ui:fragment>
+	<ui:fragment rendered="#{!empty settingsWrapper.get(':StyleCustomizationFile')}">
+            <style>
+                /* Custom CSS */
+                <o:resourceInclude path="/CustomizationFilesServlet?customFileType=style" />
+            </style>
+        </ui:fragment>
     </h:head>
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <f:loadBundle basename="Bundle" var="bundle"/>
-        <a href="#content" class="sr-only">#{bundle['body.skip']}</a>       
+	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>                
         <ui:include src="dataverse_header.xhtml">
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
@@ -59,8 +67,6 @@
             </f:facet>
         </p:ajaxStatus>
         <ui:include src="contactFormFragment.xhtml">
-            <ui:param name="formTitle" value="#{bundle['contact.header']}"/>
-            <ui:param name="formTo" value="#{bundle['contact.to']}"/>
         </ui:include>
         <p:dialog id="statusInfo" header="#{settingsWrapper.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
             <p><h:outputText value="#{settingsWrapper.get(':StatusMessageText')}" escape="false"/></p>
@@ -76,52 +82,33 @@
         <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>  
+        <script type="text/javascript" defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>          
+        <ui:fragment rendered="#{systemConfig.isShibPassiveLoginEnabled()}">
+            <script type="text/javascript" language="javascript" src="#{resource['js/shib/isPassive.js']}"></script>
+        </ui:fragment>
         <script>
-                    $(document).ready(function () {
-                        // Navbar Search Toggle
-                        $(document).on('click', '#navbar-search-toggle', function (e) {
-                            $(this).parent("li").hide();
-                            $("form.navbar-form[role='search']").show();
-                        });
-                        $('body').click(function (e) {
-                            if (!$(e.target).closest("form.navbar-form[role='search']").length) {
-                                $("form.navbar-form[role='search']").hide();
-                                $("#navbar-search-toggle").parent("li").show();
-                            }
-                            ;
-                        });
-
-                        // Rebind bootstrap UI components
-                        bind_bsui_components();
-                    });
-
-                    /*
-                     * Custom Popover with HTML code snippet
-                     */
-                    function popoverHTML() {
-                        var popoverTemplateHTML = ['<div class="popover">',
-                            '<div class="arrow"></div>',
-                            '<h3 class="popover-title"></h3>',
-                            '<div class="popover-content">',
-                            '</div>',
-                            '</div>'].join('');
-
-                        var popoverContentHTML = ['<code>',
-                            '<h:outputText value="#{bundle.htmlAllowedTags}" escape="true"/>',
-                            '</code>'].join('');
-
-                        $('body').popover({
-                            selector: 'span.popoverHTML',
-                            title: '<h:outputText value="#{bundle.htmlAllowedTitle}"/>',
-                            trigger: 'hover',
-                            content: popoverContentHTML,
-                            template: popoverTemplateHTML,
-                            placement: "bottom",
-                            container: "#content",
-                            html: true
-                        });
+            //<![CDATA[
+            $(document).ready(function () {
+                // Navbar Search Toggle
+                $(document).on('click', '#navbar-search-toggle', function (e) {
+                    $(this).parent("li").hide();
+                    $("form.navbar-form[role='search']").show();
+                });
+                $('body').click(function (e) {
+                    if (!$(e.target).closest("form.navbar-form[role='search']").length) {
+                        $("form.navbar-form[role='search']").hide();
+                        $("#navbar-search-toggle").parent("li").show();
                     }
+                    ;
+                });
+
+                // Rebind bootstrap UI components
+                bind_bsui_components();
+            });
+
+            
+            //]]>
         </script>
         <ui:include src="google-analytics-snippet.xhtml"></ui:include>
         <ui:include src="piwik-analytics-snippet.xhtml"></ui:include>

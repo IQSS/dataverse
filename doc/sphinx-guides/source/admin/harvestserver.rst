@@ -1,7 +1,8 @@
 Managing Harvesting Server and Sets
 ===================================
 
-.. contents:: :local:
+.. contents:: |toctitle|
+  :local:
 
 Your Dataverse as an OAI server
 -------------------------------

@@ -528,7 +528,7 @@ public class ServiceRegistry {
     public <T> Iterator<T> getServiceProviders(Class<T> category,
                                                Filter filter,
                                                boolean useOrdering) {
-        SubRegistry reg = (SubRegistry)categoryMap.get(category);
+        SubRegistry reg = categoryMap.get(category);
         if (reg == null) {
             throw new IllegalArgumentException("category unknown!");
         }
@@ -557,9 +557,7 @@ public class ServiceRegistry {
         if (providerClass == null) {
             throw new IllegalArgumentException("providerClass == null!");
         }
-        Iterator iter = categoryMap.keySet().iterator();
-        while (iter.hasNext()) {
-            Class c = (Class)iter.next();
+        for (Class c : categoryMap.keySet()) {
             if (c.isAssignableFrom(providerClass)) {
                 SubRegistry reg = (SubRegistry)categoryMap.get(c);
                 T provider = reg.getServiceProviderByClass(providerClass);

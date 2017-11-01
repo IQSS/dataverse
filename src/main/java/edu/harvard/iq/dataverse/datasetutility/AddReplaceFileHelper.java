@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -1124,7 +1125,7 @@ public class AddReplaceFileHelper{
         }
 
         // Initialize new file list
-        this.finalFileList = new ArrayList();
+        this.finalFileList = new ArrayList<>();
 
         String warningMessage  = null;
         
@@ -1378,10 +1379,19 @@ public class AddReplaceFileHelper{
         for (DataFile df : finalFileList){
             try {
                 optionalFileParams.addOptionalParams(df);
+                
+                // call restriction command here
+                boolean restrict = optionalFileParams.getRestriction();
+                if (restrict != df.getFileMetadata().isRestricted()) {
+                    commandEngine.submit(new RestrictFileCommand(df, dvRequest, restrict));
+                }
+                
             } catch (DataFileTagException ex) {
                 Logger.getLogger(AddReplaceFileHelper.class.getName()).log(Level.SEVERE, null, ex);
                 addError(ex.getMessage());
                 return false;
+            } catch (CommandException ex) {
+                addError(ex.getMessage());
             }
         }
         

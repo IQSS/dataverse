@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -14,11 +15,22 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
+import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,7 +74,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
     @Inject
     PermissionsWrapper permissionsWrapper;
     @Inject
-    WidgetWrapper widgetWrapper;    
+    ThumbnailServiceWrapper thumbnailServiceWrapper;
+    @Inject
+    WidgetWrapper widgetWrapper;  
+    @EJB
+    SystemConfig systemConfig;
 
     private String browseModeString = "browse";
     private String searchModeString = "search";
@@ -88,7 +104,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     // commenting out dataverseSubtreeContext. it was not well-loved in the GUI
 //    private String dataverseSubtreeContext;
     private String selectedTypesString;
-    private List<String> selectedTypesList = new ArrayList<String>();
+    private List<String> selectedTypesList = new ArrayList<>();
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
@@ -277,9 +293,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         selectedTypesList = new ArrayList<>();
         String[] parts = selectedTypesString.split(":");
 //        int count = 0;
-        for (String string : parts) {
-            selectedTypesList.add(string);
-        }
+        selectedTypesList.addAll(Arrays.asList(parts));
 
         List<String> filterQueriesFinalAllTypes = new ArrayList<>();
         String[] arr = selectedTypesList.toArray(new String[selectedTypesList.size()]);
@@ -384,7 +398,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     dataverseService.populateDvSearchCard(solrSearchResult);
                     
                     /*
-                    Datasets cannot be harvested yet.
+                    Dataverses cannot be harvested yet.
                     if (isHarvestedDataverse(solrSearchResult.getEntityId())) {
                         solrSearchResult.setHarvested(true);
                     }*/
@@ -847,23 +861,23 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean isSortedByNameAsc() {
-        return getCurrentSort().equals(searchFieldNameSort + ":" + ASCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldNameSort + ":" + ASCENDING);
     }
 
     public boolean isSortedByNameDesc() {
-        return getCurrentSort().equals(searchFieldNameSort + ":" + DESCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldNameSort + ":" + DESCENDING);
     }
 
     public boolean isSortedByReleaseDateAsc() {
-        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + ASCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + ASCENDING);
     }
 
     public boolean isSortedByReleaseDateDesc() {
-        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + DESCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + DESCENDING);
     }
 
     public boolean isSortedByRelevance() {
-        return getCurrentSort().equals(searchFieldRelevance + ":" + DESCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldRelevance + ":" + DESCENDING);
     }
 
     public int getPage() {
@@ -1146,31 +1160,31 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public void setDisplayCardValues() {
-        int i = 0;
-        dvobjectThumbnailsMap = new HashMap<>();
-        dvobjectViewMap = new HashMap<>();
+
         Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {
             //logger.info("checking DisplayImage for the search result " + i++);
-            boolean valueSet = false;
-            if (result.getType().equals("dataverses") /*&& result.getEntity() instanceof Dataverse*/) {
-                result.setImageUrl(getDataverseCardImageUrl(result));
-                valueSet = true;
-            } else if (result.getType().equals("datasets") /*&& result.getEntity() instanceof Dataset*/) {
-                result.setImageUrl(getDatasetCardImageUrl(result));
-                valueSet = true;
+            if (result.getType().equals("dataverses")) {
+                /**
+                 * @todo Someday we should probably revert this setImageUrl to
+                 * the original meaning "image_url" to address this issue:
+                 * `image_url` from Search API results no longer yields a
+                 * downloadable image -
+                 * https://github.com/IQSS/dataverse/issues/3616
+                 */
+                result.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(result));
+            } else if (result.getType().equals("datasets")) {
+                
+                result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
+                
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
                         harvestedDatasetIds = new HashSet<>();
                     }
                     harvestedDatasetIds.add(result.getEntityId());
                 }
-            } else if (result.getType().equals("files") /*&& result.getEntity() instanceof DataFile*/) {
-                // TODO: 
-                // use permissionsWrapper?  -- L.A. 4.2.1
-                // OK, done! (4.2.2; in the getFileCardImageUrl() method, below)
-                result.setImageUrl(getFileCardImageUrl(result));
-                valueSet = true;
+            } else if (result.getType().equals("files")) {
+                result.setImageUrl(thumbnailServiceWrapper.getFileCardImageAsBase64Url(result));
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
                         harvestedDatasetIds = new HashSet<>();
@@ -1178,17 +1192,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     harvestedDatasetIds.add(result.getParentIdAsLong());
                 }
             }
-
-            if (valueSet) {
-                if (result.getImageUrl() != null) {
-                    result.setDisplayImage(true);
-                }
-            } else {
-                logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
-            }
         }
-        dvobjectThumbnailsMap = null;
-        dvobjectViewMap = null;
+        
+        thumbnailServiceWrapper.resetObjectMaps();
         
         // Now, make another pass, and add the remote archive descriptions to the 
         // harvested dataset and datafile cards (at the expense of one extra 
@@ -1224,7 +1230,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (dataverse.getId().equals(result.getParentIdAsLong())) {
                     // definitely NOT linked:
                     result.setIsInTree(true);
-                } else if (result.getParentIdAsLong().longValue() == 1L) {
+                } else if (result.getParentIdAsLong() == 1L) {
                     // the object's parent is the root Dv; and the current 
                     // Dv is NOT root... definitely linked:
                     result.setIsInTree(false);
@@ -1253,193 +1259,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
         
     }
-
-    private Map<Long, String> dvobjectThumbnailsMap = null;
-    private Map<Long, DvObject> dvobjectViewMap = null;
-
-    private String getAssignedDatasetImage(Dataset dataset) {
-        if (dataset == null) {
-            return null;
-        }
-
-        DataFile assignedThumbnailFile = dataset.getThumbnailFile();
-
-        if (assignedThumbnailFile != null) {
-            Long assignedThumbnailFileId = null;
-
-            if (this.dvobjectThumbnailsMap.containsKey(assignedThumbnailFileId)) {
-                // Yes, return previous answer
-                //logger.info("using cached result for ... "+assignedThumbnailFileId);
-                if (!"".equals(this.dvobjectThumbnailsMap.get(assignedThumbnailFileId))) {
-                    return this.dvobjectThumbnailsMap.get(assignedThumbnailFileId);
-                }
-                return null;
-            }
-
-            String imageSourceBase64 = ImageThumbConverter.getImageThumbAsBase64(
-                    assignedThumbnailFile,
-                    ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-
-            if (imageSourceBase64 != null) {
-                this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, imageSourceBase64);
-                return imageSourceBase64;
-            }
-
-            // OK - we can't use this "assigned" image, because of permissions, or because 
-            // the thumbnail failed to generate, etc... in this case we'll 
-            // mark this dataset in the lookup map - so that we don't have to
-            // do all these lookups again...
-            this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, "");
-            
-            // TODO: (?)
-            // do we need to cache this datafile object in the view map?
-            // -- L.A., 4.2.2
-        }
-
-        return null;
-
-    }
-
-    // it's the responsibility of the user - to make sure the search result
-    // passed to this method is of the Datafile type!
-    private String getFileCardImageUrl(SolrSearchResult result) {
-        Long imageFileId = result.getEntity().getId();
-
-        if (imageFileId != null) {
-            if (this.dvobjectThumbnailsMap.containsKey(imageFileId)) {
-                // Yes, return previous answer
-                //logger.info("using cached result for ... "+datasetId);
-                if (!"".equals(this.dvobjectThumbnailsMap.get(imageFileId))) {
-                    return this.dvobjectThumbnailsMap.get(imageFileId);
-                }
-                return null;
-            }
-
-            String cardImageUrl = null;
-
-            if ((!((DataFile)result.getEntity()).isRestricted()
-                        || permissionsWrapper.hasDownloadFilePermission(result.getEntity()))
-                    && dataFileService.isThumbnailAvailable((DataFile) result.getEntity())) {
-                
-                cardImageUrl = ImageThumbConverter.getImageThumbAsBase64(
-                        (DataFile) result.getEntity(),
-                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-            }
-
-            if (cardImageUrl != null) {
-                this.dvobjectThumbnailsMap.put(imageFileId, cardImageUrl);
-                //logger.info("datafile id " + imageFileId + ", returning " + cardImageUrl);
-
-                if (!(dvobjectViewMap.containsKey(imageFileId)
-                        && dvobjectViewMap.get(imageFileId).isInstanceofDataFile())) {
-
-                    dvobjectViewMap.put(imageFileId, result.getEntity());
-
-                }
-
-                return cardImageUrl;
-            } else {
-                this.dvobjectThumbnailsMap.put(imageFileId, "");
-            }
-        }
-        return null;
-    }
-
-    // it's the responsibility of the user - to make sure the search result
-    // passed to this method is of the Dataset type!
-    private String getDatasetCardImageUrl(SolrSearchResult result) {
-        // harvested check!
-
-        String cardImageUrl = null;
-
-        if (result.getEntity() != null) {
-            cardImageUrl = this.getAssignedDatasetImage((Dataset) result.getEntity());
-
-            if (cardImageUrl != null) {
-                //logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
-                return cardImageUrl;
-            }
-        }
-
-        Long thumbnailImageFileId = datasetVersionService.getThumbnailByVersionId(result.getDatasetVersionId());
-
-        if (thumbnailImageFileId != null) {
-            //cardImageUrl = FILE_CARD_IMAGE_URL + thumbnailImageFileId;
-            if (this.dvobjectThumbnailsMap.containsKey(thumbnailImageFileId)) {
-                // Yes, return previous answer
-                //logger.info("using cached result for ... "+datasetId);
-                if (!"".equals(this.dvobjectThumbnailsMap.get(thumbnailImageFileId))) {
-                    return this.dvobjectThumbnailsMap.get(thumbnailImageFileId);
-                }
-                return null;
-            }
-
-            DataFile thumbnailImageFile = null;
-
-            if (dvobjectViewMap.containsKey(thumbnailImageFileId)
-                    && dvobjectViewMap.get(thumbnailImageFileId).isInstanceofDataFile()) {
-                thumbnailImageFile = (DataFile) dvobjectViewMap.get(thumbnailImageFileId);
-            } else {
-                thumbnailImageFile = dataFileService.findCheapAndEasy(thumbnailImageFileId);
-                if (thumbnailImageFile != null) {
-                    // TODO:
-                    // do we need this file on the map? - it may not even produce
-                    // a thumbnail!
-                    dvobjectViewMap.put(thumbnailImageFileId, thumbnailImageFile);
-                } else {
-                    this.dvobjectThumbnailsMap.put(thumbnailImageFileId, "");
-                    return null;
-                }
-            }
-
-            if (dataFileService.isThumbnailAvailable(thumbnailImageFile)) {
-                cardImageUrl = ImageThumbConverter.getImageThumbAsBase64(
-                        thumbnailImageFile,
-                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-            }
-
-            if (cardImageUrl != null) {
-                this.dvobjectThumbnailsMap.put(thumbnailImageFileId, cardImageUrl);
-            } else {
-                this.dvobjectThumbnailsMap.put(thumbnailImageFileId, "");
-            }
-        }
-
-        //logger.info("dataset id " + result.getEntityId() + ", returning " + cardImageUrl);
-
-        return cardImageUrl;
-    }
-
-    // it's the responsibility of the user - to make sure the search result
-    // passed to this method is of the Dataverse type!
-    private String getDataverseCardImageUrl(SolrSearchResult result) {
-        return dataverseService.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
-    }
     
-    /* 
-        These commented out methods below are old optimizations that are no longer 
-        necessary, since there is now a more direct connection between a harvested
-        dataset and its HarvestingClient configuration. -- L.A. 4.5 
-    */
-    /*
-    private Map<Long, String> getHarvestedDatasetDescriptions() {
-        if (harvestedDatasetDescriptions != null) {
-            return harvestedDatasetDescriptions;
-        }
-        harvestedDatasetDescriptions = dataverseService.getAllHarvestedDataverseDescriptions();
-        return harvestedDataverseDescriptions;
-    }*/
-    
-    /*private boolean isHarvestedDataverse(Long id) {
-        return this.getHarvestedDataverseDescriptions().containsKey(id);
-    }
-
-    private String getHarvestingDataverseDescription(Long id) {
-        if (this.isHarvestedDataverse(id)) {
-            return this.getHarvestedDataverseDescriptions().get(id);
-        }
-        return null;
-    }*/
     public enum SortOrder {
 
         asc, desc

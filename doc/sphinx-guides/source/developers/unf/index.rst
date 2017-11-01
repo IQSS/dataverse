@@ -4,15 +4,6 @@
 Universal Numerical Fingerprint (UNF)
 =====================================
 
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   unf-v3
-   unf-v5
-   unf-v6
-
 .. figure:: ./img/unf-diagram.png
     :align: center
     :alt: alternate text
@@ -38,5 +29,18 @@ available, for cross-validation.
 
 Learn more: Micah Altman, Jeff Gill and Michael McDonald, 2003,
 `Numerical Issues in Statistical Computing for the Social Scientist
-<http://datascience.iq.harvard.edu/publications/numerical-issues-statistical-computing-social-scientist>`_,
+<http://www.wiley.com/WileyCDA/WileyTitle/productCd-0471236330.html>`_,
 New York: John Wiley.
+
+**Contents:**
+
+.. toctree::
+   :maxdepth: 2
+
+   unf-v3
+   unf-v5
+   unf-v6
+
+----
+
+Previous: :doc:`/developers/tools` | Next: :doc:`/developers/geospatial`

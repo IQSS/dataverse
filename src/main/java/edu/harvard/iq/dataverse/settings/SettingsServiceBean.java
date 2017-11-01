@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-//import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,6 +32,45 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        AllowApiTokenLookupViaApi,
+        /**
+         * Ordered, comma-separated list of custom fields to show above the fold
+         * on dataset page such as "data_type,sample,pdb"
+         */
+        CustomDatasetSummaryFields,
+        /**
+         * Defines a public installation -- all datafiles are unrestricted
+         */
+        PublicInstall,
+        /**
+         * Sets the name of your cloud computing environment.
+         * For example, "Massachusetts Open Cloud"
+         */
+        CloudEnvironmentName,
+        /**
+         * Defines the base for a computing environment URL.
+         * The container name will be appended to this on the "Compute" button 
+         */
+        ComputeBaseUrl,
+        /**
+         * For example, https://datacapture.example.org
+         */
+        DataCaptureModuleUrl,
+        RepositoryStorageAbstractionLayerUrl,
+        UploadMethods,
+        DownloadMethods,
+        /**
+         * Sites around the world to which data has been replicated using RSAL
+         * (Repository Storage Abstraction Layer).
+         */
+        ReplicationSites,
+        /**
+         * If the data replicated around the world using RSAL (Repository
+         * Storage Abstraction Layer) is locally available, this is its file
+         * path, such as "/programs/datagrid".
+         */
+        LocalDataAccessPath,
+        IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
         FooterCopyright,
@@ -64,7 +102,12 @@ public class SettingsServiceBean {
          * Search API. See also https://github.com/IQSS/dataverse/issues/1299
          */
         SearchApiNonPublicAllowed,
-        
+        /**
+         * In Dataverse 4.7 and earlier, an API token was required to use the
+         * Search API. Tokens are no longer required but you can revert to the
+         * old behavior by setting this to false.
+         */
+        SearchApiRequiresToken,
         /**
          * Experimental: Use Solr to power the file listing on the dataset page.
          */
@@ -127,10 +170,6 @@ public class SettingsServiceBean {
         SolrHostColonPort,
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
-        /**
-         * Experimental: Key for if DDI export is enabled or disabled.
-         */
-        DdiExportEnabled,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
         /** Key for the url to send users who want to sign up to. */
@@ -153,6 +192,7 @@ public class SettingsServiceBean {
         TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
+
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
@@ -179,9 +219,6 @@ public class SettingsServiceBean {
         StatusMessageText,
         /* return email address for system emails such as notifications */
         SystemEmail, 
-        /* whether file landing page is available
-        for 4.2 development */
-        ShowFileLandingPage,
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 
         case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
@@ -240,8 +277,88 @@ public class SettingsServiceBean {
         /*
         Whether Harvesting (OAI) service is enabled
         */
-        OAIServerEnabled;
+        OAIServerEnabled,
         
+        /**
+        * Whether Shibboleth passive authentication mode is enabled
+        */
+        ShibPassiveLoginEnabled,
+        /**
+         * Whether Export should exclude FieldType.EMAIL
+         */
+        ExcludeEmailFromExport,
+        /*
+         Location and name of HomePage customization file
+        */
+        HomePageCustomizationFile,
+        /*
+         Location and name of Header customization file
+        */
+        HeaderCustomizationFile,
+        /*
+         Location and name of Footer customization file
+        */
+        FooterCustomizationFile,
+        /*
+         Location and name of CSS customization file
+        */
+        StyleCustomizationFile,
+        /*
+         Location and name of installation logo customization file
+        */
+        LogoCustomizationFile,
+        
+        // Option to override the navbar url underlying the "About" link
+        NavbarAboutUrl,
+        
+        // Option to override multiple guides with a single url
+        NavbarGuidesUrl,
+        
+        // Limit on how many guestbook entries to display on the guestbook-responses page:
+        GuestbookResponsesPageDisplayLimit,
+
+        /**
+         * The dictionary filepaths separated by a pipe (|)
+         */
+        PVDictionaries,
+
+//        /**
+//         * The days and minimum length for when to apply an expiration date.
+//         */
+//        PVExpirationDays,
+//        PVValidatorExpirationMaxLength,
+
+        /**
+         * The minimum length of a good, long, strong password.
+         */
+        PVGoodStrength,
+
+        /**
+         * A password minimum and maximum length
+         */
+        PVMinLength,
+        PVMaxLength,
+
+        /**
+         * One letter, 2 special characters, etc.
+         */
+        PVCharacterRules,
+
+        /**
+         * The number of M characteristics
+         */
+        PVNumberOfCharacteristics,
+        
+        /**
+         * The number of consecutive digits allowed for a password
+         */
+        PVNumberOfConsecutiveDigitsAllowed,
+        /**
+         * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
+         */
+        PVCustomPasswordResetAlertMessage
+        ;
+
         @Override
         public String toString() {
             return ":" + name();
@@ -258,7 +375,7 @@ public class SettingsServiceBean {
      * Values that are considered as "true".
      * @see #isTrue(java.lang.String, boolean) 
      */
-    private static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
+    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
             new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
     
     /**
@@ -352,6 +469,10 @@ public class SettingsServiceBean {
     
     public boolean isTrueForKey( Key key, boolean defaultValue ) {
         return isTrue( key.toString(), defaultValue );
+    }
+
+    public boolean isFalseForKey( Key key, boolean defaultValue ) {
+        return ! isTrue( key.toString(), defaultValue );
     }
             
     public void deleteValueForKey( Key name ) {

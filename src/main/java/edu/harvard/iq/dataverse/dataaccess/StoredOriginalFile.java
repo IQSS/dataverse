@@ -19,23 +19,19 @@
 */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import edu.harvard.iq.dataverse.DataFile;
-import java.io.InputStream;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.logging.Logger;
 /**
  *
  * @author Leonid Andreev
  */
 public class StoredOriginalFile {
+    private static Logger logger = Logger.getLogger(StoredOriginalFile.class.getPackage().getName());
     
     public StoredOriginalFile () {
         
@@ -43,10 +39,10 @@ public class StoredOriginalFile {
     
     private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
     
-    public static DataFileIO retreive(DataFileIO dataAccess) {
-        String originalMimeType = null;
+    public static StorageIO<DataFile> retreive(StorageIO<DataFile> storageIO) {
+        String originalMimeType;
 
-        DataFile dataFile = dataAccess.getDataFile();
+        DataFile dataFile = storageIO.getDataFile();
 
         if (dataFile == null) {
             return null;
@@ -58,141 +54,44 @@ public class StoredOriginalFile {
             return null;
         }
 
-        Channel storedOriginalChannel = null;
+        long storedOriginalSize; 
+        InputStreamIO inputStreamIO;
+        
         try {
-            storedOriginalChannel = dataAccess.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
+            storageIO.open();
+            Channel storedOriginalChannel = storageIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
+            storedOriginalSize = storageIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
+            inputStreamIO = new InputStreamIO(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
+            logger.fine("Opened stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioEx) {
             // The original file not saved, or could not be opened.
+            logger.fine("Failed to open stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION+"!");
             return null;
         }
 
-        if (storedOriginalChannel == null) {
-            return null;
-        }
-
-        dataAccess.setInputStream(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel));
-
-        // Reset the size, filename and the mime type: 
-        
-        long origFileSize; 
-        try {
-            origFileSize = dataAccess.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
-        } catch (IOException ioEx) {
-            return null; 
-        }
-        
-        dataAccess.setSize(origFileSize);
-        
-        if (originalMimeType != null && !originalMimeType.equals("")) {
+        if (originalMimeType != null && !originalMimeType.isEmpty()) {
             if (originalMimeType.matches("application/x-dvn-.*-zip")) {
-                dataAccess.setMimeType("application/zip");
+                inputStreamIO.setMimeType("application/zip");
             } else {
-                dataAccess.setMimeType(originalMimeType);
+                inputStreamIO.setMimeType(originalMimeType);
             }
         } else {
-            dataAccess.setMimeType("application/x-unknown");
+            inputStreamIO.setMimeType("application/x-unknown");
         }
 
-        String fileName = dataAccess.getFileName();
+        String fileName = storageIO.getFileName();
         if (fileName != null) {
             if (originalMimeType != null) {
                 String origFileExtension = generateOriginalExtension(originalMimeType);
-                dataAccess.setFileName(fileName.replaceAll(".tab$", origFileExtension));
+                inputStreamIO.setFileName(fileName.replaceAll(".tab$", origFileExtension));
             } else {
-                dataAccess.setFileName(fileName.replaceAll(".tab$", ""));
+                inputStreamIO.setFileName(fileName.replaceAll(".tab$", ""));
             }
         }
 
-        dataAccess.setNoVarHeader(true);
-        dataAccess.setVarHeader(null);
-        
-        return dataAccess;
+        return inputStreamIO;
 
     }
-    
-    // This method is deprecated; 
-    // The method above should be used instead, as it fully utilises the new generic 
-    // DataFileIO framework. 
-    // The method below is however left in place temporarily, for backward 
-    // compatibility access to the existing stored originals. 
-    
-    /*
-    @Deprecated
-    public static FileAccessIO retrieve (DataFile dataFile, FileAccessIO fileDownload) {
-        String originalMimeType = null; 
-        
-        if (dataFile.getDataTable() != null) {
-            originalMimeType = dataFile.getDataTable().getOriginalFileFormat();
-        } else {
-            return null; 
-        }
-        
-        /* 
-         * TODO: 
-         * This assumes that, and only works if this file is stored locally 
-         * on the filesystem!!
-         * L.A. 4.0.2
-        */
-       /*
-        String tabularFileName = dataFile.getStorageIdentifier(); 
-        Path savedOriginalPath = null; 
-        
-        if (tabularFileName != null && !tabularFileName.equals("")) {
-            savedOriginalPath = Paths.get(dataFile.getOwner().getFileSystemDirectory().toString(), "_"+tabularFileName);
-        }     
-        
-
-        if (savedOriginalPath != null) {
-            
-            if (Files.exists(savedOriginalPath)) {
-                
-                fileDownload.closeInputStream();
-                fileDownload.setSize(savedOriginalPath.toFile().length());
-                
-                try {
-                    fileDownload.setInputStream(new FileInputStream(savedOriginalPath.toFile()));
-                } catch (IOException ex) {
-                    return null; 
-                }
-                fileDownload.setIsLocalFile(true);
-
-                if (originalMimeType != null && !originalMimeType.equals("")) {
-                    if (originalMimeType.matches("application/x-dvn-.*-zip")) {
-                        fileDownload.setMimeType("application/zip");
-                    } else {
-                        fileDownload.setMimeType(originalMimeType);
-                    }
-                } else {
-                    fileDownload.setMimeType("application/x-unknown");
-                }
-
-                String fileName = fileDownload.getFileName();
-                if (fileName != null) {
-                    if ( originalMimeType != null) {
-                        String origFileExtension = generateOriginalExtension(originalMimeType);
-                        fileDownload.setFileName(fileName.replaceAll(".tab$", origFileExtension));
-                    } else {
-                        fileDownload.setFileName(fileName.replaceAll(".tab$", ""));
-                    }
-                }
-
-
-                // The fact that we have the "original format" file for this data
-                // set, means it's a subsettable, tab-delimited file. Which means
-                // we've already prepared a variable header to be added to the
-                // stream. We don't want to add it to the stream that's no longer
-                // tab-delimited -- that would screw it up! -- so let's remove
-                // those headers:
-
-                fileDownload.setNoVarHeader(true);
-                fileDownload.setVarHeader(null);
-                
-                return fileDownload;
-            }
-        }
-        
-        return null;
-    }*/
 
     // TODO: 
     // do what the comment below says - move this code into the file util, 

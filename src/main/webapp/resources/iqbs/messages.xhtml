@@ -20,29 +20,20 @@
         </ui:fragment>
         <ui:fragment rendered="#{not empty flash['errorMsg']}">
             <div class="alert alert-danger">
-                
-                <!-- <h:outputText escape="false" value="# {flash['errorMsg']} "/>
-                Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact Dataverse Support">Dataverse Support</a> for assistance. -->
-                
                 <o:form useRequestURI="true">
-            
-               <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['messages.error']}</strong> – 
-                
-                <h:outputText value="#{flash['errorMsg']} " escape="false"/>
-                
-                <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
-                    <o:param>
-                        <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                        </p:commandLink>                                
-                    </o:param>
-                </h:outputFormat>
-                
+                    <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['messages.error']}</strong> – 
+                    <h:outputText value="#{flash['errorMsg']} " escape="false"/>
+                    <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
+                        <o:param>
+                            <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                            </p:commandLink>                                
+                        </o:param>
+                    </h:outputFormat>
                 </o:form>
-                
             </div>
         </ui:fragment>
         <ui:fragment rendered="#{not empty flash['infoMsg']}">
@@ -69,8 +60,7 @@
                 </ui:fragment>
                 <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{msg.summary}</strong>&#160;<h:outputText value="#{msg.detail}" rendered="#{!empty msg.detail and (msg.detail != msg.summary)}"/>
                 <ui:fragment rendered="#{level eq 'FATAL'}">
-                    <!-- FIXME: Dataverse Support -->
-                    Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact Dataverse Support">Dataverse Support</a> for assistance.
+                    Please contact <a href="#" onclick="event.preventDefault();PF('contactForm').show();" title="Contact #{settingsWrapper.supportTeamName}">#{settingsWrapper.supportTeamName}</a> for assistance.
                     <strong>Date/Time: </strong>
                     <h:outputText value="#{now}">
                         <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" type="date" />

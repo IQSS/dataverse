@@ -1,5 +1,7 @@
 #!/bin/sh
 scripts/database/homebrew/run-reference_data.sql > /tmp/run-reference_data.sql
+psql dataverse_db -f doc/sphinx-guides/source/_static/util/createsequence.sql
+psql -c 'ALTER TABLE datasetidentifier_seq OWNER TO "dataverse_app";' dataverse_db
 cd scripts/api
 ./setup-all.sh --insecure > /tmp/setup-all.sh.out 2> /tmp/setup-all.sh.err
 cd ../..

@@ -8,6 +8,18 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:jsf="http://xmlns.jcp.org/jsf">
 
+<ui:fragment rendered="#{widgetWrapper.widgetView}">
+    <p class="help-block">
+        <span class="glyphicon glyphicon-info-sign"/>
+        <h:outputFormat value=" #{bundle['file.dataFilesTab.versions.widget.viewMoreInfo']}" escape="false">
+            <f:param value="#{FilePage.fileMetadata.datasetVersion.dataset.globalId}"/>
+            <f:param value="#{FilePage.fileMetadata.datasetVersion.dataset.displayName}"/>
+            <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
+        </h:outputFormat>
+    </p>
+</ui:fragment>
+
+<ui:fragment rendered="#{!widgetWrapper.widgetView}">
     <!-- VERSIONS -->
     <script type="text/javascript">
         /* Version tab: Retrieve data after page load */
@@ -128,4 +140,5 @@
         <!-- end: date column -->
     </p:dataTable>
     <!-- / VERSIONS -->
+</ui:fragment>
 </ui:composition>

@@ -3,6 +3,9 @@
 UNF Version 3
 ===========================
 
+.. contents:: |toctitle|
+	:local:
+
 Version 3 of the UNF algorithm was used by the Dataverse Network software prior to version 2.0, and was implemented in R code. This algorithm was used on digital objects containing vectors of numbers, vectors of character strings, data sets comprising such vectors, and studies comprising one or more such data sets.
 
 The UNF V3 algorithm applied to the content of a data set or study is as follows:

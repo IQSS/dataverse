@@ -181,7 +181,7 @@ public class ManageGroupsPage implements java.io.Serializable {
      */
     public List<RoleAssignee> getExplicitGroupMembers(ExplicitGroup eg) {
         return (eg != null) ? 
-                new ArrayList(eg.getDirectMembers()) : null;
+                new ArrayList<>(eg.getDirectMembers()) : null;
     }
 
     /**

@@ -170,25 +170,14 @@ public class DataFileServiceBeanTest {
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not files that thumbnails can be created for.
      * @throws Exception when the test is in error.
-     */
-    @Test
-    public void testIsThumbnailSupported() throws Exception {
-        assertFalse(dataFileServiceBean.thumbnailSupported(null));
-        assertFalse(dataFileServiceBean.thumbnailSupported(fileWoContentType));
-        assertFalse(dataFileServiceBean.thumbnailSupported(fileWithBogusContentType));
-    }
-
-    /**
-     * Expect that {@code null}, a DataFile without content type and a DataFile
-     * with bogus content type are not files that thumbnails can be created for.
-     * @throws Exception when the test is in error.
-     */
+     (this method has been removed from datafileservicebean)
     @Test
     public void testIsThumbnailSupportedForSize() throws Exception {
         assertFalse(dataFileServiceBean.isThumbnailAvailableForSize(null));
         assertFalse(dataFileServiceBean.isThumbnailAvailableForSize(fileWoContentType));
         assertFalse(dataFileServiceBean.isThumbnailAvailableForSize(fileWithBogusContentType));
     }
+    */
     
     /**
      * Expect that files without content type or with a bogus content type are

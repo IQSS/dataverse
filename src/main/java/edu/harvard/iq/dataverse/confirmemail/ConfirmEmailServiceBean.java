@@ -1,10 +1,14 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -37,6 +41,8 @@ public class ConfirmEmailServiceBean {
 
     @EJB
     SystemConfig systemConfig;
+
+    @EJB DataverseServiceBean dataverseService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -102,11 +108,20 @@ public class ConfirmEmailServiceBean {
 
         try {
             String toAddress = aUser.getEmail();
-            /**
-             * @todo Move this to Bundle.properties.
-             */
-            String subject = BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject");
-            mailService.sendSystemEmail(toAddress, subject, messageBody);
+            try {
+                Dataverse rootDataverse = dataverseService.findRootDataverse();
+                if (rootDataverse != null) {
+                    String rootDataverseName = rootDataverse.getName();
+                    // FIXME: consider refactoring this into MailServiceBean.sendNotificationEmail. CONFIRMEMAIL may be the only type where we don't want an in-app notification.
+                    UserNotification userNotification = new UserNotification();
+                    userNotification.setType(UserNotification.Type.CONFIRMEMAIL);
+                    String subject = MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null);
+                    logger.fine("sending email to " + toAddress + " with this subject: " + subject);
+                    mailService.sendSystemEmail(toAddress, subject, messageBody);
+                }
+            } catch (Exception e) {
+                logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
+            }
         } catch (Exception ex) {
             /**
              * @todo get more specific about the exception that's thrown when

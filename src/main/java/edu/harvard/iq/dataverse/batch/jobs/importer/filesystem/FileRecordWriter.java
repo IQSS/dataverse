@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -108,17 +109,17 @@ public class FileRecordWriter extends AbstractItemWriter {
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
-        dataset = datasetServiceBean.findByGlobalId(jobParams.getProperty("datasetId"));
+        dataset = datasetServiceBean.find(Long.parseLong(jobParams.getProperty("datasetId")));
         user = authenticationServiceBean.getAuthenticatedUser(jobParams.getProperty("userId"));
         //jobLogger = Logger.getLogger("job-"+Long.toString(jobContext.getInstanceId()));
-        fileCount = ((HashMap<String, String>) jobContext.getTransientUserData()).size();
+        fileCount = ((Map<String, String>) jobContext.getTransientUserData()).size();
         fileMode = jobParams.getProperty("fileMode");
         uploadFolder = jobParams.getProperty("uploadFolder");
         if (jobParams.getProperty("totalSize") != null) {
             try { 
                 suppliedSize = new Long(jobParams.getProperty("totalSize"));
                 getJobLogger().log(Level.INFO, "Size parameter supplied: "+suppliedSize);
-            } catch (Exception ex) {
+            } catch (NumberFormatException ex) {
                 getJobLogger().log(Level.WARNING, "Invalid file size supplied: "+jobParams.getProperty("totalSize"));
                 suppliedSize = null; 
             }
@@ -279,10 +280,10 @@ public class FileRecordWriter extends AbstractItemWriter {
             // lookup the checksum value in the job's manifest hashmap
             if (jobContext.getTransientUserData() != null) {
                 String manifestPath = relativePath.substring(folderName.length() + 1);
-                checksumValue = ((HashMap<String, String>) jobContext.getTransientUserData()).get(manifestPath);
+                checksumValue = ((Map<String, String>) jobContext.getTransientUserData()).get(manifestPath);
                 if (checksumValue != null) {
                     // remove the key, so we can check for unused checksums when the job is complete
-                    ((HashMap<String, String>) jobContext.getTransientUserData()).remove(manifestPath);
+                    ((Map<String, String>) jobContext.getTransientUserData()).remove(manifestPath);
 
                 } else {
                     getJobLogger().log(Level.WARNING, "Unable to find checksum in manifest for: " + file.getAbsolutePath());
@@ -330,6 +331,7 @@ public class FileRecordWriter extends AbstractItemWriter {
             jobContext.setExitStatus("FAILED");
             return null;
         }
+   
             
         packageFile.setFilesize(totalSize);
         packageFile.setModificationTime(new Timestamp(new Date().getTime()));
@@ -394,11 +396,11 @@ public class FileRecordWriter extends AbstractItemWriter {
         }
         // lookup the checksum value in the job's manifest hashmap
         if (jobContext.getTransientUserData() != null) {
-            String checksumVal = ((HashMap<String, String>) jobContext.getTransientUserData()).get(relativePath);
+            String checksumVal = ((Map<String, String>) jobContext.getTransientUserData()).get(relativePath);
             if (checksumVal != null) {
                 datafile.setChecksumValue(checksumVal);
                 // remove the key, so we can check for unused checksums when the job is complete
-                ((HashMap<String, String>) jobContext.getTransientUserData()).remove(relativePath);
+                ((Map<String, String>) jobContext.getTransientUserData()).remove(relativePath);
             } else {
                 datafile.setChecksumValue("Unknown");
                 getJobLogger().log(Level.WARNING, "Unable to find checksum in manifest for: " + file.getAbsolutePath());

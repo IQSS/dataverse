@@ -14,9 +14,6 @@
             <div class="row">
                 <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
                     <p>
-                        <h:outputText value="#{bundle['footer.dataScienceIQSS']}" escape="false"/> &#160;|&#160; #{bundle['footer.dataverseProjectOn']} <a href="https://twitter.com/dataverseorg" target="_blank" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"><span class="socicon socicon-twitter" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"/></a> &#160;|&#160; #{bundle['footer.codeAvailable']} <a href="https://github.com/IQSS/dataverse" target="_blank" title="#{bundle['footer.dataverseOnGitHub']}"><span class="socicon socicon-github" title="#{bundle['footer.dataverseOnGitHub']}"/></a>
-                    </p>
-                    <p>
                         <h:outputText value="#{systemConfig.footerCopyrightAndYear}#{settingsWrapper.get(':FooterCopyright')}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
                     </p>
                 </div>
@@ -38,12 +35,14 @@
                 <div class="#{widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
                     <div class="poweredbylogo">
                         <span>#{bundle['footer.poweredby']}</span>
-                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverseproject_logo.jpg" alt="#{bundle['footer.dataverseProject']}" /></a>
+                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverseproject_logo.png" alt="#{bundle['footer.dataverseProject']}" /></a>
                         <h:outputText class="version" value="v. #{systemConfig.getVersion(true)}" rendered="#{!widgetView}"/>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetWrapper.widgetView}"/>
     
 </ui:composition>

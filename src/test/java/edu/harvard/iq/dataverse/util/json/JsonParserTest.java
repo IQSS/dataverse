@@ -620,7 +620,7 @@ public class JsonParserTest {
         throw new IllegalArgumentException("Unknown dataset field type '" + ex.getDatasetFieldType() + "'");
     }
     
-    static class MockSettingsSvc extends SettingsServiceBean {
+    private static class MockSettingsSvc extends SettingsServiceBean {
         @Override
         public String getValueForKey( Key key /*, String defaultValue */) {
             switch (key) {

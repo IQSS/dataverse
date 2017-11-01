@@ -57,6 +57,10 @@
 {%- endblock %}
 
 {%- block linktags %}
+<link type="text/css" rel="stylesheet" href="{{pathto("_static/fontcustom.css", 1)}}" />
+<link type="text/css" rel="stylesheet" href="{{pathto("_static/socicon.css", 1)}}" />
+<link type="text/css" rel="stylesheet" href="{{pathto("_static/theme.css", 1)}}" />
+<link type="text/css" rel="stylesheet" href="{{pathto("_static/primefaces.css", 1)}}" />
 <link type="text/css" rel="stylesheet" href="{{pathto("_static/docsdataverse_org.css", 1)}}" />
 {%- endblock %}
 
@@ -120,7 +124,7 @@
 
 {%- block footer %}
 <footer class="footer">
-  <div class="container">
+  <div class="container small">
     <p class="pull-right">
       <a href="#">Back to top</a>
       {% if theme_source_link_position == "footer" %}
@@ -128,15 +132,14 @@
         {% include "sourcelink.html" %}
       {% endif %}
     </p>
-    <p>
     {%- if show_copyright %}
       {%- if hasdoc('copyright') %}
-        {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}<br/>
+        {% trans path=pathto('copyright'), copyright=copyright|e %}<p><a href="{{ path }}">Copyright</a>  &#169; {{ copyright }}.</p>{% endtrans %}
       {%- else %}
-        {% trans copyright=copyright|e %}<a href="http://datascience.iq.harvard.edu/" target="_blank">Data Science</a> at <a href="http://www.iq.harvard.edu/" target="_blank">The Institute for Quantitative Social Science</a>  &nbsp;|&nbsp;  Code available at <a href="https://github.com/IQSS/dataverse" title="Dataverse on GitHub" target="_blank"><img src="/en/latest/_static/images/githubicon.png" width="20" alt="Dataverse on GitHub"/></a> &nbsp;|&nbsp; Created using <a href="http://sphinx.pocoo.org/" target="_blank">Sphinx</a> {{ sphinx_version }}<br/>Version {{ version }} &nbsp;|&nbsp; Last updated on {{ last_updated }}<br/>&copy; Copyright {{ copyright }} {% endtrans %}<br/>
+        {% trans copyright=copyright|e %}<p>Developed at the <a href="http://www.iq.harvard.edu/" title="Institute for Quantitative Social Science" target="_blank">Institute for Quantitative Social Science</a>  &nbsp;|&nbsp;  Code available at <a href="https://github.com/IQSS/dataverse" title="Dataverse on GitHub" target="_blank"><span class="socicon socicon-github"></span></a> &nbsp;|&nbsp; Created using <a href="http://sphinx.pocoo.org/" target="_blank">Sphinx</a> {{ sphinx_version }}<br/>Version {{ version }} &nbsp;|&nbsp; Last updated on {{ last_updated }}</p>
+        <p>Copyright &#169; {{ copyright }}</p> {% endtrans %}
       {%- endif %}
     {%- endif %}
-    </p>
   </div>
 </footer>
 {%- endblock %}

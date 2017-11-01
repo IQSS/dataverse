@@ -19,16 +19,34 @@ body {
 
 footer {
     margin: 30px 0;
-    /* margin: 50px 0;*/
+}
+footer p {
+    color: #808080;
+}
+footer span.socicon-github {
+    color: #000;
+    font-size: 1.3em;
+    vertical-align: top;
 }
 
 iframe {
 	border:0;
 }
 
-.navbar-default a.navbar-brand, .navbar-default a.navbar-brand:hover {
-    color: #c55b28;
+a.navbar-brand, a.navbar-brand:hover {
+    color:#C55B28 !important;
 }
+span.navbar-brand {color:#C55B28 !important; padding-left: 32px; height: 50px;}
+span.navbar-brand .icon-dataverse {color:#C55B28; font-size:28px; margin: -4px 0 0 -27px; position: absolute;}
+ul.navbar-nav li.dropdown span.dropdown-toggle {display: block; padding: 15px; color: #777;}
+ul.navbar-nav li.dropdown.open > span.dropdown-toggle {background: #e7e7e7;}
+.bg-dataverse, bg-brand {background:#C55B28;}
+.bg-dataset {background:#337AB7;}
+.bg-file {background:#777777;}
+.bg-muted {background:#F5F5F5;}
+.text-dataverse, .text-brand {color:#C55B28;}
+.text-dataset {color:#31708F;}
+.text-file {color:#777777;}
 
 #dataverse-org-homepage-url {
     height: 50px;
@@ -58,6 +76,33 @@ a.headerlink {
     color:#606060; 
     font-family: Menlo, Monaco, Consolas, "Courier New", monospace; 
 }
+
+div.panel.panel-default.code-example {
+    margin-bottom: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 4px 4px 0 0 !important;
+}
+div.panel.panel-default.code-example + div.highlight-html pre {
+    border-radius: 0 0 4px 4px !important;
+}
+div.code-example .color-swatches {
+    margin: 0 5px;
+    overflow: hidden;
+}
+div.code-example .color-swatch {
+    float: left;
+    width: 100px;
+    height: 100px;
+    margin: 0 5px;
+    border-radius: 3px
+}
+
+#breadcrumbNavBlock {margin-top:.5em;}
+#breadcrumbNavBlock .breadcrumbBlock {float:left; position:relative;}
+#breadcrumbNavBlock .breadcrumbActive {font-weight:bold;}
+#breadcrumbNavBlock .breadcrumbCarrot {float: left; margin: 0 .4em; color: #B3B3B3; display: block;}
+
+div.form-group .glyphicon.glyphicon-asterisk {font-size: .5em; vertical-align: text-top;}
 
 /* alternative formattings:  font-weight: bold; font-size: 110%; etc. */
 

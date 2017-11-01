@@ -3,6 +3,13 @@
 TwoRavens: Tabular Data Exploration
 +++++++++++++++++++++++++++++++++++
 
+**Please note:** This document is a bit old and may need an update. The TwoRavens
+project has a more recently published user guide on their site: `http://2ra.vn/papers/tworavens-guide.pdf <http://2ra.vn/papers/tworavens-guide.pdf>`_. 
+
+
+.. contents:: |toctitle|
+	:local:
+
 Exploring and Analyzing Tabular files in Dataverse
 ==================================================
 
@@ -33,7 +40,7 @@ The Summary tab shows summary statistics when a pebble is hovered over. If one r
 Modeling/Center Panel
 =====================
 
-The center panel displays a graphical representation of variable relations and denotes variables that have been tagged with certain properties.  Variables may be tagged as either a dependent variable, a time series variable, or a cross sectional variable.  Each of these are accomplished by clicking on the appropriate button at the top of the screen, and then clicking on a pebble in the center panel.  You’ll notice that when a variable is tagged with a property, the fill color becomes white, and the outline (or stroke) of the pebble turns the color of property’s button.  Note that to estimate a model, the dependent variable must be selected.
+The center panel displays a graphical representation of variable relations and denotes variables that have been tagged with certain properties.  Variables may be tagged as either a dependent variable, a time series variable, or a cross sectional variable.  Each of these are accomplished by clicking on the appropriate button at the top of the screen, and then clicking on a pebble in the center panel.  You’ll notice that when a variable is tagged with a property, the fill color becomes white, and the outline (or stroke) of the pebble turns the color of the property’s button.  Note that to estimate a model, the dependent variable must be selected.
 
 Variable relations are specified by point-click-drag from one pebble to the other.  When a path between pebbles has been specified, it is visually presented with a dotted arrow line and may be removed by pushing the delete key on your keyboard. 
 
@@ -74,4 +81,4 @@ Reset
 
 This is your start over button. Clicking this is equivalent to reloading the Web page or re-initiating TwoRavens.
 
-Scenario Example:
+

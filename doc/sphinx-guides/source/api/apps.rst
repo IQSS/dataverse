@@ -5,7 +5,8 @@ The introduction of Dataverse APIs has fostered the development of apps that are
 
 The apps below are open source, demonstrating how to use Dataverse APIs. Some of these apps (and others) are built on :doc:`/api/client-libraries` that are available for Dataverse APIs.
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Javascript
 ----------

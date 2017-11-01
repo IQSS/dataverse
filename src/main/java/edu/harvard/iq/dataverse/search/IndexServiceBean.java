@@ -113,7 +113,7 @@ public class IndexServiceBean {
     @PostConstruct
     public void init(){
         solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-        rootDataverseName = findRootDataverseCached().getName() + " " + BundleUtil.getStringFromBundle("dataverse");
+        rootDataverseName = findRootDataverseCached().getName();
     }
     
     @PreDestroy
@@ -171,7 +171,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
         } else { (this means that all dataverses are "local" - should this be removed? */
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName() + " " + BundleUtil.getStringFromBundle("dataverse")); //rootDataverseName);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName()); //rootDataverseName);
         /*}*/
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
@@ -681,7 +681,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName() + " " + BundleUtil.getStringFromBundle("dataverse")); //rootDataverseName);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName()); //rootDataverseName);
         }
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
@@ -909,7 +909,7 @@ public class IndexServiceBean {
                             datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
                         } else {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName() + " " + BundleUtil.getStringFromBundle("dataverse"));
+                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName());
                         }
                     }
                     if (fileSortByDate == null) {

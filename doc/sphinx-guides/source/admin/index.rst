@@ -10,7 +10,7 @@ This guide documents the functionality only available to the Dataverse Admin ("N
 
 These "superuser" tasks are managed via the new page called the Dashboard. A user logged in as a Dataverse Admin will see the Dashboard link rendered in the upper right corner of every Dataverse page. 
 
-Contents:
+**Contents:**
 
 .. toctree::
 
@@ -18,4 +18,9 @@ Contents:
    harvestserver
    metadataexport
    timers
+   geoconnect-worldmap
+   user-administration
+   solr-search-index
+   monitoring
+   maintenance
    troubleshooting

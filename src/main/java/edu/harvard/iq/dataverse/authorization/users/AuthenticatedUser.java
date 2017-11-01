@@ -4,12 +4,17 @@ import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import edu.harvard.iq.dataverse.userdata.UserUtil;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,6 +29,15 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 
+/**
+ * When adding an attribute to this class, be sure to update the following:
+ * 
+ *  (1) AuthenticatedUser.toJSON() - within this class   (REQUIRED)
+ *  (2) UserServiceBean.getUserListCore() - native SQL query
+ *  (3) UserServiceBean.createAuthenticatedUserForView() - add values to a detached AuthenticatedUser object
+ * 
+ * @author rmp553
+ */
 @NamedQueries({
     @NamedQuery( name="AuthenticatedUser.findAll",
                 query="select au from AuthenticatedUser au"),
@@ -73,19 +87,26 @@ public class AuthenticatedUser implements User, Serializable {
     private String email;
     private String affiliation;
     private String position;
+    
     @NotBlank(message = "Please enter your last name.")
     private String lastName;
+    
     @NotBlank(message = "Please enter your first name.")
     private String firstName;
+    
     @Column(nullable = true)
     private Timestamp emailConfirmed;
-    private boolean superuser;
+    //TODO: add the word time after next 3 columns   
+    @Column(nullable=false)
+    private Timestamp createdTime;
+    
+    @Column(nullable=true)
+    private Timestamp lastLoginTime;    // last user login timestamp
 
-    /**
-     * @todo Remove? Check for accuracy? For Solr JOINs we used to care about
-     * the modification times of users but now we don't index users at all.
-     */
-    private Timestamp modificationTime;
+    @Column(nullable=true)
+    private Timestamp lastApiUseTime;   // last API use with user's token
+            
+    private boolean superuser;
 
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
@@ -132,6 +153,45 @@ public class AuthenticatedUser implements User, Serializable {
             setPosition( inf.getPosition());
         }
     }
+
+
+    //For User List Admin dashboard
+    @Transient
+    private String roles;
+    
+    public String getRoles() {
+        return roles;
+    }
+
+    public void setRoles(String roles) {
+        this.roles = roles;
+    }
+    
+    //For User List Admin dashboard - AuthenticatedProviderId
+    @Transient
+    private String authProviderId;    
+
+    public String getAuthProviderId() {
+        return authProviderId;
+    }
+
+    public void setAuthProviderId(String authProviderId) {
+        this.authProviderId = authProviderId;
+    }
+    
+    
+    @Transient
+    private String authProviderFactoryAlias;    
+
+    public String getAuthProviderFactoryAlias() {
+        return authProviderFactoryAlias;
+    }
+
+    public void setAuthProviderFactoryAlias(String authProviderFactoryAlias) {
+        this.authProviderFactoryAlias = authProviderFactoryAlias;
+    }
+    
+    
     
     @Override
     public boolean isAuthenticated() { return true; }
@@ -213,10 +273,6 @@ public class AuthenticatedUser implements User, Serializable {
         this.superuser = superuser;
     }
 
-    public void setModificationTime(Timestamp modificationTime) {
-        this.modificationTime = modificationTime;
-    }
-
     @OneToOne(mappedBy = "authenticatedUser")
     private AuthenticatedUserLookup authenticatedUserLookup;
 
@@ -253,6 +309,59 @@ public class AuthenticatedUser implements User, Serializable {
         this.shibIdentityProvider = shibIdentityProvider;
     }
     
+    public JsonObjectBuilder toJson() {
+        //JsonObjectBuilder authenicatedUserJson = Json.createObjectBuilder();
+        
+        NullSafeJsonBuilder authenicatedUserJson = NullSafeJsonBuilder.jsonObjectBuilder();
+         
+        authenicatedUserJson.add("id", this.id);
+        authenicatedUserJson.add("userIdentifier", this.userIdentifier);
+        authenicatedUserJson.add("lastName", this.lastName);
+        authenicatedUserJson.add("firstName", this.firstName);
+        authenicatedUserJson.add("email", this.email);
+        authenicatedUserJson.add("affiliation", UserUtil.getStringOrNull(this.affiliation));
+        authenicatedUserJson.add("position", UserUtil.getStringOrNull(this.position));
+        authenicatedUserJson.add("isSuperuser", this.superuser);
+              
+        authenicatedUserJson.add("authenticationProvider", this.authProviderFactoryAlias);   
+        authenicatedUserJson.add("roles", UserUtil.getStringOrNull(this.roles));
+        
+        authenicatedUserJson.add("createdTime", UserUtil.getTimestampStringOrNull(this.createdTime));
+        authenicatedUserJson.add("lastLoginTime", UserUtil.getTimestampStringOrNull(this.lastLoginTime));
+        authenicatedUserJson.add("lastApiUseTime", UserUtil.getTimestampStringOrNull(this.lastApiUseTime));
+
+        return authenicatedUserJson;
+    }
+    
+     /**
+     * May be used for translating API field names.  
+     * 
+     * Should match order of "toJson()" method
+     * 
+     * @return 
+     */
+    public static JsonObjectBuilder getBundleStrings(){
+     
+           return Json.createObjectBuilder()                   
+                .add("userId", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userId"))
+                .add("userIdentifier", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userIdentifier"))
+                .add("lastName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastName"))
+                .add("firstName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.firstName"))
+                .add("email", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.email"))
+                .add("affiliation", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.affiliation"))
+                .add("position", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.position"))
+                .add("isSuperuser", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.isSuperuser"))
+                
+                .add("authenticationProvider", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.authProviderFactoryAlias"))
+                .add("roles", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles"))
+                   
+                .add("createdTime", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.createdTime"))
+                .add("lastLoginTime", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastLoginTime"))
+                .add("lastApiUseTime", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastApiUseTime"))
+                ;
+                       
+    }
+    
     @Override
     public String toString() {
         return "[AuthenticatedUser identifier:" + getIdentifier() + "]";
@@ -262,4 +371,55 @@ public class AuthenticatedUser implements User, Serializable {
         return this.getLastName() + " " + this.getFirstName() + " " + this.getUserIdentifier();
     }
     
+    /**
+     * 
+     * @param lastLoginTime 
+     */
+    public void setLastLoginTime(Timestamp lastLoginTime){
+        
+        this.lastLoginTime = lastLoginTime;
+    }
+    
+    /**
+     * @param lastLoginTime
+     */
+    public Timestamp getLastLoginTime(){
+        return this.lastLoginTime;
+    }
+    
+    
+    public void setCreatedTime(Timestamp createdTime){
+        this.createdTime = createdTime;
+    }
+    
+    public Timestamp getCreatedTime(){
+        return this.createdTime;
+    }
+
+    
+    /**
+     * 
+     * @param lastApiUseTime 
+     */
+    public void setLastApiUseTime(Timestamp lastApiUseTime){        
+        this.lastApiUseTime = lastApiUseTime;
+    }
+    
+    /**
+     * 
+     * @param lastApiUseTime
+     */
+    public Timestamp getLastApiUseTime(){
+        
+        return this.lastApiUseTime;
+    }
+
+    public String getOrcidId() {
+        String authProviderId = getAuthenticatedUserLookup().getAuthenticationProviderId();
+        if (OrcidOAuth2AP.PROVIDER_ID_PRODUCTION.equals(authProviderId)) {
+            return getAuthenticatedUserLookup().getPersistentUserId();
+        }
+        return null;
+    }
+
 }

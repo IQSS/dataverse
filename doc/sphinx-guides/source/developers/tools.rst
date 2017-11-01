@@ -4,7 +4,8 @@ Tools
 
 These are handy tools for your :doc:`/developers/dev-environment/`.
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Netbeans Connector Chrome Extension
 +++++++++++++++++++++++++++++++++++
@@ -16,6 +17,11 @@ Maven
 +++++
 
 With Maven installed you can run `mvn package` and `mvn test` from the command line. It can be downloaded from https://maven.apache.org
+
+PlantUML
+++++++++
+
+PlantUML is used to create diagrams in the guides and other places. Download it from http://plantuml.com and check out an example script at https://github.com/IQSS/dataverse/blob/v4.6.1/doc/Architecture/components.sh . Note that for this script to work, you'll need the ``dot`` program, which can be installed on Mac with ``brew install graphviz``.
 
 Eclipse Memory Analyzer Tool (MAT)
 ++++++++++++++++++++++++++++++++++
@@ -61,6 +67,8 @@ Vagrantfile).
 
 Please note that running ``vagrant up`` for the first time should run the ``downloads/download.sh`` script for you to download required software such as Glassfish and Solr and any patches. However, these dependencies change over time so it's a place to look if ``vagrant up`` was working but later fails.
 
+On Windows if you see an error like ``/usr/bin/perl^M: bad interpreter`` you might need to run ``dos2unix`` on the installation scripts. 
+
 MSV
 +++
 
@@ -72,3 +80,14 @@ MSV
     start parsing a grammar.
     validating ddi.xml
     the document is valid.
+
+FontCustom
+++++++++++
+
+The custom file type icons were created with the help of `FontCustom <https://github.com/FontCustom/fontcustom>`. Their README provides installation instructions as well as directions for producing your own vector-based icon font.
+
+Here is a vector-based SVG file to start with as a template: :download:`icon-template.svg <../_static/icon-template.svg>`
+
+----
+
+Previous: :doc:`making-releases` | Next: :doc:`unf/index`

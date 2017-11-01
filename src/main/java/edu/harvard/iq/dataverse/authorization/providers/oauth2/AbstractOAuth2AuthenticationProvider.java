@@ -92,7 +92,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     
     public AbstractOAuth2AuthenticationProvider(){}
     
-    public abstract BaseApi getApiInstance();
+    public abstract BaseApi<OAuth20Service> getApiInstance();
     
     protected abstract ParsedUserResponse parseUserResponse( String responseBody );
     
@@ -105,7 +105,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         if ( scope != null ) {        
             svcBuilder.scope(scope);
         }
-        return (OAuth20Service) svcBuilder.build( getApiInstance() );
+        return svcBuilder.build( getApiInstance() );
     }
     
     public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {

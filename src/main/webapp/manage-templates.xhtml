@@ -14,7 +14,7 @@
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageTemplatesPage.dataverse, bundle['dataset.manageTemplates.pageTitle'])}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['dataset.manageTemplates.pageTitle']} - #{manageTemplatesPage.dataverse.name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle['dataset.manageTemplates.pageTitle']} - #{manageTemplatesPage.dataverse.name}"/>
             <ui:param name="dataverse" value="#{manageTemplatesPage.dataverse}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">

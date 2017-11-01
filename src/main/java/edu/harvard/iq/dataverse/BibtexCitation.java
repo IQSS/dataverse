@@ -21,7 +21,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class BibtexCitation {
 
-    private List<String> authors = new ArrayList();
+    private List<String> authors = new ArrayList<>();
     private String title;
     private String year;
     private GlobalId persistentId;

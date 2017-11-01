@@ -107,6 +107,14 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     private Timestamp permissionIndexTime;
     
+    @Column
+    private String storageIdentifier;
+    
+    /**
+     * previewImageAvailable could also be thought of as "thumbnail has been
+     * generated. However, were all three thumbnails generated? We might need a
+     * boolean per thumbnail size.
+     */
     private boolean previewImageAvailable;
     
     public boolean isPreviewImageAvailable() {
@@ -282,6 +290,14 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         
         return null;
     }    
+    
+    public String getStorageIdentifier() {
+        return storageIdentifier;
+    }
+    
+    public void setStorageIdentifier(String storageIdentifier) {
+        this.storageIdentifier = storageIdentifier;
+    }
     
     /**
      * 

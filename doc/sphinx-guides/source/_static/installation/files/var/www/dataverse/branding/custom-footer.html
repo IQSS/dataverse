@@ -1,0 +1,38 @@
+    <style>
+    	/* NOTE: You can use the custom CSS configuration to move this CSS your own stylesheet. */
+
+    	/* Overwrite default footer styles to make room at the bottom of the browser page for our custom footer... */
+    	html, body {
+            height: 100%;
+        }
+        #content.container {
+            min-height: calc(100% - 210px);
+            margin-bottom: -142px; 
+        }
+        #content.container:after {
+            content: "";
+            display: block;
+        }
+        #footer {
+                color: #a9a9a9; margin-top:0px; padding-bottom:0px; bottom:-130px; position: relative;
+        }
+        
+        /* Place custom footer just above default footer at the bottom of the page... */
+        #custom-footer, #content.container:after {
+            height: 142px; 
+        }
+        #custom-footer {
+            background: #414141; color: #a9a9a9; min-height: 100px; padding: 1.25em 0 100px 0;
+        }
+        #custom-footer a {
+            color: #fff;
+        }
+    </style>
+    <div id="custom-footer">
+    	<div class="container">
+    		<p>SAMPLE FOOTER TEXT</p>
+    		<p class="small">
+                    <a href="https://dataverse.org" title="SAMPLE LINK" target="_blank">SAMPLE LINK</a>
+                </p>
+    	</div>
+    </div>

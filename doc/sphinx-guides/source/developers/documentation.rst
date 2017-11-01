@@ -2,6 +2,9 @@
 Documentation
 =============
 
+.. contents:: |toctitle|
+	:local:
+
 Quick Fix
 -----------
 
@@ -61,3 +64,17 @@ After sphinx is done processing the files you should notice that the html folder
 You can click on the files in the html folder to preview the changes.
 
 Now you can make a commit with the changes to your own fork in GitHub and submit a pull request to the dataverse repository.
+
+Table of Contents
+-----------------
+
+Every non-index page should use the following code to display a table of contents of internal sub-headings: ::
+
+	.. contents:: |toctitle|
+		:local:
+
+This code should be placed below any introductory text/images and directly above the first subheading, much like a Wikipedia page.
+
+----
+
+Previous: :doc:`testing` | Next: :doc:`debugging`

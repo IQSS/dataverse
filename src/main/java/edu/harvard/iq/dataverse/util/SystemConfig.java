@@ -3,12 +3,11 @@ package edu.harvard.iq.dataverse.util;
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +15,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import org.passay.CharacterRule;
 
 /**
  * System-wide configuration
@@ -86,6 +87,8 @@ public class SystemConfig {
     private static String buildNumberString = null; 
     
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
+    
+    private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 5000L; 
     
     public String getVersion() {
         return getVersion(false);
@@ -405,13 +408,34 @@ public class SystemConfig {
         return defaultMultipleUploadFilesLimit; 
     }
     
+    public long getGuestbookResponsesPageDisplayLimit() {
+        String limitSetting = settingsService.getValueForKey(SettingsServiceBean.Key.GuestbookResponsesPageDisplayLimit);   
+        
+        Long limit = null; 
+        if (limitSetting != null && !limitSetting.equals("")) {
+            try {
+                limit = new Long(limitSetting);
+            } catch (NumberFormatException nfe) {
+                limit = null; 
+            }
+        }
+        
+        if (limit != null) {
+            return limit.longValue();
+        }
+        
+        return DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT; 
+    }
     
+    public long getUploadLogoSizeLimit(){
+        return 500000;
+    }
 
     // TODO: (?)
     // create sensible defaults for these things? -- 4.2.2
     public long getThumbnailSizeLimitImage() {
         long limit = getThumbnailSizeLimit("Image");
-        return limit == 0 ? 5000000 : limit;
+        return limit == 0 ? 500000 : limit;
     } 
     
     public long getThumbnailSizeLimitPDF() {
@@ -421,11 +445,12 @@ public class SystemConfig {
     
     public long getThumbnailSizeLimit(String type) {
         String option = null; 
+        
+        //get options via jvm options
+        
         if ("Image".equals(type)) {
-            option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
             option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
         } else if ("PDF".equals(type)) {
-            option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitPDF);
             option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
         }
         Long limit = null; 
@@ -478,11 +503,6 @@ public class SystemConfig {
         return appPrivacyPolicyUrl;
     }
 
-    public boolean isDdiExportEnabled() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.DdiExportEnabled, safeDefaultIfKeyNotFound);
-    }
-
     public boolean myDataDoesNotUsePermissionDocs() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.MyDataDoesNotUseSolrPermissionDocs, safeDefaultIfKeyNotFound);
@@ -491,11 +511,6 @@ public class SystemConfig {
     public boolean isFilesOnDatasetPageFromSolr() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);
-    }
-    
-    public boolean isFileLandingPageAvailable() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShowFileLandingPage, safeDefaultIfKeyNotFound);
     }
 
     public Long getMaxFileUploadSize(){
@@ -609,7 +624,7 @@ public class SystemConfig {
     }
 
     public String getNameOfInstallation() {
-        return dataverseService.findRootDataverse().getName() + " Dataverse";
+        return dataverseService.findRootDataverse().getName();
     }
 
     public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {
@@ -639,5 +654,204 @@ public class SystemConfig {
         }
         return saneDefault;
     }
+    
+    public boolean isShibPassiveLoginEnabled() {
+        boolean defaultResponse = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
+    }
+
+    /**
+     * getPVDictionaries
+     *
+     * @return A string of one or more pipe (|) separated file paths.
+     */
+    public String getPVDictionaries() {
+        return settingsService.get(SettingsServiceBean.Key.PVDictionaries.toString());
+    }
+
+    /**
+     * getPVGoodStrength
+     *
+     * Get the minimum length of a valid password to apply an expiration rule.
+     * Defaults to 20.
+     *
+     * @return The length.
+     */
+    public int getPVGoodStrength() {
+        // FIXME: Change this to 21 to match Harvard's requirements or implement a way to disable the rule (0 or -1) and have the default be disabled.
+        int goodStrengthLength = 20;
+        //String _goodStrengthLength = System.getProperty("pv.goodstrength", settingsService.get(SettingsServiceBean.Key.PVGoodStrength.toString()));
+        String _goodStrengthLength = settingsService.get(SettingsServiceBean.Key.PVGoodStrength.toString());
+        try {
+            goodStrengthLength = Integer.parseInt(_goodStrengthLength);
+        } catch (NumberFormatException nfe) {
+            logger.fine("Invalid value for PVGoodStrength: " + _goodStrengthLength);
+        }
+        return goodStrengthLength;
+    }
+
+    /**
+     * getPVMinLength
+     *
+     * Get the minimum length of a valid password. Defaults to 6.
+     *
+     * @return The length.
+     */
+    public int getPVMinLength() {
+        int passportValidatorMinLength = 6;
+        String _passportValidatorMinLength = settingsService.get(SettingsServiceBean.Key.PVMinLength.toString());
+        try {
+            passportValidatorMinLength = Integer.parseInt(_passportValidatorMinLength);
+        } catch (NumberFormatException nfe) {
+            logger.fine("Invalid value for PwMinLength: " + _passportValidatorMinLength);
+        }
+        return passportValidatorMinLength;
+    }
+
+    /**
+     * getPVMaxLength
+     *
+     * Get the maximum length of a valid password. Defaults to 0 (disabled).
+     *
+     * @return The length.
+     */
+    public int getPVMaxLength() {
+        int passportValidatorMaxLength = 0;
+        String _passportValidatorMaxLength = settingsService.get(SettingsServiceBean.Key.PVMaxLength.toString());
+        try {
+            passportValidatorMaxLength = Integer.parseInt(_passportValidatorMaxLength);
+        } catch (NumberFormatException nfe) {
+            logger.fine("Invalid value for PwMaxLength: " + _passportValidatorMaxLength);
+        }
+        return passportValidatorMaxLength;
+    }
+
+    /**
+     * One letter, 2 special characters, etc. Defaults to:
+     *
+     * - one uppercase
+     *
+     * - one lowercase
+     *
+     * - one digit
+     *
+     * - one special character
+     *
+     * TODO: This is more strict than what Dataverse 4.0 shipped with. Consider
+     * keeping the default the same.
+     */
+    public List<CharacterRule> getPVCharacterRules() {
+        String characterRulesString = settingsService.get(SettingsServiceBean.Key.PVCharacterRules.toString());
+        return PasswordValidatorUtil.getCharacterRules(characterRulesString);
+    }
+
+    /**
+     * getPVNumberOfCharacteristics
+     *
+     * Get the number M characteristics. Defaults to 3.
+     *
+     * @return The number.
+     * 
+     * TODO: Consider changing the out-of-the-box rules to be the same as Dataverse 4.0, which was 2 (one letter, one number).
+     */
+    public int getPVNumberOfCharacteristics() {
+        int numberOfCharacteristics = 2;
+        String _numberOfCharacteristics = settingsService.get(SettingsServiceBean.Key.PVNumberOfCharacteristics.toString());
+        try {
+            numberOfCharacteristics = Integer.parseInt(_numberOfCharacteristics);
+        } catch (NumberFormatException nfe) {
+            logger.fine("Invalid value for PVNumberOfCharacteristics: " + _numberOfCharacteristics);
+        }
+        return numberOfCharacteristics;
+    }
+
+    /**
+     * Get the number of consecutive digits allowed. Defaults to highest int
+     * possible.
+     */
+    public int getPVNumberOfConsecutiveDigitsAllowed() {
+        int numConsecutiveDigitsAllowed = Integer.MAX_VALUE;
+        String _numberOfConsecutiveDigitsAllowed = settingsService.get(SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed.toString());
+        try {
+            numConsecutiveDigitsAllowed = Integer.parseInt(_numberOfConsecutiveDigitsAllowed);
+        } catch (NumberFormatException nfe) {
+            logger.fine("Invalid value for " + SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed + ": " + _numberOfConsecutiveDigitsAllowed);
+        }
+        return numConsecutiveDigitsAllowed;
+    }
+
+    public enum FileUploadMethods {
+
+        RSYNC("dcm/rsync+ssh"),
+        NATIVE("NATIVE");
+
+        private final String text;
+
+        private FileUploadMethods(final String text) {
+            this.text = text;
+        }
+
+        public static FileUploadMethods fromString(String text) {
+            if (text != null) {
+                for (FileUploadMethods fileUploadMethods : FileUploadMethods.values()) {
+                    if (text.equals(fileUploadMethods.text)) {
+                        return fileUploadMethods;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("FileUploadMethods must be one of these values: " + Arrays.asList(FileUploadMethods.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+        
+        
+    }
+    
+    public enum FileDownloadMethods {
+        RSYNC("rsal/rsync"),
+        NATIVE("NATIVE");
+        private final String text;
+
+        private FileDownloadMethods(final String text) {
+            this.text = text;
+        }
+
+        public static FileUploadMethods fromString(String text) {
+            if (text != null) {
+                for (FileUploadMethods fileUploadMethods : FileUploadMethods.values()) {
+                    if (text.equals(fileUploadMethods.text)) {
+                        return fileUploadMethods;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("FileDownloadMethods must be one of these values: " + Arrays.asList(FileDownloadMethods.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+        
+    }
+
+    public boolean isPublicInstall(){
+        boolean saneDefault = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
+    }
+    
+    public boolean isRsyncUpload(){
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        return uploadMethods != null &&  uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+    }
+    
+    public boolean isRsyncDownload()
+    {
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        return downloadMethods !=null && downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString());
+    }
+    
 
 }

@@ -16,7 +16,7 @@
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle.login} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle.login} - #{dataverseServiceBean.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
@@ -73,6 +73,23 @@
                                             </div>
                                         </div>
                                     </ui:repeat>
+                                    
+                                    <!-- validation -->
+                                    <div class="form-group" jsf:rendered="#{LoginPage.requireExtraValidation}">
+                                        <div class="col-sm-offset-4 col-sm-8">
+                                            <p>
+                                                <h:outputText styleClass="highlightBold" value="#{bundle['contact.question']}"/> <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                            </p>
+                                            <h:outputFormat value="#{LoginPage.op1} + #{LoginPage.op2} = "/>
+                                            <p:inputText id="messageSum" label="Sum" size="4" value="#{LoginPage.userSum}" converterMessage="#{bundle['contact.sum.converterMessage']}"
+                                                         required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['contact.sum.required']}"
+                                                         validatorMessage="#{bundle['contact.sum.invalid']}" validator="#{LoginPage.validateUserSum}">
+                                                <f:convertNumber integerOnly="true" type="number"/>
+                                            </p:inputText>
+                                            <h:message for="messageSum" styleClass="bg-danger text-danger"/>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="form-group">
                                         <div class="col-sm-offset-4 col-sm-9 button-block">
                                             <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
@@ -96,7 +113,7 @@
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
                                         <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
-                                        <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -118,8 +135,6 @@
                                 </div>
 
                                 <script type="text/javascript">
-                                    // TODO: get this working for https://github.com/IQSS/dataverse/issues/1551
-                                    //shibRedirectPage = '?redirectPage=' + '#{LoginPage.redirectPage}';
                                     shibRedirectPage = '';
                                 </script>
 
@@ -160,7 +175,7 @@
                                             <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <o:param value="#{systemConfig.guidesVersion}"/>
                                             <o:param>
-                                                <p:commandLink value="#{bundle['contact.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>

@@ -37,11 +37,11 @@ import java.util.*;
  */
 public interface SubsetGenerator {
         
-    public  void subsetFile(String infile, String outfile, Set<Integer> columns, Long numCases);
+    public  void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases);
 
-    public void subsetFile(String infile, String outfile, Set<Integer> columns, Long numCases,
+    public void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases,
         String delimiter);
 
-    public void subsetFile(InputStream in, String outfile, Set<Integer> columns, Long numCases,
+    public void subsetFile(InputStream in, String outfile, List<Integer> columns, Long numCases,
         String delimiter);
 }

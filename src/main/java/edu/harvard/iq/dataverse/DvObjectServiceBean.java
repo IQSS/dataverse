@@ -72,6 +72,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }
 
     /**
+     * @param dvObject
+     * @return 
      * @todo DRY! Perhaps we should merge this with the older
      * updateContentIndexTime method.
      */
@@ -176,8 +178,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         
         String qstr = "SELECT h.dataverse_id FROM harvestingclient h;";
 
-        return em.createNativeQuery(qstr)
-                        .getResultList();
+        return em.createNativeQuery(qstr).getResultList();
         
     }
     
@@ -186,6 +187,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
      * dataverse page. (In order to determine if "linked" or not).
      * *done in recursive 1 query!*
      * 
+     * @param objectIds
      * @return 
      */
     public Map<Long, String> getObjectPathsByIds(Set<Long> objectIds){
@@ -201,7 +203,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             " SELECT o.id, o.owner_id FROM path_elements p, dvobject o WHERE o.id = p.owner_id) " +
             "SELECT id, owner_id FROM path_elements WHERE owner_id IS NOT NULL;"; // ORDER by id ASC;";
         
-        List<Object[]> searchResults = null;
+        List<Object[]> searchResults;
         
         try {
             searchResults = em.createNativeQuery(qstr).getResultList();
@@ -216,11 +218,11 @@ public class DvObjectServiceBean implements java.io.Serializable {
         Map<Long, Long> treeMap = new HashMap<>();
         
         for (Object[] result : searchResults) {
-            Long objectId = null;
-            Long ownerId = null;
+            Long objectId;
+            Long ownerId;
             if (result[0] != null) {
                 try {
-                    objectId = ((Integer)result[0]).longValue();
+                    objectId = ((Integer) result[0]).longValue();
                 } catch (Exception ex) {
                     logger.warning("OBJECT PATH: could not cast result[0] (dvobject id) to Integer!");
                     objectId = null;
@@ -231,7 +233,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 
                 ownerId = (Long)result[1];
                 logger.fine("OBJECT PATH: id: "+objectId+", owner: "+ownerId);
-                if (ownerId != null && (ownerId.longValue() != 1L)) {
+                if (ownerId != null && (ownerId != 1L)) {
                     treeMap.put(objectId, ownerId);
                 }
             }
@@ -251,8 +253,6 @@ public class DvObjectServiceBean implements java.io.Serializable {
             logger.fine("OBJECT PATH: returning "+treePath+" for "+objectId);
             ret.put(objectId, treePath);
         }
-        
-        treeMap = null;
         return ret;        
     }
 }

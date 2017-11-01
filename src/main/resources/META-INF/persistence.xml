@@ -16,7 +16,7 @@
             <!-- The following property allows primary keys of 0 -->
             <property name="eclipselink.id-validation" value="NULL"/>
             <!-- Uncomment next line to show all SQL queries in the log -->
-            <!-- <property name="eclipselink.logging.level.sql" value="FINE"/> -->
+            <!--<property name="eclipselink.logging.level.sql" value="FINE"/>-->
         </properties>
     </persistence-unit>
     <!-- the persistence unit below is no longer necessary; needs to be removed 

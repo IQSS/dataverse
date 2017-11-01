@@ -9,22 +9,26 @@ use File::Copy;
 my $verbose;
 my $pg_only;
 my $hostname;
+my $gfuser;
 my $gfdir;
 my $mailserver;
 my $yes;
 my $force;
 my $nogfpasswd;
+my $admin_email;
 my ($rez) = GetOptions(
     #"length=i" => \$length,    # numeric
     #"file=s"   => \$data,      # string
     "verbose"      => \$verbose,
     "pg_only"      => \$pg_only,
     "hostname=s"   => \$hostname,
+    "gfuser=s"     => \$gfuser,
     "gfdir=s"      => \$gfdir,
     "mailserver=s" => \$mailserver,
     "y|yes"        => \$yes,
     "f|force"      => \$force,
     "nogfpasswd"   => \$nogfpasswd,
+    "admin_email=s" => \$admin_email,
 );
 
 my @CONFIG_VARIABLES;
@@ -43,6 +47,7 @@ else
 
     @CONFIG_VARIABLES = (
 	'HOST_DNS_ADDRESS',
+	'GLASSFISH_USER',
 	'GLASSFISH_DIRECTORY',
 	'ADMIN_EMAIL',
 	'MAIL_SERVER',
@@ -66,16 +71,11 @@ else
 	);
 }
 
-# TODO:
-# supply pre-set, default values in a text file;
-# this way we can provide different sets of default
-# values, for the installers intended for different
-# groups of users - local developers vs. "real"
-# dataverse users.
-
 my %CONFIG_DEFAULTS = (
     'HOST_DNS_ADDRESS',    'localhost',
+    'GLASSFISH_USER',	   '',
     'GLASSFISH_DIRECTORY', '/usr/local/glassfish4',
+    'GLASSFISH_USER',	   '',
     'ADMIN_EMAIL',         '',
     'MAIL_SERVER',         'mail.hmdc.harvard.edu',
 
@@ -96,9 +96,9 @@ my %CONFIG_DEFAULTS = (
     'RSERVE_PASSWORD', 'rserve'
 
 );
-
 my %CONFIG_PROMPTS = (
     'HOST_DNS_ADDRESS',    'Fully Qualified Domain Name of your host',
+    'GLASSFISH_USER',	   'Glassfish service account username',
     'GLASSFISH_DIRECTORY', 'Glassfish Directory',
     'ADMIN_EMAIL',         'Administrator email address for this Dataverse',
     'MAIL_SERVER',         'SMTP (mail) server to relay notification messages',
@@ -124,6 +124,7 @@ my %CONFIG_PROMPTS = (
 
 my %CONFIG_COMMENTS = (
     'HOST_DNS_ADDRESS',    ":\n(enter numeric IP address, if FQDN is unavailable) ",
+    'GLASSFISH_USER',      ":\nThis user will be running Glassfish service on your system.\n - If this is a dev. environment, this should be your own username; \n - In production, we suggest \"glassfish\" or another unprivileged user\n: ",
     'GLASSFISH_DIRECTORY', '',
     'ADMIN_EMAIL',         ":\n(please enter a valid email address!) ",
     'MAIL_SERVER',         '',
@@ -154,14 +155,14 @@ my $API_URL = "http://localhost:8080/api";
 # doesn't get paranoid)
 
 my %POSTGRES_DRIVERS = (
-    #    "8_4", "postgresql-8.3-603.jdbc4.jar",
     "8_4", "postgresql-8.4-703.jdbc4.jar",
     "9_0", "postgresql-9.0-802.jdbc4.jar",
     "9_1", "postgresql-9.1-902.jdbc4.jar",
-    "9_2", "postgresql-9.1-902.jdbc4.jar",
-    "9_3", "postgresql-9.1-902.jdbc4.jar",
-    "9_4", "postgresql-9.1-902.jdbc4.jar",
-    "9_5", "postgresql-9.1-902.jdbc4.jar"
+    "9_2", "postgresql-9.2-1004.jdbc4.jar",
+    "9_3", "postgresql-9.3-1104.jdbc4.jar",
+    "9_4", "postgresql-9.4.1212.jar",
+    "9_5", "postgresql-42.1.4.jar",
+    "9_6", "postgresql-42.1.4.jar"
 );
 
 # A few preliminary checks:
@@ -180,6 +181,63 @@ if ($hostname) {
 }
 else {
     $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} = $hostname_from_cmdline;
+}
+
+# read default configuration values from tab separated file "default.config" if it exists
+#  moved after the $hostname_from_cmdline section to avoid excessively complicating the logic
+#  of command line argument, automatic selection, or config file.
+sub trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
+my $config_default_file = "default.config";
+if ( -e $config_default_file )
+{
+	print("loading default configuration values from $config_default_file\n");
+	open( my $inp_cfg, $config_default_file );
+	while( my $ln = <$inp_cfg> )
+	{
+		my @xs = split('\t', $ln );
+		if ( 2 == @xs )
+		{
+			my $k = $xs[0];
+			my $v = trim($xs[1]);
+			$CONFIG_DEFAULTS{$k}=$v;
+		}
+	}
+}
+else
+{
+	print("using hard-coded default configuration values ($config_default_file not found)\n");
+}
+
+# get current user. first one wins.
+my $current_user = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
+
+if (!$CONFIG_DEFAULTS{'GLASSFISH_USER'}) {
+   $CONFIG_DEFAULTS{'GLASSFISH_USER'} = $current_user;
+   print "No pre-configured user found; using $current_user.\n";
+}
+
+# command-line argument takes precendence
+if ($gfuser) {
+    print "Using CLI-specified user $gfuser.\n";
+    $CONFIG_DEFAULTS{'GLASSFISH_USER'} = $gfuser;
+}
+
+# prefer that we not install as root.
+unless ( $< != 0 ) {
+print "####################################################################\n";
+print "     It is recommended that this script not be run as root.\n";
+print " Consider creating a glassfish service account, giving it ownership\n";
+print "  on the glassfish/domains/domain1/ and glassfish/lib/ directories,\n";
+print "    along with the JVM-specified files.dir location, and running\n";
+print "       this installer as the user who will launch Glassfish.\n";
+print "####################################################################\n";
+}
+
+# ensure $gfuser exists or bail
+my $gfidcmd="id $CONFIG_DEFAULTS{'GLASSFISH_USER'}";
+my $gfreturncode=system($gfidcmd);
+if ($gfreturncode != 0) {
+   die "Couldn't find user $gfuser. Please ensure the account exists and is readable by the user running this installer.\n";
 }
 
 if ($mailserver) {
@@ -337,6 +395,15 @@ for my $ENTRY (@CONFIG_VARIABLES)
 		# TODO: 
 		# verify that we can write in the Glassfish directory 
 		# (now that we are no longer requiring to run the installer as root)
+
+		my $g_testdir = $g_dir . "/glassfish/domains/domain1";
+		my $g_libdir = $g_dir . "/glassfish/lib";
+		if (!(-w $g_testdir)) {
+		   die("$g_testdir not writable. Have you created a glassfish user, and given it write permission on $g_testdir?\n");
+		} elsif (!(-w $g_libdir)) {
+		   die("$g_libdir not writable. Have you created a glassfish user, and given it write permission on $g_libdir?\n");
+		}
+
 	    }
 
 	    print "OK!\n";
@@ -899,6 +966,35 @@ if ( -e "/proc/meminfo" && open MEMINFO, "/proc/meminfo" ) {
 
     close MEMINFO;
 
+# TODO: Figure out how to determine the amount of memory when running in Docker
+# because we're wondering if Dataverse can run in the free OpenShift Online
+# offering that only gives you 1 GB of memory. Obviously, if this is someone's
+# first impression of Dataverse, we want to to run well! What if you try to
+# ingest a large file or perform other memory-intensive operations? For more
+# context, see https://github.com/IQSS/dataverse/issues/4040#issuecomment-331282286
+    if ( -e "/sys/fs/cgroup/memory/memory.limit_in_bytes" && open CGROUPMEM, "/sys/fs/cgroup/memory/memory.limit_in_bytes" ) {
+        print "We must be running in Docker! Fancy!\n";
+        while ( my $limitline = <CGROUPMEM> ) {
+            # The goal of this cgroup check is for
+	    # "Setting the heap limit for Glassfish to 750MB"
+	    # to change to some other value, based on memory available.
+	    print "/sys/fs/cgroup/memory/memory.limit_in_bytes: $limitline\n";
+	    my $limit_in_kb = $limitline / 1024;
+	    print "Docker limit_in_kb =  $limit_in_kb but ignoring\n";
+	    # In openshift.json, notice how PostgreSQL and Solr have
+	    # resources.limits.memory set to "256Mi".
+	    # If you try to give the Dataverse/Glassfish container twice
+	    # as much memory (512 MB) and allow $sys_mem_total to
+	    # be set below, you should see the following:
+	    # "Setting the heap limit for Glassfish to 192MB."
+	    # FIXME: dataverse.war will not deploy with only 512 GB of memory.
+	    # Again, the goal is 1 GB total (512MB + 256MB + 256MB) for
+	    # Glassfish, PostgreSQL, and Solr to fit in the free OpenShift tier.
+	    #print "setting sys_mem_total to: $limit_in_kb\n";
+	    #$sys_mem_total = $limit_in_kb;
+	}
+        close CGROUPMEM;
+    }
 }
 elsif ( -x "/usr/sbin/sysctl" ) {
     # MacOS X, probably...
@@ -990,7 +1086,7 @@ my $DOMAIN_DOWN =
 print STDERR $DOMAIN_DOWN . "\n";
 if ($DOMAIN_DOWN) {
     print "Trying to start domain up...\n";
-    system( $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
+    system( "sudo -u $CONFIG_DEFAULTS{'GLASSFISH_USER'} " . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
 
     # TODO: (?) - retest that the domain is running now? 
 }
@@ -1020,18 +1116,26 @@ unless ($success) {
 
 # Additional config files:
 
-my $JHOVE_CONFIG = "../../conf/jhove/jhove.conf";
-my $JHOVE_CONF_SCHEMA = "../../conf/jhove/jhoveConfig.xsd";
+my $JHOVE_CONFIG = "jhove.conf";
+my $JHOVE_CONF_SCHEMA = "jhoveConfig.xsd";
 
-# (if the installer is being run as part of a distribution zipped bundle, and not
+
+my $JHOVE_CONFIG_DIST = $JHOVE_CONFIG; 
+my $JHOVE_CONF_SCHEMA_DIST = $JHOVE_CONF_SCHEMA; 
+
+# (if the installer is being run NOT as part of a distribution zipped bundle, but
 # from inside the source tree - adjust the locations of the jhove config files:
 
 unless ( -f $JHOVE_CONFIG ) {
-    $JHOVE_CONFIG = "jhove.conf";
-    $JHOVE_CONF_SCHEMA ="jhoveConfig.xsd";
+    $JHOVE_CONFIG_DIST = "../../conf/jhove/jhove.conf";
+    $JHOVE_CONF_SCHEMA_DIST = "../../conf/jhove/jhoveConfig.xsd";
 }
 
-unless ( -f $JHOVE_CONFIG && -f $JHOVE_CONF_SCHEMA ) {
+# but if we can't find the files in either location, it must mean
+# that they are not running the script in the correct directory - so 
+# nothing else left for us to do but give up:
+
+unless ( -f $JHOVE_CONFIG_DIST && -f $JHOVE_CONF_SCHEMA_DIST ) {
     print "\nERROR! JHOVE configuration files not found in the config dir!\n";
     print "(are you running the installer in the right directory?\n";
     print "Aborting...\n";
@@ -1040,18 +1144,18 @@ unless ( -f $JHOVE_CONFIG && -f $JHOVE_CONF_SCHEMA ) {
 
 print "\nCopying additional configuration files... ";
 
-system( "/bin/cp -f " . $JHOVE_CONF_SCHEMA . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
+system( "/bin/cp -f " . $JHOVE_CONF_SCHEMA_DIST . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
 
 # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
 # - so it may need to be readjusted here: 
 
 if ( $glassfish_dir ne "/usr/local/glassfish4" )
 {
-    system( "sed 's:/usr/local/glassfish4:$glassfish_dir:g' < " . $JHOVE_CONFIG . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
+    system( "sed 's:/usr/local/glassfish4:$glassfish_dir:g' < " . $JHOVE_CONFIG_DIST . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
 }
 else 
 {
-    system( "/bin/cp -f " . $JHOVE_CONFIG . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
+    system( "/bin/cp -f " . $JHOVE_CONFIG_DIST . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
 }
 
 print "done!\n";
@@ -1151,6 +1255,17 @@ unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "
     print "\nERROR: Can't find the metadata and user/dataverse setup scripts!\n";
     print "\tAre you running the installer in the right directory?\n";
     exit 1;
+}
+
+# if there's an admin_email set from arguments, replace the value in `dv-root.json` (called by `setup-all.sh`)
+if ($admin_email)
+{
+	print "setting contact email for root dataverse to: $admin_email\n";
+	set_root_contact_email( $admin_email );
+}
+else
+{
+	print "using default contact email for root dataverse\n";
 }
 
 for my $script ( "setup-all.sh" ) {
@@ -1395,3 +1510,27 @@ sub validate_smtp_server {
 
     return $mail_server_status; 
 }
+
+# support function for set_root_contact_email
+sub search_replace_file
+{
+        my ($infile, $pattern, $replacement, $outfile) = @_;
+        open (my $inp, $infile);
+        local $/ = undef;
+        my $txt = <$inp>;
+        close $inp;
+        $txt =~s/$pattern/$replacement/g;
+        open (my $opf, '>:encoding(UTF-8)', $outfile);
+        print $opf $txt;
+        close $opf;
+        return;
+}
+# set the email address for the default `dataverseAdmin` account
+sub set_root_contact_email
+{
+        my ($contact_email) = @_;
+        my $config_json = "data/user-admin.json";
+        search_replace_file($config_json,"\"email\":\"dataverse\@mailinator.com\"","\"email\":\"$contact_email\"",$config_json);
+        return;
+}
+

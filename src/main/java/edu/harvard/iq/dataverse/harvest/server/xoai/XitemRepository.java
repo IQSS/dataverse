@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import edu.harvard.iq.dataverse.harvest.server.xoai.Xitem;
 import com.lyncode.xoai.dataprovider.exceptions.IdDoesNotExistException;
 import com.lyncode.xoai.dataprovider.exceptions.OAIException;
 import com.lyncode.xoai.dataprovider.filter.ScopedFilter;
@@ -13,20 +12,17 @@ import com.lyncode.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
 import com.lyncode.xoai.dataprovider.handlers.results.ListItemsResults;
 import com.lyncode.xoai.dataprovider.model.Item;
 import com.lyncode.xoai.dataprovider.model.ItemIdentifier;
+import com.lyncode.xoai.dataprovider.model.Set;
 import com.lyncode.xoai.dataprovider.repository.ItemRepository;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
-import static java.lang.Math.min;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
-import static java.util.Arrays.asList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
-import static java.lang.Math.min;
-import static java.lang.Math.min;
-import static java.lang.Math.min;
 
 /**
  *
@@ -53,12 +49,26 @@ public class XitemRepository implements ItemRepository {
 
     @Override
     public Item getItem(String identifier) throws IdDoesNotExistException, OAIException {
-        logger.fine("getItem; calling findOAIRecordBySetNameandGlobalId, identifier " + identifier);
-        OAIRecord oaiRecord = recordService.findOAIRecordBySetNameandGlobalId(null, identifier);
-        if (oaiRecord != null) {
-            Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
-            if (dataset != null) {
-                return new Xitem(oaiRecord).withDataset(dataset);
+        logger.fine("getItem; calling findOaiRecordsByGlobalId, identifier " + identifier);
+        List<OAIRecord> oaiRecords = recordService.findOaiRecordsByGlobalId(identifier);
+        if (oaiRecords != null && !oaiRecords.isEmpty()) {
+            Xitem xoaiItem = null; 
+            for (OAIRecord record : oaiRecords) {
+                if (xoaiItem == null) {
+                    Dataset dataset = datasetService.findByGlobalId(record.getGlobalId());
+                    if (dataset != null) {
+                        xoaiItem = new Xitem(record).withDataset(dataset);
+                    }
+                } else {
+                    // Adding extra set specs to the XOAI Item, if this record
+                    // is part of multiple sets:
+                    if (!StringUtil.isEmpty(record.getSetName())) {
+                        xoaiItem.getSets().add(new Set(record.getSetName()));
+                    }
+                }
+            }
+            if (xoaiItem != null) {
+                return xoaiItem;
             }
         }
 
@@ -119,6 +129,14 @@ public class XitemRepository implements ItemRepository {
                 OAIRecord record = oaiRecords.get(i);
                 xoaiItems.add(new Xitem(record));
             }
+            
+            // Run a second pass, looking for records in this set that occur
+            // in *other* sets. Then we'll add these multiple sets to the 
+            // formatted output in the header:
+            if (!StringUtil.isEmpty(setSpec)) {
+                addExtraSets(xoaiItems, setSpec, from, until);
+            }
+            
             boolean hasMore = offset + length < oaiRecords.size();
             ListItemIdentifiersResult result = new ListItemIdentifiersResult(hasMore, xoaiItems);
             logger.fine("returning result with " + xoaiItems.size() + " items.");
@@ -186,6 +204,11 @@ public class XitemRepository implements ItemRepository {
                     xoaiItems.add(xItem);
                 }
             }
+            
+            if (!StringUtil.isEmpty(setSpec)) {
+                addExtraSets(xoaiItems, setSpec, from, until);
+            }
+            
             boolean hasMore = offset + length < oaiRecords.size();
             ListItemsResults result = new ListItemsResults(hasMore, xoaiItems);
             logger.fine("returning result with " + xoaiItems.size() + " items.");
@@ -193,5 +216,37 @@ public class XitemRepository implements ItemRepository {
         }
 
         return new ListItemsResults(false, xoaiItems);
+    }
+    
+    private void addExtraSets(Object xoaiItemsList, String setSpec, Date from, Date until) {
+        
+        List<Xitem> xoaiItems = (List<Xitem>)xoaiItemsList;
+        
+        List<OAIRecord> oaiRecords = recordService.findOaiRecordsNotInThisSet(setSpec, from, until);
+        
+        if (oaiRecords == null || oaiRecords.isEmpty()) {
+            return;
+        }
+                
+        // Make a second pass through the list of xoaiItems already found for this set, 
+        // and add any other sets in which this item occurs:
+        
+        int j = 0;
+        for (int i = 0; i < xoaiItems.size(); i++) {
+            // fast-forward the second list, until we find a record with this identifier, 
+            // or until we are past this record (both lists are sorted alphabetically by
+            // the identifier:
+            Xitem xitem = xoaiItems.get(i);
+            
+            while (j < oaiRecords.size() && xitem.getIdentifier().compareTo(oaiRecords.get(j).getGlobalId()) > 0) {
+                j++;
+            }
+            
+            while (j < oaiRecords.size() && xitem.getIdentifier().equals(oaiRecords.get(j).getGlobalId())) {
+                xoaiItems.get(i).getSets().add(new Set(oaiRecords.get(j).getSetName()));
+                j++;
+            }
+        }
+                
     }
 }

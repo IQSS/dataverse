@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,7 +41,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  *
@@ -75,7 +74,6 @@ public class DatasetVersion implements Serializable {
     //IMPORTANT: If you add a new value to this enum, you will also have to modify the
     // StudyVersionsFragment.xhtml in order to display the correct value from a Resource Bundle
     public enum VersionState {
-
         DRAFT, RELEASED, ARCHIVED, DEACCESSIONED
     };
 
@@ -83,15 +81,76 @@ public class DatasetVersion implements Serializable {
         NONE, CC0
     }
 
-
-    public DatasetVersion() {
-
-    }
-
+    public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
+    public static final int VERSION_NOTE_MAX_LENGTH = 1000;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    private String UNF;
 
+    @Version
+    private Long version;
+
+    private Long versionNumber;
+    private Long minorVersionNumber;
+    
+    @Column(length = VERSION_NOTE_MAX_LENGTH)
+    private String versionNote;
+    
+    /*
+     * @todo versionState should never be null so when we are ready, uncomment
+     * the `nullable = false` below.
+     */
+//    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private VersionState versionState;
+
+    @ManyToOne
+    private Dataset dataset;
+
+    @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
+    private List<FileMetadata> fileMetadatas = new ArrayList();
+    
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
+    @JoinColumn(name = "termsOfUseAndAccess_id")
+    private TermsOfUseAndAccess termsOfUseAndAccess;
+    
+    @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetField> datasetFields = new ArrayList();
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @Column( nullable=false )
+    private Date createTime;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @Column( nullable=false )
+    private Date lastUpdateTime;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date releaseTime;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date archiveTime;
+    
+    @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
+    private String archiveNote;
+    
+    private String deaccessionLink;
+
+    @Transient
+    private String contributorNames;
+
+    @OneToMany(mappedBy="datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetVersionUser> datasetVersionUsers;
+    
+    // Is this the right mapping and cascading for when the workflowcomments table is being used for objects other than DatasetVersion?
+    @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<WorkflowComment> workflowComments;
+
+    
     public Long getId() {
         return this.id;
     }
@@ -107,7 +166,6 @@ public class DatasetVersion implements Serializable {
     public void setUNF(String UNF) {
         this.UNF = UNF;
     }
-    
 
     /**
      * This is JPA's optimistic locking mechanism, and has no semantic meaning in the DV object model.
@@ -120,33 +178,6 @@ public class DatasetVersion implements Serializable {
     public void setVersion(Long version) {
     }
     
-    private String UNF;
-
-    @Version
-    private Long version;
-
-    private Long versionNumber;
-    private Long minorVersionNumber;
-    public static final int VERSION_NOTE_MAX_LENGTH = 1000;
-    @Column(length = VERSION_NOTE_MAX_LENGTH)
-    private String versionNote;
-    
-    /**
-     * @todo versionState should never be null so when we are ready, uncomment
-     * the `nullable = false` below.
-     */
-//    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private VersionState versionState;
-
-
-    @ManyToOne
-    private Dataset dataset;
-
-    @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
-    private List<FileMetadata> fileMetadatas = new ArrayList();
-
     public List<FileMetadata> getFileMetadatas() {
         return fileMetadatas;
     }
@@ -160,11 +191,6 @@ public class DatasetVersion implements Serializable {
         this.fileMetadatas = fileMetadatas;
     }
     
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
-    @JoinColumn(name = "termsOfUseAndAccess_id")
-    private TermsOfUseAndAccess termsOfUseAndAccess;
-
-
     public TermsOfUseAndAccess getTermsOfUseAndAccess() {
         return termsOfUseAndAccess;
     }
@@ -172,10 +198,6 @@ public class DatasetVersion implements Serializable {
     public void setTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
         this.termsOfUseAndAccess = termsOfUseAndAccess;
     }
-
-    @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    //@OrderBy("datasetField.displayOrder") 
-    private List<DatasetField> datasetFields = new ArrayList();
 
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
@@ -192,69 +214,19 @@ public class DatasetVersion implements Serializable {
         }
         this.datasetFields = datasetFields;
     }
-
-    /*
-     @OneToMany(mappedBy="studyVersion", cascade={CascadeType.REMOVE, CascadeType.PERSIST})
-     private List<VersionContributor> versionContributors;
-     */
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
-    private Date createTime;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
-    private Date lastUpdateTime;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date releaseTime;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date archiveTime;
-    public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
-    @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
-    private String archiveNote;
-    private String deaccessionLink;
     
-
-    
-
-    
-    private boolean inReview;
-    public void setInReview(boolean inReview){
-        this.inReview = inReview;
-    }
-
     /**
      * The only time a dataset can be in review is when it is in draft.
+     * @return if the dataset is being reviewed
      */
     public boolean isInReview() {
         if (versionState != null && versionState.equals(VersionState.DRAFT)) {
-            return inReview;
+            DatasetLock l = getDataset().getDatasetLock();
+            return (l != null) && l.getReason()==DatasetLock.Reason.InReview;
         } else {
             return false;
         }
     }
-
-
-    
-    /**
-     * Quick hack to disable <script> tags
-     * for Terms of Use and Terms of Access.
-     * 
-     * Need to add jsoup or something similar.
-     * 
-     * @param str
-     * @return 
-     */
-    private String stripScriptTags(String str){        
-        if (str == null){
-            return null;
-        }
-
-        str = str.replaceAll("(?i)<script\\b[^<]*(?:(?!<\\/script>)<[^<]*)*<\\/script>", "");
-        str = str.replaceAll("(?i)<\\/script>", "");
-        str = str.replaceAll("(?i)<script\\b", "");
-
-        return str;
-    }
-
 
     public Date getArchiveTime() {
         return archiveTime;
@@ -327,9 +299,6 @@ public class DatasetVersion implements Serializable {
         this.releaseTime = releaseTime;
     }
 
-    @OneToMany(mappedBy="datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetVersionUser> datasetVersionUsers;
-
     public List<DatasetVersionUser> getDatasetVersionUsers() {
         return datasetVersionUsers;
     }
@@ -348,9 +317,6 @@ public class DatasetVersion implements Serializable {
         }
         return ret;
     }
-
-    @Transient
-    private String contributorNames;
 
     public String getContributorNames() {
         return contributorNames;
@@ -445,7 +411,6 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setVersionState(VersionState versionState) {
-
         this.versionState = versionState;
     }
 
@@ -485,8 +450,8 @@ public class DatasetVersion implements Serializable {
             if (this.getFileMetadatas().size() != this.getDataset().getReleasedVersion().getFileMetadatas().size()){
                 return false;
             } else {
-                List <DataFile> current = new ArrayList();
-                List <DataFile> previous = new ArrayList();
+                List <DataFile> current = new ArrayList<>();
+                List <DataFile> previous = new ArrayList<>();
                 for (FileMetadata fmdc : this.getFileMetadatas()){
                     current.add(fmdc.getDataFile());
                 }
@@ -522,7 +487,7 @@ public class DatasetVersion implements Serializable {
     public void initDefaultValues() {
         //first clear then initialize - in case values were present 
         // from template or user entry
-        this.setDatasetFields(new ArrayList());
+        this.setDatasetFields(new ArrayList<>());
         this.setDatasetFields(this.initDatasetFields());
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         terms.setDatasetVersion(this);
@@ -547,7 +512,6 @@ public class DatasetVersion implements Serializable {
     }
 
     public DatasetVersion getLargestMinorRelease() {
-
         if (this.getDataset().isReleased()) {
             for (DatasetVersion testVersion : this.dataset.getVersions()) {
                 if (testVersion.getVersionNumber() != null && testVersion.getVersionNumber().equals(this.getVersionNumber())) {
@@ -581,10 +545,7 @@ public class DatasetVersion implements Serializable {
             return false;
         }
         DatasetVersion other = (DatasetVersion) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
     @Override
@@ -610,7 +571,12 @@ public class DatasetVersion implements Serializable {
         //todo get "Production Date" from datasetfieldvalue table
         return "Production Date";
     }
-    
+
+    /**
+     * @return A string with the description of the dataset as-is from the
+     * database (if available, or empty string) without passing it through
+     * methods such as stripAllTags, sanitizeBasicHTML or similar.
+     */
     public String getDescription() {
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
@@ -623,12 +589,30 @@ public class DatasetVersion implements Serializable {
                         }
                     }
                 }
-                return MarkupChecker.sanitizeBasicHTML(descriptionString);
+                logger.fine("pristine description: " + descriptionString);
+                return descriptionString;
             }
         }
         return "";
     }
-    
+
+    /**
+     * @return Strip out all A string with the description of the dataset that
+     * has been passed through the stripAllTags method to remove all HTML tags.
+     */
+    public String getDescriptionPlainText() {
+        return MarkupChecker.stripAllTags(getDescription());
+    }
+
+    /**
+     * @return A string with the description of the dataset that has been passed
+     * through the escapeHtml method to change the "less than" sign to "&lt;"
+     * for example.
+     */
+    public String getDescriptionHtmlEscaped() {
+        return MarkupChecker.escapeHtml(getDescription());
+    }
+
     public List<String[]> getDatasetContacts(){
         List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -690,7 +674,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public List<DatasetAuthor> getDatasetAuthors() {
-        //todo get "List of Authors" from datasetfieldvalue table
+        //TODO get "List of Authors" from datasetfieldvalue table
         List <DatasetAuthor> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addAuthor = true;
@@ -723,6 +707,30 @@ public class DatasetVersion implements Serializable {
         return retList;
     }
     
+    /**
+     * @return List of Strings containing the names of the authors.
+     */
+    public List<String> getDatasetAuthorNames() {
+        List<String> authors = new ArrayList<>();
+        for (DatasetAuthor author : this.getDatasetAuthors()) {
+            authors.add(author.getName().getValue());
+        }
+        return authors;
+    }
+
+    /**
+     * @return List of Strings containing the dataset's subjects
+     */
+    public List<String> getDatasetSubjects() {
+        List<String> subjects = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
+                subjects.addAll(dsf.getValues());
+            }
+        }
+        return subjects;
+    }
+
     public String getDatasetProducersString(){
         String retVal = "";
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -744,7 +752,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setDatasetAuthors(List<DatasetAuthor> authors) {
-        // FIXME add the authores to the relevant fields
+        // FIXME add the authors to the relevant fields
     }
 
     public String getCitation() {
@@ -768,6 +776,10 @@ public class DatasetVersion implements Serializable {
         return null;
     }
     
+    /**
+     * @param dsfType The type of DatasetField required
+     * @return the first field of type dsfType encountered.
+     */
     public DatasetField getDatasetField(DatasetFieldType dsfType) {
         if (dsfType != null) {
             for (DatasetField dsf : this.getFlatDatasetFields()) {
@@ -777,7 +789,6 @@ public class DatasetVersion implements Serializable {
             }
         }
         return null;
-
     }
 
     public String getDistributionDate() {
@@ -809,7 +820,7 @@ public class DatasetVersion implements Serializable {
         }
         String rootDataverseName = root.getName();
         if (!StringUtil.isEmpty(rootDataverseName)) {
-            return rootDataverseName + " Dataverse";
+            return rootDataverseName;
         } else {
             return "";
         }
@@ -817,7 +828,7 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetDistributor> getDatasetDistributors() {
         //todo get distributors from DatasetfieldValues
-        return new ArrayList();
+        return new ArrayList<>();
     }
 
     public void setDatasetDistributors(List<DatasetDistributor> distributors) {
@@ -887,7 +898,7 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetField> initDatasetFields() {
         //retList - Return List of values
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList<>();
         //Running into null on create new dataset
         if (this.getDatasetFields() != null) {
             for (DatasetField dsf : this.getDatasetFields()) {
@@ -943,13 +954,33 @@ public class DatasetVersion implements Serializable {
                 return null;
             }
         }
-        return serverName + "/dataset.xhtml?id=" + dset.getId() + "&versionId" + this.getId();
+        return serverName + "/dataset.xhtml?id=" + dset.getId() + "&versionId=" + this.getId();
+    } 
+    
+    /*
+    Per #3511 we  are returning all users to the File Landing page
+    If we in the future we are going to return them to the referring page we will need the 
+    getReturnToDatasetURL method and add something to the call to the api to
+    pass the referring page and some kind of decision point in  the getWorldMapDatafileInfo method in 
+    WorldMapRelatedData
+    SEK 3/24/2017
+    */
+    
+    public String getReturnToFilePageURL (String serverName, Dataset dset, DataFile dataFile){
+        if (serverName == null || dataFile == null) {
+            return null;
+        }
+        if (dset == null) {
+            dset = this.getDataset();
+            if (dset == null) {
+                return null;
+            }
+        }
+        return serverName + "/file.xhtml?fileId=" + dataFile.getId() + "&version=" + this.getSemanticVersion();        
     }
-
-    ;
     
     public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList<>();
 
         for (DatasetField sourceDsf : copyFromList) {
             //the copy needs to have the current version
@@ -965,7 +996,7 @@ public class DatasetVersion implements Serializable {
     }
 
     private List<DatasetField> getFlatDatasetFields(List<DatasetField> dsfList) {
-        List<DatasetField> retList = new LinkedList();
+        List<DatasetField> retList = new LinkedList<>();
         for (DatasetField dsf : dsfList) {
             retList.add(dsf);
             if (dsf.getDatasetFieldType().isCompound()) {
@@ -1002,8 +1033,8 @@ public class DatasetVersion implements Serializable {
        // }
     }
 
-    public List<ConstraintViolation> validateRequired() {
-        List<ConstraintViolation> returnListreturnList = new ArrayList();
+    public List<ConstraintViolation<DatasetField>> validateRequired() {
+        List<ConstraintViolation<DatasetField>> returnListreturnList = new ArrayList<>();
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         for (DatasetField dsf : this.getFlatDatasetFields()) {
@@ -1020,7 +1051,7 @@ public class DatasetVersion implements Serializable {
     }
     
     public Set<ConstraintViolation> validate() {
-        Set<ConstraintViolation> returnSet = new HashSet();
+        Set<ConstraintViolation> returnSet = new HashSet<>();
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
@@ -1064,4 +1095,9 @@ public class DatasetVersion implements Serializable {
         }
         return returnSet;
     }
+
+    public List<WorkflowComment> getWorkflowComments() {
+        return workflowComments;
+    }
+
 }

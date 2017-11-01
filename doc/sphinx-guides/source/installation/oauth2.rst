@@ -1,7 +1,8 @@
 OAuth Login: ORCID, GitHub, Google
 ==================================
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Introduction
 ------------
@@ -63,6 +64,14 @@ Edit the JSON template and replace the two "FIXME" values with the Client ID and
 After restarting Glassfish you should see the new provider under "Other options" on the Log In page, as described in the :doc:`/user/account` section of the User Guide.
 
 By default, the Log In page will show the "builtin" provider, but you can adjust this via the ``:DefaultAuthProvider`` configuration option. For details, see :doc:`config`.
+
+ORCID Sandbox
+^^^^^^^^^^^^^
+
+ORCID provides a sandbox registry, which may be useful for staging, or for development installations.
+This template can be used for configuring this setting (**this is not something you should use in a production environment**):
+
+- :download:`orcid-sandbox.json <../_static/installation/files/root/auth-providers/orcid-sandbox.json>`
 
 Converting Local Users to OAuth
 -------------------------------

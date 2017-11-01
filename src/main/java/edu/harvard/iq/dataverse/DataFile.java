@@ -10,7 +10,8 @@ import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -26,8 +27,8 @@ import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.Entity;
@@ -61,6 +62,7 @@ import org.hibernate.validator.constraints.NotBlank;
 		, @Index(columnList="contenttype")
 		, @Index(columnList="restricted")})
 public class DataFile extends DvObject implements Comparable {
+    private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
     
     public static final char INGEST_STATUS_NONE = 65;
@@ -68,7 +70,7 @@ public class DataFile extends DvObject implements Comparable {
     public static final char INGEST_STATUS_INPROGRESS = 67;
     public static final char INGEST_STATUS_ERROR = 68; 
     
-    public static final Long ROOT_DATAFILE_ID_DEFAULT = new Long(-1);
+    public static final Long ROOT_DATAFILE_ID_DEFAULT = (long) -1;
     
     private String name;
     
@@ -79,10 +81,10 @@ public class DataFile extends DvObject implements Comparable {
     private String contentType;
     
 
-    @Expose    
-    @SerializedName("storageIdentifier")
-    @Column( nullable = false )
-    private String fileSystemName;
+//    @Expose    
+//    @SerializedName("storageIdentifier")
+//    @Column( nullable = false )
+//    private String fileSystemName;
 
     /**
      * End users will see "SHA-1" (with a hyphen) rather than "SHA1" in the GUI
@@ -255,7 +257,7 @@ public class DataFile extends DvObject implements Comparable {
 
     public void setDataTable(DataTable dt) {
         if (this.getDataTables() == null) {
-            this.setDataTables( new ArrayList() );
+            this.setDataTables(new ArrayList<>());
         } else {
             this.getDataTables().clear();
         }
@@ -272,13 +274,11 @@ public class DataFile extends DvObject implements Comparable {
         List<DataFileTag> currentDataTags = this.getTags();
         List<String> tagStrings = new ArrayList<>();
         
-        if (( currentDataTags != null)||(!currentDataTags.isEmpty())){
+        if (( currentDataTags != null)&&(!currentDataTags.isEmpty())){
                        
-            Iterator itr = currentDataTags.iterator();
-            while (itr.hasNext()){
-                DataFileTag element = (DataFileTag)itr.next();
+            for (DataFileTag element : currentDataTags) {
                 tagStrings.add(element.getTypeLabel());
-             }
+            }
         }
         return tagStrings;
     }
@@ -294,9 +294,7 @@ public class DataFile extends DvObject implements Comparable {
         }
         
         
-        Iterator itr = currentDataTags.iterator();
-        while (itr.hasNext()){
-            DataFileTag element = (DataFileTag)itr.next();
+        for (DataFileTag element : currentDataTags) {
             builder.add(element.getTypeLabel());            
         }
         return builder;
@@ -355,7 +353,7 @@ public class DataFile extends DvObject implements Comparable {
 
     public void setIngestReport(IngestReport report) {
         if (ingestReports == null) {
-            ingestReports = new ArrayList();
+            ingestReports = new ArrayList<>();
         } else {
             ingestReports.clear();
         }
@@ -439,13 +437,13 @@ public class DataFile extends DvObject implements Comparable {
         super.setOwner(dataset);
     }
     
-    public String getStorageIdentifier() {
-        return this.fileSystemName;
-    }
-
-    public void setStorageIdentifier(String storageIdentifier) {
-        this.fileSystemName = storageIdentifier;
-    }
+//    public String getStorageIdentifier() {
+//        return this.fileSystemName;
+//    }
+//
+//    public void setStorageIdentifier(String storageIdentifier) {
+//        this.fileSystemName = storageIdentifier;
+//    }
     
     public String getDescription() {
         FileMetadata fmd = getLatestFileMetadata();
@@ -486,8 +484,9 @@ public class DataFile extends DvObject implements Comparable {
             if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
                 fmd = fileMetadata;
             } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
-                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   )
+                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
                 fmd = fileMetadata;
+        }
         }
         return fmd;
     }
@@ -531,10 +530,11 @@ public class DataFile extends DvObject implements Comparable {
         return restricted;
     }
 
+    
     public void setRestricted(boolean restricted) {
         this.restricted = restricted;
     }
-     
+
     public ChecksumType getChecksumType() {
         return checksumType;
     }
@@ -555,69 +555,16 @@ public class DataFile extends DvObject implements Comparable {
         return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
     }
 
-    public DataFileIO getAccessObject() throws IOException {
-        DataFileIO dataAccess =  DataAccess.getDataFileIO(this);
+
+    public StorageIO<DataFile> getStorageIO() throws IOException {
+        StorageIO<DataFile> storageIO = DataAccess.getStorageIO(this);
         
-        if (dataAccess == null) {
-            throw new IOException("Failed to create access object for datafile.");
+        if (storageIO == null) {
+            throw new IOException("Failed to create storageIO for datafile.");
         }
         
-        return dataAccess; 
+        return storageIO; 
     }
-
-    // public static String getSwiftFileURI() throws IOException {
-    //     String fileURI = DataAccess.swiftFileUri;
-        
-    //     if (fileURI == null) {
-    //         throw new IOException("Failed to get swift file URI.");
-    //     }
-    //     return fileURI; 
-    // }
-
-    // public static String getSwiftContainerURI() throws IOException {
-    //     String containerURI = DataAccess.swiftContainerUri;
-        
-    //     if (containerURI == null) {
-    //         throw new IOException("Failed to get swift container URI.");
-    //     }
-    //     return containerURI; 
-    // }
-
-    
-    // The 2 methods below - TODO: 
-    // remove everything filesystem-specific; 
-    // move the functionality into storage drivers. 
-    // -- L.A. 4.0.2
-    
-    public Path getSavedOriginalFile() {
-       
-        if (!this.isTabularData() || this.fileSystemName == null) {
-            return null; 
-        }
-        
-        Path studyDirectoryPath = this.getOwner().getFileSystemDirectory();
-        if (studyDirectoryPath == null) {
-            return null;
-        }
-        String studyDirectory = studyDirectoryPath.toString();
- 
-        Path savedOriginal = Paths.get(studyDirectory, "_" + this.fileSystemName);
-        if (Files.exists(savedOriginal)) {
-            return savedOriginal;
-        }
-        return null; 
-    }
-    
-    /*
-    public String getFilename() {
-        String studyDirectory = this.getOwner().getFileSystemDirectory().toString();
- 
-        if (studyDirectory == null || this.fileSystemName == null || this.fileSystemName.equals("")) {
-            return null;
-        }
-        String fileSystemPath = studyDirectory + "/" + this.fileSystemName;
-        return fileSystemPath.replaceAll("/", "%2F");
-    }*/
     
     /*
         Does the contentType indicate a shapefile?
@@ -644,10 +591,7 @@ public class DataFile extends DvObject implements Comparable {
     }
     
     public boolean isFilePackage() {
-        if (DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType)) {
-            return true;
-        }
-        return false;
+        return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
     }
 
     public void setIngestStatus(char ingestStatus) {
@@ -809,7 +753,21 @@ public class DataFile extends DvObject implements Comparable {
     public String getDisplayName() {
         // @todo should we show the published version label instead?
         // currently this method is not being used
-        return getLatestFileMetadata().getLabel();
+       return getLatestFileMetadata().getLabel(); 
+       /*
+       Taking out null check to see if npe persists.
+       Really shouldn't need it 
+       a file should always have a latest metadata
+       
+               ////if (getLatestFileMetadata() != null) {
+           return getLatestFileMetadata().getLabel(); 
+       // }
+       // logger.fine("DataFile getLatestFileMetadata is null for DataFile id = " + this.getId());
+       // return "";
+       
+       */
+
+
     }
     
     @Override
@@ -869,12 +827,12 @@ public class DataFile extends DvObject implements Comparable {
         return this.previousDataFileId;
     }
 
-    public String asPrettyJSON(){
+    public String toPrettyJSON(){
         
         return serializeAsJSON(true);
     }
 
-    public String asJSON(){
+    public String toJSON(){
         
         return serializeAsJSON(false);
     }
@@ -953,7 +911,7 @@ public class DataFile extends DvObject implements Comparable {
         // ----------------------------------        
         // Checksum
         // ----------------------------------
-        Map<String, String> checkSumMap = new HashMap<String, String>();
+        Map<String, String> checkSumMap = new HashMap<>();
         checkSumMap.put("type", getChecksumType().toString());
         checkSumMap.put("value", getChecksumValue());
         
@@ -992,6 +950,7 @@ public class DataFile extends DvObject implements Comparable {
         }
         return null;
     }
+    
 
 } // end of class
     

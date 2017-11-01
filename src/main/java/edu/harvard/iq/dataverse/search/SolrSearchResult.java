@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
@@ -16,8 +17,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.math.BigDecimal;
-import javax.json.JsonValue;
 
 public class SolrSearchResult {
 
@@ -32,8 +31,16 @@ public class SolrSearchResult {
     private String persistentUrl;
     private String downloadUrl;
     private String apiUrl;
+    /**
+     * This is called "imageUrl" because it used to really be a URL. While
+     * performance improvements were being made in the 4.2 timeframe, we started
+     * putting base64 representations of images in this String instead, which
+     * broke the Search API and probably things built on top of it such as
+     * MyData. See "`image_url` from Search API results no longer yields a
+     * downloadable image" at https://github.com/IQSS/dataverse/issues/3616
+     */
     private String imageUrl;
-    private boolean displayImage;
+    private DatasetThumbnail datasetThumbnail;
     private String query;
     private String name;
     private String nameSort;
@@ -396,7 +403,7 @@ public class SolrSearchResult {
      */
     public JsonObjectBuilder getJsonForMyData() {
 
-        JsonObjectBuilder myDataJson = json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls) 
+        JsonObjectBuilder myDataJson = json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls)
 
         myDataJson.add("publication_statuses", this.getPublicationStatusesAsJSON())
                 .add("is_draft_state", this.isDraftState())
@@ -636,12 +643,12 @@ public class SolrSearchResult {
         this.imageUrl = imageUrl;
     }
 
-    public boolean isDisplayImage() {
-        return displayImage;
+    public DatasetThumbnail getDatasetThumbnail() {
+        return datasetThumbnail;
     }
 
-    public void setDisplayImage(boolean displayImage) {
-        this.displayImage = displayImage;
+    public void setDatasetThumbnail(DatasetThumbnail datasetThumbnail) {
+        this.datasetThumbnail = datasetThumbnail;
     }
 
     public String getQuery() {
@@ -908,7 +915,7 @@ public class SolrSearchResult {
             String badString = "null";
             if (!identifier.contains(badString)) {
                 if (entity != null && entity instanceof Dataset) {
-                    if (this.isHarvested()) {
+                    if (this.isHarvested() && ((Dataset)entity).getHarvestedFrom() != null) {
                         String remoteArchiveUrl = ((Dataset) entity).getRemoteArchiveURL();
                         if (remoteArchiveUrl != null) {
                             return remoteArchiveUrl;

@@ -29,6 +29,8 @@ import org.javaswift.joss.model.StoredObject;
 
 
 
+import edu.harvard.iq.dataverse.DvObject;
+import java.io.IOException;
 /**
  *
  * @author Leonid Andreev
@@ -40,35 +42,33 @@ public class DataAccess {
 
     };
 
-    // set by the user in glassfish-setup.sh if DEFFAULT_STORAGE_DRIVER_IDENTIFIER = swift
-    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
-    public static final String DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS = System.getProperty("dataverse.files.swift-endpoint-start");
-    public static String swiftFileUri;
-    public static String swiftContainerUri;
 
-    // The getDataFileIO() methods initialize DataFileIO objects for
+    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
+    
+    // The getStorageIO() methods initialize StorageIO objects for
     // datafiles that are already saved using one of the supported Dataverse
     // DataAccess IO drivers.
-    
-    public static DataFileIO getDataFileIO (DataFile df) throws IOException {
-        return getDataFileIO (df, null);
+    public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject) throws IOException {
+        return getStorageIO(dvObject, null);
     }
 
-    public static DataFileIO getDataFileIO (DataFile df, DataAccessRequest req) throws IOException {
-
-        if (df == null ||
-                df.getStorageIdentifier() == null ||
-                df.getStorageIdentifier().equals("")) {
-            throw new IOException ("getDataAccessObject: null or invalid datafile.");
+    //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
+    public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
+        
+        if (dvObject == null
+                || dvObject.getStorageIdentifier() == null
+            || dvObject.getStorageIdentifier().isEmpty()) {
+            throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
 
-        if (df.getStorageIdentifier().startsWith("file://")
-                || (!df.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
-            return new FileAccessIO (df, req);
-        } else if (df.getStorageIdentifier().startsWith("swift://") || 
-            df.getStorageIdentifier().startsWith(DEFAULT_SWIFT_ENDPOINT_START_CHARACTERS)){ 
-            return new SwiftAccessIO (df, req);
-        } else if (df.getStorageIdentifier().startsWith("tmp://")) {
+        if (dvObject.getStorageIdentifier().startsWith("file://")
+                || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z0-9]*://.*"))) {
+            return new FileAccessIO<>(dvObject, req);
+        } else if (dvObject.getStorageIdentifier().startsWith("swift://")){
+            return new SwiftAccessIO<>(dvObject, req);
+        } else if (dvObject.getStorageIdentifier().startsWith("s3://")){ 
+            return new S3AccessIO<>(dvObject, req);
+        } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
         
@@ -79,57 +79,45 @@ public class DataAccess {
         // "storage identifier". 
         // -- L.A. 4.0.2
         
-        throw new IOException ("getDataAccessObject: Unsupported storage method.");
+
+        throw new IOException("getDataAccessObject: Unsupported storage method.");
     }
-    
+
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
     // for saving new, not yet saved datafiles.
+    public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
 
-    public static DataFileIO createNewDataFileIO (DataFile df, String storageTag) throws IOException {
-
-        return createNewDataFileIO(df, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        return createNewStorageIO(dvObject, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
-    
-    public static DataFileIO createNewDataFileIO (DataFile df, String storageTag, String driverIdentifier) throws IOException {
-        if (df == null ||
-                storageTag == null ||
-                storageTag.equals("")) {
-            throw new IOException ("getDataAccessObject: null or invalid datafile.");
+
+    public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
+        if (dvObject == null
+                || storageTag == null
+            || storageTag.isEmpty()) {
+            throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
-        
-        DataFileIO dataFileIO = null; 
-        
-        df.setStorageIdentifier(storageTag);
-        
+
+        StorageIO<T> storageIO = null;
+
+        dvObject.setStorageIdentifier(storageTag);
+
+        if (driverIdentifier == null) {
+            driverIdentifier = "file";
+        }
+
         if (driverIdentifier.equals("file")) {
-            dataFileIO = new FileAccessIO (df, null);
+            storageIO = new FileAccessIO<>(dvObject, null);
         } else if (driverIdentifier.equals("swift")) {
-            dataFileIO =  new SwiftAccessIO (df, null);
-        } else { 
-            throw new IOException ("createDataAccessObject: Unsupported storage method " + driverIdentifier);
+            storageIO = new SwiftAccessIO<>(dvObject, null);
+        } else if (driverIdentifier.equals("s3")) {
+            storageIO = new S3AccessIO<>(dvObject, null);
+        } else {
+            throw new IOException("createDataAccessObject: Unsupported storage method " + driverIdentifier);
         }
-        
-        dataFileIO.open(DataAccessOption.WRITE_ACCESS);
-        return dataFileIO;
-    }
 
-    public static String getSwiftFileURI(StoredObject fileObject) throws IOException {
-        String fileUri;
-        try {
-            fileUri = fileObject.getPublicURL();
-        }
-        catch (Exception ex){
-            ex.printStackTrace();
-            throw new IOException("SwiftAccessIO: failed to get file storage location");
-        }
-        return fileUri;
-    }
-
-    public static String getSwiftContainerURI(StoredObject fileObject) throws IOException {
-        String containerUri;
-        containerUri = getSwiftFileURI(fileObject);
-        containerUri = containerUri.substring(0, containerUri.lastIndexOf('/'));
-        return containerUri;
+        storageIO.open(DataAccessOption.WRITE_ACCESS);
+        return storageIO;
     }
     
+
 }

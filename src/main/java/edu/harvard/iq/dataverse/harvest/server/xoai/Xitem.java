@@ -27,7 +27,11 @@ public class Xitem implements Item {
     
     public Xitem(OAIRecord oaiRecord) {
         super();
-        this.oaiRecord = oaiRecord;  
+        this.oaiRecord = oaiRecord;
+        oaisets = new ArrayList<>();
+        if (oaiRecord.getSetName() != null) {
+            oaisets.add(new Set(oaiRecord.getSetName()));
+        }
     }
     
     private OAIRecord oaiRecord;
@@ -70,15 +74,13 @@ public class Xitem implements Item {
     public Date getDatestamp() {
         return oaiRecord.getLastUpdateTime();
     }
+    
+    private  List<Set> oaisets;
 
     @Override
-    public List<com.lyncode.xoai.dataprovider.model.Set> getSets() {
-        List<Set> sets = new ArrayList<>();
-        if (oaiRecord.getSetName() != null) {
-            sets.add(new Set(oaiRecord.getSetName()));
-        }
+    public List<Set> getSets() {
         
-        return sets;
+        return oaisets;
  
     }
 

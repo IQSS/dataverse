@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -302,6 +303,9 @@ public class DataversePage implements java.io.Serializable {
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
             setupForGeneralInfoEdit();
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
+            if (dataverse.getName() == null) {
+                dataverse.setName(DataverseUtil.getSuggestedDataverseNameOnCreate(session.getUser()));
+            }
         }
 
         return null;

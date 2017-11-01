@@ -1,0 +1,58 @@
+{
+    "name": "no pauses, long",
+    "steps": [
+        {
+            "provider":":internal",
+            "stepType":"log",
+            "parameters": {
+                "memo":"first step"
+            }
+        },
+        {
+            "provider":":internal",
+            "stepType":"log"
+        },
+        
+        {
+            "provider":":internal",
+            "stepType":"log"
+        },
+        
+        {
+            "provider":":internal",
+            "stepType":"log"
+        },
+        
+        {
+            "provider":":internal",
+            "stepType":"log"
+        },
+        
+        {
+            "provider":":internal",
+            "stepType":"log"
+        },
+        
+        {
+            "provider":":internal",
+            "stepType":"log"
+        },
+        
+        {
+            "provider":":internal",
+            "stepType":"log"
+        },
+        
+        {
+            "provider":":internal",
+            "stepType":"log"
+        },
+        {
+            "provider":":internal",
+            "stepType":"log",
+            "parameters" : {
+                "memo":"Last step"
+            }
+        }       
+    ]
+}

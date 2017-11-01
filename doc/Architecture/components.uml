@@ -40,11 +40,14 @@ node "DatabaseServer2" {
 }
 
 node "RserveServer1" {
+  component "rApache" {
+  }
   database "Rserve" {
   }
 } 
 
 Clients --> LoadBalancer
+Clients --> rApache
 
 LoadBalancer --> Apache1
 LoadBalancer --> Apache2
@@ -54,9 +57,9 @@ Glassfish1 --> DatabaseServer1
 Glassfish2 --> DatabaseServer1
 Glassfish3 --> DatabaseServer1
 
-Glassfish1 --> RserveServer1
-Glassfish2 --> RserveServer1
-Glassfish3 --> RserveServer1
+Glassfish1 --> Rserve
+Glassfish2 --> Rserve
+Glassfish3 --> Rserve
 
 DatabaseServer1 --> DatabaseServer2
 

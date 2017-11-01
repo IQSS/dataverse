@@ -1,0 +1,35 @@
+    <style>
+        /* NOTE: You can use the custom CSS configuration to move this CSS your own stylesheet... */
+
+        /* Overwrite default navbar styles to make room at the top of the browser page for our custom header... */
+        .navbar-fixed-top {
+            top:50px !important;
+        }
+        #dataverse-header-block {
+            padding-top: 100px;
+        }
+
+	/* Place narrow custom header at the top of the page... */
+        #custom-header {
+            background: #414141;
+            min-height: 44px;
+            position: fixed;
+            right: 0;
+            left: 0;
+            z-index: 930;
+            padding-top: 8px;
+        }
+        #custom-header a.cst-hdr-link {
+            line-height: 32px;
+            color: #BAC5C6;
+            font-weight: bold;
+        }
+    </style>
+    <div id="custom-header">
+        <div class="container">
+            <p class="text-right">
+                <a class="pull-left" href="https://dataverse.org" title="SAMPLE IMAGE LINK" target="_blank"><img src="/var/www/dataverse/branding/sample.png" alt="SAMPLE IMAGE"/></a>
+                <a class="cst-hdr-link" href="https://dataverse.org" title="SAMPLE HEADER LINK" target="_blank">SAMPLE HEADER LINK</a>
+            </p>
+        </div>
+    </div>
