@@ -459,12 +459,16 @@ public class DatasetUtil {
   }
 }
 */
+    // TODO: Make this more performant by writing the output to the database or a file?
     public static String getJsonLd(DatasetVersion workingVersion) {
+        // We show published datasets only for "datePublished" field below.
+        if (workingVersion.isDraft()) {
+            return "";
+        }
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("@context", "http://schema.org");
         job.add("@type", "Dataset");
-        // FIXME
-        job.add("@id", "https://doi.org/10.7910/dvn/icfngt");
+        job.add("@id", workingVersion.getDataset().getPersistentURL());
         job.add("additionalType", "Dataset");
         job.add("name", workingVersion.getTitle());
         job.add("@context", "http://schema.org");
@@ -480,6 +484,7 @@ public class DatasetUtil {
             String firstName = null;
             String lastName = null;
             if (parts.length == 1) {
+                // TODO: consider adding "Thing" for the "@type" explicitly here.
                 name = personOrOrganization;
             } else {
                 author.add("@type", "Person");
@@ -493,18 +498,15 @@ public class DatasetUtil {
             authors.add(author);
         }
         job.add("author", authors);
-        // FIXME
-        job.add("datePublished", "2017");
+        job.add("datePublished", workingVersion.getProductionDate());
         job.add("schemaVersion", "http://datacite.org/schema/kernel-4");
         job.add("publisher", Json.createObjectBuilder()
                 .add("@type", "Organization")
-                // FIXME
-                .add("name", "Harvard Dataverse")
+                .add("name", workingVersion.getRootDataverseNameforCitation())
         );
         job.add("provider", Json.createObjectBuilder()
                 .add("@type", "Organization")
-                // FIXME
-                .add("name", "DataCite")
+                .add("name", "Dataverse")
         );
         return job.build().toString();
     }
