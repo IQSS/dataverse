@@ -475,25 +475,9 @@ public class DatasetUtil {
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : workingVersion.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();
-            // "We expect dataset depositors to put personal names and organizational names in the author field." For example, "Gallup Organization".
             String personOrOrganization = datasetAuthor.getName().getValue();
-            // TODO: Make this more robust. What if people or orgs have more than one comma in the name? For example,
-            // "Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA"
-            String[] parts = personOrOrganization.split(",");
-            String name = "";
-            String firstName = null;
-            String lastName = null;
-            if (parts.length == 1) {
-                // TODO: consider adding "Thing" for the "@type" explicitly here.
-                name = personOrOrganization;
-            } else {
-                author.add("@type", "Person");
-                lastName = parts[0];
-                firstName = parts[1];
-                author.add("givenName", firstName);
-                author.add("familyName", lastName);
-                name = firstName + " " + lastName;
-            }
+            String name = personOrOrganization;
+            // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
             author.add("name", name);
             authors.add(author);
         }
