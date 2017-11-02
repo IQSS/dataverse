@@ -2666,12 +2666,14 @@ public class DatasetPage implements java.io.Serializable {
     
     
     public boolean isStillLockedForIngest() {
-        Dataset testDataset = datasetService.find(dataset.getId());
-        if (testDataset != null && testDataset.getId() != null) {
-            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
-            
-            if (testDataset.getLockFor(DatasetLock.Reason.Ingest) != null) {
-                return true;
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (testDataset != null && testDataset.getId() != null) {
+                logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
+
+                if (testDataset.getLockFor(DatasetLock.Reason.Ingest) != null) {
+                    return true;
+                }
             }
         }
         return false;
@@ -2690,16 +2692,17 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
-    public boolean isLockedForIngest(){
-        
-        Dataset testDataset = datasetService.find(dataset.getId());
-        if (stateChanged) {
-            return false; 
-        }
-        
-        if (testDataset != null) {
-            if (testDataset.getLockFor(DatasetLock.Reason.Ingest) != null) {
-                return true;
+    public boolean isLockedForIngest() {
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (stateChanged) {
+                return false;
+            }
+
+            if (testDataset != null) {
+                if (testDataset.getLockFor(DatasetLock.Reason.Ingest) != null) {
+                    return true;
+                }
             }
         }
         return false;
