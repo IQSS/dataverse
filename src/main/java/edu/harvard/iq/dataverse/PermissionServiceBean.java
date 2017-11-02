@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -568,8 +569,8 @@ public class PermissionServiceBean {
     public void checkDownloadFileLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
-                // The "InReview" lock is not really a lock for curators or contributors. They can still download.
-                if (!isUserAllowedOn(dataverseRequest.getUser(), new CreateDatasetCommand(dataset, dataverseRequest, true), dataset)) {
+                // The "InReview" lock is not really a lock for curators or contributors. They can still download.                
+                if (!isUserAllowedOn(dataverseRequest.getUser(), new UpdateDatasetCommand(dataset, dataverseRequest), dataset)) {
                     throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowedInReview"), command);
                 }
             }
