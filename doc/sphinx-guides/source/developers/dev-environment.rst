@@ -163,7 +163,7 @@ Run Installer
 Please note the following:
 
 - If you have trouble with the SMTP server, consider editing the installer script to disable the SMTP check.
-- Rather than running the installer in "interactive" mode, it's possible to put the values in a file. See "non-interactive mode" in the :doc:`/installation/installation-main` section of the Installation Guide.
+- Rather than running the installer in "interactive" mode, it's possible to put the values in a file. See "non-interactive mode" in the :doc:`/installation/installation-main` section of the Installation Guide. If you put a ``default.config`` file in place you can run ``./install -y -f -nogfpasswd -insecure`` to set up a dev environment, for example.
 
 Now that you have all the prerequisites in place, you need to configure the environment for the Dataverse app - configure the database connection, set some options, etc. We have an installer script that should do it all for you. Again, assuming that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects:
 

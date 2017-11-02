@@ -15,6 +15,7 @@ my $mailserver;
 my $yes;
 my $force;
 my $nogfpasswd;
+my $insecure;
 my $admin_email;
 my ($rez) = GetOptions(
     #"length=i" => \$length,    # numeric
@@ -28,6 +29,7 @@ my ($rez) = GetOptions(
     "y|yes"        => \$yes,
     "f|force"      => \$force,
     "nogfpasswd"   => \$nogfpasswd,
+    "insecure"     => \$insecure,
     "admin_email=s" => \$admin_email,
 );
 
@@ -54,6 +56,7 @@ else
 
 	'POSTGRES_SERVER',
 	'POSTGRES_PORT',
+	'POSTGRES_ADMIN_USERNAME',
 	'POSTGRES_ADMIN_PASSWORD',
 	'POSTGRES_DATABASE',
 	'POSTGRES_USER',
@@ -79,6 +82,7 @@ my %CONFIG_DEFAULTS = (
     'ADMIN_EMAIL',         '',
     'MAIL_SERVER',         'mail.hmdc.harvard.edu',
 
+    'POSTGRES_ADMIN_USERNAME', 'postgres',
     'POSTGRES_ADMIN_PASSWORD', 'secret',
     'POSTGRES_SERVER',   '127.0.0.1',
     'POSTGRES_PORT',     5432,
@@ -105,6 +109,7 @@ my %CONFIG_PROMPTS = (
 
     'POSTGRES_SERVER',   'Postgres Server Address',
     'POSTGRES_PORT',     'Postgres Server Port',
+    'POSTGRES_ADMIN_USERNAME', 'Postgres ADMIN username',
     'POSTGRES_ADMIN_PASSWORD', 'Postgres ADMIN password',
     'POSTGRES_DATABASE', 'Name of the Postgres Database',
     'POSTGRES_USER',     'Name of the Postgres User',
@@ -131,6 +136,7 @@ my %CONFIG_COMMENTS = (
 
     'POSTGRES_SERVER',   '',
     'POSTGRES_PORT',     '',
+    'POSTGRES_ADMIN_USERNAME', ":\n - We will need this to create the user and database that the Dataverse application will be using.\n (Hit RETURN if access control is set to \"trust\" for this connection in pg_hba.conf)\n: ",
     'POSTGRES_ADMIN_PASSWORD', ":\n - We will need this to create the user and database that the Dataverse application will be using.\n (Hit RETURN if access control is set to \"trust\" for this connection in pg_hba.conf)\n: ",
     'POSTGRES_USER',     ":\n - This is the Postgres user that the Dataverse app will be using to talk to the database\n: ",
     'POSTGRES_DATABASE', '',
@@ -712,14 +718,20 @@ if ( $psql_exec eq "" )
     $psql_admin_exec = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec; 
     $psql_exec = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec; 
 
-    print "Checking if we can talk to Postgres as the admin user...\n";
+    print "Checking if we can talk to Postgres as the admin user (" . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_USERNAME'} . ")...\n";
 }
 
 # 4. CONFIGURE POSTGRES:
 
 # 4a. BUT FIRST, CHECK IF WE CAN TALK TO POSTGRES AS THE ADMIN:
 
-if ( $psql_admin_exec eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
+print "\$psql_admin_exec: $psql_admin_exec\n";
+
+my $foo = $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_USERNAME'} . " -d postgres -c 'SELECT * FROM pg_roles'";
+
+print "\$foo: $foo\n";
+
+if ( $psql_admin_exec eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_USERNAME'} . " -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
 {
     # No, we can't. :(
     if ($pg_local_connection) 
@@ -817,6 +829,7 @@ else
     # 4c. CHECK IF THIS DB ALREADY EXISTS:
     
     my $psql_command_dbcheck =
+        # FIXME: Don't hardcode "-U postgres".
 	$psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -c \"\" -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ">/dev/null 2>&1";
 
     if ( ( my $exitcode = system($psql_command_dbcheck) ) == 0 ) 
@@ -874,6 +887,7 @@ else
 	print TMPCMD $sql_command;
 	close TMPCMD;
 	    
+        # FIXME: Don't hardcode "-U postgres".
 	my $psql_commandline = $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
 
 	my $out      = qx($psql_commandline 2>&1);
@@ -1098,7 +1112,11 @@ else {
 # the username and password for every asadmin command, if
 # access to :4848 is password-protected:
 
-system( $glassfish_dir. "/bin/asadmin login" );
+# If you you have a "default.config" file in place and run `./install -y -f -nogfpasswd`
+# you can keep the installation process non-interactive.
+unless ($nogfpasswd) {
+    system( $glassfish_dir. "/bin/asadmin login" );
+}
 
 # NEW: configure glassfish using ASADMIN commands:
 
@@ -1284,10 +1302,15 @@ for my $script ( "setup-all.sh" ) {
     #    $run_script = "tmpscript.sh";
     #}
     #else {
-    $run_script = $script;
+    #    $run_script = $script;
     #}
+    if ($insecure) {
+        $run_script = "$script --insecure";
+    } else {
+        $run_script = $script;
+    }
 
-    unless ( my $exit_code = system( "./" . $run_script . " > $run_script.$$.log 2>&1") == 0 ) 
+    unless ( my $exit_code = system( "./" . $run_script . " > $script.$$.log 2>&1") == 0 )
     {
         print "\nERROR executing script " . $script . "!\n";
         exit 1;
