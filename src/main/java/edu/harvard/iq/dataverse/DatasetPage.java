@@ -3969,6 +3969,6 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getJsonLd() {
-        return DatasetUtil.getJsonLd(workingVersion);
+        return workingVersion.getJsonLd();
     }
 }

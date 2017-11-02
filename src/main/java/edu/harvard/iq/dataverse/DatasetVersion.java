@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -1118,6 +1121,42 @@ public class DatasetVersion implements Serializable {
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
         String r = fmt.format(rel_date.getTime());
         return r;
+    }
+
+    // TODO: Make this more performant by writing the output to the database or a file?
+    public String getJsonLd() {
+        // We show published datasets only for "datePublished" field below.
+        if (!this.isPublished()) {
+            return "";
+        }
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("@context", "http://schema.org");
+        job.add("@type", "Dataset");
+        job.add("@id", this.getDataset().getPersistentURL());
+        job.add("additionalType", "Dataset");
+        job.add("name", this.getTitle());
+        job.add("@context", "http://schema.org");
+        JsonArrayBuilder authors = Json.createArrayBuilder();
+        for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
+            JsonObjectBuilder author = Json.createObjectBuilder();
+            String personOrOrganization = datasetAuthor.getName().getValue();
+            String name = personOrOrganization;
+            // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
+            author.add("name", name);
+            authors.add(author);
+        }
+        job.add("author", authors);
+        job.add("datePublished", this.getPublicationDate());
+        job.add("schemaVersion", "http://datacite.org/schema/kernel-4");
+        job.add("publisher", Json.createObjectBuilder()
+                .add("@type", "Organization")
+                .add("name", this.getRootDataverseNameforCitation())
+        );
+        job.add("provider", Json.createObjectBuilder()
+                .add("@type", "Organization")
+                .add("name", "Dataverse")
+        );
+        return job.build().toString();
     }
 
 }
