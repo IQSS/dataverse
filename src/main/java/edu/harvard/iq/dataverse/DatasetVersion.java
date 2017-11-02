@@ -418,6 +418,10 @@ public class DatasetVersion implements Serializable {
         return versionState.equals(VersionState.RELEASED);
     }
 
+    public boolean isPublished() {
+        return isReleased();
+    }
+
     public boolean isDraft() {
         return versionState.equals(VersionState.DRAFT);
     }

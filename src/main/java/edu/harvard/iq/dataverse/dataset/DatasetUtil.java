@@ -462,7 +462,7 @@ public class DatasetUtil {
     // TODO: Make this more performant by writing the output to the database or a file?
     public static String getJsonLd(DatasetVersion workingVersion) {
         // We show published datasets only for "datePublished" field below.
-        if (workingVersion.isDraft()) {
+        if (!workingVersion.isPublished()) {
             return "";
         }
         JsonObjectBuilder job = Json.createObjectBuilder();
