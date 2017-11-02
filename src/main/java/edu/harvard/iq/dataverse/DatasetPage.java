@@ -2655,8 +2655,12 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isStillLocked() {
+        
         if (dataset != null && dataset.getId() != null) {
             logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
+            if(dataset.getLocks().size() == 1 && dataset.getLockFor(DatasetLock.Reason.InReview) != null){
+                return false;
+            }
             if (datasetService.checkDatasetLock(dataset.getId())) {
                 return true;
             }
