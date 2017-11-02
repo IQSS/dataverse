@@ -717,9 +717,7 @@ public class FilePage implements java.io.Serializable {
         } catch (IllegalCommandException ex) {
             return true;
         }
-        System.out.print("returning false from is locked from Download....");
-        return false;
-        
+        return false;       
     }
 
     public String getPublicDownloadUrl() {
