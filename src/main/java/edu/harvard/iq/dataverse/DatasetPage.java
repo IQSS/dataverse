@@ -3865,23 +3865,6 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     /**
-     * dataset publication date unpublished datasets will return an empty
-     * string.
-     *
-     * @return String dataset publication date (dd MMM yyyy).
-     */
-    public String getPublicationDate() {
-        assert (null != workingVersion);
-        if (DatasetVersion.VersionState.DRAFT == workingVersion.getVersionState()) {
-            return "";
-        }
-        Date rel_date = workingVersion.getReleaseTime();
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-        String r = fmt.format(rel_date.getTime());
-        return r;
-    }
-
-    /**
      * dataset authors
      *
      * @return list of author names

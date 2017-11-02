@@ -1100,4 +1100,20 @@ public class DatasetVersion implements Serializable {
         return workflowComments;
     }
 
+    /**
+     * dataset publication date unpublished datasets will return an empty
+     * string.
+     *
+     * @return String dataset publication date (dd MMM yyyy).
+     */
+    public String getPublicationDate() {
+        if (DatasetVersion.VersionState.DRAFT == this.getVersionState()) {
+            return "";
+        }
+        Date rel_date = this.getReleaseTime();
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+        String r = fmt.format(rel_date.getTime());
+        return r;
+    }
+
 }
