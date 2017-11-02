@@ -2621,6 +2621,20 @@ public class DatasetPage implements java.io.Serializable {
             //requestContext.execute("refreshPage();");
         }
     }
+    
+        public void refreshIngestLock() {
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
+        logger.fine("checking ingest lock");
+        if (isStillLockedForIngest()) {
+            logger.fine("(still locked)");
+        } else {
+            // OK, the dataset is no longer locked. 
+            // let's tell the page to refresh:
+            logger.fine("no longer locked!");
+            stateChanged = true;
+            //requestContext.execute("refreshPage();");
+        }
+    }
 
     /* 
 
@@ -2650,6 +2664,19 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
+    
+    public boolean isStillLockedForIngest() {
+        Dataset testDataset = datasetService.find(dataset.getId());
+        if (testDataset != null && testDataset.getId() != null) {
+            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
+            
+            if (testDataset.getLockFor(DatasetLock.Reason.Ingest) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public boolean isLocked() {
         if (stateChanged) {
             return false; 
@@ -2657,6 +2684,21 @@ public class DatasetPage implements java.io.Serializable {
         
         if (dataset != null) {
             if (dataset.isLocked()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isLockedForIngest(){
+        
+        Dataset testDataset = datasetService.find(dataset.getId());
+        if (stateChanged) {
+            return false; 
+        }
+        
+        if (testDataset != null) {
+            if (testDataset.getLockFor(DatasetLock.Reason.Ingest) != null) {
                 return true;
             }
         }
@@ -2689,6 +2731,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void setLocked(boolean locked) {
+        // empty method, so that we can use DatasetPage.locked in a hidden 
+        // input on the page. 
+    }
+    
+    public void setLockedForIngest(boolean locked) {
         // empty method, so that we can use DatasetPage.locked in a hidden 
         // input on the page. 
     }

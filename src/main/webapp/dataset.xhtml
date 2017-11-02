@@ -473,9 +473,11 @@
 
                         <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
                             <h:inputHidden value="#{DatasetPage.locked}" id="datasetLockedVariable" />
+                            <h:inputHidden value="#{DatasetPage.lockedForIngest}" id="datasetLockedIngestVariable" />
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
 
                             <p:remoteCommand name="refreshLockCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshLock}"/>
+                            <p:remoteCommand name="refreshIngestLockCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshIngestLock}"/>
                             <p:remoteCommand name="refreshAllCommand" process="@this" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.refresh}"/>
 
                             <!-- see the comment in the javascript below that explains what this button is for -->
@@ -521,6 +523,7 @@
                                         // already completed in the background:
                                         //$('button[id$="refreshButton"]').trigger('click');
                                         refreshLockCommand();
+                                        refreshIngestLockCommand();
                                     }, 10000);
                                 }
                             </script>

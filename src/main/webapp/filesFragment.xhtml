@@ -322,7 +322,7 @@
                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable}">
                     <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                     type="button" styleClass="btn btn-default"
-                                    disabled="#{DatasetPage.lockedFromEdits}"
+                                    disabled="#{DatasetPage.lockedFromDownload}"
                                     update="@form"
                                     actionListener="#{DatasetPage.validateFilesForDownload(false)}">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
@@ -330,7 +330,7 @@
                     <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                     <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                     type="button" styleClass="btn btn-default"
-                                    disabled="#{DatasetPage.lockedFromEdits}"
+                                    disabled="#{DatasetPage.lockedFromDownload}"
                                     action="#{DatasetPage.validateFilesForDownload(true)}"
                                     update="@form" oncomplete="">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
@@ -348,8 +348,7 @@
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
-            </f:facet>
-                        
+            </f:facet>          
             <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
                 <!-- Ingest in progress... -->
                 #{bundle['file.ingestInProgress']}
