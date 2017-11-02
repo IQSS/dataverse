@@ -1146,8 +1146,8 @@ public class DatasetVersion implements Serializable {
             authors.add(author);
         }
         job.add("author", authors);
-        job.add("datePublished", this.getPublicationDate());
-        job.add("schemaVersion", "http://datacite.org/schema/kernel-4");
+        job.add("dateModified", this.getPublicationDate());
+        job.add("schemaVersion", "https://schema.org/version/3.3");
         job.add("publisher", Json.createObjectBuilder()
                 .add("@type", "Organization")
                 .add("name", this.getRootDataverseNameforCitation())
