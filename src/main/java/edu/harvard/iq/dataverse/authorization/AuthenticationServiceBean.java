@@ -114,7 +114,8 @@ public class AuthenticationServiceBean {
             registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService) );
             registerProviderFactory( new ShibAuthenticationProviderFactory() );
             registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
-        } catch (AuthorizationSetupException ex) {
+        
+        } catch (AuthorizationSetupException ex) { 
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
         }
         

@@ -136,7 +136,7 @@
                                 <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated
                                                                                   and DatasetPage.canUpdateDataset()
                                                                                   and !DatasetPage.dataset.deaccessioned}">
-                                    <button type="button" id="editDataSet" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.locked ? 'disabled' : ''}" data-toggle="dropdown">
+                                    <button type="button" id="editDataSet" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" data-toggle="dropdown">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
@@ -472,10 +472,10 @@
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
 
                         <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
-                            <h:inputHidden value="#{DatasetPage.locked}" id="datasetLockedVariable" />
+                            <h:inputHidden value="#{DatasetPage.lockedForIngest}" id="datasetLockedForIngestVariable" />
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
 
-                            <p:remoteCommand name="refreshLockCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshLock}"/>
+                            <p:remoteCommand name="refreshIngestLockCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshIngestLock}"/>
                             <p:remoteCommand name="refreshAllCommand" process="@this" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.refresh}"/>
 
                             <!-- see the comment in the javascript below that explains what this button is for -->
@@ -487,7 +487,7 @@
                                 });
 
                                 function refreshIfStillLocked() {
-                                    if ($('input[id$="datasetLockedVariable"]').val() === 'true') {
+                                    if ($('input[id$="datasetLockedForIngestVariable"]').val() === 'true') {
                                         // if dataset is locked, instruct the page to
                                         // wait and check again:
                                         waitAndCheckLockAgain();
@@ -520,7 +520,8 @@
                                         // backing bean; i.e., check, if the ingest has
                                         // already completed in the background:
                                         //$('button[id$="refreshButton"]').trigger('click');
-                                        refreshLockCommand();
+                                        //refreshLockCommand();
+                                        refreshIngestLockCommand();
                                     }, 10000);
                                 }
                             </script>
