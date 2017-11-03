@@ -53,7 +53,6 @@ public class MapLayerMetadata implements Serializable {
     // ForeignKey to DataFile
     //x@ManyToOne
     // For now, make this unique:  Each DataFile may only have one map
-    //@OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}) // TODO: Figure out why this doesn't work.
     @JoinColumn(nullable=false, unique=true)
     private DataFile dataFile;
 

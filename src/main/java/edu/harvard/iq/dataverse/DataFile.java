@@ -189,6 +189,9 @@ public class DataFile extends DvObject implements Comparable {
     
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<GuestbookResponse> guestbookResponses;
+    
+    @OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private MapLayerMetadata mapLayerMetadata; //does not need get/set, here just to trigger JPA cleanup
 
     public List<GuestbookResponse> getGuestbookResponses() {
         return guestbookResponses;
@@ -217,7 +220,7 @@ public class DataFile extends DvObject implements Comparable {
     
     /**
      * All constructors should use this method
-     * to intitialize this file replace attributes
+     * to initialize this file replace attributes
      */
     private void initFileReplaceAttributes(){
         this.rootDataFileId = ROOT_DATAFILE_ID_DEFAULT;
