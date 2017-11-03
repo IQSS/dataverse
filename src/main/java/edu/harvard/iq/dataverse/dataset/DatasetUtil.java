@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -34,9 +33,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import javax.imageio.ImageIO;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
 import org.apache.commons.io.IOUtils;
 
 public class DatasetUtil {
