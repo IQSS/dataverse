@@ -1,9 +1,16 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import java.io.StringReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -83,6 +90,42 @@ public class DatasetVersionTest {
         
         ds.setDatasetLock(null);
         assertFalse(nonDraft.isInReview());
+    }
+
+    @Test
+    public void testGetJsonLd() throws ParseException {
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("LK0D1H");
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setDataset(dataset);
+        datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+        assertEquals("", datasetVersion.getPublicationDateAsString());
+        // Only published datasets return any JSON.
+        assertEquals("", datasetVersion.getJsonLd());
+        datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
+        datasetVersion.setReleaseTime(dateFmt.parse("19551105"));
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+        dataset.setOwner(dataverse);
+        String jsonLd = datasetVersion.getJsonLd();
+        System.out.println("jsonLd: " + jsonLd);
+        JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
+        JsonObject obj = jsonReader.readObject();
+        assertEquals("http://schema.org", obj.getString("@context"));
+        assertEquals("Dataset", obj.getString("@type"));
+        assertEquals("http://dx.doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
+        assertEquals("https://schema.org/version/3.3", obj.getString("schemaVersion"));
+        assertEquals("1955-11-05", obj.getString("dateModified"));
+        // TODO: if it ever becomes easier to mock a dataset title, test it.
+        assertEquals("", obj.getString("name"));
+        // TODO: If it ever becomes easier to mock authors, test them.
+        JsonArray emptyArray = Json.createArrayBuilder().build();
+        assertEquals(emptyArray, obj.getJsonArray("author"));
+        assertEquals("Dataverse", obj.getJsonObject("provider").getString("name"));
+        assertEquals("LibraScholar", obj.getJsonObject("publisher").getString("name"));
     }
 
 }
