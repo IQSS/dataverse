@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -83,6 +85,16 @@ public class ExternalTool implements Serializable {
 
     public String getButtonLabel() {
         return BundleUtil.getStringFromBundle(displayNameBundleKey);
+    }
+
+    public JsonObjectBuilder toJson() {
+        JsonObjectBuilder jab = Json.createObjectBuilder();
+        jab.add("id", this.getId());
+        jab.add("displayName", this.getButtonLabel());
+        jab.add("description", this.getDescriptionBundleKey());
+        jab.add(ExternalToolHandler.toolUrlString, this.getToolUrl());
+        jab.add(ExternalToolHandler.toolParametersString, this.getToolParameters());
+        return jab;
     }
 
 }

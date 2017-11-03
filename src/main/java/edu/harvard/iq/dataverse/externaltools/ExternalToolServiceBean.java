@@ -22,4 +22,10 @@ public class ExternalToolServiceBean {
         return typedQuery.getResultList();
     }
 
+    public ExternalTool save(ExternalTool externalTool) {
+        em.persist(externalTool);
+        em.flush();;
+        return em.merge(externalTool);
+    }
+
 }
