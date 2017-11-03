@@ -1111,9 +1111,9 @@ public class DatasetVersion implements Serializable {
      * dataset publication date unpublished datasets will return an empty
      * string.
      *
-     * @return String dataset publication date (dd MMM yyyy).
+     * @return String dataset publication date in ISO 8601 format (yyyy-MM-dd).
      */
-    public String getPublicationDate() {
+    public String getPublicationDateAsString() {
         if (DatasetVersion.VersionState.DRAFT == this.getVersionState()) {
             return "";
         }
@@ -1146,7 +1146,16 @@ public class DatasetVersion implements Serializable {
             authors.add(author);
         }
         job.add("author", authors);
-        job.add("dateModified", this.getPublicationDate());
+        /**
+         * We are aware that there is a "datePublished" field but it means "Date
+         * of first broadcast/publication." This only makes sense for a 1.0
+         * version.
+         *
+         * "dateModified" is more appropriate for a version: "The date on which
+         * the CreativeWork was most recently modified or when the item's entry
+         * was modified within a DataFeed."
+         */
+        job.add("dateModified", this.getPublicationDateAsString());
         job.add("schemaVersion", "https://schema.org/version/3.3");
         job.add("publisher", Json.createObjectBuilder()
                 .add("@type", "Organization")
