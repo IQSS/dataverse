@@ -13,6 +13,7 @@
         <f:facet name="first">
             <title><h:outputText value="#{pageTitle}"/></title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+            <ui:remove><!-- We might want dc_meta_header or jsonld_header at the file level some day.--></ui:remove>
 	    <ui:insert name="dc_meta_header"></ui:insert>
 	    <ui:insert name="jsonld_header"></ui:insert>
             <meta http-equiv="Content-Language" content="en"/>
