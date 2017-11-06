@@ -15,7 +15,8 @@ public class ExternalToolHandlerTest {
         assertEquals(null, ExternalToolHandler.parseAddExternalToolInput(Json.createObjectBuilder().build().toString()));
         String psiTool = new String(Files.readAllBytes(Paths.get("doc/sphinx-guides/source/_static/installation/files/root/external-tools/psi.json")));
         System.out.println("psiTool: " + psiTool);
-        assertEquals("https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/UI/code/interface.html", ExternalToolHandler.parseAddExternalToolInput(psiTool).getToolUrl());
+        // TODO: How do we put the real file id in here?
+        assertEquals("https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/UI/code/interface.html?fileid={fileId}", ExternalToolHandler.parseAddExternalToolInput(psiTool).getToolUrl());
         ExternalTool externalTool = ExternalToolHandler.parseAddExternalToolInput(psiTool);
         // TODO: How do we put the real file id in here?
         assertEquals("?fileid={fileId}", ExternalToolHandler.getQueryParametersForUrl(externalTool));
