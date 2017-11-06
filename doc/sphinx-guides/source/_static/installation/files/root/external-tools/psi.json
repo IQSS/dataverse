@@ -1,6 +1,12 @@
 {
   "displayNameBundleKey": "psi.displayName",
   "descriptionBundleKey": "psi.description",
-  "toolUrl": "https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/",
-  "toolParameters": {}
+  "toolUrl": "https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/UI/code/interface.html",
+  "toolParameters": {
+    "queryParameters": [
+      {
+        "fileid": "{fileId}"
+      }
+    ]
+  }
 }

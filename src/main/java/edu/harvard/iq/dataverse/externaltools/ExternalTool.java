@@ -68,7 +68,7 @@ public class ExternalTool implements Serializable {
     }
 
     public String getToolUrl() {
-        return toolUrl;
+        return toolUrl + ExternalToolHandler.getQueryParametersForUrl(this);
     }
 
     public void setToolUrl(String toolUrl) {
