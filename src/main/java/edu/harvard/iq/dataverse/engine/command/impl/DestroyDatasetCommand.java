@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.IdServiceBean;
+import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -66,6 +67,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         // deleted too!)
         
         Iterator <DataFile> dfIt = doomed.getFiles().iterator();
+        MapLayerMetadataServiceBean mapBean = new MapLayerMetadataServiceBean();
         while (dfIt.hasNext()){
             DataFile df = dfIt.next();
             // Gather potential Solr IDs of files. As of this writing deaccessioned files are never indexed.
@@ -73,6 +75,13 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             datasetAndFileSolrIdsToDelete.add(solrIdOfPublishedFile);
             String solrIdOfDraftFile = IndexServiceBean.solrDocIdentifierFile + df.getId() + IndexServiceBean.draftSuffix;
             datasetAndFileSolrIdsToDelete.add(solrIdOfDraftFile);
+            try { //Not run as part of context, if failure code we will keep going
+                if(mapBean.findMetadataByDatafile(df) != null) {
+                    mapBean.deleteMapLayerFromWorldMap(df, (AuthenticatedUser) getUser());
+                }
+            } catch (Exception e) { //If exception deleting from external, keep going
+                logger.log(Level.SEVERE, "During destruction of dataset: " + e);
+            }
             ctxt.engine().submit(new DeleteDataFileCommand(df, getRequest(), true));
             dfIt.remove();
         }
