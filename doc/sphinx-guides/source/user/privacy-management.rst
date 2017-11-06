@@ -12,7 +12,7 @@ Restricting Access to Files
 (Insert info about how to restrict access and unrestrict access to a file)
 
 Granting Access to Specific Users
-=================================
+---------------------------------
 (Insert info about how to give specific users access to a restricted file)
 
 DataTags
