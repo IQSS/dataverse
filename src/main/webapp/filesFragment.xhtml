@@ -139,25 +139,6 @@
 
                     </div>
 
-                    
-                  
-
-                      
-                    <!--Cloud dataset button-->
-                    <div id="cloudDatasetCheckbox" class="btn-group">
-                        <div id="cloudDataset" class="ui-chkbox ui-widget" jsf:rendered="#{( DatasetPage.sessionUserAuthenticated and 
-                                                                                           DatasetPage.canUpdateDataset())}">
-                            <p:selectBooleanCheckbox value="#{DatasetPage.dataset.cloudDataset}"
-                                                     onchange="submit()"
-                                                     valueChangeListener="#{DatasetPage.changeCloudDataset}">
-                            </p:selectBooleanCheckbox>
-                            <label for="cloudDataset">Cloud Dataset</label>
-                        </div>
-                    </div>
-                    <!--Cloud dataset button end-->
-                    
-                                        
-
                     <div jsf:id="restrictDeleteBlock" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
                         <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">

@@ -121,20 +121,6 @@ public class Dataset extends DvObjectContainer {
     @OneToMany(mappedBy="dataset", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLinkingDataverse> datasetLinkingDataverses;
     
-    
-    //@author anuj
-    @Column(nullable = false)
-    private boolean cloudDataset;
-
-    public boolean isCloudDataset() {
-        return cloudDataset;
-    }
-
-    public void setCloudDataset(boolean cloudDataset) {
-        this.cloudDataset = cloudDataset;
-    }
- 
-
     public List<DatasetLinkingDataverse> getDatasetLinkingDataverses() {
         return datasetLinkingDataverses;
     }

@@ -298,25 +298,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.persist(dsv);
         return dsv;
     }
-    
-    //@author anuj
-    /**
-     * @param datasetId - long representing the ID of the dataset
-     * Toggles the state of the 'clouddataset' entity field.
-     * Persists the toggled state of the dataset and refresh the entity.
-     */
-    public void toggleCloudDataset(long datasetId){
-        Dataset dataset = (Dataset)em.find(Dataset.class, datasetId);
-        dataset.setCloudDataset(!(dataset.isCloudDataset()));
-        em.persist(dataset);
-        em.refresh(dataset);
-        //String query = "Update Dataset d SET cloudDataset = "+dataset.isCloudDataset()+" WHERE d.identifier = '" +dataset.getIdentifier()+"'";
-         //int update = em.createQuery(query).executeUpdate();
-        //logger.info("Updated: "+dataset.isCloudDataset());
-        //dataset.setCloudDataset(dataset.isCloudDataset());
-       // em.merge(dataset);
-    }
-    
+      
     public String createCitationRIS(DatasetVersion version) {
         return createCitationRIS(version, null);
     } 
