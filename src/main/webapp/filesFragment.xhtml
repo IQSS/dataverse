@@ -312,14 +312,12 @@
                                         #{bundle['file.tags']} 
                             </p:commandLink>    
                         </li>                                                               
-                        <ui:repeat value="#{DatasetPage.externalTools}" var="tool">
-                            <li>
-                                <a href="#{tool.toolUrl}">#{tool.buttonLabel}</a>
-                            </li>
-                        </ui:repeat>
+
                     </ul>
                     <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                 </div>
+                
+                
                 
                 <!-- DOWNLOAD -->
                 <div jsf:id="downloadButtonBlock" class="btn-group" 
@@ -359,6 +357,20 @@
                 #{bundle['file.ingestInProgress']}
             </div>
             
+            <!-- MAD: This needs to be outside the download group I think, it needs that space and the like... --> 
+            <div class="btn-group" >
+                <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                    <span class="glyphicon glyphicon-cog"/> #{bundle['dataset.configureBtn']} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right text-left" role="menu">
+                    <ui:repeat value="#{DatasetPage.getExternalTools()}" var="tool">
+                    <li>
+                        <a href="#{tool.toolUrl}">#{tool.buttonLabel}</a>
+                    </li>
+                    </ui:repeat>
+                </ul>
+            </div>
+            
             <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
                 <ui:include src="file-setup-button.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
@@ -366,6 +378,8 @@
                 </ui:include>
             </ui:fragment>
 
+
+            
             <div class="btn-group" jsf:rendered="#{!settingsWrapper.rsyncDownload}">
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>

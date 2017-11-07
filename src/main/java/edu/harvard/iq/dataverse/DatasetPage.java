@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
@@ -1522,8 +1524,29 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
         }
+        
+        //MAD : need to do this for each file and populate... ugh. Also clean up the double "findAll"
+        
+        //fileMetadatasSearch is this what I'm suppose to be using???? private List<FileMetadata> fileMetadatasSearch;
+        
+        //I need to generate a list of lists of external tools, one for each file. I don't understand how this data will be consumed in fileFragments...
+        //In the jsf it looks like I can reference #{fileMetadata.dataFile.id} and the like... so as long as I can create a list that can be referenced?
+        //Alternatively, maybe this info should be in the fileMetadata?
+        
+        User user = session.getUser();
+        ApiToken apitoken = new ApiToken();
+        if (user instanceof AuthenticatedUser) {
+            apitoken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        }
+        
+        //for(FileMetadata mData : fileMetadatasSearch)
+        //{
+            externalTools = externalToolService.findAll(null, apitoken);
+        //}
+        
+        
 
-        externalTools = externalToolService.findAll();
+        //externalTools = externalToolService.findAll();
 
         return null;
     }
