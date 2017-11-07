@@ -79,6 +79,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
@@ -1508,12 +1509,17 @@ public class DatasetPage implements java.io.Serializable {
                 
         // Various info messages, when the dataset is locked (for various reasons):
         if (dataset.isLocked()) {
-            if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.DcmUpload)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"), BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
-            } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
-            } else if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
+                        BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.inReview.message"),
+                        BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
+                        BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
         }
 
@@ -1869,7 +1875,7 @@ public class DatasetPage implements java.io.Serializable {
                 // has been published. If a publishing workflow is configured, this may have sent the 
                 // dataset into a workflow limbo, potentially waiting for a third party system to complete 
                 // the process. So it may be premature to show the "success" message at this point. 
-                if (dataset.isLocked() && dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
+                if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
                 } else {
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
@@ -2622,12 +2628,26 @@ public class DatasetPage implements java.io.Serializable {
             //requestContext.execute("refreshPage();");
         }
     }
+    
+        public void refreshIngestLock() {
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
+        logger.fine("checking ingest lock");
+        if (isStillLockedForIngest()) {
+            logger.fine("(still locked)");
+        } else {
+            // OK, the dataset is no longer locked. 
+            // let's tell the page to refresh:
+            logger.fine("no longer locked!");
+            stateChanged = true;
+            //requestContext.execute("refreshPage();");
+        }
+    }
 
     /* 
 
     public boolean isLockedInProgress() {
         if (dataset != null) {
-            logger.fine("checking lock status of dataset " + dataset.getId());
+            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
             if (dataset.isLocked()) {
                 return true;
             }
@@ -2636,21 +2656,35 @@ public class DatasetPage implements java.io.Serializable {
     }*/
     
     public boolean isDatasetLockedInWorkflow() {
-        if (dataset != null) {
-            if (dataset.isLocked()) {
-                if (dataset.getDatasetLock().getReason().equals(DatasetLock.Reason.Workflow)) {
-                    return true;
-                }
+        return (dataset != null) 
+                ? dataset.isLockedFor(DatasetLock.Reason.Workflow) 
+                : false;
+    }
+    
+    public boolean isStillLocked() {
+        
+        if (dataset != null && dataset.getId() != null) {
+            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
+            if(dataset.getLocks().size() == 1 && dataset.getLockFor(DatasetLock.Reason.InReview) != null){
+                return false;
+            }
+            if (datasetService.checkDatasetLock(dataset.getId())) {
+                return true;
             }
         }
         return false;
     }
     
-    public boolean isStillLocked() {
-        if (dataset != null && dataset.getId() != null) {
-            logger.fine("checking lock status of dataset " + dataset.getId());
-            if (datasetService.checkDatasetLock(dataset.getId())) {
-                return true;
+    
+    public boolean isStillLockedForIngest() {
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (testDataset != null && testDataset.getId() != null) {
+                logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
+
+                if (testDataset.getLockFor(DatasetLock.Reason.Ingest) != null) {
+                    return true;
+                }
             }
         }
         return false;
@@ -2669,7 +2703,53 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
+    public boolean isLockedForIngest() {
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (stateChanged) {
+                return false;
+            }
+
+            if (testDataset != null) {
+                if (testDataset.getLockFor(DatasetLock.Reason.Ingest) != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
+     * For all other locks edit should be locked for all editors.
+     */
+    public boolean isLockedFromEdits() {
+        
+        try {
+            permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+        } catch (IllegalCommandException ex) {
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean isLockedFromDownload(){
+        
+        try {
+            permissionService.checkDownloadFileLock(dataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+        } catch (IllegalCommandException ex) {
+            return true;
+        }
+        return false;
+        
+    }
+
     public void setLocked(boolean locked) {
+        // empty method, so that we can use DatasetPage.locked in a hidden 
+        // input on the page. 
+    }
+    
+    public void setLockedForIngest(boolean locked) {
         // empty method, so that we can use DatasetPage.locked in a hidden 
         // input on the page. 
     }
@@ -3956,9 +4036,9 @@ public class DatasetPage implements java.io.Serializable {
         String lockInfoMessage = "script downloaded";
         DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
         if (lock != null) {
-            dataset.setDatasetLock(lock);
+            dataset.addLock(lock);
         } else {
-            logger.warning("Failed to lock the dataset (dataset id="+dataset.getId()+")");
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
         }
         
     }
@@ -3985,6 +4065,7 @@ public class DatasetPage implements java.io.Serializable {
      * It returns the default summary fields( subject, description, keywords, related publications and notes)
      * if the custom summary datafields has not been set, otherwise will set the custom fields set by the sysadmins
      * 
+     * @return the dataset fields to be shown in the dataset summary
      */
     public List<DatasetField> getDatasetSummaryFields() {
        customFields  = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);

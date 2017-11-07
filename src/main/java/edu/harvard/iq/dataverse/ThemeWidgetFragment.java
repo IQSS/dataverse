@@ -262,7 +262,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
     
     public String cancel() {
-         return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
+         return "dataverse.xhtml?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
     
     
@@ -285,7 +285,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
               this.cleanupTempDirectory(); 
         }
         JsfHelper.addSuccessMessage(JH.localize("dataverse.theme.success"));    
-        return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
+        return "dataverse.xhtml?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
       
  }

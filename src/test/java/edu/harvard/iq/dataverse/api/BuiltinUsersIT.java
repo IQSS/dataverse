@@ -39,8 +39,8 @@ public class BuiltinUsersIT {
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
-        Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
-        removeIdentifierGenerationStyle.then().assertThat()
+        Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
+        removeAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(200);
 
     }
@@ -72,18 +72,18 @@ public class BuiltinUsersIT {
                 .statusCode(OK.getStatusCode());
 
     }
-    
+
     @Test
     public void testLastApiUse() {
         Response createApiUser = UtilIT.createRandomUser();
         String apiUsername = UtilIT.getUsernameFromResponse(createApiUser);
         String secondApiToken = UtilIT.getApiTokenFromResponse(createApiUser);
-        
+
         Response createDataverse = UtilIT.createRandomDataverse(secondApiToken);
         String alias = UtilIT.getAliasFromResponse(createDataverse);
         Response createDatasetViaApi = UtilIT.createRandomDatasetViaNativeApi(alias, secondApiToken);
         Response getApiUserAsJson = UtilIT.getAuthenticatedUser(apiUsername, secondApiToken);
-        
+
         getApiUserAsJson.prettyPrint();
         getApiUserAsJson.then().assertThat()
                 // Checking that it's 2017 or whatever. Not y3k compliant! 
@@ -142,8 +142,8 @@ public class BuiltinUsersIT {
         createUserResponse.prettyPrint();
         assertEquals(400, createUserResponse.statusCode());
     }
-    
-    @Test 
+
+    @Test
     public void testBadCharacterInUsername() {
         String randomUsername = getRandomUsername() + "/";
         String email = randomUsername + "@mailinator.com";
@@ -151,7 +151,7 @@ public class BuiltinUsersIT {
         createUserResponse.prettyPrint();
         assertEquals(400, createUserResponse.statusCode());
     }
-    
+
     @Test
     public void testAccentInUsername() {
         String randomUsername = getRandomUsername();
@@ -177,7 +177,7 @@ public class BuiltinUsersIT {
         String createdToken = createdUser.getString("data.apiToken");
         logger.info(createdToken);
 
-        Response getApiTokenShouldFail = getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
+        Response getApiTokenShouldFail = UtilIT.getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
         getApiTokenShouldFail.then().assertThat()
                 .body("message", equalTo("This API endpoint has been disabled."))
                 .statusCode(FORBIDDEN.getStatusCode());
@@ -186,13 +186,13 @@ public class BuiltinUsersIT {
         setAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response getApiTokenUsingUsername = getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
+        Response getApiTokenUsingUsername = UtilIT.getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
         getApiTokenUsingUsername.prettyPrint();
         assertEquals(200, getApiTokenUsingUsername.getStatusCode());
         String retrievedTokenUsingUsername = JsonPath.from(getApiTokenUsingUsername.asString()).getString("data.message");
         assertEquals(createdToken, retrievedTokenUsingUsername);
 
-        Response failExpected = getApiTokenUsingUsername("junk", "junk");
+        Response failExpected = UtilIT.getApiTokenUsingUsername("junk", "junk");
         failExpected.prettyPrint();
         assertEquals(400, failExpected.getStatusCode());
 
@@ -204,8 +204,8 @@ public class BuiltinUsersIT {
             assertEquals(createdToken, retrievedTokenUsingEmail);
         }
 
-        Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
-        removeIdentifierGenerationStyle.then().assertThat()
+        Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
+        removeAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(200);
 
     }
@@ -355,13 +355,6 @@ public class BuiltinUsersIT {
                 .body(userAsJson)
                 .contentType(ContentType.JSON)
                 .post("/api/builtin-users?key=" + builtinUserKey + "&password=" + password);
-        return response;
-    }
-
-    private Response getApiTokenUsingUsername(String username, String password) {
-        Response response = given()
-                .contentType(ContentType.JSON)
-                .get("/api/builtin-users/" + username + "/api-token?username=" + username + "&password=" + password);
         return response;
     }
 
