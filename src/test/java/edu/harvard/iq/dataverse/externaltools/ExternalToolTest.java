@@ -9,9 +9,9 @@ public class ExternalToolTest {
     public void testGetButtonLabel() {
         System.out.println("getButtonLabel");
         ExternalTool externalTool = new ExternalTool();
-        // TODO: In order for external tools like PSI to be modular, they should not have entries in Bundle.properties.
-        externalTool.setDisplayNameBundleKey("psi.displayName");
-        assertEquals("Privacy-Preserving Data Preview", externalTool.getButtonLabel());
+        externalTool.setDisplayName("Privacy-Preserving Data Preview");
+        String buttonLabel = externalTool.getButtonLabel();
+        assertEquals("Privacy-Preserving Data Preview", buttonLabel);
     }
 
 }

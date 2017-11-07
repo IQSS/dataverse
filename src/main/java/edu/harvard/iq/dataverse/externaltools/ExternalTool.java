@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -20,28 +19,19 @@ public class ExternalTool implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * This text appears on the button and refers to a bundle key that can be
-     * translated.
-     */
+    // TODO: How are we going to internationize the display name?
     @Column(nullable = false)
-    private String displayNameBundleKey;
+    private String displayName;
 
-    /**
-     * This popup text describes the tool and refers to a bundle key that can be
-     * translated.
-     */
-    @Column(nullable = false)
-    private String descriptionBundleKey;
+    // TODO: How are we going to internationize the description?
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String description;
 
-    /**
-     * The base URL of the tool without parameters.
-     */
     @Column(nullable = false)
     private String toolUrl;
 
     /**
-     * Parameters the tool requires such as DataFile DOI and API Token
+     * Parameters the tool requires such as DataFile id and API Token
      */
     @Column(nullable = false)
     private String toolParameters;
@@ -60,20 +50,20 @@ public class ExternalTool implements Serializable {
         this.id = id;
     }
 
-    public String getDisplayNameBundleKey() {
-        return displayNameBundleKey;
+    public String getDisplayName() {
+        return displayName;
     }
 
-    public void setDisplayNameBundleKey(String displayNameBundleKey) {
-        this.displayNameBundleKey = displayNameBundleKey;
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
-    public String getDescriptionBundleKey() {
-        return descriptionBundleKey;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDescriptionBundleKey(String descriptionBundleKey) {
-        this.descriptionBundleKey = descriptionBundleKey;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getToolUrl() {
@@ -110,16 +100,16 @@ public class ExternalTool implements Serializable {
     }
 
     public String getButtonLabel() {
-        return BundleUtil.getStringFromBundle(displayNameBundleKey);
+        return getDisplayName();
     }
 
     public JsonObjectBuilder toJson() {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("id", this.getId());
-        jab.add("displayName", this.getButtonLabel());
-        jab.add("description", this.getDescriptionBundleKey());
-        jab.add(ExternalToolHandler.toolUrlString, this.getToolUrl());
-        jab.add(ExternalToolHandler.toolParametersString, this.getToolParameters());
+        jab.add(ExternalToolHandler.DISPLAY_NAME, this.getDisplayName());
+        jab.add(ExternalToolHandler.DESCRIPTION, this.getDescription());
+        jab.add(ExternalToolHandler.TOOL_URL, this.getToolUrl());
+        jab.add(ExternalToolHandler.TOOL_PARAMETERS, this.getToolParameters());
         return jab;
     }
 

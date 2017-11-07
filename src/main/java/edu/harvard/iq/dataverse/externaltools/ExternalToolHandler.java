@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +13,10 @@ import javax.json.JsonReader;
 
 public class ExternalToolHandler {
 
-    public static final String toolUrlString = "toolUrl";
-    public static final String displayNameBundleKey = "displayNameBundleKey";
-    public static final String descriptionNameBundleKey = "descriptionBundleKey";
-    public static final String toolParametersString = "toolParameters";
+    public static final String DISPLAY_NAME = "displayName";
+    public static final String DESCRIPTION = "description";
+    public static final String TOOL_URL = "toolUrl";
+    public static final String TOOL_PARAMETERS = "toolParameters";
 
     public static ExternalTool parseAddExternalToolInput(String userInput) {
         try {
@@ -25,22 +24,11 @@ public class ExternalToolHandler {
             ExternalTool externalTool = new ExternalTool();
             JsonReader jsonReader = Json.createReader(new StringReader(userInput));
             JsonObject jsonObject = jsonReader.readObject();
-            // Get display name.
-            String displayNameBundleKey = jsonObject.getString(ExternalToolHandler.displayNameBundleKey);
-            System.out.println("displayNameBundleKey: " + displayNameBundleKey);
-            externalTool.setDisplayNameBundleKey(displayNameBundleKey);
-            String displayName = BundleUtil.getStringFromBundle(externalTool.getDisplayNameBundleKey());
-            System.out.println("displayName: " + displayName);
-            // Get description.
-            String descriptionBundleKey = jsonObject.getString(ExternalToolHandler.descriptionNameBundleKey);
-            externalTool.setDescriptionBundleKey(descriptionBundleKey);
-            String description = BundleUtil.getStringFromBundle(externalTool.getDescriptionBundleKey());
-            System.out.println("description: " + description);
-            // Get URL
-            String toolUrl = jsonObject.getString(ExternalToolHandler.toolUrlString);
-            externalTool.setToolUrl(toolUrl);
+            externalTool.setDisplayName(jsonObject.getString(DISPLAY_NAME));
+            externalTool.setDescription(jsonObject.getString(DESCRIPTION));
+            externalTool.setToolUrl(jsonObject.getString(TOOL_URL));
             // Get parameters
-            JsonObject toolParameters = jsonObject.getJsonObject(ExternalToolHandler.toolParametersString);
+            JsonObject toolParameters = jsonObject.getJsonObject(TOOL_PARAMETERS);
             String toolParametersAsString = toolParameters.toString();
             System.out.println("toolParametersAsString: " + toolParametersAsString);
             externalTool.setToolParameters(toolParametersAsString);
