@@ -714,6 +714,39 @@ public class DatasetVersion implements Serializable {
         return retList;
     }
     
+    public List<String> getTimePeriodsCovered() {
+        List <String> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCovered)) {
+                for (DatasetFieldCompoundValue timePeriodValue : dsf.getDatasetFieldCompoundValues()) {
+                    String start = "";
+                    String end = "";
+                    for (DatasetField subField : timePeriodValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCoveredStart)) {
+                            if (subField.isEmptyForDisplay()) {
+                                start = null;
+                            } else {
+                                start = subField.getDisplayValue();
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCoveredEnd)) {
+                            if (subField.isEmptyForDisplay()) {
+                                end = null;
+                            } else {
+                                end = subField.getDisplayValue();
+                            }
+                        }
+
+                    }
+                    if (start != null && end != null) {
+                        retList.add(start + "/" + end);
+                    }
+                }
+            }
+        }       
+        return retList;        
+    }
+    
     /**
      * @return List of Strings containing the names of the authors.
      */
@@ -1151,7 +1184,10 @@ public class DatasetVersion implements Serializable {
          * (Per @jggautier's comment 03/11/2017 in #2243, we are putting datePublished 
          * back -- L.A.)
          */
-        job.add("datePublished", this.getDataset().getPublicationDateFormattedYYYYMMDD());
+        String datePublished = this.getDataset().getPublicationDateFormattedYYYYMMDD();
+        if (datePublished != null) {
+            job.add("datePublished", datePublished);
+        }
         
          /**
          * "dateModified" is more appropriate for a version: "The date on which
@@ -1173,16 +1209,26 @@ public class DatasetVersion implements Serializable {
         citation.add("@type", "Dataset");
         citation.add("text", this.getCitation());
         job.add("citation", citation);
-        /* TODO: should we use the HTML-style citation, i.e. this.getCitation(true) instead -- L.A.?) */
+        /* should we use the HTML-style citation, i.e. this.getCitation(true) instead -- L.A.?) */
         
         /**
          * temporalCoverage:
-         * TODO (if available)
+         * (if available)
          */
+        
+        List<String> timePeriodsCovered = this.getTimePeriodsCovered();
+        if (timePeriodsCovered.size() > 0) {
+            JsonArrayBuilder temporalCoverage = Json.createArrayBuilder();
+            for (String timePeriod : timePeriodsCovered) {
+                temporalCoverage.add(timePeriod);
+            }
+            job.add("temporalCoverage", temporalCoverage);
+        }
         
         /**
          * spatialCoverage:
-         * TODO (if available)
+         * (if available)
+         * TODO
          */
         
         /**
