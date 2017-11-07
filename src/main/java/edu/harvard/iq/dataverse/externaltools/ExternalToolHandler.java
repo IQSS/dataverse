@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -50,6 +51,12 @@ public class ExternalToolHandler {
     }
 
     public static String getQueryParametersForUrl(ExternalTool externalTool) {
+        DataFile nullDataFile = null;
+        return getQueryParametersForUrl(externalTool, nullDataFile);
+    }
+
+    // FIXME: Do we really need two methods?
+    public static String getQueryParametersForUrl(ExternalTool externalTool, DataFile dataFile) {
         String toolParameters = externalTool.getToolParameters();
         JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
         JsonObject obj = jsonReader.readObject();
@@ -61,17 +68,31 @@ public class ExternalToolHandler {
         if (numQueryParam == 1) {
             JsonObject jsonObject = queryParams.getJsonObject(0);
             Set<String> firstPair = jsonObject.keySet();
-            String firstKey = firstPair.iterator().next();
-            return "?" + firstKey + "=" + jsonObject.getString(firstKey);
+            String key = firstPair.iterator().next();
+            String value = jsonObject.getString(key);
+            return "?" + getQueryParam(key, value, dataFile);
         } else {
             List<String> params = new ArrayList<>();
             queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
                 queryParam.keySet().forEach((key) -> {
-                    params.add(key + "=" + queryParam.getString(key));
+                    String value = queryParam.getString(key);
+                    params.add(getQueryParam(key, value, dataFile));
                 });
             });
             return "?" + String.join("&", params);
 
+        }
+    }
+
+    private static String getQueryParam(String key, String value, DataFile dataFile) {
+        if (dataFile == null) {
+            return key + "=" + value;
+        }
+        // TODO: Put reserved words like "{fileId}" into an enum.
+        if ("{fileId}".equals(value)) {
+            return key + "=" + dataFile.getId();
+        } else {
+            return key + "=" + value;
         }
     }
 

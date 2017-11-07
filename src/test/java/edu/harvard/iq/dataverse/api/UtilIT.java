@@ -1092,6 +1092,11 @@ public class UtilIT {
                 .get("/api/admin/externalTools");
     }
 
+    static Response getExternalToolsByFileId(long fileId) {
+        return given()
+                .get("/api/admin/externalTools/file/" + fileId);
+    }
+
     static Response addExternalTool(JsonObject jsonObject) {
         RequestSpecification requestSpecification = given();
             requestSpecification = given()

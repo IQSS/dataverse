@@ -1,12 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFile;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
@@ -20,6 +24,21 @@ public class ExternalTools extends AbstractApiBean {
             jab.add(externalTool.toJson());
         });
         return ok(jab);
+    }
+
+    @GET
+    @Path("file/{id}")
+    public Response getExternalToolsByFile(@PathParam("id") Long fileIdFromUser) {
+        DataFile dataFile = fileSvc.find(fileIdFromUser);
+        if (dataFile == null) {
+            return error(BAD_REQUEST, "Could not find datafile with id " + fileIdFromUser);
+        }
+        JsonArrayBuilder tools = Json.createArrayBuilder();
+        externalToolService.findAll(dataFile)
+                .forEach((externalTool) -> {
+                    tools.add(externalTool.toJson());
+                });
+        return ok(tools);
     }
 
     @POST

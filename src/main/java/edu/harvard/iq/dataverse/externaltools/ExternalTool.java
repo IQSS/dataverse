@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
 import javax.json.Json;
@@ -9,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 @Entity
 public class ExternalTool implements Serializable {
@@ -43,6 +45,9 @@ public class ExternalTool implements Serializable {
     @Column(nullable = false)
     private String toolParameters;
 
+    @Transient
+    private DataFile dataFile;
+
     public Long getId() {
         return id;
     }
@@ -68,7 +73,7 @@ public class ExternalTool implements Serializable {
     }
 
     public String getToolUrl() {
-        return toolUrl + ExternalToolHandler.getQueryParametersForUrl(this);
+        return toolUrl + ExternalToolHandler.getQueryParametersForUrl(this, dataFile);
     }
 
     public void setToolUrl(String toolUrl) {
@@ -81,6 +86,14 @@ public class ExternalTool implements Serializable {
 
     public void setToolParameters(String toolParameters) {
         this.toolParameters = toolParameters;
+    }
+
+    public DataFile getDataFile() {
+        return dataFile;
+    }
+
+    public void setDataFile(DataFile dataFile) {
+        this.dataFile = dataFile;
     }
 
     public String getButtonLabel() {

@@ -3992,6 +3992,7 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
 
+    // FIXME: We need to return a list of tools per file.
     public List<ExternalTool> getExternalTools() {
         return externalTools;
     }

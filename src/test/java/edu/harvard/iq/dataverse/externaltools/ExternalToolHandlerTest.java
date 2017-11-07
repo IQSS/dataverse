@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.DataFile;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import javax.json.Json;
@@ -15,11 +16,13 @@ public class ExternalToolHandlerTest {
         assertEquals(null, ExternalToolHandler.parseAddExternalToolInput(Json.createObjectBuilder().build().toString()));
         String psiTool = new String(Files.readAllBytes(Paths.get("doc/sphinx-guides/source/_static/installation/files/root/external-tools/psi.json")));
         System.out.println("psiTool: " + psiTool);
-        // TODO: How do we put the real file id in here?
-        assertEquals("https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/UI/code/interface.html?fileid={fileId}", ExternalToolHandler.parseAddExternalToolInput(psiTool).getToolUrl());
         ExternalTool externalTool = ExternalToolHandler.parseAddExternalToolInput(psiTool);
-        // TODO: How do we put the real file id in here?
-        assertEquals("?fileid={fileId}", ExternalToolHandler.getQueryParametersForUrl(externalTool));
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        externalTool.setDataFile(dataFile);
+        String result = externalTool.getToolUrl();
+        System.out.println("result: " + result);
+        assertEquals("https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/UI/code/interface.html?fileid=42", result);
     }
 
     @Test
@@ -53,6 +56,23 @@ public class ExternalToolHandlerTest {
         String result2 = ExternalToolHandler.getQueryParametersForUrl(externalTool);
         System.out.println("result2: " + result2);
         assertEquals("?key1=value1&key2=value2", result2);
+
+        // Two query parameters, one a reserved word
+        externalTool.setToolParameters(Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("key1", "{fileId}")
+                        )
+                        .add(Json.createObjectBuilder()
+                                .add("key2", "value2")
+                        )
+                )
+                .build().toString());
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        String result3 = ExternalToolHandler.getQueryParametersForUrl(externalTool, dataFile);
+        System.out.println("result3: " + result3);
+        assertEquals("?key1=42&key2=value2", result3);
     }
 
 }

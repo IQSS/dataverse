@@ -27,6 +27,14 @@ public class ExternalToolsIT {
     }
 
     @Test
+    public void getExternalToolsByFileId() {
+        // FIXME: Don't hard code the file id. Make a dataset.
+        long fileId = 12;
+        Response getExternalTools = UtilIT.getExternalToolsByFileId(fileId);
+        getExternalTools.prettyPrint();
+    }
+
+    @Test
     public void testAddExternalTool() throws IOException {
         String psiTool = new String(java.nio.file.Files.readAllBytes(Paths.get("doc/sphinx-guides/source/_static/installation/files/root/external-tools/psi.json")));
         JsonReader jsonReader = Json.createReader(new StringReader(psiTool));
