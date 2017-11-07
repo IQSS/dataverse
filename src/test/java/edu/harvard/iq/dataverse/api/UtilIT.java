@@ -1092,8 +1092,9 @@ public class UtilIT {
                 .get("/api/admin/externalTools");
     }
 
-    static Response getExternalToolsByFileId(long fileId) {
+    static Response getExternalToolsByFileId(long fileId, String apiToken) {
         return given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/admin/externalTools/file/" + fileId);
     }
 

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
@@ -23,10 +24,11 @@ public class ExternalToolServiceBean {
         return typedQuery.getResultList();
     }
 
-    public List<ExternalTool> findAll(DataFile file) {
+    public List<ExternalTool> findAll(DataFile file, ApiToken apiToken) {
         List<ExternalTool> externalTools = findAll();
         externalTools.forEach((externalTool) -> {
             externalTool.setDataFile(file);
+            externalTool.setApiToken(apiToken);
         });
         return externalTools;
     }

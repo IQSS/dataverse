@@ -9,6 +9,9 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
@@ -159,7 +162,12 @@ public class FilePage implements java.io.Serializable {
            
            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
 
-           externalTools = externalToolService.findAll(file);
+            User user = session.getUser();
+            ApiToken apitoken = new ApiToken();
+            if (user instanceof AuthenticatedUser) {
+                apitoken = authService.findApiTokenByUser((AuthenticatedUser) user);
+            }
+            externalTools = externalToolService.findAll(file, apitoken);
 
         } else {
 

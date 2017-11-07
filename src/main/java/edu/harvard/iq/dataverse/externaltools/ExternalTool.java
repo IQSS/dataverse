@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
 import javax.json.Json;
@@ -48,6 +49,9 @@ public class ExternalTool implements Serializable {
     @Transient
     private DataFile dataFile;
 
+    @Transient
+    private ApiToken apiToken;
+
     public Long getId() {
         return id;
     }
@@ -73,7 +77,8 @@ public class ExternalTool implements Serializable {
     }
 
     public String getToolUrl() {
-        return toolUrl + ExternalToolHandler.getQueryParametersForUrl(this, dataFile);
+        // TODO: In addition to (or rather than) supporting API tokens as query parameters, support them as HTTP headers.
+        return toolUrl + ExternalToolHandler.getQueryParametersForUrl(this, dataFile, apiToken);
     }
 
     public void setToolUrl(String toolUrl) {
@@ -94,6 +99,14 @@ public class ExternalTool implements Serializable {
 
     public void setDataFile(DataFile dataFile) {
         this.dataFile = dataFile;
+    }
+
+    public ApiToken getApiToken() {
+        return apiToken;
+    }
+
+    public void setApiToken(ApiToken apiToken) {
+        this.apiToken = apiToken;
     }
 
     public String getButtonLabel() {

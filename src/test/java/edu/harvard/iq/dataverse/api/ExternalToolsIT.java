@@ -30,8 +30,11 @@ public class ExternalToolsIT {
     public void getExternalToolsByFileId() {
         // FIXME: Don't hard code the file id. Make a dataset.
         long fileId = 12;
-        Response getExternalTools = UtilIT.getExternalToolsByFileId(fileId);
+        // FIXME: Don't card code the API token.
+        String apiToken = "564e49d6-e653-4216-9c6e-996130bb67d2";
+        Response getExternalTools = UtilIT.getExternalToolsByFileId(fileId, apiToken);
         getExternalTools.prettyPrint();
+        // "toolUrl": "https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/UI/code/interface.html?fileid=12&key=564e49d6-e653-4216-9c6e-996130bb67d2",
     }
 
     @Test

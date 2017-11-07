@@ -2,9 +2,9 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
-import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.ws.rs.GET;
@@ -34,7 +34,10 @@ public class ExternalTools extends AbstractApiBean {
             return error(BAD_REQUEST, "Could not find datafile with id " + fileIdFromUser);
         }
         JsonArrayBuilder tools = Json.createArrayBuilder();
-        externalToolService.findAll(dataFile)
+        ApiToken apiToken = new ApiToken();
+        String apiTokenString = getRequestApiKey();
+        apiToken.setTokenString(apiTokenString);
+        externalToolService.findAll(dataFile, apiToken)
                 .forEach((externalTool) -> {
                     tools.add(externalTool.toJson());
                 });

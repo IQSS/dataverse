@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -52,11 +53,12 @@ public class ExternalToolHandler {
 
     public static String getQueryParametersForUrl(ExternalTool externalTool) {
         DataFile nullDataFile = null;
-        return getQueryParametersForUrl(externalTool, nullDataFile);
+        ApiToken nullApiToken = null;
+        return getQueryParametersForUrl(externalTool, nullDataFile, nullApiToken);
     }
 
     // FIXME: Do we really need two methods?
-    public static String getQueryParametersForUrl(ExternalTool externalTool, DataFile dataFile) {
+    public static String getQueryParametersForUrl(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
         String toolParameters = externalTool.getToolParameters();
         JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
         JsonObject obj = jsonReader.readObject();
@@ -70,13 +72,13 @@ public class ExternalToolHandler {
             Set<String> firstPair = jsonObject.keySet();
             String key = firstPair.iterator().next();
             String value = jsonObject.getString(key);
-            return "?" + getQueryParam(key, value, dataFile);
+            return "?" + getQueryParam(key, value, dataFile, apiToken);
         } else {
             List<String> params = new ArrayList<>();
             queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
                 queryParam.keySet().forEach((key) -> {
                     String value = queryParam.getString(key);
-                    params.add(getQueryParam(key, value, dataFile));
+                    params.add(getQueryParam(key, value, dataFile, apiToken));
                 });
             });
             return "?" + String.join("&", params);
@@ -84,15 +86,22 @@ public class ExternalToolHandler {
         }
     }
 
-    private static String getQueryParam(String key, String value, DataFile dataFile) {
+    private static String getQueryParam(String key, String value, DataFile dataFile, ApiToken apiToken) {
         if (dataFile == null) {
             return key + "=" + value;
         }
-        // TODO: Put reserved words like "{fileId}" into an enum.
-        if ("{fileId}".equals(value)) {
-            return key + "=" + dataFile.getId();
-        } else {
-            return key + "=" + value;
+        String apiTokenString = null;
+        if (apiToken != null) {
+            apiTokenString = apiToken.getTokenString();
+        }
+        // TODO: Put reserved words like "{fileId}" and "{apiToken}" into an enum.
+        switch (value) {
+            case "{fileId}":
+                return key + "=" + dataFile.getId();
+            case "{apiToken}":
+                return key + "=" + apiTokenString;
+            default:
+                return key + "=" + value;
         }
     }
 
