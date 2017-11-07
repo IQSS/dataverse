@@ -1343,7 +1343,7 @@
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
                                 <o:param>
-                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                    <a href="/dataverse/#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
                                         <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
                                     </a>
                                 </o:param>
@@ -1413,12 +1413,12 @@
                             <span class="glyphicon glyphicon-exclamation-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
                                 <o:param>
-                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                    <a href="/dataverse/#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
                                         <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
                                     </a>
                                 </o:param>
                                 <o:param>
-                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.owner.alias}" title="#{DatasetPage.dataset.owner.owner.displayName}">
+                                    <a href="/dataverse/#{DatasetPage.dataset.owner.owner.alias}" title="#{DatasetPage.dataset.owner.owner.displayName}">
                                         <h:outputText value="#{DatasetPage.dataset.owner.owner.displayName}"/>
                                     </a>
                                 </o:param>
