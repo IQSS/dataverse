@@ -45,7 +45,7 @@
         <span class="text-muted">{{ card_info.date_to_display_on_card }} 
             {% if card_info.parentId %}
                 {% if card_info.parentId != card_info.identifier %}
-                  -  <a href="/dataverse.xhtml?id={{ card_info.parentId }}">{{ card_info.parentName }}</a>
+                  -  <a href="/dataverse/{{ card_info.parent_alias }}">{{ card_info.parentName }}</a>
                 {% endif %}
             {% endif %}
         </span>
@@ -59,7 +59,7 @@
                 <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}"><span class="icon-dataset text-info"></span></a>
             </div>
             <span class="text-muted">{{ card_info.date_to_display_on_card }}
-                - <a href="/dataverse.xhtml?id={{ card_info.parentId }}">{{ card_info.parentName }}</a>
+                - <a href="/dataverse.xhtml/{{ card_info.parent_alias }}">{{ card_info.parentName }}</a>
             </span>
             <span class="resultDatasetCitationBlock{%if card_info.is_deaccesioned %} bg-danger{% else %} bg-citation {% endif %}">
                 {%if card_info.citationHtml %}{{ card_info.citationHtml|safe }}{% else %}{{ card_info.citation|safe }}{% endif %}</span>
