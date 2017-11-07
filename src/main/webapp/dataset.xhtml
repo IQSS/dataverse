@@ -30,7 +30,7 @@
 	    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
             <meta name="DC.creator" content="#{author}"/>
 	    </ui:repeat>
-            <ui:repeat var="subject" value="#{DatasetPage.datasetSubjects}">
+            <ui:repeat var="subject" value="#{DatasetPage.workingVersion.datasetSubjects}">
             <meta name="DC.subject" content="#{subject}"/>
 	    </ui:repeat>
 	    </ui:define>

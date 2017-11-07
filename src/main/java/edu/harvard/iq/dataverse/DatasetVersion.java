@@ -1197,10 +1197,17 @@ public class DatasetVersion implements Serializable {
         job.add("dateModified", this.getPublicationDateAsString());
         job.add("version", this.getVersionNumber().toString());
         /**
-         * "keywords" - contains subject(s), datasetkeyword(s) and topicclassification(s)
-         * metadata fields for the version. -- L.A. 
-         * TODO (see #2243 for details on how to format)
+         * "keywords" - We are using getDatasetSubjects() for consistency with
+         * `meta name="DC.subject"` in the dataset "head" tag. Per #2243 in the
+         * future, we could consider adding datasetkeyword(s) and
+         * topicclassification(s) but we should keep it consistent with
+         * "DC.subject".
          */
+        JsonArrayBuilder keywords = Json.createArrayBuilder();
+        this.getDatasetSubjects().forEach((subjects) -> {
+            keywords.add(subjects);
+        });
+        job.add("keywords", keywords);
         
         /**
          * citation: 

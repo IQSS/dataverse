@@ -3875,16 +3875,6 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     /**
-     * dataset subjects
-     *
-     * @return array of String containing the subjects for a page
-     */
-    public List<String> getDatasetSubjects() {
-        assert (null != workingVersion);
-        return workingVersion.getDatasetSubjects();
-    }
-
-    /**
      * publisher (aka - name of root dataverse)
      *
      * @return the publisher of the version
