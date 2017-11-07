@@ -2,10 +2,12 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import java.io.StringReader;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -105,8 +107,11 @@ public class DatasetVersionTest {
         // Only published datasets return any JSON.
         assertEquals("", datasetVersion.getJsonLd());
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+        datasetVersion.setVersionNumber(1L);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
-        datasetVersion.setReleaseTime(dateFmt.parse("19551105"));
+        Date publicationDate = dateFmt.parse("19551105");
+        datasetVersion.setReleaseTime(publicationDate);
+        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
@@ -119,6 +124,8 @@ public class DatasetVersionTest {
         assertEquals("http://dx.doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
         assertEquals("https://schema.org/version/3.3", obj.getString("schemaVersion"));
         assertEquals("1955-11-05", obj.getString("dateModified"));
+        assertEquals("1955-11-05", obj.getString("datePublished"));
+        assertEquals("1", obj.getString("version"));
         // TODO: if it ever becomes easier to mock a dataset title, test it.
         assertEquals("", obj.getString("name"));
         // TODO: If it ever becomes easier to mock authors, test them.
@@ -126,6 +133,7 @@ public class DatasetVersionTest {
         assertEquals(emptyArray, obj.getJsonArray("author"));
         assertEquals("Dataverse", obj.getJsonObject("provider").getString("name"));
         assertEquals("LibraScholar", obj.getJsonObject("publisher").getString("name"));
+        assertEquals(datasetVersion.getCitation(), obj.getJsonObject("citation").getString("text"));
     }
 
 }

@@ -1133,9 +1133,7 @@ public class DatasetVersion implements Serializable {
         job.add("@context", "http://schema.org");
         job.add("@type", "Dataset");
         job.add("@id", this.getDataset().getPersistentURL());
-        job.add("additionalType", "Dataset");
         job.add("name", this.getTitle());
-        job.add("@context", "http://schema.org");
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();
@@ -1150,17 +1148,55 @@ public class DatasetVersion implements Serializable {
          * We are aware that there is a "datePublished" field but it means "Date
          * of first broadcast/publication." This only makes sense for a 1.0
          * version.
-         *
+         * (Per @jggautier's comment 03/11/2017 in #2243, we are putting datePublished 
+         * back -- L.A.)
+         */
+        job.add("datePublished", this.getDataset().getPublicationDateFormattedYYYYMMDD());
+        
+         /**
          * "dateModified" is more appropriate for a version: "The date on which
          * the CreativeWork was most recently modified or when the item's entry
          * was modified within a DataFeed."
          */
         job.add("dateModified", this.getPublicationDateAsString());
+        job.add("version", this.getVersionNumber().toString());
+        /**
+         * "keywords" - contains subject(s), datasetkeyword(s) and topicclassification(s)
+         * metadata fields for the version. -- L.A. 
+         * TODO (see #2243 for details on how to format)
+         */
+        
+        /**
+         * citation: 
+         */
+        JsonObjectBuilder citation = Json.createObjectBuilder();
+        citation.add("@type", "Dataset");
+        citation.add("text", this.getCitation());
+        job.add("citation", citation);
+        /* TODO: should we use the HTML-style citation, i.e. this.getCitation(true) instead -- L.A.?) */
+        
+        /**
+         * temporalCoverage:
+         * TODO (if available)
+         */
+        
+        /**
+         * spatialCoverage:
+         * TODO (if available)
+         */
+        
+        /**
+         * "funder":
+         * TODO
+         * (see 2243 for info on how to format -- L.A.)
+        */
+        
         job.add("schemaVersion", "https://schema.org/version/3.3");
         job.add("publisher", Json.createObjectBuilder()
                 .add("@type", "Organization")
                 .add("name", this.getRootDataverseNameforCitation())
         );
+
         job.add("provider", Json.createObjectBuilder()
                 .add("@type", "Organization")
                 .add("name", "Dataverse")
