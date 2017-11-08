@@ -36,9 +36,11 @@ public class ExternalTool implements Serializable {
     @Column(nullable = false)
     private String toolParameters;
 
+    // FIXME: Remove this.
     @Transient
     private DataFile dataFile;
 
+    // FIXME: Remove this.
     @Transient
     private ApiToken apiToken;
 
@@ -67,6 +69,10 @@ public class ExternalTool implements Serializable {
     }
 
     public String getToolUrl() {
+        return toolUrl;
+    }
+
+    public String getToolUrlWithQueryParams() {
         // TODO: In addition to (or rather than) supporting API tokens as query parameters, support them as HTTP headers.
         return toolUrl + ExternalToolHandler.getQueryParametersForUrl(this, dataFile, apiToken);
     }
@@ -99,6 +105,7 @@ public class ExternalTool implements Serializable {
         this.apiToken = apiToken;
     }
 
+    // FIXME: remove this.
     public String getButtonLabel() {
         return getDisplayName();
     }

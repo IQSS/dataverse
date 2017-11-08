@@ -18,27 +18,11 @@ public class ExternalToolHandler {
     public static final String TOOL_URL = "toolUrl";
     public static final String TOOL_PARAMETERS = "toolParameters";
 
-    public static ExternalTool parseAddExternalToolInput(String userInput) {
-        try {
-
-            ExternalTool externalTool = new ExternalTool();
-            JsonReader jsonReader = Json.createReader(new StringReader(userInput));
-            JsonObject jsonObject = jsonReader.readObject();
-            externalTool.setDisplayName(jsonObject.getString(DISPLAY_NAME));
-            externalTool.setDescription(jsonObject.getString(DESCRIPTION));
-            externalTool.setToolUrl(jsonObject.getString(TOOL_URL));
-            // Get parameters
-            JsonObject toolParameters = jsonObject.getJsonObject(TOOL_PARAMETERS);
-            String toolParametersAsString = toolParameters.toString();
-            System.out.println("toolParametersAsString: " + toolParametersAsString);
-            externalTool.setToolParameters(toolParametersAsString);
-            return externalTool;
-        } catch (Exception ex) {
-            System.out.println("ex: " + ex);
-            return null;
-        }
-    }
-
+    // FIXME: Have the entity be part of the handler.
+//    private ExternalTool externalTool;
+    // FIXME: Start using these. The are being removed from the entity.
+//    private DataFile dataFile;
+//    private ApiToken apiToken;
     public static String getQueryParametersForUrl(ExternalTool externalTool) {
         DataFile nullDataFile = null;
         ApiToken nullApiToken = null;
@@ -46,6 +30,8 @@ public class ExternalToolHandler {
     }
 
     // FIXME: Do we really need two methods?
+    // FIXME: rename to handleRequest() to someday handle sending headers as well as query parameters.
+    // FIXME: Stop using the arguments when you uncomment the fields above.
     public static String getQueryParametersForUrl(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
         String toolParameters = externalTool.getToolParameters();
         JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));

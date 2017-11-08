@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolUtil;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.ws.rs.GET;
@@ -47,7 +47,8 @@ public class ExternalTools extends AbstractApiBean {
     @POST
     public Response addExternalTool(String userInput) {
         try {
-            ExternalTool externalTool = ExternalToolHandler.parseAddExternalToolInput(userInput);
+            ExternalTool externalTool = ExternalToolUtil.parseAddExternalToolInput(userInput);
+            // FIXME: Write to ActionLogRecord.
             ExternalTool saved = externalToolService.save(externalTool);
             return ok(saved.toJson());
         } catch (Exception ex) {
