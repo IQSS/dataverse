@@ -105,11 +105,6 @@ public class ExternalTool implements Serializable {
         this.apiToken = apiToken;
     }
 
-    // FIXME: remove this.
-    public String getButtonLabel() {
-        return getDisplayName();
-    }
-
     public JsonObjectBuilder toJson() {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("id", this.getId());

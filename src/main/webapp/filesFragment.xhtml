@@ -312,11 +312,6 @@
                                         #{bundle['file.tags']} 
                             </p:commandLink>    
                         </li>                                                               
-                        <ui:repeat value="#{DatasetPage.externalTools}" var="tool">
-                            <li>
-                                <a href="#{tool.toolUrl}">#{tool.buttonLabel}</a>
-                            </li>
-                        </ui:repeat>
                     </ul>
                     <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                 </div>

@@ -25,7 +25,7 @@ public class ExternalToolUtilTest {
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         externalTool.setApiToken(apiToken);
-        String toolUrl = externalTool.getToolUrl();
+        String toolUrl = externalTool.getToolUrlWithQueryParams();
         System.out.println("result: " + toolUrl);
         assertEquals("https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/UI/code/interface.html?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7", toolUrl);
 

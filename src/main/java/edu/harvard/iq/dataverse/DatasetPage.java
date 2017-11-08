@@ -85,8 +85,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
@@ -170,8 +168,6 @@ public class DatasetPage implements java.io.Serializable {
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
-    @EJB
-    ExternalToolServiceBean externalToolService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -249,7 +245,6 @@ public class DatasetPage implements java.io.Serializable {
     private boolean removeUnusedTags;
     
     private Boolean hasRsyncScript = false;
-    private List<ExternalTool> externalTools;
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -1522,8 +1517,6 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
         }
-
-        externalTools = externalToolService.findAll();
 
         return null;
     }
@@ -4071,11 +4064,6 @@ public class DatasetPage implements java.io.Serializable {
        customFields  = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
-    }
-
-    // FIXME: We need to return a list of tools per file.
-    public List<ExternalTool> getExternalTools() {
-        return externalTools;
     }
 
 }

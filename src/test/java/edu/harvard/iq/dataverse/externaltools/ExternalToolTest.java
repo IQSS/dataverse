@@ -1,17 +1,22 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import javax.json.JsonObjectBuilder;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class ExternalToolTest {
 
+    // TODO: Write test for toJson.
     @Test
-    public void testGetButtonLabel() {
-        System.out.println("getButtonLabel");
+    public void testToJson() {
+        System.out.println("toJson");
         ExternalTool externalTool = new ExternalTool();
-        externalTool.setDisplayName("Privacy-Preserving Data Preview");
-        String buttonLabel = externalTool.getButtonLabel();
-        assertEquals("Privacy-Preserving Data Preview", buttonLabel);
+        try {
+            JsonObjectBuilder json = externalTool.toJson();
+            System.out.println("JSON: " + json);
+        } catch (Exception ex) {
+            assertEquals(null, ex.getMessage());
+        }
     }
 
 }
