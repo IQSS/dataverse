@@ -66,6 +66,7 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         if (producerString.isEmpty()) {
             producerString = ":unav";
         }
+        
         metadata.put("datacite.creator", authorString);
         metadata.put("datacite.title", dvObjectIn.getDisplayName());
         metadata.put("datacite.publisher", producerString);

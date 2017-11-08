@@ -362,11 +362,13 @@ class DataCiteMetadataTemplate {
 
         StringBuilder contributorsElement = new StringBuilder();
         for (String[] contact : this.getContacts()) {
-            contributorsElement.append("<contributor contributorType=\"ContactPerson\"><contributorName>" + contact[0] + "</contributorName>");
-            if (!contact[1].isEmpty()) {
-                contributorsElement.append("<affiliation>" + contact[1] + "</affiliation>");
+            if (!contact[0].isEmpty()) {
+                contributorsElement.append("<contributor contributorType=\"ContactPerson\"><contributorName>" + contact[0] + "</contributorName>");
+                if (!contact[1].isEmpty()) {
+                    contributorsElement.append("<affiliation>" + contact[1] + "</affiliation>");
+                }
+                contributorsElement.append("</contributor>");
             }
-            contributorsElement.append("</contributor>");
         }
         for (String[] producer : this.getProducers()) {
             contributorsElement.append("<contributor contributorType=\"Producer\"><contributorName>" + producer[0] + "</contributorName>");

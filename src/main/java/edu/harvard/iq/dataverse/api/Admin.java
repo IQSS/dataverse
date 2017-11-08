@@ -4,6 +4,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
@@ -60,6 +61,7 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
@@ -91,6 +93,8 @@ public class Admin extends AbstractApiBean {
     IngestServiceBean ingestService;
     @EJB
     DataFileServiceBean fileService;
+    @EJB
+    DatasetServiceBean datasetService;
 
     // Make the session available
     @Inject
@@ -1002,4 +1006,57 @@ public class Admin extends AbstractApiBean {
                 .add("errors", errorArray)
         );
     }
+    
+    @GET
+    @Path("{id}/registerDataFile")
+    public Response registerDataFile(@PathParam("id") String id ) {
+        System.out.print("try register datafile: " );
+        return response( req -> {
+            execCommand(new RegisterDvObjectCommand(req, findDataFileOrDie(id)));
+            return ok("DataFile " + id + " registered");
+        });
+    }
+    
+    @GET
+    @Path("/registerDataFileAll")
+    public Response registerDataFileAll() {
+        Integer numDF = fileService.findAll().size();
+        Integer filecounter = 1;
+        System.out.print ("number of Files: " + numDF);
+            for (DataFile df: fileService.findAll()){
+                System.out.print ("filecounter: " + filecounter++);
+                System.out.print("DATAFILE: " + df.getDisplayName());
+                System.out.print("DATAFILE ID: " + df.getId());
+                try {
+                    if (df.getIdentifier() == null || df.getIdentifier().isEmpty()){
+                        execCommand(new RegisterDvObjectCommand(createDataverseRequest(findAuthenticatedUserOrDie()), df));
+                    }                   
+                } catch (WrappedResponse ex) {
+                    System.out.print("Wrapped response: " + ex.getMessage());
+                    Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+                }  
+                if (filecounter >= numDF ){
+                    break;
+                }
+            }
+        
+        /*
+        datasetService.findAll().forEach((dataset) -> {
+            System.out.print("dataset: " + dataset.getDisplayName());
+            dataset.getFiles().forEach((DataFile df) -> {
+                System.out.print("datafile: " + df.getDisplayName());
+                try {
+                    execCommand(new RegisterDvObjectCommand(createDataverseRequest(findAuthenticatedUserOrDie()), df));
+                } catch (WrappedResponse ex) {
+                    System.out.print("Wrapped response: " + ex.getMessage());
+                    Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+        });
+*/
+        return ok("All Datafiles have been registered");
+
+    }
+    
+    
 }

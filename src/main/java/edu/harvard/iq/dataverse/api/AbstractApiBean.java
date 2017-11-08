@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -147,9 +149,12 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DatasetServiceBean datasetSvc;
+    
+    @EJB
+    protected DataFileServiceBean fileService;
 
-	@EJB
-	protected DataverseServiceBean dataverseSvc;
+    @EJB
+    protected DataverseServiceBean dataverseSvc;
 
     @EJB
     protected AuthenticationServiceBean authSvc;
@@ -384,6 +389,24 @@ public abstract class AbstractApiBean {
             }
         }
     }
+    
+    protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
+        DataFile datafile;
+
+        try {
+            datafile = fileService.find(Long.parseLong(id));
+            if (datafile == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.id", Collections.singletonList(id))));
+            }
+            return datafile;
+        } catch (NumberFormatException nfe) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", Collections.singletonList(id))));
+        }
+
+    }
+    
+    
 
     protected DataverseRequest createDataverseRequest( User u )  {
         return new DataverseRequest(u, httpRequest);

@@ -966,6 +966,10 @@ public class SolrSearchResult {
             return null;
         }*/
         
+        if (entity.getIdentifier() != null){
+            return "/file.xhtml?persistentId=" + entity.getGlobalId();
+        }
+        
         return "/file.xhtml?fileId=" + entity.getId() + "&datasetVersionId=" + datasetVersionId;
         
         /*
