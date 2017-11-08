@@ -1020,26 +1020,29 @@ public class Admin extends AbstractApiBean {
     @GET
     @Path("/registerDataFileAll")
     public Response registerDataFileAll() {
+        AuthenticatedUser authenticatedUser;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
         Integer numDF = fileService.findAll().size();
         Integer filecounter = 1;
-        System.out.print ("number of Files: " + numDF);
-            for (DataFile df: fileService.findAll()){
-                System.out.print ("filecounter: " + filecounter++);
-                System.out.print("DATAFILE: " + df.getDisplayName());
-                System.out.print("DATAFILE ID: " + df.getId());
-                try {
-                    if (df.getIdentifier() == null || df.getIdentifier().isEmpty()){
-                        execCommand(new RegisterDvObjectCommand(createDataverseRequest(findAuthenticatedUserOrDie()), df));
-                    }                   
-                } catch (WrappedResponse ex) {
-                    System.out.print("Wrapped response: " + ex.getMessage());
-                    Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
-                }  
-                if (filecounter >= numDF ){
-                    break;
+        System.out.print("number of Files: " + numDF);
+        for (DataFile df : fileService.findAll()) {
+            System.out.print("filecounter: " + filecounter++);
+            System.out.print("DATAFILE: " + df.getDisplayName());
+            System.out.print("DATAFILE ID: " + df.getId());
+            try {
+                if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
+                    execCommand(new RegisterDvObjectCommand(createDataverseRequest(authenticatedUser), df));
                 }
+            } catch (WrappedResponse ex) {
+                System.out.print("Wrapped response: " + ex.getMessage());
+                Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             }
-        
+        }
+
         /*
         datasetService.findAll().forEach((dataset) -> {
             System.out.print("dataset: " + dataset.getDisplayName());
@@ -1053,10 +1056,10 @@ public class Admin extends AbstractApiBean {
                 }
             });
         });
-*/
+         */
         return ok("All Datafiles have been registered");
 
     }
-    
+
     
 }
