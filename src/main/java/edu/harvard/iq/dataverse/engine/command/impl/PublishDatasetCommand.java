@@ -12,9 +12,10 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.util.Optional;
+import static java.util.stream.Collectors.joining;
 
 /**
- * Kick-off a dataset publication process. The process may complete immediatly, 
+ * Kick-off a dataset publication process. The process may complete immediately, 
  * but may also result in a workflow being started and pending on some external 
  * response. Either way, the process will be completed by an instance of 
  * {@link FinalizeDatasetPublicationCommand}.
@@ -54,20 +55,17 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
             theDataset.getEditVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
             
-        } else /* major, non-first release */ {
+        } else {
+            // major, non-first release
             theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
             theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
         }
 
         theDataset = ctxt.em().merge(theDataset);
         
-        //Move remove lock to after merge... SEK 9/1/17 (why? -- L.A.)
-        ctxt.engine().submit( new RemoveLockCommand(getRequest(), theDataset));
-
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         if ( prePubWf.isPresent() ) {
             // We start a workflow
-            ctxt.engine().submit( new AddLockCommand(getRequest(), theDataset, new DatasetLock(DatasetLock.Reason.Workflow, getRequest().getAuthenticatedUser())));
             ctxt.workflows().start(prePubWf.get(), buildContext(doiProvider, TriggerType.PrePublishDataset) );
             return new PublishDatasetResult(theDataset, false);
             
@@ -90,9 +88,11 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
         }
         
-        if (theDataset.isLocked()  && !theDataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview)) {
-            
-            throw new IllegalCommandException("This dataset is locked. Reason: " + theDataset.getDatasetLock().getReason().toString() + ". Please try publishing later.", this);
+        if ( theDataset.isLockedFor(DatasetLock.Reason.Workflow)
+                || theDataset.isLockedFor(DatasetLock.Reason.Ingest) ) {
+            throw new IllegalCommandException("This dataset is locked. Reason: " 
+                    + theDataset.getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
+                    + ". Please try publishing later.", this);
         }
         
         if (theDataset.getLatestVersion().isReleased()) {

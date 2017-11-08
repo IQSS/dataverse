@@ -23,13 +23,10 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,16 +97,25 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         
-
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
         ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
 
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset));
+        // Remove locks
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
+        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
+            ctxt.engine().submit( 
+                    new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
+        }
         
-        ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset)
-                .ifPresent(wf -> ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset)));
+        ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
+            try {
+                ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset));
+            } catch (CommandException ex) {
+                logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
+            }
+        });
         
         Dataset resultSet = ctxt.em().merge(theDataset);
         
@@ -266,7 +272,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     }
     
     /**
-     * Whether it's EZID or DataCiteif, if the registration is 
+     * Whether it's EZID or DataCite, if the registration is 
      * refused because the identifier already exists, we'll generate another one
      * and try to register again... but only up to some
      * reasonably high number of times - so that we don't 

@@ -130,6 +130,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setPublisher(producerString);
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
         String xmlMetadata = metadataTemplate.generateXML();
+        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
 
@@ -172,8 +173,14 @@ public class DOIDataCiteRegisterService {
                 try (DataCiteRESTfullClient client = openClient()) {
                     retString = client.postMetadata(xmlMetadata);
                     client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+                    
                 } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
+                    
+                } catch ( RuntimeException rte ) {
+                    logger.log(Level.SEVERE, "Error creating DOI at DataCite: {0}", rte.getMessage());
+                    logger.log(Level.SEVERE, "Exception", rte);
+                    
                 }
             }
         } else if (status.equals("unavailable")) {

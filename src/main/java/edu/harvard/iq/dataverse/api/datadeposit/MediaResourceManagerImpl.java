@@ -160,7 +160,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
                             Dataset dataset = fileToDelete.getOwner();
-                            SwordUtil.datasetLockCheck(dataset);
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
                             /**
@@ -217,7 +216,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
             }
-            SwordUtil.datasetLockCheck(dataset);
             
             //---------------------------------------
             // Make sure that the upload type is not rsync

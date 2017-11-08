@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -712,6 +714,31 @@ public class FilePage implements java.io.Serializable {
 
     public boolean isPubliclyDownloadable() {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
+    }
+    
+    /**
+     * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
+     * For all other locks edit should be locked for all editors.
+     */
+    public boolean isLockedFromEdits() {
+        Dataset testDataset = fileMetadata.getDataFile().getOwner();
+        
+        try {
+            permissionService.checkEditDatasetLock(testDataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(testDataset, dvRequestService.getDataverseRequest()));
+        } catch (IllegalCommandException ex) {
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean isLockedFromDownload(){
+        Dataset testDataset = fileMetadata.getDataFile().getOwner();
+        try {
+            permissionService.checkDownloadFileLock(testDataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(testDataset, dvRequestService.getDataverseRequest()));
+        } catch (IllegalCommandException ex) {
+            return true;
+        }
+        return false;       
     }
 
     public String getPublicDownloadUrl() {

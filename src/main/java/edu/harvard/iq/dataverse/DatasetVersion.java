@@ -221,8 +221,7 @@ public class DatasetVersion implements Serializable {
      */
     public boolean isInReview() {
         if (versionState != null && versionState.equals(VersionState.DRAFT)) {
-            DatasetLock l = getDataset().getDatasetLock();
-            return (l != null) && l.getReason()==DatasetLock.Reason.InReview;
+            return getDataset().isLockedFor(DatasetLock.Reason.InReview);
         } else {
             return false;
         }

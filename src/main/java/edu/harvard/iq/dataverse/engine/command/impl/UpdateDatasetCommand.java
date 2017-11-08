@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
@@ -78,6 +77,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
+        ctxt.permissions().checkEditDatasetLock(theDataset, getRequest(), this);
         // first validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required

@@ -9,9 +9,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Logger;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -73,7 +74,6 @@ import org.hibernate.validator.constraints.NotBlank;
     @Index(columnList = "thumbnailfile_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
 public class Dataset extends DvObjectContainer {
-    private static final Logger logger = Logger.getLogger(Dataset.class.getCanonicalName());
 
     public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
@@ -100,8 +100,8 @@ public class Dataset extends DvObjectContainer {
     @OrderBy("versionNumber DESC, minorVersionNumber DESC")
     private List<DatasetVersion> versions = new ArrayList<>();
 
-    @OneToOne(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
-    private DatasetLock datasetLock;
+    @OneToMany(mappedBy = "dataset", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<DatasetLock> datasetLocks;
     
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "thumbnailfile_id")
@@ -154,57 +154,63 @@ public class Dataset extends DvObjectContainer {
         datasetVersion.setMinorVersionNumber((long) 0);
         versions.add(datasetVersion);
     }
-/*
     
-
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public String getAuthority() {
-        return authority;
-    }
-
-    public void setAuthority(String authority) {
-        this.authority = authority;
-    }
-    */
     /**
-     * @return dataset identifier.
-     *         For example, a dataset with database id (primary key) 3, persistent ID
-     *         doi:10.5072/FK2/abcde, this should return "abcde".
+     * Checks whether {@code this} dataset is locked for a given reason.
+     * @param reason the reason we test for.
+     * @return {@code true} iff the data set is locked for {@code reason}.
      */
-    /*
+    public boolean isLockedFor( DatasetLock.Reason reason ) {
+        for ( DatasetLock l : getLocks() ) {
+            if ( l.getReason() == reason ) {
+                return true;
+            }
+        }
+        return false;
+    }
     
-
-    public String getIdentifier() {
-        return identifier;
+    /**
+     * Retrieves the dataset lock for the passed reason. 
+     * @param reason
+     * @return the dataset lock, or {@code null}.
+     */
+    public DatasetLock getLockFor( DatasetLock.Reason reason ) {
+        for ( DatasetLock l : getLocks() ) {
+            if ( l.getReason() == reason ) {
+                return l;
+            }
+        }
+        return null;
+    }
+    
+    public Set<DatasetLock> getLocks() {
+        // lazy set creation
+        if ( datasetLocks == null ) {
+            setLocks( new HashSet<>() );
+        }
+        return datasetLocks;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    /**
+     * JPA use only!
+     * @param datasetLocks 
+     */
+    void setLocks(Set<DatasetLock> datasetLocks) {
+        this.datasetLocks = datasetLocks;
+    }
+    
+    public void addLock(DatasetLock datasetLock) {
+        getLocks().add(datasetLock);
+    }
+    
+    public void removeLock( DatasetLock aDatasetLock ) {
+        getLocks().remove( aDatasetLock );
     }
 
-    public String getDoiSeparator() {
-        return doiSeparator;
+    public boolean isLocked() {
+        return !getLocks().isEmpty();
     }
-
-    public void setDoiSeparator(String doiSeparator) {
-        this.doiSeparator = doiSeparator;
-    }
-
-    public Date getGlobalIdCreateTime() {
-        return globalIdCreateTime;
-    }
-
-    public void setGlobalIdCreateTime(Date globalIdCreateTime) {
-        this.globalIdCreateTime = globalIdCreateTime;
-    }
-    */
+    
     public Date getLastExportTime() {
         return lastExportTime;
     }
@@ -243,18 +249,6 @@ public class Dataset extends DvObjectContainer {
 
     public void setFiles(List<DataFile> files) {
         this.files = files;
-    }
-
-    public DatasetLock getDatasetLock() {
-        return datasetLock;
-    }
-
-    public void setDatasetLock(DatasetLock datasetLock) {
-        this.datasetLock = datasetLock;
-    }
-
-    public boolean isLocked() {
-        return (getDatasetLock()!=null);
     }
 
     public boolean isDeaccessioned() {
