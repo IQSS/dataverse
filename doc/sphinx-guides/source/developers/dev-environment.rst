@@ -27,6 +27,8 @@ Glassfish
 
 As a `Java Enterprise Edition <http://en.wikipedia.org/wiki/Java_Platform,_Enterprise_Edition>`_ 7 (Java EE 7) application, Dataverse requires an applications server to run.
 
+FIXME: Update to Glassfish 5
+
 Glassfish 4.1 is required (not any earlier or later versions until https://github.com/IQSS/dataverse/issues/2628 is resolved), which can be downloaded from http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip . If you have downloaded Glassfish as part of a Netbeans bundle, you can manually add the proper version by clicking "Tools", "Servers", "Add Server".
 
 By default, Glassfish reports analytics information. The administration guide suggests this can be disabled with ``asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes.
@@ -163,7 +165,7 @@ Run Installer
 Please note the following:
 
 - If you have trouble with the SMTP server, consider editing the installer script to disable the SMTP check.
-- Rather than running the installer in "interactive" mode, it's possible to put the values in a file. See "non-interactive mode" in the :doc:`/installation/installation-main` section of the Installation Guide.
+- Rather than running the installer in "interactive" mode, it's possible to put the values in a file. See "non-interactive mode" in the :doc:`/installation/installation-main` section of the Installation Guide. If you put a ``default.config`` file in place you can run ``./install -y -f -nogfpasswd -insecure`` to set up a dev environment, for example.
 
 Now that you have all the prerequisites in place, you need to configure the environment for the Dataverse app - configure the database connection, set some options, etc. We have an installer script that should do it all for you. Again, assuming that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects:
 
