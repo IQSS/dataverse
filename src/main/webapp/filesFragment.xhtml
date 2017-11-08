@@ -61,7 +61,7 @@
                     </div>
                 </div>
             </div>
-            <div jsf:id="filesHeaderBlock" class="row" jsf:rendered="#{DatasetPage.fileMetadatasSearch.size() gt 1}">
+            <div jsf:id="filesHeaderBlock" class="row" jsf:rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 1}">
                 <div class="col-xs-6">
                     <!-- dataset file search -->
                     <div class="input-group">
@@ -92,7 +92,7 @@
                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
                                          and (DatasetPage.canUpdateDataset()
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                        <p:commandLink type="button" styleClass="btn btn-default btn-access  #{DatasetPage.workingVersion.fileMetadatas.size() > 0 or DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
+                        <p:commandLink type="button" styleClass="btn btn-default btn-access  #{DatasetPage.workingVersion.fileMetadatas.size() > 0 or DatasetPage.lockedFromEdits ? 'disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
                                         rendered="#{DatasetPage.sessionUserAuthenticated 
                                                     and DatasetPage.canUpdateDataset()
                                                     and !widgetWrapper.widgetView and settingsWrapper.rsyncUpload}">
@@ -100,12 +100,12 @@
                             <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['file.uploadFiles']}"/>
                         </p:commandLink>
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
-                                      type="button" styleClass="btn btn-default btn-access #{DatasetPage.locked ? 'ui-state-disabled' : ''}"
-                                      disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated 
+                                      type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
+                                      disabled="#{DatasetPage.lockedFromEdits}" rendered="#{DatasetPage.sessionUserAuthenticated 
                                                                                     and DatasetPage.canUpdateDataset()
                                                                                     and !widgetWrapper.widgetView and !settingsWrapper.rsyncUpload}">
                             <!-- UPLOAD FILES BUTTON -->
-                            <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
+                            <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
 <!--                        <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.showComputeButton()}">
                              COMPUTE BUTTON 
@@ -278,35 +278,35 @@
                 <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                              and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and (DatasetPage.fileMetadatasSearch.size() gt 0)}">
                     <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
-                            disabled="#{DatasetPage.locked ? 'disabled' : ''}">
+                            disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                        <li class="#{DatasetPage.locked ? 'disabled' : ''}">
+                        <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                             <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
                                 <h:outputText value="#{bundle['file.delete']}"/> 
                             </p:commandLink>
                         </li>
-                        <li class="#{DatasetPage.locked ? 'disabled' : ''}">
+                        <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                             <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile" action="#{DatasetPage.editFileMetadata()}">                                         
                                 <h:outputText value="#{bundle['file.metadata']}"/>
                             </p:commandLink>
                         </li>
                         <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
-                            <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
+                            <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
                                 <p:commandLink oncomplete="toggle_dropdown();" 
                                                onclick="testFilesSelectedForRestriction()">
                                     <h:outputText value="#{bundle['file.restrict']}"/>
                                 </p:commandLink>
                             </li>
-                            <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
+                            <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
                                 <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
                                                action="#{DatasetPage.restrictSelectedFiles(false)}">
                                     <h:outputText value="#{bundle['file.unrestrict']}"/>
                                 </p:commandLink>
                             </li>
                         </ui:fragment>
-                        <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
+                        <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
                             <p:commandLink id="fileCategoriesLinkTwo"    
                                            onclick="testFilesSelectedForTags()">
                                         #{bundle['file.tags']} 
@@ -322,7 +322,7 @@
                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable}">
                     <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                     type="button" styleClass="btn btn-default"
-                                    disabled="#{DatasetPage.locked}"
+                                    disabled="#{DatasetPage.lockedFromDownload}"
                                     update="@form"
                                     actionListener="#{DatasetPage.validateFilesForDownload(false)}">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
@@ -330,7 +330,7 @@
                     <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                     <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                     type="button" styleClass="btn btn-default"
-                                    disabled="#{DatasetPage.locked}"
+                                    disabled="#{DatasetPage.lockedFromDownload}"
                                     action="#{DatasetPage.validateFilesForDownload(true)}"
                                     update="@form" oncomplete="">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
@@ -348,8 +348,7 @@
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
-            </f:facet>
-                        
+            </f:facet>          
             <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
                 <!-- Ingest in progress... -->
                 #{bundle['file.ingestInProgress']}
@@ -371,6 +370,7 @@
                     <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
                     <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                    <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
                 </ui:include>
             </div>
             

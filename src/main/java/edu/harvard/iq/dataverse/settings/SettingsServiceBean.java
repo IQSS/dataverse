@@ -32,6 +32,7 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        AllowApiTokenLookupViaApi,
         /**
          * Ordered, comma-separated list of custom fields to show above the fold
          * on dataset page such as "data_type,sample,pdb"

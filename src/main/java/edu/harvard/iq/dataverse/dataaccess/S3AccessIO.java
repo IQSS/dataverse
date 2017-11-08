@@ -25,8 +25,12 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,9 +38,11 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
@@ -186,6 +192,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             File inputFile = fileSystemPath.toFile();
             if (dvObject instanceof DataFile) {
                 s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
+                
                 newFileSize = inputFile.length();
             } else {
                 throw new IOException("DvObject type other than datafile is not yet supported");
@@ -205,6 +212,25 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         setSize(newFileSize);
     }
 
+    /**
+     * Implements the StorageIO saveInputStream() method. 
+     * This implementation is somewhat problematic, because S3 cannot save an object of 
+     * an unknown length. This effectively nullifies any benefits of streaming; 
+     * as we cannot start saving until we have read the entire stream. 
+     * One way of solving this would be to buffer the entire stream as byte[], 
+     * in memory, then save it... Which of course would be limited by the amount 
+     * of memory available, and thus would not work for streams larger than that. 
+     * So we have eventually decided to save save the stream to a temp file, then 
+     * save to S3. This is slower, but guaranteed to work on any size stream. 
+     * An alternative we may want to consider is to not implement this method 
+     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException, 
+     * similarly to how we handle attempts to open OutputStreams, in this and the 
+     * Swift driver. 
+     * 
+     * @param inputStream InputStream we want to save
+     * @param auxItemTag String representing this Auxiliary type ("extension")
+     * @throws IOException if anything goes wrong.
+    */
     @Override
     public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
         if (filesize == null || filesize < 0) {
@@ -235,24 +261,23 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
-        //TODO? Copying over the object to a byte array is farily inefficient.
-        // We need the length of the data to upload inputStreams (see our putObject calls).
-        // There may be ways to work around this, see https://github.com/aws/aws-sdk-java/issues/474 to start.
-        // This is out of scope of creating the S3 driver and referenced in issue #4064!
-        byte[] bytes = IOUtils.toByteArray(inputStream);
-        long length = bytes.length;
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(length);
+        String directoryString = FileUtil.getFilesTempDirectory();
+
+        Random rand = new Random();
+        Path tempPath = Paths.get(directoryString, Integer.toString(rand.nextInt(Integer.MAX_VALUE)));
+        File tempFile = createTempFile(tempPath, inputStream);
+        
         try {
-            s3.putObject(bucketName, key, inputStream, metadata);
+            s3.putObject(bucketName, key, tempFile);
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3 Storage.";
             }
-
+            tempFile.delete();
             throw new IOException(failureMsg);
         }
+        tempFile.delete();
         setSize(s3.getObjectMetadata(bucketName, key).getContentLength());
     }
 
@@ -336,7 +361,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String destinationKey = getDestinationKey(auxItemTag);
         try {
             File inputFile = fileSystemPath.toFile();
-            s3.putObject(new PutObjectRequest(bucketName, destinationKey, inputFile));
+            s3.putObject(new PutObjectRequest(bucketName, destinationKey, inputFile));            
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.savePathAsAux():    " + ase.getMessage());
             throw new IOException("S3AccessIO: Failed to save path as an auxiliary object.");
@@ -367,31 +392,71 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    //todo: add new method with size?
-    //or just check the data file content size?
-    // this method copies a local InputStream into this DataAccess Auxiliary location:
+    /**
+     * Implements the StorageIO saveInputStreamAsAux() method. 
+     * This implementation is problematic, because S3 cannot save an object of 
+     * an unknown length. This effectively nullifies any benefits of streaming; 
+     * as we cannot start saving until we have read the entire stream. 
+     * One way of solving this would be to buffer the entire stream as byte[], 
+     * in memory, then save it... Which of course would be limited by the amount 
+     * of memory available, and thus would not work for streams larger than that. 
+     * So we have eventually decided to save save the stream to a temp file, then 
+     * save to S3. This is slower, but guaranteed to work on any size stream. 
+     * An alternative we may want to consider is to not implement this method 
+     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException, 
+     * similarly to how we handle attempts to open OutputStreams, in this and the 
+     * Swift driver. 
+     * 
+     * @param inputStream InputStream we want to save
+     * @param auxItemTag String representing this Auxiliary type ("extension")
+     * @throws IOException if anything goes wrong.
+    */
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
+
+        String directoryString = FileUtil.getFilesTempDirectory();
+
+        Random rand = new Random();
+        String pathNum = Integer.toString(rand.nextInt(Integer.MAX_VALUE));
+        Path tempPath = Paths.get(directoryString, pathNum);
+        File tempFile = createTempFile(tempPath, inputStream);
+        
         String destinationKey = getDestinationKey(auxItemTag);
-        byte[] bytes = IOUtils.toByteArray(inputStream);
-        long length = bytes.length;
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(length);
+        
         try {
-            s3.putObject(bucketName, destinationKey, inputStream, metadata);
+            s3.putObject(bucketName, destinationKey, tempFile);
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
 
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Unknown exception occured while saving a local InputStream as S3Object";
             }
+            tempFile.delete();
             throw new IOException(failureMsg);
         }
+        tempFile.delete();
     }
+    
+    //Helper method for supporting saving streams with unknown length to S3
+    //We save those streams to a file and then upload the file
+    private File createTempFile(Path path, InputStream inputStream) throws IOException {
 
+        File targetFile = new File(path.toUri()); //File needs a name
+        OutputStream outStream = new FileOutputStream(targetFile);
+
+        byte[] buffer = new byte[8 * 1024];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            outStream.write(buffer, 0, bytesRead);
+        }
+        IOUtils.closeQuietly(inputStream);
+        IOUtils.closeQuietly(outStream);
+        return targetFile;
+    } 
+    
     @Override
     public List<String> listAuxObjects() throws IOException {
         if (!this.canWrite()) {
@@ -405,7 +470,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         List<S3ObjectSummary> storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
         try {
             while (storedAuxFilesList.isTruncated()) {
-                logger.fine("S3 listAuxObjects: going to second page of list");
+                logger.fine("S3 listAuxObjects: going to next page of list");
                 storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
                 storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
             }
@@ -416,7 +481,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         for (S3ObjectSummary item : storedAuxFilesSummary) {
             String destinationKey = item.getKey();
-            String fileName = destinationKey.substring(destinationKey.lastIndexOf("/"));
+            String fileName = destinationKey.substring(destinationKey.lastIndexOf(".") + 1);
             logger.fine("S3 cached aux object fileName: " + fileName);
             ret.add(fileName);
         }

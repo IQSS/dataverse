@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -502,17 +504,28 @@ public class FilePage implements java.io.Serializable {
         return "";
     }
     
+    private Boolean thumbnailAvailable = null; 
+    
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
         // new and optimized logic: 
         // - check download permission here (should be cached - so it's free!)
         // - only then ask the file service if the thumbnail is available/exists.
-        // the service itself no longer checks download permissions.  
+        // the service itself no longer checks download permissions.
+        // (Also, cache the result the first time the check is performed... 
+        // remember - methods referenced in "rendered=..." attributes are 
+        // called *multiple* times as the page is loading!)
         
-        if (!fileDownloadHelper.canDownloadFile(fileMetadata)) {
-            return false;
+        if (thumbnailAvailable != null) {
+            return thumbnailAvailable;
         }
-     
-        return datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
+                
+        if (!fileDownloadHelper.canDownloadFile(fileMetadata)) {
+            thumbnailAvailable = false;
+        } else {
+            thumbnailAvailable = datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
+        }
+        
+        return thumbnailAvailable;
     }
     
     private String returnToDatasetOnly(){
@@ -691,6 +704,31 @@ public class FilePage implements java.io.Serializable {
 
     public boolean isPubliclyDownloadable() {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
+    }
+    
+    /**
+     * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
+     * For all other locks edit should be locked for all editors.
+     */
+    public boolean isLockedFromEdits() {
+        Dataset testDataset = fileMetadata.getDataFile().getOwner();
+        
+        try {
+            permissionService.checkEditDatasetLock(testDataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(testDataset, dvRequestService.getDataverseRequest()));
+        } catch (IllegalCommandException ex) {
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean isLockedFromDownload(){
+        Dataset testDataset = fileMetadata.getDataFile().getOwner();
+        try {
+            permissionService.checkDownloadFileLock(testDataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(testDataset, dvRequestService.getDataverseRequest()));
+        } catch (IllegalCommandException ex) {
+            return true;
+        }
+        return false;       
     }
 
     public String getPublicDownloadUrl() {
