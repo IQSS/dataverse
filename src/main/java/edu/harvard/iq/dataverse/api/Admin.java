@@ -1025,21 +1025,24 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+        Integer count = fileService.findAll().size();
+        Integer successes = 0;
+        logger.info("Starting to register  " +  count + " files. " + new Date());
         for (DataFile df : fileService.findAll()) {
-
             try {
                 if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
                     execCommand(new RegisterDvObjectCommand(createDataverseRequest(authenticatedUser), df));
+                    successes++;
+                    if (successes % 100 == 0){
+                        logger.info(successes + " of  " +  count + " files registered successfully. " + new Date());
+                    }                   
                 }
             } catch (WrappedResponse ex) {
+                logger.info("Failed to register file id: "+df.getId());
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            logger.info("Registered file id: "+df.getId());
+            }           
         }
-
-        return ok("All Datafiles have been registered");
-
-    }
-
-    
+        logger.info(successes + " of  " +  count + " files registered successfully. " + new Date());
+        return ok("Datafile registration complete." + successes + " of  " +  count + " files registered successfully.");
+    }    
 }
