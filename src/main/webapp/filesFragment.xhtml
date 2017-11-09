@@ -358,12 +358,13 @@
             </div>
             
             <!-- MAD: This needs to be outside the download group I think, it needs that space and the like... --> 
-            <div class="btn-group" >
+            <!-- Also needs restrictions so it only shows up on the correct files-->
+            <div class="btn-group" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
                 <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                     <span class="glyphicon glyphicon-cog"/> #{bundle['dataset.configureBtn']} <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu pull-right text-left" role="menu">
-                    <ui:repeat value="#{DatasetPage.getExternalTools()}" var="tool">
+                    <ui:repeat value="#{DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id)}" var="tool">
                     <li>
                         <a href="#{tool.toolUrl}">#{tool.buttonLabel}</a>
                     </li>

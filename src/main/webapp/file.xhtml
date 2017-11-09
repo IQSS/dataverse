@@ -139,7 +139,7 @@
                                                     <h:outputText value= "#{bundle['file.delete']}"/>
                                                 </p:commandLink>
                                             </li>
-                                            <ui:repeat value="#{FilePage.externalTools}" var="tool">
+                                            <ui:repeat value="#{FilePage.externalTools}" var="tool" rendered="#{FilePage.fileMetadata.dataFile.tabularData}">
                                                 <li>
                                                     <a href="#{tool.toolUrl}">#{tool.buttonLabel}</a>
                                                 </li>
