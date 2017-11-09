@@ -27,10 +27,9 @@ public class ExternalToolUtilTest {
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
-        String toolUrl = ExternalToolUtil.getToolUrlWithQueryParams(externalToolHandler, externalTool);
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         System.out.println("result: " + toolUrl);
         assertEquals("https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/UI/code/interface.html?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7", toolUrl);
-
     }
 
     @Test
@@ -49,7 +48,7 @@ public class ExternalToolUtilTest {
         DataFile nullDataFile = null;
         ApiToken nullApiToken = null;
         ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
-        String result1 = ExternalToolUtil.getQueryParametersForUrl(externalToolHandler1, externalTool);
+        String result1 = externalToolHandler1.getQueryParametersForUrl();
         System.out.println("result1: " + result1);
         assertEquals("?key1=value1", result1);
 
@@ -65,7 +64,7 @@ public class ExternalToolUtilTest {
                 )
                 .build().toString());
         ExternalToolHandler externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
-        String result2 = ExternalToolUtil.getQueryParametersForUrl(externalToolHandler2, externalTool);
+        String result2 = externalToolHandler2.getQueryParametersForUrl();
         System.out.println("result2: " + result2);
         assertEquals("?key1=value1&key2=value2", result2);
 
@@ -85,7 +84,7 @@ public class ExternalToolUtilTest {
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalToolHandler externalToolHandler3 = new ExternalToolHandler(externalTool, dataFile, apiToken);
-        String result3 = ExternalToolUtil.getQueryParametersForUrl(externalToolHandler3, externalTool);
+        String result3 = externalToolHandler3.getQueryParametersForUrl();
         System.out.println("result3: " + result3);
         assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7", result3);
 
@@ -101,7 +100,7 @@ public class ExternalToolUtilTest {
                 )
                 .build().toString());
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
-        String result4 = ExternalToolUtil.getQueryParametersForUrl(externalToolHandler4, externalTool);
+        String result4 = externalToolHandler4.getQueryParametersForUrl();
         System.out.println("result4: " + result4);
         assertEquals("?key1=42&key2=null", result4);
     }

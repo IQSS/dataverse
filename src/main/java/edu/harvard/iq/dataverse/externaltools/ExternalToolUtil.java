@@ -9,10 +9,8 @@ import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.TOOL_UR
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -48,59 +46,5 @@ public class ExternalToolUtil {
         }
     }
 
-    // FIXME: rename to handleRequest() to someday handle sending headers as well as query parameters.
-    public static String getQueryParametersForUrl(ExternalToolHandler externalToolHandler, ExternalTool externalTool) {
-        DataFile dataFile = externalToolHandler.getDataFile();
-        ApiToken apiToken = externalToolHandler.getApiToken();
-        String toolParameters = externalTool.getToolParameters();
-        JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
-        JsonObject obj = jsonReader.readObject();
-        JsonArray queryParams = obj.getJsonArray("queryParameters");
-        if (queryParams == null || queryParams.isEmpty()) {
-            return "";
-        }
-        int numQueryParam = queryParams.size();
-        if (numQueryParam == 1) {
-            JsonObject jsonObject = queryParams.getJsonObject(0);
-            Set<String> firstPair = jsonObject.keySet();
-            String key = firstPair.iterator().next();
-            String value = jsonObject.getString(key);
-            return "?" + getQueryParam(key, value, dataFile, apiToken);
-        } else {
-            List<String> params = new ArrayList<>();
-            queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
-                queryParam.keySet().forEach((key) -> {
-                    String value = queryParam.getString(key);
-                    params.add(getQueryParam(key, value, dataFile, apiToken));
-                });
-            });
-            return "?" + String.join("&", params);
-
-        }
-    }
-
-    private static String getQueryParam(String key, String value, DataFile dataFile, ApiToken apiToken) {
-        if (dataFile == null) {
-            logger.info("DataFile was null!");
-            return key + "=" + value;
-        }
-        String apiTokenString = null;
-        if (apiToken != null) {
-            apiTokenString = apiToken.getTokenString();
-        }
-        // TODO: Put reserved words like "{fileId}" and "{apiToken}" into an enum.
-        switch (value) {
-            case "{fileId}":
-                return key + "=" + dataFile.getId();
-            case "{apiToken}":
-                return key + "=" + apiTokenString;
-            default:
-                return key + "=" + value;
-        }
-    }
-
-    public static String getToolUrlWithQueryParams(ExternalToolHandler externalToolHandler, ExternalTool externalTool) {
-        return externalTool.getToolUrl() + getQueryParametersForUrl(externalToolHandler, externalTool);
-    }
 
 }
