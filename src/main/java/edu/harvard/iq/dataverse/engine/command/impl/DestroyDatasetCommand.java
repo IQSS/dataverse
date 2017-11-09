@@ -82,6 +82,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             } catch (Exception e) { //If exception deleting from external, keep going
                 logger.log(Level.SEVERE, "During destruction of dataset: " + e);
             }
+            ctxt.engine().submit(new DeleteMapLayerMetadataCommand(getRequest(), df));
             ctxt.engine().submit(new DeleteDataFileCommand(df, getRequest(), true));
             dfIt.remove();
         }

@@ -190,8 +190,9 @@ public class DataFile extends DvObject implements Comparable {
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<GuestbookResponse> guestbookResponses;
     
-    @OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private MapLayerMetadata mapLayerMetadata; //does not need get/set, here just to trigger JPA cleanup
+    //MAD: We decided against the cascade approach as other cleanup needs to be done outside of the db if the DataFile is deleted. 
+    //@OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    //private MapLayerMetadata mapLayerMetadata;
 
     public List<GuestbookResponse> getGuestbookResponses() {
         return guestbookResponses;
