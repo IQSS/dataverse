@@ -20,4 +20,4 @@ Installation Guide
    geoconnect
    shibboleth
    oauth2
-   psi
+   external-tools
