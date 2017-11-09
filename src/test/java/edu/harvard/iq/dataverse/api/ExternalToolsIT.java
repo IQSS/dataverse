@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Paths;
@@ -47,6 +48,19 @@ public class ExternalToolsIT {
         addExternalTool.then().assertThat()
                 .body("data.displayName", CoreMatchers.equalTo("Privacy-Preserving Data Preview"))
                 .statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testGetActionLogRecordAll() {
+        Response getActionLogRecordAll = UtilIT.getActionLogRecordAll();
+        getActionLogRecordAll.prettyPrint();
+    }
+
+    @Test
+    public void testGetActionLogRecordsForExternalTools() {
+        ActionLogRecord.ActionType type = ActionLogRecord.ActionType.ExternalTool;
+        Response getActionLogRecordAll = UtilIT.getActionLogRecordByType(type);
+        getActionLogRecordAll.prettyPrint();
     }
 
 }

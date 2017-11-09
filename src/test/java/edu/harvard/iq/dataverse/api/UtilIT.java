@@ -29,6 +29,7 @@ import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1155,6 +1156,16 @@ public class UtilIT {
                     .body(jsonObject.toString())
                     .contentType(ContentType.JSON);
         return requestSpecification.post("/api/admin/externalTools");
+    }
+
+    static Response getActionLogRecordAll() {
+        return given()
+                .get("/api/admin/actionLogRecord");
+    }
+
+    static Response getActionLogRecordByType(ActionLogRecord.ActionType type) {
+        return given()
+                .get("/api/admin/actionLogRecord/type/" + type);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
@@ -51,10 +52,11 @@ public class ExternalTools extends AbstractApiBean {
     public Response addExternalTool(String userInput) {
         try {
             ExternalTool externalTool = ExternalToolUtil.parseAddExternalToolInput(userInput);
-            // FIXME: Write to ActionLogRecord.
             ExternalTool saved = externalToolService.save(externalTool);
+            Long toolId = saved.getId();
+            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.ExternalTool, "addExternalTool").setInfo("External tool added with id " + toolId + "."));
             JsonObjectBuilder tool = Json.createObjectBuilder();
-            tool.add("id", saved.getId());
+            tool.add("id", toolId);
             tool.add(ExternalToolHandler.DISPLAY_NAME, saved.getDisplayName());
             return ok(tool);
         } catch (Exception ex) {
