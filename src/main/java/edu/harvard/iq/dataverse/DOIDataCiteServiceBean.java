@@ -224,8 +224,6 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
             doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
             return true;
         } catch (Exception e) {
-            System.out.print("publicizeIdentifier: exception ");
-            System.out.print("contributor: " + metadata.get("datacite.creator"));
             logger.log(Level.WARNING, "modifyMetadata failed");
             logger.log(Level.WARNING, "String {0}", e.toString());
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());

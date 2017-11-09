@@ -36,7 +36,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
     public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target) {
         super(aRequest, target);
         this.target = target;
-        System.out.print("end of constructor: ");
     }
 
     @Override
@@ -46,10 +45,8 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
 
-        System.out.print(" start of execute: ");
         if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
-            System.out.print("!Super user");
-            throw new PermissionException("REgister DV Object can only be called by superusers.",
+            throw new PermissionException("Register DV Object can only be called by superusers.",
                     this, Collections.singleton(Permission.EditDataset), target);
         }
 
@@ -79,18 +76,12 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             }
 
             if (idServiceBean.alreadyExists(target)) {
-                System.out.print("already exists");
                 return;
             }
-            System.out.print("Before create Identifier");
             String doiRetString = idServiceBean.createIdentifier(target);
-            System.out.print("After create Identifier");
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
                 if (target.isReleased()) {
-                    System.out.print("Is released: " + target.getIdentifier());
-                    System.out.print("Publicizing : " + target.getId());
                     idServiceBean.publicizeIdentifier(target);
-                    System.out.print("after Pub Identifier");
                 }
 
                 if (!idServiceBean.registerWhenPublished() || target.isReleased()) {
@@ -131,14 +122,11 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 }
 
             } else {
-                System.out.print("in 'else'");
                 //do nothing - we'll know it failed because the global id create time won't have been updated.
             }
         } catch (Exception e) {
-            System.out.print("some kind of exception: " + e.getMessage());
             //do nothing - idem and the problem has been logged
         } catch (Throwable ex) {
-            System.out.print("some kind of Throwable: " + ex.getMessage());
             //do nothing - we'll know it failed because the global id create time won't have been updated.
         }
     }

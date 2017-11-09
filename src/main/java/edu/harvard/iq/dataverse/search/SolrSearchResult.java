@@ -965,7 +965,6 @@ public class SolrSearchResult {
             }
             return null;
         }*/
-        
         if (entity.getIdentifier() != null){
             return "/file.xhtml?persistentId=" + entity.getGlobalId();
         }

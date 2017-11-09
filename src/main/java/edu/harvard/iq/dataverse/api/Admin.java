@@ -1010,7 +1010,6 @@ public class Admin extends AbstractApiBean {
     @GET
     @Path("{id}/registerDataFile")
     public Response registerDataFile(@PathParam("id") String id ) {
-        System.out.print("try register datafile: " );
         return response( req -> {
             execCommand(new RegisterDvObjectCommand(req, findDataFileOrDie(id)));
             return ok("DataFile " + id + " registered");
@@ -1026,37 +1025,18 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        Integer numDF = fileService.findAll().size();
-        Integer filecounter = 1;
-        System.out.print("number of Files: " + numDF);
         for (DataFile df : fileService.findAll()) {
-            System.out.print("filecounter: " + filecounter++);
-            System.out.print("DATAFILE: " + df.getDisplayName());
-            System.out.print("DATAFILE ID: " + df.getId());
+
             try {
                 if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
                     execCommand(new RegisterDvObjectCommand(createDataverseRequest(authenticatedUser), df));
                 }
             } catch (WrappedResponse ex) {
-                System.out.print("Wrapped response: " + ex.getMessage());
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             }
+            logger.info("Registered file id: "+df.getId());
         }
 
-        /*
-        datasetService.findAll().forEach((dataset) -> {
-            System.out.print("dataset: " + dataset.getDisplayName());
-            dataset.getFiles().forEach((DataFile df) -> {
-                System.out.print("datafile: " + df.getDisplayName());
-                try {
-                    execCommand(new RegisterDvObjectCommand(createDataverseRequest(findAuthenticatedUserOrDie()), df));
-                } catch (WrappedResponse ex) {
-                    System.out.print("Wrapped response: " + ex.getMessage());
-                    Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            });
-        });
-         */
         return ok("All Datafiles have been registered");
 
     }

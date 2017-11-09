@@ -40,7 +40,7 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
             logger.log(Level.WARNING, "cause: ", e.getCause());
             logger.log(Level.WARNING, "message {0}", e.getMessage());
         } catch (Exception e) {
-            System.out.print("Other Error on ezidService.login(USERNAME, PASSWORD) - not EZIDException ");
+            logger.log(Level.SEVERE, "Other Error on ezidService.login(USERNAME, PASSWORD) - not EZIDException ", e.getMessage());
         }
     }
 
