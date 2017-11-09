@@ -30,8 +30,6 @@ public class ExternalToolServiceBean {
 
     public ExternalTool save(ExternalTool externalTool) {
         em.persist(externalTool);
-        // FIXME: Remove this flush.
-        em.flush();
         return em.merge(externalTool);
     }
 
