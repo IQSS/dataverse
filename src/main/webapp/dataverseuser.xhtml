@@ -100,10 +100,10 @@
                                                     <i class="icon-dataverse text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.createDataverse']}" escape="false">
                                                         <o:param>
-                                                            <a href="/dataverse.xhtml?alias=#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                            <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="/dataverse.xhtml?alias=#{item.theObject.getOwner().getAlias()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
+                                                            <a href="/dataverse/#{item.theObject.getOwner().getAlias()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
                                                             <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/dataverse-management.html" title="#{bundle['notification.dataverse.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
@@ -117,7 +117,7 @@
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="/dataverse.xhtml?alias=#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
+                                                            <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
                                                             <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/dataset-management.html" title="#{bundle['notification.dataset.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
@@ -131,7 +131,7 @@
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="/dataverse.xhtml?alias=#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
+                                                            <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
                                                             #{DataverseUserPage.getReasonForReturn(item.theObject)}
@@ -145,7 +145,7 @@
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="/dataverse.xhtml?alias=#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
+                                                            <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                         <!-- Reason for Return - This needs some work in the DataverseUserPage method to get it to work -->
                                                         <ui:remove>
@@ -162,7 +162,7 @@
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="/dataverse.xhtml?alias=#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
+                                                            <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -213,7 +213,7 @@
                                                     <h:outputFormat value="#{bundle['notification.access.granted.dataverse']}" escape="false">
                                                         <o:param value="#{item.roleString}"/>
                                                         <o:param>
-                                                            <a href="/dataverse.xhtml?alias=#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                            <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                     <ui:fragment rendered="#{item.roleString == 'File Downloader'}">
@@ -254,7 +254,7 @@
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.access.revoked.dataverse']}" escape="false">
                                                             <o:param>
-                                                                <a href="/dataverse.xhtml?alias=#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                                <a href="/dataverse/#{item.theObject.getAlias()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
                                                             </o:param>
                                                     </h:outputFormat>
                                                     </ui:fragment>

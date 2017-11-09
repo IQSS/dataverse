@@ -169,11 +169,11 @@ public class DataCiteRESTfullClient implements Closeable {
      * @param metadata
      * @return
      */
-    public String postMetadata(String metadata) throws UnsupportedEncodingException {
+    public String postMetadata(String metadata) {
         HttpPost httpPost = new HttpPost(this.url + "/metadata");
         httpPost.setHeader("Content-Type", "application/xml;charset=UTF-8");
-        httpPost.setEntity(new StringEntity(metadata, "utf-8"));
         try {
+            httpPost.setEntity(new StringEntity(metadata, "utf-8"));
             HttpResponse response = httpClient.execute(httpPost,context);
             
             String data = EntityUtils.toString(response.getEntity(), encoding);
@@ -183,6 +183,7 @@ public class DataCiteRESTfullClient implements Closeable {
                 throw new RuntimeException(errMsg);
             }
             return data;
+            
         } catch (IOException ioe) {
             logger.log(Level.SEVERE, "IOException when post metadata");
             throw new RuntimeException("IOException when post metadata", ioe);

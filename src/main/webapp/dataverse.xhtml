@@ -483,7 +483,7 @@
                             <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog" modal="true">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.share.dataverseShare.tip']}</p>
 
-                                <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse.xhtml?alias=#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
+                                <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
 
                                 <div class="button-block">
                                     <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
@@ -530,7 +530,7 @@
                                         <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
                                             <div class="item">
                                                 <div style="vertical-align:middle;">
-                                                    <c:set var="dvFeatUrl" value="/dataverse.xhtml?alias=#{dv.alias}"/>
+                                                    <c:set var="dvFeatUrl" value="/dataverse/#{dv.alias}"/>
                                                     <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
                                                         <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">
                                                             <i class="icon-dataverse"></i>
