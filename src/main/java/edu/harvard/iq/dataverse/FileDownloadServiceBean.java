@@ -151,6 +151,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
                 && (( fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
+            guestbookResponse.setDownloadtype("Explore");
             if(guestbookResponse.getDataFile() == null  && fmd != null){                
                 guestbookResponse.setDataFile(fmd.getDataFile());
             }
@@ -180,6 +181,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
                 
         if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
+            guestbookResponse.setDownloadtype("Explore");
             if(guestbookResponse.getDataFile() == null && fmd != null){
                 guestbookResponse.setDataFile(fmd.getDataFile());
             }
