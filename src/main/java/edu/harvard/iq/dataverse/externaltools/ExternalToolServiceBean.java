@@ -24,13 +24,8 @@ public class ExternalToolServiceBean {
         return typedQuery.getResultList();
     }
 
-    public List<ExternalTool> findAll(DataFile file, ApiToken apiToken) {
-        List<ExternalTool> externalTools = findAll();
-        externalTools.forEach((externalTool) -> {
-            externalTool.setDataFile(file);
-            externalTool.setApiToken(apiToken);
-        });
-        return externalTools;
+    public List<ExternalToolHandler> findAll(DataFile file, ApiToken apiToken) {
+        return ExternalToolUtil.findAll(findAll(), file, apiToken);
     }
 
     public ExternalTool save(ExternalTool externalTool) {

@@ -4,9 +4,11 @@ import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolUtil;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -21,7 +23,8 @@ public class ExternalTools extends AbstractApiBean {
     public Response getExternalTools() {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         externalToolService.findAll().forEach((externalTool) -> {
-            jab.add(externalTool.toJson());
+            // FIXME: Show more than the ID in the output.
+            jab.add(externalTool.getId());
         });
         return ok(jab);
     }
@@ -38,8 +41,8 @@ public class ExternalTools extends AbstractApiBean {
         String apiTokenString = getRequestApiKey();
         apiToken.setTokenString(apiTokenString);
         externalToolService.findAll(dataFile, apiToken)
-                .forEach((externalTool) -> {
-                    tools.add(externalTool.toJson());
+                .forEach((externalToolHandler) -> {
+                    tools.add(externalToolHandler.toJson());
                 });
         return ok(tools);
     }
@@ -50,7 +53,10 @@ public class ExternalTools extends AbstractApiBean {
             ExternalTool externalTool = ExternalToolUtil.parseAddExternalToolInput(userInput);
             // FIXME: Write to ActionLogRecord.
             ExternalTool saved = externalToolService.save(externalTool);
-            return ok(saved.toJson());
+            JsonObjectBuilder tool = Json.createObjectBuilder();
+            tool.add("id", saved.getId());
+            tool.add(ExternalToolHandler.DISPLAY_NAME, saved.getDisplayName());
+            return ok(tool);
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getMessage());
         }
