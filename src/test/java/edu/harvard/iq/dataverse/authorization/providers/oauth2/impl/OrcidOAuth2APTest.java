@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import java.util.ArrayList;
@@ -16,39 +17,35 @@ import org.junit.Before;
  * @author pameyer
  */
 public class OrcidOAuth2APTest extends OrcidOAuth2AP {
-	private final String response_file="src/test/resources/xml/oauth2/orcid/v20_response.xml";
-	private static String RESPONSE = null;
-	private final String no_email_has_affiliation_file="src/test/resources/xml/oauth2/orcid/v20_no_email_has_aff.xml";
-	private static String NO_EMAIL_HAS_AFFILIATION = null;
-	private final String no_email_file="src/test/resources/xml/oauth2/orcid/v20_no_email.xml";
-	private static String NO_EMAIL = null;
+	private static final String RESPONSE_FILE="src/test/resources/xml/oauth2/orcid/v20_response.xml";
+	private static final String NO_EMAIL_HAS_AFFILIATION_FILE="src/test/resources/xml/oauth2/orcid/v20_no_email_has_aff.xml";
+	private static final String NO_EMAIL_FILE="src/test/resources/xml/oauth2/orcid/v20_no_email.xml";
+	private static final String ACTIVITIES_FILE="src/test/resources/xml/oauth2/orcid/v20_activities.xml";
+	private static final String RESPONSE;
+	private static final String NO_EMAIL_HAS_AFFILIATION;
+	private static final String NO_EMAIL;
+	private static final String ACTIVITIES;
+    
     public OrcidOAuth2APTest() {
         super("", "", "");
     }
 
-	
-
-    @Before
-    public void setUp()
-    {
-	    RESPONSE = loadResponseXML( response_file );
-	    NO_EMAIL_HAS_AFFILIATION = loadResponseXML( no_email_has_affiliation_file );
-	    NO_EMAIL = loadResponseXML( no_email_file );
+    static {
+	    RESPONSE = loadResponseXML( RESPONSE_FILE );
+	    NO_EMAIL_HAS_AFFILIATION = loadResponseXML( NO_EMAIL_HAS_AFFILIATION_FILE );
+	    NO_EMAIL = loadResponseXML( NO_EMAIL_FILE );
+        ACTIVITIES = loadResponseXML( ACTIVITIES_FILE );
     }
     /**
      * load XML responses from filesystem (resources).
      * Why? To allow validating against the XSD prior to 1.2 -> 2.0 upgrade
      */
-    private static String loadResponseXML(String fname)
-    {
+    private static String loadResponseXML(String fname) {
 	    String txt = null;
-	    try
-	    {
+	    try {
 		    java.io.File inp = new java.io.File( fname );
 		    txt = org.apache.commons.io.FileUtils.readFileToString( inp );
-	    }
-	    catch( java.io.IOException ie )
-	    {
+	    } catch( java.io.IOException ie ) {
 		    // no-op; assert that the needed strings are not null in tests
 	    }
 	    return txt;
@@ -57,11 +54,9 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     @Test
     public void testParseUserResponse() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-	assertNotNull( RESPONSE );
-        System.out.println("withEmailResponse = " + RESPONSE);
+        assertNotNull( RESPONSE );
         final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(RESPONSE);
 
-        assertEquals("8888-8888-8888-8880", actual.userIdInProvider);
         assertEquals("bdoc", actual.username);
         assertEquals("Bob T.", actual.displayInfo.getFirstName());
         assertEquals("Doc", actual.displayInfo.getLastName());
@@ -69,16 +64,14 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals("", actual.displayInfo.getAffiliation());
         assertEquals("", actual.displayInfo.getPosition());
         assertEquals(Arrays.asList("bdoc@mailinator.com", "bdoc2@mailinator.com"), actual.emails);
-
     }
 
     @Test
     public void testParseUserResponseNoEmailHasAffiliation() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-	assertNotNull( NO_EMAIL_HAS_AFFILIATION );
+        assertNotNull( NO_EMAIL_HAS_AFFILIATION );
         final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(NO_EMAIL_HAS_AFFILIATION);
 
-        assertEquals("0000-0003-2591-1698", actual.userIdInProvider);
         assertEquals("Bob T.", actual.displayInfo.getFirstName());
         assertEquals("Doc", actual.displayInfo.getLastName());
         assertEquals("", actual.displayInfo.getEmailAddress());
@@ -97,7 +90,6 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         System.out.println("noEmailResponse = " + NO_EMAIL );
         final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(NO_EMAIL);
 
-        assertEquals("0000-0003-2591-1698", actual.userIdInProvider);
         assertEquals("Bob.Doc", actual.username);
         assertEquals("Bob T.", actual.displayInfo.getFirstName());
         assertEquals("Doc", actual.displayInfo.getLastName());
@@ -105,7 +97,6 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals("", actual.displayInfo.getAffiliation());
         assertEquals("", actual.displayInfo.getPosition());
         assertEquals(Arrays.asList("").toString(), actual.emails.toString());
-
     }
     
     @Test
@@ -128,4 +119,39 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         sut.extractOrcidNumber(response);
     }
     
+    @Test
+    public void testParseActivitiesResponse() {
+        OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
+        assertNotNull( ACTIVITIES );
+        final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(ACTIVITIES);
+
+        assertEquals("My Organization Name", actual.getAffiliation());
+        assertEquals("role, department", actual.getPosition());
+    }
+    
+    @Test
+    public void testParseActivitiesResponseNoOrgName() {
+        OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
+        assertNotNull( ACTIVITIES );
+        
+        String responseWithNoOrg = ACTIVITIES.replaceAll("\n","").replaceAll("<employment:organization>.*</employment:organization>", "");
+        
+        final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(responseWithNoOrg);
+
+        assertEquals(null, actual.getAffiliation());
+        assertEquals("role, department", actual.getPosition());
+    }
+    
+    @Test
+    public void testParseActivitiesResponseNoRole() {
+        OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
+        assertNotNull( ACTIVITIES );
+        
+        String responseWithNoOrg = ACTIVITIES.replaceAll("\n","").replaceAll("<employment:role-title>.*</employment:role-title>", "");
+        
+        final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(responseWithNoOrg);
+
+        assertEquals("My Organization Name", actual.getAffiliation());
+        assertEquals("department", actual.getPosition());
+    }
 }

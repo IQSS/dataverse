@@ -12,13 +12,13 @@
 	<common:last-modified-date>2016-04-14T20:56:22.279Z</common:last-modified-date>
 	<person:name visibility="public"> 		
 		<common:created-date>2016-04-14T20:56:22.279Z</common:created-date>
-        <common:last-modified-date>2016-04-14T20:56:22.279Z</common:last-modified-date>
-        <personal-details:given-names>Bob T.</personal-details:given-names>
-        <personal-details:family-name>Doc</personal-details:family-name>
+		<common:last-modified-date>2016-04-14T20:56:22.279Z</common:last-modified-date>
+		<personal-details:given-names>Bob T.</personal-details:given-names>
+		<personal-details:family-name>Doc</personal-details:family-name>
 		<personal-details:credit-name>Bob the Doc</personal-details:credit-name>		
 	</person:name>
 	<other-name:other-names>		
-        <common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>
+		<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>
 		<other-name:other-name visibility="public" put-code="1">
 			<common:created-date>2001-12-31T12:00:00</common:created-date>
 			<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>						
@@ -35,7 +35,7 @@
 	</other-name:other-names>
 	<person:biography visibility="public">
 		<common:created-date>2016-04-14T20:56:22.279Z</common:created-date>
-        <common:last-modified-date>2016-04-14T20:56:22.279Z</common:last-modified-date>
+		<common:last-modified-date>2016-04-14T20:56:22.279Z</common:last-modified-date>
 		<personal-details:content>biography</personal-details:content>		
 	</person:biography>
 	<researcher-url:researcher-urls>
@@ -101,18 +101,18 @@
 	</address:addresses>
 	<keyword:keywords>
 		<keyword:keyword visibility="public" put-code="1">
-            <common:created-date>2001-12-31T12:00:00</common:created-date>
-            <common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>		
-            <common:source>
-                <common:source-orcid>
-                    <common:uri>http://orcid.org/8888-8888-8888-8880</common:uri>
-                    <common:path>8888-8888-8888-8880</common:path>
-                    <common:host>orcid.org</common:host>
-                </common:source-orcid>
-                <common:source-name />
-            </common:source>
-            <keyword:content>keyword1</keyword:content>
-        </keyword:keyword>
+			<common:created-date>2001-12-31T12:00:00</common:created-date>
+			<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>		
+			<common:source>
+				<common:source-orcid>
+					<common:uri>http://orcid.org/8888-8888-8888-8880</common:uri>
+					<common:path>8888-8888-8888-8880</common:path>
+					<common:host>orcid.org</common:host>
+				</common:source-orcid>
+				<common:source-name />
+			</common:source>
+			<keyword:content>keyword1</keyword:content>
+		</keyword:keyword>
 	</keyword:keywords>
 	<external-identifier:external-identifiers>
 		<external-identifier:external-identifier visibility="public" put-code="1">
