@@ -91,7 +91,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             oauthUser = idp.getUserRecord(code, state, getCallbackUrl());
             UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
             AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
-
+            
             if (dvUser == null) {
                 // need to create the user
                 newAccountPage.setNewUser(oauthUser);
@@ -100,6 +100,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             } else {
                 // login the user and redirect to HOME of intended page (if any).
                 session.setUser(dvUser);
+                // TODO ORCIDv2 store the raw access token
                 String destination = redirectPage.orElse("/");
                 HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
                 String prettyUrl = response.encodeRedirectURL(destination);

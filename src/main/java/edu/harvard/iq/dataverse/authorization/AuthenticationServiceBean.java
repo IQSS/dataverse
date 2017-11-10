@@ -317,7 +317,19 @@ public class AuthenticationServiceBean {
         }
     }
 
-    public AuthenticatedUser authenticate( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
+    /**
+     * Returns an {@link AuthenticatedUser} matching the passed provider id and the authentication request. If
+     *  no such user exist, it is created and then returned.
+     * 
+     * <strong>Invariant:</strong> upon successful return from this call, an {@link AuthenticatedUser} record 
+     * matching the request and provider exists in the database.
+     * 
+     * @param authenticationProviderId
+     * @param req
+     * @return The authenticated user for the passed provider id and authentication request.
+     * @throws AuthenticationFailedException 
+     */
+    public AuthenticatedUser getCreateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
         if ( ! (prv instanceof CredentialsAuthenticationProvider) ) {
@@ -333,18 +345,16 @@ public class AuthenticationServiceBean {
                 user = userService.updateLastLogin(user);
             }
             
-            /**
-             * @todo Why does a method called "authenticate" have the potential
-             * to call "createAuthenticatedUser"? Isn't the creation of a user a
-             * different action than authenticating?
-             *
-             * @todo Wouldn't this be more readable with if/else rather than
-             * ternary?  (please)
-             */
-            return ( user == null ) ?
-                AuthenticationServiceBean.this.createAuthenticatedUser(
-                        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true )
-                    : (BuiltinAuthenticationProvider.PROVIDER_ID.equals(user.getAuthenticatedUserLookup().getAuthenticationProviderId())) ? user : updateAuthenticatedUser(user, resp.getUserDisplayInfo());
+            if ( user == null ) {
+                return createAuthenticatedUser(
+                        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true );
+            } else {
+                if (BuiltinAuthenticationProvider.PROVIDER_ID.equals(user.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
+                    return user;
+                } else {
+                    return updateAuthenticatedUser(user, resp.getUserDisplayInfo());
+                }
+            }
         } else { 
             throw new AuthenticationFailedException(resp, "Authentication Failed: " + resp.getMessage());
         }
@@ -778,7 +788,7 @@ public class AuthenticationServiceBean {
 
         String credentialsAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
         try {
-            AuthenticatedUser au = authenticate(credentialsAuthProviderId, authReq);
+            AuthenticatedUser au = getCreateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.fine("User authenticated:" + au.getEmail());
             return au;
         } catch (AuthenticationFailedException ex) {
