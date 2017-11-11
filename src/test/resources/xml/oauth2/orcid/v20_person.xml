@@ -57,7 +57,7 @@
 		</researcher-url:researcher-url>
 	</researcher-url:researcher-urls>
 	<email:emails>
-		<email:email visibility="public">				
+		<email:email primary="true" visibility="public">				
 			<common:created-date>2001-12-31T12:00:00</common:created-date>
 			<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>				
 			<common:source>

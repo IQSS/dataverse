@@ -3,13 +3,10 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-import org.junit.Before;
 
 /**
  *
@@ -17,13 +14,9 @@ import org.junit.Before;
  * @author pameyer
  */
 public class OrcidOAuth2APTest extends OrcidOAuth2AP {
-	private static final String RESPONSE_FILE="src/test/resources/xml/oauth2/orcid/v20_response.xml";
-	private static final String NO_EMAIL_HAS_AFFILIATION_FILE="src/test/resources/xml/oauth2/orcid/v20_no_email_has_aff.xml";
-	private static final String NO_EMAIL_FILE="src/test/resources/xml/oauth2/orcid/v20_no_email.xml";
+    private static final String PERSON_FILE="src/test/resources/xml/oauth2/orcid/v20_person.xml";
 	private static final String ACTIVITIES_FILE="src/test/resources/xml/oauth2/orcid/v20_activities.xml";
-	private static final String RESPONSE;
-	private static final String NO_EMAIL_HAS_AFFILIATION;
-	private static final String NO_EMAIL;
+	private static final String PERSON;
 	private static final String ACTIVITIES;
     
     public OrcidOAuth2APTest() {
@@ -31,9 +24,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     }
 
     static {
-	    RESPONSE = loadResponseXML( RESPONSE_FILE );
-	    NO_EMAIL_HAS_AFFILIATION = loadResponseXML( NO_EMAIL_HAS_AFFILIATION_FILE );
-	    NO_EMAIL = loadResponseXML( NO_EMAIL_FILE );
+	    PERSON = loadResponseXML( PERSON_FILE );
         ACTIVITIES = loadResponseXML( ACTIVITIES_FILE );
     }
     /**
@@ -54,8 +45,8 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     @Test
     public void testParseUserResponse() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-        assertNotNull( RESPONSE );
-        final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(RESPONSE);
+        assertNotNull( PERSON );
+        final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(PERSON);
 
         assertEquals("bdoc", actual.username);
         assertEquals("Bob T.", actual.displayInfo.getFirstName());
@@ -67,28 +58,10 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     }
 
     @Test
-    public void testParseUserResponseNoEmailHasAffiliation() {
-        OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-        assertNotNull( NO_EMAIL_HAS_AFFILIATION );
-        final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(NO_EMAIL_HAS_AFFILIATION);
-
-        assertEquals("Bob T.", actual.displayInfo.getFirstName());
-        assertEquals("Doc", actual.displayInfo.getLastName());
-        assertEquals("", actual.displayInfo.getEmailAddress());
-        assertEquals("Miskatonic University", actual.displayInfo.getAffiliation());
-        assertEquals("", actual.displayInfo.getPosition());
-        List<String> emptyList = new ArrayList<>();
-        assertEquals(emptyList, actual.emails);
-        assertEquals("Bob.Doc", actual.username);
-
-    }
-
-    @Test
     public void testParseUserResponse_noEmails() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-        assertNotNull( NO_EMAIL );
-        System.out.println("noEmailResponse = " + NO_EMAIL );
-        final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(NO_EMAIL);
+        String noEmail = PERSON.replaceAll("\n", " ").replaceAll("<email:emails>.*</email:emails>", "");
+        final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(noEmail);
 
         assertEquals("Bob.Doc", actual.username);
         assertEquals("Bob T.", actual.displayInfo.getFirstName());
