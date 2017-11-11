@@ -5,6 +5,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <h:head>
@@ -187,7 +188,7 @@
                                 <div class="form-group text-left">
                                     <div class="col-sm-12">
                                         <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
-                                            <h:graphicImage rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
+                                            <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
                                             <h:outputFormat value=" #{LoginPage.loginButtonText}"/>
                                         </h:outputLink>
                                         <ui:fragment rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}">

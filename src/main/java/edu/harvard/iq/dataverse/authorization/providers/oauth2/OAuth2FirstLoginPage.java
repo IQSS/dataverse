@@ -66,6 +66,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     @EJB
     AuthTestDataServiceBean authTestDataSvc;
 
+    @EJB
+    OAuth2TokenDataServiceBean oauth2Tokens;
+    
     @Inject
     DataverseSession session;
 
@@ -136,7 +139,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 }
                 String randomUsername = randomUser.get("username");
                 String eppn = randomUser.get("eppn");
-                String accessToken = "qwe-addssd-iiiiie";
+                OAuth2TokenData accessToken = new OAuth2TokenData();
+                accessToken.setAccessToken("qwe-addssd-iiiiie");
                 setNewUser(new OAuth2UserRecord(authProviderId, eppn, randomUsername, accessToken,
                         new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
                         extraEmails));
@@ -186,7 +190,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 new Timestamp(new Date().getTime()),
                 UserNotification.Type.CREATEACC, null);
         
-        // TODO ORCIDv2 store the raw access token
+        final OAuth2TokenData tokenData = newUser.getTokenData();
+                tokenData.setUser(user);
+                tokenData.setOauthProviderId(newUser.getServiceId());
+                oauth2Tokens.store(tokenData);
         
         return "/dataverse.xhtml?faces-redirect=true";
     }

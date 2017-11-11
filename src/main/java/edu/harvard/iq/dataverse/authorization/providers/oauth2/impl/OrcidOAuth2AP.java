@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
@@ -44,8 +45,9 @@ import javax.xml.xpath.XPathExpression;
 /**
  * OAuth2 identity provider for ORCiD. Note that ORCiD has two systems: sandbox
  * and production. Hence having the user endpoint as a parameter.
+ * 
  * @author michael
- * But don't blame michael for pameyer's later changes
+ * @author pameyer
  */
 public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
@@ -80,6 +82,11 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         OAuth20Service service = getService(state, redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
         
+        if ( ! accessToken.getScope().contains(scope) ) {
+            // We did not get the permissions on the scope we need. Abort and inform the user.
+            throw new OAuth2Exception(200, BundleUtil.getStringFromBundle("auth.providers.orcid.insufficientScope"), "");
+        }
+        
         String orcidNumber = extractOrcidNumber(accessToken.getRawResponse());
         
         final String userEndpoint = getUserEndpoint(accessToken);
@@ -101,7 +108,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             
             return new OAuth2UserRecord(getId(), orcidNumber,
                                         parsed.username, 
-                                        accessToken.getAccessToken(),
+                                        OAuth2TokenData.from(accessToken),
                                         parsed.displayInfo,
                                         parsed.emails);
         } else {

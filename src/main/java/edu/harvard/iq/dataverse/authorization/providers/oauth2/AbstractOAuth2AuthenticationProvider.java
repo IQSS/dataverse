@@ -126,7 +126,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
             final ParsedUserResponse parsed = parseUserResponse(body);
             return new OAuth2UserRecord(getId(), parsed.userIdInProvider,
                                         parsed.username, 
-                                        accessToken.getAccessToken(),
+                                        OAuth2TokenData.from(accessToken),
                                         parsed.displayInfo,
                                         parsed.emails);
         } else {
