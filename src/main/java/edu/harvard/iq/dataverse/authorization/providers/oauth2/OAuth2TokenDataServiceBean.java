@@ -12,7 +12,6 @@ import javax.persistence.PersistenceContext;
  * 
  * @author michael
  */
-@Named
 @Stateless
 public class OAuth2TokenDataServiceBean {
     

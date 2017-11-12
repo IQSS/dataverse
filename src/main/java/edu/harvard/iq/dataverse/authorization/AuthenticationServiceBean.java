@@ -47,6 +47,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Singleton;
+import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -63,6 +64,7 @@ import javax.validation.ValidatorFactory;
  * 
  * Register the providers in the {@link #startup()} method.
  */
+@Named
 @Singleton
 public class AuthenticationServiceBean {
     private static final Logger logger = Logger.getLogger(AuthenticationServiceBean.class.getName());
@@ -233,7 +235,12 @@ public class AuthenticationServiceBean {
                 em.remove(apiToken);
             }
         }
-    }   
+    }
+    
+    public boolean isOrcidEnabled() {
+        return oAuth2authenticationProviders.values().stream().anyMatch( s -> s.getId().toLowerCase().contains("orcid") );
+    }
+    
     /**
      * Use with care! This method was written primarily for developers
      * interested in API testing who want to:
