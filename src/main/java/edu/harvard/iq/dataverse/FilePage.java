@@ -170,7 +170,7 @@ public class FilePage implements java.io.Serializable {
                 apitoken = authService.findApiTokenByUser((AuthenticatedUser) user);
             }
             externalTools = externalToolService.findAll(file, apitoken);
-
+            
         } else {
 
             return permissionsWrapper.notFound();
@@ -777,6 +777,15 @@ public class FilePage implements java.io.Serializable {
 
     public List<ExternalTool> getExternalTools() {
         return externalTools;
+    }
+    
+    String psiPopupUrl = "";
+    public void setPsiPopupUrl(String newUrl) {
+        psiPopupUrl = newUrl; 
+    }
+    
+    public String getPsiPopupUrl() {
+        return psiPopupUrl;
     }
 
 }

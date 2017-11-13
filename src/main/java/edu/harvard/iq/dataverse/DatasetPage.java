@@ -4120,6 +4120,16 @@ public class DatasetPage implements java.io.Serializable {
         return externalTools.get(fileId);        
     }
     
+    
+    String psiPopupUrl = "";
+    public void setPsiPopupUrl(String newUrl) {
+        psiPopupUrl = newUrl;
+    }
+    
+    public String getPsiPopupUrl() {
+        return psiPopupUrl;
+    }
+    
         //MAD : need to do this for each file and populate... ugh. Also clean up the double "findAll"
         
         //fileMetadatasSearch is this what I'm suppose to be using???? private List<FileMetadata> fileMetadatasSearch;
