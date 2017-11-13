@@ -16,6 +16,7 @@ import java.util.Set;
  */
 public abstract class AbstractCommand<R> implements Command<R> {
 
+    // FIXME: rename this from "affectedDataverses" to "affectedDvObjects". It's confusing.
     private final Map<String, DvObject> affectedDataverses;
     private final DataverseRequest request;
 
@@ -83,9 +84,9 @@ public abstract class AbstractCommand<R> implements Command<R> {
     }
 
     @Override
-    public String describe(Map<String, DvObject> dvObjMap) {
+    public String describe() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, DvObject> ent : dvObjMap.entrySet()) {
+        for (Map.Entry<String, DvObject> ent : affectedDataverses.entrySet()) {
             DvObject value = ent.getValue();
             sb.append(ent.getKey()).append(":");
             sb.append((value != null) ? value.accept(DvObject.NameIdPrinter) : "<null>");

@@ -182,7 +182,7 @@ public class EjbDataverseEngine {
             DataverseRequest dvReq = aCommand.getRequest();
             
             Map<String, DvObject> affectedDvObjects = aCommand.getAffectedDvObjects();
-            logRec.setInfo( aCommand.describe(affectedDvObjects) );
+            logRec.setInfo(aCommand.describe());
             for (Map.Entry<String, ? extends Set<Permission>> pair : requiredMap.entrySet()) {
                 String dvName = pair.getKey();
                 if (!affectedDvObjects.containsKey(dvName)) {
