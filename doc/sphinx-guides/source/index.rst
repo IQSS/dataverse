@@ -14,11 +14,11 @@ These guides are for the most recent version of Dataverse. For the guides for **
   :maxdepth: 2
 
   user/index
-  installation/index
   api/index
+  installation/index
+  admin/index
   developers/index
   style/index
-  admin/index
 
 How the Guides Are Organized
 =============================
