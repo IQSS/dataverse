@@ -50,10 +50,10 @@ public class ExternalToolHandler {
     public JsonObjectBuilder toJson() {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("id", externalTool.getId());
-        jab.add(ExternalToolHandler.DISPLAY_NAME, externalTool.getDisplayName());
-        jab.add(ExternalToolHandler.DESCRIPTION, externalTool.getDescription());
-        jab.add(ExternalToolHandler.TOOL_URL, getToolUrlWithQueryParams());
-        jab.add(ExternalToolHandler.TOOL_PARAMETERS, externalTool.getToolParameters());
+        jab.add(DISPLAY_NAME, externalTool.getDisplayName());
+        jab.add(DESCRIPTION, externalTool.getDescription());
+        jab.add(TOOL_URL, getToolUrlWithQueryParams());
+        jab.add(TOOL_PARAMETERS, externalTool.getToolParameters());
         return jab;
     }
 
@@ -89,7 +89,7 @@ public class ExternalToolHandler {
     private String getQueryParam(String key, String value) {
         DataFile df = getDataFile();
         if (df == null) {
-            logger.info("DataFile was null!");
+            logger.fine("DataFile was null!");
             return key + "=" + value;
         }
         String apiTokenString = null;
