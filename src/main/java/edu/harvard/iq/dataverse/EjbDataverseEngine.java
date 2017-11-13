@@ -182,7 +182,7 @@ public class EjbDataverseEngine {
             DataverseRequest dvReq = aCommand.getRequest();
             
             Map<String, DvObject> affectedDvObjects = aCommand.getAffectedDvObjects();
-            logRec.setInfo( describe(affectedDvObjects) );
+            logRec.setInfo( aCommand.describe(affectedDvObjects) );
             for (Map.Entry<String, ? extends Set<Permission>> pair : requiredMap.entrySet()) {
                 String dvName = pair.getKey();
                 if (!affectedDvObjects.containsKey(dvName)) {
@@ -442,16 +442,5 @@ public class EjbDataverseEngine {
 
         return ctxt;
     }
-    
-    
-    private String describe( Map<String, DvObject> dvObjMap ) {
-        StringBuilder sb = new StringBuilder();
-        for ( Map.Entry<String, DvObject> ent : dvObjMap.entrySet() ) {
-            DvObject value = ent.getValue();
-            sb.append(ent.getKey()).append(":");
-            sb.append( (value!=null) ? value.accept(DvObject.NameIdPrinter) : "<null>");
-            sb.append(" ");
-        }
-        return sb.toString();
-    }
+
 }

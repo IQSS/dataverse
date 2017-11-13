@@ -81,4 +81,17 @@ public abstract class AbstractCommand<R> implements Command<R> {
     protected User getUser() {
        return getRequest().getUser();
     }
+
+    @Override
+    public String describe(Map<String, DvObject> dvObjMap) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, DvObject> ent : dvObjMap.entrySet()) {
+            DvObject value = ent.getValue();
+            sb.append(ent.getKey()).append(":");
+            sb.append((value != null) ? value.accept(DvObject.NameIdPrinter) : "<null>");
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
+
 }

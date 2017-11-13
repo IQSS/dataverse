@@ -41,5 +41,6 @@ public interface Command<R> {
 	 * @return A map of the permissions required for this command
 	 */        
     Map<String,Set<Permission>> getRequiredPermissions();
-	
+
+    public String describe(Map<String, DvObject> dvObjMap);
 }
