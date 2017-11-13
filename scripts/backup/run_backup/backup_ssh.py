@@ -3,6 +3,7 @@
 import sys
 import io
 import paramiko
+import os
 from config import (ConfigSectionMap)
 
 my_ssh_client = None
@@ -25,7 +26,11 @@ def open_ssh_client():
 
     return ssh_client
 
-def transfer_file(local_file, dataset_authority, dataset_identifier, storage_identifier):
+# Transfers the file "local_flo" over ssh/sftp to the configured remote server.
+# local_flo can be either a string specifying the file path, or a file-like object (stream).
+# Note that if a stream is supplied, the method also needs the file size to be specified, 
+# via the parameter byte_size.
+def transfer_file(local_flo, dataset_authority, dataset_identifier, storage_identifier, byte_size):
     sftp_client=my_ssh_client.open_sftp()
 
     remote_dir = dataset_authority + "/" + dataset_identifier
@@ -38,13 +43,18 @@ def transfer_file(local_file, dataset_authority, dataset_identifier, storage_ide
             cdir = cdir + subdir + "/"
             sftpattr=sftp_client.stat(cdir)
         except IOError:
-            print "directory "+cdir+" does not exist (creating)"
+            #print "directory "+cdir+" does not exist (creating)"
             sftp_client.mkdir(cdir)
-        else:
-            print "directory "+cdir+" already exists"
+        #else:
+        #    print "directory "+cdir+" already exists"
 
     remote_file = remote_dir  + "/" + storage_identifier
-    sftp_client.put(local_file,remote_file)
+
+    if (type(local_flo) is str):
+        sftp_client.put(local_flo,remote_file)
+    else:
+        # assume it's a stream:
+        sftp_client.putfo(local_flo,remote_file,byte_size)
     sftp_client.close()
 
     print "File transfered."
@@ -76,13 +86,15 @@ def verify_remote_file(remote_file, checksum_type, checksum_value):
         raise ValueError("remote checksum BAD! (" + remote_checksum_value + ")")
 
 
-def backup_file_ssh(file_input, dataset_authority, dataset_identifier, storage_identifier, checksum_type, checksum_value):
+def backup_file_ssh(file_input, dataset_authority, dataset_identifier, storage_identifier, checksum_type, checksum_value, byte_size=0):
     global my_ssh_client
     if (my_ssh_client is None):
         my_ssh_client = open_ssh_client()
         print "ssh client is not defined"
+    else:
+        print "reusing the existing ssh client"
 
-    file_transfered = transfer_file(file_input, dataset_authority, dataset_identifier, storage_identifier)
+    file_transfered = transfer_file(file_input, dataset_authority, dataset_identifier, storage_identifier, byte_size)
 
     verify_remote_file(file_transfered, checksum_type, checksum_value)
 
@@ -91,8 +103,21 @@ def main():
     print "entering ssh (standalone mode)"
 
 
+    print "testing local file:"
     try:
+        file_path="config.ini"
         backup_file_ssh("config.ini", "1902.1", "XYZ", "config.ini", "MD5", "8e6995806b1cf27df47c5900869fdd27")
+    except ValueError:
+        print "failed to verify file (\"config.ini\")"
+    else:
+        print "file ok"
+
+    print "testing file stream:"
+    try: 
+        file_size = os.stat(file_path).st_size
+        print ("file size: %d" % file_size)
+        file_stream = io.open("config.ini", "rb")
+        backup_file_ssh(file_stream, "1902.1", "XYZ", "config.ini", "MD5", "8e6995806b1cf27df47c5900869fdd27", file_size)
     except ValueError:
         print "failed to verify file (\"config.ini\")"
     else:
