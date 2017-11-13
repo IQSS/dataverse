@@ -154,11 +154,13 @@
             </div>
         </nav>
         <!-- Header Panel -->
+        <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend. -->
         <div id="dataverseHeader" class="container bg-muted"
-                style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};"
+                style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'FFFFFF'};"
                 jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView}">
              <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils"/>
-            <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};"
+            <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend. -->
+            <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'FFFFFF'};"
                  jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
             </div>
