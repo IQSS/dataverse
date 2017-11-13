@@ -45,10 +45,10 @@ ${GLASSFISH_SETUP_SCRIPT}:	glassfish-setup.sh
 	/bin/cp glassfish-setup.sh ${INSTALLER_ZIP_DIR}
 
 
-${POSTGRES_DRIVERS}:	pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar
+${POSTGRES_DRIVERS}:	pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.1.4.jar
 	@echo copying postgres drviers
 	@mkdir -p ${POSTGRES_DRIVERS}
-	/bin/cp pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar ${INSTALLER_ZIP_DIR}/pgdriver
+	/bin/cp pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.1.4.jar ${INSTALLER_ZIP_DIR}/pgdriver
 
 ${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data
 	@echo copying api scripts
