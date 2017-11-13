@@ -3,6 +3,7 @@ CREATE TABLE datafilestatus (
     datasetidentifier character varying(255),
     storageidentifier character varying(255),
     status character varying(255),
+    createdate timestamp without time zone,
     lastbackuptime timestamp without time zone,
     lastbackupmethod character varying(16)
 );
