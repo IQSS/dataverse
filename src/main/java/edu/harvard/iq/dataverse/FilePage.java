@@ -760,13 +760,5 @@ public class FilePage implements java.io.Serializable {
         
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
     }
-    
-    public FileDownloadHelper getFileDownloadHelper() {
-        return fileDownloadHelper;
-    }
-
-    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
-        this.fileDownloadHelper = fileDownloadHelper;
-    }
 
 }
