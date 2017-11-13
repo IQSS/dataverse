@@ -47,10 +47,12 @@ def query_database(sinceTimestamp=None):
 
     # select data files from the database 
     dataverse_query="SELECT s.authority,s.identifier,o.storageidentifier,f.checksumtype,f.checksumvalue,f.filesize,o.createdate FROM dataset s, datafile f, dvobject o WHERE o.id = f.id AND o.owner_id = s.id AND s.harvestingclient_id IS null"
-    if sinceTimestamp is not None:
-        dataverse_query = dataverse_query+" AND o.createdate > '"+sinceTimestamp+"'"
+    if sinceTimestamp is None:
+        cursor.execute(dataverse_query)
+    else:
+        dataverse_query = dataverse_query+" AND o.createdate > %s"
+        cursor.execute(dataverse_query, (sinceTimestamp,))
 
-    cursor.execute(dataverse_query)
 
     records = cursor.fetchall()
 
@@ -83,9 +85,12 @@ def get_datafile_status(dataset_authority, dataset_identifier, storage_identifie
     cursor = backup_db_connection.cursor()
 
     # select the last timestamp from the datafilestatus table: 
-    dataverse_query="SELECT status FROM datafilestatus WHERE datasetidentifier='"+dataset_authority+"/"+dataset_identifier+"' AND storageidentifier='"+storage_identifier+"';"
+    
+    dataverse_query="SELECT status FROM datafilestatus WHERE datasetidentifier=%s AND storageidentifier=%s;"
 
-    cursor.execute(dataverse_query)
+    dataset_id=dataset_authority+"/"+dataset_identifier
+
+    cursor.execute(dataverse_query, (dataset_id, storage_identifier))
 
     record = cursor.fetchone()
 
@@ -94,6 +99,7 @@ def get_datafile_status(dataset_authority, dataset_identifier, storage_identifie
         return None
 
     backupstatus = record[0]
+    print "last backup status: "+backupstatus
     return backupstatus
 
 def record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, status, timestamp):
@@ -105,12 +111,16 @@ def record_datafile_status(dataset_authority, dataset_identifier, storage_identi
     timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%S')
 
     if current_status is None:
-        uquery = "INSERT INTO datafilestatus (datasetidentifier, storageidentifier, status, lastbackuptime, lastbackupmethod) VALUES ('"+dataset_authority+"/"+dataset_identifier+"', '"+storage_identifier+"', '"+status+"', '"+timestamp_str+"', '" + ConfigSectionMap("Backup")['storagetype'] + "');"
+        query = "INSERT INTO datafilestatus (status, lastbackuptime, lastbackupmethod, datasetidentifier, storageidentifier) VALUES (%s, %s, %s, %s, %s);"
     else:
-        uquery = "UPDATE datafilestatus SET status='"+status+"', lastbackuptime='"+timestamp_str+"', lastbackupmethod='"+ConfigSectionMap("Backup")['storagetype']+"' WHERE datasetidentifier='"+dataset_authority+"/"+dataset_identifier+"' AND storageidentifier='"+storage_identifier+"';"
+        query = "UPDATE datafilestatus SET status=%s, lastbackuptime=%s, lastbackupmethod=%s WHERE datasetidentifier=%s AND storageidentifier=%s;"
 
-    print uquery
-    cursor.execute(uquery)
+    dataset_id=dataset_authority+"/"+dataset_identifier
+    backup_method = ConfigSectionMap("Backup")['storagetype']
+
+    cursor.execute(query, (status, timestamp_str, backup_method, dataset_id, storage_identifier))
+
+    # finalize transaction:
     backup_db_connection.commit()
     cursor.close()
         
