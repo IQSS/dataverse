@@ -4095,23 +4095,13 @@ public class DatasetPage implements java.io.Serializable {
             apitoken = authService.findApiTokenByUser((AuthenticatedUser) user);
         }
         
-        //List<List<ExternalTool>> dsTools = new ArrayList();//not convinced this structure will be processed in the correct order by jsf or that I've put things in the right place on that side
-        
-        for (FileMetadata fm : fileMetadatasSearch) { //why does normal fileMetadatas not exist at this point? should I trigger it? how is search different?
+        for (FileMetadata fm : fileMetadatasSearch) { //why does normal fileMetadatas not exist at this point? how is search different?
             DataFile fmFile = fm.getDataFile();
             List<ExternalTool> fileTools = externalToolService.findAll(fmFile, apitoken); //MAD: rename these
             externalTools.put(fmFile.getId(),fileTools);
         }
     }
 
-    // FIXME: We need to return a list of tools per file.
-    //public List<ExternalTool> getExternalTools() {
-    //    return externalTools;
-    //}
-
-        //I need this to return one list of tools based upon an id
-        //??? How is externalTools being populated? should it be attached to an object?
-        //eh there is a service bean I can query... maybe I'm doing this wrong and still need that double list...
     public Map getExternalTools() {
         return externalTools;        
     }
@@ -4119,7 +4109,6 @@ public class DatasetPage implements java.io.Serializable {
     public List<ExternalTool> getExternalToolsForDataFile(Long fileId) {
         return externalTools.get(fileId);        
     }
-    
     
     String psiPopupUrl = "";
     public void setPsiPopupUrl(String newUrl) {
@@ -4130,14 +4119,9 @@ public class DatasetPage implements java.io.Serializable {
         return psiPopupUrl;
     }
     
-        //MAD : need to do this for each file and populate... ugh. Also clean up the double "findAll"
-        
-        //fileMetadatasSearch is this what I'm suppose to be using???? private List<FileMetadata> fileMetadatasSearch;
-        
-        //I need to generate a list of lists of external tools, one for each file. I don't understand how this data will be consumed in fileFragments...
-        //In the jsf it looks like I can reference #{fileMetadata.dataFile.id} and the like... so as long as I can create a list that can be referenced?
-        //Alternatively, maybe this info should be in the fileMetadata?
+    public String psiExternalAlert() { 
+        JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.summary"), BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.details"));
+        return "";
+    }
     
-   // fileMetadatasSearch
-
 }
