@@ -1,6 +1,15 @@
 The script, run_backup.py is run on schedule (by a crontab, most
 likely). It will back up the files stored in your Dataverse on the
-remote storage system specified. Access credentials, for the Dataverse
+remote storage system specified. 
+
+The backup script is written in Python. The following extra modules are required:
+
+psycopg2    - PostgresQL driver 
+boto3       - AWS sdk, for accessing S3 storage
+paramiko    - SSH client, for transferring files via SFTP
+swiftclient - [optional] for reading Datafiles stored on swift [not implemented yet] and/or backing up files on swift [untested, experimental (?) implementation]
+
+Access credentials, for the Dataverse
 and the remote storage system are configured in the file config.ini.
 
 The following config.ini sections must be configured for the
@@ -51,7 +60,7 @@ Dataverse. In its present form, the script can read files stored on
 the filesystem and S3. There is no support for reading files stored
 via swift as of yet. Adding swift support should be straightforward,
 by supplying another storage module - similarly to the existing
-storage_filesystem.py and storage_S3.py.
+storage_filesystem.py and storage_s3.py.
 
 For the filesystem storage: the assumption is that the script has
 direct access to the filesystem where the files live. Meaning that in
