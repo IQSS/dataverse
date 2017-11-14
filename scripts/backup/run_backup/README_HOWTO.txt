@@ -49,11 +49,18 @@ NOTE that the current assumption is that this Postgres database lives
 on the same server as the main Dataverse database and is owned by the
 same user.
 
-Also, one table must be created in this database before the script can
-be run. The script backupdb.sql is provided in this directory. NOTE
-that the Postgres user name dvnapp is hard-coded in the script; change
-it to reflect the name of the database user on your system, if
-necessary.
+Also, one table must be created *in this database* (NOT in the main
+Dataverse database) before the script can be run. The script
+backupdb.sql is provided in this directory. NOTE that the Postgres
+user name dvnapp is hard-coded in the script; change it to reflect the
+name of the database user on your system, if necessary.
+
+You can use the standard psql command to create the table; for example:
+
+    	psql -d backupdb -f backupdb.sql
+
+(please note that the example above assumes "backupdb" as the name of
+the backup database)
 
 2. Repository
 
@@ -62,7 +69,8 @@ Dataverse. In its present form, the script can read files stored on
 the filesystem and S3. There is no support for reading files stored
 via swift as of yet. Adding swift support should be straightforward,
 by supplying another storage module - similarly to the existing
-storage_filesystem.py and storage_s3.py.
+storage_filesystem.py and storage_s3.py. If you'd like to work on 
+this, please get in touch.
 
 For the filesystem storage: the assumption is that the script has
 direct access to the filesystem where the files live. Meaning that in
@@ -76,7 +84,7 @@ the example below:
 [Repository]
 FileSystemDirectory: /usr/local/glassfish4/glassfish/domains/domain1/files
 
-For the S3, no configuration is needed in the config.ini. But AWS
+For S3, no configuration is needed in the config.ini. But AWS
 access must be properly configured for the user running the backup
 module, in the standard ~/.aws location.
 
