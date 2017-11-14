@@ -245,8 +245,11 @@ public class Dataverses extends AbstractApiBean {
             }
             
             Dataset managedDs = execCommand(new CreateDatasetCommand(ds, createDataverseRequest(u)));
-            return created( "/datasets/" + managedDs.getId(),
-                    Json.createObjectBuilder().add("id", managedDs.getId()) );
+            return created("/datasets/" + managedDs.getId(),
+                    Json.createObjectBuilder()
+                            .add("id", managedDs.getId())
+                            .add("persistentId", managedDs.getGlobalId())
+            );
                 
         } catch ( WrappedResponse ex ) {
             return ex.getResponse();

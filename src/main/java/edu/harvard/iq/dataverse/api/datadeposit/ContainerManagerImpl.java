@@ -129,7 +129,6 @@ public class ContainerManagerImpl implements ContainerManager {
                 String globalId = urlManager.getTargetIdentifier();
                 Dataset dataset = datasetService.findByGlobalId(globalId);
                 if (dataset != null) {
-                    SwordUtil.datasetLockCheck(dataset);
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
                     UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq);
                     if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
@@ -222,7 +221,6 @@ public class ContainerManagerImpl implements ContainerManager {
                         if (!permissionService.isUserAllowedOn(user, deleteDatasetVersionCommand, dataset)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsDataset.getAlias());
                         }
-                        SwordUtil.datasetLockCheck(dataset);
                         DatasetVersion.VersionState datasetVersionState = dataset.getLatestVersion().getVersionState();
                         if (dataset.isReleased()) {
                             if (datasetVersionState.equals(DatasetVersion.VersionState.DRAFT)) {

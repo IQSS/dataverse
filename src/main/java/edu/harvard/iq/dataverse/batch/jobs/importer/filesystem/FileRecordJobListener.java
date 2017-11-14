@@ -236,9 +236,12 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         }
 
         // remove dataset lock
-        if (dataset != null && dataset.getId() != null) {
-            datasetServiceBean.removeDatasetLock(dataset.getId());
-        }
+        // Disabled now, see L.A.'s comment at beforeJob()
+//        if (dataset != null && dataset.getId() != null) {
+//            datasetServiceBean.removeDatasetLock(dataset.getId(), DatasetLock.Reason.Ingest);
+//        }
+
+
         getJobLogger().log(Level.INFO, "Removing dataset lock.");
         
         // job step info

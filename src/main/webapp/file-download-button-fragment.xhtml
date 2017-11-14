@@ -56,12 +56,13 @@
             <li><!-- Two Ravens -->
                 <h:commandLink rendered="#{!downloadPopupRequired}"
                                styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                action="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
                     #{bundle['file.explore.twoRavens']} 
                 </h:commandLink>
                 <p:commandLink rendered="#{downloadPopupRequired}"                                            
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                process="@this"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
@@ -70,14 +71,15 @@
             </li>
             <li><!-- WorldMap Explore -->
                 <h:commandLink rendered="#{!downloadPopupRequired}"
-                               styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                               styleClass="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                               
                                action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
                     #{bundle['file.mapData.worldMap']}
                 </h:commandLink>
                 <p:commandLink rendered="#{downloadPopupRequired}"
-                               styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                               disabled="#{fileMetadata.dataFile.ingestInProgress}"
+                               styleClass="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                               disabled="#{fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
                                process="@this"
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
                                update="@widgetVar(downloadPopup)"
@@ -93,7 +95,7 @@
         <h:commandLink rendered="#{!downloadPopupRequired}"
                        type="button" 
                        styleClass="btn btn-default #{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                       disabled="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                       disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
                        action="#{fileDownloadService.startExploreDownloadLink( guestbookResponse, fileMetadata )}" target="_blank">
             <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
         </h:commandLink>
@@ -102,7 +104,7 @@
                        process="@this"
                        action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
                        update="@widgetVar(downloadPopup)"
-                       disabled="#{fileMetadata.dataFile.ingestInProgress}"
+                       disabled="#{fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
                        oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
         </p:commandLink>
@@ -113,7 +115,7 @@
         <h:commandLink pt:role="button" rendered="#{!downloadPopupRequired}"
                        type="button" 
                        styleClass="btn btn-default #{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}" 
-                       disabled="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}" 
+                       disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                        title="Explore" action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
         </h:commandLink>
@@ -122,7 +124,7 @@
                        process="@this"
                        action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
                        update="@widgetVar(downloadPopup)"
-                       disabled="#{fileMetadata.dataFile.ingestInProgress}"
+                       disabled="#{fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
                        oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
         </p:commandLink>
@@ -140,6 +142,7 @@
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) }"
                    type="button" styleClass="btn btn-default"
                    process="@this"
+                   disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                    actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'Download')}">
         <!-- non-tabular data file: -->
         <!-- no guest book/terms of use/etc. - straight to the download API url: -->
@@ -149,6 +152,7 @@
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and downloadPopupRequired }"
                    type="button" styleClass="btn btn-default"
                    process="@this"
+                   disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                    action="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata)}"
                    update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
         <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
@@ -181,6 +185,7 @@
             <li>
                 <p:commandLink rendered="#{!downloadPopupRequired}"
                                process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'original')}">
                     <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
@@ -188,6 +193,7 @@
                 </p:commandLink>
                 <p:commandLink rendered="#{downloadPopupRequired}"
                                process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'original' )}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
@@ -199,11 +205,13 @@
             <li>
                 <p:commandLink rendered="#{!downloadPopupRequired}"
                                process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'tab')}">
                     #{bundle['file.downloadBtn.format.tab']}
                 </p:commandLink>
                 <p:commandLink rendered="#{downloadPopupRequired}"
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'tab' )}"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                     #{bundle['file.downloadBtn.format.tab']}
@@ -213,11 +221,13 @@
                 <li>
                     <p:commandLink rendered="#{!downloadPopupRequired}"
                                    process="@this"
+                                   disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                    actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'RData')}">
                         #{bundle['file.downloadBtn.format.rdata']}
                     </p:commandLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"
                                    process="@this"
+                                   disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'RData' )}"
                                    update="@widgetVar(downloadPopup)"
                                    oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
@@ -228,11 +238,13 @@
             <li>
                 <p:commandLink rendered="#{!downloadPopupRequired}"
                                process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'var')}">
                     #{bundle['file.downloadBtn.format.var']}
                 </p:commandLink>
                 <p:commandLink rendered="#{downloadPopupRequired}"
                                process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'var' )}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
@@ -242,18 +254,20 @@
             <li>
                 <p:commandLink id="fileDowloadDataSubsetButton" rendered="#{!(downloadPopupRequired)}"
                                process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload or empty fileMetadata.dataFile.id) ? 'disabled' : ''}" 
                                actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse,fileMetadata, 'subset')}"
                                update="@widgetVar(downloadDataSubsetPopup)"
                                oncomplete="PF('downloadDataSubsetPopup').show()"
                                value="Data Subset"
-                               disabled="#{empty fileMetadata.dataFile.id}"/>
+                               />
                 <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{downloadPopupRequired}"
                                process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload or empty fileMetadata.dataFile.id) ? 'disabled' : ''}" 
                                actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse,fileMetadata, 'subset')}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show()"
                                value="Data Subset"
-                               disabled="#{empty fileMetadata.dataFile.id}"/>
+                               />
             </li>
             <li class="dropdown-submenu pull-left">
                 <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>

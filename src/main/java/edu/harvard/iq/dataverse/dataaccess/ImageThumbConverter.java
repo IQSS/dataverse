@@ -309,11 +309,11 @@ public class ImageThumbConverter {
                 return false;
             }
         } catch (FileNotFoundException fnfe) {
-            logger.fine("No .img file for this worldmap file yet; giving up.");
+            logger.fine("No .img file for this worldmap file yet; giving up. Original Error: " + fnfe);
             return false;
 
         } catch (IOException ioex) {
-            logger.warning("caught IOException trying to open an input stream for worldmap .img file (" + storageIO.getDataFile().getStorageIdentifier() + ")");
+            logger.warning("caught IOException trying to open an input stream for worldmap .img file (" + storageIO.getDataFile().getStorageIdentifier() + "). Original Error: " + ioex);
             return false;
         }
 
