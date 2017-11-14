@@ -1,5 +1,5 @@
 import ConfigParser
-
+import sys
 Config = ConfigParser.ConfigParser()
 Config.read("config.ini")
 
@@ -10,7 +10,7 @@ def ConfigSectionMap(section):
         try:
             dict1[option] = Config.get(section, option)
             if dict1[option] == -1:
-                DebugPrint("skip: %s" % option)
+                sys.stderr.write("skip: %s\n" % option)
         except:
             print("exception on %s!" % option)
             dict1[option] = None
