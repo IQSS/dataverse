@@ -11,30 +11,32 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-        <h:outputLink pt:role="button" rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}"
-                      type="button" styleClass="btn btn-default btn-access" value="# {fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-            <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.map']}
-        </h:outputLink>
         <div class="btn-group" >
             <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                 <span class="glyphicon glyphicon-cog"/> #{bundle['dataset.configureBtn']} <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu pull-right text-left" role="menu">
-                <li>
-                    <a onclick="PF('mapData_popup').show()" href="javascript:void(0);" >#{bundle['file.map']}</a> <!--jsf:rendered="# {worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}"-->
+            <ul class="dropdown-menu pull-right text-left" role="menu" >
+                <!-- Worldmap unpublished -->
+                <li jsf:rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
+                    <a onclick="PF('mapData_popup').show()" href="javascript:void(0);" >#{bundle['file.map']}</a>
                 </li>
+                <!-- Worldmap published -->
+                <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}">
+                    <a href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" >#{bundle['file.map']}</a>
+                </li>
+                <!-- Configure options (currently just psi) -->
                 <ui:repeat value="#{externalTools}" var="tool" rendered="#{dataverseSession.user.authenticated and canUpdateDataset and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
                     <li>
                         <p:commandLink
                             update="@([id$=psiBrowserPopup])"
-                            oncomplete="PF('psiBrowserPopup').show()"> <!--disabled="# {DatasetPage.locked}" -->
+                            oncomplete="PF('psiBrowserPopup').show()">
                             #{tool.displayName}
                         </p:commandLink>
                         <!-- Pop-up for the only tool we currently pull with this code, the psi tool. -->
                         <!-- This will need to become more modular as we add more tools. -->
                         <!-- Placed here so it can access the tool variable for this file -->
 
-                        <p:dialog id="psiBrowserPopup" styleClass="largePopUp" header="#{bundle['file.psiBrowserInfoDialog.header']}" widgetVar="psiBrowserPopup">
+                        <p:dialog id="psiBrowserPopup" header="#{bundle['file.psiBrowserInfoDialog.header']}" widgetVar="psiBrowserPopup">
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.psiBrowserInfoDialog.tip']}
                             </p>
@@ -54,7 +56,7 @@
             </ul>
         </div>
         
-        <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true" rendered="# {(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+        <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true" rendered="#{(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
             <p class="help-block">
                 <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
             </p>
