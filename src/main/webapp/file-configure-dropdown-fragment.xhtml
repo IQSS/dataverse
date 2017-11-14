@@ -11,16 +11,50 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    
-        <!-- WorldMap Map Data link group -->
-        <!-- 4.2.1: VERIFIED: none of these checks add any queries, if there are no map layers. -->
-        <!-- WorldMap Map Data -->
-        <h:outputLink rendered="# {worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-            #{bundle['file.map']}
+        <h:outputLink pt:role="button" rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}"
+                      type="button" styleClass="btn btn-default btn-access" value="# {fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
+            <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.map']}
         </h:outputLink>
-        <!-- Unpublished Map Data -->
-        <a onclick="PF('mapData_popup').show()" href="javascript:void(0);" jsf:rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">#{bundle['file.map']}</a>
-        <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true" rendered="#{(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+        <div class="btn-group" >
+            <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                <span class="glyphicon glyphicon-cog"/> #{bundle['dataset.configureBtn']} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu pull-right text-left" role="menu">
+                <li>
+                    <a onclick="PF('mapData_popup').show()" href="javascript:void(0);" >#{bundle['file.map']}</a> <!--jsf:rendered="# {worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}"-->
+                </li>
+                <ui:repeat value="#{externalTools}" var="tool" rendered="#{dataverseSession.user.authenticated and canUpdateDataset and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                    <li>
+                        <p:commandLink
+                            update="@([id$=psiBrowserPopup])"
+                            oncomplete="PF('psiBrowserPopup').show()"> <!--disabled="# {DatasetPage.locked}" -->
+                            #{tool.displayName}
+                        </p:commandLink>
+                        <!-- Pop-up for the only tool we currently pull with this code, the psi tool. -->
+                        <!-- This will need to become more modular as we add more tools. -->
+                        <!-- Placed here so it can access the tool variable for this file -->
+
+                        <p:dialog id="psiBrowserPopup" styleClass="largePopUp" header="#{bundle['file.psiBrowserInfoDialog.header']}" widgetVar="psiBrowserPopup">
+                            <p class="help-block">
+                                <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.psiBrowserInfoDialog.tip']}
+                            </p>
+                            <div class="button-block">
+                                <!-- This calls the alert in dataset page and works, but probably should be somewhere else -->
+                                <p:commandButton 
+                                    action="#{DatasetPage.psiExternalAlert()}" 
+                                    value="#{bundle['file.configureButton']}" 
+                                    onclick="PF('psiBrowserPopup').hide();window.open('#{tool.toolUrl}', '_blank')"
+                                    update=":messagePanel">
+                                </p:commandButton>
+                                <button type="button" class="btn btn-default" onclick="PF('psiBrowserPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                            </div>
+                        </p:dialog>
+                    </li>
+                </ui:repeat>
+            </ul>
+        </div>
+        
+        <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true" rendered="# {(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
             <p class="help-block">
                 <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
             </p>
@@ -30,5 +64,5 @@
                 </button>
             </div>
         </p:dialog>
-    
+
 </ui:composition>
