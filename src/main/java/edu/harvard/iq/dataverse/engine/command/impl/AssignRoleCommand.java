@@ -64,7 +64,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
 
     @Override
     public String describe() {
-        return grantee + " has been given access to " + defPoint.accept(DvObject.NameIdPrinter);
+        return grantee + " has been given " + role + " on " + defPoint.accept(DvObject.NameIdPrinter);
     }
 
 }
