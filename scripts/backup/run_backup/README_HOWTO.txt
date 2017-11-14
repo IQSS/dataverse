@@ -6,7 +6,7 @@ The backup script is written in Python. The following extra modules are required
 
 (versions tested as of the writing of this doc, 11.14.2017)
 
-psycopg2    [2.7.3.2] - PostgresQL driver 
+psycopg2    [2.7.3.2] - PostgreSQL driver 
 boto3       [1.4.7]   - AWS sdk, for accessing S3 storage
 paramiko    [2.2.1]   - SSH client, for transferring files via SFTP
 swiftclient [2.7.0]   - [optional] for reading Datafiles stored on swift [not implemented yet] and/or backing up files on swift [untested, experimental (?) implementation]
@@ -21,10 +21,10 @@ whole thing to work:
 
 The script needs to be able to access the Dataverse database, in order to
 obtain the lists of files that have changed since the last backup and
-need to be copied. The script can use PostgresQL running on a
+need to be copied. The script can use PostgreSQL running on a
 remote server. Just make sure that the remote server is configured to
 allow connections from the host running the backup script; and that
-PostgresQL is allowing database access from this host too.
+PostgreSQL is allowing database access from this host too.
 
 Configure the access credentials as in the example below:
 
