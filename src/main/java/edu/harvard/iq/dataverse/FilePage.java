@@ -780,13 +780,4 @@ public class FilePage implements java.io.Serializable {
         return externalTools;
     }
     
-    String psiPopupUrl = "";
-    public void setPsiPopupUrl(String newUrl) {
-        psiPopupUrl = newUrl; 
-    }
-    
-    public String getPsiPopupUrl() {
-        return psiPopupUrl;
-    }
-    
 }

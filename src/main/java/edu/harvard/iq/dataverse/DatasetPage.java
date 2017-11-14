@@ -4110,15 +4110,6 @@ public class DatasetPage implements java.io.Serializable {
         return externalTools.get(fileId);        
     }
     
-    String psiPopupUrl = "";
-    public void setPsiPopupUrl(String newUrl) {
-        psiPopupUrl = newUrl;
-    }
-    
-    public String getPsiPopupUrl() {
-        return psiPopupUrl;
-    }
-    
     public String psiExternalAlert() { 
         JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.summary"), BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.details"));
         return "";

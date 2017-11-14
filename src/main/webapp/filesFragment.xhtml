@@ -358,32 +358,13 @@
             </div>
             
             <!---Modular configure-->
-            <div class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}"> <!--fileMetadata.dataFile.tabularData and -->
-                <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
-                    <span class="glyphicon glyphicon-cog"/> #{bundle['dataset.configureBtn']} <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu pull-right text-left" role="menu">
-                    <li>
-                        <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
-                            <ui:include src="file-map-setup-button.xhtml">
-                                <ui:param name="fileMetadata" value="#{fileMetadata}"/>
-                                <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                            </ui:include>
-                        </ui:fragment>
-                    </li>
-                    <ui:repeat value="#{DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id)}" var="tool">
-                    <li>
-                        <p:commandLink 
-                            update="@([id$=psiBrowserPopup])"
-                            oncomplete="PF('psiBrowserPopup').show()"
-                            action="#{DatasetPage.setPsiPopupUrl(tool.toolUrl)}"
-                            disabled="#{DatasetPage.locked}">
-                            #{tool.displayName}
-                        </p:commandLink>
-                    </li>
-                    </ui:repeat>
-                </ul>
-            </div>
+            
+                <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                    <ui:include src="file-configure-dropdown-fragment.xhtml">
+                        <ui:param name="externalTools" value="#{DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                        <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                    </ui:include>
+                </ui:fragment>
 
             <div class="btn-group" jsf:rendered="#{!settingsWrapper.rsyncDownload}">
                 <ui:include src="file-download-button-fragment.xhtml">
