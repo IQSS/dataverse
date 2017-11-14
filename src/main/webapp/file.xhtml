@@ -129,7 +129,8 @@
                                                     <h:outputText value= "#{bundle['file.delete']}"/>
                                                 </p:commandLink>
                                             </li>
-                                            <li rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                                            <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
+                                            <li>
                                                 <ui:fragment >
                                                     <ui:include src="file-map-setup-button.xhtml">
                                                         <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
@@ -137,7 +138,8 @@
                                                     </ui:include>
                                                 </ui:fragment>
                                             </li>
-                                            <ui:repeat value="#{FilePage.externalTools}" var="tool" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}"> <!--FilePage.fileMetadata.dataFile.tabularData and -->
+                                            </ui:fragment>
+                                            <ui:repeat value="#{FilePage.externalTools}" var="tool" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() and (FilePage.fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
                                                 <!-- Map Data/Set Up Button Block -->
 
                                                 <!-- END: Map Data/Set Up Button Block -->
