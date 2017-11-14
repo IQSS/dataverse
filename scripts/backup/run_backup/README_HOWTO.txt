@@ -4,10 +4,12 @@ remote storage system specified.
 
 The backup script is written in Python. The following extra modules are required:
 
-psycopg2    - PostgresQL driver 
-boto3       - AWS sdk, for accessing S3 storage
-paramiko    - SSH client, for transferring files via SFTP
-swiftclient - [optional] for reading Datafiles stored on swift [not implemented yet] and/or backing up files on swift [untested, experimental (?) implementation]
+(versions tested as of the writing of this doc, 11.14.2017)
+
+psycopg2    [2.7.3.2] - PostgresQL driver 
+boto3       [1.4.7]   - AWS sdk, for accessing S3 storage
+paramiko    [2.2.1]   - SSH client, for transferring files via SFTP
+swiftclient [2.7.0]   - [optional] for reading Datafiles stored on swift [not implemented yet] and/or backing up files on swift [untested, experimental (?) implementation]
 
 Access credentials, for the Dataverse
 and the remote storage system are configured in the file config.ini.

@@ -50,6 +50,11 @@ def main():
                     record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'OK', create_time)
                 except ValueError:
                     print "failed to back up file "+storage_identifier
+                    record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'FAIL_WRITE', create_time)
+                    #TODO: add a separate failure status 'FAIL_VERIFY' - for when it looked like we were able to copy the file 
+                    # onto the remote storage system, but the checksum verification failed (?)
+            else:
+                record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'FAIL_READ', create_time)
 
 if __name__ == "__main__":
     main()

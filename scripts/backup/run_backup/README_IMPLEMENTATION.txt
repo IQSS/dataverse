@@ -1,10 +1,12 @@
 The backup script is implemented in Python. The following extra
 modules are needed:
 
-psycopg2    - PostgresQL driver 
-boto3       - AWS sdk, for accessing S3 storage
-paramiko    - SSH client, for transferring files via SFTP
-swiftclient - for reading [not yet implemented] and writing swift objects. 
+(versions tested as of the writing of this doc, 11.14.2017)
+
+psycopg2    [2.7.3.2] - PostgresQL driver 
+boto3       [1.4.7]   - AWS sdk, for accessing S3 storage
+paramiko    [2.2.1]   - SSH client, for transferring files via SFTP
+swiftclient [2.7.0]   - for reading [not yet implemented] and writing swift objects. 
 
 1. Database access.
 

@@ -21,6 +21,7 @@ def open_dataverse_file(dataset_authority, dataset_identifier, storage_identifie
         return byteStream
     elif storageTag == 's3':
         byteStream = open_storage_object_s3(dataset_authority, dataset_identifier, objectLocation)
+        return byteStream
     elif storageTag == 'swift':
         raise ValueError("backup of swift objects not supported yet")
 
