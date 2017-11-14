@@ -4120,7 +4120,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String psiExternalAlert() { 
-        JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.summary"), BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.details"));
+        JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.summary"), BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.details"));
         return "";
     }
     

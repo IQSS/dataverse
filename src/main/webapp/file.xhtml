@@ -72,16 +72,6 @@
                                 <!-- END: Email/Share Button Group -->
                                 
                                 <div class="button-container btn-group" jsf:rendered="#{!widgetWrapper.widgetView}">
-                                    <!-- Map Data/Set Up Button Block -->
-                                    <ui:fragment rendered="#{(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))  
-                                                                or (!FilePage.fileMetadata.datasetVersion.deaccessioned or 
-                                                                  (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
-                                        <ui:include src="file-setup-button.xhtml">
-                                            <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
-                                            <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
-                                        </ui:include>
-                                    </ui:fragment>
-                                    <!-- END: Map Data/Set Up Button Block -->
                                     <!-- Edit Button Group -->
                                     <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                              and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
@@ -139,15 +129,25 @@
                                                     <h:outputText value= "#{bundle['file.delete']}"/>
                                                 </p:commandLink>
                                             </li>
-                                            <ui:repeat value="#{FilePage.externalTools}" var="tool" rendered="#{FilePage.fileMetadata.dataFile.tabularData}">
+                                            <li rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                                                <ui:fragment >
+                                                    <ui:include src="file-map-setup-button.xhtml">
+                                                        <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
+                                                        <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
+                                                    </ui:include>
+                                                </ui:fragment>
+                                            </li>
+                                            <ui:repeat value="#{FilePage.externalTools}" var="tool" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}"> <!--FilePage.fileMetadata.dataFile.tabularData and -->
+                                                <!-- Map Data/Set Up Button Block -->
+
+                                                <!-- END: Map Data/Set Up Button Block -->
                                                 <li>
-                                                    <!--<a href="# {tool.toolUrl}"># {tool.buttonLabel}</a>-->
                                                     <p:commandLink
                                                         update="@([id$=psiBrowserPopup])"
                                                         action="#{FilePage.setPsiPopupUrl(tool.toolUrl)}"
                                                         oncomplete="PF('psiBrowserPopup').show()"
                                                         disabled="#{DatasetPage.locked}">
-                                                        #{bundle['file.psiBroswerinfoDialog.configureElement']}
+                                                        #{tool.displayName}
                                                     </p:commandLink>
                                                 </li>
                                             </ui:repeat>
