@@ -42,7 +42,6 @@ body .ui-widget {font-size: inherit;}
 #footer.widget-view {position:fixed; left:0px; bottom:0px; margin:0; padding:4px 0 0 0; min-height:44px; width:100%; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
-
 #footer .version {vertical-align:bottom;white-space:nowrap;}
 #footer.widget-view .widgetBrandMsg {line-height:42px;}
 

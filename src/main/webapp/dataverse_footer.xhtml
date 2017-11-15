@@ -34,16 +34,8 @@
                 </div>
                 <div class="#{widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
                     <div class="poweredbylogo">
-                        <ui:fragment rendered="#{authenticationServiceBean.orcidEnabled}">
-                            <span class="orcid">
-                                #{bundle['orcid.poweredby']}
-                                <a href="http://orcid.org/" title="#{bundle['orcid.poweredby.title']}" target="_blank">
-                                    <img src="/resources/images/orcid_16x16.png" alt="#{bundle['footer.dataverseProject']}" /></a>
-                            </span>
-                        </ui:fragment>
                         <span>#{bundle['footer.poweredby']}</span>
-                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank">
-                                    <img src="/resources/images/dataverseproject_logo.png" alt="#{bundle['orcid.poweredby.imagealt']}" /></a>
+                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverseproject_logo.png" alt="#{bundle['footer.dataverseProject']}" /></a>
                         <h:outputText class="version" value="v. #{systemConfig.getVersion(true)}" rendered="#{!widgetView}"/>
                     </div>
                 </div>
