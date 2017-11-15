@@ -109,19 +109,14 @@
                             <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
                         <!--Compute button-->
-                        <div jsf:id="computeButton" class="btn-group" jsf:rendered="#{( DatasetPage.sessionUserAuthenticated
+<!--                        <div jsf:id="computeButton" class="btn-group" jsf:rendered="#{( DatasetPage.sessionUserAuthenticated
                                              and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and 
                                              !(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 0)}"
                              target="_blank">
                             <h:outputLink value="#{DatasetPage.computeUrl}" type="button" styleClass="btn btn-default">
-                               <h:outputText id="compute-button" value="#{bundle['file.compute']}" />
+                               <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
                             </h:outputLink> 
-                            <p:commandLink type="button" styleClass="btn btn-default" action="#{DatasetPage.addItemtoCart(DatasetPage.dataset.getDisplayName())}"
-                                           disabled="#{DatasetPage.locked}" value="#{bundle['file.cart']}" update=":datasetForm">
-                                <span class="glyphicon glyphicon-list"/> #{bundle['file.cart']}
-                                <!--<f:ajax render=":datasetForm"/>-->
-                            </p:commandLink>
-                        </div>               
+                        </div>               -->
                         <!--Compute button end--> 
 
 
