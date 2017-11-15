@@ -359,7 +359,7 @@
             
             <!---Modular configure-->
             
-                <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (fileMetadata.dataFile.tabularData and DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id).size() > 0 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
                     <ui:include src="file-configure-dropdown-fragment.xhtml">
                         <ui:param name="externalTools" value="#{DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id)}"/>
                         <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>

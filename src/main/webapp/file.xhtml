@@ -76,7 +76,7 @@
                                     
                                     
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() 
-                                                             and (FilePage.fileMetadata.dataFile.tabularData 
+                                                             and (FilePage.fileMetadata.dataFile.tabularData and FilePage.getExternalTools().size() > 0
                                                              or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">		
                                         <ui:include src="file-configure-dropdown-fragment.xhtml">
                                             <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
