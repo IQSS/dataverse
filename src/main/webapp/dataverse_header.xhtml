@@ -157,7 +157,7 @@
         <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend. -->
         <div id="dataverseHeader" class="container bg-muted"
                 style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'FFFFFF'};"
-                jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView}">
+                jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView and !dataverseHeaderFragment.isRootDataverseThemeDisabled(dataverse)}">
              <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils"/>
             <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend. -->
             <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'FFFFFF'};"
