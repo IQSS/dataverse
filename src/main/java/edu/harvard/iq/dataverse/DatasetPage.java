@@ -4095,10 +4095,13 @@ public class DatasetPage implements java.io.Serializable {
             apitoken = authService.findApiTokenByUser((AuthenticatedUser) user);
         }
         
-        for (FileMetadata fm : fileMetadatasSearch) { //why does normal fileMetadatas not exist at this point? how is search different?
-            DataFile fmFile = fm.getDataFile();
-            List<ExternalTool> fileTools = externalToolService.findAll(fmFile, apitoken); //MAD: rename these
-            externalTools.put(fmFile.getId(),fileTools);
+        if(fileMetadatasSearch != null) {
+            externalTools.clear();
+            for (FileMetadata fm : fileMetadatasSearch) { //why does normal fileMetadatas not exist at this point? how is search different?
+                DataFile fmFile = fm.getDataFile();
+                List<ExternalTool> fileTools = externalToolService.findAll(fmFile, apitoken); //MAD: rename these
+                externalTools.put(fmFile.getId(),fileTools);
+            }
         }
     }
 
