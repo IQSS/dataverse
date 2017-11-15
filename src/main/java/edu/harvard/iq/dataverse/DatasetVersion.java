@@ -145,6 +145,9 @@ public class DatasetVersion implements Serializable {
 
     @Transient
     private String contributorNames;
+    
+    @Transient 
+    private String jsonLd;
 
     @OneToMany(mappedBy="datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetVersionUser> datasetVersionUsers;
@@ -770,7 +773,57 @@ public class DatasetVersion implements Serializable {
         }
         return subjects;
     }
-
+    
+    /**
+     * @return List of Strings containing the version's Topic Classifications
+     */
+    public List<String> getTopicClassifications() {
+        List<String> topicClassifications = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.topicClassification)) {
+                for (DatasetFieldCompoundValue topicClassValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : topicClassValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.topicClassValue)) {
+                            String topic = subField.getValue();
+                            // Field values should NOT be empty or, especially, null
+                            // - in the ideal world. But as we are realizing, they CAN 
+                            // be null in real life databases. So, a check, just in case:
+                            if (!StringUtil.isEmpty(topic)) {
+                                topicClassifications.add(subField.getValue());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return topicClassifications;
+    }
+    
+    /**
+     * @return List of Strings containing the version's Keywords
+     */
+    public List<String> getKeywords() {
+        List<String> keywords = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
+                for (DatasetFieldCompoundValue keywordFieldValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : keywordFieldValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordValue)) {
+                            String keyword = subField.getValue();
+                            // Field values should NOT be empty or, especially, null,
+                            // - in the ideal world. But as we are realizing, they CAN 
+                            // be null in real life databases. So, a check, just in case:
+                            if (!StringUtil.isEmpty(keyword)) {
+                                keywords.add(subField.getValue());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return keywords;
+    }
+    
     public String getDatasetProducersString(){
         String retVal = "";
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -1157,11 +1210,25 @@ public class DatasetVersion implements Serializable {
     }
 
     // TODO: Make this more performant by writing the output to the database or a file?
+    // Agree - now that this has grown into a somewhat complex chunk of formatted
+    // metadata - and not just a couple of values inserted into the page html -
+    // it feels like it would make more sense to treat it as another supported  
+    // export format, that can be produced once and cached. 
+    // The problem with that is that the export subsystem assumes there is only 
+    // one metadata export in a given format per dataset (it uses the current 
+    // released (published) version. This JSON fragment is generated for a 
+    // specific released version - and we can have multiple released versions. 
+    // So something will need to be modified to accommodate this. -- L.A.  
+    
     public String getJsonLd() {
         // We show published datasets only for "datePublished" field below.
         if (!this.isPublished()) {
             return "";
         }
+        
+        /*if (jsonLd != null) {
+            return jsonLd;
+        }*/
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("@context", "http://schema.org");
         job.add("@type", "Dataset");
@@ -1197,16 +1264,24 @@ public class DatasetVersion implements Serializable {
         job.add("dateModified", this.getPublicationDateAsString());
         job.add("version", this.getVersionNumber().toString());
         /**
-         * "keywords" - We are using getDatasetSubjects() for consistency with
-         * `meta name="DC.subject"` in the dataset "head" tag. Per #2243 in the
-         * future, we could consider adding datasetkeyword(s) and
-         * topicclassification(s) but we should keep it consistent with
-         * "DC.subject".
+         * "keywords" - contains subject(s), datasetkeyword(s) and topicclassification(s)
+         * metadata fields for the version. -- L.A. 
+         * (see #2243 for details/discussion/feedback from Google)
          */
         JsonArrayBuilder keywords = Json.createArrayBuilder();
+        
         this.getDatasetSubjects().forEach((subjects) -> {
             keywords.add(subjects);
         });
+        
+        this.getTopicClassifications().forEach((topics) -> {
+            keywords.add(topics);
+        });
+        
+        this.getKeywords().forEach((keywordValues) -> {
+            keywords.add(keywordValues);
+        });
+        
         job.add("keywords", keywords);
         
         /**
@@ -1254,7 +1329,8 @@ public class DatasetVersion implements Serializable {
                 .add("@type", "Organization")
                 .add("name", "Dataverse")
         );
-        return job.build().toString();
+        jsonLd = job.build().toString();
+        return jsonLd;
     }
 
 }
