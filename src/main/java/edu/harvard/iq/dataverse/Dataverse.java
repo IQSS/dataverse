@@ -745,11 +745,4 @@ public class Dataverse extends DvObjectContainer {
         return false;
     }
 
-    public boolean isRootDataverse() {
-        if (getOwner() == null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }
