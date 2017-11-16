@@ -1,13 +1,11 @@
 package edu.harvard.iq.dataverse.actionlogging;
 
 import java.util.Date;
-import java.util.List;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 
 /**
  * A service bean that persists {@link ActionLogRecord}s to the DB.
@@ -33,17 +31,6 @@ public class ActionLogServiceBean {
             rec.setActionResult(ActionLogRecord.Result.OK);
         }
         em.persist(rec);
-    }
-
-    public List<ActionLogRecord> findAll() {
-        TypedQuery<ActionLogRecord> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ActionLogRecord AS o ORDER BY o.id", ActionLogRecord.class);
-        return typedQuery.getResultList();
-    }
-
-    public List<ActionLogRecord> findByActionType(ActionLogRecord.ActionType actionType) {
-        TypedQuery<ActionLogRecord> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ActionLogRecord AS o WHERE o.actionType = :actionType ORDER BY o.id", ActionLogRecord.class);
-        typedQuery.setParameter("actionType", actionType);
-        return typedQuery.getResultList();
     }
 
 }

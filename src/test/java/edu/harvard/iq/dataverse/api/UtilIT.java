@@ -1158,16 +1158,6 @@ public class UtilIT {
         return requestSpecification.post("/api/admin/externalTools");
     }
 
-    static Response getActionLogRecordAll() {
-        return given()
-                .get("/api/admin/actionLogRecord");
-    }
-
-    static Response getActionLogRecordByType(ActionLogRecord.ActionType type) {
-        return given()
-                .get("/api/admin/actionLogRecord/type/" + type);
-    }
-
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"

@@ -18,8 +18,14 @@ In this way, Dataverse users who lack the permission to access the raw data can 
 Installation
 ~~~~~~~~~~~~~
 
-To install PSI for use with Dataverse, follow the steps below:
+Follow the links above for instructions on how to install PSI.
+
+After you have installed PSI, make it available within Dataverse by following the steps below:
 
 Download :download:`psi.json <../_static/installation/files/root/external-tools/psi.json>`
+
+Edit ``psi.json`` (the file you just downloaded) and update the URL to be the server where you installed PSI.
+
+Run the curl command below to make PSI available within Dataverse:
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file psi.json http://localhost:8080/api/admin/externalTools``

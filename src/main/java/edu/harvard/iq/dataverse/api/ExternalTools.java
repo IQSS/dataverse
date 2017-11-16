@@ -30,24 +30,6 @@ public class ExternalTools extends AbstractApiBean {
         return ok(jab);
     }
 
-    @GET
-    @Path("file/{id}")
-    public Response getExternalToolsByFile(@PathParam("id") Long fileIdFromUser) {
-        DataFile dataFile = fileSvc.find(fileIdFromUser);
-        if (dataFile == null) {
-            return error(BAD_REQUEST, "Could not find datafile with id " + fileIdFromUser);
-        }
-        JsonArrayBuilder tools = Json.createArrayBuilder();
-        ApiToken apiToken = new ApiToken();
-        String apiTokenString = getRequestApiKey();
-        apiToken.setTokenString(apiTokenString);
-        externalToolService.findAll(dataFile, apiToken)
-                .forEach((externalToolHandler) -> {
-                    tools.add(externalToolHandler.toJson());
-                });
-        return ok(tools);
-    }
-
     @POST
     public Response addExternalTool(String userInput) {
         try {
@@ -63,6 +45,30 @@ public class ExternalTools extends AbstractApiBean {
             return error(BAD_REQUEST, ex.getMessage());
         }
 
+    }
+
+    /**
+     * For testing only. For each of the external tools in the database we are
+     * testing the JSON format and that any reserved words within the JSON are
+     * properly replaced with the data the user supplies such as a file id
+     * and/or API token.
+     */
+    @GET
+    @Path("test/file/{id}")
+    public Response getExternalToolHandlersByFile(@PathParam("id") Long fileIdFromUser) {
+        DataFile dataFile = fileSvc.find(fileIdFromUser);
+        if (dataFile == null) {
+            return error(BAD_REQUEST, "Could not find datafile with id " + fileIdFromUser);
+        }
+        JsonArrayBuilder tools = Json.createArrayBuilder();
+        ApiToken apiToken = new ApiToken();
+        String apiTokenString = getRequestApiKey();
+        apiToken.setTokenString(apiTokenString);
+        externalToolService.findExternalToolHandlersByFile(dataFile, apiToken)
+                .forEach((externalToolHandler) -> {
+                    tools.add(externalToolHandler.toJson());
+                });
+        return ok(tools);
     }
 
 }

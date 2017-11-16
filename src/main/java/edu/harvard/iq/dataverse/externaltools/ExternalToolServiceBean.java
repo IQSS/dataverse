@@ -33,8 +33,8 @@ public class ExternalToolServiceBean {
         return typedQuery.getResultList();
     }
 
-    public List<ExternalToolHandler> findAll(DataFile file, ApiToken apiToken) {
-        return findAll(findAll(), file, apiToken);
+    public List<ExternalToolHandler> findExternalToolHandlersByFile(DataFile file, ApiToken apiToken) {
+        return findExternalToolHandlersByFile(findAll(), file, apiToken);
     }
 
     public ExternalTool save(ExternalTool externalTool) {
@@ -42,9 +42,11 @@ public class ExternalToolServiceBean {
         return em.merge(externalTool);
     }
 
-    // Perhaps this could use a better name than "findAll". This method takes a list of tools from the database and
-    // returns "handlers" that have inserted parameters in the right places.
-    public static List<ExternalToolHandler> findAll(List<ExternalTool> externalTools, DataFile file, ApiToken apiToken) {
+    /**
+     * This method takes a list of tools from the database and returns
+     * "handlers" that have inserted parameters in the right places.
+     */
+    public static List<ExternalToolHandler> findExternalToolHandlersByFile(List<ExternalTool> externalTools, DataFile file, ApiToken apiToken) {
         List<ExternalToolHandler> externalToolHandlers = new ArrayList<>();
         externalTools.forEach((externalTool) -> {
             ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken);

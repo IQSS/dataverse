@@ -1003,34 +1003,4 @@ public class Admin extends AbstractApiBean {
         );
     }
 
-    @Path("actionLogRecord")
-    @GET
-    public Response getActionLogRecordAll() {
-        final JsonArrayBuilder jab = Json.createArrayBuilder();
-        actionLogSvc.findAll().forEach((entry) -> {
-            jab.add(entry.getId());
-        });
-        return ok(jab);
-    }
-
-    @Path("actionLogRecord/type/{type}")
-    @GET
-    public Response getActionLogRecordByType(@PathParam("type") String userInputType) {
-        ActionLogRecord.ActionType type = ActionLogRecord.ActionType.valueOf(userInputType);
-        final JsonArrayBuilder jab = Json.createArrayBuilder();
-        actionLogSvc.findByActionType(type).forEach((entry) -> {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add("id", entry.getId());
-            job.add("actionType", entry.getActionType().toString());
-            job.add("actionSubType", entry.getActionSubType());
-            String info = entry.getInfo();
-            if (info != null) {
-                job.add("info", info);
-            }
-            job.add("startTime", entry.getStartTime().toString());
-            jab.add(job);
-        });
-        return ok(jab);
-    }
-
 }
