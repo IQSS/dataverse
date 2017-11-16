@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -778,7 +780,7 @@ public class DatasetVersion implements Serializable {
      * @return List of Strings containing the version's Topic Classifications
      */
     public List<String> getTopicClassifications() {
-        List<String> topicClassifications = new ArrayList<>();
+        List<String> topics = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.topicClassification)) {
                 for (DatasetFieldCompoundValue topicClassValue : dsf.getDatasetFieldCompoundValues()) {
@@ -789,14 +791,14 @@ public class DatasetVersion implements Serializable {
                             // - in the ideal world. But as we are realizing, they CAN 
                             // be null in real life databases. So, a check, just in case:
                             if (!StringUtil.isEmpty(topic)) {
-                                topicClassifications.add(subField.getValue());
+                                topics.add(subField.getValue());
                             }
                         }
                     }
                 }
             }
         }
-        return topicClassifications;
+        return topics;
     }
     
     /**
@@ -1226,13 +1228,13 @@ public class DatasetVersion implements Serializable {
             return "";
         }
         
-        /*if (jsonLd != null) {
+        if (jsonLd != null) {
             return jsonLd;
-        }*/
+        }
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("@context", "http://schema.org");
         job.add("@type", "Dataset");
-        job.add("@id", this.getDataset().getPersistentURL());
+        job.add("@identifier", this.getDataset().getPersistentURL());
         job.add("name", this.getTitle());
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
@@ -1263,6 +1265,7 @@ public class DatasetVersion implements Serializable {
          */
         job.add("dateModified", this.getPublicationDateAsString());
         job.add("version", this.getVersionNumber().toString());
+        job.add("description", this.getDescriptionPlainText());
         /**
          * "keywords" - contains subject(s), datasetkeyword(s) and topicclassification(s)
          * metadata fields for the version. -- L.A. 
@@ -1270,17 +1273,17 @@ public class DatasetVersion implements Serializable {
          */
         JsonArrayBuilder keywords = Json.createArrayBuilder();
         
-        this.getDatasetSubjects().forEach((subjects) -> {
-            keywords.add(subjects);
-        });
+        for (String subject : this.getDatasetSubjects()) {
+            keywords.add(subject);
+        }
         
-        this.getTopicClassifications().forEach((topics) -> {
-            keywords.add(topics);
-        });
+        for (String topic : this.getTopicClassifications()) {
+            keywords.add(topic);
+        }
         
-        this.getKeywords().forEach((keywordValues) -> {
-            keywords.add(keywordValues);
-        });
+        for (String keyword : this.getKeywords()) {
+            keywords.add(keyword);
+        }
         
         job.add("keywords", keywords);
         
@@ -1308,21 +1311,40 @@ public class DatasetVersion implements Serializable {
         }
         
         /**
-         * spatialCoverage:
-         * (if available)
+         * spatialCoverage (if available)
          * TODO
+         * (punted, for now - see #2243)
+         * 
          */
         
         /**
-         * "funder":
+         * funder (if available)
          * TODO
-         * (see 2243 for info on how to format -- L.A.)
-        */
+         * (punted, for now - see #2243)
+         */
         
         job.add("schemaVersion", "https://schema.org/version/3.3");
-        job.add("publisher", Json.createObjectBuilder()
-                .add("@type", "Organization")
+        
+        TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
+        if (terms != null) {
+            if (TermsOfUseAndAccess.License.CC0.equals(terms.getLicense())) {
+                job.add("license", Json.createObjectBuilder()
+                        .add("@type", "Dataset")
+                        .add("text", "CC0")
+                        .add("url", "https://creativecommons.org/publicdomain/zero/1.0/")
+                );
+                
+            } else {
+                job.add("license", Json.createObjectBuilder()
+                        .add("text", terms.getTermsOfUse())
+                );
+            }
+        }
+        
+        job.add("includedInDataCatalog", Json.createObjectBuilder()
+                .add("@type", "DataCatalog")
                 .add("name", this.getRootDataverseNameforCitation())
+                .add("url", SystemConfig.getDataverseSiteUrlStatic())
         );
 
         job.add("provider", Json.createObjectBuilder()
