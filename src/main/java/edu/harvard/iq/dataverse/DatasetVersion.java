@@ -731,14 +731,17 @@ public class DatasetVersion implements Serializable {
                             if (subField.isEmptyForDisplay()) {
                                 start = null;
                             } else {
-                                start = subField.getDisplayValue();
+                                // we want to use "getValue()", as opposed to "getDisplayValue()" here - 
+                                // as the latter method prepends the value with the word "Start:"!
+                                start = subField.getValue();
                             }
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCoveredEnd)) {
                             if (subField.isEmptyForDisplay()) {
                                 end = null;
                             } else {
-                                end = subField.getDisplayValue();
+                                // see the comment above
+                                end = subField.getValue();
                             }
                         }
 
