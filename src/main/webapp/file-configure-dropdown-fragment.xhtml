@@ -29,33 +29,34 @@
                     <li>
                         <p:commandLink
                             update="@([id$=psiBrowserPopup])"
+                            action="#{configureFragmentBean.setPsiPopupUrl(tool.toolUrl)}"
                             oncomplete="PF('psiBrowserPopup').show()">
                             #{tool.displayName}
                         </p:commandLink>
-                        <!-- Pop-up for the only tool we currently pull with this code, the psi tool. -->
-                        <!-- This will need to become more modular as we add more tools. -->
-                        <!-- Placed here so it can access the tool variable for this file -->
-
-                        <p:dialog id="psiBrowserPopup" header="#{bundle['file.psiBrowserInfoDialog.header']}" widgetVar="psiBrowserPopup">
-                            <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.psiBrowserInfoDialog.tip']}
-                            </p>
-                            <div class="button-block">
-                                <!-- This calls the alert in dataset page and works, but probably should be somewhere else -->
-                                <p:commandButton 
-                                    action="#{DatasetPage.psiExternalAlert()}" 
-                                    value="#{bundle['file.configureButton']}" 
-                                    onclick="PF('psiBrowserPopup').hide();window.open('#{tool.toolUrl}', '_blank')"
-                                    update=":messagePanel">
-                                </p:commandButton>
-                                <button type="button" class="btn btn-default" onclick="PF('psiBrowserPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
-                            </div>
-                        </p:dialog>
                     </li>
                 </ui:repeat>
             </ul>
         </div>
         
+        <!-- Pop-up for the only tool we currently pull with this code, the psi tool. -->
+        <!-- This will need to become more modular as we add more tools. -->
+        <!-- Placed here so it can access the tool variable for this file -->
+        <p:dialog header="#{bundle['file.psiBrowserInfoDialog.header']}" widgetVar="psiBrowserPopup" modal="true" >
+            <p class="help-block">
+                <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.psiBrowserInfoDialog.tip']}
+            </p>
+            <div class="button-block">
+                <!-- This calls the alert in dataset page and works, but probably should be somewhere else -->
+                <p:commandButton 
+                    action="#{configureFragmentBean.psiExternalAlert()}" 
+                    value="#{bundle['file.configureButton']}" 
+                    onclick="PF('psiBrowserPopup').hide();window.open('#{configureFragmentBean.getPsiPopupUrl()}', '_blank')"
+                    update=":messagePanel">
+                </p:commandButton>
+                <button type="button" class="btn btn-default" onclick="PF('psiBrowserPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
+            </div>
+        </p:dialog>
+    
         <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true" rendered="#{(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
             <p class="help-block">
                 <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>

@@ -174,6 +174,7 @@ public class DatasetPage implements java.io.Serializable {
     PrivateUrlServiceBean privateUrlService;
     @EJB
     ExternalToolServiceBean externalToolService;
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -190,6 +191,7 @@ public class DatasetPage implements java.io.Serializable {
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
     SettingsWrapper settingsWrapper; 
+    
 
 
     private Dataset dataset = new Dataset();
@@ -4113,9 +4115,6 @@ public class DatasetPage implements java.io.Serializable {
         return externalTools.get(fileId);        
     }
     
-    public String psiExternalAlert() { 
-        JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.summary"), BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.details"));
-        return "";
-    }
+
     
 }
