@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 
 /**
  *
@@ -23,25 +24,25 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     
     private static final Logger logger = Logger.getLogger(ConfigureFragmentBean.class.getName());
     
-    private String psiPopupUrl = "";
+    private ExternalTool tool = null;
     
+    //MAD: Is this in the configs?
     public String psiExternalAlert() { 
         JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.summary"), BundleUtil.getStringFromBundle("file.psiBroswerinfoDialog.launchMessage.details"));
         return "";
     }    
 
-    //MAD This shouldn't be psi specific probably...
     /**
-     * @return the psiPopupUrl
+     * @param setTool the tool to set
      */
-    public String getPsiPopupUrl() {
-        return psiPopupUrl;
+    public void setConfigurePopupTool(ExternalTool setTool) {
+        tool = setTool;
     }
-
+    
     /**
-     * @param psiPopupUrl the psiPopupUrl to set
+     * @return the Tool
      */
-    public void setPsiPopupUrl(String psiPopupUrl) {
-        this.psiPopupUrl = psiPopupUrl;
+    public ExternalTool getConfigurePopupTool() {
+        return tool;
     }
 }

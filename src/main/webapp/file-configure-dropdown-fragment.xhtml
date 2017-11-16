@@ -24,36 +24,32 @@
                 <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}">
                     <a href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" >#{bundle['file.map']}</a>
                 </li>
-                <!-- Configure options (currently just psi) -->
                 <ui:repeat value="#{externalTools}" var="tool" rendered="#{dataverseSession.user.authenticated and canUpdateDataset and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
                     <li>
                         <p:commandLink
-                            update="@([id$=psiBrowserPopup])"
-                            action="#{configureFragmentBean.setPsiPopupUrl(tool.toolUrl)}"
-                            oncomplete="PF('psiBrowserPopup').show()">
-                            #{tool.displayName}
+                            update="@([id$=configureToolPopup])"
+                            action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
+                            oncomplete="PF('configureToolPopup').show()">
+                            #{tool.buttonLabel}
                         </p:commandLink>
                     </li>
                 </ui:repeat>
             </ul>
         </div>
         
-        <!-- Pop-up for the only tool we currently pull with this code, the psi tool. -->
-        <!-- This will need to become more modular as we add more tools. -->
-        <!-- Placed here so it can access the tool variable for this file -->
-        <p:dialog header="#{bundle['file.psiBrowserInfoDialog.header']}" widgetVar="psiBrowserPopup" modal="true" >
+        <p:dialog header="#{configureFragmentBean.configurePopupTool.displayName}" widgetVar="configureToolPopup" modal="true" id="configureToolPopup">
             <p class="help-block">
-                <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.psiBrowserInfoDialog.tip']}
+                <span class="glyphicon glyphicon-info-sign"/> #{configureFragmentBean.configurePopupTool.description}
             </p>
             <div class="button-block">
                 <!-- This calls the alert in dataset page and works, but probably should be somewhere else -->
                 <p:commandButton 
                     action="#{configureFragmentBean.psiExternalAlert()}" 
                     value="#{bundle['file.configureButton']}" 
-                    onclick="PF('psiBrowserPopup').hide();window.open('#{configureFragmentBean.getPsiPopupUrl()}', '_blank')"
+                    onclick="PF('configureToolPopup').hide();window.open('#{configureFragmentBean.configurePopupTool.toolUrl}', '_blank')"
                     update=":messagePanel">
                 </p:commandButton>
-                <button type="button" class="btn btn-default" onclick="PF('psiBrowserPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                <button type="button" class="btn btn-default" onclick="PF('configureToolPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
             </div>
         </p:dialog>
     
