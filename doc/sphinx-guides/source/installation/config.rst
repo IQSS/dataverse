@@ -385,7 +385,7 @@ Once you have the location of your custom header HTML file, run this curl comman
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
 
-If you have enabled a custom header or navbar logo, you may want to disable the theme of the/logo/banner of the "root" dataverse by setting ``:DisableRootDataverseTheme`` to ``true`` like this:
+If you have enabled a custom header or navbar logo, you may want to disable the theme of the logo/banner of the "root" dataverse by setting ``:DisableRootDataverseTheme`` to ``true`` like this:
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:DisableRootDataverseTheme``
 
@@ -684,7 +684,7 @@ See :ref:`Branding Your Installation` above.
 See :ref:`Branding Your Installation` above.
 
 :DisableRootDataverseTheme
-++++++++++++++++++++++++
+++++++++++++++++++++++++++
 
 See :ref:`Branding Your Installation` above.
 
