@@ -1527,20 +1527,8 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
-        //MAD : need to do this for each file and populate... ugh. Also clean up the double "findAll"
+        generateExternalTools();
         
-        //fileMetadatasSearch is this what I'm suppose to be using???? private List<FileMetadata> fileMetadatasSearch;
-        
-        //I need to generate a list of lists of external tools, one for each file. I don't understand how this data will be consumed in fileFragments...
-        //In the jsf it looks like I can reference #{fileMetadata.dataFile.id} and the like... so as long as I can create a list that can be referenced?
-        //Alternatively, maybe this info should be in the fileMetadata?
-
-            generateExternalTools();
-        
-        
-
-        //externalTools = externalToolService.findAll();
-
         return null;
     }
     
@@ -4089,9 +4077,8 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
 
-    //MAD: probably not the right way to do this
     private void generateExternalTools() {
-        User user = session.getUser(); //redundant?
+        User user = session.getUser();
         ApiToken apitoken = new ApiToken();
         if (user instanceof AuthenticatedUser) {
             apitoken = authService.findApiTokenByUser((AuthenticatedUser) user);
@@ -4101,7 +4088,7 @@ public class DatasetPage implements java.io.Serializable {
             externalTools.clear();
             for (FileMetadata fm : fileMetadatasSearch) { //why does normal fileMetadatas not exist at this point? how is search different?
                 DataFile fmFile = fm.getDataFile();
-                List<ExternalTool> fileTools = externalToolService.findAll(fmFile, apitoken); //MAD: rename these
+                List<ExternalTool> fileTools = externalToolService.findAll(fmFile, apitoken);
                 externalTools.put(fmFile.getId(),fileTools);
             }
         }
