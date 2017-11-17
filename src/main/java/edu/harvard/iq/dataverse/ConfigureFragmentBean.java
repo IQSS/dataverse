@@ -27,7 +27,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     private ExternalTool tool = null;
     
     public String psiExternalAlert() { 
-        JH.addMessage(FacesMessage.SEVERITY_WARN, tool.getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + tool.getDisplayName());
+        JH.addMessage(FacesMessage.SEVERITY_WARN, tool.getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + tool.getDisplayName() + ".");
         return "";
     }    
 

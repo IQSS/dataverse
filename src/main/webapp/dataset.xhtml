@@ -1179,6 +1179,16 @@
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
                     
+                    <p:dialog header="#{configureFragmentBean.configurePopupTool.displayName}" widgetVar="configureToolPopup" modal="true" 
+                            id="configureToolPopup" styleClass="smallPopUp" rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset()}">
+
+                            <ui:include src="file-configure-popup-fragment.xhtml">
+                                <ui:param name="externalTools" value="#{DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                                <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                            </ui:include>
+
+                    </p:dialog>
+                    
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
 
@@ -1213,7 +1223,7 @@
                             </ui:include>
                         </div>
                     </p:dialog>
-
+                   
                     <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
                             <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">

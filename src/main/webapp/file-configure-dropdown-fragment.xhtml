@@ -11,18 +11,18 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-        <div class="btn-group" >
+        <div class="btn-group">
             <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                 <span class="glyphicon glyphicon-cog"/> #{bundle['dataset.configureBtn']} <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu pull-right text-left" role="menu" >
+            <ul class="dropdown-menu pull-right text-left" role="menu">
                 <!-- Worldmap unpublished -->
                 <li jsf:rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
-                    <a onclick="PF('mapData_popup').show()" href="javascript:void(0);" >#{bundle['file.map']}</a>
+                    <a onclick="PF('mapData_popup').show()" href="javascript:void(0);">#{bundle['file.map']}</a>
                 </li>
                 <!-- Worldmap published -->
                 <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}">
-                    <a href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" >#{bundle['file.map']}</a>
+                    <a href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}">#{bundle['file.map']}</a>
                 </li>
                 <ui:repeat value="#{externalTools}" var="tool" rendered="#{dataverseSession.user.authenticated and canUpdateDataset and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
                     <li>
@@ -37,31 +37,17 @@
             </ul>
         </div>
         
-        <p:dialog header="#{configureFragmentBean.configurePopupTool.displayName}" widgetVar="configureToolPopup" modal="true" id="configureToolPopup">
-            <p class="help-block">
-                <span class="glyphicon glyphicon-info-sign"/> #{configureFragmentBean.configurePopupTool.description}
-            </p>
-            <div class="button-block">
-                <!-- This calls the alert in dataset page and works, but probably should be somewhere else -->
-                <p:commandButton 
-                    action="#{configureFragmentBean.psiExternalAlert()}" 
-                    value="#{bundle['file.configure.Button']}" 
-                    onclick="PF('configureToolPopup').hide();window.open('#{configureFragmentBean.configurePopupTool.toolUrl}', '_blank')"
-                    update=":messagePanel">
-                </p:commandButton>
-                <button type="button" class="btn btn-default" onclick="PF('configureToolPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
-            </div>
-        </p:dialog>
-    
-        <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true" rendered="#{(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
-            <p class="help-block">
-                <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
-            </p>
-            <div class="button-block">
-                <button type="button" class="btn btn-default" onclick="PF('mapData_popup').hide();PF('blockDatasetForm').hide();">
-                    #{bundle.close}
-                </button>
-            </div>
-        </p:dialog>
+        <!-- MOVED TO file configure popup fragment -->
+
+          <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true" rendered="#{(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+              <p class="help-block">
+                  <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
+              </p>
+              <div class="button-block">
+                  <button type="button" class="btn btn-default" onclick="PF('mapData_popup').hide();PF('blockDatasetForm').hide();">
+                      #{bundle.close}
+                  </button>
+              </div>
+          </p:dialog>
 
 </ui:composition>
