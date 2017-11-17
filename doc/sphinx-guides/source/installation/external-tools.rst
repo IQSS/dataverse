@@ -9,7 +9,7 @@ External tools can provide additional features that are not part of Dataverse it
 Downloading and Adjusting an External Tool Manifest File
 --------------------------------------------------------
 
-External tools must be expressed in an external tool manifest file, a specific JSON format Dataverse requires. The author of the external tool may be able to provide you with a JSON file and installation instructions. Failing that, you can create your own JSON manifest file to use. If you have installed the tool yourself, you will need to adjust ``toolUrl`` to include the server on which you installed the tool. The JSON file might look like this:
+External tools must be expressed in an external tool manifest file, a specific JSON format Dataverse requires. The author of the external tool may be able to provide you with a JSON file and installation instructions.  The JSON file might look like this:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/awesomeTool.json
 
