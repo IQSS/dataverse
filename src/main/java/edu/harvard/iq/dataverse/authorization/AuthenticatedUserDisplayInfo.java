@@ -15,7 +15,7 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
     private String firstName;
     private String position;
     
-    /**
+    /*
      * @todo Shouldn't we persist the displayName too? It still exists on the
      * authenticateduser table.
      */
