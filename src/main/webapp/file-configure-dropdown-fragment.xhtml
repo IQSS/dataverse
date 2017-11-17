@@ -24,13 +24,13 @@
                 <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}">
                     <a href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}">#{bundle['file.map']}</a>
                 </li>
-                <ui:repeat value="#{externalTools}" var="tool" rendered="#{dataverseSession.user.authenticated and canUpdateDataset and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                <ui:repeat value="#{externalToolHandlers}" var="toolHandler" rendered="#{dataverseSession.user.authenticated and canUpdateDataset and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
                     <li>
                         <p:commandLink
                             update="@([id$=configureToolPopup])"
-                            action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
+                            action="#{configureFragmentBean.setConfigurePopupToolHandler(toolHandler)}"
                             oncomplete="PF('configureToolPopup').show()">
-                            #{tool.buttonLabel}
+                            #{toolHandler.externalTool.displayName}
                         </p:commandLink>
                     </li>
                 </ui:repeat>

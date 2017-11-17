@@ -76,10 +76,10 @@
                                     
                                     
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() 
-                                                             and (FilePage.fileMetadata.dataFile.tabularData and FilePage.getExternalTools().size() > 0
+                                                             and (FilePage.fileMetadata.dataFile.tabularData and FilePage.getExternalToolHandlers().size() > 0
                                                              or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">		
                                         <ui:include src="file-configure-dropdown-fragment.xhtml">
-                                            <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
+                                            <ui:param name="externalToolHandlers" value="#{FilePage.getExternalToolHandlers()}"/>
                                             <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>		
                                             <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>		
                                         </ui:include>		
@@ -150,17 +150,15 @@
                                             <li>
                                             </li>
                                             </ui:fragment>
-                                            <ui:repeat value="#{FilePage.externalTools}" var="tool" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() and (FilePage.fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
-                                                <!-- Map Data/Set Up Button Block -->
-
-                                                <!-- END: Map Data/Set Up Button Block -->
+                                            <ui:repeat value="#{FilePage.externalToolHandlers}" var="toolHandler" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() and (FilePage.fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
+<!--MAD: What is this doing? -->
                                                 <li>
                                                     <p:commandLink
                                                         update="@([id$=psiBrowserPopup])"
-                                                        action="#{FilePage.setPsiPopupUrl(tool.toolUrl)}"
+                                                        action="#{FilePage.setPsiPopupUrl(toolHandler.toolUrlWithQueryParams)}"
                                                         oncomplete="PF('psiBrowserPopup').show()"
                                                         disabled="#{DatasetPage.locked}">
-                                                        #{tool.displayName}
+                                                        #{toolHandler.externalTool.displayName}
                                                     </p:commandLink>
                                                 </li>
                                             </ui:repeat>

@@ -6,47 +6,59 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
 public class ExternalToolHandler {
+
+    private static final Logger logger = Logger.getLogger(ExternalToolHandler.class.getCanonicalName());
 
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
     public static final String TOOL_URL = "toolUrl";
     public static final String TOOL_PARAMETERS = "toolParameters";
 
-    public static ExternalTool parseAddExternalToolInput(String userInput) {
-        try {
+    private final ExternalTool externalTool;
+    private final DataFile dataFile;
 
-            ExternalTool externalTool = new ExternalTool();
-            JsonReader jsonReader = Json.createReader(new StringReader(userInput));
-            JsonObject jsonObject = jsonReader.readObject();
-            externalTool.setDisplayName(jsonObject.getString(DISPLAY_NAME));
-            externalTool.setDescription(jsonObject.getString(DESCRIPTION));
-            externalTool.setToolUrl(jsonObject.getString(TOOL_URL));
-            // Get parameters
-            JsonObject toolParameters = jsonObject.getJsonObject(TOOL_PARAMETERS);
-            String toolParametersAsString = toolParameters.toString();
-            System.out.println("toolParametersAsString: " + toolParametersAsString);
-            externalTool.setToolParameters(toolParametersAsString);
-            return externalTool;
-        } catch (Exception ex) {
-            System.out.println("ex: " + ex);
-            return null;
-        }
+    private final ApiToken apiToken;
+
+    /**
+     * @param externalTool The database entity.
+     * @param dataFile Required.
+     * @param apiToken The apiToken can be null because in the future, "explore"
+     * tools can be used anonymously.
+     */
+    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
+        this.externalTool = externalTool;
+        this.dataFile = dataFile;
+        this.apiToken = apiToken;
     }
 
-    public static String getQueryParametersForUrl(ExternalTool externalTool) {
-        DataFile nullDataFile = null;
-        ApiToken nullApiToken = null;
-        return getQueryParametersForUrl(externalTool, nullDataFile, nullApiToken);
+    public DataFile getDataFile() {
+        return dataFile;
     }
 
-    // FIXME: Do we really need two methods?
-    public static String getQueryParametersForUrl(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
+    public ApiToken getApiToken() {
+        return apiToken;
+    }
+
+    public JsonObjectBuilder toJson() {
+        JsonObjectBuilder jab = Json.createObjectBuilder();
+        jab.add("id", externalTool.getId());
+        jab.add(DISPLAY_NAME, externalTool.getDisplayName());
+        jab.add(DESCRIPTION, externalTool.getDescription());
+        jab.add(TOOL_URL, getToolUrlWithQueryParams());
+        jab.add(TOOL_PARAMETERS, externalTool.getToolParameters());
+        return jab;
+    }
+
+    // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
+    public String getQueryParametersForUrl() {
         String toolParameters = externalTool.getToolParameters();
         JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
         JsonObject obj = jsonReader.readObject();
@@ -60,13 +72,13 @@ public class ExternalToolHandler {
             Set<String> firstPair = jsonObject.keySet();
             String key = firstPair.iterator().next();
             String value = jsonObject.getString(key);
-            return "?" + getQueryParam(key, value, dataFile, apiToken);
+            return "?" + getQueryParam(key, value);
         } else {
             List<String> params = new ArrayList<>();
             queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
                 queryParam.keySet().forEach((key) -> {
                     String value = queryParam.getString(key);
-                    params.add(getQueryParam(key, value, dataFile, apiToken));
+                    params.add(getQueryParam(key, value));
                 });
             });
             return "?" + String.join("&", params);
@@ -74,18 +86,21 @@ public class ExternalToolHandler {
         }
     }
 
-    private static String getQueryParam(String key, String value, DataFile dataFile, ApiToken apiToken) {
-        if (dataFile == null) {
+    private String getQueryParam(String key, String value) {
+        DataFile df = getDataFile();
+        if (df == null) {
+            logger.fine("DataFile was null!");
             return key + "=" + value;
         }
         String apiTokenString = null;
-        if (apiToken != null) {
-            apiTokenString = apiToken.getTokenString();
+        ApiToken theApiToken = getApiToken();
+        if (theApiToken != null) {
+            apiTokenString = theApiToken.getTokenString();
         }
         // TODO: Put reserved words like "{fileId}" and "{apiToken}" into an enum.
         switch (value) {
             case "{fileId}":
-                return key + "=" + dataFile.getId();
+                return key + "=" + df.getId();
             case "{apiToken}":
                 return key + "=" + apiTokenString;
             default:
@@ -93,4 +108,12 @@ public class ExternalToolHandler {
         }
     }
 
+    public String getToolUrlWithQueryParams() {
+        return externalTool.getToolUrl() + getQueryParametersForUrl();
+    }
+
+    public ExternalTool getExternalTool() {
+        return externalTool;
+    }
+    
 }

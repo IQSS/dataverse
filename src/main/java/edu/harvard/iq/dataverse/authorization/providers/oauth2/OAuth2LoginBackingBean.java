@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,8 +25,8 @@ import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 /**
- * Backing bean of the oauth2 login process. Used from the login page and the
- * callback page.
+ * Backing bean of the oauth2 login process. Used from the login and the
+ * callback pages.
  *
  * @author michael
  */
@@ -45,6 +44,9 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     @EJB
     AuthenticationServiceBean authenticationSvc;
+    
+    @EJB
+    OAuth2TokenDataServiceBean oauth2Tokens;
 
     @EJB
     SystemConfig systemConfig;
@@ -91,7 +93,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             oauthUser = idp.getUserRecord(code, state, getCallbackUrl());
             UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
             AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
-
+            
             if (dvUser == null) {
                 // need to create the user
                 newAccountPage.setNewUser(oauthUser);
@@ -100,6 +102,10 @@ public class OAuth2LoginBackingBean implements Serializable {
             } else {
                 // login the user and redirect to HOME of intended page (if any).
                 session.setUser(dvUser);
+                final OAuth2TokenData tokenData = oauthUser.getTokenData();
+                tokenData.setUser(dvUser);
+                tokenData.setOauthProviderId(idp.getId());
+                oauth2Tokens.store(tokenData);
                 String destination = redirectPage.orElse("/");
                 HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
                 String prettyUrl = response.encodeRedirectURL(destination);

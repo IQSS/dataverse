@@ -2,38 +2,32 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import javax.json.Json;
-import org.junit.Test;
+import javax.json.JsonObject;
 import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class ExternalToolHandlerTest {
 
     @Test
-    public void testParseAddExternalToolInput() throws Exception {
-        assertEquals(null, ExternalToolHandler.parseAddExternalToolInput(null));
-        assertEquals(null, ExternalToolHandler.parseAddExternalToolInput(""));
-        assertEquals(null, ExternalToolHandler.parseAddExternalToolInput(Json.createObjectBuilder().build().toString()));
-        String psiTool = new String(Files.readAllBytes(Paths.get("doc/sphinx-guides/source/_static/installation/files/root/external-tools/psi.json")));
-        System.out.println("psiTool: " + psiTool);
-        ExternalTool externalTool = ExternalToolHandler.parseAddExternalToolInput(psiTool);
+    public void testToJson() {
+        System.out.println("toJson");
+        ExternalTool externalTool = new ExternalTool("displayName", "description", "toolUrl", "{}");
+        externalTool.setId(42l);
         DataFile dataFile = new DataFile();
-        dataFile.setId(42l);
-        externalTool.setDataFile(dataFile);
         ApiToken apiToken = new ApiToken();
-        apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        externalTool.setApiToken(apiToken);
-        String toolUrl = externalTool.getToolUrl();
-        System.out.println("result: " + toolUrl);
-        assertEquals("https://beta.dataverse.org/custom/DifferentialPrivacyPrototype/UI/code/interface.html?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7", toolUrl);
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        JsonObject json = externalToolHandler.toJson().build();
+        System.out.println("JSON: " + json);
+        assertEquals("displayName", json.getString("displayName"));
 
     }
 
+    // TODO: It would probably be better to split these into individual tests.
     @Test
     public void testGetToolUrlWithOptionalQueryParameters() {
-        ExternalTool externalTool = new ExternalTool();
-        externalTool.setToolUrl("http://example.com");
+        String toolUrl = "http://example.com";
+        ExternalTool externalTool = new ExternalTool("displayName", "description", toolUrl, "{}");
 
         // One query parameter.
         externalTool.setToolParameters(Json.createObjectBuilder()
@@ -43,9 +37,12 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
-        String result1 = ExternalToolHandler.getQueryParametersForUrl(externalTool);
+        DataFile nullDataFile = null;
+        ApiToken nullApiToken = null;
+        ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
+        String result1 = externalToolHandler1.getQueryParametersForUrl();
         System.out.println("result1: " + result1);
-        assertEquals("?key1=value1", ExternalToolHandler.getQueryParametersForUrl(externalTool));
+        assertEquals("?key1=value1", result1);
 
         // Two query parameters.
         externalTool.setToolParameters(Json.createObjectBuilder()
@@ -58,7 +55,8 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
-        String result2 = ExternalToolHandler.getQueryParametersForUrl(externalTool);
+        ExternalToolHandler externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
+        String result2 = externalToolHandler2.getQueryParametersForUrl();
         System.out.println("result2: " + result2);
         assertEquals("?key1=value1&key2=value2", result2);
 
@@ -77,7 +75,8 @@ public class ExternalToolHandlerTest {
         dataFile.setId(42l);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        String result3 = ExternalToolHandler.getQueryParametersForUrl(externalTool, dataFile, apiToken);
+        ExternalToolHandler externalToolHandler3 = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        String result3 = externalToolHandler3.getQueryParametersForUrl();
         System.out.println("result3: " + result3);
         assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7", result3);
 
@@ -92,10 +91,26 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
-        ApiToken nullApiToken = null;
-        String result4 = ExternalToolHandler.getQueryParametersForUrl(externalTool, dataFile, nullApiToken);
+        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
+        String result4 = externalToolHandler4.getQueryParametersForUrl();
         System.out.println("result4: " + result4);
         assertEquals("?key1=42&key2=null", result4);
+
+        // Two query parameters, attempt to use a reserved word that doesn't exist.
+        externalTool.setToolParameters(Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("key1", "{siteUrl}")
+                        )
+                        .add(Json.createObjectBuilder()
+                                .add("key2", "{apiToken}")
+                        )
+                )
+                .build().toString());
+        ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
+        String result5 = externalToolHandler5.getQueryParametersForUrl();
+        System.out.println("result5: " + result5);
+        assertEquals("?key1={siteUrl}&key2=null", result5);
 
     }
 

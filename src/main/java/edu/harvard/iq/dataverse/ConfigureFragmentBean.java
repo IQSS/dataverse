@@ -12,6 +12,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 
 /**
  *
@@ -24,24 +25,24 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     
     private static final Logger logger = Logger.getLogger(ConfigureFragmentBean.class.getName());
     
-    private ExternalTool tool = null;
+    private ExternalToolHandler toolHandler = null;
     
     public String psiExternalAlert() { 
-        JH.addMessage(FacesMessage.SEVERITY_WARN, tool.getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + tool.getDisplayName() + ".");
+        JH.addMessage(FacesMessage.SEVERITY_WARN, toolHandler.getExternalTool().getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + toolHandler.getExternalTool().getDisplayName() + ".");
         return "";
     }    
 
     /**
      * @param setTool the tool to set
      */
-    public void setConfigurePopupTool(ExternalTool setTool) {
-        tool = setTool;
+    public void setConfigurePopupToolHandler(ExternalToolHandler setTool) {
+        toolHandler = setTool;
     }
     
     /**
      * @return the Tool
      */
-    public ExternalTool getConfigurePopupTool() {
-        return tool;
+    public ExternalToolHandler getConfigurePopupToolHandler() {
+        return toolHandler;
     }
 }

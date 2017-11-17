@@ -1,12 +1,15 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -21,14 +24,38 @@ public class ExternalTools extends AbstractApiBean {
     public Response getExternalTools() {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         externalToolService.findAll().forEach((externalTool) -> {
-            jab.add(externalTool.toJson());
+            // FIXME: Show more than the ID in the output.
+            jab.add(externalTool.getId());
         });
         return ok(jab);
     }
 
+    @POST
+    public Response addExternalTool(String userInput) {
+        try {
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolInput(userInput);
+            ExternalTool saved = externalToolService.save(externalTool);
+            Long toolId = saved.getId();
+            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.ExternalTool, "addExternalTool").setInfo("External tool added with id " + toolId + "."));
+            JsonObjectBuilder tool = Json.createObjectBuilder();
+            tool.add("id", toolId);
+            tool.add(ExternalToolHandler.DISPLAY_NAME, saved.getDisplayName());
+            return ok(tool);
+        } catch (Exception ex) {
+            return error(BAD_REQUEST, ex.getMessage());
+        }
+
+    }
+
+    /**
+     * For testing only. For each of the external tools in the database we are
+     * testing the JSON format and that any reserved words within the JSON are
+     * properly replaced with the data the user supplies such as a file id
+     * and/or API token.
+     */
     @GET
-    @Path("file/{id}")
-    public Response getExternalToolsByFile(@PathParam("id") Long fileIdFromUser) {
+    @Path("test/file/{id}")
+    public Response getExternalToolHandlersByFile(@PathParam("id") Long fileIdFromUser) {
         DataFile dataFile = fileSvc.find(fileIdFromUser);
         if (dataFile == null) {
             return error(BAD_REQUEST, "Could not find datafile with id " + fileIdFromUser);
@@ -37,23 +64,11 @@ public class ExternalTools extends AbstractApiBean {
         ApiToken apiToken = new ApiToken();
         String apiTokenString = getRequestApiKey();
         apiToken.setTokenString(apiTokenString);
-        externalToolService.findAll(dataFile, apiToken)
-                .forEach((externalTool) -> {
-                    tools.add(externalTool.toJson());
+        externalToolService.findExternalToolHandlersByFile(dataFile, apiToken)
+                .forEach((externalToolHandler) -> {
+                    tools.add(externalToolHandler.toJson());
                 });
         return ok(tools);
-    }
-
-    @POST
-    public Response addExternalTool(String userInput) {
-        try {
-            ExternalTool externalTool = ExternalToolHandler.parseAddExternalToolInput(userInput);
-            ExternalTool saved = externalToolService.save(externalTool);
-            return ok(saved.toJson());
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getMessage());
-        }
-
     }
 
 }

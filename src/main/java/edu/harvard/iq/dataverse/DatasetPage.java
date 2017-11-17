@@ -87,7 +87,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import java.util.Collections;
 
@@ -253,7 +253,7 @@ public class DatasetPage implements java.io.Serializable {
     private boolean removeUnusedTags;
     
     private Boolean hasRsyncScript = false;
-    private Map<Long,List<ExternalTool>> externalTools = new HashMap<Long,List<ExternalTool>>(); //<List<ExternalTool>>
+    private Map<Long,List<ExternalToolHandler>> externalToolHandlers = new HashMap<Long,List<ExternalToolHandler>>();
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -4085,21 +4085,21 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         if(fileMetadatasSearch != null) {
-            externalTools.clear();
+            externalToolHandlers.clear();
             for (FileMetadata fm : fileMetadatasSearch) { //why does normal fileMetadatas not exist at this point? how is search different?
                 DataFile fmFile = fm.getDataFile();
-                List<ExternalTool> fileTools = externalToolService.findAll(fmFile, apitoken);
-                externalTools.put(fmFile.getId(),fileTools);
+                List<ExternalToolHandler> fileToolHandlers = externalToolService.findExternalToolHandlersByFile(fmFile, apitoken);
+                externalToolHandlers.put(fmFile.getId(),fileToolHandlers);
             }
         }
     }
 
-    public Map getExternalTools() {
-        return externalTools;        
+    public Map getExternalToolHandlers() {
+        return externalToolHandlers;        
     }
     
-    public List<ExternalTool> getExternalToolsForDataFile(Long fileId) {
-        return externalTools.get(fileId);        
+    public List<ExternalToolHandler> getExternalToolHandlersForDataFile(Long fileId) {
+        return externalToolHandlers.get(fileId);        
     }
     
 

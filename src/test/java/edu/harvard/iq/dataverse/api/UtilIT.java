@@ -29,6 +29,7 @@ import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;

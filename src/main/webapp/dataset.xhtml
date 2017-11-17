@@ -1179,11 +1179,11 @@
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
                     
-                    <p:dialog header="#{configureFragmentBean.configurePopupTool.displayName}" widgetVar="configureToolPopup" modal="true" 
+                    <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
                             id="configureToolPopup" styleClass="smallPopUp" rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset()}">
 
                             <ui:include src="file-configure-popup-fragment.xhtml">
-                                <ui:param name="externalTools" value="#{DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                                <ui:param name="externalToolHandlers" value="#{DatasetPage.getExternalToolHandlersForDataFile(fileMetadata.dataFile.id)}"/>
                                 <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                             </ui:include>
 

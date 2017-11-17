@@ -2,12 +2,10 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import java.io.IOException;
-import java.io.StringReader;
-import java.nio.file.Paths;
 import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
 import org.hamcrest.CoreMatchers;
 import org.junit.BeforeClass;
@@ -39,13 +37,24 @@ public class ExternalToolsIT {
 
     @Test
     public void testAddExternalTool() throws IOException {
-        String psiTool = new String(java.nio.file.Files.readAllBytes(Paths.get("doc/sphinx-guides/source/_static/installation/files/root/external-tools/psi.json")));
-        JsonReader jsonReader = Json.createReader(new StringReader(psiTool));
-        JsonObject obj = jsonReader.readObject();
-        Response addExternalTool = UtilIT.addExternalTool(obj);
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("description", "This tool is awesome.");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("fileid", "{fileId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
+                        .build())
+                .build());
+        Response addExternalTool = UtilIT.addExternalTool(job.build());
         addExternalTool.prettyPrint();
         addExternalTool.then().assertThat()
-                .body("data.displayName", CoreMatchers.equalTo("Privacy-Preserving Data Preview"))
+                .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"))
                 .statusCode(OK.getStatusCode());
     }
 

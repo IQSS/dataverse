@@ -1,16 +1,11 @@
 package edu.harvard.iq.dataverse.externaltools;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import java.io.Serializable;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
 
 @Entity
 public class ExternalTool implements Serializable {
@@ -19,11 +14,17 @@ public class ExternalTool implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // TODO: How are we going to internationize the display name?
+    /**
+     * The display name (on the button, for example) of the tool in English.
+     */
+    // TODO: How are we going to internationalize the display name?
     @Column(nullable = false)
     private String displayName;
 
-    // TODO: How are we going to internationize the description?
+    /**
+     * The description of the tool in English.
+     */
+    // TODO: How are we going to internationalize the description?
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
@@ -31,16 +32,32 @@ public class ExternalTool implements Serializable {
     private String toolUrl;
 
     /**
-     * Parameters the tool requires such as DataFile id and API Token
+     * Parameters the tool requires such as DataFile id and API Token as a JSON
+     * object, persisted as a String.
      */
     @Column(nullable = false)
     private String toolParameters;
 
-    @Transient
-    private DataFile dataFile;
+    /**
+     * This default constructor is only here to prevent this error at
+     * deployment:
+     *
+     * Exception Description: The instance creation method
+     * [...ExternalTool.<Default Constructor>], with no parameters, does not
+     * exist, or is not accessible
+     *
+     * Don't use it.
+     */
+    @Deprecated
+    public ExternalTool() {
+    }
 
-    @Transient
-    private ApiToken apiToken;
+    public ExternalTool(String displayName, String description, String toolUrl, String toolParameters) {
+        this.displayName = displayName;
+        this.description = description;
+        this.toolUrl = toolUrl;
+        this.toolParameters = toolParameters;
+    }
 
     public Long getId() {
         return id;
@@ -67,8 +84,7 @@ public class ExternalTool implements Serializable {
     }
 
     public String getToolUrl() {
-        // TODO: In addition to (or rather than) supporting API tokens as query parameters, support them as HTTP headers.
-        return toolUrl + ExternalToolHandler.getQueryParametersForUrl(this, dataFile, apiToken);
+        return toolUrl;
     }
 
     public void setToolUrl(String toolUrl) {
@@ -81,36 +97,6 @@ public class ExternalTool implements Serializable {
 
     public void setToolParameters(String toolParameters) {
         this.toolParameters = toolParameters;
-    }
-
-    public DataFile getDataFile() {
-        return dataFile;
-    }
-
-    public void setDataFile(DataFile dataFile) {
-        this.dataFile = dataFile;
-    }
-
-    public ApiToken getApiToken() {
-        return apiToken;
-    }
-
-    public void setApiToken(ApiToken apiToken) {
-        this.apiToken = apiToken;
-    }
-
-    public String getButtonLabel() {
-        return getDisplayName();
-    }
-
-    public JsonObjectBuilder toJson() {
-        JsonObjectBuilder jab = Json.createObjectBuilder();
-        jab.add("id", this.getId());
-        jab.add(ExternalToolHandler.DISPLAY_NAME, this.getDisplayName());
-        jab.add(ExternalToolHandler.DESCRIPTION, this.getDescription());
-        jab.add(ExternalToolHandler.TOOL_URL, this.getToolUrl());
-        jab.add(ExternalToolHandler.TOOL_PARAMETERS, this.getToolParameters());
-        return jab;
     }
 
 }
