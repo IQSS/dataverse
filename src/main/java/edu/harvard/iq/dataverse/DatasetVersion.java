@@ -783,37 +783,35 @@ public class DatasetVersion implements Serializable {
      * @return List of Strings containing the version's Topic Classifications
      */
     public List<String> getTopicClassifications() {
-        List<String> topics = new ArrayList<>();
-        for (DatasetField dsf : this.getDatasetFields()) {
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.topicClassification)) {
-                for (DatasetFieldCompoundValue topicClassValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : topicClassValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.topicClassValue)) {
-                            String topic = subField.getValue();
-                            // Field values should NOT be empty or, especially, null
-                            // - in the ideal world. But as we are realizing, they CAN 
-                            // be null in real life databases. So, a check, just in case:
-                            if (!StringUtil.isEmpty(topic)) {
-                                topics.add(subField.getValue());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return topics;
+        return getCompoundChildFieldValues(DatasetFieldConstant.topicClassification, DatasetFieldConstant.topicClassValue);
     }
-    
+ 
     /**
      * @return List of Strings containing the version's Keywords
      */
     public List<String> getKeywords() {
+        return getCompoundChildFieldValues(DatasetFieldConstant.keyword, DatasetFieldConstant.keywordValue);
+    }
+    
+    /**
+     * @return List of Strings containing the version's PublicationCitations
+     */
+    public List<String> getPublicationCitationValues() {
+        return getCompoundChildFieldValues(DatasetFieldConstant.publication, DatasetFieldConstant.publicationCitation);
+    }
+    
+    /**
+     * @param parentFieldName compound dataset field A (from DatasetFieldConstant.*)
+     * @param childFieldName dataset field B, child field of A (from DatasetFieldConstant.*)
+     * @return List of values of the child field
+     */
+    public List<String> getCompoundChildFieldValues(String parentFieldName, String childFieldName) {
         List<String> keywords = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
+            if (dsf.getDatasetFieldType().getName().equals(parentFieldName)) {
                 for (DatasetFieldCompoundValue keywordFieldValue : dsf.getDatasetFieldCompoundValues()) {
                     for (DatasetField subField : keywordFieldValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordValue)) {
+                        if (subField.getDatasetFieldType().getName().equals(childFieldName)) {
                             String keyword = subField.getValue();
                             // Field values should NOT be empty or, especially, null,
                             // - in the ideal world. But as we are realizing, they CAN 
@@ -1237,15 +1235,19 @@ public class DatasetVersion implements Serializable {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("@context", "http://schema.org");
         job.add("@type", "Dataset");
-        job.add("@identifier", this.getDataset().getPersistentURL());
+        job.add("identifier", this.getDataset().getPersistentURL());
         job.add("name", this.getTitle());
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();
-            String personOrOrganization = datasetAuthor.getName().getValue();
-            String name = personOrOrganization;
+            String name = datasetAuthor.getName().getValue();
+            String affiliation = datasetAuthor.getAffiliation().getValue();
             // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
+            author.add("@type", "Person");
             author.add("name", name);
+            if (!StringUtil.isEmpty(affiliation)) {
+                author.add("affiliation", affiliation);
+            }
             authors.add(author);
         }
         job.add("author", authors);
@@ -1253,8 +1255,6 @@ public class DatasetVersion implements Serializable {
          * We are aware that there is a "datePublished" field but it means "Date
          * of first broadcast/publication." This only makes sense for a 1.0
          * version.
-         * (Per @jggautier's comment 03/11/2017 in #2243, we are putting datePublished 
-         * back -- L.A.)
          */
         String datePublished = this.getDataset().getPublicationDateFormattedYYYYMMDD();
         if (datePublished != null) {
@@ -1292,12 +1292,19 @@ public class DatasetVersion implements Serializable {
         
         /**
          * citation: 
+         * (multiple) publicationCitation values, if present:
          */
-        JsonObjectBuilder citation = Json.createObjectBuilder();
-        citation.add("@type", "Dataset");
-        citation.add("text", this.getCitation());
-        job.add("citation", citation);
-        /* should we use the HTML-style citation, i.e. this.getCitation(true) instead -- L.A.?) */
+        
+        List<String> publicationCitations = getPublicationCitationValues();
+        if (publicationCitations.size() > 0) {
+            JsonArrayBuilder citation = Json.createArrayBuilder();
+            for (String pubCitation : publicationCitations) {
+                //citationEntry.add("@type", "Dataset");
+                //citationEntry.add("text", pubCitation);
+                citation.add(pubCitation);
+            }
+            job.add("citation", citation);
+        }
         
         /**
          * temporalCoverage:
@@ -1330,18 +1337,15 @@ public class DatasetVersion implements Serializable {
         
         TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
         if (terms != null) {
+            JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "Dataset");
+            
             if (TermsOfUseAndAccess.License.CC0.equals(terms.getLicense())) {
-                job.add("license", Json.createObjectBuilder()
-                        .add("@type", "Dataset")
-                        .add("text", "CC0")
-                        .add("url", "https://creativecommons.org/publicdomain/zero/1.0/")
-                );
-                
+                license.add("text", "CC0").add("url", "https://creativecommons.org/publicdomain/zero/1.0/");
             } else {
-                job.add("license", Json.createObjectBuilder()
-                        .add("text", terms.getTermsOfUse())
-                );
+                license.add("text", terms.getTermsOfUse());
             }
+            
+            job.add("license",license);
         }
         
         job.add("includedInDataCatalog", Json.createObjectBuilder()
