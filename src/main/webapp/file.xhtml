@@ -92,7 +92,9 @@
                                     </div>
                                     <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                              and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
-                                                             and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
+                                                             and !FilePage.lockedFromEdits
+                                                             and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}"
+                                          >
                                         <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                         </button>
@@ -155,6 +157,7 @@
                                         <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                                         <ui:param name="isFilePg" value="true"/>
+                                        <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                                     </ui:include>
                                 </div>
                                 <!-- END: Explore/Download/Request Button Block -->
@@ -287,16 +290,19 @@
                                 
                                 <!-- Add + Edit Metadata Button -->
                                 <div class="button-block tab-header margin-bottom text-right">
-                                    <h:outputLink class="btn btn-default btn-access" value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
+                                    <h:outputLink styleClass="btn btn-default btn-access #{(FilePage.lockedFromEdits) ? 'disabled' : ''}"
+                                                  value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
                                                   rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                      and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
-                                                     and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}">
+                                                     and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}"
+                                                  disabled="#{FilePage.lockedFromEdits}">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </h:outputLink>
                                     <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                          and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}">
-                                        <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()">
+                                        <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()"
+                                                       disabled="#{FilePage.lockedFromEdits}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
                                         </p:commandLink>
                                     </div>
@@ -440,6 +446,7 @@
                             <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                             <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
+                            <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                         </ui:include>
                     </p:dialog>
                     <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="#{bundle['file.download.subset.header']}" widgetVar="downloadDataSubsetPopup"
@@ -525,8 +532,7 @@
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-request-access-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                            <ui:param name="fileDownloadHelper" value="#{FilePage.fileDownloadHelper}"/>
-                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                            <ui:param name="fileDownloadHelper" value="#{fileDownloadHelper}"/>                            
                         </ui:include>
                     </p:dialog>                   
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.compute.fileRestricted']}" widgetVar="computeAccessDeniedPopup" modal="true">

@@ -168,19 +168,19 @@ public class LoginPage implements java.io.Serializable {
         }
         authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
         try {
-            AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
+            AuthenticatedUser r = authSvc.getCreateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
             
             if ("dataverse.xhtml".equals(redirectPage)) {
-                redirectPage = redirectPage + "&alias=" + dataverseService.findRootDataverse().getAlias();
+                redirectPage = redirectToRoot();
             }
             
             try {            
                 redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
-                redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
+                redirectPage = redirectToRoot();
             }
 
             logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
@@ -213,6 +213,10 @@ public class LoginPage implements java.io.Serializable {
             }
         }
         
+    }
+    
+    private String redirectToRoot(){
+        return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
     }
 
     public String getCredentialsAuthProviderId() {

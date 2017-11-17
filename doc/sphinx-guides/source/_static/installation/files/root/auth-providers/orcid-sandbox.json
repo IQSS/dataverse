@@ -3,6 +3,6 @@
     "factoryAlias":"oauth2",
     "title":"ORCID",
     "subtitle":"",
-    "factoryData":"type: orcid | userEndpoint: https://api.sandbox.orcid.org/v1.2/{ORCID}/orcid-profile | clientId: FIXME | clientSecret: FIXME",
+    "factoryData":"type: orcid | userEndpoint: https://api.sandbox.orcid.org/v2.0/{ORCID}/record | clientId: FIXME | clientSecret: FIXME",
     "enabled":true
 }

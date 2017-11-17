@@ -66,6 +66,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     @EJB
     AuthTestDataServiceBean authTestDataSvc;
 
+    @EJB
+    OAuth2TokenDataServiceBean oauth2Tokens;
+    
     @Inject
     DataverseSession session;
 
@@ -99,7 +102,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         logger.fine("init called");
 
         AbstractOAuth2AuthenticationProvider.DevOAuthAccountType devMode = systemConfig.getDevOAuthAccountType();
-        logger.fine("devMode: " + devMode);
+        logger.log(Level.FINE, "devMode: {0}", devMode);
         if (!AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.PRODUCTION.equals(devMode)) {
             if (devMode.toString().startsWith("RANDOM")) {
                 Map<String, String> randomUser = authTestDataSvc.getRandomUser();
@@ -136,7 +139,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 }
                 String randomUsername = randomUser.get("username");
                 String eppn = randomUser.get("eppn");
-                String accessToken = "qwe-addssd-iiiiie";
+                OAuth2TokenData accessToken = new OAuth2TokenData();
+                accessToken.setAccessToken("qwe-addssd-iiiiie");
                 setNewUser(new OAuth2UserRecord(authProviderId, eppn, randomUsername, accessToken,
                         new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
                         extraEmails));
@@ -185,7 +189,12 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         userNotificationService.sendNotification(user,
                 new Timestamp(new Date().getTime()),
                 UserNotification.Type.CREATEACC, null);
-
+        
+        final OAuth2TokenData tokenData = newUser.getTokenData();
+                tokenData.setUser(user);
+                tokenData.setOauthProviderId(newUser.getServiceId());
+                oauth2Tokens.store(tokenData);
+        
         return "/dataverse.xhtml?faces-redirect=true";
     }
 
@@ -196,13 +205,13 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         auReq.putCredential(creds.get(0).getTitle(), getUsername());
         auReq.putCredential(creds.get(1).getTitle(), getPassword());
         try {
-            AuthenticatedUser existingUser = authenticationSvc.authenticate(BuiltinAuthenticationProvider.PROVIDER_ID, auReq);
+            AuthenticatedUser existingUser = authenticationSvc.getCreateAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, auReq);
             authenticationSvc.updateProvider(existingUser, newUser.getServiceId(), newUser.getIdInService());
             builtinUserSvc.removeUser(existingUser.getUserIdentifier());
 
             session.setUser(existingUser);
-            AuthenticationProvider authProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("oauth2.convertAccount.success", Arrays.asList(authProvider.getInfo().getTitle())));
+            AuthenticationProvider newUserAuthProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("oauth2.convertAccount.success", Arrays.asList(newUserAuthProvider.getInfo().getTitle())));
 
             return "/dataverse.xhtml?faces-redirect=true";
 
@@ -212,22 +221,17 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         }
     }
 
-    public String testAction() {
-        Logger.getLogger(OAuth2FirstLoginPage.class.getName()).log(Level.INFO, "testAction");
-        return "dataverse.xhtml";
-    }
-
     public boolean isEmailAvailable() {
         return authenticationSvc.isEmailAddressAvailable(getSelectedEmail());
     }
 
-    /**
+    /*
      * @todo This was copied from DataverseUserPage and modified so consider
      * consolidating common code (DRY).
      */
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
-        logger.fine("Validating username: " + userName);
+        logger.log(Level.FINE, "Validating username: {0}", userName);
         boolean userNameFound = authenticationSvc.identifierExists(userName);
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
@@ -236,7 +240,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         }
     }
 
-    /**
+    /*
      * @todo This was copied from DataverseUserPage and modified so consider
      * consolidating common code (DRY).
      */
@@ -336,11 +340,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     public boolean isConvertFromBuiltinIsPossible() {
         AuthenticationProvider builtinAuthProvider = authenticationSvc.getAuthenticationProvider(BuiltinAuthenticationProvider.PROVIDER_ID);
-        if (builtinAuthProvider != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return builtinAuthProvider != null;
     }
 
     public String getSuggestConvertInsteadOfCreate() {
@@ -371,7 +371,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 }
             }
         }
-        logger.fine(emailsToPickFrom.size() + " emails to pick from: " + emailsToPickFrom);
+        logger.log(Level.FINE, "{0} emails to pick from: {1}", new Object[]{emailsToPickFrom.size(), emailsToPickFrom});
         return emailsToPickFrom;
     }
 

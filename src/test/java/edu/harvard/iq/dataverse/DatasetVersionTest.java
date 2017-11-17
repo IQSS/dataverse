@@ -83,14 +83,14 @@ public class DatasetVersionTest {
         
         DatasetVersion draft = ds.getCreateVersion();
         draft.setVersionState(DatasetVersion.VersionState.DRAFT);
-        ds.setDatasetLock(new DatasetLock(DatasetLock.Reason.InReview, MocksFactory.makeAuthenticatedUser("Lauren", "Ipsumowitch")));
+        ds.addLock(new DatasetLock(DatasetLock.Reason.InReview, MocksFactory.makeAuthenticatedUser("Lauren", "Ipsumowitch")));
         assertTrue(draft.isInReview());
 
         DatasetVersion nonDraft = new DatasetVersion();
         nonDraft.setVersionState(DatasetVersion.VersionState.RELEASED);
         assertEquals(false, nonDraft.isInReview());
         
-        ds.setDatasetLock(null);
+        ds.addLock(null);
         assertFalse(nonDraft.isInReview());
     }
 
