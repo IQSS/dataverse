@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -357,7 +358,45 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         }
         
         return null;
-    }    
+    }
+    
+    public String getAuthorString(){
+        if (this instanceof Dataverse){
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        if (this instanceof Dataset){
+            Dataset dataset = (Dataset) this;
+            return dataset.getLatestVersion().getAuthorsStr();
+        }
+        if (this instanceof DataFile){
+            Dataset dataset = (Dataset) this.getOwner();
+            return dataset.getLatestVersion().getAuthorsStr();
+        }
+        throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
+    }
+    
+    public String getTargetUrl(){
+        if (this instanceof Dataverse){
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        if (this instanceof Dataset){
+            return Dataset.TARGET_URL;
+        }
+        if (this instanceof DataFile){
+            return DataFile.TARGET_URL;
+        }
+        throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
+        
+    }
+    
+    public String getYearPublishedCreated(){
+        //if published get the year if draft get when created
+        if (this.isReleased()){
+            return new SimpleDateFormat("yyyy").format(this.getPublicationDate());
+        } else {
+           return  new SimpleDateFormat("yyyy").format(this.getCreateDate());
+        }
+    }
     
     public String getStorageIdentifier() {
         return storageIdentifier;

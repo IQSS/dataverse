@@ -343,7 +343,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     public String modifyIdentifierTargetURL(DvObject dvObject) throws Exception  {
         logger.log(Level.FINE,"modifyIdentifier");
         reRegisterHandle(dvObject);
-        if(dvObject.isInstanceofDataset()){
+        if(dvObject instanceof Dataset){
             Dataset dataset = (Dataset) dvObject;
             dataset.getFiles().forEach((df) -> {
                 reRegisterHandle(df);

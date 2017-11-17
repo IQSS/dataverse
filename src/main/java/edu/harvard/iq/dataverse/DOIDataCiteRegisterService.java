@@ -109,7 +109,7 @@ public class DOIDataCiteRegisterService {
         
         Dataset dataset = null;
         
-        if (dvObject.isInstanceofDataset()){
+        if (dvObject instanceof Dataset){
             dataset = (Dataset) dvObject;
         } else {
             dataset = (Dataset) dvObject.getOwner();

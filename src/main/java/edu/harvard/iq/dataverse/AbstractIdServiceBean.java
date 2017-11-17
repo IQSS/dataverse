@@ -48,14 +48,7 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
     
     protected HashMap<String, String> addBasicMetadata(DvObject dvObjectIn, HashMap<String, String> metadata) {
 
-        Dataset dataset;
-        if (dvObjectIn.isInstanceofDataset()) {
-            dataset = (Dataset) dvObjectIn;
-        } else {
-            dataset = (Dataset) dvObjectIn.getOwner();
-        }
-
-        String authorString = dataset.getLatestVersion().getAuthorsStr();
+        String authorString = dvObjectIn.getAuthorString();
 
         if (authorString.isEmpty()) {
             authorString = ":unav";
@@ -75,32 +68,16 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
 
     protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");
-        if (dvObjectIn.isInstanceofDataset()){
-              return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + dvObjectIn.getGlobalId();
-        }       
-        if (dvObjectIn.isInstanceofDataFile()){
-              return systemConfig.getDataverseSiteUrl() + DataFile.TARGET_URL + dvObjectIn.getGlobalId();
-        }       
-        return null;
+        return systemConfig.getDataverseSiteUrl() + dvObjectIn.getTargetUrl() + dvObjectIn.getGlobalId();
     }
     
     @Override
-    public String getIdentifier(DvObject dvObject)
-    {
+    public String getIdentifier(DvObject dvObject) {
         return dvObject.getGlobalId();
     }
     
     protected String generateYear (DvObject dvObjectIn){
-        Dataset dataset;
-        if(dvObjectIn.isInstanceofDataset()){
-            dataset = (Dataset) dvObjectIn;
-        } else {
-            dataset = (Dataset) dvObjectIn.getOwner();
-        }
-        if (dataset.isReleased()) {
-            return dataset.getPublicationDateFormattedYYYYMMDD().substring(0, 4);
-        }
-        return new SimpleDateFormat("yyyy").format(dataset.getCreateDate()); 
+        return dvObjectIn.getYearPublishedCreated(); 
     }
     
      @Override

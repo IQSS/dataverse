@@ -180,7 +180,7 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
                     + dvObject.getDoiSeparator() + dvObject.getIdentifier());
             try {
                 modifyIdentifierTargetURL(dvObject);
-                if (dvObject.isInstanceofDataset()) {
+                if (dvObject instanceof Dataset ) {
                     Dataset dataset = (Dataset) dvObject;
                     for (DataFile df : dataset.getFiles()) {
                         metadata = new HashMap<>();
