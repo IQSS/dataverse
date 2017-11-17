@@ -1,12 +1,12 @@
-The backup script is implemented in Python. The following extra
-modules are needed:
+The backup script is implemented in Python (developed and tested with
+v. 2.7.10). The following extra modules are needed:
 
 (versions tested as of the writing of this doc, 11.14.2017)
 
 psycopg2    [2.7.3.2] - PostgresQL driver 
 boto3       [1.4.7]   - AWS sdk, for accessing S3 storage
 paramiko    [2.2.1]   - SSH client, for transferring files via SFTP
-swiftclient [2.7.0]   - for reading [not yet implemented] and writing swift objects. 
+swiftclient [2.7.0]   - for reading [not yet implemented] and writing [incomplete implementation provided] swift objects. 
 
 1. Database access.
 
@@ -31,7 +31,7 @@ with the datafile. Use storage_filesystem.py as the model. Then the
 top-level storage.py class will need to be modified to import and use
 the extra storage method.
 
-3. Backup (write) acces.
+3. Backup (write) access.
 
 Similarly, storage type-specific code for writing backed up objects is
 isolated in the backup_...py files. The currently implemented storage
@@ -62,8 +62,41 @@ createdate timestamp currently in the backup db.
 
 5. TODOs
 
-It could be useful to  make the script automatically generate a report
-of some kind, once it completes a backup run (and maybe send it to the
-email address specified?). Currently, to  produce a report of how many
-files have  been backed up, how  many failed, etc., you  need to query
-the backup database.
+
+As currently implemented, the status notification report will only
+specify how many files have been processed, and how many succeeded or
+failed. In order to get more detailed information about the individual
+files you'll need to consult the datafilestatus table in the backup
+database.
+
+It could be useful to perhaps extend it to provide a list of specific
+files that have been backed up successfully or failed. 
+
+Note that the script relies on the *nix 'mail' command to send the
+email notification. I chose to do it this way because it felt easier
+than to require the user to configure which smtp server to use in
+order to send it from python code... But this requires the mail
+command to be there, and the system configured to be able to send
+email from the command line.
+
+If for whatever reason this is not an option, and mail needs to be
+sent via remote SMTP, the provided email_notification.py could be
+easily modified to use something like
+
+
+import smtplib
+from email.mime.text import MIMEText
+
+...
+
+msg = MIMEText(text)
+
+msg['Subject'] = subject_str
+msg['To'] = ConfigSectionMap("Notifications")['email']
+
+...
+
+s = smtplib.SMTP(ConfigSectionMap("Notifications")['smtpserver'])
+s.sendmail(from, ConfigSectionMap("Notifications")['email'], msg.as_string())
+s.quit()
+

@@ -3,20 +3,33 @@
 import ConfigParser
 import psycopg2
 import sys
-from database import (query_database, get_last_timestamp, record_datafile_status)
+import io
+from database import (query_database, get_last_timestamp, record_datafile_status, get_datafile_status)
 from storage import (open_dataverse_file)
 from backup import (backup_file)
-import io
+from email_notification import (send_notification)
 
 def main():
+    rrmode = False
 
-    time_stamp = get_last_timestamp()
+    if (len(sys.argv) > 1 and sys.argv[1] == '--rerun'):
+        rrmode = True
+
+    if rrmode:
+        time_stamp = None
+    else:
+        time_stamp = get_last_timestamp()
+
     if time_stamp is None:
-        print "No time stamp! first run."
+        print "No time stamp! first run (or a full re-run)."
         records = query_database()
     else:
         print "last backup: "+time_stamp
         records = query_database(time_stamp)
+
+    files_total=0
+    files_success=0
+    files_failed=0
 
     for result in records:
         dataset_authority = result[0]
@@ -32,9 +45,14 @@ def main():
 
 
         if (storage_identifier is not None and dataset_identifier is not None and dataset_authority is not None):
+            files_total += 1
             print dataset_authority + "/" + dataset_identifier + "/" + storage_identifier + ", " + checksum_type + ": " + checksum_value
 
             file_input=None
+
+            # if this is a re-run, we are only re-trying the files that have failed previously:
+            if (rrmode and get_datafile_status(dataset_authority, dataset_identifier, storage_identifier) == 'OK'): 
+                continue
 
             try: 
                 file_input = open_dataverse_file(dataset_authority, dataset_identifier, storage_identifier)
@@ -48,13 +66,20 @@ def main():
                     backup_file(file_input, dataset_authority, dataset_identifier, storage_identifier, checksum_type, checksum_value, file_size)
                     print "backed up file "+storage_identifier
                     record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'OK', create_time)
+                    files_success += 1
                 except ValueError:
                     print "failed to back up file "+storage_identifier
                     record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'FAIL_WRITE', create_time)
+                    files_failed += 1
                     #TODO: add a separate failure status 'FAIL_VERIFY' - for when it looked like we were able to copy the file 
                     # onto the remote storage system, but the checksum verification failed (?)
             else:
                 record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'FAIL_READ', create_time)
+                files_failed += 1
+
+    report = ('backup script run report: %d files processed; %d success, %d failed' % (files_total, files_success, files_failed))
+    print report
+    send_notification(report)
 
 if __name__ == "__main__":
     main()

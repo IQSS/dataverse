@@ -23,4 +23,5 @@ These "superuser" tasks are managed via the new page called the Dashboard. A use
    solr-search-index
    monitoring
    maintenance
+   backup
    troubleshooting

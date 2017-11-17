@@ -2,14 +2,28 @@ The script, run_backup.py is run on schedule (by a crontab, most
 likely). It will back up the files stored in your Dataverse on the
 remote storage system specified. 
 
-The backup script is written in Python. The following extra modules are required:
+The backup script is written in Python (developed and tested with
+v. 2.7.10). The following extra modules are required:
 
 (versions tested as of the writing of this doc, 11.14.2017)
 
 psycopg2    [2.7.3.2] - PostgreSQL driver 
 boto3       [1.4.7]   - AWS sdk, for accessing S3 storage
 paramiko    [2.2.1]   - SSH client, for transferring files via SFTP
-swiftclient [2.7.0]   - [optional] for reading Datafiles stored on swift [not implemented yet] and/or backing up files on swift [untested, experimental (?) implementation]
+swiftclient [2.7.0]   - [optional] for reading Datafiles stored on swift [not implemented yet] and/or backing up files on swift [incomplete implementation provided]
+
+In the default mode, the script will attempt to retrieve and back up
+only the files that have been created in the Dataverse since the
+createdate timestamp on the most recent file already in the backup
+database; or all the files, if this is the first run (see the section
+below on what the "backup databse" is).
+
+When run with the "--rerun" option (python run_backup.py --rerun) the
+script will retrieve the list of ALL the files currently in the
+dataverse, but will only attempt to back up the ones not yet backed up
+successfully. (i.e. it will skip the files already in the backup
+database with the 'OK' backup status)
+
 
 Access credentials, for the Dataverse
 and the remote storage system are configured in the file config.ini.
@@ -110,4 +124,18 @@ SshUsername: xxxxx
 
 Additionally, SSH access to the remote server (SshHost, above) must be
 provided for the user specified (SshUsername) via ssh keys.
+
+4. Email notifications
+
+Once the script completes a backup run it will send a (very minimal)
+status report to the email address specified in the config.ini file;
+for example:
+
+[Notifications]
+Email: xxx@yyy.zzz.edu
+
+As currently implemented, the report will only specify how many files
+have been processed, and how many succeeded or failed. In order to get
+more detailed information about the individual files you'll need to
+consult the datafilestatus table in the backup database.
 
