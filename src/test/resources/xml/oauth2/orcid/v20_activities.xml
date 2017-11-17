@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<activities:employments
+  path="http://orcid.org/v2.0/8888-8888-8888-8880/employments"
+  xmlns:activities="http://www.orcid.org/ns/activities" xmlns:employment="http://www.orcid.org/ns/employment"
+  xmlns:common="http://www.orcid.org/ns/common" xmlns:education="http://www.orcid.org/ns/education"
+  xmlns:funding="http://www.orcid.org/ns/funding" xmlns:work="http://www.orcid.org/ns/work"
+  xmlns:peer-review="http://www.orcid.org/ns/peer-review" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.orcid.org/ns/activities ../activities-2.0.xsd ">
+  <common:last-modified-date>2017-01-18T13:32:45.500-06:00</common:last-modified-date>
+  <employment:employment-summary put-code="1"
+    path="/8888-8888-8888-8888/employment/1" visibility="public">
+    <common:created-date>2017-01-18T13:32:45.500-06:00</common:created-date>
+    <common:last-modified-date>2017-01-18T13:32:45.500-06:00</common:last-modified-date>
+    <common:source>
+      <common:source-orcid>
+        <common:uri>http://orcid.org/8888-8888-8888-8888</common:uri>
+        <common:path>8888-8888-8888-8888</common:path>
+        <common:host>orcid.org</common:host>
+      </common:source-orcid>
+      <common:source-name>User One Credit name</common:source-name>
+    </common:source>
+    <employment:department-name>department</employment:department-name>
+    <employment:role-title>role</employment:role-title>
+    <employment:organization>
+      <common:name>My Organization Name</common:name>
+      <common:address>
+        <common:city>x</common:city>
+        <common:country>AS</common:country>
+      </common:address>
+    </employment:organization>
+  </employment:employment-summary>
+  <employment:employment-summary put-code="1"
+    path="/8888-8888-8888-8888/employment/1" visibility="public">
+    <common:created-date>2017-01-18T13:32:45.500-06:00</common:created-date>
+    <common:last-modified-date>2017-01-18T13:32:45.500-06:00</common:last-modified-date>
+    <common:source>
+      <common:source-orcid>
+        <common:uri>http://orcid.org/8888-8888-8888-8888</common:uri>
+        <common:path>8888-8888-8888-8888</common:path>
+        <common:host>orcid.org</common:host>
+      </common:source-orcid>
+      <common:source-name>User One Credit name</common:source-name>
+    </common:source>
+    <employment:department-name>employment</employment:department-name>
+    <employment:organization>
+      <common:name>employment</common:name>
+      <common:address>
+        <common:city>x</common:city>
+        <common:country>AS</common:country>
+      </common:address>
+    </employment:organization>
+  </employment:employment-summary>
+</activities:employments>

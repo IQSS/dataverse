@@ -168,7 +168,7 @@ public class LoginPage implements java.io.Serializable {
         }
         authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
         try {
-            AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
+            AuthenticatedUser r = authSvc.getCreateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
             

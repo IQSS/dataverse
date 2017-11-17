@@ -63,8 +63,6 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
@@ -1002,5 +1000,10 @@ public class Admin extends AbstractApiBean {
                 .add("errors", errorArray)
         );
     }
-
+    
+    @GET
+    @Path("/isOrcid")
+    public Response isOrcidEnabled() {
+        return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
+    }
 }
