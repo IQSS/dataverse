@@ -79,6 +79,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
@@ -3957,8 +3958,37 @@ public class DatasetPage implements java.io.Serializable {
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
-
+    
+    Boolean thisLatestReleasedVersion = null;
+    
+    public boolean isThisLatestReleasedVersion() {
+        if (thisLatestReleasedVersion != null) {
+            return thisLatestReleasedVersion;
+        }
+        
+        if (!workingVersion.isPublished()) {
+            thisLatestReleasedVersion = false;
+            return false;
+        }
+        
+        DatasetVersion latestPublishedVersion = null;
+        Command<DatasetVersion> cmd = new GetLatestPublishedDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
+        try {
+            latestPublishedVersion = commandEngine.submit(cmd);
+        } catch (Exception ex) {
+            // whatever...
+        }
+        
+        thisLatestReleasedVersion = workingVersion.equals(latestPublishedVersion);
+        
+        return thisLatestReleasedVersion;
+        
+    }
+    
     public String getJsonLd() {
-        return workingVersion.getJsonLd();
+        if (isThisLatestReleasedVersion()) {
+            return workingVersion.getJsonLd();
+        }
+        return "";
     }
 }
