@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 
 /**
@@ -27,7 +26,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     
     private ExternalToolHandler toolHandler = null;
     
-    public String psiExternalAlert() { 
+    public String configureExternalAlert() { 
         JH.addMessage(FacesMessage.SEVERITY_WARN, toolHandler.getExternalTool().getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + toolHandler.getExternalTool().getDisplayName() + ".");
         return "";
     }    

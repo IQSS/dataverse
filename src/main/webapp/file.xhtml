@@ -150,18 +150,6 @@
                                             <li>
                                             </li>
                                             </ui:fragment>
-                                            <ui:repeat value="#{FilePage.externalToolHandlers}" var="toolHandler" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() and (FilePage.fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
-<!--MAD: What is this doing? -->
-                                                <li>
-                                                    <p:commandLink
-                                                        update="@([id$=psiBrowserPopup])"
-                                                        action="#{FilePage.setPsiPopupUrl(toolHandler.toolUrlWithQueryParams)}"
-                                                        oncomplete="PF('psiBrowserPopup').show()"
-                                                        disabled="#{DatasetPage.locked}">
-                                                        #{toolHandler.externalTool.displayName}
-                                                    </p:commandLink>
-                                                </li>
-                                            </ui:repeat>
                                         </ul>
                                     </div>
                                     <!-- END: Edit Button Group -->
@@ -480,6 +468,17 @@
                              </ui:include>
                         </div>
                     </p:dialog>
+                    
+                    <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
+                        id="configureToolPopup" styleClass="smallPopUp" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
+
+                        <ui:include src="file-configure-popup-fragment.xhtml">
+                            <ui:param name="externalToolHandlers" value="#{FilePage.getExternalToolHandlers()}"/>
+                            <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
+                        </ui:include>
+
+                    </p:dialog>
+                    
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
                         <p class="help-block">
