@@ -20,8 +20,16 @@
             <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
             <ui:param name="showMessagePanel" value="true"/>
             <ui:define name="body">
-                <div class="alert alert-danger" role="alert" style="margin-top:3em;">
-                    <h:outputText value="#{bundle['oauth2.callback.message']} #{OAuth2Page.error.message} " escape="false"/>
+	    <div class="alert alert-danger" role="alert" style="margin-top:3em;">
+		    <p>
+                    <h:outputFormat value="#{bundle['oauth2.callback.message']}" escape="false">
+                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                    <f:param value="#{systemConfig.guidesVersion}"/>
+				    </h:outputFormat>
+				    </p>
+				    <p>
+				    <h:outputText value="#{OAuth2Page.error.message}"/>
+				    </p>
                     <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
                             <o:param>
                                 <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
