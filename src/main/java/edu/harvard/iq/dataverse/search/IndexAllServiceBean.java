@@ -107,6 +107,7 @@ public class IndexAllServiceBean {
 
         List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         int dataverseIndexCount = 0;
+        int dataverseFailureCount = 0;
         for (Dataverse dataverse : dataverses) {
             try {
                 dataverseIndexCount++;
@@ -114,11 +115,13 @@ public class IndexAllServiceBean {
                 Future<String> result = indexService.indexDataverseInNewTransaction(dataverse);
             } catch (Exception e) {
                 //We want to keep running even after an exception so throw some more info into the log
+                dataverseFailureCount++;
                 logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + dataverses.size() + " (id=" + dataverse.getId() + ", persistentId=" + dataverse.getAlias() + ") Exception info: " + e.getMessage());
             }
         }
 
         int datasetIndexCount = 0;
+        int datasetFailureCount = 0;
         List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Dataset dataset : datasets) {
             try {
@@ -127,6 +130,7 @@ public class IndexAllServiceBean {
                 Future<String> result = indexService.indexDatasetInNewTransaction(dataset);
             } catch (Exception e) {
                 //We want to keep running even after an exception so throw some more info into the log
+                datasetFailureCount++;
                 logger.info("FAILURE indexing dataset " + datasetIndexCount + " of " + datasets.size() + " (id=" + dataset.getId() + ", identifier = " + dataset.getIdentifier() + ") Exception info: " + e.getMessage());
             }
 
@@ -138,6 +142,10 @@ public class IndexAllServiceBean {
         long indexAllTimeEnd = System.currentTimeMillis();
         String timeElapsed = "index all took " + (indexAllTimeEnd - indexAllTimeBegin) + " milliseconds";
         logger.info(timeElapsed);
+        if (datasetFailureCount + dataverseFailureCount > 0){
+            String failureMessage = "There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.";
+            logger.info(failureMessage);            
+        }
         status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. " + timeElapsed + ". " + resultOfClearingIndexTimes + "\n";
         logger.info(status);
         return new AsyncResult<>(status);
