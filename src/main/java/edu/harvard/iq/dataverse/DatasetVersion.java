@@ -1243,7 +1243,7 @@ public class DatasetVersion implements Serializable {
             String name = datasetAuthor.getName().getValue();
             String affiliation = datasetAuthor.getAffiliation().getValue();
             // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
-            author.add("@type", "Person");
+            //author.add("@type", "Person");
             author.add("name", name);
             if (!StringUtil.isEmpty(affiliation)) {
                 author.add("affiliation", affiliation);
