@@ -60,7 +60,7 @@ public class IndexAllServiceBean {
         }
         JsonArrayBuilder datasetIds = Json.createArrayBuilder();
         List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
-        for (Dataset dataset : datasets) {
+          for (Dataset dataset : datasets) {
             datasetIds.add(dataset.getId());
         }
         dvContainerIds.add("dataverses", dataverseIds);
@@ -108,17 +108,28 @@ public class IndexAllServiceBean {
         List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         int dataverseIndexCount = 0;
         for (Dataverse dataverse : dataverses) {
-            dataverseIndexCount++;
-            logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size() + " (id=" + dataverse.getId() + ", persistentId=" + dataverse.getAlias() + ")");
-            Future<String> result = indexService.indexDataverseInNewTransaction(dataverse);
+            try {
+                dataverseIndexCount++;
+                logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size() + " (id=" + dataverse.getId() + ", persistentId=" + dataverse.getAlias() + ")");
+                Future<String> result = indexService.indexDataverseInNewTransaction(dataverse);
+            } catch (Exception e) {
+                //We want to keep running even after an exception so throw some more info into the log
+                logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + dataverses.size() + " (id=" + dataverse.getId() + ", persistentId=" + dataverse.getAlias() + ") Exception info: " + e.getMessage());
+            }
         }
 
         int datasetIndexCount = 0;
         List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Dataset dataset : datasets) {
-            datasetIndexCount++;
-            logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + " (id=" + dataset.getId() + ", persistentId=" + dataset.getGlobalId() + ")");
-            Future<String> result = indexService.indexDatasetInNewTransaction(dataset);
+            try {
+                datasetIndexCount++;
+                logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + " (id=" + dataset.getId() + ", persistentId=" + dataset.getGlobalId() + ")");
+                Future<String> result = indexService.indexDatasetInNewTransaction(dataset);
+            } catch (Exception e) {
+                //We want to keep running even after an exception so throw some more info into the log
+                logger.info("FAILURE indexing dataset " + datasetIndexCount + " of " + datasets.size() + " (id=" + dataset.getId() + ", identifier = " + dataset.getIdentifier() + ") Exception info: " + e.getMessage());
+            }
+
         }
 //        logger.info("advanced search fields: " + advancedSearchFields);
 //        logger.info("not advanced search fields: " + notAdvancedSearchFields);
