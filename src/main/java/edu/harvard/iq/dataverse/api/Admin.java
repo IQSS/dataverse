@@ -65,8 +65,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
@@ -1008,6 +1006,10 @@ public class Admin extends AbstractApiBean {
     }
     
     @GET
+    @Path("/isOrcid")
+    public Response isOrcidEnabled() {
+        return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
+    }
     @Path("{id}/registerDataFile")
     public Response registerDataFile(@PathParam("id") String id ) {
         return response( req -> {

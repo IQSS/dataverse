@@ -551,8 +551,7 @@
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-request-access-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                            <ui:param name="fileDownloadHelper" value="#{FilePage.fileDownloadHelper}"/>
-                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                            <ui:param name="fileDownloadHelper" value="#{fileDownloadHelper}"/>                            
                         </ui:include>
                     </p:dialog>                   
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.compute.fileRestricted']}" widgetVar="computeAccessDeniedPopup" modal="true">
