@@ -1517,7 +1517,7 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
         }
-        
+
         return null;
     }
     
@@ -4065,5 +4065,5 @@ public class DatasetPage implements java.io.Serializable {
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
-    
+
 }

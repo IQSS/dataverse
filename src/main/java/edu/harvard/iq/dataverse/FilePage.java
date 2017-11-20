@@ -65,7 +65,6 @@ public class FilePage implements java.io.Serializable {
     private List<DatasetVersion> datasetVersionsForTab;
     private List<FileMetadata> fileMetadatasForTab;
 
-
     @EJB
     DataFileServiceBean datafileService;
     
@@ -156,7 +155,7 @@ public class FilePage implements java.io.Serializable {
             }         
            
            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
-           
+
         } else {
 
             return permissionsWrapper.notFound();
