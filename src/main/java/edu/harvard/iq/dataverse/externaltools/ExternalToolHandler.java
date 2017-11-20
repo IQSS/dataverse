@@ -37,8 +37,8 @@ public class ExternalToolHandler {
         this.externalTool = externalTool;
         if (dataFile == null) {
             String error = "A DataFile is required.";
-            logger.warning("Error in ExternalToolHandler contructor: " + error);
-            throw new RuntimeException(error);
+            logger.warning("Error in ExternalToolHandler constructor: " + error);
+            throw new IllegalArgumentException(error);
         }
         this.dataFile = dataFile;
         this.apiToken = apiToken;
@@ -112,7 +112,7 @@ public class ExternalToolHandler {
                 }
                 return key + "=" + apiTokenString;
             default:
-                throw new RuntimeException("Unknown reserved word: " + value);
+                throw new IllegalArgumentException("Unknown reserved word: " + value);
         }
     }
 
