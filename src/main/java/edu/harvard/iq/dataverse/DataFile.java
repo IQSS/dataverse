@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -193,6 +194,10 @@ public class DataFile extends DvObject implements Comparable {
     //MAD: We decided against the cascade approach as other cleanup needs to be done outside of the db if the DataFile is deleted. 
     //@OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     //private MapLayerMetadata mapLayerMetadata;
+    
+    //here only to perform cascade delete
+    @OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private WorldMapToken worldMapToken;
 
     public List<GuestbookResponse> getGuestbookResponses() {
         return guestbookResponses;

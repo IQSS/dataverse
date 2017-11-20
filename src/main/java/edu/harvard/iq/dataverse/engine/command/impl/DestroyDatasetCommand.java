@@ -86,12 +86,12 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             }
             ctxt.engine().submit(new DeleteMapLayerMetadataCommand(getRequest(), df));
             
-            //delete worldmap token here, tho the error seems to happen later than expected
-            WorldMapTokenServiceBean worldTokenBean = new WorldMapTokenServiceBean();
-            WorldMapToken worldToken = worldTokenBean.findByDataFile(df);
-            if(worldToken != null) {
-                worldTokenBean.deleteToken(worldToken);
-            }
+            //MAD: using cascade on dataset instead
+//            WorldMapTokenServiceBean worldTokenBean = new WorldMapTokenServiceBean();
+//            WorldMapToken worldToken = worldTokenBean.findByDataFile(df);
+//            if(worldToken != null) {
+//                worldTokenBean.deleteToken(worldToken);
+//            }
             
             ctxt.engine().submit(new DeleteDataFileCommand(df, getRequest(), true));
             dfIt.remove();
