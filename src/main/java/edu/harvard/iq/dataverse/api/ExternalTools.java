@@ -25,8 +25,11 @@ public class ExternalTools extends AbstractApiBean {
     public Response getExternalTools() {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         externalToolService.findAll().forEach((externalTool) -> {
-            // FIXME: Show more than the ID in the output.
-            jab.add(externalTool.getId());
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            job.add("id", externalTool.getId());
+            job.add(ExternalToolHandler.DISPLAY_NAME, externalTool.getDisplayName());
+            job.add(ExternalToolHandler.TOOL_URL, externalTool.getToolUrl());
+            jab.add(job);
         });
         return ok(jab);
     }
