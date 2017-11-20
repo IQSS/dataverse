@@ -112,7 +112,7 @@ public class ExternalToolHandler {
                 }
                 return key + "=" + apiTokenString;
             default:
-                throw new RuntimeException("Only {fileId} and {apiToken} are allowed as reserved words.");
+                throw new RuntimeException("Unknown reserved word: " + value);
         }
     }
 
@@ -123,5 +123,5 @@ public class ExternalToolHandler {
     public ExternalTool getExternalTool() {
         return externalTool;
     }
-    
+
 }

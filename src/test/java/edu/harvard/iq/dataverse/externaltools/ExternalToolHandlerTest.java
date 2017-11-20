@@ -126,7 +126,7 @@ public class ExternalToolHandlerTest {
             expectedException = ex;
         }
         assertNotNull(expectedException);
-        assertEquals("Only {fileId} and {apiToken} are allowed as reserved words.", expectedException.getMessage());
+        assertEquals("Unknown reserved word: {siteUrl}", expectedException.getMessage());
 
     }
 
