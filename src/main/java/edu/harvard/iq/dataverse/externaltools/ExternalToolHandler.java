@@ -90,6 +90,7 @@ public class ExternalToolHandler {
         DataFile df = getDataFile();
         if (df == null) {
             logger.fine("DataFile was null!");
+            // FIXME: Rather than returning the key/value here as-is, enforce the "reserved word required rule" below.
             return key + "=" + value;
         }
         String apiTokenString = null;
@@ -98,13 +99,14 @@ public class ExternalToolHandler {
             apiTokenString = theApiToken.getTokenString();
         }
         // TODO: Put reserved words like "{fileId}" and "{apiToken}" into an enum.
+        // TODO: Research if a format like {reservedWord} is easily parse-able or if another format would be better.
         switch (value) {
             case "{fileId}":
                 return key + "=" + df.getId();
             case "{apiToken}":
                 return key + "=" + apiTokenString;
             default:
-                return key + "=" + value;
+                throw new RuntimeException("Only {fileId} and {apiToken} are allowed as reserved words.");
         }
     }
 

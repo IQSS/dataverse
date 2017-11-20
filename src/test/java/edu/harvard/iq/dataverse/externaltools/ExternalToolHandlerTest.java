@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import javax.json.Json;
 import javax.json.JsonObject;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 public class ExternalToolHandlerTest {
@@ -107,10 +108,17 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
-        ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
-        String result5 = externalToolHandler5.getQueryParametersForUrl();
-        System.out.println("result5: " + result5);
-        assertEquals("?key1={siteUrl}&key2=null", result5);
+        Exception expectedException = null;
+        try {
+            ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
+            String result5 = externalToolHandler5.getQueryParametersForUrl();
+            System.out.println("result5: " + result5);
+        } catch (Exception ex) {
+            System.out.println("Exception caught: " + ex);
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+        assertEquals("Only {fileId} and {apiToken} are allowed as reserved words.", expectedException.getMessage());
 
     }
 
