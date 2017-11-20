@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.ReservedWord;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,27 +96,22 @@ public class ExternalToolHandler {
     // to use reserved words within a value like this:
     // "uri": "{siteUrl}/api/access/datafile/{fileId}/metadata/ddi"
     private String getQueryParam(String key, String value) {
-        // TODO: Put reserved words like "{fileId}" and "{apiToken}" into an enum.
-        // TODO: Research if a format like "{reservedWord}" is easily parse-able or if another format would be
-        // better. The choice of curly braces is somewhat arbitrary, but has been observed in documenation for
-        // various REST APIs. For example, "Variable substitutions will be made when a variable is named in {brackets}."
-        // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
-        switch (value) {
-            case "{fileId}":
-                // getDataFile is never null because of the constructor
-                return key + "=" + getDataFile().getId();
-            case "{apiToken}":
-                String apiTokenString = null;
-                ApiToken theApiToken = getApiToken();
-                if (theApiToken != null) {
-                    apiTokenString = theApiToken.getTokenString();
-                }
-                return key + "=" + apiTokenString;
-            default:
-                // Note that the same IllegalArgumentException is thrown in ExternalToolServiceBean.parseAddExternalToolManifest
-                // and that because of this, we should never reach here because it means that invalid data (non-reserved words)
-                // somehow slipped into the `externaltool` database table.
-                throw new IllegalArgumentException("Unknown reserved word: " + value);
+        if (value.equals(ReservedWord.FILE_ID.toString())) {
+            // getDataFile is never null because of the constructor
+            return key + "=" + getDataFile().getId();
+        } else if (value.equals(ReservedWord.API_TOKEN.toString())) {
+            String apiTokenString = null;
+            ApiToken theApiToken = getApiToken();
+            if (theApiToken != null) {
+                apiTokenString = theApiToken.getTokenString();
+            }
+            return key + "=" + apiTokenString;
+
+        } else {
+            // Note that the same IllegalArgumentException is thrown in ExternalToolServiceBean.parseAddExternalToolManifest
+            // and that because of this, we should never reach here because it means that invalid data (non-reserved words)
+            // somehow slipped into the `externaltool` database table.
+            throw new IllegalArgumentException("Unknown reserved word: " + value);
         }
     }
 

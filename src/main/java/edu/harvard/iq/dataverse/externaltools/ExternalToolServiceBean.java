@@ -44,6 +44,27 @@ public class ExternalToolServiceBean {
         return em.merge(externalTool);
     }
 
+    public enum ReservedWord {
+
+        // TODO: Research if a format like "{reservedWord}" is easily parse-able or if another format would be
+        // better. The choice of curly braces is somewhat arbitrary, but has been observed in documenation for
+        // various REST APIs. For example, "Variable substitutions will be made when a variable is named in {brackets}."
+        // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
+        FILE_ID("{fileId}"),
+        API_TOKEN("{apiToken}");
+
+        private final String text;
+
+        private ReservedWord(final String text) {
+            this.text = text;
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+    }
+
     /**
      * This method takes a list of tools from the database and returns
      * "handlers" that have inserted parameters in the right places.
@@ -73,12 +94,10 @@ public class ExternalToolServiceBean {
             Set<String> keyValuePair = queryParam.keySet();
             for (String key : keyValuePair) {
                 String value = queryParam.getString(key);
-                // FIXME: Use values from enum, once available, rather than hard-coding "{fileId}", and {apiToken}.
-                if (value.equals("{fileId}")) {
+                if (value.equals(ReservedWord.FILE_ID.text)) {
                     // Good, not only is {fileId} is a valid reserved word, it's required.
-                    // Some day there might be more reserved words than just {fileId}.
                     allRequiredReservedWordsFound = true;
-                } else if (value.equals("{apiToken}")) {
+                } else if (value.equals(ReservedWord.API_TOKEN.text)) {
                     // Good, {apiToken} is a valid reserved word.
                 } else {
                     // Only {fileId} and {apiToken} are valid. Fail fast.
@@ -88,7 +107,8 @@ public class ExternalToolServiceBean {
             }
         }
         if (!allRequiredReservedWordsFound) {
-            throw new IllegalArgumentException("Required reserved word not found: {fileId}");
+            // Some day there might be more reserved words than just {fileId}.
+            throw new IllegalArgumentException("Required reserved word not found: " + ReservedWord.FILE_ID.text);
         }
         String toolParameters = toolParametersObj.toString();
         return new ExternalTool(displayName, description, toolUrl, toolParameters);
