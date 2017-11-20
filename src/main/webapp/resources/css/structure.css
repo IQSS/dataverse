@@ -350,7 +350,7 @@ th.col-file-action.text-right {text-align: right;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block span.btn.ui-state-disabled, .button-block .button-container {margin-right:1em;}
 
-.button-block span.ingest-warning {margin-right:.5em;}
+td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margin-left:.5em;}
 
 .btn.btn-default.btn-access {background-color: #fff;background-image:none;}
 .btn.btn-default.btn-access:focus, .btn.btn-default.btn-access:hover,.btn.btn-default.btn-access:active {background-color: #e6e6e6;background-image:none;}
