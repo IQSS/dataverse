@@ -83,7 +83,7 @@ public class WorldMapTokenServiceBean {
         
         try{
 //           String sqlStatement = 
-            Query query = em.createQuery("select m from worldmapauth_token m WHERE m.dataFile=:datafile",  WorldMapToken.class);
+            Query query = em.createQuery("select m from WorldMapToken m WHERE m.dataFile=:datafile",  WorldMapToken.class);
             query.setParameter("datafile", datafile);
             query.setMaxResults(1);
             //entityManager.createQuery(SQL_QUERY).setParameter(arg0,arg1).setMaxResults(10).getResultList();
