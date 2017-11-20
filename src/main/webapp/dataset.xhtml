@@ -1185,7 +1185,7 @@
                     <!-- END: Request Access Sign Up/Log In Button -->
                     
                     <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
-                            id="configureToolPopup" styleClass="smallPopUp" rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset()}">
+                            id="configureToolPopup" styleClass="smallPopUp">
 
                             <ui:include src="file-configure-popup-fragment.xhtml">
                                 <ui:param name="externalToolHandlers" value="#{DatasetPage.getExternalToolHandlersForDataFile(fileMetadata.dataFile.id)}"/>
