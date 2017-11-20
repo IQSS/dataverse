@@ -35,6 +35,11 @@ public class ExternalToolHandler {
      */
     public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
         this.externalTool = externalTool;
+        if (dataFile == null) {
+            String error = "A DataFile is required.";
+            logger.warning("Error in ExternalToolHandler contructor: " + error);
+            throw new RuntimeException(error);
+        }
         this.dataFile = dataFile;
         this.apiToken = apiToken;
     }
@@ -86,24 +91,25 @@ public class ExternalToolHandler {
         }
     }
 
+    // TODO: Make this parser much smarter in the future. Tools like Data Explorer will want
+    // to use reserved words within a value like this:
+    // "uri": "{siteUrl}/api/access/datafile/{fileId}/metadata/ddi"
     private String getQueryParam(String key, String value) {
-        DataFile df = getDataFile();
-        if (df == null) {
-            logger.fine("DataFile was null!");
-            // FIXME: Rather than returning the key/value here as-is, enforce the "reserved word required rule" below.
-            return key + "=" + value;
-        }
-        String apiTokenString = null;
-        ApiToken theApiToken = getApiToken();
-        if (theApiToken != null) {
-            apiTokenString = theApiToken.getTokenString();
-        }
         // TODO: Put reserved words like "{fileId}" and "{apiToken}" into an enum.
-        // TODO: Research if a format like {reservedWord} is easily parse-able or if another format would be better.
+        // TODO: Research if a format like "{reservedWord}" is easily parse-able or if another format would be
+        // better. The choice of curly braces is somewhat arbitrary, but has been observed in documenation for
+        // various REST APIs. For example, "Variable substitutions will be made when a variable is named in {brackets}."
+        // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
         switch (value) {
             case "{fileId}":
-                return key + "=" + df.getId();
+                // getDataFile is never null because of the constructor
+                return key + "=" + getDataFile().getId();
             case "{apiToken}":
+                String apiTokenString = null;
+                ApiToken theApiToken = getApiToken();
+                if (theApiToken != null) {
+                    apiTokenString = theApiToken.getTokenString();
+                }
                 return key + "=" + apiTokenString;
             default:
                 throw new RuntimeException("Only {fileId} and {apiToken} are allowed as reserved words.");

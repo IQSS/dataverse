@@ -13,10 +13,10 @@ External tools must be expressed in an external tool manifest file, a specific J
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/awesomeTool.json
 
-In the example above, there are reserved words that can be used to insert dynamic values into tools. The supported values are:
+In the example above, a mix of required and optional reserved words appear that can be used to insert dynamic values into tools. The supported values are:
 
-- ``{fileId}`` - The Dataverse database ID of a file the external tool has been launched on.
-- ``{apiToken}`` - The Dataverse API token of the user launching the external tool.
+- ``{fileId}`` (required) - The Dataverse database ID of a file the external tool has been launched on.
+- ``{apiToken}`` (optional) - The Dataverse API token of the user launching the external tool.
 
 Making an External Tool Available in Dataverse
 ----------------------------------------------

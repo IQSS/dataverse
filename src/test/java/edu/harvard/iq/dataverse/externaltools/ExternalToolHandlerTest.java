@@ -30,38 +30,46 @@ public class ExternalToolHandlerTest {
         String toolUrl = "http://example.com";
         ExternalTool externalTool = new ExternalTool("displayName", "description", toolUrl, "{}");
 
-        // One query parameter.
+        // One query parameter, not a reserved word, no {fileId} (required) used.
         externalTool.setToolParameters(Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("key1", "value1")
+                                .add("mode", "mode1")
                         )
                 )
                 .build().toString());
         DataFile nullDataFile = null;
         ApiToken nullApiToken = null;
-        ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
-        String result1 = externalToolHandler1.getQueryParametersForUrl();
-        System.out.println("result1: " + result1);
-        assertEquals("?key1=value1", result1);
+        Exception expectedException1 = null;
+        try {
+            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
+        } catch (Exception ex) {
+            expectedException1 = ex;
+        }
+        assertNotNull(expectedException1);
+        assertEquals("A DataFile is required.", expectedException1.getMessage());
 
         // Two query parameters.
         externalTool.setToolParameters(Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("key1", "value1")
+                                .add("mode", "mode1")
                         )
                         .add(Json.createObjectBuilder()
                                 .add("key2", "value2")
                         )
                 )
                 .build().toString());
-        ExternalToolHandler externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
-        String result2 = externalToolHandler2.getQueryParametersForUrl();
-        System.out.println("result2: " + result2);
-        assertEquals("?key1=value1&key2=value2", result2);
+        Exception expectedException2 = null;
+        try {
+            ExternalToolHandler externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
+        } catch (Exception ex) {
+            expectedException2 = ex;
+        }
+        assertNotNull(expectedException2);
+        assertEquals("A DataFile is required.", expectedException2.getMessage());
 
-        // Two query parameters, both reserved words
+        // Two query parameters, both reserved words, one is {fileId} which is required.
         externalTool.setToolParameters(Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
