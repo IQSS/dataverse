@@ -18,6 +18,8 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
@@ -33,6 +35,28 @@ public class ExternalToolServiceBean {
     public List<ExternalTool> findAll() {
         TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o ORDER BY o.id", ExternalTool.class);
         return typedQuery.getResultList();
+    }
+
+    public ExternalTool findById(long id) {
+        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.id = :id", ExternalTool.class);
+        typedQuery.setParameter("id", id);
+        try {
+            ExternalTool externalTool = typedQuery.getSingleResult();
+            return externalTool;
+        } catch (NoResultException | NonUniqueResultException ex) {
+            return null;
+        }
+    }
+
+    public boolean delete(long doomedId) {
+        ExternalTool doomed = findById(doomedId);
+        try {
+            em.remove(doomed);
+            return true;
+        } catch (Exception ex) {
+            logger.info("Could not delete external tool with id of " + doomedId);
+            return false;
+        }
     }
 
     public List<ExternalToolHandler> findExternalToolHandlersByFile(DataFile file, ApiToken apiToken) {

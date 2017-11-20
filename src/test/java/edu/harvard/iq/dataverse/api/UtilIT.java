@@ -1158,6 +1158,11 @@ public class UtilIT {
         return requestSpecification.post("/api/admin/externalTools");
     }
 
+    static Response deleteExternalTool(long externalToolid) {
+        return given()
+                .delete("/api/admin/externalTools/" + externalToolid);
+    }
+
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"

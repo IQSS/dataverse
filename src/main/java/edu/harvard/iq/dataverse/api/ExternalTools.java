@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -45,6 +46,17 @@ public class ExternalTools extends AbstractApiBean {
             return error(BAD_REQUEST, ex.getMessage());
         }
 
+    }
+
+    @DELETE
+    @Path("{id}")
+    public Response deleteExternalTool(@PathParam("id") long externalToolIdFromUser) {
+        boolean deleted = externalToolService.delete(externalToolIdFromUser);
+        if (deleted) {
+            return ok("Deleted external tool with id of " + externalToolIdFromUser);
+        } else {
+            return error(BAD_REQUEST, "Could not not delete external tool with id of " + externalToolIdFromUser);
+        }
     }
 
     /**

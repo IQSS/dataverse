@@ -79,6 +79,14 @@ public class ExternalToolsIT {
     }
 
     @Test
+    public void testDeleteExternalTool() {
+        // FIXME: Don't hard code a tool id here.
+        long externalToolId = 14l;
+        Response addExternalTool = UtilIT.deleteExternalTool(externalToolId);
+        addExternalTool.prettyPrint();
+    }
+
+    @Test
     public void testAddExternalToolNonReservedWord() throws IOException {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");

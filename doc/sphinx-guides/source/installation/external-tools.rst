@@ -25,6 +25,20 @@ If the JSON file were called, for example, :download:`awesomeTool.json <../_stat
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file awesomeTool.json http://localhost:8080/api/admin/externalTools``
 
+Listing all External Tools in Dataverse
+---------------------------------------
+
+To list all the external tools that are available in Dataverse:
+
+``curl http://localhost:8080/api/admin/externalTools``
+
+Removing an External Tool Available in Dataverse
+------------------------------------------------
+
+Assuming the external tool database id is "1", remove it with the following command:
+
+``curl -X DELETE http://localhost:8080/api/admin/externalTools/1``
+
 Writing Your Own External Tool
 ------------------------------
 
