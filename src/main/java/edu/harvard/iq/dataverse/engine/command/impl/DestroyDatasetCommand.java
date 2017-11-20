@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -83,6 +85,14 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
                 logger.log(Level.SEVERE, "During destruction of dataset: " + e);
             }
             ctxt.engine().submit(new DeleteMapLayerMetadataCommand(getRequest(), df));
+            
+            //delete worldmap token here, tho the error seems to happen later than expected
+            WorldMapTokenServiceBean worldTokenBean = new WorldMapTokenServiceBean();
+            WorldMapToken worldToken = worldTokenBean.findByDataFile(df);
+            if(worldToken != null) {
+                worldTokenBean.deleteToken(worldToken);
+            }
+            
             ctxt.engine().submit(new DeleteDataFileCommand(df, getRequest(), true));
             dfIt.remove();
         }
