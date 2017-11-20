@@ -112,6 +112,9 @@ public class ExternalToolHandler {
                 }
                 return key + "=" + apiTokenString;
             default:
+                // Note that the same IllegalArgumentException is thrown in ExternalToolServiceBean.parseAddExternalToolManifest
+                // and that because of this, we should never reach here because it means that invalid data (non-reserved words)
+                // somehow slipped into the `externaltool` database table.
                 throw new IllegalArgumentException("Unknown reserved word: " + value);
         }
     }

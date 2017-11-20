@@ -31,9 +31,9 @@ public class ExternalTools extends AbstractApiBean {
     }
 
     @POST
-    public Response addExternalTool(String userInput) {
+    public Response addExternalTool(String manifest) {
         try {
-            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolInput(userInput);
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(manifest);
             ExternalTool saved = externalToolService.save(externalTool);
             Long toolId = saved.getId();
             actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.ExternalTool, "addExternalTool").setInfo("External tool added with id " + toolId + "."));

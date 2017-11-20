@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.json.Json;
@@ -31,10 +30,7 @@ public class ExternalToolServiceBeanTest {
     }
 
     @Test
-    public void testParseAddExternalToolInput() throws IOException {
-        assertEquals(null, ExternalToolServiceBean.parseAddExternalToolInput(null));
-        assertEquals(null, ExternalToolServiceBean.parseAddExternalToolInput(""));
-        assertEquals(null, ExternalToolServiceBean.parseAddExternalToolInput(Json.createObjectBuilder().build().toString()));
+    public void testParseAddExternalToolInput() {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
@@ -51,7 +47,7 @@ public class ExternalToolServiceBeanTest {
                 .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
-        ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolInput(tool);
+        ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
         assertEquals("AwesomeTool", externalTool.getDisplayName());
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
@@ -64,7 +60,7 @@ public class ExternalToolServiceBeanTest {
     }
 
     @Test
-    public void testParseAddExternalToolInputNoFileId() throws IOException {
+    public void testParseAddExternalToolInputNoFileId() {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
@@ -78,20 +74,123 @@ public class ExternalToolServiceBeanTest {
                 .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
-        // TODO: Consider failing fast right here where we parse the manifest for the tool and it doesn't use the {fileId} keyword.
-        ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolInput(tool);
-        assertEquals("AwesomeTool", externalTool.getDisplayName());
-        DataFile nullDataFile = null;
-        ApiToken apiToken = new ApiToken();
-        apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         Exception expectedException = null;
         try {
-            ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, nullDataFile, apiToken);
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
         } catch (Exception ex) {
             expectedException = ex;
         }
         assertNotNull(expectedException);
-        assertEquals("A DataFile is required.", expectedException.getMessage());
+        assertEquals("Required reserved word not found: {fileId}", expectedException.getMessage());
+    }
+
+    @Test
+    public void testParseAddExternalToolInputNull() {
+        Exception expectedException = null;
+        try {
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(null);
+        } catch (Exception ex) {
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+        assertEquals("External tool manifest was null or empty!", expectedException.getMessage());
+    }
+
+    @Test
+    public void testParseAddExternalToolInputEmptyString() {
+        Exception expectedException = null;
+        try {
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest("");
+        } catch (Exception ex) {
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+        assertEquals("External tool manifest was null or empty!", expectedException.getMessage());
+    }
+
+    @Test
+    public void testParseAddExternalToolInputUnknownReservedWord() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("description", "This tool is awesome.");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("fileid", "{fileId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("mode", "mode1")
+                                .build())
+                        .build())
+                .build());
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+        Exception expectedException = null;
+        try {
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        } catch (Exception ex) {
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+        assertEquals("Unknown reserved word: mode1", expectedException.getMessage());
+    }
+
+    @Test
+    public void testParseAddExternalToolInputNoDisplayName() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("description", "This tool is awesome.");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("toolParameters", Json.createObjectBuilder().build());
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+        Exception expectedException = null;
+        try {
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        } catch (Exception ex) {
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+        assertEquals("displayName is required.", expectedException.getMessage());
+    }
+
+    @Test
+    public void testParseAddExternalToolInputNoDescription() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("toolParameters", Json.createObjectBuilder().build());
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+        Exception expectedException = null;
+        try {
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        } catch (Exception ex) {
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+        assertEquals("description is required.", expectedException.getMessage());
+    }
+
+    @Test
+    public void testParseAddExternalToolInputNoToolUrl() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("description", "This tool is awesome.");
+        job.add("toolParameters", Json.createObjectBuilder().build());
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+        Exception expectedException = null;
+        try {
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        } catch (Exception ex) {
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+        assertEquals("toolUrl is required.", expectedException.getMessage());
     }
 
 }

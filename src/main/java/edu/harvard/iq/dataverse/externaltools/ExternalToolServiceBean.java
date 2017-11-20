@@ -9,10 +9,12 @@ import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.TOOL_UR
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.persistence.EntityManager;
@@ -55,19 +57,48 @@ public class ExternalToolServiceBean {
         return externalToolHandlers;
     }
 
-    public static ExternalTool parseAddExternalToolInput(String userInput) {
+    public static ExternalTool parseAddExternalToolManifest(String manifest) {
+        if (manifest == null || manifest.isEmpty()) {
+            throw new IllegalArgumentException("External tool manifest was null or empty!");
+        }
+        JsonReader jsonReader = Json.createReader(new StringReader(manifest));
+        JsonObject jsonObject = jsonReader.readObject();
+        String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
+        String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
+        String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
+        JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
+        JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
+        boolean allRequiredReservedWordsFound = false;
+        for (JsonObject queryParam : queryParams.getValuesAs(JsonObject.class)) {
+            Set<String> keyValuePair = queryParam.keySet();
+            for (String key : keyValuePair) {
+                String value = queryParam.getString(key);
+                // FIXME: Use values from enum, once available, rather than hard-coding "{fileId}", and {apiToken}.
+                if (value.equals("{fileId}")) {
+                    // Good, not only is {fileId} is a valid reserved word, it's required.
+                    // Some day there might be more reserved words than just {fileId}.
+                    allRequiredReservedWordsFound = true;
+                } else if (value.equals("{apiToken}")) {
+                    // Good, {apiToken} is a valid reserved word.
+                } else {
+                    // Only {fileId} and {apiToken} are valid. Fail fast.
+                    // Note that the same IllegalArgumentException is thrown in ExternalToolHandler.getQueryParam
+                    throw new IllegalArgumentException("Unknown reserved word: " + value);
+                }
+            }
+        }
+        if (!allRequiredReservedWordsFound) {
+            throw new IllegalArgumentException("Required reserved word not found: {fileId}");
+        }
+        String toolParameters = toolParametersObj.toString();
+        return new ExternalTool(displayName, description, toolUrl, toolParameters);
+    }
+
+    private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {
         try {
-            JsonReader jsonReader = Json.createReader(new StringReader(userInput));
-            JsonObject jsonObject = jsonReader.readObject();
-            String displayName = jsonObject.getString(DISPLAY_NAME);
-            String description = jsonObject.getString(DESCRIPTION);
-            String toolUrl = jsonObject.getString(TOOL_URL);
-            JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
-            String toolParameters = toolParametersObj.toString();
-            return new ExternalTool(displayName, description, toolUrl, toolParameters);
-        } catch (Exception ex) {
-            logger.info("Exception caught in parseAddExternalToolInput: " + ex);
-            return null;
+            return jsonObject.getString(key);
+        } catch (NullPointerException ex) {
+            throw new IllegalArgumentException(key + " is required.");
         }
     }
 
