@@ -13,6 +13,11 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
+/**
+ * Handles an operation on a specific file. Requires a file id in order to be
+ * instantiated. Applies logic based on an {@link ExternalTool} specification,
+ * such as constructing a URL to access that file.
+ */
 public class ExternalToolHandler {
 
     private static final Logger logger = Logger.getLogger(ExternalToolHandler.class.getCanonicalName());

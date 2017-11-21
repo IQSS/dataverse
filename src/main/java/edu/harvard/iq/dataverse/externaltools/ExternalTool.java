@@ -7,6 +7,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+/**
+ * A specification or definition for how an external tool is intended to
+ * operate. The specification is applied dynamically on a per-file basis through
+ * an {@link ExternalToolHandler}.
+ */
 @Entity
 public class ExternalTool implements Serializable {
 
