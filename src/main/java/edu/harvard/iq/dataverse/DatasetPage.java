@@ -80,6 +80,7 @@ import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
@@ -3945,23 +3946,6 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     /**
-     * dataset publication date unpublished datasets will return an empty
-     * string.
-     *
-     * @return String dataset publication date (dd MMM yyyy).
-     */
-    public String getPublicationDate() {
-        assert (null != workingVersion);
-        if (DatasetVersion.VersionState.DRAFT == workingVersion.getVersionState()) {
-            return "";
-        }
-        Date rel_date = workingVersion.getReleaseTime();
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-        String r = fmt.format(rel_date.getTime());
-        return r;
-    }
-
-    /**
      * dataset authors
      *
      * @return list of author names
@@ -3969,16 +3953,6 @@ public class DatasetPage implements java.io.Serializable {
     public List<String> getDatasetAuthors() {
         assert (workingVersion != null);
         return workingVersion.getDatasetAuthorNames();
-    }
-
-    /**
-     * dataset subjects
-     *
-     * @return array of String containing the subjects for a page
-     */
-    public List<String> getDatasetSubjects() {
-        assert (null != workingVersion);
-        return workingVersion.getDatasetSubjects();
     }
 
     /**
@@ -4066,4 +4040,36 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
     
+    Boolean thisLatestReleasedVersion = null;
+    
+    public boolean isThisLatestReleasedVersion() {
+        if (thisLatestReleasedVersion != null) {
+            return thisLatestReleasedVersion;
+        }
+        
+        if (!workingVersion.isPublished()) {
+            thisLatestReleasedVersion = false;
+            return false;
+        }
+        
+        DatasetVersion latestPublishedVersion = null;
+        Command<DatasetVersion> cmd = new GetLatestPublishedDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
+        try {
+            latestPublishedVersion = commandEngine.submit(cmd);
+        } catch (Exception ex) {
+            // whatever...
+        }
+        
+        thisLatestReleasedVersion = workingVersion.equals(latestPublishedVersion);
+        
+        return thisLatestReleasedVersion;
+        
+    }
+    
+    public String getJsonLd() {
+        if (isThisLatestReleasedVersion()) {
+            return workingVersion.getJsonLd();
+        }
+        return "";
+    }
 }
