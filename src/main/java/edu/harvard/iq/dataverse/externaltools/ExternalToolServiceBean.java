@@ -8,6 +8,7 @@ import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.TOOL_PA
 import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.TOOL_URL;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -85,6 +86,31 @@ public class ExternalToolServiceBean {
             this.text = START + text + END;
         }
 
+        /**
+         * This is a centralized method that enforces that only reserved words
+         * are allowed to be used by external tools. External tool authors
+         * cannot pass their own query parameters through Dataverse such as
+         * "mode=mode1".
+         *
+         * @throws IllegalArgumentException
+         */
+        public static ReservedWord fromString(String text) throws IllegalArgumentException {
+            if (text != null) {
+                for (ReservedWord reservedWord : ReservedWord.values()) {
+                    if (text.equals(reservedWord.text)) {
+                        return reservedWord;
+                    }
+                }
+            }
+            // TODO: Consider switching to a more informative message that enumerates the valid reserved words.
+            boolean moreInformativeMessage = false;
+            if (moreInformativeMessage) {
+                throw new IllegalArgumentException("Unknown reserved word: " + text + ". A reserved word must be one of these values: " + Arrays.asList(ReservedWord.values()) + ".");
+            } else {
+                throw new IllegalArgumentException("Unknown reserved word: " + text);
+            }
+        }
+
         @Override
         public String toString() {
             return text;
@@ -120,15 +146,9 @@ public class ExternalToolServiceBean {
             Set<String> keyValuePair = queryParam.keySet();
             for (String key : keyValuePair) {
                 String value = queryParam.getString(key);
-                if (value.equals(ReservedWord.FILE_ID.text)) {
-                    // Good, not only is {fileId} is a valid reserved word, it's required.
+                ReservedWord reservedWord = ReservedWord.fromString(value);
+                if (reservedWord.equals(ReservedWord.FILE_ID)) {
                     allRequiredReservedWordsFound = true;
-                } else if (value.equals(ReservedWord.API_TOKEN.text)) {
-                    // Good, {apiToken} is a valid reserved word.
-                } else {
-                    // Only {fileId} and {apiToken} are valid. Fail fast.
-                    // Note that the same IllegalArgumentException is thrown in ExternalToolHandler.getQueryParam
-                    throw new IllegalArgumentException("Unknown reserved word: " + value);
                 }
             }
         }

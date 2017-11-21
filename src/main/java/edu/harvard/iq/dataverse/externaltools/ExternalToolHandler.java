@@ -96,22 +96,21 @@ public class ExternalToolHandler {
     // to use reserved words within a value like this:
     // "uri": "{siteUrl}/api/access/datafile/{fileId}/metadata/ddi"
     private String getQueryParam(String key, String value) {
-        if (value.equals(ReservedWord.FILE_ID.toString())) {
-            // getDataFile is never null because of the constructor
-            return key + "=" + getDataFile().getId();
-        } else if (value.equals(ReservedWord.API_TOKEN.toString())) {
-            String apiTokenString = null;
-            ApiToken theApiToken = getApiToken();
-            if (theApiToken != null) {
-                apiTokenString = theApiToken.getTokenString();
-            }
-            return key + "=" + apiTokenString;
-
-        } else {
-            // Note that the same IllegalArgumentException is thrown in ExternalToolServiceBean.parseAddExternalToolManifest
-            // and that because of this, we should never reach here because it means that invalid data (non-reserved words)
-            // somehow slipped into the `externaltool` database table.
-            throw new IllegalArgumentException("Unknown reserved word: " + value);
+        ReservedWord reservedWord = ReservedWord.fromString(value);
+        switch (reservedWord) {
+            case FILE_ID:
+                // getDataFile is never null because of the constructor
+                return key + "=" + getDataFile().getId();
+            case API_TOKEN:
+                String apiTokenString = null;
+                ApiToken theApiToken = getApiToken();
+                if (theApiToken != null) {
+                    apiTokenString = theApiToken.getTokenString();
+                }
+                return key + "=" + apiTokenString;
+            default:
+                // We should never reach here.
+                return null;
         }
     }
 
