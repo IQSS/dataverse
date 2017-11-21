@@ -122,22 +122,6 @@ public class Access extends AbstractApiBean {
     
     private static final String API_KEY_HEADER = "X-Dataverse-key";    
     
-    
-    @Path("datafile/bundle")
-    @GET
-    @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@QueryParam("persistentId") String persistentId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-
-        DataFile df = dataFileService.findByGlobalId(persistentId);
-
-        if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id " + persistentId + "!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        return getBundledInstance(df, apiToken, headers);
-
-    }
-
     //@EJB
     
     // TODO: 
@@ -145,9 +129,15 @@ public class Access extends AbstractApiBean {
     @Path("datafile/bundle/{fileId}")
     @GET
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
- 
-        DataFile df = dataFileService.find(fileId);
+    public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+
+        DataFile df = null;
+
+        try {
+            df = findDataFileOrDie(fileId);
+        } catch (WrappedResponse ex) {
+            throw new NotFoundException();
+        }
         
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
@@ -195,40 +185,29 @@ public class Access extends AbstractApiBean {
         }
         
         return downloadInstance;
-     }
-    
-    @Path("datafile")
-    @GET
-    @Produces({"application/xml"})
-    public DownloadInstance datafile(@QueryParam("persistentId") String persistentId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-
-       DataFile df = dataFileService.findByGlobalId(persistentId);
-
-        if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id " + persistentId + "!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        
-        return getDataFileDownloadInstance(df, apiToken, gbrecs, uriInfo, headers, response);
-        
-    }
-       
-            
+     }     
             
     @Path("datafile/{fileId}")
     @GET
-    @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
-        DataFile df = dataFileService.find(fileId);
-        GuestbookResponse gbr = null;   
+    @Produces({"application/xml"})
+    public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+        DataFile dataFile = null;
+
+        try {
+            dataFile = findDataFileOrDie(fileId);
+        } catch (WrappedResponse ex) {
+            throw new NotFoundException();
+
+        }
         
-        if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+        GuestbookResponse gbr = null;
+
+        if (dataFile == null) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id " + fileId + "!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-                       
 
-        return getDataFileDownloadInstance(df, apiToken, gbrecs, uriInfo, headers, response);
+        return getDataFileDownloadInstance(dataFile, apiToken, gbrecs, uriInfo, headers, response);
     }
     
     private DownloadInstance getDataFileDownloadInstance(DataFile df, String apiToken,   Boolean gbrecs, UriInfo uriInfo, HttpHeaders headers,  HttpServletResponse response ){
