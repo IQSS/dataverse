@@ -255,7 +255,10 @@ public class DatasetPage implements java.io.Serializable {
     private boolean removeUnusedTags;
     
     private Boolean hasRsyncScript = false;
-    private Map<Long,List<ExternalToolHandler>> externalToolHandlers = new HashMap<Long,List<ExternalToolHandler>>();
+    //private Map<Long,List<ExternalToolHandler>> externalToolHandlers = new HashMap<Long,List<ExternalToolHandler>>();
+    
+    List<ExternalTool> allTools = new ArrayList<>();
+    ApiToken apiToken = new ApiToken();
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -1528,8 +1531,14 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
         }
+                
+        //generateExternalTools();
         
-        generateExternalTools();
+        allTools = externalToolService.findAll();
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        }
         
         return null;
     }
@@ -4052,34 +4061,39 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
 
-    private void generateExternalTools() {
-        User user = session.getUser();
-        ApiToken apiToken = new ApiToken();
-        if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-        }
-        
-        //MAD: use findValidExternalToolHandlersByFile
-        //also get the list of all beforehand externalToolService.findAll()
-        
-        if(fileMetadatasSearch != null) {
-            externalToolHandlers.clear();
-            List<ExternalTool> allTools = externalToolService.findAll();
-            for (FileMetadata fm : fileMetadatasSearch) { //why does normal fileMetadatas not exist at this point? how is search different?
-                DataFile fmFile = fm.getDataFile();
-                List<ExternalToolHandler> fileToolHandlers = externalToolService.findExternalToolHandlersByFile(allTools, fmFile, apiToken); //findExternalToolHandlersByFile(fmFile, apitoken);
-                externalToolHandlers.put(fmFile.getId(), fileToolHandlers);
-            }
-        }
-    }
+//    private void generateExternalTools() {
+//        User user = session.getUser();
+//        ApiToken apiToken = new ApiToken();
+//        if (user instanceof AuthenticatedUser) {
+//            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+//        }
+//        
+//        //MAD: use findValidExternalToolHandlersByFile
+//        //also get the list of all beforehand externalToolService.findAll()
+//        
+//        if(fileMetadatasSearch != null) {
+//            externalToolHandlers.clear();
+//            List<ExternalTool> allTools = externalToolService.findAll();
+//            for (FileMetadata fm : fileMetadatasSearch) { //why does normal fileMetadatas not exist at this point? how is search different?
+//                DataFile fmFile = fm.getDataFile();
+//                List<ExternalToolHandler> fileToolHandlers = externalToolService.findExternalToolHandlersByFile(allTools, fmFile, apiToken); //findExternalToolHandlersByFile(fmFile, apitoken);
+//                externalToolHandlers.put(fmFile.getId(), fileToolHandlers);
+//            }
+//        }
+//    }
 
-    public Map getExternalToolHandlers() {
-        return externalToolHandlers;        
-    }
+//    public Map getExternalToolHandlers() {
+//        return externalToolHandlers;        
+//    }
     
+    //Should we be leveraging fileMetadatasSearch or something else that already has a list of the files (fileMetadatasSearch isn't a map for me to access via an index...)
     public List<ExternalToolHandler> getExternalToolHandlersForDataFile(Long fileId) {
-        //TODO: Instead of this relying on generation at page load to create the big externalToolHandlers list, this should likely be more dynamic
-        return externalToolHandlers.get(fileId);        
+        DataFile dataFile = datafileService.find(fileId);
+               
+        //MAD: Should I be passing back the ExternalTool instead?
+        List<ExternalToolHandler> fileToolHandlers = externalToolService.findExternalToolHandlersByFile(allTools, dataFile, apiToken);
+        
+        return fileToolHandlers;    
     }
     
 
