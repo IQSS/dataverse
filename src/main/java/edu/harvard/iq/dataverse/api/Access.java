@@ -350,7 +350,7 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}/metadata")
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadata(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ { 
+    public String tabularDatafileMetadata(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ { 
         return tabularDatafileMetadataDDI(fileId, exclude, include, header, response);
     }
     
@@ -361,16 +361,24 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}/metadata/ddi")
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadataDDI(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String tabularDatafileMetadataDDI(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile = null; 
+
         
         //httpHeaders.add("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
         //httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
         
-        dataFile = dataFileService.find(fileId);
+        //dataFile = dataFileService.find(fileId);
+        try{
+            dataFile = findDataFileOrDie(fileId);
+        } catch (WrappedResponse ex) {
+            throw new NotFoundException();
+            
+        }
+
         if (dataFile == null) {
             throw new NotFoundException();
         }
@@ -381,10 +389,10 @@ public class Access extends AbstractApiBean {
         
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
-
+        Long dataFileId = dataFile.getId();
         try {
             ddiExportService.exportDataFile(
-                    fileId,
+                    dataFileId,
                     outStream,
                     exclude,
                     include);
@@ -442,9 +450,17 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({"text/xml"})
     
-    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
+    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") String fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
     
-        DataFile df = dataFileService.find(fileId);
+        DataFile df = null;
+        
+        try{
+            df = findDataFileOrDie(fileId);
+        } catch (WrappedResponse ex) {
+            throw new NotFoundException();
+           
+        }
+        
         
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
