@@ -74,13 +74,15 @@ public class ExternalToolServiceBean {
         // better. The choice of curly braces is somewhat arbitrary, but has been observed in documenation for
         // various REST APIs. For example, "Variable substitutions will be made when a variable is named in {brackets}."
         // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
-        FILE_ID("{fileId}"),
-        API_TOKEN("{apiToken}");
+        FILE_ID("fileId"),
+        API_TOKEN("apiToken");
 
         private final String text;
+        private final String START = "{";
+        private final String END = "}";
 
         private ReservedWord(final String text) {
-            this.text = text;
+            this.text = START + text + END;
         }
 
         @Override
