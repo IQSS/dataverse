@@ -121,6 +121,22 @@ public class Access extends AbstractApiBean {
     
     
     private static final String API_KEY_HEADER = "X-Dataverse-key";    
+    
+    
+    @Path("datafile/bundle")
+    @GET
+    @Produces({"application/zip"})
+    public BundleDownloadInstance datafileBundle(@QueryParam("persistentId") String persistentId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+
+        DataFile df = dataFileService.findByGlobalId(persistentId);
+
+        if (df == null) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id " + persistentId + "!");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        return getBundledInstance(df, apiToken, headers);
+
+    }
 
     //@EJB
     
@@ -137,7 +153,12 @@ public class Access extends AbstractApiBean {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-        
+               
+        return getBundledInstance(df, apiToken, headers); 
+    }
+    
+    private BundleDownloadInstance getBundledInstance (DataFile df, String apiToken, HttpHeaders headers){
+         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
@@ -158,7 +179,7 @@ public class Access extends AbstractApiBean {
 
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
-
+        Long fileId = df.getId();
         try {
             ddiExportService.exportDataFile(
                     fileId,
@@ -173,26 +194,53 @@ public class Access extends AbstractApiBean {
             // we'll just generate the bundle without it. 
         }
         
-        return downloadInstance; 
-    }
+        return downloadInstance;
+     }
     
+    @Path("datafile")
+    @GET
+    @Produces({"application/xml"})
+    public DownloadInstance datafile(@QueryParam("persistentId") String persistentId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+
+       DataFile df = dataFileService.findByGlobalId(persistentId);
+
+        if (df == null) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id " + persistentId + "!");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        return getDataFileDownloadInstance(df, apiToken, gbrecs, uriInfo, headers, response);
+        
+    }
+       
+            
+            
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
     public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
         DataFile df = dataFileService.find(fileId);
-        GuestbookResponse gbr = null;    
+        GuestbookResponse gbr = null;   
         
+        if (df == null) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+                       
+
+        return getDataFileDownloadInstance(df, apiToken, gbrecs, uriInfo, headers, response);
+    }
+    
+    private DownloadInstance getDataFileDownloadInstance(DataFile df, String apiToken,   Boolean gbrecs, UriInfo uriInfo, HttpHeaders headers,  HttpServletResponse response ){
+        
+        GuestbookResponse gbr = null;
         /*
         if (gbrecs == null && df.isReleased()){
             //commenting out for 4.6 SEK
            // gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
         }
-        */
-        if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
+         */
+
         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
