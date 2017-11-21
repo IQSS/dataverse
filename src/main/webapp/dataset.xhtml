@@ -24,15 +24,20 @@
 	    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
 	    <meta name="DC.type" content="Dataset"/>
 	    <meta name="DC.title" content="#{DatasetPage.title}"/>
-	    <meta name="DC.date" content="#{DatasetPage.publicationDate}"/>
+            <meta name="DC.date" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
 	    <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
             <meta name="DC.description" content="#{DatasetPage.description}" />
 	    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
             <meta name="DC.creator" content="#{author}"/>
 	    </ui:repeat>
-            <ui:repeat var="subject" value="#{DatasetPage.datasetSubjects}">
+            <ui:repeat var="subject" value="#{DatasetPage.workingVersion.datasetSubjects}">
             <meta name="DC.subject" content="#{subject}"/>
 	    </ui:repeat>
+	    </ui:define>
+	    <ui:define name="jsonld_header">
+                <script type="application/ld+json">
+                    <h:outputText value="#{DatasetPage.jsonLd}"/>
+                </script>
 	    </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
