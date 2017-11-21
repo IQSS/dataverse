@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.ReservedWo
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -72,24 +71,14 @@ public class ExternalToolHandler {
         if (queryParams == null || queryParams.isEmpty()) {
             return "";
         }
-        int numQueryParam = queryParams.size();
-        if (numQueryParam == 1) {
-            JsonObject jsonObject = queryParams.getJsonObject(0);
-            Set<String> firstPair = jsonObject.keySet();
-            String key = firstPair.iterator().next();
-            String value = jsonObject.getString(key);
-            return "?" + getQueryParam(key, value);
-        } else {
-            List<String> params = new ArrayList<>();
-            queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
-                queryParam.keySet().forEach((key) -> {
-                    String value = queryParam.getString(key);
-                    params.add(getQueryParam(key, value));
-                });
+        List<String> params = new ArrayList<>();
+        queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
+            queryParam.keySet().forEach((key) -> {
+                String value = queryParam.getString(key);
+                params.add(getQueryParam(key, value));
             });
-            return "?" + String.join("&", params);
-
-        }
+        });
+        return "?" + String.join("&", params);
     }
 
     // TODO: Make this parser much smarter in the future. Tools like Data Explorer will want
