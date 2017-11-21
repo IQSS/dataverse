@@ -1138,6 +1138,15 @@ public class UtilIT {
         return response;
     }
 
+    static Response processPrepFile(JsonObject jsonObject, long dataFileId, String apiToken) {
+        Response response = given()
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON)
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/summaryStats/" + dataFileId);
+        return response;
+    }
+
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"
