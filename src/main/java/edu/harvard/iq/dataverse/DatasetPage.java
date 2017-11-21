@@ -88,6 +88,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import java.util.Collections;
@@ -4053,17 +4054,21 @@ public class DatasetPage implements java.io.Serializable {
 
     private void generateExternalTools() {
         User user = session.getUser();
-        ApiToken apitoken = new ApiToken();
+        ApiToken apiToken = new ApiToken();
         if (user instanceof AuthenticatedUser) {
-            apitoken = authService.findApiTokenByUser((AuthenticatedUser) user);
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
         }
+        
+        //MAD: use findValidExternalToolHandlersByFile
+        //also get the list of all beforehand externalToolService.findAll()
         
         if(fileMetadatasSearch != null) {
             externalToolHandlers.clear();
+            List<ExternalTool> allTools = externalToolService.findAll();
             for (FileMetadata fm : fileMetadatasSearch) { //why does normal fileMetadatas not exist at this point? how is search different?
                 DataFile fmFile = fm.getDataFile();
-                List<ExternalToolHandler> fileToolHandlers = externalToolService.findExternalToolHandlersByFile(fmFile, apitoken);
-                externalToolHandlers.put(fmFile.getId(),fileToolHandlers);
+                List<ExternalToolHandler> fileToolHandlers = externalToolService.findExternalToolHandlersByFile(allTools, fmFile, apiToken); //findExternalToolHandlersByFile(fmFile, apitoken);
+                externalToolHandlers.put(fmFile.getId(), fileToolHandlers);
             }
         }
     }
@@ -4073,6 +4078,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public List<ExternalToolHandler> getExternalToolHandlersForDataFile(Long fileId) {
+        //TODO: Instead of this relying on generation at page load to create the big externalToolHandlers list, this should likely be more dynamic
         return externalToolHandlers.get(fileId);        
     }
     

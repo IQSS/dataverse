@@ -60,10 +60,6 @@ public class ExternalToolServiceBean {
         }
     }
 
-    public List<ExternalToolHandler> findExternalToolHandlersByFile(DataFile file, ApiToken apiToken) {
-        return findExternalToolHandlersByFile(findAll(), file, apiToken);
-    }
-
     public ExternalTool save(ExternalTool externalTool) {
         em.persist(externalTool);
         return em.merge(externalTool);
@@ -119,13 +115,15 @@ public class ExternalToolServiceBean {
 
     /**
      * This method takes a list of tools from the database and returns
-     * "handlers" that have inserted parameters in the right places.
+     * "handlers" for supported file formats that have inserted parameters in the right places.
      */
     public static List<ExternalToolHandler> findExternalToolHandlersByFile(List<ExternalTool> externalTools, DataFile file, ApiToken apiToken) {
         List<ExternalToolHandler> externalToolHandlers = new ArrayList<>();
         externalTools.forEach((externalTool) -> {
-            ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken);
-            externalToolHandlers.add(externalToolHandler);
+            if (file.isTabularData()) {
+                ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken);
+                externalToolHandlers.add(externalToolHandler);
+            }
         });
         return externalToolHandlers;
     }

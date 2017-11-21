@@ -1188,7 +1188,6 @@
                             id="configureToolPopup" styleClass="smallPopUp">
 
                             <ui:include src="file-configure-popup-fragment.xhtml">
-                                <ui:param name="externalToolHandlers" value="#{DatasetPage.getExternalToolHandlersForDataFile(fileMetadata.dataFile.id)}"/>
                                 <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                             </ui:include>
 

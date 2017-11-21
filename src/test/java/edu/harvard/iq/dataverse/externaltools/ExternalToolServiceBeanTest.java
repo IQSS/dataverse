@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +16,15 @@ public class ExternalToolServiceBeanTest {
     public ExternalToolServiceBeanTest() {
     }
 
+//test commented out because now we only return external tools that fit the file types we support (e.g. tabular only)
+    
     @Test
     public void testfindAll() {
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
+        List<DataTable> dataTables = new ArrayList<DataTable>();
+        dataTables.add(new DataTable());
+        dataFile.setDataTables(dataTables);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalTool externalTool = new ExternalTool("displayName", "description", "http://foo.com", "{}");

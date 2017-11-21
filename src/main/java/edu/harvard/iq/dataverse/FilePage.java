@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -167,7 +168,9 @@ public class FilePage implements java.io.Serializable {
             if (user instanceof AuthenticatedUser) {
                 apitoken = authService.findApiTokenByUser((AuthenticatedUser) user);
             }
-            externalToolHandlers = externalToolService.findExternalToolHandlersByFile(file, apitoken);
+            List<ExternalTool> allTools = externalToolService.findAll();
+            
+            externalToolHandlers = externalToolService.findExternalToolHandlersByFile(allTools, file, apitoken);
             
         } else {
 

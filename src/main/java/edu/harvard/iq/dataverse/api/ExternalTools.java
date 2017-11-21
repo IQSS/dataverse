@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -79,7 +80,10 @@ public class ExternalTools extends AbstractApiBean {
         ApiToken apiToken = new ApiToken();
         String apiTokenString = getRequestApiKey();
         apiToken.setTokenString(apiTokenString);
-        externalToolService.findExternalToolHandlersByFile(dataFile, apiToken)
+        
+        List<ExternalTool> allTools = externalToolService.findAll();
+        
+        externalToolService.findExternalToolHandlersByFile(allTools, dataFile, apiToken)
                 .forEach((externalToolHandler) -> {
                     tools.add(externalToolHandler.toJson());
                 });
