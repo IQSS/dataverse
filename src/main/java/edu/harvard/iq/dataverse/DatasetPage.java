@@ -3,10 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
@@ -89,7 +87,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import java.util.Collections;
 
@@ -258,7 +255,6 @@ public class DatasetPage implements java.io.Serializable {
     //private Map<Long,List<ExternalToolHandler>> externalToolHandlers = new HashMap<Long,List<ExternalToolHandler>>();
     
     List<ExternalTool> allTools = new ArrayList<>();
-    ApiToken apiToken = new ApiToken();
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -1531,14 +1527,8 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
         }
-                
-        //generateExternalTools();
         
         allTools = externalToolService.findAll();
-        User user = session.getUser();
-        if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-        }
         
         return null;
     }
@@ -4060,40 +4050,17 @@ public class DatasetPage implements java.io.Serializable {
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
-
-//    private void generateExternalTools() {
-//        User user = session.getUser();
-//        ApiToken apiToken = new ApiToken();
-//        if (user instanceof AuthenticatedUser) {
-//            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-//        }
-//        
-//        //MAD: use findValidExternalToolHandlersByFile
-//        //also get the list of all beforehand externalToolService.findAll()
-//        
-//        if(fileMetadatasSearch != null) {
-//            externalToolHandlers.clear();
-//            List<ExternalTool> allTools = externalToolService.findAll();
-//            for (FileMetadata fm : fileMetadatasSearch) { //why does normal fileMetadatas not exist at this point? how is search different?
-//                DataFile fmFile = fm.getDataFile();
-//                List<ExternalToolHandler> fileToolHandlers = externalToolService.findExternalToolHandlersByFile(allTools, fmFile, apiToken); //findExternalToolHandlersByFile(fmFile, apitoken);
-//                externalToolHandlers.put(fmFile.getId(), fileToolHandlers);
-//            }
-//        }
-//    }
-
-//    public Map getExternalToolHandlers() {
-//        return externalToolHandlers;        
-//    }
     
     //Should we be leveraging fileMetadatasSearch or something else that already has a list of the files (fileMetadatasSearch isn't a map for me to access via an index...)
-    public List<ExternalToolHandler> getExternalToolHandlersForDataFile(Long fileId) {
+    //Also this gets called a fair bit by the render logic as its looking for length and then the file. That could be more efficient
+    //-- MAD 4.8.3
+    public List<ExternalTool> getExternalToolsForDataFile(Long fileId) {
         DataFile dataFile = datafileService.find(fileId);
                
         //MAD: Should I be passing back the ExternalTool instead?
-        List<ExternalToolHandler> fileToolHandlers = externalToolService.findExternalToolHandlersByFile(allTools, dataFile, apiToken);
+        List<ExternalTool> fileTools = externalToolService.findExternalToolsByFile(allTools, dataFile);
         
-        return fileToolHandlers;    
+        return fileTools;    
     }
     
 

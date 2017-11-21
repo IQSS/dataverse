@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.DESCRIPTION;
 import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.DISPLAY_NAME;
 import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.TOOL_PARAMETERS;
@@ -117,15 +116,27 @@ public class ExternalToolServiceBean {
      * This method takes a list of tools from the database and returns
      * "handlers" for supported file formats that have inserted parameters in the right places.
      */
-    public static List<ExternalToolHandler> findExternalToolHandlersByFile(List<ExternalTool> externalTools, DataFile file, ApiToken apiToken) {
-        List<ExternalToolHandler> externalToolHandlers = new ArrayList<>();
-        externalTools.forEach((externalTool) -> {
+//    public static List<ExternalToolHandler> findExternalToolHandlersByFile(List<ExternalTool> externalTools, DataFile file, ApiToken apiToken) {
+//        List<ExternalToolHandler> externalToolHandlers = new ArrayList<>();
+//        externalTools.forEach((externalTool) -> {
+//            if (file.isTabularData()) {
+//                ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken);
+//                externalToolHandlers.add(externalToolHandler);
+//            }
+//        });
+//        return externalToolHandlers;
+//    }
+    
+    //this takes in a list of allExternalTools so it doesn't hit the database each time
+    public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
+        List<ExternalTool> externalTools = new ArrayList<>();
+        allExternalTools.forEach((externalTool) -> {
             if (file.isTabularData()) {
-                ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken);
-                externalToolHandlers.add(externalToolHandler);
+                externalTools.add(externalTool);
             }
         });
-        return externalToolHandlers;
+        
+        return externalTools;
     }
 
     public static ExternalTool parseAddExternalToolManifest(String manifest) {

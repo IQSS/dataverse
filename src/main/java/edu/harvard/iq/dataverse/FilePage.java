@@ -9,9 +9,6 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
@@ -25,7 +22,6 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -68,7 +64,7 @@ public class FilePage implements java.io.Serializable {
     private Dataset dataset;
     private List<DatasetVersion> datasetVersionsForTab;
     private List<FileMetadata> fileMetadatasForTab;
-    private List<ExternalToolHandler> externalToolHandlers;
+    private List<ExternalTool> externalTools;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -163,14 +159,10 @@ public class FilePage implements java.io.Serializable {
            
            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
 
-            User user = session.getUser();
-            ApiToken apitoken = new ApiToken();
-            if (user instanceof AuthenticatedUser) {
-                apitoken = authService.findApiTokenByUser((AuthenticatedUser) user);
-            }
             List<ExternalTool> allTools = externalToolService.findAll();
             
-            externalToolHandlers = externalToolService.findExternalToolHandlersByFile(allTools, file, apitoken);
+            //maybe this shouldn't be inited and accessed, instead just done when needed???
+            externalTools = externalToolService.findExternalToolsByFile(allTools, file);
             
         } else {
 
@@ -776,8 +768,8 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
     }
 
-    public List<ExternalToolHandler> getExternalToolHandlers() {
-        return externalToolHandlers;
+    public List<ExternalTool> getExternalTools() {
+        return externalTools;
     }
     
 }

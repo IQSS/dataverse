@@ -76,10 +76,11 @@
                                     
                                     
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() 
-                                                             and (FilePage.fileMetadata.dataFile.tabularData and FilePage.getExternalToolHandlers().size() > 0
+                                                             and (FilePage.getExternalTools().size() > 0
                                                              or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">		
                                         <ui:include src="file-configure-dropdown-fragment.xhtml">
-                                            <ui:param name="externalToolHandlers" value="#{FilePage.getExternalToolHandlers()}"/>
+                                            <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
+                                            <ui:param name="fileId" value="#{FilePage.fileMetadata.dataFile.id}"/>
                                             <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>		
                                             <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>		
                                         </ui:include>		
@@ -473,7 +474,7 @@
                         id="configureToolPopup" styleClass="smallPopUp" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
 
                         <ui:include src="file-configure-popup-fragment.xhtml">
-                            <ui:param name="externalToolHandlers" value="#{FilePage.getExternalToolHandlers()}"/>
+                            <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
                             <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
                         </ui:include>
 

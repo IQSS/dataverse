@@ -5,13 +5,20 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 
 /**
  *
@@ -24,24 +31,54 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     
     private static final Logger logger = Logger.getLogger(ConfigureFragmentBean.class.getName());
     
-    private ExternalToolHandler toolHandler = null;
+    private ExternalTool tool = null;
+    private Long fileId = null;
+    
+    @EJB
+    DataFileServiceBean datafileService;
+    @Inject
+    DataverseSession session;
+    @EJB
+    AuthenticationServiceBean authService;
     
     public String configureExternalAlert() { 
-        JH.addMessage(FacesMessage.SEVERITY_WARN, toolHandler.getExternalTool().getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + toolHandler.getExternalTool().getDisplayName() + ".");
+        JH.addMessage(FacesMessage.SEVERITY_WARN, tool.getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + tool.getDisplayName() + ".");
         return "";
     }    
 
     /**
      * @param setTool the tool to set
      */
-    public void setConfigurePopupToolHandler(ExternalToolHandler setTool) {
-        toolHandler = setTool;
+    public void setConfigurePopupTool(ExternalTool setTool) {
+        tool = setTool;
     }
     
     /**
      * @return the Tool
      */
+    public ExternalTool getConfigurePopupTool() {
+        return tool;
+    }
+    
     public ExternalToolHandler getConfigurePopupToolHandler() {
+        if(fileId == null) {
+            return null;
+        }
+        
+        datafileService.find(fileId);
+        
+        ApiToken apiToken = new ApiToken();
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        }
+        
+        ExternalToolHandler toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken);
         return toolHandler;
+    }
+    
+    public void setConfigureFileId(Long setFileId)
+    {
+        fileId = setFileId;
     }
 }

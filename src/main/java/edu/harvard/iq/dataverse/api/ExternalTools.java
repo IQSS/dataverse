@@ -63,31 +63,31 @@ public class ExternalTools extends AbstractApiBean {
         }
     }
 
-    /**
-     * For testing only. For each of the external tools in the database we are
-     * testing the JSON format and that any reserved words within the JSON are
-     * properly replaced with the data the user supplies such as a file id
-     * and/or API token.
-     */
-    @GET
-    @Path("test/file/{id}")
-    public Response getExternalToolHandlersByFile(@PathParam("id") Long fileIdFromUser) {
-        DataFile dataFile = fileSvc.find(fileIdFromUser);
-        if (dataFile == null) {
-            return error(BAD_REQUEST, "Could not find datafile with id " + fileIdFromUser);
-        }
-        JsonArrayBuilder tools = Json.createArrayBuilder();
-        ApiToken apiToken = new ApiToken();
-        String apiTokenString = getRequestApiKey();
-        apiToken.setTokenString(apiTokenString);
-        
-        List<ExternalTool> allTools = externalToolService.findAll();
-        
-        externalToolService.findExternalToolHandlersByFile(allTools, dataFile, apiToken)
-                .forEach((externalToolHandler) -> {
-                    tools.add(externalToolHandler.toJson());
-                });
-        return ok(tools);
-    }
+//    /**
+//     * For testing only. For each of the external tools in the database we are
+//     * testing the JSON format and that any reserved words within the JSON are
+//     * properly replaced with the data the user supplies such as a file id
+//     * and/or API token.
+//     */
+//    @GET
+//    @Path("test/file/{id}")
+//    public Response getExternalToolHandlersByFile(@PathParam("id") Long fileIdFromUser) {
+//        DataFile dataFile = fileSvc.find(fileIdFromUser);
+//        if (dataFile == null) {
+//            return error(BAD_REQUEST, "Could not find datafile with id " + fileIdFromUser);
+//        }
+//        JsonArrayBuilder tools = Json.createArrayBuilder();
+//        ApiToken apiToken = new ApiToken();
+//        String apiTokenString = getRequestApiKey();
+//        apiToken.setTokenString(apiTokenString);
+//        
+//        List<ExternalTool> allTools = externalToolService.findAll();
+//        
+//        externalToolService.findExternalToolHandlersByFile(allTools, dataFile, apiToken)
+//                .forEach((externalToolHandler) -> {
+//                    tools.add(externalToolHandler.toJson());
+//                });
+//        return ok(tools);
+//    }
 
 }
