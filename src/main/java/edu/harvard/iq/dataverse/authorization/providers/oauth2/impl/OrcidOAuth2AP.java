@@ -263,7 +263,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
     @Override
     public String getPersistentIdUrlPrefix() {
-        return "http://orcid.org/";
+        return "https://orcid.org/";
     }
 
     @Override
