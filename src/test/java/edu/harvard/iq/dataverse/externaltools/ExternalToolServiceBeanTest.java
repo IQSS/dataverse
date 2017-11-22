@@ -18,22 +18,22 @@ public class ExternalToolServiceBeanTest {
 
 //test commented out because now there is no way to get all the handlers for a file...
     
-//    @Test
-//    public void testfindAll() {
-//        DataFile dataFile = new DataFile();
-//        dataFile.setId(42l);
-//        List<DataTable> dataTables = new ArrayList<DataTable>();
-//        dataTables.add(new DataTable());
-//        dataFile.setDataTables(dataTables);
-//        ApiToken apiToken = new ApiToken();
-//        apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-//        ExternalTool externalTool = new ExternalTool("displayName", "description", "http://foo.com", "{}");
-//        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken);
-//        List<ExternalTool> externalTools = new ArrayList<>();
-//        externalTools.add(externalTool);
-//        List<ExternalToolHandler> externalToolHandlers = ExternalToolServiceBean.findExternalToolHandlersByFile(externalTools, dataFile, apiToken);
-//        assertEquals(dataFile.getId(), externalToolHandlers.get(0).getDataFile().getId());
-//    }
+    @Test
+    public void testfindAll() {
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        List<DataTable> dataTables = new ArrayList<DataTable>();
+        dataTables.add(new DataTable());
+        dataFile.setDataTables(dataTables);
+        ApiToken apiToken = new ApiToken();
+        apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
+        ExternalTool externalTool = new ExternalTool("displayName", "description", "http://foo.com", "{}");
+        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        List<ExternalTool> externalTools = new ArrayList<>();
+        externalTools.add(externalTool);
+        List<ExternalTool> availableExternalTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
+        assertEquals(availableExternalTools.size(), 1);
+    }
 
     @Test
     public void testParseAddExternalToolInput() {
