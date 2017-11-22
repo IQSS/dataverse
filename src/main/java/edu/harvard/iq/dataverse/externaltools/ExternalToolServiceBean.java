@@ -70,12 +70,13 @@ public class ExternalToolServiceBean {
         // better. The choice of curly braces is somewhat arbitrary, but has been observed in documenation for
         // various REST APIs. For example, "Variable substitutions will be made when a variable is named in {brackets}."
         // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
+        SITE_URL("siteUrl"),
         FILE_ID("fileId"),
         API_TOKEN("apiToken");
 
         private final String text;
-        private final String START = "{";
-        private final String END = "}";
+        public static final String START = "{";
+        public static final String END = "}";
 
         private ReservedWord(final String text) {
             this.text = START + text + END;
@@ -111,10 +112,11 @@ public class ExternalToolServiceBean {
             return text;
         }
     }
-    
+
     /**
-     * This method takes a list of tools and a file and returns which tools that file supports
-     * The list of tools is passed in so it doesn't hit the database each time
+     * This method takes a list of tools and a file and returns which tools that
+     * file supports The list of tools is passed in so it doesn't hit the
+     * database each time
      */
     public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
@@ -123,7 +125,7 @@ public class ExternalToolServiceBean {
                 externalTools.add(externalTool);
             }
         });
-        
+
         return externalTools;
     }
 
@@ -142,6 +144,13 @@ public class ExternalToolServiceBean {
         for (JsonObject queryParam : queryParams.getValuesAs(JsonObject.class)) {
             Set<String> keyValuePair = queryParam.keySet();
             for (String key : keyValuePair) {
+                if (ExternalToolHandler.hardCodedKludgeForDataExplorer) {
+                    // The kludge is to get this working: "uri": "{siteUrl}/api/access/datafile/{fileId}/metadata/ddi"
+                    if (key.equals("uri") && keyValuePair.size() == 1) {
+                        allRequiredReservedWordsFound = true;
+                        continue;
+                    }
+                }
                 String value = queryParam.getString(key);
                 ReservedWord reservedWord = ReservedWord.fromString(value);
                 if (reservedWord.equals(ReservedWord.FILE_ID)) {

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.externaltools;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.ReservedWord;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,8 @@ import javax.json.JsonReader;
  * such as constructing a URL to access that file.
  */
 public class ExternalToolHandler {
+
+    public static boolean hardCodedKludgeForDataExplorer = false;
 
     private static final Logger logger = Logger.getLogger(ExternalToolHandler.class.getCanonicalName());
 
@@ -90,6 +93,15 @@ public class ExternalToolHandler {
     // to use reserved words within a value like this:
     // "uri": "{siteUrl}/api/access/datafile/{fileId}/metadata/ddi"
     private String getQueryParam(String key, String value) {
+        // FIXME: Remove this special case for Data Explorer https://github.com/IQSS/dataverse/issues/4249
+        if (hardCodedKludgeForDataExplorer) {
+            if (key.equals("uri")) {
+                String staticSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
+                // TODO: support {siteUrl} for real instead of having replaceAll in here. Write a parser.
+                // The "\\" is so replaceAll doesn't freak out at "{" and throw"java.util.regex.PatternSyntaxException: Illegal repetition"
+                return key + "=" + value.replaceAll("\\" + ReservedWord.SITE_URL, staticSiteUrl).replaceAll("\\" + ReservedWord.FILE_ID, getDataFile().getId().toString());
+            }
+        }
         ReservedWord reservedWord = ReservedWord.fromString(value);
         switch (reservedWord) {
             case FILE_ID:
@@ -102,6 +114,9 @@ public class ExternalToolHandler {
                     apiTokenString = theApiToken.getTokenString();
                 }
                 return key + "=" + apiTokenString;
+            case SITE_URL:
+                // We don't have a real use case for this yet but adding it for completeness.
+                return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
             default:
                 // We should never reach here.
                 return null;

@@ -1,0 +1,12 @@
+{
+  "displayName": "Amazing Tool",
+  "description": "The most amazing tool.",
+  "toolUrl": "https://amazingtool.com",
+  "toolParameters": {
+    "queryParameters": [
+      {
+        "uri": "{siteUrl}/api/access/datafile/{fileId}/metadata/ddi"
+      }
+    ]
+  }
+}

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import javax.json.Json;
 import javax.json.JsonObject;
 import static org.junit.Assert.assertEquals;
@@ -109,7 +110,7 @@ public class ExternalToolHandlerTest {
         externalTool.setToolParameters(Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("key1", "{siteUrl}")
+                                .add("key1", "{noSuchReservedWord}")
                         )
                         .add(Json.createObjectBuilder()
                                 .add("key2", "{apiToken}")
@@ -126,8 +127,50 @@ public class ExternalToolHandlerTest {
             expectedException = ex;
         }
         assertNotNull(expectedException);
-        assertEquals("Unknown reserved word: {siteUrl}", expectedException.getMessage());
+        assertEquals("Unknown reserved word: {noSuchReservedWord}", expectedException.getMessage());
 
+    }
+
+    @Test
+    public void testParseAwesomeTool() {
+        String toolUrl = "https://amazingtool.com";
+        ExternalTool externalTool = new ExternalTool("Amazing Tool", "The most amazing tool.", toolUrl, "{}");
+
+        // somewhat sophisticated external tool specification with multiple reserved words in one query parameter
+        externalTool.setToolParameters(Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("uri", "{siteUrl}/api/access/datafile/{fileId}/metadata/ddi")
+                        )
+                )
+                .build().toString());
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        ApiToken nullApiToken = null;
+        // Try setting the kludge to true to see how we want the parser to work.
+        if (ExternalToolHandler.hardCodedKludgeForDataExplorer) {
+            System.out.println("kludge is in place");
+            // We set this property in this test so that it gets inserted by a call to SystemConfig.getDataverseSiteUrlStatic() in ExternalToolHandler.java.
+            System.setProperty(SystemConfig.SITE_URL, "https://dataverse.example.com");
+            ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
+            // The example from https://github.com/scholarsportal/Dataverse-Data-Explorer is this:
+            // https://scholarsportal.github.io/Dataverse-Data-Explorer/?uri=https://dataverse.scholarsportal.info/api/access/datafile/8988/metadata/ddi
+            String queryParams = externalToolHandler.getQueryParametersForUrl();
+            System.out.println("query params: " + queryParams);
+            assertEquals("?uri=https://dataverse.example.com/api/access/datafile/42/metadata/ddi", queryParams);
+        } else {
+            System.out.println("no kludge");
+            Exception expectedException = null;
+            try {
+                ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
+                System.out.println("queryParams: " + externalToolHandler.getQueryParametersForUrl());
+            } catch (Exception ex) {
+                System.out.println("ex: " + ex);
+                expectedException = ex;
+                assertNotNull(expectedException);
+                assertEquals("Unknown reserved word: {siteUrl}/api/access/datafile/{fileId}/metadata/ddi", expectedException.getMessage());
+            }
+        }
     }
 
 }
