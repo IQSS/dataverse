@@ -190,7 +190,7 @@ public class SchemaDotOrgExporterTest {
     @Test
     public void testGetDisplayName() {
         System.out.println("getDisplayName");
-        assertEquals("schema.org JSON-LD", schemaDotOrgExporter.getDisplayName());
+        assertEquals("Schema.org JSON-LD", schemaDotOrgExporter.getDisplayName());
     }
 
     /**
