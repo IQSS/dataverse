@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -16,22 +15,23 @@ import javax.json.JsonReader;
 @AutoService(Exporter.class)
 public class SchemaDotOrgExporter implements Exporter {
 
+    private static final Logger logger = Logger.getLogger(SchemaDotOrgExporter.class.getCanonicalName());
+
     @Override
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
-//        JsonObject json2 = Json.createObjectBuilder().add("foo", "bar").build();
         String jsonLdAsString = version.getJsonLd();
-        StringReader foo = new StringReader(jsonLdAsString);
-        JsonReader bar = Json.createReader(foo);
-        JsonObject json2 = bar.readObject();
+        StringReader stringReader = new StringReader(jsonLdAsString);
+        JsonReader jsonReader = Json.createReader(stringReader);
+        JsonObject jsonLdJsonObject = jsonReader.readObject();
         try {
-            outputStream.write(json2.toString().getBytes("UTF8"));
+            outputStream.write(jsonLdJsonObject.toString().getBytes("UTF8"));
         } catch (IOException ex) {
-            Logger.getLogger(SchemaDotOrgExporter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.info("IOException calling outputStream.write: " + ex);
         }
         try {
             outputStream.flush();
         } catch (IOException ex) {
-            Logger.getLogger(SchemaDotOrgExporter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.info("IOException calling outputStream.flush: " + ex);
         }
     }
 
