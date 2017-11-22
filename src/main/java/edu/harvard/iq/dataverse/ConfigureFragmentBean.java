@@ -21,7 +21,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
- *
+ * This bean is mainly for keeping track of which file the user selected to run external tools on.
+ * Also for creating an alert across Dataset and DataFile page, and making it easy to get the file-specific handler for a tool.
  * @author madunlap
  */
 

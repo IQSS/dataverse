@@ -111,23 +111,11 @@ public class ExternalToolServiceBean {
             return text;
         }
     }
-
-    /**
-     * This method takes a list of tools from the database and returns
-     * "handlers" for supported file formats that have inserted parameters in the right places.
-     */
-//    public static List<ExternalToolHandler> findExternalToolHandlersByFile(List<ExternalTool> externalTools, DataFile file, ApiToken apiToken) {
-//        List<ExternalToolHandler> externalToolHandlers = new ArrayList<>();
-//        externalTools.forEach((externalTool) -> {
-//            if (file.isTabularData()) {
-//                ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken);
-//                externalToolHandlers.add(externalToolHandler);
-//            }
-//        });
-//        return externalToolHandlers;
-//    }
     
-    //this takes in a list of allExternalTools so it doesn't hit the database each time
+    /**
+     * This method takes a list of tools and a file and returns which tools that file supports
+     * The list of tools is passed in so it doesn't hit the database each time
+     */
     public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
         allExternalTools.forEach((externalTool) -> {
