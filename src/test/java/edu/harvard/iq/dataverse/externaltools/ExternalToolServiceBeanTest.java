@@ -15,8 +15,6 @@ public class ExternalToolServiceBeanTest {
 
     public ExternalToolServiceBeanTest() {
     }
-
-//test commented out because now there is no way to get all the handlers for a file...
     
     @Test
     public void testfindAll() {

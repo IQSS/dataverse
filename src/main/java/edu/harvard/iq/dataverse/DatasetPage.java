@@ -252,7 +252,6 @@ public class DatasetPage implements java.io.Serializable {
     private boolean removeUnusedTags;
     
     private Boolean hasRsyncScript = false;
-    //private Map<Long,List<ExternalToolHandler>> externalToolHandlers = new HashMap<Long,List<ExternalToolHandler>>();
     
     List<ExternalTool> allTools = new ArrayList<>();
     
@@ -4051,13 +4050,12 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
     
-    //Should we be leveraging fileMetadatasSearch or something else that already has a list of the files (fileMetadatasSearch isn't a map for me to access via an index...)
+    //Should we be leveraging fileMetadatasSearch or something else that already has file list (fileMetadatasSearch isn't a map to access via an index...)
     //Also this gets called a fair bit by the render logic as its looking for length and then the file. That could be more efficient
     //-- MAD 4.8.3
     public List<ExternalTool> getExternalToolsForDataFile(Long fileId) {
         DataFile dataFile = datafileService.find(fileId);
                
-        //MAD: Should I be passing back the ExternalTool instead?
         List<ExternalTool> fileTools = externalToolService.findExternalToolsByFile(allTools, dataFile);
         
         return fileTools;    
