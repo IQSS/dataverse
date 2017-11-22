@@ -77,12 +77,12 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             datasetAndFileSolrIdsToDelete.add(solrIdOfPublishedFile);
             String solrIdOfDraftFile = IndexServiceBean.solrDocIdentifierFile + df.getId() + IndexServiceBean.draftSuffix;
             datasetAndFileSolrIdsToDelete.add(solrIdOfDraftFile);
-            try { //Not run as part of context, if failure code we will keep going
+            try { //Deletes the mapLayerMetadata from the worldmap itself (unlike the command).
                 if(mapBean.findMetadataByDatafile(df) != null) {
                     mapBean.deleteMapLayerFromWorldMap(df, (AuthenticatedUser) getUser());
                 }
             } catch (Exception e) { //If exception deleting from external, keep going
-                logger.log(Level.SEVERE, "During destruction of dataset: " + e);
+                logger.log(Level.SEVERE, "During deletion of map data from worldmap external system: " + e.getMessage());
             }
             ctxt.engine().submit(new DeleteMapLayerMetadataCommand(getRequest(), df));
             
