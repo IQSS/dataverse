@@ -136,10 +136,6 @@ public class Access extends AbstractApiBean {
         try {
             df = findDataFileOrDie(fileId);
         } catch (WrappedResponse ex) {
-            throw new NotFoundException();
-        }
-        
-        if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
@@ -196,16 +192,11 @@ public class Access extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(fileId);
         } catch (WrappedResponse ex) {
-            throw new NotFoundException();
-
+            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
         GuestbookResponse gbr = null;
-
-        if (dataFile == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id " + fileId + "!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
 
         return getDataFileDownloadInstance(dataFile, apiToken, gbrecs, uriInfo, headers, response);
     }
@@ -354,12 +345,8 @@ public class Access extends AbstractApiBean {
         try{
             dataFile = findDataFileOrDie(fileId);
         } catch (WrappedResponse ex) {
-            throw new NotFoundException();
-            
-        }
-
-        if (dataFile == null) {
-            throw new NotFoundException();
+            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);           
         }
         
         String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
@@ -436,12 +423,6 @@ public class Access extends AbstractApiBean {
         try{
             df = findDataFileOrDie(fileId);
         } catch (WrappedResponse ex) {
-            throw new NotFoundException();
-           
-        }
-        
-        
-        if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
