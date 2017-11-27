@@ -5,12 +5,10 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -56,14 +54,8 @@ public class ExternalTools extends AbstractApiBean {
         }
     }
 
-    /**
-     * For testing only. For each of the external tools in the database we are
-     * testing the JSON format and that any reserved words within the JSON are
-     * properly replaced with the data the user supplies such as a file id
-     * and/or API token.
-     */
     @GET
-    @Path("test/file/{id}")
+    @Path("file/{id}")
     public Response getExternalToolHandlersByFile(@PathParam("id") Long fileIdFromUser) {
         DataFile dataFile = fileSvc.find(fileIdFromUser);
         if (dataFile == null) {
