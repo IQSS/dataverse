@@ -14,7 +14,6 @@ User Guide
    find-use-data
    dataverse-management
    dataset-management
-   privacy-management
    tabulardataingest/index
    data-exploration/index
    appendix
