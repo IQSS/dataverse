@@ -28,7 +28,6 @@ public class ExternalToolsIT {
     public void getExternalToolsByFileId() {
         // FIXME: Don't hard code the file id. Make a dataset.
         long fileId = 12;
-        // FIXME: Don't card code the API token.
         Response getExternalTools = UtilIT.getExternalToolsByFileId(fileId);
         getExternalTools.prettyPrint();
     }
