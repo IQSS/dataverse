@@ -64,6 +64,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     
     public ExternalToolHandler getConfigurePopupToolHandler() {
         if(fileId == null) {
+            //on first UI load, method is called before fileId is set. There may be a better way to handle this
             return null;
         }
         if(toolHandler != null) {
