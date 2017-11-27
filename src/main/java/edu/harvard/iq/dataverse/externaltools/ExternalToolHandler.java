@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
 /**
@@ -55,16 +54,6 @@ public class ExternalToolHandler {
 
     public ApiToken getApiToken() {
         return apiToken;
-    }
-
-    public JsonObjectBuilder toJson() {
-        JsonObjectBuilder jab = Json.createObjectBuilder();
-        jab.add("id", externalTool.getId());
-        jab.add(DISPLAY_NAME, externalTool.getDisplayName());
-        jab.add(DESCRIPTION, externalTool.getDescription());
-        jab.add(TOOL_URL, getToolUrlWithQueryParams());
-        jab.add(TOOL_PARAMETERS, externalTool.getToolParameters());
-        return jab;
     }
 
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.

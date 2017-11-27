@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import java.io.Serializable;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -102,6 +104,16 @@ public class ExternalTool implements Serializable {
 
     public void setToolParameters(String toolParameters) {
         this.toolParameters = toolParameters;
+    }
+
+    public JsonObjectBuilder toJson() {
+        JsonObjectBuilder jab = Json.createObjectBuilder();
+        jab.add("id", getId());
+        jab.add(ExternalToolHandler.DISPLAY_NAME, getDisplayName());
+        jab.add(ExternalToolHandler.DESCRIPTION, getDescription());
+        jab.add(ExternalToolHandler.TOOL_URL, getToolUrl());
+        jab.add(ExternalToolHandler.TOOL_PARAMETERS, getToolParameters());
+        return jab;
     }
 
 }

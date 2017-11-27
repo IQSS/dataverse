@@ -26,11 +26,7 @@ public class ExternalTools extends AbstractApiBean {
     public Response getExternalTools() {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         externalToolService.findAll().forEach((externalTool) -> {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add("id", externalTool.getId());
-            job.add(ExternalToolHandler.DISPLAY_NAME, externalTool.getDisplayName());
-            job.add(ExternalToolHandler.TOOL_URL, externalTool.getToolUrl());
-            jab.add(job);
+            jab.add(externalTool.toJson());
         });
         return ok(jab);
     }
@@ -42,10 +38,7 @@ public class ExternalTools extends AbstractApiBean {
             ExternalTool saved = externalToolService.save(externalTool);
             Long toolId = saved.getId();
             actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.ExternalTool, "addExternalTool").setInfo("External tool added with id " + toolId + "."));
-            JsonObjectBuilder tool = Json.createObjectBuilder();
-            tool.add("id", toolId);
-            tool.add(ExternalToolHandler.DISPLAY_NAME, saved.getDisplayName());
-            return ok(tool);
+            return ok(saved.toJson());
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getMessage());
         }
@@ -81,10 +74,10 @@ public class ExternalTools extends AbstractApiBean {
         String apiTokenString = getRequestApiKey();
         apiToken.setTokenString(apiTokenString);
 
-        List<ExternalTool> allTools = externalToolService.findAll();
-        for (ExternalTool tool : allTools) {
-            ExternalToolHandler toolHandler = new ExternalToolHandler(tool,dataFile, apiToken);
-            tools.add(toolHandler.toJson());
+        List<ExternalTool> allExternalTools = externalToolService.findAll();
+        List<ExternalTool> toolsByFile = ExternalToolServiceBean.findExternalToolsByFile(allExternalTools, dataFile);
+        for (ExternalTool tool : toolsByFile) {
+            tools.add(tool.toJson());
         }
 
         return ok(tools);
