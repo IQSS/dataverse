@@ -393,8 +393,10 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         //if published get the year if draft get when created
         if (this.isReleased()){
             return new SimpleDateFormat("yyyy").format(this.getPublicationDate());
-        } else {
+        } else if (this.getCreateDate() != null) {
            return  new SimpleDateFormat("yyyy").format(this.getCreateDate());
+        } else {
+            return new SimpleDateFormat("yyyy").format(new Date());
         }
     }
     
