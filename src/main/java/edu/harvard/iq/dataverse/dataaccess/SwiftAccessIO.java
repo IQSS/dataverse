@@ -130,6 +130,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     private Account account = null;
     private StoredObject swiftFileObject = null;
     private Container swiftContainer = null;
+    //TODO: when swift containers can be private, change this -SF
+    boolean publicSwiftContainer = true;
+
         
     //for hash
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
@@ -643,19 +646,20 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             // This is a new object being created.
             this.swiftContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
         }
-
         if (!this.swiftContainer.exists()) {
             if (writeAccess) {
                 //creates a private data container
                 swiftContainer.create();
-//                 try {
-//                     //creates a public data container
-//                     this.swiftContainer.makePublic();
-//                 }
-//                 catch (Exception e){
-//                     //e.printStackTrace();
-//                     logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
-//                 }
+                if (publicSwiftContainer) {
+                    try {
+                        //creates a public data container
+                        this.swiftContainer.makePublic();
+                    }
+                    catch (Exception e){
+                        //e.printStackTrace();
+                        logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
+                    }
+                }
             } else {
                 // This is a fatal condition - it has to exist, if we were to 
                 // read an existing object!

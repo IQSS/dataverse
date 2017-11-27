@@ -241,7 +241,7 @@
                                         <!-- Add button -->
                                         <ui:fragment>
                                         <li>
-                                            <p:commandLink action="#{DatasetPage.addItemtoCart(DatasetPage.dataset.getDisplayName())}"
+                                            <p:commandLink action="#{DatasetPage.addItemtoCart(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}"
                                                 disabled="#{DatasetPage.locked}" value="#{bundle['dataset.compute.computeBatchAdd']}" update=":datasetForm">
                                                 <h:outputText value="#{bundle['dataset.compute.computeBatchAdd']}"/>
                                             </p:commandLink>
@@ -250,7 +250,7 @@
                                         <!-- Delete button -->
                                         <ui:fragment>
                                         <li>
-                                            <p:commandLink value="#{bundle['dataset.compute.computeBatchDelete']}" action="#{DatasetPage.removeCartItem(DatasetPage.dataset.getDisplayName())}" update=":datasetForm">  
+                                            <p:commandLink value="#{bundle['dataset.compute.computeBatchDelete']}" action="#{DatasetPage.removeCartItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}" update=":datasetForm">  
                                                 <h:outputText value="#{bundle['dataset.compute.computeBatchDelete']}"/>
                                             </p:commandLink>
                                         </li>
@@ -272,7 +272,7 @@
                                         <!-- Compute on compute batch button -->
                                         <ui:fragment>
                                         <li>
-                                            <h:outputLink value="#{DatasetPage.computeUrl}">
+                                            <h:outputLink value="#{DatasetPage.batchComputeUrl}">
                                                 <h:outputText id="compute-batch-button" value="#{bundle['dataset.compute.computeBatchCompute']}" />
                                             </h:outputLink>
                                         </li>
@@ -1325,27 +1325,18 @@
                     </p:dialog>
                     
                     <p:dialog id="cartDatasetForm" header="#{bundle['dataset.compute.computeBatchBtn']}" widgetVar="cartDatasetForm" modal="true">
-                        <h:dataTable id="computeBatch" class="table table-striped" value="#{DatasetPage.getItems()}" var='computeBatchDatasetName'>
+                        <h:dataTable id="computeBatch" class="table table-striped" value="#{DatasetPage.batchList}" var='computeBatchDatasetName'>
                             <h:column>
                                 <f:facet name = "header">#{bundle.dataset}</f:facet>
                                 <p:outputLabel value="#{computeBatchDatasetName}" />
                             </h:column>
-                            <h:column>
-                                <!--<f:facet name = "header">Delete</f:facet>-->
+<!--                            <h:column>
                                 <p:commandLink type="button" class="btn btn-default"
                                                  value = "Delete" 
                                                  action = "#{DatasetPage.removeCartItem(computeBatchDatasetName)}" update="@form"/>     
                               
-                            </h:column>
+                            </h:column>-->
                         </h:dataTable>
-                        <div class="button-block">
-                            <h:outputLink value="#{DatasetPage.computeUrl}" type="button" styleClass="btn btn-default">
-                               <h:outputText id="compute-button" value="#{bundle['file.compute']}" />
-                            </h:outputLink>
-                            <button type="button" class="btn btn-default" onclick="PF('cartDatasetForm').hide();PF('blockDatasetForm').hide();">
-                                #{bundle.close}
-                            </button>
-                        </div>
                     </p:dialog>
 
                     <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup" modal="true">

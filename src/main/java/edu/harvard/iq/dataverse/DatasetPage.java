@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -355,16 +356,36 @@ public class DatasetPage implements java.io.Serializable {
         this.lazyModel = lazyModel;
     }
     
-    public List<String> getItems() {
-        return cart.getContents();
+    public List<String> getBatchList() {
+        List<Entry<String,String>> contents = cart.getContents();
+        List<String> list = new ArrayList<>();
+        for (Entry<String,String> entry : contents) {
+            String datasetName = entry.getKey();
+            list.add(datasetName);
+        }
+        return list;
     }
 
-    public void addItemtoCart(String title) {
-        cart.addItem(title);
+    public void addItemtoCart(String title, String containerName) throws Exception{
+        cart.addItem(title, containerName);
     }
     
-    public void removeCartItem(String title) {
-        cart.removeItem(title);
+    public void removeCartItem(String title, String containerName) throws Exception {
+        cart.removeItem(title, containerName);
+    }
+    
+    public String getBatchComputeUrl() {
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+            String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
+            List<Entry<String,String>> contents = cart.getContents();
+            for (Entry<String,String> entry : contents) {
+                String datasetName = entry.getKey();
+                String containerName = entry.getValue();
+                url += "&" + datasetName + "=" + containerName;
+            }
+            return url;
+        }
+        return "";
     }
     
     private String fileLabelSearchTerm;
