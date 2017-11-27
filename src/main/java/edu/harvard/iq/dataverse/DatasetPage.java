@@ -254,6 +254,7 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean hasRsyncScript = false;
     
     List<ExternalTool> allTools = new ArrayList<>();
+    Map<Long,List<ExternalTool>> queriedFileTools = new HashMap<>(); 
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -4050,13 +4051,16 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
     
-    //Should we be leveraging fileMetadatasSearch or something else that already has file list (fileMetadatasSearch isn't a map to access via an index...)
-    //Also this gets called a fair bit by the render logic as its looking for length and then the file. That could be more efficient
-    //-- MAD 4.8.3
     public List<ExternalTool> getExternalToolsForDataFile(Long fileId) {
-        DataFile dataFile = datafileService.find(fileId);
-               
-        List<ExternalTool> fileTools = externalToolService.findExternalToolsByFile(allTools, dataFile);
+        List<ExternalTool> fileTools = queriedFileTools.get(fileId);
+        if(fileTools != null) { //if already queried before and added to list
+            return fileTools;
+        }
+        
+        DataFile dataFile = datafileService.find(fileId);         
+        fileTools = externalToolService.findExternalToolsByFile(allTools, dataFile);
+        
+        queriedFileTools.put(fileId, fileTools); //add externalTools to map so we don't have to do the lifting again
         
         return fileTools;    
     }
