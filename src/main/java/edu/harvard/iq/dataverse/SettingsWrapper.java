@@ -155,5 +155,9 @@ public class SettingsWrapper implements java.io.Serializable {
         return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
     }
 
+    public boolean isRootDataverseThemeDisabled() {
+        return isTrueForKey(Key.DisableRootDataverseTheme, false);
+    }
+
 }
 
