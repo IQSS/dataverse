@@ -6,8 +6,12 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.ReservedWo
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -21,7 +25,7 @@ import javax.json.JsonReader;
  */
 public class ExternalToolHandler {
 
-    public static boolean hardCodedKludgeForDataExplorer = false;
+    public static boolean hardCodedKludgeForDataExplorer = true;
 
     private static final Logger logger = Logger.getLogger(ExternalToolHandler.class.getCanonicalName());
 
@@ -97,9 +101,22 @@ public class ExternalToolHandler {
         if (hardCodedKludgeForDataExplorer) {
             if (key.equals("uri")) {
                 String staticSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
-                // TODO: support {siteUrl} for real instead of having replaceAll in here. Write a parser.
-                // The "\\" is so replaceAll doesn't freak out at "{" and throw"java.util.regex.PatternSyntaxException: Illegal repetition"
-                return key + "=" + value.replaceAll("\\" + ReservedWord.SITE_URL, staticSiteUrl).replaceAll("\\" + ReservedWord.FILE_ID, getDataFile().getId().toString());
+                //create a map for special word replacement
+                Map<String, String> replacements = new HashMap<String, String>() {{
+                    put("siteUrl", staticSiteUrl);
+                    put("fileId", getDataFile().getId().toString());
+                }};
+                StringBuffer sb = new StringBuffer();
+                Pattern p = Pattern.compile("\\{(.*?)\\}");
+                Matcher m = p.matcher(value);
+                while (m.find()) {
+                    String repString = replacements.get(m.group(1));
+                    if (repString != null){   
+                        m.appendReplacement(sb, repString);
+                    }
+                }
+
+                return key + "=" + m.appendTail(sb);
             }
         }
         ReservedWord reservedWord = ReservedWord.fromString(value);
