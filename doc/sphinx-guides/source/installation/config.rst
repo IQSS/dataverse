@@ -389,7 +389,8 @@ If you have enabled a custom header or navbar logo, you might prefer to disable 
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:DisableRootDataverseTheme``
 
-Please note: If your installation is already up and running on production, before disabling your root dataverse theme, consider that child dataverses have the ability to inherit themes. You should manually revert the root dataverse theme to default values before disabling, or continue to allow the root dataverse theme to be inherited.
+Please note: Disabling the display of the root dataverse theme also disables your ability to edit it. Remember that dataverse owners can set their dataverses to "inherit theme" from the root. Those dataverses will continue to inherit the root dataverse theme (even though it no longer displays on the root). If you would like to edit the root dataverse theme in the future, you will have to re-enable it first.
+
 
 Custom Footer
 +++++++++++++
