@@ -149,7 +149,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                         storageIO.open();
                         storageIO.deleteAllAuxObjects();
                     } catch (IOException ioex) {
-                        Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting Auxiliary file(s) while deleting DataFile " + doomed.getStorageIdentifier() + " : " + ioex.getMessage());
+                        Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting Auxiliary file(s) while deleting DataFile " + doomed.getStorageIdentifier() + " : " + ioex);
                     }
 
                     // We only want to attempt to delete the main physical file

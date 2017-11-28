@@ -82,7 +82,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
                     mapBean.deleteMapLayerFromWorldMap(df, (AuthenticatedUser) getUser());
                 }
             } catch (Exception e) { //If exception deleting from external, keep going
-                logger.log(Level.SEVERE, "During deletion of map data from worldmap external system: " + e.getMessage());
+                logger.log(Level.SEVERE, "During deletion of map data from worldmap external system: " + e);
             }
             ctxt.engine().submit(new DeleteMapLayerMetadataCommand(getRequest(), df));
             
