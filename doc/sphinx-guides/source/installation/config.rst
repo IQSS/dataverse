@@ -385,6 +385,13 @@ Once you have the location of your custom header HTML file, run this curl comman
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
 
+If you have enabled a custom header or navbar logo, you might prefer to disable the theme of the root dataverse. You can do so by setting ``:DisableRootDataverseTheme`` to ``true`` like this:
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:DisableRootDataverseTheme``
+
+Please note: Disabling the display of the root dataverse theme also disables your ability to edit it. Remember that dataverse owners can set their dataverses to "inherit theme" from the root. Those dataverses will continue to inherit the root dataverse theme (even though it no longer displays on the root). If you would like to edit the root dataverse theme in the future, you will have to re-enable it first.
+
+
 Custom Footer
 +++++++++++++
 
@@ -676,6 +683,11 @@ See :ref:`Branding Your Installation` above.
 
 :HeaderCustomizationFile
 ++++++++++++++++++++++++
+
+See :ref:`Branding Your Installation` above.
+
+:DisableRootDataverseTheme
+++++++++++++++++++++++++++
 
 See :ref:`Branding Your Installation` above.
 
