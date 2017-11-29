@@ -1344,7 +1344,11 @@ public class DatasetVersion implements Serializable {
             if (TermsOfUseAndAccess.License.CC0.equals(terms.getLicense())) {
                 license.add("text", "CC0").add("url", "https://creativecommons.org/publicdomain/zero/1.0/");
             } else {
-                license.add("text", terms.getTermsOfUse());
+                String termsOfUse = terms.getTermsOfUse();
+                // Terms of use can be null if you create the dataset with JSON.
+                if (termsOfUse != null) {
+                    license.add("text", termsOfUse);
+                }
             }
             
             job.add("license",license);
