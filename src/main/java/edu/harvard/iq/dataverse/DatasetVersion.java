@@ -1211,12 +1211,8 @@ public class DatasetVersion implements Serializable {
         return r;
     }
 
-    // TODO: Make this more performant by writing the output to the database or a file?
-    // Agree - now that this has grown into a somewhat complex chunk of formatted
-    // metadata - and not just a couple of values inserted into the page html -
-    // it feels like it would make more sense to treat it as another supported  
-    // export format, that can be produced once and cached. 
-    // The problem with that is that the export subsystem assumes there is only 
+    // TODO: Consider moving this comment into the Exporter code.
+    // The export subsystem assumes there is only
     // one metadata export in a given format per dataset (it uses the current 
     // released (published) version. This JSON fragment is generated for a 
     // specific released version - and we can have multiple released versions. 

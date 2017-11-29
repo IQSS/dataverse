@@ -17,6 +17,8 @@ public class SchemaDotOrgExporter implements Exporter {
 
     private static final Logger logger = Logger.getLogger(SchemaDotOrgExporter.class.getCanonicalName());
 
+    public static final String NAME = "schema.org";
+
     @Override
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         String jsonLdAsString = version.getJsonLd();
@@ -37,7 +39,7 @@ public class SchemaDotOrgExporter implements Exporter {
 
     @Override
     public String getProviderName() {
-        return "schema.org";
+        return NAME;
     }
 
     @Override
