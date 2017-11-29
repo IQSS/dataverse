@@ -130,17 +130,21 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({"application/zip"})
     public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-
+               
+        return getBundledInstance(findDataFileOrDieWrapper(fileId), apiToken, headers); 
+    }
+    
+    private DataFile findDataFileOrDieWrapper(String fileId){
+        
         DataFile df = null;
-
+        
         try {
             df = findDataFileOrDie(fileId);
         } catch (WrappedResponse ex) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-               
-        return getBundledInstance(df, apiToken, headers); 
+         return df;
     }
     
     private BundleDownloadInstance getBundledInstance (DataFile df, String apiToken, HttpHeaders headers){
@@ -187,18 +191,8 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({"application/xml"})
     public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        DataFile dataFile = null;
 
-        try {
-            dataFile = findDataFileOrDie(fileId);
-        } catch (WrappedResponse ex) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        
-        GuestbookResponse gbr = null;
-
-        return getDataFileDownloadInstance(dataFile, apiToken, gbrecs, uriInfo, headers, response);
+        return getDataFileDownloadInstance(findDataFileOrDieWrapper(fileId), apiToken, gbrecs, uriInfo, headers, response);
     }
     
     private DownloadInstance getDataFileDownloadInstance(DataFile df, String apiToken,   Boolean gbrecs, UriInfo uriInfo, HttpHeaders headers,  HttpServletResponse response ){
@@ -341,13 +335,7 @@ public class Access extends AbstractApiBean {
         //httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
         
-        //dataFile = dataFileService.find(fileId);
-        try{
-            dataFile = findDataFileOrDie(fileId);
-        } catch (WrappedResponse ex) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);           
-        }
+        dataFile = findDataFileOrDieWrapper(fileId);
         
         String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
         response.setHeader("Content-disposition", "attachment; filename=\""+fileName+"\"");
@@ -418,14 +406,7 @@ public class Access extends AbstractApiBean {
     
     public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") String fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
     
-        DataFile df = null;
-        
-        try{
-            df = findDataFileOrDie(fileId);
-        } catch (WrappedResponse ex) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
+        DataFile df = findDataFileOrDieWrapper(fileId);
         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
