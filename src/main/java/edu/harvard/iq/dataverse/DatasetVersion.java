@@ -1244,6 +1244,9 @@ public class DatasetVersion implements Serializable {
             // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
             //author.add("@type", "Person");
             author.add("name", name);
+            // We are aware that the following error is thrown by https://search.google.com/structured-data/testing-tool
+            // "The property affiliation is not recognized by Google for an object of type Thing."
+            // Someone at Google has said this is ok.
             if (!StringUtil.isEmpty(affiliation)) {
                 author.add("affiliation", affiliation);
             }
