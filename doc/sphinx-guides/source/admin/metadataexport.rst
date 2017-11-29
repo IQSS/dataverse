@@ -11,7 +11,7 @@ Publishing a dataset automatically starts a metadata export job, that will run i
 
 - Dublin Core
 - Data Documentation Initiative (DDI)
-- schema.org JSON-LD
+- Schema.org JSON-LD
 - native JSON (Dataverse-specific)
 
 A scheduled timer job that runs nightly will attempt to export any published datasets that for whatever reason haven't been exported yet. This timer is activated automatically on the deployment, or restart, of the application. So, again, no need to start or configure it manually. (See the "Application Timers" section of this guide for more information)
