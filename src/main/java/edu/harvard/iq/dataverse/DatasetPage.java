@@ -87,6 +87,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
+import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
@@ -4077,7 +4078,15 @@ public class DatasetPage implements java.io.Serializable {
     
     public String getJsonLd() {
         if (isThisLatestReleasedVersion()) {
-            return workingVersion.getJsonLd();
+            ExportService instance = ExportService.getInstance(settingsService);
+            String jsonLd = instance.getExportAsString(dataset, SchemaDotOrgExporter.NAME);
+            if (jsonLd != null) {
+                logger.fine("Returning cached schema.org JSON-LD.");
+                return jsonLd;
+            } else {
+                logger.fine("No cached schema.org JSON-LD available. Going to the database.");
+                return workingVersion.getJsonLd();
+            }
         }
         return "";
     }

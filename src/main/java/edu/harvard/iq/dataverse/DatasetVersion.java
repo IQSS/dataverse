@@ -1211,12 +1211,8 @@ public class DatasetVersion implements Serializable {
         return r;
     }
 
-    // TODO: Make this more performant by writing the output to the database or a file?
-    // Agree - now that this has grown into a somewhat complex chunk of formatted
-    // metadata - and not just a couple of values inserted into the page html -
-    // it feels like it would make more sense to treat it as another supported  
-    // export format, that can be produced once and cached. 
-    // The problem with that is that the export subsystem assumes there is only 
+    // TODO: Consider moving this comment into the Exporter code.
+    // The export subsystem assumes there is only
     // one metadata export in a given format per dataset (it uses the current 
     // released (published) version. This JSON fragment is generated for a 
     // specific released version - and we can have multiple released versions. 
@@ -1244,6 +1240,9 @@ public class DatasetVersion implements Serializable {
             // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
             //author.add("@type", "Person");
             author.add("name", name);
+            // We are aware that the following error is thrown by https://search.google.com/structured-data/testing-tool
+            // "The property affiliation is not recognized by Google for an object of type Thing."
+            // Someone at Google has said this is ok.
             if (!StringUtil.isEmpty(affiliation)) {
                 author.add("affiliation", affiliation);
             }
@@ -1341,7 +1340,11 @@ public class DatasetVersion implements Serializable {
             if (TermsOfUseAndAccess.License.CC0.equals(terms.getLicense())) {
                 license.add("text", "CC0").add("url", "https://creativecommons.org/publicdomain/zero/1.0/");
             } else {
-                license.add("text", terms.getTermsOfUse());
+                String termsOfUse = terms.getTermsOfUse();
+                // Terms of use can be null if you create the dataset with JSON.
+                if (termsOfUse != null) {
+                    license.add("text", termsOfUse);
+                }
             }
             
             job.add("license",license);
