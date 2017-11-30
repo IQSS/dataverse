@@ -761,4 +761,8 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
     }
 
+    public boolean isHasDifferentiallyPrivateFile() {
+        return settingsService.isTrue("TMP_FOR_4307", false);
+    }
+
 }
