@@ -1236,13 +1236,18 @@ public class DatasetVersion implements Serializable {
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();
             String name = datasetAuthor.getName().getValue();
-            String affiliation = datasetAuthor.getAffiliation().getValue();
+            DatasetField authorAffiliation = datasetAuthor.getAffiliation();
+            String affiliation = null;
+            if (authorAffiliation != null) {
+                affiliation = datasetAuthor.getAffiliation().getValue();
+            }
             // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
             //author.add("@type", "Person");
             author.add("name", name);
             // We are aware that the following error is thrown by https://search.google.com/structured-data/testing-tool
             // "The property affiliation is not recognized by Google for an object of type Thing."
             // Someone at Google has said this is ok.
+            // This logic could be moved into the `if (authorAffiliation != null)` block above.
             if (!StringUtil.isEmpty(affiliation)) {
                 author.add("affiliation", affiliation);
             }
