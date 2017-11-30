@@ -130,25 +130,9 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({"application/zip"})
     public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-               
-        return getBundledInstance(findDataFileOrDieWrapper(fileId), apiToken, headers); 
-    }
-    
-    private DataFile findDataFileOrDieWrapper(String fileId){
         
-        DataFile df = null;
+        DataFile df = findDataFileOrDieWrapper(fileId);
         
-        try {
-            df = findDataFileOrDie(fileId);
-        } catch (WrappedResponse ex) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-         return df;
-    }
-    
-    private BundleDownloadInstance getBundledInstance (DataFile df, String apiToken, HttpHeaders headers){
-         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
@@ -169,10 +153,10 @@ public class Access extends AbstractApiBean {
 
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
-        Long fileId = df.getId();
+        Long dfId = df.getId();
         try {
             ddiExportService.exportDataFile(
-                    fileId,
+                    dfId,
                     outStream,
                     null,
                     null);
@@ -184,19 +168,33 @@ public class Access extends AbstractApiBean {
             // we'll just generate the bundle without it. 
         }
         
-        return downloadInstance;
-     }     
+        return downloadInstance;       
+    
+    }
+    
+    //Added a wrapper method since the original method throws a wrapped response 
+    //the access methods return files instead of responses so we convert to a WebApplicationException
+    
+    private DataFile findDataFileOrDieWrapper(String fileId){
+        
+        DataFile df = null;
+        
+        try {
+            df = findDataFileOrDie(fileId);
+        } catch (WrappedResponse ex) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+         return df;
+    }
+        
             
     @Path("datafile/{fileId}")
     @GET
     @Produces({"application/xml"})
     public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
-        return getDataFileDownloadInstance(findDataFileOrDieWrapper(fileId), apiToken, gbrecs, uriInfo, headers, response);
-    }
-    
-    private DownloadInstance getDataFileDownloadInstance(DataFile df, String apiToken,   Boolean gbrecs, UriInfo uriInfo, HttpHeaders headers,  HttpServletResponse response ){
-        
+        DataFile df = findDataFileOrDieWrapper(fileId);
         GuestbookResponse gbr = null;
         /*
         if (gbrecs == null && df.isReleased()){
