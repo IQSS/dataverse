@@ -249,6 +249,18 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         return signupAllowed;
     }
 
+    public boolean isRootDataverseThemeDisabled(Dataverse dataverse) {
+        if (dataverse == null) {
+            return false;
+        }
+        if (dataverse.getOwner() == null) {
+            // We're operating on the root dataverse.
+            return settingsWrapper.isRootDataverseThemeDisabled();
+        } else {
+            return false;
+        }
+    }
+
     public String getSignupUrl(String loginRedirect) {
         String nonNullDefaultIfKeyNotFound = "";
         String signUpUrl = settingsWrapper.getValueForKey(SettingsServiceBean.Key.SignUpUrl, nonNullDefaultIfKeyNotFound);

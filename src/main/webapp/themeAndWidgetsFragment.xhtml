@@ -6,7 +6,7 @@
     xmlns:o="http://omnifaces.org/ui">
     <!-- Theme and Widgets Edit Tabs -->
         <p:tabView  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
-            <p:tab id="themeTab" title="#{bundle['dataverse.theme.title']}">
+            <p:tab id="themeTab" title="#{bundle['dataverse.theme.title']}" rendered="#{not settingsWrapper.rootDataverseThemeDisabled or themeWidgetFragment.editDv.owner != null}">
                 <p:fragment autoUpdate="true">
                     <!-- Dataverse Theme Panel -->
                     <div class="row form-horizontal">
@@ -182,6 +182,12 @@
                 <div class="button-block">
                     <p:commandButton class="btn btn-default" value="#{bundle.saveChanges}" update=":#{p:component('messagePanel')}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}" oncomplete="bind_bsui_components();"/>
                     <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
+                </div>
+            </p:tab>
+            <p:tab id="themeTabDisabled" title="#{bundle['dataverse.theme.title']}" rendered="#{themeWidgetFragment.editDv.owner == null and settingsWrapper.rootDataverseThemeDisabled}">
+                <div>#{bundle['dataverse.theme.disabled']}</div>
+                <div class="button-block">
+                    <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeTabDisabledDone" value="#{bundle.done}"/>
                 </div>
             </p:tab>
             <p:tab id="widgetsTab" title="#{bundle['dataverse.widgets.title']}">
