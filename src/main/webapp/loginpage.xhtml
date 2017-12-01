@@ -191,7 +191,7 @@
                                             <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
 					    <h:outputFormat value="#{bundle['login.button.orcid']}"/>
                                         </h:outputLink>
-                                        <ui:fragment rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}">
+                                        <ui:fragment rendered="#{LoginPage.getLoginButtonText()}">
                                             <p class="help-block small" style="margin-top:1em;">
                                                 ORCID is an open, non-profit, community-based effort to provide a registry of unique researcher identifiers
                                                 and a transparent method of linking research activities and outputs to these identifiers. ORCID is unique in
