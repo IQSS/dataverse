@@ -949,6 +949,11 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
     
+    public boolean isHasDifferentiallyPrivateFile(){
+        //TODO get the actual value based on datatable
+        return this.isTabularData();
+    }
+    
 
 } // end of class
     

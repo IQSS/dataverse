@@ -139,7 +139,7 @@
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
                
-    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) and !hasDifferentiallyPrivateFile }"
+    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) and !fileMetadata.dataFile.hasDifferentiallyPrivateFile }"
                    type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
@@ -149,7 +149,7 @@
         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
     </p:commandLink>
 
-    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and downloadPopupRequired and !hasDifferentiallyPrivateFile }"
+    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and downloadPopupRequired and !fileMetadata.dataFile.hasDifferentiallyPrivateFile }"
                    type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
@@ -159,7 +159,7 @@
         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
     </p:commandLink>
 
-    <div class="btn-group" jsf:rendered="#{ (fileDownloadHelper.canDownloadFile(fileMetadata) and fileMetadata.dataFile.tabularData) or hasDifferentiallyPrivateFile }">
+    <div class="btn-group" jsf:rendered="#{ (fileDownloadHelper.canDownloadFile(fileMetadata) and fileMetadata.dataFile.tabularData) or fileMetadata.dataFile.hasDifferentiallyPrivateFile }">
         <!-- Download Dropdown -->
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
@@ -271,10 +271,10 @@
             </li>
             <!--FIXME: Put another "<li>" here for just "Data Summary" (not differentially private) once that's a thing. It's public. Anyone can download it.-->
             <li>
-                <!--FIXME: only render for if I am the data owner/depositer/have access-->
-                <p:commandLink rendered="#{hasDifferentiallyPrivateFile}">
-                    <!--FIXME: finalize this string and move it to the bundle-->
-                    <h:outputFormat value="Data Summary (Differentially Private)">
+                
+                <p:commandLink rendered="#{fileMetadata.dataFile.hasDifferentiallyPrivateFile}">
+                    <!--FIXME: needs an action to perform -->
+                    <h:outputFormat value="#{bundle['file.downloadBtn.format.diffPrivate']}" >
                     </h:outputFormat>
                 </p:commandLink>
             </li>

@@ -4082,8 +4082,5 @@ public class DatasetPage implements java.io.Serializable {
         return "";
     }
 
-    public boolean isHasDifferentiallyPrivateFile() {
-        return settingsService.isTrue("TMP_FOR_4307", false);
-    }
 
 }
