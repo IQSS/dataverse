@@ -27,7 +27,7 @@ Value           Description
 ==============  ===========
 original        "Saved Original", the proprietary (SPSS, Stata, R, etc.) file from which the tabular data was ingested;
 RData           Tabular data as an R Data frame (generated; unless the "original" file was in R);
-prep		"Pre-processed data", in JSON. (TODO: *get a proper description of the feature from James/Vito*)
+prep		"Pre-processed data", in JSON.
 ==============  ===========
 
 ``imageThumb``
