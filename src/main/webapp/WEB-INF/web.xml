@@ -39,6 +39,10 @@
     </context-param>
     <!-- JSF mapping -->
     <filter>
+        <filter-name>MalformedBlocker</filter-name>
+        <filter-class>edu.harvard.iq.dataverse.MalformedUrlFilter</filter-class>
+    </filter>
+    <filter>
         <filter-name>Router</filter-name>
         <filter-class>edu.harvard.iq.dataverse.api.ApiRouter</filter-class>
     </filter>
@@ -46,6 +50,12 @@
         <filter-name>Blocker</filter-name>
         <filter-class>edu.harvard.iq.dataverse.api.ApiBlockingFilter</filter-class>
     </filter>
+    <filter-mapping>
+        <filter-name>MalformedBlocker</filter-name>
+        <url-pattern>/*</url-pattern>
+<!--        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>-->
+    </filter-mapping>
     <filter-mapping>
         <filter-name>Router</filter-name>
         <url-pattern>/api/*</url-pattern>
