@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.metadata.tabular.TabularMetadataServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -51,24 +52,29 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.ServiceUnavailableException;
+import javax.ws.rs.WebApplicationException;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
-
-
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.ServiceUnavailableException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -103,9 +109,11 @@ public class Access extends AbstractApiBean {
     @EJB
     VariableServiceBean variableService;
     @EJB
-    SettingsServiceBean settingsService;
+    TabularMetadataServiceBean tabularMetadataService;
     @EJB
-    SystemConfig systemConfig;
+    SettingsServiceBean settingsService;
+    //@EJB
+    //SystemConfig systemConfig;
     @EJB
     DDIExportServiceBean ddiExportService;
     @EJB
@@ -121,11 +129,7 @@ public class Access extends AbstractApiBean {
     
     
     private static final String API_KEY_HEADER = "X-Dataverse-key";    
-
-    //@EJB
     
-    // TODO: 
-    // versions? -- L.A. 4.0 beta 10
     @Path("datafile/bundle/{fileId}")
     @GET
     @Produces({"application/zip"})
@@ -385,16 +389,20 @@ public class Access extends AbstractApiBean {
     }
     
     /*
-     * "Preprocessed data" metadata format:
+     * "Preprocessed" aka "Data Summary" metadata
+     * Note the new flag for requesting "differentially private" version of the
+     * metadata - produced by PSI, where privacy preservation algorithms have 
+     * been applied, scrambling sensitive/potentially identifiable information 
+     * from the summary statistics. 
      * (this was previously provided as a "format conversion" option of the 
      * file download form of the access API call)
      */
     
     @Path("datafile/{fileId}/metadata/preprocessed")
     @GET
-    @Produces({"text/xml"})
+    @Produces({"application/json"})
     
-    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
+    public DownloadInstance getTabularDataSummary(@PathParam("fileId") Long fileId, @QueryParam("diffPrivate") boolean differentiallyPrivate, @QueryParam("formatVersion") String formatVersion, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
     
         DataFile df = dataFileService.find(fileId);
         
@@ -409,22 +417,82 @@ public class Access extends AbstractApiBean {
         
         // This will throw a WebApplicationException, with the correct 
         // exit code, if access isn't authorized: 
+        // TODO: note that, eventually, we'll need to be making some extra authorization
+        // decisions here, based on whether the datafile for which the summary metadata
+        // are requested is sensitive data; and if so, whether they should be 
+        // allowed to download the raw summary stats (potentially containing 
+        // some traces of identifiable data), or if the "differentially private" 
+        // (sanitized/scrubbed/masked) version is all they get. -- L.A. Nov. 2017
         checkAuthorization(df, apiToken);
+        
         DownloadInfo dInfo = new DownloadInfo(df);
+        String format = differentiallyPrivate ? "prep_dp" : "prep";
 
         if (df.isTabularData()) {
-            dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
+            
+            dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format="+format, "Preprocessed data in JSON"));
         } else {
             throw new ServiceUnavailableException("Preprocessed Content Metadata requested on a non-tabular data file.");
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
-        if (downloadInstance.isDownloadServiceSupported("format", "prep")) {
+        if (downloadInstance.isDownloadServiceSupported("format", format)) {
             logger.fine("Preprocessed data for tabular file "+fileId);
         }
         
         response.setHeader("Access-Control-Allow-Origin", "*");
         
         return downloadInstance;
+    }
+    
+    // POST version of the method, for accepting the Data Summary ("preprocessed")
+    // fragment, generated by an outside tool, for caching. 
+    // At this point the only use case for such an external tool is PSI; so 
+    // this API will be used for storing differentially private summary metadata 
+    // only. But it's implemented in a way that it should be possible to use it
+    // for caching "true", raw Data Summary metadata too. Perhaps we could, 
+    // in some point in the future, use it to switch to a setup where it is 
+    // the TwoRavens' job, to generate the .prep file, and then make this API 
+    // call to cache it on the Dataverse side. This would eliminate the current issue 
+    // of having to maintain the R code for generating the prep fragment on the 
+    // Dataverse side, and somehow make sure its version is in sync with what 
+    // the version of TwoRavens installed; otherwise the format of the prep file
+    // is incompatible with what TwoRavens is expecting... - royal pain. --L.A. 
+    @Path("datafile/{fileId}/metadata/preprocessed")
+    @POST
+    public Response saveTabularDataSummary(@PathParam("fileId") Long fileId, @FormDataParam("metadata") String jsonIn, @FormDataParam("diffPrivate") Boolean differentiallyPrivate, @FormDataParam("formatVersion") String formatVersion) {
+        AuthenticatedUser authenticatedUser;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(FORBIDDEN, "Authorized users only.");
+        }
+        // FIXME: What should the permission be? (Dataset owner - I'm guessing (??) -- L.A.)
+        if (!authenticatedUser.isSuperuser()) {
+            return error(FORBIDDEN, "This API endpoint is so experimental that right now it is only available to superusers.");
+        }
+        DataFile dataFile = dataFileService.find(fileId);
+        if (dataFile == null) {
+            return error(BAD_REQUEST, "File not found based on id " + fileId + ".");
+        }
+        
+        if (!dataFile.isTabularData()) {
+            return error(BAD_REQUEST, "Not a tabular DataFile (db id="+fileId+")");
+        }
+
+        // At this point we are defaulting to "differentially-private", since this 
+        // is what the API is going to be used for exclusively: 
+        
+        if (differentiallyPrivate == null) {
+            differentiallyPrivate = true;
+        }
+                        
+        boolean saved = tabularMetadataService.processDataSummary(jsonIn, dataFile, differentiallyPrivate, formatVersion);
+        
+        if (saved) {
+            return ok("Summary metadata has been saved.");
+        } else {
+            return error(BAD_REQUEST, "Error saving summary metadata.");
+        }
     }
     
     /* 

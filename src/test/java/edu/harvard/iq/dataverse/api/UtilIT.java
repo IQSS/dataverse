@@ -1137,6 +1137,17 @@ public class UtilIT {
                 .get("/api/builtin-users/" + username + "/api-token?username=" + username + "&password=" + password);
         return response;
     }
+    
+    static Response submitDataSummaryForCaching(JsonObject jsonObject, long dataFileId, String apiToken) {
+        
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("diffPrivate", "true")
+                .multiPart("metadata", jsonObject.toString());
+        
+        return requestSpecification.post("/api/access/datafile/" + dataFileId + "/metadata/preprocessed");
+    }
+
 
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {

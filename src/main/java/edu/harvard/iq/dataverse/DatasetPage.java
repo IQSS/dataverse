@@ -86,6 +86,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
+import edu.harvard.iq.dataverse.metadata.tabular.TabularMetadataServiceBean;
 import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
@@ -169,6 +170,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
+    @EJB
+    TabularMetadataServiceBean tabularMetadataService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -532,6 +535,27 @@ public class DatasetPage implements java.io.Serializable {
         return result;
     }
 
+    private Map<Long, Boolean> differentiallyPrivateDataSummaryAvailable = new HashMap<>();
+    //this function applies to a single datafile
+    public boolean isDifferentiallyPrivateDataSummaryAvailable(FileMetadata metadata) {
+        
+        Long fileId = metadata.getDataFile().getId();
+        
+        if (fileId == null) {
+            return false;
+        }
+        
+        if (differentiallyPrivateDataSummaryAvailable.containsKey(fileId)) {
+            return differentiallyPrivateDataSummaryAvailable.get(fileId);
+        }
+        
+        boolean differentiallyPrivate = true;
+        boolean result = tabularMetadataService.isDataSummaryAvailable(metadata.getDataFile(), differentiallyPrivate, null);
+        
+        differentiallyPrivateDataSummaryAvailable.put(fileId, result);
+        return result;
+    }
+    
     public boolean canDownloadAllFiles(){
        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (!fileDownloadHelper.canDownloadFile(fmd)) {

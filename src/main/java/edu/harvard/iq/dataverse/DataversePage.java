@@ -654,7 +654,7 @@ public class DataversePage implements java.io.Serializable {
             return null;
         }
     }
-
+    
     public void cancel(ActionEvent e) {
         // reset values
         dataverse = dataverseService.find(dataverse.getId());
