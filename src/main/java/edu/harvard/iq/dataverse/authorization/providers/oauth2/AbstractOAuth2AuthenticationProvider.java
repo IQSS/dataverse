@@ -236,5 +236,6 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         RANDOM_EMAIL1,
         RANDOM_EMAIL2,
         RANDOM_EMAIL3,
+        RANDOM_EMAIL4,
     };
 }

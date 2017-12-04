@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupExcep
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.DataportenOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import java.util.Arrays;
@@ -29,6 +30,7 @@ public class OAuth2AuthenticationProviderFactory implements AuthenticationProvid
 
     public OAuth2AuthenticationProviderFactory() {
         builders.put("github", (row, data) -> readRow(row, new GitHubOAuth2AP(data.get("clientId"), data.get("clientSecret"))));
+        builders.put("dataporten", (row, data) -> readRow(row, new DataportenOAuth2AP(data.get("clientId"), data.get("clientSecret"))));
         builders.put("google", (row, data) -> readRow(row, new GoogleOAuth2AP(data.get("clientId"), data.get("clientSecret"))));
         builders.put("orcid", (row, data)  -> readRow(row, new OrcidOAuth2AP(data.get("clientId"), data.get("clientSecret"), data.get("userEndpoint"))));
     }
