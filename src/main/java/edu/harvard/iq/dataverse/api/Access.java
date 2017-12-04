@@ -450,7 +450,7 @@ public class Access extends AbstractApiBean {
     // this API will be used for storing differentially private summary metadata 
     // only. But it's implemented in a way that it should be possible to use it
     // for caching "true", raw Data Summary metadata too. Perhaps we could, 
-    // in some point in the future, use it to switch to a setup where it is 
+    // at some point in the future, use it to switch to a setup where it is 
     // the TwoRavens' job, to generate the .prep file, and then make this API 
     // call to cache it on the Dataverse side. This would eliminate the current issue 
     // of having to maintain the R code for generating the prep fragment on the 
@@ -466,14 +466,22 @@ public class Access extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(FORBIDDEN, "Authorized users only.");
         }
-        // FIXME: What should the permission be? (Dataset owner - I'm guessing (??) -- L.A.)
-        if (!authenticatedUser.isSuperuser()) {
-            return error(FORBIDDEN, "This API endpoint is so experimental that right now it is only available to superusers.");
-        }
+        
         DataFile dataFile = dataFileService.find(fileId);
         if (dataFile == null) {
             return error(BAD_REQUEST, "File not found based on id " + fileId + ".");
         }
+        // Original, experimental implementation of the authorization, restricting
+        // the API to admins only:
+        //if (!authenticatedUser.isSuperuser()) {
+        //    return error(FORBIDDEN, "This API endpoint is so experimental that right now it is only available to superusers.");
+        //}
+        // Current implementation, restricting the API to the user authorized 
+        // to edit the Dataset:
+        if (!permissionService.userOn(authenticatedUser, dataFile.getOwner()).has(Permission.EditDataset)) {
+            return error(FORBIDDEN, "User not authorized to edit the dataset.");
+        }
+        
         
         if (!dataFile.isTabularData()) {
             return error(BAD_REQUEST, "Not a tabular DataFile (db id="+fileId+")");
