@@ -24,6 +24,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import javax.persistence.Query;
 
 /**
  *
@@ -74,6 +75,23 @@ public class WorldMapTokenServiceBean {
         return em.find(WorldMapToken.class, pk);
     }
     
+    public WorldMapToken findByDataFile(DataFile datafile)
+    {
+        if (datafile == null){
+            return null;
+        }
+        
+        try{
+//           String sqlStatement = 
+            Query query = em.createQuery("select m from WorldMapToken m WHERE m.dataFile=:datafile",  WorldMapToken.class);
+            query.setParameter("datafile", datafile);
+            query.setMaxResults(1);
+            //entityManager.createQuery(SQL_QUERY).setParameter(arg0,arg1).setMaxResults(10).getResultList();
+            return (WorldMapToken) query.getSingleResult();
+        } catch ( NoResultException nre ) {
+            return null;
+        }    
+    }
 
     /**
      * Expire the token, set the "hasExpired" flag to True

@@ -3,12 +3,17 @@ package edu.harvard.iq.dataverse.api;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -73,6 +78,39 @@ public class Geoconnect extends AbstractApiBean {
             logger.info("Couldn't update last verfied status code or timestamp: " + ex.getLocalizedMessage());
             return null;
         }
+    }
+
+    // For testing only.
+    @Path("addMapLayerMetadata/{identifier}")
+    @POST
+    public Response addMapLayerMetadata(@PathParam("identifier") String identifier) {
+        try {
+            Dataset dataset = findDatasetOrDie(identifier);
+            MapLayerMetadata mapLayerMetadata = new MapLayerMetadata();
+
+            DataFile dfile = dataset.getLatestVersion().getFileMetadatas().get(0).getDataFile();
+            JsonObjectBuilder jab = Json.createObjectBuilder();
+            jab.add("layerName", "layerName");
+            jab.add("layerLink", "layerLink");
+            jab.add("embedMapLink", "embedMapLink");
+            jab.add("worldmapUsername", "worldmapUsername");
+            jab.add("mapImageLink", "mapImageLink");
+
+            JsonObject jsonInfo = jab.build();
+            mapLayerMetadata.setDataFile(dfile);
+            mapLayerMetadata.setDataset(dfile.getOwner());
+            mapLayerMetadata.setLayerName(jsonInfo.getString("layerName"));
+            mapLayerMetadata.setLayerLink(jsonInfo.getString("layerLink"));
+            mapLayerMetadata.setEmbedMapLink(jsonInfo.getString("embedMapLink"));
+            mapLayerMetadata.setWorldmapUsername(jsonInfo.getString("worldmapUsername"));
+            mapLayerMetadata.setMapImageLink(jsonInfo.getString("mapImageLink"));
+            MapLayerMetadata savedMapLayerMetadata = mapLayerMetadataSrv.save(mapLayerMetadata);
+            return ok("MapLayerMetadata saved with id" + savedMapLayerMetadata.getId());
+        } catch (WrappedResponse ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+            return error(Response.Status.NOT_FOUND, "Dataset not found");
+        }
+
     }
 
 }

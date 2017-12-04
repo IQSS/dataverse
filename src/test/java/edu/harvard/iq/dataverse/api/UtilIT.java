@@ -1087,6 +1087,13 @@ public class UtilIT {
                 .post("/api/admin/geoconnect/mapLayerMetadatas/check/" + mapLayerMetadataId);
     }
 
+    static Response addMapLayerMetadata(int datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/admin/geoconnect/addMapLayerMetadata/" + datasetId);
+    }
+
+
     static Response getMapFromFile(long fileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

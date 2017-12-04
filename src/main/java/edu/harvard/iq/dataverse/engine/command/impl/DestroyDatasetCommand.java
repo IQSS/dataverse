@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.IdServiceBean;
+import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -18,6 +19,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -66,6 +69,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         // deleted too!)
         
         Iterator <DataFile> dfIt = doomed.getFiles().iterator();
+        MapLayerMetadataServiceBean mapBean = new MapLayerMetadataServiceBean();
         while (dfIt.hasNext()){
             DataFile df = dfIt.next();
             // Gather potential Solr IDs of files. As of this writing deaccessioned files are never indexed.
@@ -73,6 +77,23 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             datasetAndFileSolrIdsToDelete.add(solrIdOfPublishedFile);
             String solrIdOfDraftFile = IndexServiceBean.solrDocIdentifierFile + df.getId() + IndexServiceBean.draftSuffix;
             datasetAndFileSolrIdsToDelete.add(solrIdOfDraftFile);
+            try { //Deletes the mapLayerMetadata from the worldmap itself (unlike the command).
+                if(mapBean.findMetadataByDatafile(df) != null) {
+                    mapBean.deleteMapLayerFromWorldMap(df, (AuthenticatedUser) getUser());
+                }
+            } catch (Exception e) { //If exception deleting from external, keep going
+                logger.log(Level.SEVERE, "During deletion of map data from worldmap external system: " + e);
+                logger.log(Level.SEVERE,  org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(e));
+            }
+            ctxt.engine().submit(new DeleteMapLayerMetadataCommand(getRequest(), df));
+            
+            //MAD: using cascade on dataset instead
+//            WorldMapTokenServiceBean worldTokenBean = new WorldMapTokenServiceBean();
+//            WorldMapToken worldToken = worldTokenBean.findByDataFile(df);
+//            if(worldToken != null) {
+//                worldTokenBean.deleteToken(worldToken);
+//            }
+            
             ctxt.engine().submit(new DeleteDataFileCommand(df, getRequest(), true));
             dfIt.remove();
         }
