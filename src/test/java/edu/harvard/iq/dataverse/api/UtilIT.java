@@ -1148,6 +1148,11 @@ public class UtilIT {
         return requestSpecification.post("/api/access/datafile/" + dataFileId + "/metadata/preprocessed");
     }
 
+    static Response getDataSummaryDiffPrivate(long dataFileId, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        return requestSpecification.get("/api/access/datafile/" + dataFileId + "/metadata/preprocessed?diffPrivate=true");
+    }
 
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
