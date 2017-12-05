@@ -64,7 +64,7 @@ import org.hibernate.validator.constraints.NotBlank;
 public class DataFile extends DvObject implements Comparable {
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
-    
+    public static final String TARGET_URL = "/file.xhtml?persistentId=";
     public static final char INGEST_STATUS_NONE = 65;
     public static final char INGEST_STATUS_SCHEDULED = 66;
     public static final char INGEST_STATUS_INPROGRESS = 67;

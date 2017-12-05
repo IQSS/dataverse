@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.util.*;
@@ -11,16 +10,16 @@ import java.util.logging.Logger;
 public interface IdServiceBean {
 
     static final Logger logger = Logger.getLogger(IdServiceBean.class.getCanonicalName());
-
-    boolean alreadyExists(Dataset dataset) throws Exception;
+    
+    boolean alreadyExists(DvObject dvObject) throws Exception;
 
     boolean registerWhenPublished();
     
     List<String> getProviderInformation();
-
-    String createIdentifier(Dataset dataset) throws Throwable;
-
-    HashMap getIdentifierMetadata(Dataset dataset);
+    
+    String createIdentifier(DvObject dvObject) throws Throwable;
+    
+    HashMap getIdentifierMetadata(DvObject dvObject);
 
     HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier);
 
@@ -33,18 +32,18 @@ public interface IdServiceBean {
      * @return the Global Identifier, e.g. "doi:10.12345/67890"
      */
     String getIdentifierForLookup(String protocol, String authority, String separator, String identifier);
+    
+    String modifyIdentifierTargetURL(DvObject dvObject) throws Exception;
 
-    String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception;
-
-    void deleteIdentifier(Dataset datasetIn) throws Exception;
-
-    HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn);
-
-    HashMap getMetadataFromDatasetForTargetURL(Dataset datasetIn);
-
-    String getIdentifierFromDataset(Dataset dataset);
-
-    boolean publicizeIdentifier(Dataset studyIn);
+    void deleteIdentifier(DvObject dvObject) throws Exception;
+    
+    HashMap getMetadataForCreateIndicator(DvObject dvObject);
+    
+    HashMap getMetadataForTargetURL(DvObject dvObject);
+    
+    String getIdentifier(DvObject dvObject);
+    
+    boolean publicizeIdentifier(DvObject dvObject);
 
     static IdServiceBean getBean(String protocol, CommandContext ctxt) {
         logger.log(Level.FINE,"getting bean, protocol=" + protocol);

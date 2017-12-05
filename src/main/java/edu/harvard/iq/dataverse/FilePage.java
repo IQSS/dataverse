@@ -64,7 +64,7 @@ public class FilePage implements java.io.Serializable {
     private Dataset dataset;
     private List<DatasetVersion> datasetVersionsForTab;
     private List<FileMetadata> fileMetadatasForTab;
-
+    private String persistentId;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -116,7 +116,7 @@ public class FilePage implements java.io.Serializable {
     public String init() {
      
         
-        if ( fileId != null ) { 
+         if ( fileId != null || persistentId != null ) { 
            
             // ---------------------------------------
             // Set the file and datasetVersion 
@@ -124,11 +124,13 @@ public class FilePage implements java.io.Serializable {
             if (fileId != null) {
                file = datafileService.find(fileId);   
 
-            }  else if (fileId == null){
-               return permissionsWrapper.notFound();
-            }
+            }  else if (persistentId != null){
+               file = datafileService.findByGlobalId(persistentId);
+               if (file != null){
+                                  fileId = file.getId();
+               }
 
-            if (file == null){
+            } else if (fileId == null){
                return permissionsWrapper.notFound();
             }
 
@@ -444,6 +446,14 @@ public class FilePage implements java.io.Serializable {
 
     public void setFileMetadatasForTab(List<FileMetadata> fileMetadatasForTab) {
         this.fileMetadatasForTab = fileMetadatasForTab;
+    }
+    
+    public String getPersistentId() {
+        return persistentId;
+    }
+
+    public void setPersistentId(String persistentId) {
+        this.persistentId = persistentId;
     }
     
     

@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -305,7 +306,16 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     ConstraintViolation violation = constraintViolations.iterator().next();
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
-                    ingestService.addFiles(editVersion, dataFiles);
+                    try{
+                    for(DataFile df : dataFiles){
+                       commandEngine.submit(new CreateDataFileCommand(df, editVersion, dvReq));
+                    }
+                    
+                    }catch(CommandException cmdex)
+                    {
+                        logger.info("Error saving file :"+cmdex.getMessage());
+                    }
+//                    ingestService.addFiles(editVersion, dataFiles);
                 }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "No files to add to dataset. Perhaps the zip file was empty.");

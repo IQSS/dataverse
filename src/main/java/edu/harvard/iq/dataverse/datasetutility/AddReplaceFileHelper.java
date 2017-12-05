@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -18,6 +19,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
@@ -39,6 +41,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
+import javax.inject.Inject;
 import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
@@ -92,7 +95,6 @@ import org.ocpsoft.common.util.Strings;
 public class AddReplaceFileHelper{
     
     private static final Logger logger = Logger.getLogger(AddReplaceFileHelper.class.getCanonicalName());
-
     
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
@@ -1410,8 +1412,17 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
-
-        ingestService.addFiles(workingVersion, finalFileList);
+        
+        try{
+        for(DataFile dataFile : finalFileList){
+            commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequest ));
+            }
+        }
+        catch(CommandException cmdex)
+        {
+            logger.info("error in saving files:"+cmdex.getMessage());
+        }
+//        ingestService.addFiles(workingVersion, finalFileList);
 
         return true;
     }
