@@ -49,9 +49,7 @@ public class OAuth2TokenData implements Serializable {
     private Timestamp expiryDate;
     
     /**
-     * "TEXT" is 255 characters, which is enough for Google at 131 characters.
-     * Facebook says, "Please don't put a maximum size on the storage for an
-     * access token" at
+     * "Please don't put a maximum size on the storage for an access token" at
      * https://stackoverflow.com/questions/4408945/what-is-the-length-of-the-access-token-in-facebook-oauth2/16365828#16365828
      */
     @Column(columnDefinition = "TEXT")
