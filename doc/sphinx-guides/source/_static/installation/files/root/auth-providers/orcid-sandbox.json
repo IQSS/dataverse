@@ -1,7 +1,7 @@
 {
     "id":"orcid-sandbox",
     "factoryAlias":"oauth2",
-    "title":"ORCID",
+    "title":"ORCID Sandbox",
     "subtitle":"",
     "factoryData":"type: orcid | userEndpoint: https://api.sandbox.orcid.org/v2.0/{ORCID}/person | clientId: FIXME | clientSecret: FIXME",
     "enabled":true
