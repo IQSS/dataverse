@@ -22,6 +22,7 @@
                 <f:metadata>
                     <f:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
+                    <f:viewParam name="persistentId" value="#{FilePage.persistentId}"/>
                     <f:viewAction action="#{FilePage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(FilePage.fileMetadata)}"/>
                 </f:metadata>
@@ -192,6 +193,16 @@
                                 <h:outputText styleClass="label label-default" rendered="#{!FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
                                               value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionState}"/>
                             </div>
+                            
+                            <div class="col-xs-12">
+                                <div class="alert alert-warning" style="margin:0;padding:0 .5em;background:none;border-radius:0;border:0;color:#333;">
+                                    <h:outputFormat value="#{bundle['file.citation.notice']}" escape="false">
+                                        <o:param value="#{FilePage.fileMetadata.datasetVersion.dataset.displayName}"/>
+                                    </h:outputFormat>
+                                </div>
+                            </div>
+                            
+                            
                             <div id="citation-block" class="col-xs-12">
                                  <div class="col-xs-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
                                     <div class="row">
@@ -330,6 +341,14 @@
                                     </div>
                                     <div id="panelCollapseFMD" class="collapse in">
                                         <div class="panel-body">
+                                            <div class="form-group" jsf:rendered="#{FilePage.file.identifier != null}">
+                                                <label for="metadata_persistentId" class="col-sm-3 control-label">
+                                                    #{bundle['file.metadata.persistentId']}
+                                                </label>
+                                                <div class="col-sm-9">
+                                                    #{FilePage.file.getGlobalId()}
+                                                </div>
+                                            </div>
                                             <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable}">
                                                 <label class="col-sm-3 control-label">                                                   
                                                    #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
@@ -338,20 +357,20 @@
                                                     <h:outputText value="#{FilePage.publicDownloadUrl}"/>
                                                 </div>
                                             </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
-                                                <label class="col-sm-3 control-label">                                                   
-                                                   #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.checksumValue}"/>
-                                                </div>
-                                            </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.unf)}">
                                                 <label class="col-sm-3 control-label">
                                                    #{bundle['file.metadataTab.fileMetadata.unf.label']}
                                                 </label>
                                                 <div class="col-sm-9">
                                                     <h:outputText value="#{FilePage.file.unf}"/>
+                                                </div>
+                                            </div>
+                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
+                                                <label class="col-sm-3 control-label">                                                   
+                                                   #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
+                                                </label>
+                                                <div class="col-sm-9">
+                                                    <h:outputText value="#{FilePage.file.checksumValue}"/>
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{FilePage.file.released}">

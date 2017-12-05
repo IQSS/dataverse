@@ -92,7 +92,7 @@ public class Dataset extends DvObjectContainer {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastExportTime;
 
-    @NotBlank(message = "Please enter an identifier for your dataset.")
+    //@NotBlank(message = "Please enter an identifier for your dataset.")
     @Column(nullable = false)
     private String identifier;
     
@@ -211,51 +211,6 @@ public class Dataset extends DvObjectContainer {
         return !getLocks().isEmpty();
     }
     
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public String getAuthority() {
-        return authority;
-    }
-
-    public void setAuthority(String authority) {
-        this.authority = authority;
-    }
-
-    /**
-     * @return dataset identifier.
-     *         For example, a dataset with database id (primary key) 3, persistent ID
-     *         doi:10.5072/FK2/abcde, this should return "abcde".
-     */
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }
-
-    public String getDoiSeparator() {
-        return doiSeparator;
-    }
-
-    public void setDoiSeparator(String doiSeparator) {
-        this.doiSeparator = doiSeparator;
-    }
-
-    public Date getGlobalIdCreateTime() {
-        return globalIdCreateTime;
-    }
-
-    public void setGlobalIdCreateTime(Date globalIdCreateTime) {
-        this.globalIdCreateTime = globalIdCreateTime;
-    }
-
     public Date getLastExportTime() {
         return lastExportTime;
     }

@@ -28,26 +28,27 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         return protocol + ":" + authority + separator + identifier;
     }
 
+    
     @Override
-    public HashMap<String, String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
-        logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
+    public HashMap<String, String> getMetadataForCreateIndicator(DvObject dvObjectIn) {
+        logger.log(Level.FINE,"getMetadataForCreateIndicator(DvObject)");
         HashMap<String, String> metadata = new HashMap<>();
-
-        metadata = addBasicMetadata(datasetIn, metadata);
-        metadata.put("datacite.publicationyear", generateYear(datasetIn));
-        metadata.put("_target", getTargetUrl(datasetIn));
+        metadata = addBasicMetadata(dvObjectIn, metadata);
+        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
+        metadata.put("_target", getTargetUrl(dvObjectIn));
         return metadata;
     }
 
-    protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
+    protected HashMap<String, String> getUpdateMetadata(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
         HashMap<String, String> metadata = new HashMap<>();
-        metadata = addBasicMetadata(datasetIn, metadata);
+        metadata = addBasicMetadata(dvObjectIn, metadata);
         return metadata;
     }
     
-    protected HashMap<String, String> addBasicMetadata(Dataset datasetIn, HashMap<String, String> metadata){
-        String authorString = datasetIn.getLatestVersion().getAuthorsStr();
+    protected HashMap<String, String> addBasicMetadata(DvObject dvObjectIn, HashMap<String, String> metadata) {
+
+        String authorString = dvObjectIn.getAuthorString();
 
         if (authorString.isEmpty()) {
             authorString = ":unav";
@@ -55,41 +56,42 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
 
         String producerString = dataverseService.findRootDataverse().getName();
 
-        if(producerString.isEmpty()) {
+        if (producerString.isEmpty()) {
             producerString = ":unav";
         }
+        
         metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
+        metadata.put("datacite.title", dvObjectIn.getDisplayName());
         metadata.put("datacite.publisher", producerString);
-        
-        
         return metadata;
-    }
+    }   
 
-    @Override
-    public HashMap<String, String> getMetadataFromDatasetForTargetURL(Dataset datasetIn) {
-        logger.log(Level.FINE,"getMetadataFromDatasetForTargetURL");
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("_target", getTargetUrl(datasetIn));
-        return metadata;
-    }
-
-    protected String getTargetUrl(Dataset datasetIn) {
+    protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");
-        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalId();
-    }
-
-    @Override
-    public String getIdentifierFromDataset(Dataset dataset) {
-        logger.log(Level.FINE,"getIdentifierFromDataset");
-        return dataset.getGlobalId();
+        return systemConfig.getDataverseSiteUrl() + dvObjectIn.getTargetUrl() + dvObjectIn.getGlobalId();
     }
     
-    protected String generateYear (Dataset datasetIn){
-        if (datasetIn.isReleased()) {
-            return datasetIn.getPublicationDateFormattedYYYYMMDD().substring(0, 4);
-        }
-        return new SimpleDateFormat("yyyy").format(datasetIn.getCreateDate()); 
+    @Override
+    public String getIdentifier(DvObject dvObject) {
+        return dvObject.getGlobalId();
+    }
+    
+    protected String generateYear (DvObject dvObjectIn){
+        return dvObjectIn.getYearPublishedCreated(); 
+    }
+    
+     @Override
+    public HashMap getIdentifierMetadata(DvObject dvObject) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    
+    @Override
+    public HashMap<String, String> getMetadataForTargetURL(DvObject dvObject) {
+        logger.log(Level.FINE,"getMetadataForTargetURL");
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("_target", getTargetUrl(dvObject));
+        return metadata;
     }
 
 }

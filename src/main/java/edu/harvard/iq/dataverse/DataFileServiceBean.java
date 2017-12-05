@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.sql.Timestamp;
@@ -32,7 +33,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
+import org.apache.commons.lang.RandomStringUtils;
 
 /**
  *
@@ -53,7 +56,9 @@ public class DataFileServiceBean implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     UserServiceBean userService; 
-
+    @EJB
+    SettingsServiceBean settingsService;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -153,6 +158,59 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (DataFile)query.getSingleResult();
         
     }*/
+    
+    public DataFile findByGlobalId(String globalId){
+        String protocol = "";
+        String authority = "";
+        String identifier = "";
+        int index1 = globalId.indexOf(':');
+        String nonNullDefaultIfKeyNotFound = ""; 
+        String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);        
+        int index2 = globalId.indexOf(separator, index1 + 1);
+        int index3;
+        if (index1 == -1) {            
+            logger.info("Error parsing identifier: " + globalId + ". ':' not found in string");
+            return null;
+        } else {
+            protocol = globalId.substring(0, index1);
+        }
+        if (index2 == -1 ) {
+            logger.info("Error parsing identifier: " + globalId + ". Second separator not found in string");
+            return null;
+        } else {
+            authority = globalId.substring(index1 + 1, index2);
+        }
+        if (protocol.equals("doi")) {
+
+            index3 = globalId.indexOf(separator, index2 + 1);
+            if (index3 == -1 ) { 
+                identifier = globalId.substring(index2 + 1); //.toUpperCase();
+            } else {
+                if (index3 > -1) {
+                    authority = globalId.substring(index1 + 1, index3);
+                    identifier = globalId.substring(index3 + 1).toUpperCase();
+                }
+            }
+        } else {
+            identifier = globalId.substring(index2 + 1).toUpperCase();
+        }
+        String queryStr = "SELECT s from DataFile s where s.identifier = :identifier  and s.protocol= :protocol and s.authority= :authority";
+        DataFile file = null;
+        try {
+            Query query = em.createQuery(queryStr);
+            query.setParameter("identifier", identifier);
+            query.setParameter("protocol", protocol);
+            query.setParameter("authority", authority);
+            file = (DataFile) query.getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            // (set to .info, this can fill the log file with thousands of 
+            // these messages during a large harvest run)
+            logger.fine("no file found: " + globalId);
+            // DO nothing, just return null.
+        }
+        return file;
+        
+    }
     
     public DataFile findReplacementFile(Long previousFileId){
         Query query = em.createQuery("select object(o) from DataFile as o where o.previousDataFileId = :previousFileId");
@@ -313,7 +371,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Object[] result;
 
         try {
-            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t3.AUTHORITY, t3.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
+            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t2.AUTHORITY, t2.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.AUTHORITY, T0.PROTOCOL, T0.IDENTIFIER FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
         } catch (Exception ex) {
             return null;
         }
@@ -442,6 +500,21 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (rootDataFileId != null){
             dataFile.setRootDataFileId(rootDataFileId);
         } 
+        
+        String authority = (String) result[22];
+        if (authority != null) {
+            dataFile.setAuthority(authority);
+        }
+
+        String protocol = (String) result[23];
+        if (protocol != null) {
+            dataFile.setProtocol(protocol);
+        }
+
+        String identifier = (String) result[24];
+        if (identifier != null) {
+            dataFile.setIdentifier(identifier);
+        }
                 
         dataFile.setOwner(owner);
 
@@ -1458,6 +1531,75 @@ public class DataFileServiceBean implements java.io.Serializable {
         } catch (Exception ex) {
             return new ArrayList<>();
         }
+    }
+    
+    
+    
+    public String generateDatasetIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        switch (doiIdentifierType) {
+            case "randomString":
+                return generateIdentifierAsRandomString(datafile, idServiceBean);
+            case "sequentialNumber":
+                return generateIdentifierAsSequentialNumber(datafile, idServiceBean);
+            default:
+                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
+                return generateIdentifierAsRandomString(datafile, idServiceBean);
+        }
+    }
+    
+    private String generateIdentifierAsRandomString(DataFile datafile, IdServiceBean idServiceBean) {
+
+        String identifier = null;
+        do {
+            identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+
+        return identifier;
+    }
+
+    private String generateIdentifierAsSequentialNumber(DataFile datafile, IdServiceBean idServiceBean) {
+        
+        String identifier; 
+        do {
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
+            query.execute();
+            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // because the stored procedure hasn't been created in the database?
+            if (identifierNumeric == null) {
+                return null; 
+            }
+            identifier = identifierNumeric.toString();
+        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+        
+        return identifier;
+    }
+
+    /**
+     * Check that a identifier entered by the user is unique (not currently used
+     * for any other study in this Dataverse Network) alos check for duplicate
+     * in EZID if needed
+     * @param userIdentifier
+     * @param datafile
+     * @param idServiceBean
+     * @return   */
+    public boolean isIdentifierUniqueInDatabase(String userIdentifier, DataFile datafile, IdServiceBean idServiceBean) {
+        String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
+        query += " and d.protocol ='" + datafile.getProtocol() + "'";
+        query += " and d.authority = '" + datafile.getAuthority() + "'";
+        boolean u = em.createQuery(query).getResultList().isEmpty();
+            
+        try{
+            if (idServiceBean.alreadyExists(datafile)) {
+                u = false;
+            }
+        } catch (Exception e){
+            //we can live with failure - means identifier not found remotely
+        }
+
+       
+        return u;
     }
     
 }
