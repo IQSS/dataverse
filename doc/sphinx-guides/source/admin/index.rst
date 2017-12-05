@@ -21,6 +21,7 @@ These "superuser" tasks are managed via the new page called the Dashboard. A use
    geoconnect-worldmap
    user-administration
    solr-search-index
+   ip-groups
    monitoring
    maintenance
    troubleshooting
