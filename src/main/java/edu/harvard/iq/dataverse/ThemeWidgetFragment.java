@@ -44,8 +44,8 @@ import org.primefaces.model.UploadedFile;
 @ViewScoped
 @Named
 public class ThemeWidgetFragment implements java.io.Serializable {
-    static final String DEFAULT_LOGO_BACKGROUND_COLOR = "F5F5F5";
-    static final String DEFAULT_BACKGROUND_COLOR = "F5F5F5";
+    static final String DEFAULT_LOGO_BACKGROUND_COLOR = "FFFFFF";
+    static final String DEFAULT_BACKGROUND_COLOR = "FFFFFF";
     static final String DEFAULT_LINK_COLOR = "428BCA";
     static final String DEFAULT_TEXT_COLOR = "888888";
     private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());   

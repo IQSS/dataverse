@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public abstract class AbstractCommand<R> implements Command<R> {
 
-    private final Map<String, DvObject> affectedDataverses;
+    private final Map<String, DvObject> affectedDvObjects;
     private final DataverseRequest request;
 
     static protected class DvNamePair {
@@ -47,21 +47,21 @@ public abstract class AbstractCommand<R> implements Command<R> {
 
     public AbstractCommand(DataverseRequest aRequest, DvNamePair dvp, DvNamePair... more) {
         request = aRequest;
-        affectedDataverses = new HashMap<>();
-        affectedDataverses.put(dvp.name, dvp.dvObject);
+        affectedDvObjects = new HashMap<>();
+        affectedDvObjects.put(dvp.name, dvp.dvObject);
         for (DvNamePair p : more) {
-            affectedDataverses.put(p.name, p.dvObject);
+            affectedDvObjects.put(p.name, p.dvObject);
         }
     }
 
     public AbstractCommand(DataverseRequest aRequest, Map<String, DvObject> someAffectedDvObjects) {
         request = aRequest;
-        affectedDataverses = someAffectedDvObjects;
+        affectedDvObjects = someAffectedDvObjects;
     }
     
     @Override
     public Map<String, DvObject> getAffectedDvObjects() {
-        return affectedDataverses;
+        return affectedDvObjects;
     }
 
     @Override
@@ -81,4 +81,17 @@ public abstract class AbstractCommand<R> implements Command<R> {
     protected User getUser() {
        return getRequest().getUser();
     }
+
+    @Override
+    public String describe() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, DvObject> ent : affectedDvObjects.entrySet()) {
+            DvObject value = ent.getValue();
+            sb.append(ent.getKey()).append(":");
+            sb.append((value != null) ? value.accept(DvObject.NameIdPrinter) : "<null>");
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
+
 }

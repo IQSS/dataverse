@@ -200,10 +200,10 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader {margin:0 auto;}
 #dataverseHeader .dataverseHeaderBlock {display:table-row;}
 #dataverseHeader .dataverseHeaderCell {display:table-cell;}
-#dataverseHeader .dataverseHeaderLogo {text-align:center;}
+#dataverseHeader .dataverseHeaderLogo {padding-right:1em; text-align:center;}
 #dataverseHeader .dataverseHeaderLogo img {max-width:940px; max-height:120px;}
 #dataverseHeader .dataverseHeaderCell.dataverseHeaderLogo img {max-width:100px; max-height:100px;}
-#dataverseHeader .dataverseHeaderName {padding:2em 1em;}
+#dataverseHeader .dataverseHeaderName {padding:2em 1em 2em 0em;}
 #dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName {font-size: 1.3em;}
 #dataverseHeader .dataverseHeaderName span.label.label-unpublished {vertical-align:text-top; line-height: normal; margin-left:1em;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
@@ -350,7 +350,7 @@ th.col-file-action.text-right {text-align: right;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block span.btn.ui-state-disabled, .button-block .button-container {margin-right:1em;}
 
-.button-block span.ingest-warning {margin-right:.5em;}
+td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margin-left:.5em;}
 
 .btn.btn-default.btn-access {background-color: #fff;background-image:none;}
 .btn.btn-default.btn-access:focus, .btn.btn-default.btn-access:hover,.btn.btn-default.btn-access:active {background-color: #e6e6e6;background-image:none;}
