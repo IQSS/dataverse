@@ -267,6 +267,7 @@ public class LoginPage implements java.io.Serializable {
 
     public String getLoginButtonText() {
         if (authProvider != null) {
+            // Note that for ORCID we do not want the normal "Log In with..." text. There is special logic in the xhtml.
             return BundleUtil.getStringFromBundle("login.button", Arrays.asList(authProvider.getInfo().getTitle()));
         } else {
             return BundleUtil.getStringFromBundle("login.button", Arrays.asList("???"));
