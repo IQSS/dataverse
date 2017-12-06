@@ -2118,7 +2118,6 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void toggleAllSelected(){
-        System.out.print("in toggle all");
         this.selectAllFiles = !this.selectAllFiles;
         toggleSelectedFiles(this.selectAllFiles);
     }
