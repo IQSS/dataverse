@@ -20,6 +20,7 @@
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
+        <p:ajax  event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" /> 
         <f:facet name="header">
             <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.showComputeButton()}">
                 <!-- Cloud Storage Access -->

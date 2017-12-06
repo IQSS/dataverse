@@ -2068,8 +2068,16 @@ public class DatasetPage implements java.io.Serializable {
             requestContext.execute("PF('selectFilesForDownload').show()");
             return;
         }
+
+        List<FileMetadata> allFiles = new ArrayList<>();
         
-        
+        if (isSelectAllFiles()){
+            workingVersion.getFileMetadatas().forEach((fm) -> {
+                allFiles.add(fm);
+            });
+            this.selectedFiles = allFiles;
+        }
+
         for (FileMetadata fmd : this.selectedFiles){
             if(this.fileDownloadHelper.canDownloadFile(fmd)){
                 getSelectedDownloadableFiles().add(fmd);
@@ -2109,8 +2117,16 @@ public class DatasetPage implements java.io.Serializable {
         this.selectAllFiles = selectAllFiles;
     }
     
-    public void toggleSelectedFiles(){
-        //method for when user clicks (de-)select all files
+    public void toggleAllSelected(){
+        System.out.print("in toggle all");
+        this.selectAllFiles = !this.selectAllFiles;
+        toggleSelectedFiles(this.selectAllFiles);
+    }
+    
+    
+    
+    public void toggleSelectedFiles(boolean selectAllFiles){
+
         this.selectedFiles = new ArrayList<>();
         if(this.selectAllFiles){
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
