@@ -18,6 +18,13 @@ import javax.persistence.NamedQuery;
  * user's access token for the remote system, as well as additional data,
  * such as refresh token and expiry date.
  * 
+ * Persisting token data is a requirement for ORCID according to
+ * https://members.orcid.org/api/news/xsd-20-update which says "Store full
+ * responses from token exchange: access tokens, refresh tokens, scope, scope
+ * expiry to indicate an iD has been authenticated and with what scope" but we
+ * don't know how long responses need to be stored. There is no such requirement
+ * to store responses for any other OAuth provider.
+ *
  * @author michael
  */
 @NamedQueries({
@@ -41,7 +48,11 @@ public class OAuth2TokenData implements Serializable {
     
     private Timestamp expiryDate;
     
-    @Column(length = 64)
+    /**
+     * "Please don't put a maximum size on the storage for an access token" at
+     * https://stackoverflow.com/questions/4408945/what-is-the-length-of-the-access-token-in-facebook-oauth2/16365828#16365828
+     */
+    @Column(columnDefinition = "TEXT")
     private String accessToken;
     
     @Column(length = 64)
