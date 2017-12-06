@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -48,7 +49,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.inject.Inject;
 
@@ -1117,6 +1120,23 @@ public class Access extends AbstractApiBean {
             } else {
                 logger.log(Level.FINE, "API token-based auth: User {0} is not authorized to access the datafile.", user.getIdentifier());
             }
+
+            // Wait! What about IP Groups?
+            // This was copied from SearchServiceBean
+            Set<Group> groups = groupSvc.collectAncestors(groupSvc.groupsFor(createDataverseRequest(GuestUser.get())));
+            List<String> groupsList = new ArrayList();
+            for (Group group : groups) {
+                logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
+                String groupAlias = group.getAlias();
+                if (groupAlias != null && !groupAlias.isEmpty()) {
+                    groupsList.add(groupAlias);
+                }
+            }
+            logger.info("list of groups: " + groupsList);
+            if (!groups.isEmpty()) {
+                logger.info("The user is a member of at least one group. Is it an IP Group? Does that IP Group have access to download the file? If so return true. Here is the list of groups: " + groupsList);
+            }
+
             
             return false;
         } 
