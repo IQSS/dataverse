@@ -86,6 +86,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import java.util.Collections;
 
@@ -170,6 +172,9 @@ public class DatasetPage implements java.io.Serializable {
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
+    @EJB
+    ExternalToolServiceBean externalToolService;
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -186,6 +191,7 @@ public class DatasetPage implements java.io.Serializable {
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
     SettingsWrapper settingsWrapper; 
+    
 
 
     private Dataset dataset = new Dataset();
@@ -247,6 +253,9 @@ public class DatasetPage implements java.io.Serializable {
     private boolean removeUnusedTags;
     
     private Boolean hasRsyncScript = false;
+    
+    List<ExternalTool> allTools = new ArrayList<>();
+    Map<Long,List<ExternalTool>> queriedFileTools = new HashMap<>(); 
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -1519,6 +1528,8 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
         }
+        
+        allTools = externalToolService.findAll();
         
         return null;
     }
@@ -4055,6 +4066,22 @@ public class DatasetPage implements java.io.Serializable {
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
+    
+    public List<ExternalTool> getExternalToolsForDataFile(Long fileId) {
+        List<ExternalTool> fileTools = queriedFileTools.get(fileId);
+        if(fileTools != null) { //if already queried before and added to list
+            return fileTools;
+        }
+        
+        DataFile dataFile = datafileService.find(fileId);         
+        fileTools = externalToolService.findExternalToolsByFile(allTools, dataFile);
+        
+        queriedFileTools.put(fileId, fileTools); //add externalTools to map so we don't have to do the lifting again
+        
+        return fileTools;    
+    }
+    
+
     
     Boolean thisLatestReleasedVersion = null;
     
