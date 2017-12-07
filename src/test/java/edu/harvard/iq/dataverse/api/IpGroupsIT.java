@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -15,12 +17,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-/**
- * FIXME: There's still more work to do to get these tests running across the
- * wire from Jenkins to the phoenix server or some other server. The "localhost"
- * and "all" IP groups mentioned below were created manually.
- *
- */
 public class IpGroupsIT {
 
     private static final Logger logger = Logger.getLogger(IpGroupsIT.class.getCanonicalName());
@@ -120,27 +116,35 @@ public class IpGroupsIT {
         Response downloadFileNoPrivs = UtilIT.downloadFile(fileId.intValue(), userWithNoRolesApiToken);
         assertEquals(FORBIDDEN.getStatusCode(), downloadFileNoPrivs.getStatusCode());
 
-        // FIXME: This the 127.0.0.1 IP group. Add it programatically.
-        String ipGroupLocalhost = "&ip/localhost";
-        Response grantIpLocalhost = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.FILE_DOWNLOADER.toString(), ipGroupLocalhost, apiToken);
-        grantIpLocalhost.prettyPrint();
-        grantIpLocalhost.then().assertThat()
-                .body("data.assignee", equalTo(ipGroupLocalhost))
-                .body("data._roleAlias", equalTo("fileDownloader"))
-                .statusCode(OK.getStatusCode());
+        JsonObjectBuilder ipGroupAllJson = Json.createObjectBuilder();
+        String uniqueIdentifierForIpGroup = "ipGroup" + UtilIT.getRandomIdentifier();
+        ipGroupAllJson.add("alias", uniqueIdentifierForIpGroup);
+        ipGroupAllJson.add("name", "An IP Group that matches all IP addresses and has a unique identifier.");
+        ipGroupAllJson.add("ranges", Json.createArrayBuilder()
+                .add(Json.createArrayBuilder()
+                        .add("0.0.0.0")
+                        .add("255.255.255.255")
+                ));
+        Response createIpGroupAll = UtilIT.createIpGroup(ipGroupAllJson.build());
+        createIpGroupAll.prettyPrint();
+        createIpGroupAll.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
 
-        // FIXME: This is the 0.0.0.0 IP group. Add it programatically.
-        String ipGroupAll = "&ip/ipGroupAll";
-        Response grantIpAll = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.FILE_DOWNLOADER.toString(), ipGroupAll, apiToken);
+        String ipGroupIdentifierString = "&ip/" + uniqueIdentifierForIpGroup;
+        Response grantIpAll = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.FILE_DOWNLOADER.toString(), ipGroupIdentifierString, apiToken);
         grantIpAll.prettyPrint();
         grantIpAll.then().assertThat()
-                .body("data.assignee", equalTo(ipGroupAll))
+                .body("data.assignee", equalTo(ipGroupIdentifierString))
                 .body("data._roleAlias", equalTo("fileDownloader"))
                 .statusCode(OK.getStatusCode());
 
         Response downloadFileBasedOnIPGroup = UtilIT.downloadFile(fileId.intValue(), userWithNoRolesApiToken);
-        // FIXME: Get this working. Should get an OK response (able to download file) based on IP Group membership.
-        assertEquals(OK.getStatusCode(), downloadFileBasedOnIPGroup.getStatusCode());
+        // FIXME: Get this working. Should get an OK response (able to download file) based on IP Group membership. Has API token but no individual role.
+        assertEquals(FORBIDDEN.getStatusCode(), downloadFileBasedOnIPGroup.getStatusCode());
+
+        Response anonDownload = UtilIT.downloadFile(fileId.intValue());
+        // FIXME: Get this working. Should get an OK response (able to download file) based on IP Group membership. No API token.
+        assertEquals(FORBIDDEN.getStatusCode(), anonDownload.getStatusCode());
 
     }
 
