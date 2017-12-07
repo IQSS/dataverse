@@ -890,6 +890,25 @@ public class UtilIT {
                 .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
+    static Response uploadProv(String idOrPersistentId, JsonObject jsonObject, String apiToken) {
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                    // This "[]" is here to quickly test that a JSON array is considered invalid.
+                    //.body("[]")
+                    .body(jsonObject.toString())
+                    .contentType("application/json");
+        }
+        return requestSpecification.post("/api/files/" + idInPath + "/prov" + optionalQueryParam);
+    }
+
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
 //        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
         return given()
