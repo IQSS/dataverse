@@ -4,7 +4,8 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -14,6 +15,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * FIXME: There's still more work to do to get these tests running across the
+ * wire from Jenkins to the phoenix server or some other server. The "localhost"
+ * and "all" IP groups mentioned below were created manually.
+ *
+ */
 public class IpGroupsIT {
 
     private static final Logger logger = Logger.getLogger(IpGroupsIT.class.getCanonicalName());
@@ -21,12 +28,6 @@ public class IpGroupsIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
-
-        Response removeSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        removeSearchApiNonPublicAllowed.prettyPrint();
-        removeSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
-
     }
 
     @Test
@@ -75,6 +76,42 @@ public class IpGroupsIT {
         publishDataset.prettyPrint();
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
+
+        // BEGIN: group sanity check
+        // All this user2 stuff is a sanity check that groups for at all. We test an "explicit" group.
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.prettyPrint();
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+
+        Response downloadFileUser2Fail = UtilIT.downloadFile(fileId.intValue(), apiToken2);
+        assertEquals(FORBIDDEN.getStatusCode(), downloadFileUser2Fail.getStatusCode());
+
+        String aliasInOwner = "groupFor" + dataverseAlias;
+        String displayName = "Group for " + dataverseAlias;
+        String user2identifier = "@" + username2;
+        Response createGroup = UtilIT.createGroup(dataverseAlias, aliasInOwner, displayName, apiToken);
+        createGroup.prettyPrint();
+        createGroup.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String groupIdentifier = JsonPath.from(createGroup.asString()).getString("data.identifier");
+
+        List<String> roleAssigneesToAdd = new ArrayList<>();
+        roleAssigneesToAdd.add(user2identifier);
+        Response addToGroup = UtilIT.addToGroup(dataverseAlias, aliasInOwner, roleAssigneesToAdd, apiToken);
+        addToGroup.prettyPrint();
+        addToGroup.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.FILE_DOWNLOADER.toString(), groupIdentifier, apiToken);
+        grantRoleResponse.prettyPrint();
+        grantRoleResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response downloadFileUser2Works = UtilIT.downloadFile(fileId.intValue(), apiToken2);
+        assertEquals(OK.getStatusCode(), downloadFileUser2Works.getStatusCode());
+        // END: group sanity check
 
         System.out.println("file id: " + fileId);
         Response downloadFile = UtilIT.downloadFile(fileId.intValue(), apiToken);
