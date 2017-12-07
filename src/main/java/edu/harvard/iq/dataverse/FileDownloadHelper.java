@@ -38,7 +38,10 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
-    
+
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
     public FileDownloadHelper() {
@@ -149,22 +152,18 @@ public class FileDownloadHelper implements java.io.Serializable {
         // --------------------------------------------------------------------
         
         // --------------------------------------------------------------------
-        // (2) In Dataverse 4.3 and earlier we required that users be authenticated
-        // to download files, but in developing the Private URL feature, we have
-        // added a new subclass of "User" called "PrivateUrlUser" that returns false
-        // for isAuthenticated but that should be able to download restricted files
-        // when given the Member role (which includes the DownloadFile permission).
-        // This is consistent with how Builtin and Shib users (both are
-        // AuthenticatedUsers) can download restricted files when they are granted
-        // the Member role. For this reason condition 2 has been changed. Previously,
-        // we required isSessionUserAuthenticated to return true. Now we require
-        // that the User is not an instance of GuestUser, which is similar in
-        // spirit to the previous check.
+        // (2) A Guest user can only download a restricted file through  membership of an IP Group.
         // --------------------------------------------------------------------
 
         if (session.getUser() instanceof GuestUser){
-            this.fileDownloadPermissionMap.put(fid, false);
-            return false;
+            boolean guestHasAccessDueToIpGroup = permissionService.requestOn(dvRequestService.getDataverseRequest(), fileMetadata.getDataFile()).has(Permission.DownloadFile);
+            if (guestHasAccessDueToIpGroup) {
+                this.fileDownloadPermissionMap.put(fid, true);
+                return true;
+            } else {
+                this.fileDownloadPermissionMap.put(fid, false);
+                return false;
+            }
         }
 
         

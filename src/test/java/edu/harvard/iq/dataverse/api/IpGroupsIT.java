@@ -139,12 +139,12 @@ public class IpGroupsIT {
                 .statusCode(OK.getStatusCode());
 
         Response downloadFileBasedOnIPGroup = UtilIT.downloadFile(fileId.intValue(), userWithNoRolesApiToken);
-        // FIXME: Get this working. Should get an OK response (able to download file) based on IP Group membership. Has API token but no individual role.
-        assertEquals(FORBIDDEN.getStatusCode(), downloadFileBasedOnIPGroup.getStatusCode());
+        // Should get an OK response (able to download file) based on IP Group membership. Has API token but no individual role.
+        assertEquals(OK.getStatusCode(), downloadFileBasedOnIPGroup.getStatusCode());
 
         Response anonDownload = UtilIT.downloadFile(fileId.intValue());
-        // FIXME: Get this working. Should get an OK response (able to download file) based on IP Group membership. No API token.
-        assertEquals(FORBIDDEN.getStatusCode(), anonDownload.getStatusCode());
+        // Should get an OK response (able to download file) based on IP Group membership. No API token.
+        assertEquals(OK.getStatusCode(), anonDownload.getStatusCode());
 
     }
 
