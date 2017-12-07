@@ -244,7 +244,7 @@ public class Admin extends AbstractApiBean {
             return ok(Boolean.toString(prvs.get(0).isEnabled()));
         }
     }
-    
+
     @DELETE
     @Path("authenticationProviders/{id}/")
     public Response deleteAuthenticationProvider( @PathParam("id") String id ) {
