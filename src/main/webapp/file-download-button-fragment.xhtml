@@ -235,22 +235,71 @@
                     </p:commandLink>
                 </li>
             </ui:fragment>
+            
+            <!-- Variable-level metadata in the DDI format. (TODO:? in the current implementation this download creates a guestbook response entry;
+            do we want this to happen? - strictly speaking, this is not a data, but a *meta*data download. - L.A. -->
             <li>
                 <p:commandLink rendered="#{!downloadPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                               actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'var')}">
+                               actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'varddi')}">
                     #{bundle['file.downloadBtn.format.var']}
                 </p:commandLink>
                 <p:commandLink rendered="#{downloadPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                               action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'var' )}"
+                               action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'varddi' )}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                     #{bundle['file.downloadBtn.format.var']}
                 </p:commandLink>
             </li>
+            
+            <li>
+                <!-- Data Summary, aka "preprocessed metadata": I'm going to 
+                assume that if this user has the permission to download the whole 
+                datafile, they should be allowed to download the raw summary statistics too.
+                If this file is sensitive data, then there may be something sensitive 
+                left in the raw summary stats too. But in that case an unauthorized 
+                user sure will not have download access to the full data file either. 
+                There is no need for Guestbook entries for downloading these; so 
+                it's ok to send them straight to the API: -->
+                <p:commandLink rendered="#{!downloadPopupRequired}"
+                               process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                               actionListener="#{fileDownloadService.startFileDownload(null, fileMetadata, 'datasummary')}">
+                    #{bundle['file.downloadBtn.format.dataSummary']}
+                </p:commandLink>
+                <!-- same, with download popup required: -->
+                <p:commandLink rendered="#{downloadPopupRequired}"
+                               process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                               action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'datasummary' )}"
+                               update="@widgetVar(downloadPopup)"
+                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                    #{bundle['file.downloadBtn.format.dataSummary']}
+                </p:commandLink>
+            </li>
+            
+            <li>
+                <!-- Differentially private version of the data summary: (should be available to everyone (?) -->
+                <p:commandLink rendered="#{!downloadPopupRequired}"
+                               process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                               actionListener="#{fileDownloadService.startFileDownload(null, fileMetadata, 'datasummary-diffprivate')}">
+                    #{bundle['file.downloadBtn.format.dataSummary.diffPrivate']}
+                </p:commandLink>
+                <!-- same, with a popup: -->
+                 <p:commandLink rendered="#{downloadPopupRequired}"
+                               process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                               action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'datasummary-diffprivate' )}"
+                               update="@widgetVar(downloadPopup)"
+                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                    #{bundle['file.downloadBtn.format.dataSummary']}
+                </p:commandLink>
+            </li>
+            
             <li>
                 <p:commandLink id="fileDowloadDataSubsetButton" rendered="#{!(downloadPopupRequired)}"
                                process="@this"
@@ -269,32 +318,7 @@
                                value="Data Subset"
                                />
             </li>
-            <li>
-                <!-- Data Summary, aka "preprocessed metadata": I'm going to 
-                assume that if this user has the permission to download the whole 
-                datafile, they should be allowed to download the raw summary statistics too.
-                If this file is sensitive data, then there may be something sensitive 
-                left in the raw summary stats too. But in that case an unauthorized 
-                user sure will not have download access to the full data file either. 
-                There is no need for Guestbook entries for downloading these; so 
-                it's ok to send them straight to the API: -->
-                <h:outputLink rendered="#{fileMetadata.dataFile.tabularData and fileDownloadHelper.canDownloadFile(fileMetadata)}"
-                              value="/api/access/datafile/#{fileMetadata.dataFile.id}/metadata/preprocessed"
-                              target="_blank">
-                    <h:outputFormat value="#{bundle['file.downloadBtn.format.dataSummary']}" >
-                    </h:outputFormat>
-                </h:outputLink>
-            </li>
             
-            <li>
-                <!-- Differentially private version of the data summary: (should be available to everyone (?) -->
-                <h:outputLink rendered="#{DatasetPage.isDifferentiallyPrivateDataSummaryAvailable(fileMetadata)}"
-                              value="/api/access/datafile/#{fileMetadata.dataFile.id}/metadata/preprocessed?diffPrivate=true"
-                              target="_blank">
-                    <h:outputFormat value="#{bundle['file.downloadBtn.format.dataSummary.diffPrivate']}" >
-                    </h:outputFormat>
-                </h:outputLink>
-            </li>
             
             <li class="dropdown-submenu pull-left">
                 <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>

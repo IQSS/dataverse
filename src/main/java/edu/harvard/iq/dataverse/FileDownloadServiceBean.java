@@ -137,10 +137,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;
-        if(!fileMetadata.getDatasetVersion().isDraft()){
+        if(!fileMetadata.getDatasetVersion().isDraft() && guestbookResponse != null) {
            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
            writeGuestbookResponseRecord(guestbookResponse);
-            recordsWritten = true;
+           recordsWritten = true;
         }
         callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());

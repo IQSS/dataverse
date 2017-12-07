@@ -93,6 +93,21 @@ public class Meta {
         return retValue; 
     }
     
+    /**
+     * This API retrieves the variable-level metadata for a given DataFile, 
+     * in the DDI format. Please note that it's deprecated - 
+     * /api/access/datafile/{id}/metadata/ddi should be used instead.
+     * @param fileId
+     * @param exclude
+     * @param include
+     * @param header
+     * @param response
+     * @return
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     * @deprecated
+     */
+    @Deprecated
     @Path("datafile/{fileId}")
     @GET
     @Produces({"text/xml"})
