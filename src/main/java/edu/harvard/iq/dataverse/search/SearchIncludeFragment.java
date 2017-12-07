@@ -333,14 +333,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
             DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
             solrQueryResponse = searchService.search(dataverseRequest, dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
             if (solrQueryResponse.hasError()){
-                logger.info(solrQueryResponse.getError());
+                logger.fine(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
             }
             // This 2nd search() is for populating the facets: -- L.A. 
             // TODO: ...
             solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
             if (solrQueryResponse.hasError()){
-                logger.info(solrQueryResponse.getError());
+                logger.fine(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
             }
             
