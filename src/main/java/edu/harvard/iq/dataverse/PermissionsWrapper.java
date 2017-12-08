@@ -59,8 +59,11 @@ public class PermissionsWrapper implements java.io.Serializable {
             return false;
         }
 
+        //if command map has dataverse added
         if (commandMap.containsKey(dvo.getId())) {
             Map<Class<? extends Command<?>>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
+            
+            //if internal map of commands for dataverse contains the command
             if (dvoCommandMap.containsKey(command)) {
                 return dvoCommandMap.get(command);
             } else {

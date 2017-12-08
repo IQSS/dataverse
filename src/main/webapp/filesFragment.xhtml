@@ -216,7 +216,7 @@
         <p:column class="col-file-metadata">
             
             <ui:fragment rendered="#{fileMetadata.datasetVersion.released or ((fileMetadata.datasetVersion.deaccessioned or fileMetadata.datasetVersion.draft) 
-                                     and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
+                                        and permissionsWrapper.canViewUnpublishedDataset(dvRequestService.getDataverseRequest(), DatasetPage.dataset) )}"> 
                 <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
                 <h:outputLink id="fileNameLink" value="#{widgetWrapper.wrapURL('/file.xhtml')}">
                     <f:param name="fileId" value="#{fileMetadata.dataFile.id}" />
