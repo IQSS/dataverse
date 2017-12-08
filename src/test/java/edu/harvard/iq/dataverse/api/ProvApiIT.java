@@ -64,7 +64,7 @@ public class ProvApiIT {
         Response uploadProvJson = UtilIT.uploadProvJson(dataFileId.toString(), provJsonGood, apiTokenForDepositor);
         uploadProvJson.prettyPrint();
         uploadProvJson.then().assertThat()
-                .body("data.message", equalTo("PROV-JSON provenance data saved."))
+                .body("data.message", equalTo("PROV-JSON provenance data saved: {\"prov\":true,\"foo\":\"bar\"}"))
                 .statusCode(OK.getStatusCode());
 
         JsonObject provFreeFormGood = Json.createObjectBuilder()

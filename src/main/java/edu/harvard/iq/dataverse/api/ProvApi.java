@@ -2,16 +2,12 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringReader;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonException;
@@ -24,7 +20,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 @Path("files")
@@ -63,43 +58,24 @@ public class ProvApi extends AbstractApiBean {
          * https://www.w3.org/Submission/prov-json/schema
          */
         // Write to StorageIO.
-        StorageIO<DataFile> storageIO = null;
+        // "json.json" looks a little redundand but the standard is called PROV-JSON and it's nice to see .json on disk.
+        final String provJsonExtension = "prov-json.json";
         try {
-            storageIO = DataAccess.createNewStorageIO(dataFile, "prov-json");
-            Channel outputChannel = storageIO.openAuxChannel(dataFile.getId() + ".json", DataAccessOption.WRITE_ACCESS);
-            OutputStream outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
-            logger.info("writing body: " + body);
-            outputStream.write(body.toString().getBytes("UTF8"));
-            // FIXME: Investigate why two file are being saved:
-            // - 10.5072/FK2/TZF120/prov-json (empty)
-            // - 10.5072/FK2/TZF120/prov-json.165.json (looks good)
-            logger.info("done writing body");
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+            InputStream inputStream = new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8.name()));
+            storageIO.saveInputStreamAsAux(inputStream, provJsonExtension);
         } catch (IOException ex) {
             logger.warning("Exception caught writing body: " + ex);
         }
-        // Read from StorageIO. FIXME: This isn't working. The idea was to make sure we can read back the bits we persisted to StorageIO above.
-        boolean readBackFromStorageIo = false;
-        if (readBackFromStorageIo) {
-            StorageIO<DataFile> dataAccess = null;
-            try {
-                dataAccess = DataAccess.getStorageIO(dataFile);
-            } catch (IOException ex) {
-                logger.info("Exception caught in DataAccess.getStorageIO(dataFile): " + ex);
-            }
-            InputStream cachedExportInputStream = null;
-            try {
-                cachedExportInputStream = dataAccess.getAuxFileAsInputStream("prov-json" + dataFile.getId() + ".json");
-            } catch (IOException ex) {
-                logger.info("Exception caught in dataAccess.getAuxFileAsInputStream: " + ex);
-            }
-            if (cachedExportInputStream == null) {
-                return error(INTERNAL_SERVER_ERROR, "cachedExportInputStream was null.");
-            }
-            JsonReader jsonReader = Json.createReader(cachedExportInputStream);
-            JsonObject jsonObj2 = jsonReader.readObject();
-            response.add("message", "PROV-JSON provenance data saved: " + jsonObj2.toString());
-        } else {
-            response.add("message", "PROV-JSON provenance data saved.");
+        // Read from StorageIO and show it to the user.
+        try {
+            StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
+            InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
+            JsonReader jsonReader = Json.createReader(inputStream);
+            JsonObject jsonObject = jsonReader.readObject();
+            response.add("message", "PROV-JSON provenance data saved: " + jsonObject.toString());
+        } catch (IOException ex) {
+            logger.info("Exception caught in DataAccess.getStorageIO(dataFile): " + ex);
         }
         return ok(response);
     }
