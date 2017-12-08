@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -17,6 +18,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 
 /**
  *
@@ -28,6 +30,9 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
     private static final Logger logger = Logger.getLogger(DeleteDatasetVersionCommand.class.getCanonicalName());
 
     private final Dataset doomed;
+    
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
     public DeleteDatasetVersionCommand(DataverseRequest aRequest, Dataset dataset) {
         super(aRequest, dataset);
@@ -36,7 +41,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        ctxt.permissions().checkEditDatasetLock(doomed, getRequest(), this);
+        permissionsWrapper.checkEditDatasetLock(doomed, getRequest(), this);
 
         // if you are deleting a dataset that only has 1 draft, we are actually destroying the dataset
         if (doomed.getVersions().size() == 1) {

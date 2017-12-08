@@ -252,7 +252,8 @@ public class PermissionsWrapper implements java.io.Serializable {
                 }
             }
            
-            it.remove(); // avoids a ConcurrentModificationException
+            //Was throwing errors, unnessecary if no modifications are done on the it and its elements
+            //it.remove(); // avoids a ConcurrentModificationException
         }
 
         return true;

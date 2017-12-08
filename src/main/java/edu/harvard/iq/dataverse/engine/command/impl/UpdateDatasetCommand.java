@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 
 /**
@@ -38,6 +39,8 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
     private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
@@ -77,7 +80,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        ctxt.permissions().checkEditDatasetLock(theDataset, getRequest(), this);
+        permissionsWrapper.checkEditDatasetLock(theDataset, getRequest(), this);
         // first validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
