@@ -9,26 +9,20 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.IdServiceBean;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author skraffmi
  */
-@RequiredPermissions(Permission.EditDataset)
+@RequiredPermissions({})
 public class RegisterDvObjectCommand extends AbstractVoidCommand {
 
     private final DvObject target;
@@ -44,14 +38,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-
-        if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
-            throw new PermissionException("Register DV Object can only be called by superusers.",
-                    this, Collections.singleton(Permission.EditDataset), target);
-        }
-
         IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), ctxt);
-
         try {
             //Test to see if identifier already present
             //if so, leave.
@@ -130,6 +117,5 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //do nothing - we'll know it failed because the global id create time won't have been updated.
         }
     }
-    
-    
+        
 }
