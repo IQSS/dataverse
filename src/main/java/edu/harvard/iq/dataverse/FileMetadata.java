@@ -76,6 +76,14 @@ public class FileMetadata implements Serializable {
     private DataFile dataFile;
 
     /**
+     * There are two types of provenance types and this "free-form" type is
+     * represented in the GUI as text box the user can type into. The other type
+     * is based on PROV-JSON from the W3C.
+     */
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String provFreeForm;
+
+    /**
      * Creates a copy of {@code this}, with identical business logic fields.
      * E.g., {@link #label} would be duplicated; {@link #version} will not.
      * 
@@ -124,7 +132,14 @@ public class FileMetadata implements Serializable {
     public void setRestricted(boolean restricted) {
         this.restricted = restricted;
     }
-    
+
+    public String getProvFreeForm() {
+        return provFreeForm;
+    }
+
+    public void setProvFreeForm(String provFreeForm) {
+        this.provFreeForm = provFreeForm;
+    }
 
     /* 
      * File Categories to which this version of the DataFile belongs: 

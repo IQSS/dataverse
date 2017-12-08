@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.FileMetadata;
 import java.io.StringReader;
 import javax.json.Json;
 import javax.json.JsonException;
@@ -10,6 +12,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 @Path("files")
 public class ProvApi extends AbstractApiBean {
@@ -50,14 +54,23 @@ public class ProvApi extends AbstractApiBean {
     public Response addProvFreeForm(String body, @PathParam("id") Long idSupplied) {
         // TODO: Permissions.
         // TODO: Save prov free form text to FileMetadata table.
-        StringReader rdr = new StringReader(body);
-        try {
-            JsonObject jsonObj = Json.createReader(rdr).readObject();
-        } catch (JsonException ex) {
-            return error(Response.Status.BAD_REQUEST, "A valid JSON object could not be found.");
+        DataFile dataFile = fileSvc.find(idSupplied);
+        if (dataFile == null) {
+            return error(NOT_FOUND, "Could not file a file based on id " + idSupplied + ".");
         }
+        StringReader rdr = new StringReader(body);
+        JsonObject jsonObj = null;
+        try {
+            jsonObj = Json.createReader(rdr).readObject();
+        } catch (JsonException ex) {
+            return error(BAD_REQUEST, "A valid JSON object could not be found.");
+        }
+        String provFreeForm = jsonObj.getString("text");
+        FileMetadata fileMetadata = dataFile.getFileMetadata();
+        fileMetadata.setProvFreeForm(provFreeForm);
+        DataFile savedDataFile = fileSvc.save(dataFile);
         JsonObjectBuilder response = Json.createObjectBuilder();
-        response.add("message", "A valid JSON object was uploaded to the prov-freeform endpoint.");
+        response.add("message", "Free-form provenance data saved: " + savedDataFile.getFileMetadata().getProvFreeForm());
         return ok(response);
     }
 
