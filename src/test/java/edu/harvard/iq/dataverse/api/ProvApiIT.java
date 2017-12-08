@@ -51,16 +51,26 @@ public class ProvApiIT {
                 .statusCode(OK.getStatusCode());
 
         // TODO: Test that an array fails
-        JsonArray provBadDueToBeingAnArray = Json.createArrayBuilder().add("bad").build();
+        JsonArray provJsonBadDueToBeingAnArray = Json.createArrayBuilder().add("bad").build();
 
-        JsonObject provGood = Json.createObjectBuilder()
+        JsonObject provJsonGood = Json.createObjectBuilder()
+                // TODO: Some day consider sending PROV-JSON that is valid according to the schema linked from https://www.w3.org/Submission/prov-json/
                 .add("prov", true)
                 .add("foo", "bar")
                 .build();
-        Response uploadProv = UtilIT.uploadProv(datasetId.toString(), provGood, apiTokenForDepositor);
-        uploadProv.prettyPrint();
-        uploadProv.then().assertThat()
-                .body("data.message", equalTo("A valid JSON object was uploaded."))
+        Response uploadProvJson = UtilIT.uploadProvJson(datasetId.toString(), provJsonGood, apiTokenForDepositor);
+        uploadProvJson.prettyPrint();
+        uploadProvJson.then().assertThat()
+                .body("data.message", equalTo("A valid JSON object was uploaded to the prov-json endpoint."))
+                .statusCode(OK.getStatusCode());
+
+        JsonObject provFreeFormGood = Json.createObjectBuilder()
+                .add("text", "I inherited this file from my grandfather.")
+                .build();
+        Response uploadProvFreeForm = UtilIT.uploadProvFreeForm(datasetId.toString(), provFreeFormGood, apiTokenForDepositor);
+        uploadProvFreeForm.prettyPrint();
+        uploadProvFreeForm.then().assertThat()
+                .body("data.message", equalTo("A valid JSON object was uploaded to the prov-freeform endpoint."))
                 .statusCode(OK.getStatusCode());
 
     }

@@ -890,7 +890,7 @@ public class UtilIT {
                 .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
-    static Response uploadProv(String idOrPersistentId, JsonObject jsonObject, String apiToken) {
+    static Response uploadProvJson(String idOrPersistentId, JsonObject jsonObject, String apiToken) {
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(idOrPersistentId)) {
@@ -906,7 +906,26 @@ public class UtilIT {
                     .body(jsonObject.toString())
                     .contentType("application/json");
         }
-        return requestSpecification.post("/api/files/" + idInPath + "/prov" + optionalQueryParam);
+        return requestSpecification.post("/api/files/" + idInPath + "/prov-json" + optionalQueryParam);
+    }
+
+    static Response uploadProvFreeForm(String idOrPersistentId, JsonObject jsonObject, String apiToken) {
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                    // This "[]" is here to quickly test that a JSON array is considered invalid.
+                    //.body("[]")
+                    .body(jsonObject.toString())
+                    .contentType("application/json");
+        }
+        return requestSpecification.post("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
     }
 
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
