@@ -714,7 +714,7 @@ public class FilePage implements java.io.Serializable {
         Dataset testDataset = fileMetadata.getDataFile().getOwner();
         
         try {
-            permissionService.checkEditDatasetLock(testDataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(testDataset, dvRequestService.getDataverseRequest()));
+            permissionsWrapper.checkEditDatasetLock(testDataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(testDataset, dvRequestService.getDataverseRequest()));
         } catch (IllegalCommandException ex) {
             return true;
         }
@@ -724,7 +724,7 @@ public class FilePage implements java.io.Serializable {
     public boolean isLockedFromDownload(){
         Dataset testDataset = fileMetadata.getDataFile().getOwner();
         try {
-            permissionService.checkDownloadFileLock(testDataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(testDataset, dvRequestService.getDataverseRequest()));
+            permissionsWrapper.checkDownloadFileLock(testDataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(testDataset, dvRequestService.getDataverseRequest()));
         } catch (IllegalCommandException ex) {
             return true;
         }
