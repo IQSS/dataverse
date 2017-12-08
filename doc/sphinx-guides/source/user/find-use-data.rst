@@ -60,6 +60,11 @@ After performing a search and finding the dataverse or dataset you are looking f
 
 Once on a dataset page, you will see the title, citation, description, and several other fields, as well as a button to email the dataset contact and a button to share the dataset on social media. Below that information, the files, metadata, terms of use, and version information for the dataset are available. 
 
+View Files
+----------
+
+Files in Dataverse have their own pages that can be reached through the search results or through the Files table on their parent dataset's page. The dataset page and file page offer the same functionality in terms of viewing and editing files with a few small exceptions. The file page includes the file's DOI, which can be found under the Metadata tab. Also, the file page's Versions tab gives you a version history that is more focused on the individual file rather than the dataset as a while. 
+
 Cite Data
 ---------
 
