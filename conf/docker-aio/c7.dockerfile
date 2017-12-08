@@ -32,13 +32,8 @@ RUN ln -s /opt/glassfish4 /usr/local/glassfish4
 COPY dv/install/ /opt/dv/
 COPY install.bash /opt/dv/
 COPY entrypoint.bash /opt/dv/
-#COPY setup_insecure.bash /opt/dv
-#COPY setup_tests.bash /opt/dv
 COPY testdata /opt/dv/testdata
-#COPY post.sh /opt/dv/testdata/
 COPY testscripts/* /opt/dv/testdata/
 COPY setupIT.bash /opt/dv
 WORKDIR /opt/dv
 CMD ["/opt/dv/entrypoint.bash"]
-#CMD ['./entrypoint.bash']
-#ENTRYPOINT ['/opt/dv/entrypoint.bash']
