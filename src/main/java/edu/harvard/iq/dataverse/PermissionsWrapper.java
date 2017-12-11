@@ -63,7 +63,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (commandMap.containsKey(dvo.getId())) {
             Map<Class<? extends Command<?>>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
             
-            //if internal map of commands for dataverse contains the command
+            //if internal map of commands for the dataverse contains the command
             if (dvoCommandMap.containsKey(command)) {
                 return dvoCommandMap.get(command);
             } else {
@@ -153,12 +153,6 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
                 // The "InReview" lock is not really a lock for curators. They can still make edits.
-                
-        //MAD: here I need to use the wrapper instead
-        //MAD: getRequiredPermissions I think throws a IllegalArgumentException. not sure what to do if so... probably just let it trickle up if this is all based around exceptions???
-            //command.getRequiredPermissions()
-
-                //if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
                 if (!doesSessionUserHaveDataSetPermissions(dvRequestService.getDataverseRequest(), dataset, new PublishDatasetCommand(dataset, dataverseRequest, true))) {
                     throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
                 }
@@ -177,8 +171,6 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
     }
     
-    //MAD: same idea as above
-    //MAD: write tests for both?
     public void checkDownloadFileLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
@@ -240,10 +232,6 @@ public class PermissionsWrapper implements java.io.Serializable {
     
     //Takes in a command, gets the permissions to check and calls the individual permissions check
     public boolean doesSessionUserHaveDataSetPermissions(DataverseRequest req, Dataset dataset, Command command){
-        //MAD: In here I need to call doesSessionUserHaveDataSetPermission for each permission. I have no idea what that map is tho...
-        //it seems the map is "dataverse name" "required permissions" but may be a singleton in most cases???
-        
-        //public static void printMap(Map mp)
         Map<String, Set<Permission>> permissionsToCheck = command.getRequiredPermissions();
         Iterator it = permissionsToCheck.entrySet().iterator();
         while (it.hasNext()) {
@@ -254,9 +242,7 @@ public class PermissionsWrapper implements java.io.Serializable {
                     return false;
                 }
             }
-           
-            //Was throwing errors, unnessecary if no modifications are done on the it and its elements
-            //it.remove(); // avoids a ConcurrentModificationException
+            //it.remove(); // if modifications done to iterator, avoids a ConcurrentModificationException. None done currently
         }
 
         return true;

@@ -543,49 +543,5 @@ public class PermissionServiceBean {
         }
         return dataversesUserHasPermissionOn;
     }
-    
-//    public void checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
-//        if (dataset.isLocked()) {
-//            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
-//                // The "InReview" lock is not really a lock for curators. They can still make edits.
-//                if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
-//                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
-//                }
-//            }
-//            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
-//                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
-//            }
-//            // TODO: Do we need to check for "Workflow"? Should the message be more specific?
-//            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
-//                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
-//            }
-//            // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
-//            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-//                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
-//            }
-//        }
-//    }
-    
-//    public void checkDownloadFileLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
-//        if (dataset.isLocked()) {
-//            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
-//                // The "InReview" lock is not really a lock for curators or contributors. They can still download.                
-//                if (!isUserAllowedOn(dataverseRequest.getUser(), new UpdateDatasetCommand(dataset, dataverseRequest), dataset)) {
-//                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowedInReview"), command);
-//                }
-//            }
-//            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
-//                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
-//            }
-//            // TODO: Do we need to check for "Workflow"? Should the message be more specific?
-//            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
-//                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
-//            }
-//            // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
-//            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-//                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
-//            }
-//        }
-//    }
 
 }
