@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -83,13 +83,7 @@ public class ProvApi extends AbstractApiBean {
     @POST
     @Path("{id}/prov-freeform")
     @Consumes("application/json")
-    public Response addProvFreeForm(String body, @PathParam("id") Long idSupplied) {
-        // TODO: Permissions.
-        // TODO: Save prov free form text to FileMetadata table.
-        DataFile dataFile = fileSvc.find(idSupplied);
-        if (dataFile == null) {
-            return error(NOT_FOUND, "Could not file a file based on id " + idSupplied + ".");
-        }
+    public Response addProvFreeForm(String body, @PathParam("id") String idSupplied) {
         StringReader rdr = new StringReader(body);
         JsonObject jsonObj = null;
         try {
@@ -97,13 +91,35 @@ public class ProvApi extends AbstractApiBean {
         } catch (JsonException ex) {
             return error(BAD_REQUEST, "A valid JSON object could not be found.");
         }
-        String provFreeForm = jsonObj.getString("text");
-        FileMetadata fileMetadata = dataFile.getFileMetadata();
-        fileMetadata.setProvFreeForm(provFreeForm);
-        DataFile savedDataFile = fileSvc.save(dataFile);
-        JsonObjectBuilder response = Json.createObjectBuilder();
-        response.add("message", "Free-form provenance data saved: " + savedDataFile.getFileMetadata().getProvFreeForm());
-        return ok(response);
+        String provFreeForm;
+        try {
+            provFreeForm = jsonObj.getString("text");
+        } catch (NullPointerException ex) {
+            return error(BAD_REQUEST, "The JSON object you send must have a key called 'text'.");
+        }
+        try {
+            DataFile savedDataFile = execCommand(new PersistProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied), provFreeForm));
+            JsonObjectBuilder response = Json.createObjectBuilder();
+            response.add("message", "Free-form provenance data saved: " + savedDataFile.getFileMetadata().getProvFreeForm());
+            return ok(response);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    // FIXME: Delete this and switch to the version in AbstractApiBean.java once this is merged: https://github.com/IQSS/dataverse/pull/4350
+    private DataFile findDataFileOrDie(String idSupplied) throws WrappedResponse {
+        long idSuppliedAsLong;
+        try {
+            idSuppliedAsLong = new Long(idSupplied);
+        } catch (NumberFormatException ex) {
+            throw new WrappedResponse(badRequest("Could not find a number based on " + idSupplied));
+        }
+        DataFile dataFile = fileSvc.find(idSuppliedAsLong);
+        if (dataFile == null) {
+            throw new WrappedResponse(badRequest("Could not find a file based on id " + idSupplied));
+        }
+        return dataFile;
     }
 
 }
