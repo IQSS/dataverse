@@ -245,10 +245,8 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     private String getRegistrationUrl(DvObject dvObject) {
         logger.log(Level.FINE,"getRegistrationUrl");
         String siteUrl = systemConfig.getDataverseSiteUrl();
-                
-        //String targetUrl = siteUrl + "/dataset.xhtml?persistentId=hdl:" + dataset.getAuthority() 
-        String targetUrl = siteUrl + Dataset.TARGET_URL + "hdl:" + dvObject.getAuthority()         
-                + "/" + dvObject.getIdentifier();  
+        String targetUrl = siteUrl + dvObject.getTargetUrl() + "hdl:" + dvObject.getAuthority()         
+                + "/" + dvObject.getIdentifier();         
         return targetUrl;
     }
  
