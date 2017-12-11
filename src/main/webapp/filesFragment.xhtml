@@ -312,9 +312,12 @@
                                         #{bundle['file.tags']} 
                             </p:commandLink>    
                         </li>                                                               
+
                     </ul>
                     <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                 </div>
+                
+                
                 
                 <!-- DOWNLOAD -->
                 <div jsf:id="downloadButtonBlock" class="btn-group" 
@@ -354,12 +357,15 @@
                 #{bundle['file.ingestInProgress']}
             </div>
             
-            <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
-                <ui:include src="file-setup-button.xhtml">
-                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
-                    <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                </ui:include>
-            </ui:fragment>
+            <!---Modular configure-->
+            
+                <ui:fragment rendered="#{!widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id).size() > 0 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                    <ui:include src="file-configure-dropdown-fragment.xhtml">
+                        <ui:param name="externalTools" value="#{DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                        <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
+                        <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                    </ui:include>
+                </ui:fragment>
 
             <div class="btn-group" jsf:rendered="#{!settingsWrapper.rsyncDownload}">
                 <ui:include src="file-download-button-fragment.xhtml">
