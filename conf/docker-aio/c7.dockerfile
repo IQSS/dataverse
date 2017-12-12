@@ -5,6 +5,7 @@ RUN yum install -y jq
 
 # copy and unpack dependencies (solr, glassfish)
 COPY dv /tmp/dv
+COPY testdata/schema.xml /tmp/dv
 RUN cd /opt ; tar zxf /tmp/dv/deps/solr-4.6.0dv.tgz 
 RUN cd /opt ; tar zxf /tmp/dv/deps/glassfish4dv.tgz
 
