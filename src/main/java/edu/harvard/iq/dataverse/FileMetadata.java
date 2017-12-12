@@ -327,31 +327,6 @@ public class FileMetadata implements Serializable {
          return citation;
      }
     
-    private String getFileDOI (DataFile dataFile, boolean html){
-        
-        String retVal = "";
-        GlobalId globalId = new GlobalId(dataFile);
-        if (globalId != null ){
-            
-            return formatURL(globalId.toString(), globalId.toURL().toString(), html);
-        }
-        
-        return retVal;
-        
-    }
-    
-    private String formatURL(String text, String url, boolean html) {
-        if (text == null) {
-            return null;
-        }
-
-        if (html && url != null) {
-            return "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml(text) + "</a>";
-        } else {
-            return text;
-        }
-
-    }
         
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;

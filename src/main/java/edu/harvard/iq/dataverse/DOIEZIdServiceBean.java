@@ -59,10 +59,14 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
         } catch (EZIDException e ){
             //No such identifier is treated as an exception
             //but if that is the case then we want to just return false
+            if(dvObject.getIdentifier() == null){
+                return false;
+            }
             if (e.getLocalizedMessage().contains("no such identifier")){
                 return false;
             }
             logger.log(Level.WARNING, "alreadyExists failed");
+            logger.log(Level.WARNING, "getIdentifier(dvObject) {0}", getIdentifier(dvObject));
             logger.log(Level.WARNING, "String {0}", e.toString());
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.WARNING, "cause", e.getCause());

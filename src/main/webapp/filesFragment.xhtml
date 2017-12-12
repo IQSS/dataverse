@@ -219,9 +219,10 @@
                                      and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                 <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
                 <h:outputLink id="fileNameLink" value="#{widgetWrapper.wrapURL('/file.xhtml')}">
-                    <f:param name="fileId" value="#{fileMetadata.dataFile.id}" />
-                    <f:param name="version" value="#{fileMetadata.datasetVersion.versionState}" />
-                    <f:param name="version" rendered="#{(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" value=".#{fileMetadata.datasetVersion.minorVersionNumber}" />
+                    <f:param name="#{fileMetadata.dataFile.identifier == null ? 'fileId' : ''}" value="#{fileMetadata.dataFile.id}"/>
+                    <f:param name="#{fileMetadata.dataFile.identifier != null ? 'persistentId' : ''}" value="#{fileMetadata.dataFile.globalId}"/>
+                    <f:param name="#{fileMetadata.datasetVersion.draft ? 'version' : ''}" value="#{fileMetadata.datasetVersion.versionState}"/>
+                    <f:param name="#{!fileMetadata.datasetVersion.draft ? 'version' : ''}" value="#{fileMetadata.datasetVersion.versionNumber}.#{fileMetadata.datasetVersion.minorVersionNumber}"/>
                     <h:outputText value="#{fileMetadata.label}" />
                 </h:outputLink>
             </ui:fragment>
