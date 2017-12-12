@@ -288,7 +288,7 @@ For institutions and organizations looking to use Amazon's S3 cloud storage for 
 
 You'll need an AWS account with an associated S3 bucket for your installation to use. From the S3 management console (e.g. `<https://console.aws.amazon.com/>`_), you can poke around and get familiar with your bucket. We recommend using IAM (Identity and Access Management) to create a user with full S3 access and nothing more, for security reasons. See `<http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_ for more info on this process.
 
-Make note of the bucket's name and the region its data is hosted in. Dataverse and the AWS SDK make use of "AWS credentials profile file" located in ``~/.aws/credentials`` where ``~`` is the home directory of the user you run Glasfish as. This file can be generated via either of two methods described below. It's also possible to use IAM Roles rather than a credentials file.
+Make note of the bucket's name and the region its data is hosted in. Dataverse and the AWS SDK make use of "AWS credentials profile file" located in ``~/.aws/credentials`` where ``~`` is the home directory of the user you run Glassfish as. This file can be generated via either of two methods described below. It's also possible to use IAM Roles rather than a credentials file.
 
 Set Up credentials File Manually
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
