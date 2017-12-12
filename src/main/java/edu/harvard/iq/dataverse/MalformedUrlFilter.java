@@ -16,6 +16,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -26,7 +27,16 @@ public class MalformedUrlFilter implements Filter{
     
     private static final Logger logger = Logger.getLogger(MalformedUrlFilter.class.getCanonicalName());
     
-    //MAD: is this heavy?
+    static class CleanHttpRequest extends HttpServletRequestWrapper {
+        public CleanHttpRequest(ServletRequest request) {
+            super((HttpServletRequest) request);
+        }
+        
+        public String getParameter(String paramName) {
+            return ""; //MAD: can we just return nothing?
+        }
+    }
+    
     @Inject 
     PermissionsWrapper permissionsWrapper;
     
@@ -39,8 +49,7 @@ public class MalformedUrlFilter implements Filter{
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
-        //MAD: not sure if I should be using uri instead. That also doesn't return a stringbuffer which my example used
-        //
+
         StringBuffer requestURL = request.getRequestURL(); 
         String fullRequestURL;
         
@@ -52,58 +61,31 @@ public class MalformedUrlFilter implements Filter{
             fullRequestURL = requestURL.append('?').append(queryString).toString();
         }
 
+        //MAD: This url will blow up in the broswer
+        //http://localhost:8080/dataverse.xhtml?q=&fq0=authorName_ss%3A%22Yu%%222C+M%22&types=files&sort=dateSort&order=asc
         
-        logger.log(Level.WARNING,"MAD filter is triggered : " + requestURL);
+        //logger.log(Level.WARNING,"MAD filter is triggered : " + requestURL);
         
         try {
-            //response.encodeURL(requestURI);
-            java.net.URI uri = new java.net.URI(fullRequestURL); //maybe this will just blow up...
-           
+            java.net.URI uri = new java.net.URI(fullRequestURL);
             
-            
+            //logger.log(Level.WARNING,"MAD filter has passed thru");
+            chain.doFilter(req, res); 
+
         } catch (Exception e) { //MAD: catch more fine
             logger.log(Level.WARNING,"MAD Filter caught error " + e);
 
-            //String newURI = requestURI.replace(toReplace, "?Contact_Id=");
             
-//            HttpServletResponse httpResponse = (HttpServletResponse) res;
-//            httpResponse.getWriter().println("{ status:\"error\", message:\"Malformed url explosion\"}" );
-//            httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-//            httpResponse.setContentType("application/json");
-    
-            String requestURI = request.getRequestURI();
-            logger.log(Level.WARNING,"MAD filter error old requestURI " + requestURI);
 
-            String toReplace = requestURI.substring(requestURI.indexOf("?"), requestURI.length() + 1);
-            String newURI = requestURI.replace(toReplace, "");
+            /** MAD: I tried these two options below to send the user to a 404 page to no success */
+            
+            //response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            //chain.doFilter(new CleanHttpRequest(req), res);
+            
+            //req.getRequestDispatcher("/404.xhtml").forward(new CleanHttpRequest(req), res);
 
-            logger.log(Level.WARNING,"MAD filter error old requestURI " + newURI);
-            
-            
-            req.getRequestDispatcher(newURI).forward(req, res); //hopefully this won't include the query string... regardless we should use 400
         }
         
-        
-        //context.getExternalContext().responseSendError(errorCode,null);
-        
-        
-        
-        
-        
-        //req.getRequestDispatcher(permissionsWrapper.notAuthorized()).forward(req, res); //MAD: shouldn't be here but I want to see if it forwards good urls to the error page
-
-        logger.log(Level.WARNING,"MAD filter has passed thru");
-        chain.doFilter(req, res); 
-        
-//MAD: Not my code, example below
-        
-//        if (requestURI.startsWith("/Check_License/Dir_My_App/")) {
-//            String toReplace = requestURI.substring(requestURI.indexOf("/Dir_My_App"), requestURI.lastIndexOf("/") + 1);
-//            String newURI = requestURI.replace(toReplace, "?Contact_Id=");
-//            req.getRequestDispatcher(newURI).forward(req, res);
-//        } else {
-//            chain.doFilter(req, res);
-//        }
     }
 
     @Override
