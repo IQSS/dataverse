@@ -288,23 +288,23 @@ For institutions and organizations looking to use Amazon's S3 cloud storage for 
 
 You'll need an AWS account with an associated S3 bucket for your installation to use. From the S3 management console (e.g. `<https://console.aws.amazon.com/>`_), you can poke around and get familiar with your bucket. We recommend using IAM (Identity and Access Management) to create a user with full S3 access and nothing more, for security reasons. See `<http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_ for more info on this process.
 
-Make note of the bucket's name and the region its data is hosted in. Dataverse and the aws SDK rely on the placement of a key file located in ``~/.aws/credentials``, which can be generated via either of these two methods.
+Make note of the bucket's name and the region its data is hosted in. Dataverse and the AWS SDK make use of "AWS credentials profile file" located in ``~/.aws/credentials`` where ``~`` is the home directory of the user you run Glasfish as. This file can be generated via either of two methods described below. It's also possible to use IAM Roles rather than a credentials file.
 
-Setup aws manually
-^^^^^^^^^^^^^^^^^^
+Set Up credentials File Manually
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To create ``credentials`` manually, you will need to generate a key/secret key. The first step is to log onto your aws web console (e.g. `<https://console.aws.amazon.com/>`_). If you have created a user in AWS IAM, you can click on that user and generate the keys needed for dataverse. 
+To create the ``credentials`` file manually, you will need to generate a key/secret key. The first step is to log onto your aws web console (e.g. `<https://console.aws.amazon.com/>`_). If you have created a user in AWS IAM, you can click on that user and generate the keys needed for Dataverse.
 
-Once you have acquired the keys, they need to be added to``credentials``. The format for credentials is as follows:
+Once you have acquired the keys, they need to be added to the ``credentials`` file. The format for credentials is as follows:
 
 | ``[default]``
 | ``aws_access_key_id = <insert key, no brackets>``
 | ``aws_secret_access_key = <insert secret key, no brackets>``
 
-Place this file in a folder named ``.aws`` under the home directory for the user running your dataverse installation.
+Place this file in a folder named ``.aws`` under the home directory for the user running your Dataverse installation.
 
-Setup aws via command line tools
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Set Up credentials File Via Command Line Tools
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
@@ -316,7 +316,12 @@ First, we'll get our access keys set up. If you already have your access keys co
 
 You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account. The subsequent config steps after the access keys are up to you. For reference, these keys are stored in ``~/.aws/credentials``.
 
-Configure dataverse to use aws/S3
+Using an IAM Role
+^^^^^^^^^^^^^^^^^
+
+Rather than using a credentials file (the file at ``~/.aws/credentials`` mentioned above) it possible to use IAM Roles instead. For more information on this option, see http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+
+Configure Dataverse to Use AWS/S3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 With your access to your bucket in place, we'll want to navigate to ``/usr/local/glassfish4/glassfish/bin/`` and execute the following ``asadmin`` commands to set up the proper JVM options. Recall that out of the box, Dataverse is configured to use local file storage. You'll need to delete the existing storage driver before setting the new one.
