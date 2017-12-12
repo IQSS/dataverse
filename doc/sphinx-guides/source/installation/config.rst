@@ -316,10 +316,10 @@ First, we'll get our access keys set up. If you already have your access keys co
 
 You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account. The subsequent config steps after the access keys are up to you. For reference, these keys are stored in ``~/.aws/credentials``.
 
-Using an IAM Role
-^^^^^^^^^^^^^^^^^
+Using an IAM Role with EC2
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Rather than using a credentials file (the file at ``~/.aws/credentials`` mentioned above) it possible to use IAM Roles instead. For more information on this option, see http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+If you are hosting Dataverse on an AWS EC2 instance alongside storage in S3, it possible to use IAM Roles instead of the credentials file (the file at ``~/.aws/credentials`` mentioned above) . For more information on this option, see http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
 
 Configure Dataverse to Use AWS/S3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
