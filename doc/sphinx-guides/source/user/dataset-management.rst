@@ -123,6 +123,14 @@ There are several advanced options available for certain file types.
 - Image files: .jpg, .png, and .tif files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
 - SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
 
+.. _provenance:
+
+Data Provenance
+---------------
+
+Data Provenance is a record of how your data reached its current form. It describes the origin of your data file, any transformations applied to that file, and any persons or organizations associated with that file. Dataverse can help you keep track of your data's provenance.
+
+
 .. _rsync_upload:
 
 rsync Upload
