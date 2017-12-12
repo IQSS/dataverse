@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncrypti
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.DataportenOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
@@ -863,6 +864,7 @@ public class AuthenticationServiceBean {
      */
     public List<String> getAuthenticationProviderIdsSorted() {
         GitHubOAuth2AP github = new GitHubOAuth2AP(null, null);
+        DataportenOAuth2AP dataporten = new DataportenOAuth2AP(null, null);
         GoogleOAuth2AP google = new GoogleOAuth2AP(null, null);
         return Arrays.asList(
                 BuiltinAuthenticationProvider.PROVIDER_ID,
@@ -870,7 +872,8 @@ public class AuthenticationServiceBean {
                 OrcidOAuth2AP.PROVIDER_ID_PRODUCTION,
                 OrcidOAuth2AP.PROVIDER_ID_SANDBOX,
                 github.getId(),
-                google.getId()
+                google.getId(),
+                dataporten.getId()
         );
     }
 
