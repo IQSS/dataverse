@@ -8,7 +8,7 @@ Initial setup (aka - do once):
 
 Per-build:
 - `cd conf/docker-aio`, and run `0prep.sh` to copy files for integration test data into docker build context; `0prep.sh` will also build the war file and installation zip file
-- build the docker image: `docker build -t dv -f c7.dockerfile .`
+- build the docker image: `docker build -t dv0 -f c7.dockerfile .`
 
 - Run image: `docker run -d -p 8083:8080 --name dv dv0` (aka - forward port 8083 locally to 8080 in the container)
 - Installation (integration test): `docker exec -it dv /opt/dv/setupIT.bash`
