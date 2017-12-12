@@ -309,6 +309,12 @@ public class SettingsServiceBean {
         // Option to override multiple guides with a single url
         NavbarGuidesUrl,
         
+        /**
+         * The theme for the root dataverse can get in the way when you try make
+         * use of HeaderCustomizationFile and LogoCustomizationFile so this is a
+         * way to disable it.
+         */
+        DisableRootDataverseTheme,
         // Limit on how many guestbook entries to display on the guestbook-responses page:
         GuestbookResponsesPageDisplayLimit,
 

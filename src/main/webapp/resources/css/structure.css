@@ -200,10 +200,10 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader {margin:0 auto;}
 #dataverseHeader .dataverseHeaderBlock {display:table-row;}
 #dataverseHeader .dataverseHeaderCell {display:table-cell;}
-#dataverseHeader .dataverseHeaderLogo {text-align:center;}
+#dataverseHeader .dataverseHeaderLogo {padding-right:1em; text-align:center;}
 #dataverseHeader .dataverseHeaderLogo img {max-width:940px; max-height:120px;}
 #dataverseHeader .dataverseHeaderCell.dataverseHeaderLogo img {max-width:100px; max-height:100px;}
-#dataverseHeader .dataverseHeaderName {padding:2em 1em;}
+#dataverseHeader .dataverseHeaderName {padding:2em 1em 2em 0em;}
 #dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName {font-size: 1.3em;}
 #dataverseHeader .dataverseHeaderName span.label.label-unpublished {vertical-align:text-top; line-height: normal; margin-left:1em;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
@@ -717,6 +717,9 @@ div[id$="filesTable"].ui-datatable.ui-datatable-scrollable {padding-right:12px;}
 #file-replace-original-block div[id$="filesTable"].col-sm-10 {border:1px solid #ddd;padding:0;}
 #file-replace-original-block div[id$="filesTable"] .col-file-thumb {width:74px !important;padding:4px 10px;}
 #file-replace-original-block div[id$="filesTable"] .col-file-metadata {padding:4px 10px;}
+
+/* HACK */
+div[id$="filesTable"] div.ui-datatable-scrollable-body {padding-bottom:140px;}
 
 span.ingest-warning {display:inline-block; font-size:24px; line-height:1; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:3px} 

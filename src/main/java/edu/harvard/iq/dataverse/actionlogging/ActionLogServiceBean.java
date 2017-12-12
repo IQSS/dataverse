@@ -32,4 +32,5 @@ public class ActionLogServiceBean {
         }
         em.persist(rec);
     }
+
 }
