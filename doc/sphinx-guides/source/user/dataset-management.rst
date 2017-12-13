@@ -128,7 +128,7 @@ There are several advanced options available for certain file types.
 Data Provenance
 ---------------
 
-Data Provenance is a record of how your data reached its current form. It describes the origin of your data file, any transformations applied to that file, and any persons or organizations associated with that file. Dataverse can help you keep track of your data's provenance.
+Data Provenance is a record of where your data came from and how it reached its current form. It describes the origin of your data file, any transformations applied to that file, and any persons or organizations associated with that file. A data file's provenance can be helpful in a variety of situations, including aiding in reproducibility and compliance with legal regulations. Dataverse can help keep track of your data's provenance, and make that information available to those who need it.
 
 
 .. _rsync_upload:
