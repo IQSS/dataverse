@@ -4,6 +4,7 @@ import sys
 import io
 import paramiko
 import os
+import re
 from config import (ConfigSectionMap)
 
 my_ssh_client = None
@@ -37,7 +38,7 @@ def transfer_file(local_flo, dataset_authority, dataset_identifier, storage_iden
 
     subdirs = remote_dir.split("/")
 
-    cdir = ""
+    cdir = ConfigSectionMap("Backup")['backupdirectory'] + "/"
     for subdir in subdirs:
         try:
             cdir = cdir + subdir + "/"
@@ -48,7 +49,12 @@ def transfer_file(local_flo, dataset_authority, dataset_identifier, storage_iden
         #else:
         #    print "directory "+cdir+" already exists"
 
-    remote_file = remote_dir  + "/" + storage_identifier
+    m = re.search('^([a-z0-9]*)://(.*)$', storage_identifier)
+    if m is not None:
+        storageTag = m.group(1)
+        storage_identifier = re.sub('^.*:', '', storage_identifier)
+
+    remote_file = cdir + storage_identifier
 
     if (type(local_flo) is str):
         sftp_client.put(local_flo,remote_file)
