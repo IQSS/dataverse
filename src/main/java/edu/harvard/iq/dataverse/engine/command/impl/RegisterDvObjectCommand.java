@@ -81,7 +81,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     Dataset dataset = (Dataset) target;
                     for (DataFile df : dataset.getFiles()) {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
-                            df.setIdentifier(ctxt.files().generateDatasetIdentifier(df, idServiceBean));
+                            df.setIdentifier(ctxt.files().generateDataFileIdentifier(df, idServiceBean));
                             if (df.getProtocol() == null) {
                                 df.setProtocol(protocol);
                             }
