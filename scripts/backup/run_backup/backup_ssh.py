@@ -60,7 +60,17 @@ def transfer_file(local_flo, dataset_authority, dataset_identifier, storage_iden
         sftp_client.put(local_flo,remote_file)
     else:
         # assume it's a stream:
-        sftp_client.putfo(local_flo,remote_file,byte_size)
+        # sftp_client.putfo() is convenient, but appears to be unavailable in older 
+        # versions of paramiko; so we'll be using .read() and .write() instead:
+        #sftp_client.putfo(local_flo,remote_file,byte_size)
+        sftp_stream = sftp_client.open(remote_file,"wb")
+        while True:
+            buffer = local_flo.read(32*1024)
+            if len(buffer) == 0:
+                break;
+            sftp_stream.write (buffer)
+        sftp_stream.close()
+
     sftp_client.close()
 
     print "File transfered."
