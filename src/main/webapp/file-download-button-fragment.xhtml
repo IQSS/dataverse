@@ -282,15 +282,15 @@
             </li>
             
             <li>
-                <!-- Differentially private version of the data summary: (should be available to everyone (?) -->
-                <p:commandLink rendered="#{!downloadPopupRequired}"
+                <!-- Differentially private version of the data summary: (if available) -->
+                <p:commandLink rendered="#{DatasetPage.isDifferentiallyPrivateDataSummaryAvailable(fileMetadata) and !downloadPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
                                actionListener="#{fileDownloadService.startFileDownload(null, fileMetadata, 'datasummary-diffprivate')}">
                     #{bundle['file.downloadBtn.format.dataSummary.diffPrivate']}
                 </p:commandLink>
                 <!-- same, with a popup: -->
-                 <p:commandLink rendered="#{downloadPopupRequired}"
+                 <p:commandLink rendered="#{DatasetPage.isDifferentiallyPrivateDataSummaryAvailable(fileMetadata) and downloadPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'datasummary-diffprivate' )}"
