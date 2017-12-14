@@ -85,8 +85,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
             
-            System.out.print("After generate identifier: " + theDataset.getIdentifier());
-            
         }
         if ((importType != ImportType.MIGRATION && importType != ImportType.HARVEST) && !ctxt.datasets().isIdentifierUniqueInDatabase(theDataset.getIdentifier(), theDataset, idServiceBean)) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",

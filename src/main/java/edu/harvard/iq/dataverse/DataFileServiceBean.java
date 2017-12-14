@@ -1550,7 +1550,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     
     
-    public String generateDatasetIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
+    public String generateDataFileIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         switch (doiIdentifierType) {
             case "randomString":

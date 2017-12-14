@@ -47,8 +47,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     target.setIdentifier(ctxt.datasets().generateDatasetIdentifier((Dataset) target, idServiceBean));
 
                 } else {
-                    target.setIdentifier(ctxt.files().generateDatasetIdentifier((DataFile) target, idServiceBean));
-
+                    target.setIdentifier(ctxt.files().generateDataFileIdentifier((DataFile) target, idServiceBean));
                 }
                 if (target.getProtocol() == null) {
                     target.setProtocol(protocol);

@@ -100,7 +100,7 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
                     IdServiceBean idServiceBean = IdServiceBean.getBean(theDataFile.getProtocol(),ctxt);
                     if(theDataFile.getIdentifier()==null || theDataFile.getIdentifier().isEmpty())
                     {
-                        theDataFile.setIdentifier(ctxt.files().generateDatasetIdentifier(theDataFile, idServiceBean));
+                        theDataFile.setIdentifier(ctxt.files().generateDataFileIdentifier(theDataFile, idServiceBean));
                     }
                     String nonNullDefaultIfKeyNotFound = "";
                     String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
