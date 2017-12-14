@@ -123,6 +123,7 @@
                             </div>
                             <div class="col-xs-6">
                                 <!-- Button Panels -->
+                                <!-- MAD here we'd replace the group dropdown-->
                                 <div jsf:id="editFilesRestrictDeletePanel" class="button-block pull-right text-right"
                                      jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
                                     <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
@@ -223,38 +224,73 @@
                         </div>
                     </p:column>
                     <p:column class="col-file-action text-right">
-                        <div class="button-block">
-                            <p:commandLink id="fileCategoriesButton"
-                                           type="button" styleClass="btn btn-default btn-sm"
-                                           actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
-                                           update=":datasetForm:editFileTagsPopup"
-                                           oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
-                                <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
-                            </p:commandLink>
-                            <p:commandLink id="fileSetThumbnailBtn"
-                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and not EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
-                                           type="button" styleClass="btn btn-default"
-                                           actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
-                                           update=":datasetForm:fileSetThumbnail"
-                                           oncomplete="PF('fileSetThumbnail').show()">
-                                <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
-                            </p:commandLink>
-                            <p:commandLink id="fileSetThumbnailBtn2"
-                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
-                                           type="button" styleClass="btn btn-default"
-                                           actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
-                                           oncomplete="PF('fileThumbnailConfirm').show()">
-                                <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
-                            </p:commandLink>
-                            <p:commandLink id="advancedIngestOptionsButton"
-                                           rendered="#{((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
-                                                       or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}"
-                                           type="button" styleClass="btn btn-default"
-                                           actionListener="#{EditDatafilesPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
-                                           update=":datasetForm:fileAdvancedOptions"
-                                           oncomplete="PF('fileAdvancedOptions').show()">
-                                <span class="glyphicon glyphicon-cog"/> #{bundle['file.advancedIngestOptions']}
-                            </p:commandLink>
+                        <!--MAD: here is where the button dropdown should go. right now all the buttons are individual... -->
+                        
+                        <!-- MAD: Dropdown from filesFragment.xhtml -->
+                        <div style="margin-right:14px;" class="btn-group" > <!--jsf:rendered="" -->
+                            <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
+                                    disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                <!-- MAD: Insert provenance option here -->
+                                <!-- MAD: Buttons from fileFragment that need to be worked with -->
+                                <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                        <p:commandLink oncomplete="toggle_dropdown();" 
+                                                       onclick="testFilesSelectedForRestriction()">
+                                            <h:outputText value="#{bundle['file.restrict']}"/>
+                                        </p:commandLink>
+                                    </li>
+                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                        <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
+                                                       action="#{DatasetPage.restrictSelectedFiles(false)}">
+                                            <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                        </p:commandLink>
+                                    </li>
+                                </ui:fragment>
+                                <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                    <p:commandLink id="fileCategoriesButton"
+                                               actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
+                                               update=":datasetForm:editFileTagsPopup"
+                                               oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
+                                                #{bundle['file.tags']} 
+                                    </p:commandLink>    
+                                </li>        
+                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                    <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
+                                        <h:outputText value="#{bundle['file.delete']}"/> 
+                                    </p:commandLink>
+                                </li>
+                                <li>
+                                    <p:commandLink id="fileSetThumbnailBtn"
+                                                   rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and not EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
+                                                   actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
+                                                   update=":datasetForm:fileSetThumbnail"
+                                                   oncomplete="PF('fileSetThumbnail').show()">
+                                        #{bundle['file.setThumbnail']}
+                                    </p:commandLink>
+                                </li>
+                                <li>
+                                    <p:commandLink id="fileSetThumbnailBtn2"
+                                                   rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
+                                                   actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
+                                                   oncomplete="PF('fileThumbnailConfirm').show()">
+                                        #{bundle['file.setThumbnail']}
+                                    </p:commandLink>
+                                </li>
+                                <li>
+                                    <p:commandLink id="advancedIngestOptionsButton"
+                                                   rendered="#{((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
+                                                               or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}"
+                                                   actionListener="#{EditDatafilesPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
+                                                   update=":datasetForm:fileAdvancedOptions"
+                                                   oncomplete="PF('fileAdvancedOptions').show()">
+                                        #{bundle['file.advancedIngestOptions']}
+                                    </p:commandLink>
+                                </li>
+                            </ul>
+                            <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                         </div>
                     </p:column>
                 </p:dataTable>
