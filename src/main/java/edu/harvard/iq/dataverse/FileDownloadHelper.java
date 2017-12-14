@@ -152,21 +152,9 @@ public class FileDownloadHelper implements java.io.Serializable {
         // --------------------------------------------------------------------
         
         // --------------------------------------------------------------------
-        // (2) A Guest user can only download a restricted file through  membership of an IP Group.
+        // (2) THIS CONDITION HAS BEEN REMOVED. We let the "Guest" case fall through.
         // --------------------------------------------------------------------
 
-        if (session.getUser() instanceof GuestUser){
-            boolean guestHasAccessDueToIpGroup = permissionService.requestOn(dvRequestService.getDataverseRequest(), fileMetadata.getDataFile()).has(Permission.DownloadFile);
-            if (guestHasAccessDueToIpGroup) {
-                this.fileDownloadPermissionMap.put(fid, true);
-                return true;
-            } else {
-                this.fileDownloadPermissionMap.put(fid, false);
-                return false;
-            }
-        }
-
-        
         // --------------------------------------------------------------------
         // (3) Does the User have DownloadFile Permission at the **Dataset** level 
         // --------------------------------------------------------------------
@@ -214,7 +202,7 @@ public class FileDownloadHelper implements java.io.Serializable {
             return false;
         }
         
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), objectToCheck).has(permissionToCheck);
+        boolean hasPermission = permissionService.requestOn(dvRequestService.getDataverseRequest(), fileMetadata.getDataFile()).has(permissionToCheck);
        
         // return true/false
         return hasPermission;
