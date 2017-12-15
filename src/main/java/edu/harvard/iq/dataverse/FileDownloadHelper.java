@@ -7,11 +7,11 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -26,7 +26,9 @@ import javax.inject.Named;
  @ViewScoped
  @Named
 public class FileDownloadHelper implements java.io.Serializable {
-    
+
+    private static final Logger logger = Logger.getLogger(FileDownloadHelper.class.getCanonicalName());
+
     @Inject
     DataverseSession session;
 
@@ -152,21 +154,14 @@ public class FileDownloadHelper implements java.io.Serializable {
         // --------------------------------------------------------------------
         
         // --------------------------------------------------------------------
-        // (2) A Guest user can only download a restricted file through  membership of an IP Group.
+        // (2) See if the DataverseRequest, which contains IP Groups, has permission to download the file.
         // --------------------------------------------------------------------
-
-        if (session.getUser() instanceof GuestUser){
-            boolean guestHasAccessDueToIpGroup = permissionService.requestOn(dvRequestService.getDataverseRequest(), fileMetadata.getDataFile()).has(Permission.DownloadFile);
-            if (guestHasAccessDueToIpGroup) {
-                this.fileDownloadPermissionMap.put(fid, true);
-                return true;
-            } else {
-                this.fileDownloadPermissionMap.put(fid, false);
-                return false;
-            }
+        if (permissionService.requestOn(dvRequestService.getDataverseRequest(), fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
+            logger.fine("The DataverseRequest (User plus IP address) has access to download the file.");
+            this.fileDownloadPermissionMap.put(fid, true);
+            return true;
         }
 
-        
         // --------------------------------------------------------------------
         // (3) Does the User have DownloadFile Permission at the **Dataset** level 
         // --------------------------------------------------------------------
