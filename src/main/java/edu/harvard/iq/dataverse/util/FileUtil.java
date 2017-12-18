@@ -1314,22 +1314,22 @@ public class FileUtil implements java.io.Serializable  {
         return true;
     }
 
-    public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten) {
-        String fileDownloadUrl = "/api/access/datafile/" + fileId;
+    public static String getFileDownloadUrlPath(String downloadType, String persistentId, boolean gbRecordsWritten) {
+        String fileDownloadUrl = "/api/access/datafile/:persistentId?persistentId=" + persistentId;
         if (downloadType != null && downloadType.equals("bundle")) {
-            fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
+            fileDownloadUrl = "/api/access/datafile/bundle/:persistentId?persistentId=" + persistentId;
         }
         if (downloadType != null && downloadType.equals("original")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=original";
+            fileDownloadUrl = "/api/access/datafile/:persistentId?persistentId=" + persistentId + "&format=original";
         }
         if (downloadType != null && downloadType.equals("RData")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
+            fileDownloadUrl = "/api/access/datafile/:persistentId?persistentId=" + persistentId + "&format=RData";
         }
         if (downloadType != null && downloadType.equals("var")) {
-            fileDownloadUrl = "/api/meta/datafile/" + fileId;
+            fileDownloadUrl = "/api/meta/datafile/:persistentId?persistentId=" + persistentId;
         }
         if (downloadType != null && downloadType.equals("tab")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
+            fileDownloadUrl = "/api/access/datafile/:persistentId?persistentId=" + persistentId + "?format=tab";
         }
         if (gbRecordsWritten) {
             if (downloadType != null && (downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab"))) {
@@ -1342,14 +1342,14 @@ public class FileUtil implements java.io.Serializable  {
         return fileDownloadUrl;
     }
     
-    public static String getPublicDownloadUrl(String dataverseSiteUrl, Long fileId) {
-        if (fileId == null) {
-            logger.info("In getPublicDownloadUrl but fileId is null!");
+    public static String getPublicDownloadUrl(String dataverseSiteUrl, String persistentId) {
+        if (persistentId == null) {
+            logger.info("In getPublicDownloadUrl but persistentId is null!");
             return null;
         }
         String downloadType = null;
         boolean gbRecordsWritten = false;
-        String path = getFileDownloadUrlPath(downloadType, fileId, gbRecordsWritten);
+        String path = getFileDownloadUrlPath(downloadType, persistentId, gbRecordsWritten);
         return dataverseSiteUrl + path;
     }
     

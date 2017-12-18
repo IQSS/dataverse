@@ -146,22 +146,22 @@ public class FileUtilTest {
 
     @Test
     public void testgetFileDownloadUrl() {
-        Long fileId = 42l;
-        assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath(null, fileId, false));
-        assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath("", fileId, false));
-        assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false));
-        assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false));
-        assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false));
-        assertEquals("/api/meta/datafile/42", FileUtil.getFileDownloadUrlPath("var", fileId, false));
-        assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false));
-        assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true));
-        assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true));
+        String persistentId = "doi:10.5072/FK2/P5ENAC";
+        assertEquals("/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/P5ENAC", FileUtil.getFileDownloadUrlPath(null, persistentId, false));
+        assertEquals("/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/P5ENAC", FileUtil.getFileDownloadUrlPath("", persistentId, false));
+        assertEquals("/api/access/datafile/bundle/:persistentId?persistentId=doi:10.5072/FK2/P5ENAC", FileUtil.getFileDownloadUrlPath("bundle", persistentId, false));
+        assertEquals("/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/P5ENAC&format=original", FileUtil.getFileDownloadUrlPath("original", persistentId, false));
+        assertEquals("/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/P5ENAC&format=RData", FileUtil.getFileDownloadUrlPath("RData", persistentId, false));
+        assertEquals("/api/meta/datafile/:persistentId?persistentId=doi:10.5072/FK2/P5ENAC", FileUtil.getFileDownloadUrlPath("var", persistentId, false));
+        assertEquals("/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/P5ENAC?format=tab", FileUtil.getFileDownloadUrlPath("tab", persistentId, false));
+        assertEquals("/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/P5ENAC?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", persistentId, true));
+        assertEquals("/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/P5ENAC?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, persistentId, true));
     }
 
     @Test
     public void testGetPublicDownloadUrl() {
         assertEquals(null, FileUtil.getPublicDownloadUrl(null, null));
-        assertEquals("https://demo.dataverse.org/api/access/datafile/42", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", 42l));
+        assertEquals("https://demo.dataverse.org/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/P5ENAC", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", "doi:10.5072/FK2/P5ENAC"));
     }
 
     @Test

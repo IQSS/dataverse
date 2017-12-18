@@ -76,7 +76,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
             writeGuestbookResponseRecord(guestbookResponse);
-            callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), guestbookResponse.isWriteResponse());
+            callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getGlobalId(), guestbookResponse.isWriteResponse());
         }
         
         if (guestbookResponse != null && guestbookResponse.getSelectedFileIds() != null     ){
@@ -123,8 +123,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         //return fileDownloadUrl;
     }
 
-    public void callDownloadServlet(String downloadType, Long fileId, boolean gbRecordsWritten) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, gbRecordsWritten);
+    public void callDownloadServlet(String downloadType, String persistentId, boolean gbRecordsWritten) {
+        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, persistentId, gbRecordsWritten);
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
@@ -142,7 +142,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
            writeGuestbookResponseRecord(guestbookResponse);
             recordsWritten = true;
         }
-        callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
+        callDownloadServlet(format, fileMetadata.getDataFile().getGlobalId(), recordsWritten);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
     
