@@ -267,7 +267,7 @@
                 <p:commandLink rendered="#{!downloadPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                               actionListener="#{fileDownloadService.startFileDownload(null, fileMetadata, 'datasummary')}">
+                               actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'datasummary')}">
                     #{bundle['file.downloadBtn.format.dataSummary']}
                 </p:commandLink>
                 <!-- same, with download popup required: -->
@@ -286,7 +286,7 @@
                 <p:commandLink rendered="#{DatasetPage.isDifferentiallyPrivateDataSummaryAvailable(fileMetadata) and !downloadPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                               actionListener="#{fileDownloadService.startFileDownload(null, fileMetadata, 'datasummary-diffprivate')}">
+                               actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'datasummary-diffprivate')}">
                     #{bundle['file.downloadBtn.format.dataSummary.diffPrivate']}
                 </p:commandLink>
                 <!-- same, with a popup: -->
@@ -296,7 +296,7 @@
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'datasummary-diffprivate' )}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                    #{bundle['file.downloadBtn.format.dataSummary']}
+                    #{bundle['file.downloadBtn.format.dataSummary.diffPrivate']}
                 </p:commandLink>
             </li>
             
