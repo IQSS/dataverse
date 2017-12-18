@@ -196,7 +196,8 @@
                             </ui:fragment>
                         </div>
                     </p:column>
-                    <p:column class="col-file-action text-right">
+                        <!-- MAD: Remove padding and fix overlay like on dataset page -->
+                    <p:column class="col-file-action text-right" style="padding-bottom: 300px;">
                         <!--MAD: here is where the button dropdown should go. right now all the buttons are individual... -->
                         
                         <!-- MAD: Dropdown from filesFragment.xhtml -->
@@ -208,6 +209,15 @@
                             <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                 <!-- MAD: Insert provenance option here -->
                                 <!-- MAD: Buttons from fileFragment that need to be worked with -->
+                                <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                    <p:commandLink id="fileProvenanceButton"
+                                               actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
+                                               update=":datasetForm:editProvenancePopup"
+                                               oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
+                                                #{bundle['file.provenance']} 
+                                    </p:commandLink>    
+                                </li> 
+                                
                                 <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
                                     <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
                                         <p:commandLink oncomplete="toggle_dropdown();" 
@@ -582,6 +592,10 @@
             <p:commandButton id="fileThumbnailConfirmCntBtn" value="#{bundle.continue}" oncomplete="PF('fileThumbnailConfirm').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
             <p:commandButton id="fileThumbnailConfirmCancelBtn" value="#{bundle.cancel}" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
         </div>
+    </p:dialog>
+    <!--MAD: Insert provenance popup here -->
+    <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenance']}" widgetVar="editProvenancePopup" modal="true">
+        
     </p:dialog>
     <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
