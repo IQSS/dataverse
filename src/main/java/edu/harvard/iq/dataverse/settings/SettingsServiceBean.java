@@ -357,7 +357,13 @@ public class SettingsServiceBean {
         /**
          * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
          */
-        PVCustomPasswordResetAlertMessage
+        PVCustomPasswordResetAlertMessage,
+        /*
+        String to describe DOI format for data files. Default is INDEPENDENT. (That is independent 
+        from the Dataset DOI
+        If 'DEPENEDENT' then the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+        */
+        DataFileDOIFormat
         ;
 
         @Override

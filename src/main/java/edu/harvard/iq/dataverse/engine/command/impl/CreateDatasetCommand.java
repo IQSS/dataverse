@@ -79,8 +79,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         
         IdServiceBean idServiceBean = IdServiceBean.getBean(theDataset.getProtocol(), ctxt);
         
-        System.out.print("Execute create DS command: " + idServiceBean.toString());
-        
         if (theDataset.getIdentifier() == null || theDataset.getIdentifier().isEmpty()) {
             
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));

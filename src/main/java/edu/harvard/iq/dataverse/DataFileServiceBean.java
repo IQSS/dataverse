@@ -11,8 +11,10 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DataFileDOIFormat;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1552,14 +1554,22 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     public String generateDataFileIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFileDOIFormat, "INDEPENDENT");
+        
+        String datasetIdentifer = "";
+        //If format is dependent then pre-pend the dataset identifier
+        if (doiDataFileFormat.equals(SystemConfig.DataFileDOIFormat.DEPENDENT.toString())){            
+            datasetIdentifer = datafile.getOwner().getIdentifier() + "/";
+        }
+ 
         switch (doiIdentifierType) {
-            case "randomString":
-                return generateIdentifierAsRandomString(datafile, idServiceBean);
+            case "randomString":               
+                return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean);
             case "sequentialNumber":
                 return generateIdentifierAsSequentialNumber(datafile, idServiceBean);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(datafile, idServiceBean);
+                return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean);
         }
     }
     

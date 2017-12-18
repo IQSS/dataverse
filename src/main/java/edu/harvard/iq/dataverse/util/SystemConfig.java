@@ -842,6 +842,26 @@ public class SystemConfig {
         }
         
     }
+    
+    public enum DataFileDOIFormat {
+        DEPENDENT("DEPENDENT"),
+        INDEPENDENT("INDEPENDENT");
+        private final String text;
+
+        public String getText() {
+            return text;
+        }
+        
+        private DataFileDOIFormat(final String text){
+            this.text = text;
+        }
+        
+        @Override
+        public String toString() {
+            return text;
+        }
+        
+    }
 
     public boolean isPublicInstall(){
         boolean saneDefault = false;
