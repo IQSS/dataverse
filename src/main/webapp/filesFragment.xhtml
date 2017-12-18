@@ -218,7 +218,7 @@
             <ui:fragment rendered="#{fileMetadata.datasetVersion.released or ((fileMetadata.datasetVersion.deaccessioned or fileMetadata.datasetVersion.draft) 
                                      and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                 <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
-                <a href="#{widgetWrapper.wrapURL('/file.xhtml')}?persistentId=#{fileMetadata.dataFile.globalId}&amp;version=#{fileMetadata.datasetVersion.friendlyVersionNumber}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalId).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
                     #{fileMetadata.label}
                 </a>
             </ui:fragment>
