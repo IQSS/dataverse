@@ -13,7 +13,7 @@ RUN sudo -u postgres /usr/bin/initdb -D /var/lib/pgsql/data
 #RUN sudo -u postgres createuser dvnapp
 
 # copy configuration related files
-RUN cp /tmp/dv/pg_hba.conf /tmp/dv/postgresql.conf /var/lib/pgsql/data/ ; cp /tmp/dv/schema.xml /opt/solr-4.6.0/example/solr/collection1/conf/schema.xml
+RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/data/ ; cp /tmp/dv/schema.xml /opt/solr-4.6.0/example/solr/collection1/conf/schema.xml
 
 # skipping glassfish user and solr user (run both as root)
 
