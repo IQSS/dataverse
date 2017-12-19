@@ -721,7 +721,7 @@ div[id$="filesTable"].ui-datatable.ui-datatable-scrollable {padding-right:12px;}
 #file-replace-original-block div[id$="filesTable"] .col-file-metadata {padding:4px 10px;}
 
 /* HACK */
-div[id$="filesTable"] div.ui-datatable-scrollable-body {padding-bottom:140px;}
+div[id$="filesTable"] div.ui-datatable-scrollable-body > table {margin-bottom:140px;}
 
 span.ingest-warning {display:inline-block; font-size:24px; line-height:1; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:3px} 
