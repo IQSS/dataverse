@@ -561,6 +561,7 @@ public class JsonPrinter {
         
         return jsonObjectBuilder()
                 .add("id", df.getId())
+                .add("persistentId", df.getGlobalId())
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())            
                 .add("filesize", df.getFilesize())            
