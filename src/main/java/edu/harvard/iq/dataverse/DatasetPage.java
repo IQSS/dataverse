@@ -2083,12 +2083,12 @@ public class DatasetPage implements java.io.Serializable {
         List<FileMetadata> allFiles = new ArrayList<>();
         
         if (isSelectAllFiles()){
-            workingVersion.getFileMetadatas().forEach((fm) -> {
+            for (FileMetadata fm: workingVersion.getFileMetadatas()){
                 allFiles.add(fm);
-            });
+            }
             this.selectedFiles = allFiles;
         }
-
+ 
         for (FileMetadata fmd : this.selectedFiles){
             if(this.fileDownloadHelper.canDownloadFile(fmd)){
                 getSelectedDownloadableFiles().add(fmd);
