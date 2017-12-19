@@ -48,22 +48,53 @@ public class TabularIT {
         uploadIngestableFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
         long fileId = JsonPath.from(uploadIngestableFile.body().asString()).getLong("data.files[0].dataFile.id");
+        String fileIdAsString = Long.toString(fileId);
         String filePersistentId = JsonPath.from(uploadIngestableFile.body().asString()).getString("data.files[0].dataFile.persistentId");
         System.out.println("fileId: " + fileId);
         System.out.println("filePersistentId: " + filePersistentId);
 
         // Give file time to ingest
-        Thread.sleep(2000);
+        Thread.sleep(3000);
 
         Response getMetaUsingPersistentId = UtilIT.getMetaDatafileDeprecated(filePersistentId, apiToken);
         getMetaUsingPersistentId.then().assertThat()
                 .statusCode(NOT_FOUND.getStatusCode());
 
-        Response getMetaUsingId = UtilIT.getMetaDatafileDeprecated(Long.toString(fileId), apiToken);
+        Response getMetaUsingId = UtilIT.getMetaDatafileDeprecated(fileIdAsString, apiToken);
         getMetaUsingId.prettyPrint();
         getMetaUsingId.then().assertThat()
                 .body("codeBook.fileDscr.fileTxt.fileName", equalTo("50by1000.tab"))
                 .statusCode(OK.getStatusCode());
+
+        Response fileMetadataNoFormat = UtilIT.getFileMetadata(filePersistentId, null, apiToken);
+        fileMetadataNoFormat.prettyPrint();
+        fileMetadataNoFormat.then().assertThat()
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("50by1000.tab"))
+                .statusCode(OK.getStatusCode());
+
+        Response fileMetadataNoFormatFileId = UtilIT.getFileMetadata(fileIdAsString, null, apiToken);
+        fileMetadataNoFormatFileId.prettyPrint();
+        fileMetadataNoFormatFileId.then().assertThat()
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("50by1000.tab"))
+                .statusCode(OK.getStatusCode());
+
+        Response fileMetadataDdi = UtilIT.getFileMetadata(filePersistentId, "ddi", apiToken);
+        fileMetadataDdi.prettyPrint();
+        fileMetadataDdi.then().assertThat()
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("50by1000.tab"))
+                .statusCode(OK.getStatusCode());
+
+        boolean testPreprocessedMetadataFormat = false;
+        if (testPreprocessedMetadataFormat) {
+            // If you don't have all the dependencies in place, such as Rserve, you might get a 503 and this error:
+            // org.rosuda.REngine.Rserve.RserveException: Cannot connect: Connection refused
+            Response fileMetadataPreProcessed = UtilIT.getFileMetadata(filePersistentId, "preprocessed", apiToken);
+            fileMetadataPreProcessed.prettyPrint();
+            fileMetadataPreProcessed.then().assertThat()
+                    .body("codeBook.fileDscr.fileTxt.fileName", equalTo("50by1000.tab"))
+                    .statusCode(OK.getStatusCode());
+        }
+
     }
 
 }
