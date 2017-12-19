@@ -363,7 +363,7 @@ public class SettingsServiceBean {
         from the Dataset DOI
         If 'DEPENEDENT' then the DOI will be the Dataset DOI plus a file DOI with a slash in between.
         */
-        DataFileDOIFormat
+        DataFilePIDFormat
         ;
 
         @Override

@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DataFileDOIFormat;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -1554,11 +1553,11 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     public String generateDataFileIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFileDOIFormat, "INDEPENDENT");
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
         
         String datasetIdentifer = "";
         //If format is dependent then pre-pend the dataset identifier
-        if (doiDataFileFormat.equals(SystemConfig.DataFileDOIFormat.DEPENDENT.toString())){            
+        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){            
             datasetIdentifer = datafile.getOwner().getIdentifier() + "/";
         }
  
@@ -1566,7 +1565,11 @@ public class DataFileServiceBean implements java.io.Serializable {
             case "randomString":               
                 return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean);
             case "sequentialNumber":
-                return generateIdentifierAsSequentialNumber(datafile, idServiceBean);
+                if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
+                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean);
+                } else {
+                    return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean);
+                }
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
                 return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean);
@@ -1583,7 +1586,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(DataFile datafile, IdServiceBean idServiceBean) {
+    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean) {
         
         String identifier; 
         do {
@@ -1600,6 +1603,44 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         return identifier;
     }
+    
+    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean) {
+        
+        String identifier; 
+        Boolean queryDone = false;
+            Long retVal = new Long(0);
+        do {
+
+            Long dsId = datafile.getOwner().getId();
+            if(!queryDone && dsId != null){
+                
+                System.out.print("select o.identifier  from dvobject o " +
+                    "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId +
+                     ")");
+                            Object result = em.createNativeQuery("select o.identifier  from dvobject o " +
+                    "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId +
+                     ")").getSingleResult();
+
+
+            if (result != null) {
+               retVal = new Long(1); 
+            } else {
+               retVal = (Long) result;
+            }
+                
+            } else {
+                retVal++;
+            }
+            queryDone = true;
+            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // because the stored procedure hasn't been created in the database?
+            
+            identifier = datafile.getOwner().getIdentifier() + "/"+  retVal.toString();
+            System.out.print(identifier);
+        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+        
+        return identifier;
+    }
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
@@ -1610,9 +1651,21 @@ public class DataFileServiceBean implements java.io.Serializable {
      * @param idServiceBean
      * @return   */
     public boolean isIdentifierUniqueInDatabase(String userIdentifier, DataFile datafile, IdServiceBean idServiceBean) {
-        String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
-        query += " and d.protocol ='" + datafile.getProtocol() + "'";
-        query += " and d.authority = '" + datafile.getAuthority() + "'";
+        String testProtocol = "";
+        String testAuthority = "";
+        if (datafile.getAuthority() != null){
+            testAuthority = datafile.getAuthority();
+        } else {
+            testAuthority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
+        }
+        if (datafile.getProtocol() != null){
+            testProtocol = datafile.getProtocol();
+        } else {
+            testProtocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
+        }
+        String query = "SELECT d FROM DvObject d WHERE d.identifier = '" + userIdentifier + "'";
+        query += " and d.protocol ='" + testProtocol + "'";
+        query += " and d.authority = '" + testAuthority + "'";
         boolean u = em.createQuery(query).getResultList().isEmpty();
             
         try{

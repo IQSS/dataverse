@@ -843,7 +843,7 @@ public class SystemConfig {
         
     }
     
-    public enum DataFileDOIFormat {
+    public enum DataFilePIDFormat {
         DEPENDENT("DEPENDENT"),
         INDEPENDENT("INDEPENDENT");
         private final String text;
@@ -852,7 +852,7 @@ public class SystemConfig {
             return text;
         }
         
-        private DataFileDOIFormat(final String text){
+        private DataFilePIDFormat(final String text){
             this.text = text;
         }
         
