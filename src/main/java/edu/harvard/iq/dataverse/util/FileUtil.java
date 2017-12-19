@@ -1326,6 +1326,7 @@ public class FileUtil implements java.io.Serializable  {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
         }
         if (downloadType != null && downloadType.equals("var")) {
+            // FIXME: Stop using "/api/meta", which is deprecated. Use "/api/access/datafile/{fileId}/metadata" instead.
             fileDownloadUrl = "/api/meta/datafile/" + fileId;
         }
         if (downloadType != null && downloadType.equals("tab")) {

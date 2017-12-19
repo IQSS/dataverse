@@ -478,6 +478,17 @@ public class UtilIT {
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
     }
 
+    static Response getMetaDatafileDeprecated(String fileIdOrPersistentId, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + fileIdOrPersistentId;
+        }
+        return given()
+                .get("/api/meta/datafile/" + idInPath + "?key=" + apiToken + optionalQueryParam);
+    }
+
     static Response getSwordAtomEntry(String persistentId, String apiToken) {
         Response response = given()
                 .auth().basic(apiToken, EMPTY_STRING)
