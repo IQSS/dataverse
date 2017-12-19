@@ -28,7 +28,7 @@ import javax.inject.Named;
 
 @ViewScoped
 @Named
-public class ConfigureFragmentBean implements java.io.Serializable{
+public class ConfigureFragmentBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(ConfigureFragmentBean.class.getName());
     
