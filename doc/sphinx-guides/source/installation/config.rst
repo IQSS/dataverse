@@ -284,11 +284,11 @@ You can configure this redirect properly in your cloud environment to generate a
 Amazon S3 Storage
 +++++++++++++++++
 
-For institutions and organizations looking to use Amazon's S3 cloud storage for their installation, this can be set up manually through creation of a credentials file or automatically via the aws console commands. 
+For institutions and organizations looking to use Amazon's S3 cloud storage for their installation, this can be set up manually through creation of the credentials and config files or automatically via the aws console commands. 
 
 You'll need an AWS account with an associated S3 bucket for your installation to use. From the S3 management console (e.g. `<https://console.aws.amazon.com/>`_), you can poke around and get familiar with your bucket. We recommend using IAM (Identity and Access Management) to create a user with full S3 access and nothing more, for security reasons. See `<http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_ for more info on this process.
 
-Make note of the bucket's name and the region its data is hosted in. Dataverse and the AWS SDK make use of "AWS credentials profile file" located in ``~/.aws/credentials`` where ``~`` is the home directory of the user you run Glassfish as. This file can be generated via either of two methods described below. It's also possible to use IAM Roles rather than a credentials file.
+Make note of the bucket's name and the region its data is hosted in. Dataverse and the AWS SDK make use of "AWS credentials profile file" and "AWS config profile file" located in ``~/.aws/`` where ``~`` is the home directory of the user you run Glassfish as. This file can be generated via either of two methods described below. It's also possible to use IAM Roles rather than the credentials file. Please note that in this case you will need anyway the config file to specify the region.
 
 Set Up credentials File Manually
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -301,7 +301,12 @@ Once you have acquired the keys, they need to be added to the ``credentials`` fi
 | ``aws_access_key_id = <insert key, no brackets>``
 | ``aws_secret_access_key = <insert secret key, no brackets>``
 
-Place this file in a folder named ``.aws`` under the home directory for the user running your Dataverse installation.
+You must also specify the AWS region, in the ``config`` file, for example:
+
+| ``[default]``
+| ``region = us-east-1``
+
+Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish instance. 
 
 Set Up credentials File Via Command Line Tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -319,7 +324,7 @@ You'll be prompted to enter your Access Key ID and secret key, which should be i
 Using an IAM Role with EC2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are hosting Dataverse on an AWS EC2 instance alongside storage in S3, it possible to use IAM Roles instead of the credentials file (the file at ``~/.aws/credentials`` mentioned above) . For more information on this option, see http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+If you are hosting Dataverse on an AWS EC2 instance alongside storage in S3, it possible to use IAM Roles instead of the credentials file (the file at ``~/.aws/credentials`` mentioned above) . Please note that in this case you will need anyway the config file to specify the region. For more information on this option, see http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
 
 Configure Dataverse to Use AWS/S3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
