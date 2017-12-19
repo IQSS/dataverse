@@ -109,26 +109,17 @@ public class FileDownloadHelper implements java.io.Serializable {
             return false;
         } 
         
-        // --------------------------------------------------------------------        
-        // Grab the fileMetadata.id and restriction flag                
-        // --------------------------------------------------------------------
         Long fid = fileMetadata.getId();
         //logger.info("calling candownloadfile on filemetadata "+fid);
+        // Note that `isRestricted` at the FileMetadata level is for expressing intent by version. Enforcement is done with `isRestricted` at the DataFile level.
         boolean isRestrictedFile = fileMetadata.isRestricted();
         
-        // --------------------------------------------------------------------
         // Has this file been checked? Look at the DatasetPage hash
-        // --------------------------------------------------------------------
         if (this.fileDownloadPermissionMap.containsKey(fid)){
             // Yes, return previous answer
             //logger.info("using cached result for candownloadfile on filemetadata "+fid);
             return this.fileDownloadPermissionMap.get(fid);
         }
-        //----------------------------------------------------------------------
-        //(0) Before we do any testing - if version is deaccessioned and user
-        // does not have edit dataset permission then may download
-        //----------------------------------------------------------------------
-        
        if (fileMetadata.getDatasetVersion().isDeaccessioned()) {
            if (this.doesSessionUserHavePermission(Permission.EditDataset, fileMetadata)) {
                // Yes, save answer and return true
@@ -140,55 +131,28 @@ public class FileDownloadHelper implements java.io.Serializable {
            }
        }
 
-        // --------------------------------------------------------------------
-        // (1) Is the file Unrestricted ?        
-        // --------------------------------------------------------------------
         if (!isRestrictedFile){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
         }
         
-        // --------------------------------------------------------------------
-        // Conditions (2) through (4) are for Restricted files
-        // --------------------------------------------------------------------
-        
-        // --------------------------------------------------------------------
-        // (2) See if the DataverseRequest, which contains IP Groups, has permission to download the file.
-        // --------------------------------------------------------------------
+        // See if the DataverseRequest, which contains IP Groups, has permission to download the file.
         if (permissionService.requestOn(dvRequestService.getDataverseRequest(), fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
             logger.fine("The DataverseRequest (User plus IP address) has access to download the file.");
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
         }
 
-        // --------------------------------------------------------------------
-        // (3) Does the User have DownloadFile Permission at the **Dataset** level 
-        // --------------------------------------------------------------------
-        
-
+        // Does the User have DownloadFile Permission at the **Dataset** level
+        // TODO: Investigate if this call to `doesSessionUserHavePermission` is necessary. Is the `requestOn` check above enough?
         if (this.doesSessionUserHavePermission(Permission.DownloadFile, fileMetadata)){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
         }
 
-  
-        // --------------------------------------------------------------------
-        // (4) Does the user has DownloadFile permission on the DataFile            
-        // --------------------------------------------------------------------
-        /*
-        if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
-            this.fileDownloadPermissionMap.put(fid, true);
-            return true;
-        }
-        */
-        
-        // --------------------------------------------------------------------
-        // (6) No download....
-        // --------------------------------------------------------------------
         this.fileDownloadPermissionMap.put(fid, false);
-       
         return false;
     }
    
