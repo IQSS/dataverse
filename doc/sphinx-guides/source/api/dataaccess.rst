@@ -27,7 +27,7 @@ Value           Description
 ==============  ===========
 original        "Saved Original", the proprietary (SPSS, Stata, R, etc.) file from which the tabular data was ingested;
 RData           Tabular data as an R Data frame (generated; unless the "original" file was in R);
-prep		"Pre-processed data", in JSON. (TODO: *get a proper description of the feature from James/Vito*)
+prep		"Data Summary" aka "preprocessed metadata". (DEPRECATED! use ``/api/access/datafile/$id/metadata/preproecessed`` instead; see below)
 ==============  ===========
 
 ``imageThumb``
@@ -172,7 +172,7 @@ Partial record parameters:
 
 ``/api/access/datafile/$id/metadata/preprocessed``
 
-This method provides the "Pre-processed Data" - a summary record that describes the values of the data vectors in the tabular file, in JSON. These metadata values are used by TwoRavens, the companion data exploration utility of the Dataverse application. 
+This method provides Data Summary (sometimes referred to as "preprocessed metadata") - Summary statistics and metadata describing the data vectors in the tabular file (in JSON). These metadata values are used by TwoRavens, the companion data exploration utility of the Dataverse application. 
 
 Authentication and Authorization
 -------------------------------- 

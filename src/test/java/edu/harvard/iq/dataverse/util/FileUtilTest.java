@@ -152,7 +152,8 @@ public class FileUtilTest {
         assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false));
         assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false));
         assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false));
-        assertEquals("/api/meta/datafile/42", FileUtil.getFileDownloadUrlPath("var", fileId, false));
+        assertEquals("/api/access/datafile/42/metadata/ddi", FileUtil.getFileDownloadUrlPath("varddi", fileId, false));
+        assertEquals("/api/access/datafile/42/metadata/preprocessed", FileUtil.getFileDownloadUrlPath("datasummary", fileId, false));
         assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false));
         assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true));
         assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true));

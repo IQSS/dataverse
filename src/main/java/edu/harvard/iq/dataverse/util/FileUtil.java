@@ -1316,23 +1316,25 @@ public class FileUtil implements java.io.Serializable  {
 
     public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten) {
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
-        if (downloadType != null && downloadType.equals("bundle")) {
-            fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
-        }
-        if (downloadType != null && downloadType.equals("original")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=original";
-        }
-        if (downloadType != null && downloadType.equals("RData")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
-        }
-        if (downloadType != null && downloadType.equals("var")) {
-            fileDownloadUrl = "/api/meta/datafile/" + fileId;
-        }
-        if (downloadType != null && downloadType.equals("tab")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
+        if (downloadType != null) {
+            if (downloadType.equals("bundle")) {
+                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
+            } else if (downloadType.equals("original")) {
+                fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=original";
+            } else if (downloadType.equals("RData")) {
+                fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
+            } else if (downloadType.equals("varddi")) {
+                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata/ddi";
+            } else if (downloadType.equals("datasummary")) {
+                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata/preprocessed";
+            } else if (downloadType.equals("datasummary-diffprivate")) {
+                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata/preprocessed?diffPrivate=true";
+            } else if (downloadType.equals("tab")) {
+                fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
+            }
         }
         if (gbRecordsWritten) {
-            if (downloadType != null && (downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab"))) {
+            if (fileDownloadUrl.indexOf('?') > 0) {
                 fileDownloadUrl += "&gbrecs=true";
             } else {
                 fileDownloadUrl += "?gbrecs=true";
