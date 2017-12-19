@@ -2079,8 +2079,16 @@ public class DatasetPage implements java.io.Serializable {
             requestContext.execute("PF('selectFilesForDownload').show()");
             return;
         }
+
+        List<FileMetadata> allFiles = new ArrayList<>();
         
-        
+        if (isSelectAllFiles()){
+            for (FileMetadata fm: workingVersion.getFileMetadatas()){
+                allFiles.add(fm);
+            }
+            this.selectedFiles = allFiles;
+        }
+ 
         for (FileMetadata fmd : this.selectedFiles){
             if(this.fileDownloadHelper.canDownloadFile(fmd)){
                 getSelectedDownloadableFiles().add(fmd);
@@ -2109,7 +2117,7 @@ public class DatasetPage implements java.io.Serializable {
         }       
 
     }
-    
+
     private boolean selectAllFiles;
 
     public boolean isSelectAllFiles() {
@@ -2119,32 +2127,13 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectAllFiles(boolean selectAllFiles) {
         this.selectAllFiles = selectAllFiles;
     }
-    
-    public void toggleSelectedFiles(){
-        //method for when user clicks (de-)select all files
-        this.selectedFiles = new ArrayList<>();
-        if(this.selectAllFiles){
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                this.selectedFiles.add(fmd);
-                fmd.setSelected(true);
-            }
-        } else {
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                fmd.setSelected(false);
-            }           
-        }
-        updateFileCounts();
+
+    public void toggleAllSelected(){
+        //This is here so that if the user selects all on the dataset page
+        // s/he will get all files on download
+        this.selectAllFiles = !this.selectAllFiles;
     }
-       
     
-    public void updateSelectedFiles(FileMetadata fmd){
-        if(fmd.isSelected()){
-            this.selectedFiles.add(fmd);
-        } else{
-            this.selectedFiles.remove(fmd);
-        }
-        updateFileCounts();
-    }
 
     // helper Method
     public String getSelectedFilesIdsString() {        
