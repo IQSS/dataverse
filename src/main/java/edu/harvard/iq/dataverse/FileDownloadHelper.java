@@ -144,14 +144,6 @@ public class FileDownloadHelper implements java.io.Serializable {
             return true;
         }
 
-        // Does the User have DownloadFile Permission at the **Dataset** level
-        // TODO: Investigate if this call to `doesSessionUserHavePermission` is necessary. Is the `requestOn` check above enough?
-        if (this.doesSessionUserHavePermission(Permission.DownloadFile, fileMetadata)){
-            // Yes, save answer and return true
-            this.fileDownloadPermissionMap.put(fid, true);
-            return true;
-        }
-
         this.fileDownloadPermissionMap.put(fid, false);
         return false;
     }
