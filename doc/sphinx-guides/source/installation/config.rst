@@ -306,9 +306,9 @@ You must also specify the AWS region, in the ``config`` file, for example:
 | ``[default]``
 | ``region = us-east-1``
 
-Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish instance. 
+Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish instance. (From the `AWS Command Line Interface Documentation <http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_: "In order to separate credentials from less sensitive options, region and output format are stored in a separate file named config in the same folder")
 
-Set Up credentials File Via Command Line Tools
+Set Up Access Configuration Via Command Line Tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
@@ -319,12 +319,12 @@ First, we'll get our access keys set up. If you already have your access keys co
 
 ``aws configure``
 
-You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account. The subsequent config steps after the access keys are up to you. For reference, these keys are stored in ``~/.aws/credentials``.
+You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account. The subsequent config steps after the access keys are up to you. For reference, the keys will be stored in ``~/.aws/credentials``, and your AWS access region in ``~/.aws/config``. 
 
 Using an IAM Role with EC2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are hosting Dataverse on an AWS EC2 instance alongside storage in S3, it possible to use IAM Roles instead of the credentials file (the file at ``~/.aws/credentials`` mentioned above) . Please note that in this case you will need anyway the config file to specify the region. For more information on this option, see http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+If you are hosting Dataverse on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead of the credentials file (the file at ``~/.aws/credentials`` mentioned above). Please note that you will still need the ``~/.aws/config`` file to specify the region. For more information on this option, see http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
 
 Configure Dataverse to Use AWS/S3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
