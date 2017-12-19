@@ -775,7 +775,7 @@ public class FilePage implements java.io.Serializable {
             e.printStackTrace();
         }
         
-        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
+        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), persistentId);
     }
 
     public List<ExternalTool> getExternalTools() {
