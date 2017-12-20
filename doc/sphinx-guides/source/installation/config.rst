@@ -767,20 +767,18 @@ It is recommended that you keep this as a slash ("/").
 :IdentifierGenerationStyle
 ++++++++++++++++++++++++++
 
-The ``:IdentifierGenerationStyle`` setting has to do with the "identifier" component of a persistent identifier (PID). Using "doi:10.7910/DVN/TJCLKP" as an example, the components of a PID for a dataset are as follows:
+The ``:IdentifierGenerationStyle`` setting has to do with the "identifier" component of a persistent identifier (PID). As an example, let's break down the PID "doi:10.7910/DVN/TJCLKP" into its component parts:
 
-- procotol: doi:
-- authority: 10.7910/DVN
-- separator: /
-- identifier: TJCLKP
+- Procotol: *doi:*
+- Authority: *10.7910/DVN*
+- Separator: */*
+- Identifier: *TJCLKP*
 
-That is to say, ``:IdentifierGenerationStyle`` controls the "identifier" component, the last part of a PID ("TJCLKP" in the example above).
+``:IdentifierGenerationStyle`` controls the "identifier" component, the last part of a PID ("TJCLKP" in the example above).
 
-By default, the "identifier" Dataverse generates for a dataset is a random 6 character string such as "TJCLKP" above. This is the behavior you should expect if you leave ``:IdentifierGenerationStyle`` undefined or set it to ``randomString``. 
+By default, the "identifier" that Dataverse generates for a dataset is a random 6 character string such as "TJCLKP" above. This is the behavior you should expect if you leave ``:IdentifierGenerationStyle`` undefined or set it to ``randomString``. 
 
-If you set ``:IdentifierGenerationStyle`` to ``sequentialNumber``, the "identifier" for a dataset will be sequential numeric values such as "100001" followed by "100002", etc. This configuration option depends on a sequence being created in your database using the downloadable :download:`createsequence.sql </_static/util/createsequence.sql>` script below. See the embedded comments for further instructions.
-
-Please note that ``:IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``:DataFilePIDFormat`` below for more details.
+If you set ``:IdentifierGenerationStyle`` to ``sequentialNumber``, the "identifiers" for dataset PIDs will be sequential numeric values, such as "100001" followed by "100002", etc. This configuration option depends on a sequence being created in your database using the downloadable :download:`createsequence.sql </_static/util/createsequence.sql>` script below. See the embedded comments for further instructions.
 
 .. literalinclude:: ../_static/util/createsequence.sql
 
@@ -792,13 +790,15 @@ with the single return argument ``identifier``.
 For systems using Postgresql 8.4 or older, the procedural language `plpgsql` should be enabled first.
 We have provided an example :download:`here </_static/util/pg8-createsequence-prep.sql>`.
 
+Please note that ``:IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``:DataFilePIDFormat`` below for more details.
+
 
 :DataFilePIDFormat
 ++++++++++++++++++
 
-This setting controls the way that the "identifier" component of a file's persistent identifier (PIDs) relates to the PID of its "parent" dataset.
+This setting controls the way that the "identifier" component of a file's persistent identifier (PID) relates to the PID of its "parent" dataset.
 
-By default the identifier for a file is dependent on its parent dataset. For example, if the identifier of a dataset is "TJCLKP", the identifier for a file will be the identifier of a dataset followed by a slash ("/") followed by a random 6 character string, yielding something like "TJCLKP/MLGWJO". Identifiers in this format are what you should expect if you leave ``:DataFilePIDFormat`` undefined or set it to ``DEPENDENT`` and have not changed the ``:IdentifierGenerationStyle`` setting from its default.
+By default the identifier for a file is dependent on its parent dataset. For example, if the identifier of a dataset is "TJCLKP", the identifier for a file within that dataset will consist of the parent dataset's identifier followed by a slash ("/"), followed by a random 6 character string, yielding "TJCLKP/MLGWJO". Identifiers in this format are what you should expect if you leave ``:DataFilePIDFormat`` undefined or set it to ``DEPENDENT`` and have not changed the ``:IdentifierGenerationStyle`` setting from its default.
 
 Alternatively, the indentifier for File PIDs can be configured to be independent of Dataset PIDs using the setting "``INDEPENDENT``". In this case, file PIDs will not contain the PIDs of their parent datasets, and their PIDs will be generated the exact same way that datasets' PIDs are, based on the ``:IdentifierGenerationStyle`` setting described above (random 6 character strings or sequential numbers).
 
