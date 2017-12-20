@@ -358,13 +358,15 @@ A curl example using a ``pid``::
 Replacing Files
 ^^^^^^^^^^^^^^^
 
-Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
+Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced.
 
-    POST http://$SERVER/api/files/{id}/replace?key=$apiKey
+A curl example using an ``id`` (note that ``forceReplace`` is for replacing one file type with another)::
 
-A more detailed "replace" example using curl (note that ``forceReplace`` is for replacing one file type with another)::
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://example.dataverse.edu/api/files/{id}/replace"
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://example.dataverse.edu/api/files/$FILE_ID/replace"
+A curl example using a ``pid``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://example.dataverse.edu/api/files/:persistentId/replace?persistentId={pid}"
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
 

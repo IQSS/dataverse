@@ -317,7 +317,8 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         
         
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        String origFilePid = JsonPath.from(addResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
@@ -341,7 +342,7 @@ public class FilesIT {
         msg("Replace file - BAD/warning b/c different content-type");
 
         String pathToFileWrongCtype = "src/main/webapp/resources/images/ajax-loading.gif";
-        Response replaceRespWrongCtype  = UtilIT.replaceFile(origFileId, pathToFileWrongCtype, apiToken);
+        Response replaceRespWrongCtype  = UtilIT.replaceFile(origFilePid, pathToFileWrongCtype, apiToken);
         
         msgt(replaceRespWrongCtype.prettyPrint());
         
@@ -364,7 +365,7 @@ public class FilesIT {
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
-        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, json.build(), apiToken);
+        Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, json.build(), apiToken);
         
         msgt(replaceResp.prettyPrint());
         
@@ -385,9 +386,9 @@ public class FilesIT {
 
         long rootDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.rootDataFileId");
         long previousDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.previousDataFileId");
-        long newDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
+        Long newDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
         
-        assertEquals(origFileId, previousDataFileId);
+        assertEquals(origFileId.longValue(), previousDataFileId);
         assertEquals(rootDataFileId, previousDataFileId);
 
         
@@ -405,7 +406,7 @@ public class FilesIT {
         // -------------------------
         msg("Replace file (again)");
         String pathToFile3 = "scripts/search/data/replace_test/growing_file/2016-03/data.tsv";
-        Response replaceResp2 = UtilIT.replaceFile(newDataFileId, pathToFile3, apiToken);
+        Response replaceResp2 = UtilIT.replaceFile(newDataFileId.toString(), pathToFile3, apiToken);
         
         msgt("2nd replace: " + replaceResp2.prettyPrint());
         
@@ -422,15 +423,15 @@ public class FilesIT {
                 .body("data.files[0].description", equalTo(""))
                 ;
 
-        long rootDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("data.files[0].dataFile.rootDataFileId");
-        long previousDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("data.files[0].dataFile.previousDataFileId");
+        Long rootDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("data.files[0].dataFile.rootDataFileId");
+        Long previousDataFileId2 = JsonPath.from(replaceResp2.body().asString()).getLong("data.files[0].dataFile.previousDataFileId");
         
         msgt("newDataFileId: " + newDataFileId);
         msgt("previousDataFileId2: " + previousDataFileId2);
         msgt("rootDataFileId2: " + rootDataFileId2);
         
-        assertEquals(newDataFileId, previousDataFileId2);
-        assertEquals(rootDataFileId2, origFileId);        
+        assertEquals(newDataFileId.longValue(), previousDataFileId2.longValue());
+        assertEquals(rootDataFileId2.longValue(), origFileId.longValue());
         
     }
 
@@ -468,7 +469,7 @@ public class FilesIT {
                 .body("data.files[0].label", equalTo("50by1000.dta"))
                 .statusCode(OK.getStatusCode());
 
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
@@ -503,7 +504,7 @@ public class FilesIT {
                 .add("dataFileTags", Json.createArrayBuilder()
                         .add("Survey")
                 );
-        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, json.build(), apiToken);
+        Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, json.build(), apiToken);
 
         msgt(replaceResp.prettyPrint());
 
@@ -527,7 +528,7 @@ public class FilesIT {
         long previousDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.previousDataFileId");
         long newDataFileId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
 
-        assertEquals(origFileId, previousDataFileId);
+        assertEquals(origFileId.longValue(), previousDataFileId);
         assertEquals(rootDataFileId, previousDataFileId);
 
     }
@@ -559,7 +560,7 @@ public class FilesIT {
                 .body("data.files[0].label", equalTo("cc0.png"))
                 .statusCode(OK.getStatusCode());
 
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
@@ -588,7 +589,7 @@ public class FilesIT {
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
-        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, json.build(), apiToken);
+        Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, json.build(), apiToken);
 
         replaceResp.prettyPrint();
 
@@ -632,7 +633,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         
         
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
@@ -649,7 +650,7 @@ public class FilesIT {
         // Replace file in unpublished dataset -- e.g. file not published
         // -------------------------
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
-        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, apiToken);
+        Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, apiToken);
 
         String errMsgUnpublished = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.unpublished_file_cannot_be_replaced");
         
@@ -671,12 +672,13 @@ public class FilesIT {
         // Replace file with non-existent Id
         // -------------------------
         pathToFile2 = "src/main/webapp/resources/images/cc0.png";
-        long fakeFileId = origFileId+10;
-        Response replaceResp2 = UtilIT.replaceFile(fakeFileId, pathToFile2, apiToken);
+        Long fakeFileId = origFileId+10;
+        Response replaceResp2 = UtilIT.replaceFile(fakeFileId.toString(), pathToFile2, apiToken);
 
         msgt("non-existent id: " + replaceResp.prettyPrint());
 
         replaceResp2.then().assertThat()
+                // TODO: Some day, change this from BAD_REQUEST to NOT_FOUND and expect the standard error message.
                .statusCode(BAD_REQUEST.getStatusCode())
                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
                .body("message", Matchers.equalTo(BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Arrays.asList(fakeFileId + ""))))
@@ -718,7 +720,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         
         
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
@@ -741,7 +743,7 @@ public class FilesIT {
         // -------------------------
         // Delete file
         // -------------------------
-        Response deleteFileResp = UtilIT.deleteFile((int)origFileId, apiToken);
+        Response deleteFileResp = UtilIT.deleteFile(origFileId.intValue(), apiToken);
         deleteFileResp.then().assertThat()
                 .statusCode(NO_CONTENT.getStatusCode());
         // -------------------------
@@ -756,7 +758,7 @@ public class FilesIT {
         // Replace file in unpublished dataset -- e.g. file not published
         // -------------------------
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
-        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, apiToken);
+        Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, apiToken);
 
         String errMsgDeleted = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.existing_file_not_in_latest_published_version");
         
@@ -796,7 +798,7 @@ public class FilesIT {
                 .body("data.files[0].label", equalTo("favicondataverse.png"))
                 .statusCode(OK.getStatusCode());
 
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
         msg("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
@@ -817,7 +819,7 @@ public class FilesIT {
 
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         String jsonAsString = "notJson";
-        Response replaceResp = UtilIT.replaceFile(origFileId, pathToFile2, jsonAsString, apiToken);
+        Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, jsonAsString, apiToken);
 
         msgt("replace resp: " + replaceResp.prettyPrint());
 

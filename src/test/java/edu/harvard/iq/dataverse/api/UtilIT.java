@@ -442,16 +442,22 @@ public class UtilIT {
         return requestSpecification.post("/api/datasets/" + datasetId + "/add");
     }
 
-    static Response replaceFile(long fileId, String pathToFile, String apiToken) {
+    static Response replaceFile(String fileIdOrPersistentId, String pathToFile, String apiToken) {
         String jsonAsString = null;
-        return replaceFile(fileId, pathToFile, jsonAsString, apiToken);
+        return replaceFile(fileIdOrPersistentId, pathToFile, jsonAsString, apiToken);
     }
 
-    static Response replaceFile(long fileId, String pathToFile, JsonObject jsonObject, String apiToken) {
-        return replaceFile(fileId, pathToFile, jsonObject.toString(), apiToken);
+    static Response replaceFile(String fileIdOrPersistentId, String pathToFile, JsonObject jsonObject, String apiToken) {
+        return replaceFile(fileIdOrPersistentId, pathToFile, jsonObject.toString(), apiToken);
     }
 
-    static Response replaceFile(long fileId, String pathToFile, String jsonAsString, String apiToken) {
+    static Response replaceFile(String fileIdOrPersistentId, String pathToFile, String jsonAsString, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToFile));
@@ -459,7 +465,7 @@ public class UtilIT {
             requestSpecification.multiPart("jsonData", jsonAsString);
         }
         return requestSpecification
-                .post("/api/files/" + fileId + "/replace");
+                .post("/api/files/" + idInPath + "/replace" + optionalQueryParam);
     }
 
     static Response downloadFile(Integer fileId) {

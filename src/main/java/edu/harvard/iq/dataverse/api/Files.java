@@ -20,8 +20,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataComman
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -135,7 +137,7 @@ public class Files extends AbstractApiBean {
     @Path("{id}/replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response replaceFileInDataset(
-                    @PathParam("id") Long fileToReplaceId,
+                    @PathParam("id") String fileIdOrPersistentId,
                     @FormDataParam("jsonData") String jsonData,
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
@@ -208,8 +210,15 @@ public class Files extends AbstractApiBean {
         //-------------------
         // (5) Run "runReplaceFileByDatasetId"
         //-------------------
-        
-        
+        long fileToReplaceId = 0;
+        try {
+            DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
+            fileToReplaceId = dataFile.getId();
+        } catch (WrappedResponse ex) {
+            String error = BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Arrays.asList(fileIdOrPersistentId));
+            // TODO: Some day, return ex.getResponse() instead. Also run FilesIT and updated expected status code and message.
+            return error(BAD_REQUEST, error);
+        }
         if (forceReplace){
             addFileHelper.runForceReplaceFile(fileToReplaceId,
                                     newFilename,
