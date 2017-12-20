@@ -306,14 +306,24 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     ConstraintViolation violation = constraintViolations.iterator().next();
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
-                    try{
-                    for(DataFile df : dataFiles){
-                       commandEngine.submit(new CreateDataFileCommand(df, editVersion, dvReq));
+                    //If the Id type is sequential and Dependent then write file idenitifiers outside the command
+                    String datasetIdentifier = editVersion.getDataset().getIdentifier();
+                    Long maxIdentifier = null;
+                    if (systemConfig.isDataFilePIDSequentialDependent()) {
+                        maxIdentifier = datasetService.getMaximumExistingDatafileIdentifier(editVersion.getDataset());
                     }
-                    
-                    }catch(CommandException cmdex)
-                    {
-                        logger.info("Error saving file :"+cmdex.getMessage());
+                    String dataFileIdentifier = null;
+                    try {
+                        for (DataFile df : dataFiles) {
+                            if (maxIdentifier != null) {
+                                maxIdentifier++;
+                                dataFileIdentifier = datasetIdentifier + "/" + maxIdentifier.toString();
+                            }
+                            commandEngine.submit(new CreateDataFileCommand(df, editVersion, dvReq, dataFileIdentifier));
+                        }
+
+                    } catch (CommandException cmdex) {
+                        logger.info("Error saving file :" + cmdex.getMessage());
                     }
 //                    ingestService.addFiles(editVersion, dataFiles);
                 }

@@ -1087,17 +1087,27 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return null;
             }            
         }
-                
+         
+        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
+        String datasetIdentifier = dataset.getIdentifier();
+        Long maxIdentifier = null;
+
+        if (systemConfig.isDataFilePIDSequentialDependent()){
+            maxIdentifier = datasetService.getMaximumExistingDatafileIdentifier(dataset);
+        }
+        String dataFileIdentifier = null;
+        
         // Save the NEW files permanently: 
-        try{
-        for(DataFile dataFile : newFiles){
-            
-        commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest()));
-        }
-        }
-        catch(CommandException cmdex)
-        {
-            logger.info("Command exception:"+cmdex.getMessage());
+        try {
+            for (DataFile dataFile : newFiles) {
+                if (maxIdentifier != null){
+                    maxIdentifier++;
+                    dataFileIdentifier = datasetIdentifier + "/" + maxIdentifier.toString();
+                }
+                commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest(), dataFileIdentifier));
+            }
+        } catch (CommandException cmdex) {
+            logger.info("Command exception:" + cmdex.getMessage());
         }
         //ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false; 

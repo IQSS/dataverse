@@ -1613,11 +1613,8 @@ public class DataFileServiceBean implements java.io.Serializable {
 
             Long dsId = datafile.getOwner().getId();
             if(!queryDone && dsId != null){
-                
-                System.out.print("select o.identifier  from dvobject o " +
-                    "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId +
-                     ")");
-                            Object result = em.createNativeQuery("select o.identifier  from dvobject o " +
+
+                     Object result = em.createNativeQuery("select o.identifier  from dvobject o " +
                     "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId +
                      ")").getSingleResult();
 
@@ -1636,7 +1633,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             // because the stored procedure hasn't been created in the database?
             
             identifier = datafile.getOwner().getIdentifier() + "/"+  retVal.toString();
-            System.out.print(identifier);
+
         } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
         
         return identifier;

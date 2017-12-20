@@ -47,29 +47,26 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
 
     private static final Logger logger = Logger.getLogger(CreateDataFileCommand.class.getCanonicalName());
     private final DataFile theDataFile;
-    private final boolean registrationRequired;
     private final DatasetVersion version;
-    
-    
+    private final String identifier;
+       
   
 
     public CreateDataFileCommand(DataFile theDataFile,DatasetVersion version, DataverseRequest aRequest) {
         super(aRequest, theDataFile.getOwner());
         this.theDataFile = theDataFile;
-        this.version=version;
-        this.registrationRequired = false;
-        
+        this.version=version;  
+        this.identifier = null; 
     }
     
     
-
-    public CreateDataFileCommand(DataFile theDataFile,DatasetVersion version, DataverseRequest aRequest, boolean registrationRequired) {
+    public CreateDataFileCommand(DataFile theDataFile,DatasetVersion version, DataverseRequest aRequest, String identifier) {
         super(aRequest, theDataFile.getOwner());
         this.theDataFile = theDataFile;
-        this.version=version;
-        this.registrationRequired = registrationRequired;
-       
+        this.version=version; 
+        this.identifier = identifier; 
     }
+    
     
   
     @Override
@@ -100,13 +97,16 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
                     IdServiceBean idServiceBean = IdServiceBean.getBean(theDataFile.getProtocol(),ctxt);
                     if(theDataFile.getIdentifier()==null || theDataFile.getIdentifier().isEmpty())
                     {
-                        theDataFile.setIdentifier(ctxt.files().generateDataFileIdentifier(theDataFile, idServiceBean));
+                        if (this.identifier == null){
+                            theDataFile.setIdentifier(ctxt.files().generateDataFileIdentifier(theDataFile, idServiceBean));
+                        } else {
+                            theDataFile.setIdentifier(this.identifier);
+                        }
                     }
                     String nonNullDefaultIfKeyNotFound = "";
                     String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
                     String    authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-                    String  doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-                    String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+                    String    doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
                     if (theDataFile.getProtocol()==null) theDataFile.setProtocol(protocol);
                     if (theDataFile.getAuthority()==null) theDataFile.setAuthority(authority);
                     if (theDataFile.getDoiSeparator()==null) theDataFile.setDoiSeparator(doiSeparator);

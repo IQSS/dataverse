@@ -285,6 +285,28 @@ public class DatasetServiceBean implements java.io.Serializable {
        
         return u;
     }
+    
+    public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
+
+        Long retVal = new Long(0);
+
+        Long dsId = dataset.getId();
+        if (dsId != null) {
+            Object result = em.createNativeQuery("select o.identifier  from dvobject o "
+                    + "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId
+                    + ")").getSingleResult();
+
+            if (result != null) {
+                String identifier = (String) result;
+                identifier =  identifier.substring(identifier.lastIndexOf("/") + 1);
+                retVal = new Long(identifier) ;
+            }
+
+        }
+
+        return retVal;
+
+    }
 
     public DatasetVersion storeVersion( DatasetVersion dsv ) {
         em.persist(dsv);
