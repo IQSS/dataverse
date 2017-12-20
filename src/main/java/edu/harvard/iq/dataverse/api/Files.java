@@ -265,6 +265,8 @@ public class Files extends AbstractApiBean {
             
     } // end: replaceFileInDataset
 
+    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
+    // TODO: Rename this start with "delete" rather than "get".
     @DELETE
     @Path("{id}/map")
     public Response getMapLayerMetadatas(@PathParam("id") Long idSupplied) {

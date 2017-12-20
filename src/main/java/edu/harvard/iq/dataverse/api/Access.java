@@ -435,6 +435,7 @@ public class Access extends AbstractApiBean {
     */
     
     
+    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
@@ -565,6 +566,7 @@ public class Access extends AbstractApiBean {
     
     
     
+    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("fileCardImage/{fileId}")
     @GET
     @Produces({ "image/png" })

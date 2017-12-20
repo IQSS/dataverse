@@ -98,6 +98,7 @@ public class Meta {
         return retValue; 
     }
     
+    // Because this API is deprecated, we prefer to continue letting it operate on fileId rather adding support for persistent identifiers.
     @Deprecated
     @Path("datafile/{fileId}")
     @GET
