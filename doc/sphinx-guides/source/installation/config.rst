@@ -767,14 +767,20 @@ It is recommended that you keep this as a slash ("/").
 :IdentifierGenerationStyle
 ++++++++++++++++++++++++++
 
-By default, Dataverse generates a random 6 character string to use as the persistent identifier
-for a Dataset or File (e.g. "/DACBXY"). This default setting is "``randomString``". 
+The ``:IdentifierGenerationStyle`` setting has to do with the "identifier" component of a persistent identifier (PID). Using "doi:10.7910/DVN/TJCLKP" as an example, the components of a PID for a dataset are as follows:
 
-Change this to "``sequentialNumber``" to use sequential numeric values 
-instead (e.g. "/100001").
-In addition to this setting, a database sequence must be created in the database. 
-We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`).
-You may need to make some changes to suit your system setup, see the comments for more information: 
+- procotol: doi:
+- authority: 10.7910/DVN
+- separator: /
+- identifier: TJCLKP
+
+That is to say, ``:IdentifierGenerationStyle`` controls the "identifier" component, the last part of a PID ("TJCLKP" in the example above).
+
+By default, the "identifier" Dataverse generates for a dataset is a random 6 character string such as "TJCLKP" above. This is the behavior you should expect if you leave ``:IdentifierGenerationStyle`` undefined or set it to ``randomString``. 
+
+If you set ``:IdentifierGenerationStyle`` to ``sequentialNumber``, the "identifier" for a dataset will be sequential numeric values such as "100001" followed by "100002", etc. This configuration option depends on a sequence being created in your database using the downloadable :download:`createsequence.sql </_static/util/createsequence.sql>` script below. See the embedded comments for further instructions.
+
+Please note that ``:IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``:DataFilePIDFormat`` below for more details.
 
 .. literalinclude:: ../_static/util/createsequence.sql
 
@@ -789,24 +795,25 @@ We have provided an example :download:`here </_static/util/pg8-createsequence-pr
 
 :DataFilePIDFormat
 ++++++++++++++++++
-This setting controls the way that files' persisent identifiers (PIDs) behave in reference to the datasets they are contained within. By default, PIDs for files in Dataverse are dependent on the PIDs of their parent datasets. This means that the PID of a file will contain within it the PID of its parent dataset. For example, a dataset with a PID of */DACBXY*) can contain a file with the PID of */DACBXY/MLGWJO*. The default setting that enables this is "``DEPENDENT``". 
 
-Alternatively, File PIDs can be configured to be independent of Dataset PIDs using the setting "``INDEPENDENT``". In this case, file PIDs will not contain the PIDs of their parent datasets, and their PIDs will be generated the exact same way that datasets' PIDs are. 
+This setting controls the way that the "identifier" component of a file's persistent identifier (PIDs) relates to the PID of its "parent" dataset.
 
-The ``:DataFilePIDFormat`` setting interacts with the ``:IdentifierGenerationStyle`` setting. The below chart shows the results of each possible combination of parameters from the two settings.
+By default the identifier for a file is dependent on its parent dataset. For example, if the identifier of a dataset is "TJCLKP", the identifier for a file will be the identifier of a dataset followed by a slash ("/") followed by a random 6 character string, yielding something like "TJCLKP/MLGWJO". Identifiers in this format are what you should expect if you leave ``:DataFilePIDFormat`` undefined or set it to ``DEPENDENT`` and have not changed the ``:IdentifierGenerationStyle`` setting from its default.
 
-+-----------------+----------------+------------------+
-|                 |  randomString  | sequentialNumber |
-|                 |                |                  |
-+=================+================+==================+
-| **DEPENDENT**   | /DACBXY/MLGWJO |    /100001/1     |
-+-----------------+----------------+------------------+
-| **INDEPENDENT** |    /MLGWJO     |     /100002      |
-+-----------------+----------------+------------------+
+Alternatively, the indentifier for File PIDs can be configured to be independent of Dataset PIDs using the setting "``INDEPENDENT``". In this case, file PIDs will not contain the PIDs of their parent datasets, and their PIDs will be generated the exact same way that datasets' PIDs are, based on the ``:IdentifierGenerationStyle`` setting described above (random 6 character strings or sequential numbers).
 
+The chart below shows examples from each possible combination of parameters from the two settings. ``:IdentifierGenerationStyle`` can be either ``randomString`` (the default) or ``sequentialNumber`` and ``:DataFilePIDFormat`` can be either ``DEPENDENT`` (the default) or ``INDEPENDENT``. In the examples below the "identifier" for the dataset is "TJCLKP" for "randomString" and "100001" for "sequentialNumber".
 
-As seen above, in cases where ``:IdentifierGenerationStyle`` is set to *sequentialNumber* and ``:DataFilePIDFormat`` is set to *DEPENDENT*, each file within a dataset will be assigned a number *within* that dataset. Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file will be assigned a PID with the next number in the overall sequence, regardless of what dataset it is in. If the file is created after a dataset with the PID /100001, then the file will be assigned the PID /100002.
++-----------------+---------------+------------------+
+|                 | randomString  | sequentialNumber |
+|                 |               |                  |
++=================+===============+==================+
+| **DEPENDENT**   | TJCLKP/MLGWJO |     100001/1     |
++-----------------+---------------+------------------+
+| **INDEPENDENT** |    MLGWJO     |      100002      |
++-----------------+---------------+------------------+
 
+As seen above, in cases where ``:IdentifierGenerationStyle`` is set to *sequentialNumber* and ``:DataFilePIDFormat`` is set to *DEPENDENT*, each file within a dataset will be assigned a number *within* that dataset starting with "1". Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file will be assigned a PID with the next number in the overall sequence, regardless of what dataset it is in. If the file is created after a dataset with the PID 100001, then the file will be assigned the PID 100002. Datasets and files share the same database sequence that was created as part of the setup described in ``:IdentifierGenerationStyle`` above when using the ``sequentialNumber`` option.
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
