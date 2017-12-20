@@ -329,19 +329,34 @@ The review process can sometimes resemble a tennis match, with the authors submi
 
 
 Files
-~~~~~~~~~~~
+~~~~~
+
+.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+
+  Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
+
+    GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+
+Adding Files
+^^^^^^^^^^^^
 
 .. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
 
-Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
-    
-    PUT http://$SERVER/api/files/{id}/restrict
+Restrict Files
+^^^^^^^^^^^^^^
 
-Note that some Dataverse installations do not allow the ability to restrict files.
+Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files.
 
-A more detailed "restrict" example using curl::
+A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/{id}/restrict
+
+A curl example using a ``pid``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/:persistentId/restrict?persistentId={pid}
+
+Replacing Files
+^^^^^^^^^^^^^^^
 
 Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
 

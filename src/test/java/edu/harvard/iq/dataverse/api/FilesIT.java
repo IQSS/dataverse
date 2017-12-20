@@ -862,16 +862,16 @@ public class FilesIT {
 
     @Test
     public void testRestrictFile() {
-        msgt("testRestrictFile");
-        
+        System.out.println("testRestrictFile");
+
         //get publicInstall setting so we can change it back
         Response publicInstallResponse = UtilIT.getSetting(SettingsServiceBean.Key.PublicInstall);
         //TODO: fix this its a little hacky
         String publicInstall = String.valueOf(publicInstallResponse.getBody().asString().contains("true"));
-        
+
         // make sure this is not a public installation
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
-        
+
         // Set restrict to true
         boolean restrict = true;
         // Create user
@@ -882,11 +882,11 @@ public class FilesIT {
 
         // Create Dataset
         Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
-        
+
         // -------------------------
         // Add initial file
         // -------------------------
-        msg("Add initial file");
+        System.out.println("Add initial file");
         String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
@@ -896,35 +896,38 @@ public class FilesIT {
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].label", equalTo("favicondataverse.png"))
                 .statusCode(OK.getStatusCode());
-        
-        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
-        msg("Orig file id: " + origFileId);
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        String origFilePid = JsonPath.from(addResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
+
+        System.out.println("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
-        
+
         //restrict file good
-        Response restrictResponse = UtilIT.restrictFile(origFileId, restrict, apiToken);
-        
+        Response restrictResponse = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
+        restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
+                .body("data.message", equalTo("File favicondataverse.png restricted."))
                 .statusCode(OK.getStatusCode());
-        
+
         //restrict already restricted file bad
-        Response restrictResponseBad = UtilIT.restrictFile(origFileId, restrict, apiToken);
-        
+        Response restrictResponseBad = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
+        restrictResponseBad.prettyPrint();
         restrictResponseBad.then().assertThat()
+                .body("message", equalTo("Problem trying to update restriction status on favicondataverse.png: File favicondataverse.png is already restricted"))
                 .statusCode(BAD_REQUEST.getStatusCode());
-        
+
         //unrestrict file
         restrict = false;
-        Response unrestrictResponse = UtilIT.restrictFile(origFileId, restrict, apiToken);
-        
+        Response unrestrictResponse = UtilIT.restrictFile(origFilePid, restrict, apiToken);
+        unrestrictResponse.prettyPrint();
         unrestrictResponse.then().assertThat()
+                .body("data.message", equalTo("File favicondataverse.png unrestricted."))
                 .statusCode(OK.getStatusCode());
-        
+
         //reset public install
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, publicInstall);
 
-        
     }
     
         @Test

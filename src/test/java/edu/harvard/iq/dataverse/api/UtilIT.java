@@ -845,11 +845,17 @@ public class UtilIT {
         return response;
     }
 
-    static Response restrictFile(Long datafileId, boolean restrict, String apiToken) {
+    static Response restrictFile(String fileIdOrPersistentId, boolean restrict, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(restrict)
-                .put("/api/files/" + datafileId + "/restrict");
+                .put("/api/files/" + idInPath + "/restrict" + optionalQueryParam);
         return response;
     }
 
