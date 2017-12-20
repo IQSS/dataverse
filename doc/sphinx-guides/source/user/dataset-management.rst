@@ -128,7 +128,9 @@ There are several advanced options available for certain file types.
 Data Provenance
 ---------------
 
-Data Provenance is a record of where your data came from and how it reached its current form. It describes the origin of your data file, any transformations applied to that file, and any persons or organizations associated with that file. A data file's provenance can be helpful in a variety of situations, including aiding in reproducibility and compliance with legal regulations. Dataverse can help keep track of your data's provenance, and make that information available to those who need it.
+Data Provenance is a record of where your data came from and how it reached its current form. It describes the origin of your data file, any transformations that have been made to that file, and any persons or organizations associated with that file. A data file's provenance can aid in reproducibility and compliance with legal regulations. Dataverse can help keep track of your data's provenance and make it available to those who need it.
+
+Dataverse accepts provenance information in two forms: a *Provenance Bundle File* or a free-text description. A Bundle File is the preferred way of submitting provenance information to Dataverse, as it allows Dataverse to automatically generate a detailed graph of the data file's provenance. Bundle Files are generated during the process of data analysis, using _________(data analysis? provenance?) tools like ___________ (examples?). 
 
 
 .. _rsync_upload:
