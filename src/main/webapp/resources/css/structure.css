@@ -691,7 +691,7 @@ div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-ic
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-preview-img {display:block;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
 div[id$="filesTable"] .col-file-metadata {padding-left:0; padding-right:0; border-left:0; border-right:0; text-align:left; font-weight:normal;}
-div[id$="filesTable"] td.col-file-action {padding-left:0; border-left:0; overflow:visible;}
+div[id$="filesTable"] td.col-file-action {padding-left:0; border-left:0;}
 div[id$="filesTable"] div.file-tags-block {padding-bottom:2px;}
 div[id$="filesTable"] div.file-tags-block a.ui-commandlink {font-size:12px;}
 div[id$="filesTable"] div.file-tags-block span.label {display:inline-block;}
@@ -719,7 +719,7 @@ div[id$="filesTable"].ui-datatable.ui-datatable-scrollable {padding-right:12px;}
 #file-replace-original-block div[id$="filesTable"] .col-file-metadata {padding:4px 10px;}
 
 /* HACK */
-div[id$="filesTable"] div.ui-datatable-scrollable-body {padding-bottom:140px;}
+div[id$="filesTable"] div.ui-datatable-scrollable-body, div[id$="filesTable"] div.ui-datatable-tablewrapper {padding-bottom:140px;}
 
 span.ingest-warning {display:inline-block; font-size:24px; line-height:1; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:3px} 
@@ -743,7 +743,7 @@ div.dvnDifferanceTable .diffDetailBlock {display:block;}
 
 /* MANAGE TABLE + DROPDOWN BUTTON */
 div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-datatable td.col-manage-action {overflow:visible;}
-div[id$="filesTable"].ui-datatable.ui-datatable-scrollable thead th, div[id$="filesTable"] div.ui-datatable-scrollable-header {overflow:visible !important;}
+div[id$="filesTable"].ui-datatable div.ui-datatable-scrollable-header, div[id$="filesTable"].ui-datatable thead th.col-file-action, div[id$="filesTable"].ui-datatable tbody td.col-file-action {overflow:visible !important;}
 thead.ui-datatable-scrollable-theadclone {display:none}
 
 /* FILE */

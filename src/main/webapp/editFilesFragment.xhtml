@@ -198,7 +198,58 @@
                         </div>
                     </p:column>
                         <!-- MAD: Remove padding and fix overlay like on dataset page -->
-                    <p:column class="col-file-action text-right" style="padding-bottom: 300px;">
+                    <p:column class="col-file-action text-right">
+                        
+                        
+                        
+                        <!-- per file dropdown? -->
+                        <!--MAD: A lot of this is copy paste from filesFragment. Rendered and other things are prolly wrong-->
+                            <!-- MH: Removed renders that were copied from filesFragment -->
+                        <!-- removing this column makes the formatting for the rows work, but I don't know why -->
+                        <!-- this is also breaking the size of the internal table header bar (w/ the checkbox) but I also don't know why -->
+                        <f:facet name="header" class="col-file-action text-right">
+                            <!-- Button Panels -->
+                            <!-- MAD here we'd replace the group dropdown-->
+                            <!-- This NEEDS to go inside the header bar... -->
+                            <div jsf:id="editFilesRestrictDeletePanel" style="margin-right:14px;" class="btn-group" jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFilesSelected']} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                    <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                        <p:commandLink onclick="testFilesSelectedForDelete();" > 
+                                            <h:outputText value="#{bundle['file.delete']}"/> 
+                                        </p:commandLink>
+                                    </li>
+                                    <li>
+                                        <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
+                                            <h:outputText value="#{bundle['file.restrict']}"/>
+                                        </p:commandLink>
+                                    </li>
+                                    <li>
+                                        <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(false)}">
+                                            <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                        </p:commandLink>
+                                    </li>
+                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                        <p:commandLink id="fileCategoriesButton2"
+                                                   actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
+                                                   update=":datasetForm:editFileTagsPopup"
+                                                   oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
+                                                    #{bundle['file.tags']} 
+                                        </p:commandLink>    
+                                    </li>     
+                                </ul>
+                            </div>
+                        </f:facet>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
                         <!--MAD: here is where the button dropdown should go. right now all the buttons are individual... -->
                         
                         <!-- MAD: Dropdown from filesFragment.xhtml -->
@@ -277,52 +328,6 @@
                             </ul>
                             <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                         </div>
-                    </p:column>
-                    
-                    
-                    <!-- per file dropdown? -->
-                    <!--MAD: A lot of this is copy paste from filesFragment. Rendered and other things are prolly wrong-->
-                    <!-- removing this column makes the formatting for the rows work, but I don't know why -->
-                    <!-- this is also breaking the size of the internal table header bar (w/ the checkbox) but I also don't know why -->
-                    <p:column class="col-file-action text-right #{settingsWrapper.rsyncDownload ? 'col-file-access' : ''}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                        <f:facet name="header" >
-                                    <!-- Button Panels -->
-                                    <!-- MAD here we'd replace the group dropdown-->
-                                    <!-- This NEEDS to go inside the header bar... -->
-                                    <div jsf:id="editFilesRestrictDeletePanel" class="button-block pull-right text-right"
-                                         jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
-                                        <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
-                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
-                                                    <p:commandLink onclick="testFilesSelectedForDelete();" > 
-                                                        <h:outputText value="#{bundle['file.delete']}"/> 
-                                                    </p:commandLink>
-                                                </li>
-                                                <li>
-                                                    <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
-                                                        <h:outputText value="#{bundle['file.restrict']}"/>
-                                                    </p:commandLink>
-                                                </li>
-                                                <li>
-                                                    <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(false)}">
-                                                        <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                                    </p:commandLink>
-                                                </li>
-                                                <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
-                                                    <p:commandLink id="fileCategoriesButton2"
-                                                               actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
-                                                               update=":datasetForm:editFileTagsPopup"
-                                                               oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
-                                                                #{bundle['file.tags']} 
-                                                    </p:commandLink>    
-                                                </li>     
-                                            </ul>
-                                        </div>
-                                    </div>
-                        </f:facet>         
                     </p:column>
                 </p:dataTable>
             </div>
