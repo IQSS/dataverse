@@ -10,16 +10,22 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
+    
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
                  scrollRows="25" scrollable="true" liveScroll="true"
-                 scrollHeight="92%" scrollWidth="100%" style="margin-right:1px;"
+                 scrollHeight="90%" scrollWidth="100%" style="margin-right:1px;"
                  value="#{DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
+        <p:ajax  event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" /> 
+        <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
+        <p:ajax event="rowSelect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
+        <p:ajax event="rowSelectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
+        <p:ajax event="rowUnselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
+        <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this"/>
         <f:facet name="header">
             <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.showComputeButton()}">
                 <!-- Cloud Storage Access -->
@@ -184,7 +190,7 @@
             </div>
         </f:facet>
         
-        <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"/>
+        <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"  />
         <p:column class="col-file-thumb" style="width:64px !important;">
             <div class="thumbnail-block text-center">
                 <!-- Thumbnail Preview -->

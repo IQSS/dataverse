@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
@@ -73,20 +74,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         super(dvObject, req);
         this.setIsLocalFile(false);
         try {
-            awsCredentials = new ProfileCredentialsProvider().getCredentials();
-            s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).withRegion(Regions.US_EAST_1).build();
+            s3 = AmazonS3ClientBuilder.standard().defaultClient();
         } catch (Exception e) {
             throw new AmazonClientException(
-                    "Cannot load the credentials from the credential profiles file. "
-                    + "Please make sure that your credentials file is at the correct "
-                    + "location (~/.aws/credentials), and is in valid format.",
+                    "Cannot instantiate a S3 client using AWS SDK defaults for credentials and region",
                     e);
         }
     }
 
     public static String S3_IDENTIFIER_PREFIX = "s3";
     
-    private AWSCredentials awsCredentials = null;
     private AmazonS3 s3 = null;
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String key;
