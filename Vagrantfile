@@ -12,9 +12,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     operating_system = "centos"
     if ENV['OPERATING_SYSTEM'].nil?
-      config.vm.box = "puppetlabs-centos-7.2-64-puppet-1.0.1-virtualbox.box"
-      standalone.vm.box = "puppetlabs-centos-7.2-64-puppet-1.0.1-virtualbox.box"
-      #config.vm.box_url = "https://atlas.hashicorp.com/puppetlabs/boxes/centos-7.2-64-puppet/versions/1.0.1/providers/virtualbox.box"
+      config.vm.box = "puppetlabs/centos-7.2-64-puppet"
+      config.vm.box_version = '1.0.1'
     elsif ENV['OPERATING_SYSTEM'] == 'debian'
       puts "WARNING: Debian specified. Here be dragons! https://github.com/IQSS/dataverse/issues/1059"
       config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/debian-73-x64-virtualbox-puppet.box"

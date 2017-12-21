@@ -64,3 +64,9 @@ service httpd start
 #service shibd restart
 #curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /downloads/pdurbin.pagekite.me
 #service httpd restart
+echo "#########################################################################################"
+echo "# This is a Vagrant test box, so we're disabling firewalld. 			      #
+echo "# Re-enable it with $ sudo systemctl enable firewalld && sudo systemctl start firewalld #"
+echo "#########################################################################################"
+systemctl disable firewalld
+systemctl stop firewalld
