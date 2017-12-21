@@ -9,7 +9,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "standalone", primary: true do |standalone|
     config.vm.hostname = "standalone"
     # Uncomment this temporarily to get `vagrant destroy` to work
-    #standalone.vm.box = "puppet-vagrant-boxes.puppetlabs.com-debian-73-x64-virtualbox-puppet.box"
+    #standalone.vm.box = "puppetlabs/centos-7.2-64-puppet"
 
     operating_system = "centos"
     if ENV['OPERATING_SYSTEM'].nil?
