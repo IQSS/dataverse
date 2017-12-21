@@ -140,7 +140,11 @@ EPEL distribution recommended; version 3.3.2 is **strongly** recommended.
 
 If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ): 
 
-CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 7::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
 
        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 
