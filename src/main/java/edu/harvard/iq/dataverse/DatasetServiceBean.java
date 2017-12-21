@@ -34,6 +34,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
@@ -288,13 +289,20 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
 
-        Long retVal = new Long(0);
+        long zeroFiles = new Long(0);
+        Long retVal = zeroFiles;
 
         Long dsId = dataset.getId();
         if (dsId != null) {
-            Object result = em.createNativeQuery("select o.identifier  from dvobject o "
-                    + "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId
-                    + ")").getSingleResult();
+            Object result = null;
+            try {
+                result = em.createNativeQuery("select o.identifier from dvobject o "
+                        + "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId
+                        + ")").getSingleResult();
+            } catch (NoResultException ex) {
+                logger.info("No files found in dataset id " + dsId + ". Returning a count of zero.");
+                return zeroFiles;
+            }
 
             if (result != null) {
                 String identifier = (String) result;
