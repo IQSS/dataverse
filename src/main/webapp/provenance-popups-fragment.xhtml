@@ -8,83 +8,84 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-
-
     <!--MAD: Provenance popup, most content from metadata/tags atm. Going to make it look like the mockup and then change it...-->
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true">
-        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editProvenanceDialog.tip']}</p>
-        
         <div class="form-horizontal" ><!--jsf:rendered="# {!(empty EditDatafilesPage.fileMetadataSelectedForTagsPopup)}">-->
+            <div class="form-group text-left">
+                <div class="col-sm-12">
+                    <p class="help-block">#{bundle['file.editProvenanceDialog.tip']}</p>
+                </div>
+            </div>
             <div class="form-group text-left">
                 <label for="provenanceBundle" class="col-sm-4 control-label">
                     #{bundle['file.editProvenanceDialog.bundleFile']}
                 </label>
-                <label for="provenanceBundle" class="col-sm-8 control-label">
-                    #{bundle['file.editProvenanceDialog.bundleFile.instructions']}
-                </label>
+                <div class="col-sm-8">
+                    <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
                 
-                <!--MAD: upload file ui fragment from above -->
-                <ui:fragment id="provUploadFragment"> <!--rendered="# {datasetPage || EditDatafilesPage.showFileUploadFragment()}"> -->
-                    <script>
-                        //MAD: do we need the method right below? Does it init the fileUpload var?
-////MAD: commenting this all out for now just to get something running. Probably isn't breaking things tho...
-//                        function uploadWidgetDropMsg() {
-//                            var fileUpload = $('div[id$="provUpload"] div.ui-fileupload-content');
-//                            if ($(fileUpload).children('#dragdropMsg').length) {
-//                                // do nothing
-//                            } else {
-//                                $(fileUpload).prepend('<div id="dragdropMsg"># {bundle['file.fromDropbox.description']}</div>');
-//                            }
-//                        }
-                        function uploadStarted() {
-                            $('button[id$="provUploadStarted"]').trigger('click');
-                        }
-//                        function uploadFinished(fileupload) {                    
-//                            if (fileupload.files.length === 0) {
-//                                $('button[id$="AllUploadsFinished"]').trigger('click');
-//                                //alert("all uploads finished");
-//                            }
-//                        }
-//                        function uploadWidgetDropRemoveMsg() {
-//                            $('div[id$="provUpload"] div.ui-fileupload-content div.dropMsg').remove();
-//                        }
-//                        $(document).ready(function () {
-//                            uploadWidgetDropMsg();
-//                        });
-                    </script>
-                    <!--MAD: There was a help block in here. When I removed it the background highlighting decided to creep up -->
-                    <p:fileUpload id="provUpload" 
-                                  styleClass="margin-bottom"
-                                  dragDropSupport="true"
-                                  auto="true"
-                                  multiple="false"
-                                  allowTypes="/(\.|\/)(json)$/"
-                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
-                                  process="filesTable" 
-                                  update="@this" 
-                                  label="#{bundle['file.selectToAddBtn']}"
-                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));"
-                                  onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
-                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
-                                  fileLimit="1" 
-                                  invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
-                                  sequential="true"
-                                  widgetVar="fileUploadWidget"/>
+                    <!--MAD: upload file ui fragment from above -->
+                    <ui:fragment id="provUploadFragment"> <!--rendered="# {datasetPage || EditDatafilesPage.showFileUploadFragment()}"> -->
+                        <script>
+                            //MAD: do we need the method right below? Does it init the fileUpload var?
+    ////MAD: commenting this all out for now just to get something running. Probably isn't breaking things tho...
+    //                        function uploadWidgetDropMsg() {
+    //                            var fileUpload = $('div[id$="provUpload"] div.ui-fileupload-content');
+    //                            if ($(fileUpload).children('#dragdropMsg').length) {
+    //                                // do nothing
+    //                            } else {
+    //                                $(fileUpload).prepend('<div id="dragdropMsg"># {bundle['file.fromDropbox.description']}</div>');
+    //                            }
+    //                        }
+                            function uploadStarted() {
+                                $('button[id$="provUploadStarted"]').trigger('click');
+                            }
+    //                        function uploadFinished(fileupload) {                    
+    //                            if (fileupload.files.length === 0) {
+    //                                $('button[id$="AllUploadsFinished"]').trigger('click');
+    //                                //alert("all uploads finished");
+    //                            }
+    //                        }
+    //                        function uploadWidgetDropRemoveMsg() {
+    //                            $('div[id$="provUpload"] div.ui-fileupload-content div.dropMsg').remove();
+    //                        }
+    //                        $(document).ready(function () {
+    //                            uploadWidgetDropMsg();
+    //                        });
+                        </script>
+                        <!--MAD: There was a help block in here. When I removed it the background highlighting decided to creep up -->
+                        <p:fileUpload id="provUpload" 
+                                      styleClass="margin-bottom"
+                                      dragDropSupport="true"
+                                      auto="true"
+                                      multiple="false"
+                                      allowTypes="/(\.|\/)(json)$/"
+                                      fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
+                                      process="filesTable" 
+                                      update="@this" 
+                                      label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
+                                      oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));"
+                                      onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
+                                      sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
+                                      fileLimit="1" 
+                                      invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
+                                      sequential="true"
+                                      widgetVar="fileUploadWidget"/>
 
-                    
-                    <p:message for="provUpload" id="provUploadMessage" display="text" />
-                    
-                    <p:commandButton id="provuploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
-                <!--<p:commandButton id="AllUploadsFinished" action="# {EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" style="display:none"/> 
-                    <p:commandButton id="dropBoxUploadFinished" action="# {EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:filesTable" style="display:none"/>
-                -->
-                </ui:fragment>
+
+                        <p:message for="provUpload" id="provUploadMessage" display="text" />
+
+                        <p:commandButton id="provuploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
+                    <!--<p:commandButton id="AllUploadsFinished" action="# {EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" style="display:none"/> 
+                        <p:commandButton id="dropBoxUploadFinished" action="# {EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:filesTable" style="display:none"/>
+                    -->
+                    </ui:fragment>
                 
-                
-                
+                </div>
             </div>
             <div class="form-group text-left">
-                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editProvenanceDialog.description.tip']}</p>
+                <div class="col-sm-12">
+                    <p class="help-block">#{bundle['file.editProvenanceDialog.description.tip']}</p>
+                </div>
             </div>
             <div class="form-group text-left">
                 <label for="provenanceAddDescription" class="col-sm-4 control-label">
@@ -93,25 +94,21 @@
                 <div class="col-sm-8">
                     <div class="row form-inline">
                         <div class="col-sm-12">
-                            <p:inputText id="provenanceAddDescription" styleClass="form-control"
-                                         type="text" value="#{EditDatafilesPage.newCategoryName}"
-                                         placeholder="#{bundle['file.editTagsDialog.description.placeholder']}"
-                                         onkeypress="if (event.keyCode == 13) {
+                            <p:inputTextarea id="provenanceAddDescription" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{EditDatafilesPage.newCategoryName}" 
+                                             placeholder="#{bundle['file.editProvenanceDialog.description.placeholder']}"
+                                             onkeypress="if (event.keyCode == 13) {
                                                      return false;
-                                                 }" />
+                                                 }"
+                                             style="width:98%; margin-top:.5em;"/>
                             <p:message for="provenanceAddDescription" display="text" />
                         </div>
                     </div>
                 </div>
             </div>
-
-
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editFileTagsPopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
-            <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
-        </div>        
-        
+            <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editProvenancePopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
+            <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
+        </div>
     </p:dialog>
-    
 </ui:composition>
