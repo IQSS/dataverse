@@ -9,18 +9,14 @@ import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.IdServiceBean;
-import edu.harvard.iq.dataverse.Template;
-import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -35,6 +31,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,7 +40,6 @@ import java.util.logging.Logger;
  *
  * @author rohit
  */
-@RequiredPermissions(Permission.AddDataset)
 public class CreateDataFileCommand extends AbstractCommand<DataFile>{
 
     private static final Logger logger = Logger.getLogger(CreateDataFileCommand.class.getCanonicalName());
@@ -67,13 +64,19 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
         this.identifier = identifier; 
     }
     
+    @Override
+    public Map<String, Set<Permission>> getRequiredPermissions() {
+        // for data file check permission on owning dataset
+        return Collections.singletonMap("",
+                version.getDataset().getId() == null ? Collections.singleton(Permission.AddDataset)
+                : Collections.singleton(Permission.EditDataset));
+    }
     
-  
+     
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
        
                 IngestUtil.checkForDuplicateFileNamesFinal(version,Collections.singletonList(theDataFile));
-//                DatasetVersion version= theDataFile.getOwner().getLatestVersion();
                 Dataset dataset = version.getDataset();
                 
                     String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + theDataFile.getStorageIdentifier();
