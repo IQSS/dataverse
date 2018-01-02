@@ -42,7 +42,7 @@ import java.util.logging.Logger;
  *
  * @author rohit
  */
-@RequiredPermissions(Permission.EditDataset)
+@RequiredPermissions(Permission.AddDataset)
 public class CreateDataFileCommand extends AbstractCommand<DataFile>{
 
     private static final Logger logger = Logger.getLogger(CreateDataFileCommand.class.getCanonicalName());
