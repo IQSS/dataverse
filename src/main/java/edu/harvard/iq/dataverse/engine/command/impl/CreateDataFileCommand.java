@@ -40,7 +40,7 @@ import java.util.logging.Logger;
  *
  * @author rohit
  */
-//No permission annotation here since 
+//No permission annotation here since permission is conditional on the state of the dataset
 public class CreateDataFileCommand extends AbstractCommand<DataFile>{
 
     private static final Logger logger = Logger.getLogger(CreateDataFileCommand.class.getCanonicalName());
