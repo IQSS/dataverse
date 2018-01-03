@@ -40,25 +40,16 @@ import java.util.logging.Logger;
  *
  * @author rohit
  */
+//No permission annotation here since 
 public class CreateDataFileCommand extends AbstractCommand<DataFile>{
 
     private static final Logger logger = Logger.getLogger(CreateDataFileCommand.class.getCanonicalName());
     private final DataFile theDataFile;
     private final DatasetVersion version;
     private final String identifier;
-       
-  
-
-    public CreateDataFileCommand(DataFile theDataFile,DatasetVersion version, DataverseRequest aRequest) {
-        super(aRequest, theDataFile.getOwner());
-        this.theDataFile = theDataFile;
-        this.version=version;  
-        this.identifier = null; 
-    }
-    
-    
+        
     public CreateDataFileCommand(DataFile theDataFile,DatasetVersion version, DataverseRequest aRequest, String identifier) {
-        super(aRequest, theDataFile.getOwner());
+        super(aRequest, version.getDataset().getId() == null ?  theDataFile.getOwner().getOwner() : theDataFile.getOwner() ); 
         this.theDataFile = theDataFile;
         this.version=version; 
         this.identifier = identifier; 
