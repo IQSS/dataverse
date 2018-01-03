@@ -47,12 +47,20 @@
         </div>
     </ui:fragment>
 
-    <div class="btn-group" jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">           
+
+    <!--TODO: figure out why non-dropdown "Explore" button is appearing.-->
+    <div class="btn-group" jsf:rendered="#{fileDownloadHelper.externalToolsAvailable or twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
         <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
         </button>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+            <!--TODO: Make this work on the dataset page as well.-->
+            <ui:repeat var="tool" value="#{FilePage.getExternalToolHandlers()}">
+                <li>
+                    <a href="#{tool.toolUrlWithQueryParams}">#{tool.externalTool.displayName}</a>
+                </li>
+            </ui:repeat>
             <li><!-- Two Ravens -->
                 <h:commandLink rendered="#{!downloadPopupRequired}"
                                styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"

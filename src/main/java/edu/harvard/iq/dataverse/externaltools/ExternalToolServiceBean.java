@@ -71,6 +71,7 @@ public class ExternalToolServiceBean {
         // various REST APIs. For example, "Variable substitutions will be made when a variable is named in {brackets}."
         // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
         FILE_ID("fileId"),
+        SITE_URL("siteUrl"),
         API_TOKEN("apiToken");
 
         private final String text;

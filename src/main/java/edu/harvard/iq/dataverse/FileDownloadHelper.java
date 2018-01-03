@@ -275,5 +275,9 @@ public class FileDownloadHelper implements java.io.Serializable {
     public void setSession(DataverseSession session) {
         this.session = session;
     }
-    
-}
+
+    public boolean isExternalToolsAvailable(){
+        return true;
+    }
+
+ }

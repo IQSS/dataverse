@@ -1,0 +1,15 @@
+{
+  "displayName": "Data Explorer",
+  "description": "Explore tabular data.",
+  "toolUrl": "https://scholarsportal.github.io/Dataverse-Data-Explorer/",
+  "toolParameters": {
+    "queryParameters": [
+      {
+        "fileid": "{fileId}"
+      },
+      {
+        "siteUrl": "{siteUrl}"
+      }
+    ]
+  }
+}
