@@ -11,23 +11,21 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.EditDataset)
-public class PersistProvFreeFormCommand extends AbstractCommand<DataFile> {
+public class DeleteProvFreeFormCommand extends AbstractCommand<DataFile> {
 
-    private static final Logger logger = Logger.getLogger(PersistProvFreeFormCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DeleteProvFreeFormCommand.class.getCanonicalName());
 
     private final DataFile dataFile;
-    private final String userInput;
 
-    public PersistProvFreeFormCommand(DataverseRequest aRequest, DataFile dataFile, String userInput) {
+    public DeleteProvFreeFormCommand(DataverseRequest aRequest, DataFile dataFile) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
-        this.userInput = userInput;
     }
 
+    //MAD: Temporary code from persist (create).
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
         FileMetadata fileMetadata = dataFile.getFileMetadata();
-        fileMetadata.setProvFreeForm(userInput);
         DataFile savedDataFile = ctxt.files().save(dataFile);
         logger.info("prov free-form: " + savedDataFile.getFileMetadata().getProvFreeForm());
         return savedDataFile;

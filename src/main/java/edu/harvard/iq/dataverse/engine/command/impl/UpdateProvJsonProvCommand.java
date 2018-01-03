@@ -22,19 +22,20 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
 @RequiredPermissions(Permission.EditDataset)
-public class PersistProvJsonProvCommand extends AbstractCommand<JsonObjectBuilder> {
+public class UpdateProvJsonProvCommand extends AbstractCommand<JsonObjectBuilder> {
 
-    private static final Logger logger = Logger.getLogger(PersistProvJsonProvCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(UpdateProvJsonProvCommand.class.getCanonicalName());
 
     private final DataFile dataFile;
     private final String userInput;
 
-    public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String userInput) {
+    public UpdateProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String userInput) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
         this.userInput = userInput;
     }
 
+    //MAD: Temporary code from persist (create).
     @Override
     public JsonObjectBuilder execute(CommandContext ctxt) throws CommandException {
         StringReader rdr = new StringReader(userInput);
