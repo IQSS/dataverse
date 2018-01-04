@@ -22,21 +22,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    
-                    
-                    <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
-                        <a href="/">
-                            <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
-                        </a>
-                    </ui:fragment>
-
-                    <ui:fragment rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}">                       
-                        <a href="/">
-                            <h:graphicImage url="#{settingsWrapper.get(':LogoCustomizationFile')}"/>
-                        </a>
-                    </ui:fragment>
-                    
-                    
+                    <!-- QDRCustom- Remove link-to-home logo -->
                     <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
                         <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
                     </h:outputLink>
@@ -244,8 +230,8 @@
                                         </li>
                                     </ui:remove>
                                     <li>
-                                        <h:outputLink value="/dataverseuser.xhtml">
-                                            <f:param name="selectTab" value="accountInfo" />
+                                        <!-- QDRCustom- Account Info menu link -->
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user">
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>

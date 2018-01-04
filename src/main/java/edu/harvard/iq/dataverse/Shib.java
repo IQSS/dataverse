@@ -41,6 +41,8 @@ public class Shib implements java.io.Serializable {
     DataverseSession session;
     @Inject
     SettingsWrapper settingsWrapper;
+    @Inject
+    NavigationWrapper navigationWrapper;
 
     @EJB
     AuthenticationServiceBean authSvc;
@@ -261,7 +263,9 @@ public class Shib implements java.io.Serializable {
                 logger.info("Unable to redirect user to homepage at " + prettyFacesHomePageString);
             }
         } else {
-            state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
+            /*** QDRCustom: do not change state to allow for auto-creation of local account  ***/
+            /*** state = State.PROMPT_TO_CREATE_NEW_ACCOUNT; ***/
+            
             displayNameToPersist = displayInfo.getTitle();
             emailToPersist = emailAddress;
             /**
@@ -306,7 +310,18 @@ public class Shib implements java.io.Serializable {
                     debugSummary = "Could not find a builtin account based on the username. Here we should simply create a new Shibboleth user";
                 }
             } else {
-                debugSummary = "Could not find an auth user based on email address";
+                // QDRCustom: auto-create local account for authenticated Shibboleth user
+                debugSummary = "Could not find an auth user based on email address. Creating new local account for Shibboleth user with email: " + emailAddress;                
+                String destinationAfterAccountCreation = confirmAndCreateAccount();
+                if (destinationAfterAccountCreation != null) {
+                    try {
+                        context.redirect(destinationAfterAccountCreation);
+                        return;
+                    } catch (IOException ex) {
+                        logger.info("Unable to redirect user to page: " + destinationAfterAccountCreation);
+                        return;
+                    }                    
+                }                
             }
 
         }
@@ -337,7 +352,7 @@ public class Shib implements java.io.Serializable {
             userNotificationService.sendNotification(au,
                     new Timestamp(new Date().getTime()),
                     UserNotification.Type.CREATEACC, null);
-            return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
+            return "/dataverseuser.xhtml?selectTab=dataRelatedToMe&faces-redirect=true";
         } else {
             JsfHelper.addErrorMessage("Couldn't create user.");
         }
@@ -358,7 +373,7 @@ public class Shib implements java.io.Serializable {
                 logInUserAndSetShibAttributes(au);
                 debugSummary = "Local account validated and successfully converted to a Shibboleth account. The old account username was " + builtinUsername;
                 JsfHelper.addSuccessMessage("Your Dataverse account is now associated with your institutional account.");
-                return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
+                return "/dataverseuser.xhtml?selectTab=dataRelatedToMe&faces-redirect=true";
             } else {
                 debugSummary = "Local account validated but unable to convert to Shibboleth account.";
             }
@@ -392,7 +407,16 @@ public class Shib implements java.io.Serializable {
      * https://iqssharvard.mybalsamiq.com/projects/loginwithshibboleth-version3-dataverse40/Dataverse%20Account%20III%20-%20Agree%20Terms%20of%20Use
      */
     public String cancel() {
-        return loginpage + "?faces-redirect=true";
+        // QDRCustom
+        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
+        // Redirect user to Shibboleth login page
+            try {
+                context.redirect(navigationWrapper.getShibLoginPath());
+                return "";
+            } catch (IOException ex) {
+                logger.info("Unable to redirect user to Shibboleth login page");
+                return "";
+            }
     }
 
     /**

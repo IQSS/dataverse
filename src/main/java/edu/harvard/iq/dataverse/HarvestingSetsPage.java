@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.harvest.server.OaiSetException;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,6 +28,7 @@ import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
@@ -121,8 +123,17 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     public String init() {
+        // QDRCustom
+        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();        
         if (!isSessionUserAuthenticated()) {
-            return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
+            // Redirect user to Shibboleth login page
+            try {
+                context.redirect(navigationWrapper.getShibLoginPath());
+                return "";
+            } catch (IOException ex) {
+                logger.info("Unable to redirect user to Shibboleth login page");
+                return "";
+            }
         } else if (!isSuperUser()) {
             return navigationWrapper.notAuthorized();
         }

@@ -76,37 +76,7 @@
         <div id="dv-sidebar" class="col-sm-4 col-md-3 sidebar-offcanvas">
             <!--TYPE FACET (DATAVERSES, DATASETS, FILES)-->
             <h:form id="facetType">
-                <!--DATAVERSE TOGGLE-->
-                <div class="clearfix">
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
-                        <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                        <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('dataverses')}"/>
-                        <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-                        </c:forEach>
-                        <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                        <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                        <f:param name="page" value="1"/>
-                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null ? true : false}"/>
-                    </h:outputLink>
-                    <!--DATAVERSES ONLY-->
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
-                        <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                        <f:param name="types" value="dataverses"/>
-                        <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-                        </c:forEach>
-                        <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                        <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                        <f:param name="page" value="1"/>
-
-                        <i class="icon-dataverse text-icon-inline"></i>
-
-                        <h:outputFormat styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
-                            <f:param value="#{SearchIncludeFragment.facetCountDataverses}"/>
-                        </h:outputFormat>
-                    </h:outputLink>
-                </div>
+                <!-- QDRCustom- Don't show collections -->
                 <!--DATASETS TOGGLE-->
                 <div class="clearfix">
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
@@ -269,7 +239,7 @@
                         <!--BROWSE GUEST ZERO COUNTS-->
                         <p>
                             <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.zero']}" escape="false">
-                                <f:param value="#{navigationWrapper.redirectPage}"/>
+                                <f:param value="#{'/shib.xhtml'.concat(navigationWrapper.redirectPage)}"/>
                             </h:outputFormat>
                         </p>
                     </ui:fragment>
@@ -277,7 +247,7 @@
                         <!--BROWSE GUEST HIDDEN-->
                         <p>
                             <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.hidden']}" escape="false">
-                                <f:param value="#{navigationWrapper.redirectPage}"/>
+                                <f:param value="#{'/shib.xhtml'.concat(navigationWrapper.redirectPage)}"/>
                             </h:outputFormat>
                         </p>
                     </ui:fragment>
@@ -658,7 +628,8 @@
         <p class="help-block">
             <span class="glyphicon glyphicon-warning-sign text-danger"/>
             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">
-                <f:param value="#{navigationWrapper.redirectPage}"/>
+                <f:param value="#{'/shib.xhtml'.concat(navigationWrapper.redirectPage)}"/>
+                <f:param value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user/register"/>
             </h:outputFormat>
         </p>
         <div class="button-block">

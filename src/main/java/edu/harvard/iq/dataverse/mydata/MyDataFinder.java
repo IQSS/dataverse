@@ -458,9 +458,9 @@ public class MyDataFinder {
                 this.addErrorMessage("Sorry, you have no assigned roles.");
             }else{
                 if (roleNames.size()==1){
-                    this.addErrorMessage("Sorry, nothing was found for this role: " + StringUtils.join(roleNames, ", "));                
+                    this.addErrorMessage("You have not created any data project yet.");
                 }else{
-                    this.addErrorMessage("Sorry, nothing was found for these roles: " + StringUtils.join(roleNames, ", "));                
+                    this.addErrorMessage("You have not created any data project yet.");
                 }
             }
             return false;

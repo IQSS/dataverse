@@ -5,14 +5,14 @@
 	subtitle	Subtitle	A secondary title used to amplify or state certain limitations on the main title.		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	alternativeTitle	Alternative Title	A title by which the work is commonly referred, or an abbreviation of the title.		text	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	alternativeURL	Alternative URL	A URL where the dataset can be viewed, such as a personal or project website.  	Enter full URL, starting with http://	url	3		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	otherId	Other ID	Another unique identifier that identifies this Dataset (e.g., producer's or another repository's number).		none	4	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherId	QDRID	Another unique identifier that identifies this Dataset (e.g., producer's or another repository's number).	Added by QDR staff	none	4	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	otherIdAgency	Agency	Name of agency which generated this identifier.		text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
 	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	6	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
 	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	7		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Dataset.	FamilyName, GivenName or Organization	text	8	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
 	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	9	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	citation
 	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	- #VALUE:	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
-	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	11	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
+	authorIdentifier	ORCID	Uniquely identifies an individual author or organization, according to various schemes.		text	11	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
 	datasetContact	Contact	The contact(s) for this Dataset.		none	12		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	13	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	14	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
@@ -21,27 +21,27 @@
 	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the Dataset.		textbox	17	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	citation
 	dsDescriptionDate	Date	In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	18	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dsDescription	citation
 	subject	Subject	Domain-specific Subject Categories that are topically relevant to the Dataset.		text	19		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
-	keyword	Keyword	Key terms that describe important aspects of the Dataset.		none	20		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	keyword	Keywords	Key terms that describe important aspects of the Dataset.		none	20		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	keywordValue	Term	Key terms that describe important aspects of the Dataset. Can be used for building keyword indexes and for classification and retrieval purposes. A controlled vocabulary can be employed. The vocab attribute is provided for specification of the controlled vocabulary in use, such as LCSH, MeSH, or others. The vocabURI attribute specifies the location for the full controlled vocabulary.		text	21	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	citation
-	keywordVocabulary	Vocabulary	For the specification of the keyword controlled vocabulary in use, such as LCSH, MeSH, or others.		text	22	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
-	keywordVocabularyURI	Vocabulary URL	Keyword vocabulary URL points to the web presence that describes the keyword vocabulary, if appropriate. Enter an absolute URL where the keyword vocabulary web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	23	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
+	keywordVocabulary	Vocabulary	For the specification of the keyword controlled vocabulary in use, such as LCSH, MeSH, or others.	provided by QDR	text	22	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
+	keywordVocabularyURI	Vocabulary URL	Keyword vocabulary URL points to the web presence that describes the keyword vocabulary, if appropriate. Enter an absolute URL where the keyword vocabulary web site is found, such as http://www.my.org.	provided by QDR	url	23	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
 	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  		none	24		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	topicClassValue	Term	Topic or Subject term that is relevant to this Dataset.		text	25	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	citation
 	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	26	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
-	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	27	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
+	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	27	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
 	publication	Related Publication	Publications that use the data from this Dataset.		none	28		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	29	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
-	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	30	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation
-	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	31	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
-	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	32	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	publicationIDType	Identifier Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	30	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation
+	publicationIDNumber	Identifier	The identifier for the selected ID type.		text	31	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
+	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	32	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
 	notesText	Notes	Additional important information about the Dataset.		textbox	33		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
 	language	Language	Language of the Dataset		text	34		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation
 	producer	Producer	Person or organization with the financial or administrative responsibility over this Dataset		none	35		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	36	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation
 	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	37	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	38	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
-	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	39	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
-	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	40	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	39	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	40	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	41		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	42		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	43	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
@@ -54,18 +54,18 @@
 	distributorName	Name	Distributor name	FamilyName, GivenName or Organization	text	50	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	citation
 	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	51	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	52	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	53	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	54	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	53	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	54	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation.	YYYY-MM-DD	date	55		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	56		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.	YYYY-MM-DD	date	57		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	58	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	58	;	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	59	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
 	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	60	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
-	dateOfCollection	Date of Collection	Contains the date(s) when the data were collected.		none	61	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	dateOfCollection	Date of Data Collection	Contains the date(s) when the data were collected.		none	61	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	dateOfCollectionStart	Start	Date when the data collection started.	YYYY-MM-DD	date	62	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
 	dateOfCollectionEnd	End	Date when the data collection ended.	YYYY-MM-DD	date	63	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
-	kindOfData	Kind of Data	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	64		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
+	kindOfData	Type of Data Project	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	64		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
 	series	Series	Information about the Dataset series.		none	65	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	seriesName	Name	Name of the dataset series to which the Dataset belongs.		text	66	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	citation
 	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		textbox	67	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
@@ -79,24 +79,28 @@
 	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	77		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	country	Country / Nation	The country or nation that the Dataset is about.		text	1		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
+	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
+	city	City	The name of the city that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
+	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicCoverage	citation
+	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Dataset, e.g., village, county, region.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
+	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Dataset that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Dataset's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	6		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	westLongitude	West Longitude	Westernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180,0 <= West  Bounding Longitude Value <= 180,0.		text	7		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	eastLongitude	East Longitude	Easternmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180,0 <= East Bounding Longitude Value <= 180,0.		text	8		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	northLongitude	North Latitude	Northernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90,0 <= North Bounding Latitude Value <= 90,0.		text	9		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	southLongitude	South Latitude	Southernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90,0 <= South Bounding Latitude Value <= 90,0.		text	10		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	subject	Agricultural Sciences	D01	0											
 	subject	Arts and Humanities	D0	1											
-	subject	Astronomy and Astrophysics	D1	2											
 	subject	Business and Management	D2	3											
-	subject	Chemistry	D3	4
-	subject	Computer and Information Science	D7	5									
+	subject	Computer and Information Science	D7	5											
 	subject	Earth and Environmental Sciences	D4	6											
-	subject	Engineering	D5	7
-	subject	Law	D8	8	
-	subject	Mathematical Sciences	D9	9																	
+	subject	Law	D8	8											
 	subject	Medicine, Health and Life Sciences	D6	10											
-	subject	Physics	D10	11											
 	subject	Social Sciences	D11	12											
 	subject	Other	D12	13											
 	publicationIDType	ark		0											
-	publicationIDType	arXiv		1	arxiv										
-	publicationIDType	bibcode		2											
 	publicationIDType	doi		3											
 	publicationIDType	ean13		4											
 	publicationIDType	eissn		5											
@@ -115,22 +119,20 @@
 	contributorType	Data Curator		1											
 	contributorType	Data Manager		2											
 	contributorType	Editor		3											
-	contributorType	Funder		4											
-	contributorType	Hosting Institution		5											
-	contributorType	Project Leader		6											
-	contributorType	Project Manager		7											
-	contributorType	Project Member		8											
-	contributorType	Related Person		9											
-	contributorType	Researcher		10											
-	contributorType	Research Group		11											
-	contributorType	Rights Holder		12											
-	contributorType	Sponsor		13											
-	contributorType	Supervisor		14											
+	contributorType	Hosting Institution		4											
+	contributorType	Project Leader		5											
+	contributorType	Project Manager		6											
+	contributorType	Project Member		7											
+	contributorType	Related Person		8											
+	contributorType	Researcher		9											
+	contributorType	Research Group		10											
+	contributorType	Rights Holder		11											
+	contributorType	Sponsor		12											
+	contributorType	Supervisor		13											
+	contributorType	Translator		14											
 	contributorType	Work Package Leader		15											
 	contributorType	Other		16											
 	authorIdentifierScheme	ORCID		0											
-	authorIdentifierScheme	ISNI		1											
-	authorIdentifierScheme	LCNA		2											
 	language	Abkhaz		0											
 	language	Afar		1											
 	language	Afrikaans		2											
@@ -316,3 +318,252 @@
 	language	Zhuang, Chuang		182											
 	language	Zulu		183											
 	language	Not applicable		184											
+	country	Afghanistan													
+	country	Albania													
+	country	Algeria													
+	country	American Samoa													
+	country	Andorra													
+	country	Angola													
+	country	Anguilla													
+	country	Antarctica													
+	country	Antigua and Barbuda													
+	country	Argentina													
+	country	Armenia													
+	country	Aruba													
+	country	Australia													
+	country	Austria													
+	country	Azerbaijan													
+	country	Bahamas													
+	country	Bahrain													
+	country	Bangladesh													
+	country	Barbados													
+	country	Belarus													
+	country	Belgium													
+	country	Belize													
+	country	Benin													
+	country	Bermuda													
+	country	Bhutan													
+	country	Bolivia, Plurinational State of													
+	country	Bonaire, Sint Eustatius and Saba													
+	country	Bosnia and Herzegovina													
+	country	Botswana													
+	country	Bouvet Island													
+	country	Brazil													
+	country	British Indian Ocean Territory													
+	country	Brunei Darussalam													
+	country	Bulgaria													
+	country	Burkina Faso													
+	country	Burundi													
+	country	Cambodia													
+	country	Cameroon													
+	country	Canada													
+	country	Cape Verde													
+	country	Cayman Islands													
+	country	Central African Republic													
+	country	Chad													
+	country	Chile													
+	country	China													
+	country	Christmas Island													
+	country	Cocos (Keeling) Islands													
+	country	Colombia													
+	country	Comoros													
+	country	Congo													
+	country	Congo, the Democratic Republic of the													
+	country	Cook Islands													
+	country	Costa Rica													
+	country	Croatia													
+	country	Cuba													
+	country	Curaçao													
+	country	Cyprus													
+	country	Czech Republic													
+	country	Côte d'Ivoire													
+	country	Denmark													
+	country	Djibouti													
+	country	Dominica													
+	country	Dominican Republic													
+	country	Ecuador													
+	country	Egypt													
+	country	El Salvador													
+	country	Equatorial Guinea													
+	country	Eritrea													
+	country	Estonia													
+	country	Ethiopia													
+	country	Falkland Islands (Malvinas)													
+	country	Faroe Islands													
+	country	Fiji													
+	country	Finland													
+	country	France													
+	country	French Guiana													
+	country	French Polynesia													
+	country	French Southern Territories													
+	country	Gabon													
+	country	Gambia													
+	country	Georgia													
+	country	Germany													
+	country	Ghana													
+	country	Gibraltar													
+	country	Greece													
+	country	Greenland													
+	country	Grenada													
+	country	Guadeloupe													
+	country	Guam													
+	country	Guatemala													
+	country	Guernsey													
+	country	Guinea													
+	country	Guinea-Bissau													
+	country	Guyana													
+	country	Haiti													
+	country	Heard Island and Mcdonald Islands													
+	country	Holy See (Vatican City State)													
+	country	Honduras													
+	country	Hong Kong													
+	country	Hungary													
+	country	Iceland													
+	country	India													
+	country	Indonesia													
+	country	Iran, Islamic Republic of													
+	country	Iraq													
+	country	Ireland													
+	country	Isle of Man													
+	country	Israel													
+	country	Italy													
+	country	Jamaica													
+	country	Japan													
+	country	Jersey													
+	country	Jordan													
+	country	Kazakhstan													
+	country	Kenya													
+	country	Kiribati													
+	country	Korea, Democratic People's Republic of													
+	country	Korea, Republic of													
+	country	Kuwait													
+	country	Kyrgyzstan													
+	country	Lao People's Democratic Republic													
+	country	Latvia													
+	country	Lebanon													
+	country	Lesotho													
+	country	Liberia													
+	country	Libya													
+	country	Liechtenstein													
+	country	Lithuania													
+	country	Luxembourg													
+	country	Macao													
+	country	Macedonia, the Former Yugoslav Republic of													
+	country	Madagascar													
+	country	Malawi													
+	country	Malaysia													
+	country	Maldives													
+	country	Mali													
+	country	Malta													
+	country	Marshall Islands													
+	country	Martinique													
+	country	Mauritania													
+	country	Mauritius													
+	country	Mayotte													
+	country	Mexico													
+	country	Micronesia, Federated States of													
+	country	Moldova, Republic of													
+	country	Monaco													
+	country	Mongolia													
+	country	Montenegro													
+	country	Montserrat													
+	country	Morocco													
+	country	Mozambique													
+	country	Myanmar													
+	country	Namibia													
+	country	Nauru													
+	country	Nepal													
+	country	Netherlands													
+	country	New Caledonia													
+	country	New Zealand													
+	country	Nicaragua													
+	country	Niger													
+	country	Nigeria													
+	country	Niue													
+	country	Norfolk Island													
+	country	Northern Mariana Islands													
+	country	Norway													
+	country	Oman													
+	country	Pakistan													
+	country	Palau													
+	country	Palestine, State of													
+	country	Panama													
+	country	Papua New Guinea													
+	country	Paraguay													
+	country	Peru													
+	country	Philippines													
+	country	Pitcairn													
+	country	Poland													
+	country	Portugal													
+	country	Puerto Rico													
+	country	Qatar													
+	country	Romania													
+	country	Russian Federation													
+	country	Rwanda													
+	country	Réunion													
+	country	Saint Barthélemy													
+	country	Saint Helena, Ascension and Tristan da Cunha													
+	country	Saint Kitts and Nevis													
+	country	Saint Lucia													
+	country	Saint Martin (French part)													
+	country	Saint Pierre and Miquelon													
+	country	Saint Vincent and the Grenadines													
+	country	Samoa													
+	country	San Marino													
+	country	Sao Tome and Principe													
+	country	Saudi Arabia													
+	country	Senegal													
+	country	Serbia													
+	country	Seychelles													
+	country	Sierra Leone													
+	country	Singapore													
+	country	Sint Maarten (Dutch part)													
+	country	Slovakia													
+	country	Slovenia													
+	country	Solomon Islands													
+	country	Somalia													
+	country	South Africa													
+	country	South Georgia and the South Sandwich Islands													
+	country	South Sudan													
+	country	Spain													
+	country	Sri Lanka													
+	country	Sudan													
+	country	Suriname													
+	country	Svalbard and Jan Mayen													
+	country	Swaziland													
+	country	Sweden													
+	country	Switzerland													
+	country	Syrian Arab Republic													
+	country	Taiwan, Province of China													
+	country	Tajikistan													
+	country	Tanzania, United Republic of													
+	country	Thailand													
+	country	Timor-Leste													
+	country	Togo													
+	country	Tokelau													
+	country	Tonga													
+	country	Trinidad and Tobago													
+	country	Tunisia													
+	country	Turkey													
+	country	Turkmenistan													
+	country	Turks and Caicos Islands													
+	country	Tuvalu													
+	country	Uganda													
+	country	Ukraine													
+	country	United Arab Emirates													
+	country	United Kingdom													
+	country	United States													
+	country	United States Minor Outlying Islands													
+	country	Uruguay													
+	country	Uzbekistan													
+	country	Vanuatu													
+	country	Venezuela, Bolivarian Republic of													
+	country	Viet Nam													
+	country	Virgin Islands, British													
+	country	Virgin Islands, U.S.													
+	country	Wallis and Futuna													
+	country	Western Sahara													
+	country	Yemen													
+	country	Zambia													
+	country	Zimbabwe													
+	country	Åland Islands													
