@@ -94,7 +94,7 @@ public class ExternalToolHandlerTest {
         externalTool.setToolParameters(Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("key1", "{siteUrl}")
+                                .add("key1", "{junk}")
                         )
                         .add(Json.createObjectBuilder()
                                 .add("key2", "{apiToken}")
@@ -111,7 +111,7 @@ public class ExternalToolHandlerTest {
             expectedException = ex;
         }
         assertNotNull(expectedException);
-        assertEquals("Unknown reserved word: {siteUrl}", expectedException.getMessage());
+        assertEquals("Unknown reserved word: {junk}", expectedException.getMessage());
 
     }
 
