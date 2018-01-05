@@ -48,11 +48,11 @@
     </ui:fragment>
 
 
-    <!--TODO: figure out why non-dropdown "Explore" button is appearing.-->
-    <div class="btn-group" jsf:rendered="#{fileDownloadHelper.externalToolsAvailable or twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
-        <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
+    <!--TODO: Incorporate external tools into all the existing button logic (dropdown or not, popup or not).-->
+    <div class="btn-group" jsf:rendered="#{fileDownloadHelper.externalToolsAvailable}">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
+            <!--TODO: We're hard-coding "External Tools" here for now to easily see it but we'll make it say "Explore".-->
+            <span class="glyphicon glyphicon-equalizer"/> External Tools <span class="caret"/>
         </button>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <!--TODO: Make this work on the dataset page as well.-->
@@ -61,6 +61,14 @@
                     <a href="#{tool.toolUrlWithQueryParams}">#{tool.externalTool.displayName}</a>
                 </li>
             </ui:repeat>
+        </ul>
+    </div>
+    <div class="btn-group" jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
+        <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
+        </button>
+        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <li><!-- Two Ravens -->
                 <h:commandLink rendered="#{!downloadPopupRequired}"
                                styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
