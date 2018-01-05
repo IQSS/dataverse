@@ -5,7 +5,7 @@
   "toolParameters": {
     "queryParameters": [
       {
-        "fileid": "{fileId}"
+        "fileId": "{fileId}"
       },
       {
         "siteUrl": "{siteUrl}"
