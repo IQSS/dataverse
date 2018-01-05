@@ -49,14 +49,14 @@
 
 
     <!--TODO: Incorporate external tools into all the existing button logic (dropdown or not, popup or not).-->
-    <div class="btn-group" jsf:rendered="#{fileDownloadHelper.externalToolsAvailable}">
+    <!--externalToolHandlers is set as a ui:param by the file and dataset pages-->
+    <div class="btn-group" jsf:rendered="#{not empty externalToolHandlers}">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <!--TODO: We're hard-coding "External Tools" here for now to easily see it but we'll make it say "Explore".-->
             <span class="glyphicon glyphicon-equalizer"/> External Tools <span class="caret"/>
         </button>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-            <!--TODO: Make this work on the dataset page as well.-->
-            <ui:repeat var="tool" value="#{FilePage.getExternalToolHandlers()}">
+            <ui:repeat var="tool" value="#{externalToolHandlers}">
                 <li>
                     <a href="#{tool.toolUrlWithQueryParams}">#{tool.externalTool.displayName}</a>
                 </li>

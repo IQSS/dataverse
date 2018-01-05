@@ -40,6 +40,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     DataFileServiceBean datafileService;
     
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
+//    private List<ExternalToolHandler> externalToolHandlers;
 
     public FileDownloadHelper() {
         this.filesForRequestAccess = new ArrayList<>();
@@ -274,10 +275,6 @@ public class FileDownloadHelper implements java.io.Serializable {
 
     public void setSession(DataverseSession session) {
         this.session = session;
-    }
-
-    public boolean isExternalToolsAvailable(){
-        return true;
     }
 
  }
