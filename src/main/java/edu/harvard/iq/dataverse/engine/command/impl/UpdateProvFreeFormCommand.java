@@ -27,11 +27,8 @@ public class UpdateProvFreeFormCommand extends AbstractCommand<DataFile> {
     //MAD: Temporary code from persist (create).
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
-        FileMetadata fileMetadata = dataFile.getFileMetadata();
-        fileMetadata.setProvFreeForm(userInput);
-        DataFile savedDataFile = ctxt.files().save(dataFile);
-        logger.info("prov free-form: " + savedDataFile.getFileMetadata().getProvFreeForm());
-        return savedDataFile;
+        ctxt.engine().submit(new DeleteProvFreeFormCommand(getRequest(), dataFile));
+        return ctxt.engine().submit(new PersistProvFreeFormCommand(getRequest(), dataFile, userInput));
     }
 
 }

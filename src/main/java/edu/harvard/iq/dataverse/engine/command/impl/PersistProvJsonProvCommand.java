@@ -78,7 +78,7 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObjectBuilde
             response.add("message", "PROV-JSON provenance data saved: " + jsonObject.toString());
             return response;
         } catch (IOException ex) {
-            String error = "Exception caught in DataAccess.getStorageIO(dataFile): " + ex;
+            String error = "Exception caught in DataAccess.getStorageIO(dataFile) after creating file. Error: " + ex;
             throw new IllegalCommandException(error, this);
         }
     }
