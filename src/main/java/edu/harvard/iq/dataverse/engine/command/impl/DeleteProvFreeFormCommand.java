@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.EditDataset)
-public class DeleteProvFreeFormCommand extends AbstractCommand<DataFile> {
+public class DeleteProvFreeFormCommand extends AbstractCommand<Boolean> {
 
     private static final Logger logger = Logger.getLogger(DeleteProvFreeFormCommand.class.getCanonicalName());
 
@@ -23,12 +23,12 @@ public class DeleteProvFreeFormCommand extends AbstractCommand<DataFile> {
     }
 
     @Override
-    public DataFile execute(CommandContext ctxt) throws CommandException {
+    public Boolean execute(CommandContext ctxt) throws CommandException {
         FileMetadata fileMetadata = dataFile.getFileMetadata();
         fileMetadata.setProvFreeForm(null);
         DataFile savedDataFile = ctxt.files().save(dataFile);
         logger.info("prov free-form: " + savedDataFile.getFileMetadata().getProvFreeForm());
-        return savedDataFile;
+        return savedDataFile.getFileMetadata().getProvFreeForm() == null;
     }
 
 }

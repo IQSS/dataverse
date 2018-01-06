@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
+import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -22,7 +23,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
 @RequiredPermissions(Permission.EditDataset)
-public class DeleteProvJsonProvCommand extends AbstractCommand<JsonObjectBuilder> {
+public class DeleteProvJsonProvCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(PersistProvJsonProvCommand.class.getCanonicalName());
 
@@ -33,19 +34,15 @@ public class DeleteProvJsonProvCommand extends AbstractCommand<JsonObjectBuilder
         this.dataFile = dataFile;
     }
 
+    //MAD: Is this the correct type to return?
     @Override
-    public JsonObjectBuilder execute(CommandContext ctxt) throws CommandException {
-        
-        JsonObjectBuilder response = Json.createObjectBuilder();
+    public void executeImpl(CommandContext ctxt) throws CommandException {
 
         final String provJsonExtension = "prov-json.json"; //MAD: This is hardcoded and should be global
 
         try {
             StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
             dataAccess.deleteAuxObject(provJsonExtension);             //MAD: do we need to do anything else other than catch things?
-
-            response.add("message", "PROV-JSON provenance data deleted.");
-            return response;
         } catch (IOException ex) {
             String error = "Exception caught deleting provenance aux object: " + ex;
             throw new IllegalCommandException(error, this);
