@@ -24,6 +24,7 @@ public class ExternalToolHandler {
 
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
+    public static final String TYPE = "type";
     public static final String TOOL_URL = "toolUrl";
     public static final String TOOL_PARAMETERS = "toolParameters";
 

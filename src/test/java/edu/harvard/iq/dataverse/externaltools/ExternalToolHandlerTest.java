@@ -12,8 +12,9 @@ public class ExternalToolHandlerTest {
     // TODO: It would probably be better to split these into individual tests.
     @Test
     public void testGetToolUrlWithOptionalQueryParameters() {
+        ExternalTool.Type type = ExternalTool.Type.EXPLORE;
         String toolUrl = "http://example.com";
-        ExternalTool externalTool = new ExternalTool("displayName", "description", toolUrl, "{}");
+        ExternalTool externalTool = new ExternalTool("displayName", "description", type, toolUrl, "{}");
 
         // One query parameter, not a reserved word, no {fileId} (required) used.
         externalTool.setToolParameters(Json.createObjectBuilder()

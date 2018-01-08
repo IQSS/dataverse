@@ -164,9 +164,20 @@ public class FilePage implements java.io.Serializable {
             List<ExternalTool> allTools = externalToolService.findAll();
             
             externalTools = externalToolService.findExternalToolsByFile(allTools, file);
+            // TODO: Do we even need "configure" tools right now? Should we delete all this code?
+            List<ExternalTool> onlyConfigureTools = new ArrayList<>();
+            for (ExternalTool externalTool : externalTools) {
+                if (ExternalTool.Type.CONFIGURE.equals(externalTool.getType())) {
+                    onlyConfigureTools.add(externalTool);
+                }
+            }
+            externalTools = onlyConfigureTools;
+
             externalToolHandlers = new ArrayList<>();
             for (ExternalTool externalTool : allTools) {
-                externalToolHandlers.add(new ExternalToolHandler(externalTool, file, null));
+                if (ExternalTool.Type.EXPLORE.equals(externalTool.getType())) {
+                    externalToolHandlers.add(new ExternalToolHandler(externalTool, file, null));
+                }
             }
             
         } else {

@@ -4051,6 +4051,14 @@ public class DatasetPage implements java.io.Serializable {
         
         DataFile dataFile = datafileService.find(fileId);         
         fileTools = externalToolService.findExternalToolsByFile(allTools, dataFile);
+        // TODO: Do we even need "configure" tools right now? Should we delete all this code?
+        List<ExternalTool> onlyConfigureTools = new ArrayList<>();
+        for (ExternalTool fileTool : fileTools) {
+            if (ExternalTool.Type.CONFIGURE.equals(fileTool.getType())) {
+                onlyConfigureTools.add(fileTool);
+            }
+        }
+        fileTools = onlyConfigureTools;
         
         queriedFileTools.put(fileId, fileTools); //add externalTools to map so we don't have to do the lifting again
         
@@ -4065,8 +4073,10 @@ public class DatasetPage implements java.io.Serializable {
         DataFile dataFile = datafileService.find(fileId);
         externalToolHandlers = new ArrayList<>();
         for (ExternalTool externalTool : allTools) {
-            // TODO: What about the API Token? Data Explorer doesn't need it but TwoRavens will if it's made into an external tool.
-            externalToolHandlers.add(new ExternalToolHandler(externalTool, dataFile, null));
+            if (ExternalTool.Type.EXPLORE.equals(externalTool.getType())) {
+                // TODO: What about the API Token? Data Explorer doesn't need it but TwoRavens will if it's made into an external tool.
+                externalToolHandlers.add(new ExternalToolHandler(externalTool, dataFile, null));
+            }
         }
         externalToolHandlersByFileId.put(fileId, externalToolHandlers); //add externalTools to map so we don't have to do the lifting again
         return externalToolHandlers;
