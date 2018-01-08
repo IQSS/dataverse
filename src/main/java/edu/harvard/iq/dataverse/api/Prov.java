@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvFreeFormCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonProvCommand;
 import java.io.StringReader;
@@ -10,6 +12,7 @@ import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -17,10 +20,11 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 @Path("files")
-public class ProvApi extends AbstractApiBean {
+public class Prov extends AbstractApiBean {
 
-    private static final Logger logger = Logger.getLogger(ProvApi.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(Prov.class.getCanonicalName());
 
+    /** Provenance JSON methods **/
     @POST
     @Path("{id}/prov-json")
     @Consumes("application/json")
@@ -31,7 +35,20 @@ public class ProvApi extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    @DELETE
+    @Path("{id}/prov-json")
+    public Response removeProvJson(String body, @PathParam("id") String idSupplied) {
+        try {
+            //MAD: Delete does not seem to return a code so we just say ok afterwards. Seems like what we do in other places.
+            execCommand(new DeleteProvJsonProvCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
+            return ok("Provenance URL deleted");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
 
+    /** Provenance FreeForm methods **/
     @POST
     @Path("{id}/prov-freeform")
     @Consumes("application/json")
@@ -58,7 +75,18 @@ public class ProvApi extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    @DELETE
+    @Path("{id}/prov-freeform")
+    public Response removeProvFreeForm(String body, @PathParam("id") String idSupplied) {
+        try {
+            return ok(execCommand(new DeleteProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied))));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
 
+    /** Helper Methods */
     // FIXME: Delete this and switch to the version in AbstractApiBean.java once this is merged: https://github.com/IQSS/dataverse/pull/4350
     private DataFile findDataFileOrDie(String idSupplied) throws WrappedResponse {
         long idSuppliedAsLong;

@@ -12,7 +12,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ProvApiIT {
+public class ProvIT {
 
     @BeforeClass
     public static void setUpClass() {
@@ -53,6 +53,7 @@ public class ProvApiIT {
 
         Long dataFileId = JsonPath.from(authorAddsFile.getBody().asString()).getLong("data.files[0].dataFile.id");
 
+        //Provenance Json
         // TODO: Test that an array fails
         JsonArray provJsonBadDueToBeingAnArray = Json.createArrayBuilder().add("bad").build();
 
@@ -66,7 +67,13 @@ public class ProvApiIT {
         uploadProvJson.then().assertThat()
                 .body("data.message", equalTo("PROV-JSON provenance data saved: {\"prov\":true,\"foo\":\"bar\"}"))
                 .statusCode(OK.getStatusCode());
+        
+        Response deleteProvJson = UtilIT.deleteProvJson(dataFileId.toString(), apiTokenForDepositor);
+        deleteProvJson.prettyPrint();
+        deleteProvJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
+        //Provenance FreeForm
         JsonObject provFreeFormGood = Json.createObjectBuilder()
                 .add("text", "I inherited this file from my grandfather.")
                 .build();
@@ -74,6 +81,11 @@ public class ProvApiIT {
         uploadProvFreeForm.prettyPrint();
         uploadProvFreeForm.then().assertThat()
                 .body("data.message", equalTo("Free-form provenance data saved: I inherited this file from my grandfather."))
+                .statusCode(OK.getStatusCode());
+        
+        Response deleteProvFreeForm = UtilIT.deleteProvFreeForm(dataFileId.toString(), apiTokenForDepositor);
+        deleteProvFreeForm.prettyPrint();
+        deleteProvFreeForm.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
     }

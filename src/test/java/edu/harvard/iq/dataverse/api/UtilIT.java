@@ -891,6 +891,7 @@ public class UtilIT {
     }
 
     static Response uploadProvJson(String idOrPersistentId, JsonObject jsonObject, String apiToken) {
+        logger.info("Uploading Provenance JSON");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(idOrPersistentId)) {
@@ -908,8 +909,26 @@ public class UtilIT {
         }
         return requestSpecification.post("/api/files/" + idInPath + "/prov-json" + optionalQueryParam);
     }
+    
+    static Response deleteProvJson(String idOrPersistentId, String apiToken) {
+        logger.info("Deleting Provenance JSON");
+        //TODO: Repeated code, refactor
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.delete("/api/files/" + idInPath + "/prov-json" + optionalQueryParam);
+    }
 
     static Response uploadProvFreeForm(String idOrPersistentId, JsonObject jsonObject, String apiToken) {
+        logger.info("Uploading Provenance Free Form");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(idOrPersistentId)) {
@@ -926,6 +945,23 @@ public class UtilIT {
                     .contentType("application/json");
         }
         return requestSpecification.post("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
+    }
+    
+    static Response deleteProvFreeForm(String idOrPersistentId, String apiToken) {
+         logger.info("Deleting Provenance Free Form");
+        //TODO: Repeated code, refactor
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
     }
 
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
