@@ -47,29 +47,22 @@
         </div>
     </ui:fragment>
 
-
-    <!--TODO: Incorporate external tools into all the existing button logic (dropdown or not, popup or not).-->
+    <!--DROPDOWN EXPLORE BUTTON (NOT A SINGLE EXPLORE BUTTON): Multiple tools-->
     <!--externalToolHandlers is set as a ui:param by the file and dataset pages-->
-    <div class="btn-group" jsf:rendered="#{not empty externalToolHandlers}">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-            <!--TODO: We're hard-coding "External Tools" here for now to easily see it but we'll make it say "Explore".-->
-            <span class="glyphicon glyphicon-equalizer"/> External Tools <span class="caret"/>
-        </button>
-        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-            <ui:repeat var="tool" value="#{externalToolHandlers}">
-                <li>
-                    <a href="#{tool.toolUrlWithQueryParams}">#{tool.externalTool.displayName}</a>
-                </li>
-            </ui:repeat>
-        </ul>
-    </div>
-    <div class="btn-group" jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
+    <div class="btn-group" jsf:rendered="#{not empty externalToolHandlers or (twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
         <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
         </button>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-            <li><!-- Two Ravens -->
+            <!--external tools-->
+            <ui:repeat var="tool" value="#{externalToolHandlers}">
+                <li>
+                    <a href="#{tool.toolUrlWithQueryParams}">#{tool.externalTool.displayName}</a>
+                </li>
+            </ui:repeat>
+            <!--TwoRavens-->
+            <li jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata)}">
                 <h:commandLink rendered="#{!downloadPopupRequired}"
                                styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
@@ -85,7 +78,8 @@
                     #{bundle['file.explore.twoRavens']} 
                 </p:commandLink>                          
             </li>
-            <li><!-- WorldMap Explore -->
+            <!--WorldMap Explore-->
+            <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
                 <h:commandLink rendered="#{!downloadPopupRequired}"
                                styleClass="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
@@ -106,7 +100,8 @@
         </ul>
     </div>
 
-    <ui:fragment rendered="#{ twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
+    <!--SINGLE EXPLORE BUTTON: TwoRavens only-->
+    <ui:fragment rendered="#{ twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and empty externalToolHandlers}">
         <!-- TwoRavens Explore button ONLY ... not WorldMap -->
         <h:commandLink rendered="#{!downloadPopupRequired}"
                        type="button" 
@@ -126,7 +121,8 @@
         </p:commandLink>
     </ui:fragment>
 
-    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and !(twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata))}">
+    <!--SINGLE EXPLORE BUTTON: WorldMap only-->
+    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and !(twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata)) and empty externalToolHandlers}">
         <!-- WorldMap Explore button ONLY ... not TwoRavens -->
         <h:commandLink pt:role="button" rendered="#{!downloadPopupRequired}"
                        type="button" 
