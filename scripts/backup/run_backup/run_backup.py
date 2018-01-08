@@ -30,6 +30,7 @@ def main():
     files_total=0
     files_success=0
     files_failed=0
+    files_skipped=0
 
     for result in records:
         dataset_authority = result[0]
@@ -39,6 +40,7 @@ def main():
         checksum_value = result[4]
         file_size = result[5]
         create_time = result[6]
+        is_tabular_data = result[7]
 
         if (checksum_value is None):
             checksum_value = "MISSING"
@@ -52,10 +54,11 @@ def main():
 
             # if this is a re-run, we are only re-trying the files that have failed previously:
             if (rrmode and get_datafile_status(dataset_authority, dataset_identifier, storage_identifier) == 'OK'): 
+                files_skipped += 1
                 continue
 
             try: 
-                file_input = open_dataverse_file(dataset_authority, dataset_identifier, storage_identifier)
+                file_input = open_dataverse_file(dataset_authority, dataset_identifier, storage_identifier, is_tabular_data)
             except:
                 print "failed to open file "+storage_identifier
                 file_input=None
@@ -77,7 +80,10 @@ def main():
                 record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'FAIL_READ', create_time)
                 files_failed += 1
 
-    report = ('backup script run report: %d files processed; %d success, %d failed' % (files_total, files_success, files_failed))
+    if (files_skipped > 0):
+        report = ('backup script run report: %d files processed; %d skipped (already backed up), %d success, %d failed' % (files_total, files_skipped, files_success, files_failed))
+    else:
+        report = ('backup script run report: %d files processed; %d success, %d failed' % (files_total, files_success, files_failed))
     print report
     send_notification(report)
 

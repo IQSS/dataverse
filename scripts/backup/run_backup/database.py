@@ -2,7 +2,7 @@ import psycopg2
 import sys
 import pprint
 from time import (time)
-from datetime import (datetime)
+from datetime import (datetime, timedelta)
 from config import (ConfigSectionMap)
 
 dataverse_db_connection=None
@@ -48,8 +48,12 @@ def query_database(sinceTimestamp=None):
 
     cursor = dataverse_db_connection.cursor()
 
-    # select data files from the database 
-    dataverse_query="SELECT s.authority,s.identifier,o.storageidentifier,f.checksumtype,f.checksumvalue,f.filesize,o.createdate FROM dataset s, datafile f, dvobject o WHERE o.id = f.id AND o.owner_id = s.id AND s.harvestingclient_id IS null"
+    # Select data files from the database
+    # The query below is a bit monstrous, as we try to get all the information about the stored file
+    # from multiple tables in the single request. Note the "LEFT JOIN" in it - we want it to return 
+    # the "datatable" object referencing this datafile, if such exists, or NULL otherwise. If the 
+    # value is not NULL, we know this is a tabular data file.
+    dataverse_query="SELECT s.authority, s.identifier, o.storageidentifier, f.checksumtype, f.checksumvalue, f.filesize,o.createdate, datatable.id FROM datafile f LEFT JOIN datatable ON f.id = datatable.datafile_id, dataset s, dvobject o WHERE o.id = f.id AND o.owner_id = s.id AND s.harvestingclient_id IS null"
     if sinceTimestamp is None:
         cursor.execute(dataverse_query)
     else:
@@ -77,8 +81,10 @@ def get_last_timestamp():
         #print "table is empty"
         return None
 
+    #timestamp = record[0] + timedelta(seconds=1)
     timestamp = record[0]
-    timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    # milliseconds are important!
+    timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
 
     return timestamp_str
 
@@ -110,7 +116,7 @@ def record_datafile_status(dataset_authority, dataset_identifier, storage_identi
     backup_db_connection = get_backupdb_connection()
     cursor = backup_db_connection.cursor()
 
-    createdate_str = createdate.strftime('%Y-%m-%d %H:%M:%S')
+    createdate_str = createdate.strftime('%Y-%m-%d %H:%M:%S.%f')
     nowdate_str = datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')
 
     if current_status is None:
