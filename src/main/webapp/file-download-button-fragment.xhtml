@@ -58,7 +58,20 @@
             <!--external tools-->
             <ui:repeat var="tool" value="#{externalToolHandlers}">
                 <li>
-                    <a href="#{tool.toolUrlWithQueryParams}">#{tool.externalTool.displayName}</a>
+                    <h:commandLink rendered="#{!downloadPopupRequired}"
+                                   styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                                   disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}" target="_blank">
+                        #{tool.externalTool.displayName}
+                    </h:commandLink>
+                    <p:commandLink rendered="#{downloadPopupRequired}"
+                                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
+                                   disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   process="@this"
+                                   update="@widgetVar(downloadPopup)"
+                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                        #{tool.externalTool.displayName}
+                    </p:commandLink>
                 </li>
             </ui:repeat>
             <!--TwoRavens-->
