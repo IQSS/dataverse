@@ -23,7 +23,7 @@ System Requirements
 
 Support for Shibboleth in Dataverse is built on the popular `"mod_shib" Apache module, "shibd" daemon <https://shibboleth.net/products/service-provider.html>`_, and the `Embedded Discovery Service (EDS) <https://shibboleth.net/products/embedded-discovery-service.html>`_ Javascript library, all of which are distributed by the `Shibboleth Consortium <https://shibboleth.net>`_. EDS is bundled with Dataverse, but ``mod_shib`` and ``shibd`` must be installed and configured per below.
 
-Only Red Hat Enterprise Linux (RHEL) 6 and derivatives such as CentOS have been tested (x86_64 versions) by the Dataverse team. Newer versions of RHEL and CentOS **should** work but you'll need to adjust the yum repo config accordingly. See https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not offically supported by the Shibboleth project.
+Only Red Hat Enterprise Linux (RHEL) and derivatives such as CentOS have been tested (x86_64 versions) by the Dataverse team. See https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not offically supported by the Shibboleth project.
 
 Install Apache
 ~~~~~~~~~~~~~~
@@ -45,6 +45,12 @@ Enable Shibboleth Yum Repo
 This yum repo is recommended at https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxRPMInstall
 
 ``cd /etc/yum.repos.d``
+
+If you are running el7 (RHEL/CentOS 7):
+
+``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_7/security:shibboleth.repo``
+
+If you are running el6 (RHEL/CentOS 6):
 
 ``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_CentOS-6/security:shibboleth.repo``
 
