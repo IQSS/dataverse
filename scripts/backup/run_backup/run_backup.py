@@ -4,6 +4,7 @@ import ConfigParser
 import psycopg2
 import sys
 import io
+import re
 from database import (query_database, get_last_timestamp, record_datafile_status, get_datafile_status)
 from storage import (open_dataverse_file)
 from backup import (backup_file)
@@ -70,9 +71,13 @@ def main():
                     print "backed up file "+storage_identifier
                     record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'OK', create_time)
                     files_success += 1
-                except ValueError:
-                    print "failed to back up file "+storage_identifier
-                    record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'FAIL_WRITE', create_time)
+                except ValueError, ve:
+                    exception_message = str(ve)
+                    print "failed to back up file "+storage_identifier+": "+exception_message
+                    if (re.match("^remote", exception_message) is not None):
+                        record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'FAIL_VERIFY', create_time)
+                    else:
+                        record_datafile_status(dataset_authority, dataset_identifier, storage_identifier, 'FAIL_WRITE', create_time)
                     files_failed += 1
                     #TODO: add a separate failure status 'FAIL_VERIFY' - for when it looked like we were able to copy the file 
                     # onto the remote storage system, but the checksum verification failed (?)

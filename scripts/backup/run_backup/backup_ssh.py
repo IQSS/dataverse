@@ -110,7 +110,10 @@ def backup_file_ssh(file_input, dataset_authority, dataset_identifier, storage_i
     else:
         print "reusing the existing ssh client"
 
-    file_transfered = transfer_file(file_input, dataset_authority, dataset_identifier, storage_identifier, byte_size)
+    try:
+        file_transfered = transfer_file(file_input, dataset_authority, dataset_identifier, storage_identifier, byte_size)
+    except:
+        raise ValueError("failed to transfer file")
 
     verify_remote_file(file_transfered, checksum_type, checksum_value)
 
