@@ -33,3 +33,11 @@ scripts/api/setup-all.sh*
 
 # ctags generated tag file
 tags
+
+# dependencies I'm not sure we're allowed to redistribute / have in version control
+conf/docker-aio/dv/deps/
+
+# no need to check aoi installer zip into vc
+conf/docker-aio/dv/install/dvinstall.zip
+# or copy of test data
+conf/docker-aio/testdata/
