@@ -288,32 +288,33 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
-
+        //Cannot rely on the largest table id having the greatest identifier counter
         long zeroFiles = new Long(0);
         Long retVal = zeroFiles;
-
+        Long testVal;
+        List<Object> idResults;
         Long dsId = dataset.getId();
         if (dsId != null) {
-            Object result = null;
             try {
-                result = em.createNativeQuery("select o.identifier from dvobject o "
-                        + "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId
-                        + ")").getSingleResult();
+                idResults = em.createNativeQuery("select o.identifier from dvobject o "
+                        + "where o.owner_Id  =  " + dsId
+                        + "").getResultList();
             } catch (NoResultException ex) {
-                logger.info("No files found in dataset id " + dsId + ". Returning a count of zero.");
+                logger.fine("No files found in dataset id " + dsId + ". Returning a count of zero.");
                 return zeroFiles;
             }
-
-            if (result != null) {
-                String identifier = (String) result;
-                identifier =  identifier.substring(identifier.lastIndexOf("/") + 1);
-                retVal = new Long(identifier) ;
+            if (idResults != null) {
+                for (Object raw: idResults){
+                    String identifier = (String) raw;
+                    identifier =  identifier.substring(identifier.lastIndexOf("/") + 1);
+                    testVal = new Long(identifier) ;
+                    if (testVal > retVal){
+                        retVal = testVal;
+                    }               
+                }
             }
-
         }
-
         return retVal;
-
     }
 
     public DatasetVersion storeVersion( DatasetVersion dsv ) {

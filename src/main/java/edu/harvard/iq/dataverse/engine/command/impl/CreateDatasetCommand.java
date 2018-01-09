@@ -190,21 +190,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                     theDataset.setGlobalIdCreateTime(createDate);
                     theDataset.setIdentifierRegistered(true);
             }
-        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
-        String datasetIdentifier = theDataset.getIdentifier();
-        Long maxIdentifier = null;
 
-        if (ctxt.systemConfig().isDataFilePIDSequentialDependent()){
-            maxIdentifier = ctxt.datasets().getMaximumExistingDatafileIdentifier(theDataset);
-        }
-        String dataFileIdentifier = null; 
-            for (DataFile dataFile : theDataset.getFiles()) {
-                if (maxIdentifier != null){
-                    maxIdentifier++;
-                    dataFileIdentifier = datasetIdentifier + "/" + maxIdentifier.toString();
-                }
-                ctxt.engine().submit(new CreateDataFileCommand(dataFile, dsv, getRequest(), dataFileIdentifier));           
-            }
         } else // If harvest or migrate, and this is a released dataset, we don't need to register,
         // so set the globalIdCreateTime to now
         if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED)) {
@@ -226,6 +212,22 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         savedDataset = ctxt.em().merge(savedDataset);
+        
+        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
+        String datasetIdentifier = theDataset.getIdentifier();
+        Long maxIdentifier = null;
+
+        if (ctxt.systemConfig().isDataFilePIDSequentialDependent()) {
+            maxIdentifier = ctxt.datasets().getMaximumExistingDatafileIdentifier(theDataset);
+        }
+        String dataFileIdentifier = null;
+        for (DataFile dataFile : savedDataset.getFiles()) {
+            if (maxIdentifier != null) {
+                maxIdentifier++;
+                dataFileIdentifier = datasetIdentifier + "/" + maxIdentifier.toString();
+            }
+            ctxt.engine().submit(new CreateDataFileCommand(dataFile, dsv, getRequest(), dataFileIdentifier));
+        }
         
         if (template != null) {
             ctxt.templates().incrementUsageCount(template.getId());

@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -31,8 +32,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +39,7 @@ import java.util.logging.Logger;
  *
  * @author rohit
  */
-//No permission annotation here since permission is conditional on the state of the dataset
+@RequiredPermissions(Permission.EditDataset)
 public class CreateDataFileCommand extends AbstractCommand<DataFile>{
 
     private static final Logger logger = Logger.getLogger(CreateDataFileCommand.class.getCanonicalName());
@@ -49,19 +48,12 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
     private final String identifier;
         
     public CreateDataFileCommand(DataFile theDataFile,DatasetVersion version, DataverseRequest aRequest, String identifier) {
-        super(aRequest, version.getDataset().getId() == null ?  theDataFile.getOwner().getOwner() : theDataFile.getOwner() ); 
+        super(aRequest, theDataFile.getOwner()); 
         this.theDataFile = theDataFile;
         this.version=version; 
         this.identifier = identifier; 
     }
     
-    @Override
-    public Map<String, Set<Permission>> getRequiredPermissions() {
-        // for data file check permission on owning dataset
-        return Collections.singletonMap("",
-                version.getDataset().getId() == null ? Collections.singleton(Permission.AddDataset)
-                : Collections.singleton(Permission.EditDataset));
-    }
     
      
     @Override
