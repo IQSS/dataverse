@@ -336,8 +336,9 @@ If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400
 OpenShift
 ---------
 
-From the Dataverse perspective, we are in the business of providing a "template" for OpenShift that describes how the various components we build our application on (Glassfish, PostgreSQL, Solr, the Dataverse war file itself, etc.) work together. We publish Docker images to DockerHub at https://hub.docker.com/u/iqss/ that are used in the OpenShift template. Dataverse's use of Docker is documented below in a separate section.
+From the Dataverse perspective, we are in the business of providing a "template" for OpenShift that describes how the various components we build our application on (Glassfish, PostgreSQL, Solr, the Dataverse war file itself, etc.) work together. We publish Docker images to DockerHub at https://hub.docker.com/u/iqss/ that are used in the OpenShift template.
 
+Dataverse's (light) use of Docker is documented below in a separate section. We actually started with Docker in the context of OpenShift, which is why OpenShift is listed first.
 
 The OpenShift template for Dataverse can be found at ``conf/openshift/openshift.json`` and if you need to hack on the template or related files under ``conf/docker`` it is recommended that you iterate on them using Minishift.
 
@@ -480,7 +481,11 @@ The following resources might be helpful.
 Docker
 ------
 
-Minishift makes use of Docker images on Docker Hub. To build new Docker images and push them to Docker Hub, you'll need to install Docker.
+From the Dataverse perspective, Docker is important for a few reasons:
+
+- We are thankful that NDS Labs did the initial work to containerize Dataverse and include it in the "workbench" we mention in the :doc:`/installation/prep` section of the Installation Guide. The workbench allows people to kick the tires on Dataverse.
+- There is interest from the community in running Dataverse on OpenShift and some initial work has been done to get Dataverse running on Minishift in Docker containers. Minishift makes use of Docker images on Docker Hub. To build new Docker images and push them to Docker Hub, you'll need to install Docker.
+- Docker may aid in testing efforts if we can easily spin up Docker images based on code in pull requests and run the full integration suite against those images. See the :doc:`testing` section for more information on integration tests.
 
 Installing Docker
 ~~~~~~~~~~~~~~~~~
@@ -491,10 +496,20 @@ On Mac, download the ``.dmg`` from https://www.docker.com and install it. As of 
 
 On Windows, FIXME ("Docker Community Edition for Windows" maybe???).
 
-We're working with Docker in the context of Minishift so if you haven't installed Minishift yet, follow the instructions above and make sure you get the Dataverse Docker images running in Minishift before you start messing with them.
+As explained above, we use Docker images in two different contexts:
 
-Editing Dataverse Docker Images
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Testing using an "all in one" Docker image (ephemeral, unpublished)
+- Future production use on Minishift/OpenShift/Kubernetes (published to Docker Hub)
+
+All In One Docker Images for Testing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The "all in one" Docker files are in ``conf/docker-aio`` and you should follow the readme in that directory for more information on how to use them.
+
+Future production use on Minishift/OpenShift/Kubernetes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When working with Docker in the context of Minishift, follow the instructions above and make sure you get the Dataverse Docker images running in Minishift before you start messing with them.
 
 As of this writing, the Dataverse Docker images we publish under https://hub.docker.com/u/iqss/ are highly experimental. They're tagged with branch names like ``kick-the-tires`` rather than release numbers.
 
@@ -528,10 +543,10 @@ To see a specific repo:
 
 ``curl https://hub.docker.com/v2/repositories/iqss/dataverse-glassfish/``
 
-Known issues with Dataverse Docker images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Known Issues with Dataverse Images on Docker Hub
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Again, Dataverse Docker images are highly experimental at this point. As of this writing, their purpose is primarily for kicking the tires on Dataverse. Here are some known issues:
+Again, Dataverse Docker images on Docker Hub are highly experimental at this point. As of this writing, their purpose is primarily for kicking the tires on Dataverse. Here are some known issues:
 
 - The Dataverse installer is run in the entrypoint script every time you run the image. Ideally, Dataverse would be installed in the Dockerfile instead. Dataverse is being installed in the entrypoint script because it needs PosgreSQL to be up already so that database tables can be created when the war file is deployed.
 - The Docker images have to be run as root. See the discussion above.
@@ -542,7 +557,7 @@ Again, Dataverse Docker images are highly experimental at this point. As of this
 - Only a single Solr server can be used.
 
 Get Set Up to Push Docker Images to Minishift Registry
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 FIXME https://docs.openshift.org/latest/minishift/openshift/openshift-docker-registry.html indicates that it should be possible to make use of the builtin registry in Minishift while iterating on Docker images but you may get "unauthorized: authentication required" when trying to push to it as reported at https://github.com/minishift/minishift/issues/817 so until we figure this out, you must push to Docker Hub instead. Run ``docker login`` and use the ``conf/docker/build.sh`` script to push Docker images you create to https://hub.docker.com/u/iqss/
 
