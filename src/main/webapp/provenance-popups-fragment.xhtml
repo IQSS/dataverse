@@ -39,12 +39,12 @@
                             function uploadStarted() {
                                 $('button[id$="provUploadStarted"]').trigger('click');
                             }
-    //                        function uploadFinished(fileupload) {                    
-    //                            if (fileupload.files.length === 0) {
-    //                                $('button[id$="AllUploadsFinished"]').trigger('click');
-    //                                //alert("all uploads finished");
-    //                            }
-    //                        }
+                            function uploadFinished(fileupload) {                    
+                                if (fileupload.files.length === 0) {
+                                    $('button[id$="AllUploadsFinished"]').trigger('click');
+                                    //alert("all uploads finished");
+                                }
+                            }
     //                        function uploadWidgetDropRemoveMsg() {
     //                            $('div[id$="provUpload"] div.ui-fileupload-content div.dropMsg').remove();
     //                        }
@@ -53,31 +53,25 @@
     //                        });
                         </script>
                         <!--MAD: There was a help block in here. When I removed it the background highlighting decided to creep up -->
+                        <!--MAD: Some references to EditDatafilesPage still -->
                         <p:fileUpload id="provUpload" 
                                       styleClass="margin-bottom"
                                       dragDropSupport="true"
                                       auto="true"
                                       multiple="false"
                                       allowTypes="/(\.|\/)(json)$/"
-                                      fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
-                                      process="filesTable" 
-                                      update="@this" 
+                                      fileUploadListener="#{provenanceUploadFragmentBean.handleFileUpload}" 
+                                      update="@all" 
                                       label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
-                                      oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));"
-                                      onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
-                                      sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
                                       fileLimit="1" 
-                                      invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
-                                      sequential="true"
-                                      widgetVar="provUploadWidget"/>
+                                      invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" />
 
 
                         <p:message for="provUpload" id="provUploadMessage" display="text" />
-
-                        <p:commandButton id="provuploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
-                    <!--<p:commandButton id="AllUploadsFinished" action="# {EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" style="display:none"/> 
-                        <p:commandButton id="dropBoxUploadFinished" action="# {EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:filesTable" style="display:none"/>
-                    -->
+                        <!--oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));" -->
+                                
+                        <!--<p:commandButton id="AllUploadsFinished" action="# {EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" style="display:none"/> 
+                        -->
                     </ui:fragment>
                 
                 </div>

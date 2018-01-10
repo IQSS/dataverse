@@ -266,6 +266,7 @@
                                                actionListener="#{EditDatafilesPage.refreshProvenancePopUp(fileMetadata)}"
                                                update=":datasetForm:editProvenancePopup"
                                                oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
+                                               <f:actionListener binding="#{provenanceUploadFragmentBean.setFileId(fileMetadata.dataFile.id)}" />
                                                 #{bundle['file.provenance']} 
                                     </p:commandLink>    
                                 </li> 
@@ -601,6 +602,8 @@
     </p:dialog>
 <!-- MAD: Prov popup was here -->
     <ui:include src="provenance-popups-fragment.xhtml">
+        <!--<ui:param name="fileId" value="# {FilePage.fileMetadata.dataFile.id}"/>-->
+        
         <!--<ui:param name="fileDownloadHelper" value="# {DatasetPage.fileDownloadHelper}"/>-->
     </ui:include>
 
