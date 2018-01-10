@@ -134,7 +134,7 @@
         </div>
         <div class="button-block">
             <p:commandLink type="button" process="@this" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'explore' 
-                                                                               and tool == null
+                                                                               and guestbookResponse.fileFormat != 'externalTool'
                                                                                and guestbookResponse.fileFormat != 'subset'
                                                                                 and guestbookResponse.fileFormat != 'worldMap'}"
                            actionListener="#{fileDownloadService.writeGuestbookAndStartDownload(guestbookResponse)}"
@@ -152,13 +152,13 @@
                 #{bundle['acceptTerms']} 
            <f:param name="DO_GB_VALIDATION" value="true"/> 
             </p:commandLink>
-            <p:commandLink type="button" process="@this" styleClass="btn btn-default"  rendered="#{guestbookResponse.fileFormat == 'explore' and tool == null}"
+            <p:commandLink type="button" process="@this" styleClass="btn btn-default"  rendered="#{guestbookResponse.fileFormat == 'explore'}"
                            actionListener="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, null)}"                           
                            update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
                 #{bundle['acceptTerms']} 
                 <f:param name="DO_GB_VALIDATION" value="true"/> 
             </p:commandLink>
-            <p:commandLink type="button" process="@this" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'explore' and tool != null}"
+            <p:commandLink type="button" process="@this" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
                            action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool)}" target="_blank"
                            update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
                 #{bundle['acceptTerms']}

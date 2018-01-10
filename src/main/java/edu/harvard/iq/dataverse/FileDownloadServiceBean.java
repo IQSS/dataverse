@@ -149,6 +149,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalToolHandler externalToolHandler) {
         logger.info("explore button clicked... FIXME: Why do we get here from the file page but not the dataset page?");
+        // FIXME: Why is externalToolHandler null from the dataset page (NullPointerException thrown) but not the file page?
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.info("Exploring with " + toolUrl);
         try {
