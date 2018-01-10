@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.IOException;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
@@ -89,7 +88,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     UIInput emailField;
     UIInput institutionField;
     UIInput positionField;
-    
+   
     
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
@@ -200,11 +199,7 @@ public class FileDownloadHelper implements java.io.Serializable {
                         if (cqr.getCustomQuestion().equals(cq)) {
                             valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
                             if (cqr.getResponse() == null ||  cqr.getResponse().isEmpty()){
-                                System.out.print("custom question failed");
-                                
-                               FacesContext.getCurrentInstance().addMessage(null,
-                                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Custom Question " +  BundleUtil.getStringFromBundle("requiredField"), null));
-                               
+                                cqr.setValidationMessage(BundleUtil.getStringFromBundle("requiredField"));                               
                             }                           
                         }
                     }
@@ -221,7 +216,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         boolean valid = validateGuestbookResponse(guestbookResponse);
                   
          if (!valid) {
-             
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
          } else {
              requestContext.execute("PF('downloadPopup').hide()"); 
              guestbookResponse.setDownloadtype("Download");
