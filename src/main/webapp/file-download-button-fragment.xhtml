@@ -65,7 +65,7 @@
                         #{tool.externalTool.displayName}
                     </h:commandLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"
-                                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool' )}"
+                                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                    process="@this"
                                    update="@widgetVar(downloadPopup)"
