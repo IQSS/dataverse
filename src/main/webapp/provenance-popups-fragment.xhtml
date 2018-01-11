@@ -23,6 +23,16 @@
                 <div class="col-sm-8">
                     <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
                 
+                    <div>
+                        <!-- need to conditionally load the json here. I have no idea how to load this aux file -->
+                        <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name}"/>
+                        <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name}"/>
+            
+                        
+                        <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.saveChanges}" oncomplete="PF('editProvenancePopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
+                        <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
+                    </div>
+                    
                     <!--MAD: upload file ui fragment from above -->
                     <ui:fragment id="provUploadFragment"> <!--rendered="# {datasetPage || EditDatafilesPage.showFileUploadFragment()}"> -->
                         <script>
@@ -53,7 +63,7 @@
     //                        });
                         </script>
                         <!--MAD: There was a help block in here. When I removed it the background highlighting decided to creep up -->
-                        <!--MAD: Some references to EditDatafilesPage still -->
+                        <!--MAD: Should I be hiding the upload box once one gets uploaded? I think we talked about it -->
                         <p:fileUpload id="provUpload" 
                                       styleClass="margin-bottom"
                                       dragDropSupport="true"
@@ -61,7 +71,7 @@
                                       multiple="false"
                                       allowTypes="/(\.|\/)(json)$/"
                                       fileUploadListener="#{provenanceUploadFragmentBean.handleFileUpload}" 
-                                      update="@all" 
+                                      update="@this" 
                                       label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
                                       fileLimit="1" 
                                       invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" />
