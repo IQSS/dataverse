@@ -7,15 +7,24 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIInput;
+import javax.faces.component.UIOutput;
+import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -26,11 +35,13 @@ import javax.inject.Named;
  @ViewScoped
  @Named
 public class FileDownloadHelper implements java.io.Serializable {
-
+     
     private static final Logger logger = Logger.getLogger(FileDownloadHelper.class.getCanonicalName());
-
     @Inject
     DataverseSession session;
+        
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
 
     @EJB
     PermissionServiceBean  permissionService;
@@ -39,18 +50,232 @@ public class FileDownloadHelper implements java.io.Serializable {
     FileDownloadServiceBean  fileDownloadService;
     
     @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+    
+    @EJB
     DataFileServiceBean datafileService;
+    
+    UIInput nameField;
 
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
+    public UIInput getNameField() {
+        return nameField;
+    }
+
+    public void setNameField(UIInput nameField) {
+        this.nameField = nameField;
+    }
+
+    public UIInput getEmailField() {
+        return emailField;
+    }
+
+    public void setEmailField(UIInput emailField) {
+        this.emailField = emailField;
+    }
+
+    public UIInput getInstitutionField() {
+        return institutionField;
+    }
+
+    public void setInstitutionField(UIInput institutionField) {
+        this.institutionField = institutionField;
+    }
+
+    public UIInput getPositionField() {
+        return positionField;
+    }
+
+    public void setPositionField(UIInput positionField) {
+        this.positionField = positionField;
+    }
+    UIInput emailField;
+    UIInput institutionField;
+    UIInput positionField;
+   
+    
+
 
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
+     public void nameValueChangeListener(AjaxBehaviorEvent e) {
+         String name= (String) ((UIOutput) e.getSource()).getValue();
+         this.guestbookResponse.setName(name);
+     }
+     
+    public void emailValueChangeListener(AjaxBehaviorEvent e) {
+         String email= (String) ((UIOutput) e.getSource()).getValue();
+         this.guestbookResponse.setEmail(email);
+     }
+    
+    public void institutionValueChangeListener(AjaxBehaviorEvent e) {        
+         String institution= (String) ((UIOutput) e.getSource()).getValue();
+         this.guestbookResponse.setInstitution(institution);
+     }
+    
+    public void positionValueChangeListener(AjaxBehaviorEvent e) {
+         String position= (String) ((UIOutput) e.getSource()).getValue();
+         this.guestbookResponse.setPosition(position);
+     }
+    
+    public void customQuestionValueChangeListener(AjaxBehaviorEvent e) {
+        String questionNo = (String) ((UIOutput) e.getSource()).getId();
+         String position= (String) ((UIOutput) e.getSource()).getValue();
+     }
+    
     public FileDownloadHelper() {
         this.filesForRequestAccess = new ArrayList<>();
     }
 
     
+     private boolean testResponseLength(String value) {
+        return !(value != null && value.length() > 255);
+     }
+     
+     private boolean validateGuestbookResponse(GuestbookResponse guestbookResponse){
+                Dataset dataset = guestbookResponse.getDataset();
+                boolean valid = true;
+         if (dataset.getGuestbook() != null) {
+             if (dataset.getGuestbook().isNameRequired()) {
+                 boolean nameValid = (guestbookResponse.getName() != null && !guestbookResponse.getName().isEmpty());
+                 if (!nameValid) {
+                     nameField.setValid(false);
+                     FacesContext.getCurrentInstance().addMessage(nameField.getClientId(),
+                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
+                 }
+                 valid &= nameValid;
+             }
+                valid &= testResponseLength(guestbookResponse.getName());
+                 if (! testResponseLength(guestbookResponse.getName())){
+                    nameField.setValid(false);
+                     FacesContext.getCurrentInstance().addMessage(nameField.getClientId(),
+                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
+                 }
+             if (dataset.getGuestbook().isEmailRequired()) {
+                 boolean emailValid = (guestbookResponse.getEmail() != null && !guestbookResponse.getEmail().isEmpty());
+                 if (!emailValid) {
+                     emailField.setValid(false);
+                     FacesContext.getCurrentInstance().addMessage(emailField.getClientId(),
+                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
+                 }
+                 valid &= emailValid;
+             }
+                valid &= testResponseLength(guestbookResponse.getEmail());
+                 if (! testResponseLength(guestbookResponse.getEmail())){
+                    emailField.setValid(false);
+                     FacesContext.getCurrentInstance().addMessage(emailField.getClientId(),
+                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
+                 }
+            if (dataset.getGuestbook().isInstitutionRequired()) {
+                 boolean institutionValid = (guestbookResponse.getInstitution()!= null && !guestbookResponse.getInstitution().isEmpty());
+                 if (!institutionValid) {
+                     institutionField.setValid(false);
+                     FacesContext.getCurrentInstance().addMessage(institutionField.getClientId(),
+                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
+                 }
+                valid &= institutionValid;
+            }
+                valid &= testResponseLength(guestbookResponse.getInstitution());
+                 if (! testResponseLength(guestbookResponse.getInstitution())){
+                    institutionField.setValid(false);
+                     FacesContext.getCurrentInstance().addMessage(institutionField.getClientId(),
+                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
+                 }
+            if (dataset.getGuestbook().isPositionRequired()) {
+                 boolean positionValid = (guestbookResponse.getPosition()!= null && !guestbookResponse.getPosition().isEmpty());
+                 if (!positionValid) {
+                     positionField.setValid(false);
+                     FacesContext.getCurrentInstance().addMessage(positionField.getClientId(),
+                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
+                 }
+                valid &= positionValid;
+            }
+                valid &= testResponseLength(guestbookResponse.getPosition());
+                 if (! testResponseLength(guestbookResponse.getPosition())){
+                    positionField.setValid(false);
+                     FacesContext.getCurrentInstance().addMessage(positionField.getClientId(),
+                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
+                 }
+        }
+
+        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
+            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
+                if (cq.isRequired()) {
+                    for (CustomQuestionResponse cqr : guestbookResponse.getCustomQuestionResponses()) {
+                        if (cqr.getCustomQuestion().equals(cq)) {
+                            valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
+                            if (cqr.getResponse() == null ||  cqr.getResponse().isEmpty()){
+                                cqr.setValidationMessage(BundleUtil.getStringFromBundle("requiredField"));                               
+                            } else{
+                                cqr.setValidationMessage(""); 
+                            }                          
+                        }
+                    }
+                }
+            }
+        }       
+
+        return valid;
+         
+     }
+    
+     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        boolean valid = validateGuestbookResponse(guestbookResponse);
+                  
+         if (!valid) {
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
+         } else {
+             requestContext.execute("PF('downloadPopup').hide()"); 
+             guestbookResponse.setDownloadtype("Download");
+             fileDownloadService.writeGuestbookAndStartDownload(guestbookResponse);
+         }
+
+     }
+     
+     public void writeGuestbookAndOpenSubset(GuestbookResponse guestbookResponse) {
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        boolean valid = validateGuestbookResponse(guestbookResponse);
+                  
+         if (!valid) {
+             
+         } else {
+             requestContext.execute("PF('downloadPopup').hide()"); 
+             requestContext.execute("PF('downloadDataSubsetPopup').show()");
+             guestbookResponse.setDownloadtype("Subset");
+             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+         }
+
+     }
+     
+    public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
+        
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        boolean valid = validateGuestbookResponse(guestbookResponse);
+                  
+         if (!valid) {
+             return "";
+         } 
+         guestbookResponse.setDownloadtype("Explore");
+         String retVal = fileDownloadService.startExploreDownloadLink(guestbookResponse, fmd);
+        requestContext.execute("PF('downloadPopup').hide()"); 
+        return retVal;
+    }
+    
+    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
+        
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        boolean valid = validateGuestbookResponse(guestbookResponse);
+                  
+         if (!valid) {
+             return "";
+         } 
+        guestbookResponse.setDownloadtype("WorldMap");
+        String retVal = fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fmd);
+        requestContext.execute("PF('downloadPopup').hide()"); 
+        return retVal;
+    }
+
+        
     private List<DataFile> filesForRequestAccess;
 
     public List<DataFile> getFilesForRequestAccess() {
@@ -214,7 +439,20 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
      } 
+     
+    private GuestbookResponse guestbookResponse;
+
+    public GuestbookResponse getGuestbookResponse() {
+        return guestbookResponse;
+    }
+
+    public void setGuestbookResponse(GuestbookResponse guestbookResponse) {
+        this.guestbookResponse = guestbookResponse;
+    }    
     
+    public GuestbookResponseServiceBean getGuestbookResponseService(){
+        return this.guestbookResponseService;
+    }
     
     
     //todo: potential cleanup - are these methods needed?
