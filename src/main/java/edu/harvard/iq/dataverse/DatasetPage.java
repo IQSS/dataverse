@@ -4074,8 +4074,10 @@ public class DatasetPage implements java.io.Serializable {
         externalToolHandlers = new ArrayList<>();
         for (ExternalTool externalTool : allTools) {
             if (ExternalTool.Type.EXPLORE.equals(externalTool.getType())) {
-                // TODO: What about the API Token? Data Explorer doesn't need it but TwoRavens will if it's made into an external tool.
-                externalToolHandlers.add(new ExternalToolHandler(externalTool, dataFile, null));
+                if (dataFile.isTabularData()) {
+                    // TODO: What about the API Token? Data Explorer doesn't need it but TwoRavens will if it's made into an external tool.
+                    externalToolHandlers.add(new ExternalToolHandler(externalTool, dataFile, null));
+                }
             }
         }
         externalToolHandlersByFileId.put(fileId, externalToolHandlers); //add externalTools to map so we don't have to do the lifting again

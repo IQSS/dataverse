@@ -176,7 +176,9 @@ public class FilePage implements java.io.Serializable {
             externalToolHandlers = new ArrayList<>();
             for (ExternalTool externalTool : allTools) {
                 if (ExternalTool.Type.EXPLORE.equals(externalTool.getType())) {
-                    externalToolHandlers.add(new ExternalToolHandler(externalTool, file, null));
+                    if (file.isTabularData()) {
+                        externalToolHandlers.add(new ExternalToolHandler(externalTool, file, null));
+                    }
                 }
             }
             
