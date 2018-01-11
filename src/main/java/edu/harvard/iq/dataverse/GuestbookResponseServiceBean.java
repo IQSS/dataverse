@@ -283,7 +283,7 @@ public class GuestbookResponseServiceBean {
             if (guestbookResponseId != null) {
                 singleResult[0] = result[1];
                 if (result[2] != null) {
-                    singleResult[1] = new SimpleDateFormat("MMMM d, yyyy").format((Date) result[2]);
+                    singleResult[1] = new SimpleDateFormat("yyyy-MM-dd").format((Date) result[2]);
                 } else {
                     singleResult[1] = "N/A";
                 }
