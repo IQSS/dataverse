@@ -7,112 +7,112 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
     <!--MAD: Provenance popup, most content from metadata/tags atm. Going to make it look like the mockup and then change it...-->
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true">
-        <div class="form-horizontal" ><!--jsf:rendered="# {!(empty EditDatafilesPage.fileMetadataSelectedForTagsPopup)}">-->
-            <div class="form-group text-left">
-                <div class="col-sm-12">
-                    <p class="help-block">#{bundle['file.editProvenanceDialog.tip']}</p>
-                </div>
-            </div>
-            <div class="form-group text-left">
-                <label for="provenanceBundle" class="col-sm-4 control-label">
-                    #{bundle['file.editProvenanceDialog.bundleFile']}
-                </label>
-                <div class="col-sm-8">
-                    <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
-                
-                    <div>
-                        <!-- need to conditionally load the json here. I have no idea how to load this aux file -->
-                        <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name}"/>
-                        <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name}"/>
-            
-                        
-                        <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.saveChanges}" oncomplete="PF('editProvenancePopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
-                        <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
+        <!-- MAD: I added a form tag here and it caused (non-provenance) file upload to break 
+                I really shouldn't be using the overarching form but I also don't know how to get around it... -->
+        <p:outputPanel id="provPopupOutput" class="form-horizontal"> <!-- <div class="form-horizontal" > jsf:rendered="# {!(empty EditDatafilesPage.fileMetadataSelectedForTagsPopup)}">-->
+                <div class="form-group text-left">
+                    <div class="col-sm-12">
+                        <p class="help-block">#{bundle['file.editProvenanceDialog.tip']}</p>
                     </div>
-                    
-                    <!--MAD: upload file ui fragment from above -->
-                    <ui:fragment id="provUploadFragment"> <!--rendered="# {datasetPage || EditDatafilesPage.showFileUploadFragment()}"> -->
-                        <script>
-                            //MAD: do we need the method right below? Does it init the fileUpload var?
-    ////MAD: commenting this all out for now just to get something running. Probably isn't breaking things tho...
-    //                        function uploadWidgetDropMsg() {
-    //                            var fileUpload = $('div[id$="provUpload"] div.ui-fileupload-content');
-    //                            if ($(fileUpload).children('#dragdropMsg').length) {
-    //                                // do nothing
-    //                            } else {
-    //                                $(fileUpload).prepend('<div id="dragdropMsg"># {bundle['file.fromDropbox.description']}</div>');
-    //                            }
-    //                        }
-                            function uploadStarted() {
-                                $('button[id$="provUploadStarted"]').trigger('click');
-                            }
-                            function uploadFinished(fileupload) {                    
-                                if (fileupload.files.length === 0) {
-                                    $('button[id$="AllUploadsFinished"]').trigger('click');
-                                    //alert("all uploads finished");
+                </div>
+                <div class="form-group text-left">
+                    <label for="provenanceBundle" class="col-sm-4 control-label">
+                        #{bundle['file.editProvenanceDialog.bundleFile']}
+                    </label>
+                    <div class="col-sm-8">
+                        <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
+
+
+ 
+                        <!--MAD: upload file ui fragment from above -->
+                        <ui:fragment id="provUploadFragment"> <!--rendered="# {datasetPage || EditDatafilesPage.showFileUploadFragment()}"> -->
+                            <div>
+                                <!-- need to conditionally load the json here. I have no idea how to load this aux file -->
+                                <div id="provFileText"> #{provenanceUploadFragmentBean.tempJsonFileName} </div>
+                                <!--<p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="# {bundle.saveChanges}" oncomplete="PF('editProvenancePopup').hide()" update=":datasetForm:filesTable" actionListener="# {EditDatafilesPage.saveFileTagsAndCategories()}"/>
+                                <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="# {bundle.cancel}" onclick="PF('editProvenancePopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="# {EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/> -->
+                            
+                            </div>
+                            <script>
+                                //MAD: do we need the method right below? Does it init the fileUpload var?
+        ////MAD: commenting this all out for now just to get something running. Probably isn't breaking things tho...
+        //                        function uploadWidgetDropMsg() {
+        //                            var fileUpload = $('div[id$="provUpload"] div.ui-fileupload-content');
+        //                            if ($(fileUpload).children('#dragdropMsg').length) {
+        //                                // do nothing
+        //                            } else {
+        //                                $(fileUpload).prepend('<div id="dragdropMsg"># {bundle['file.fromDropbox.description']}</div>');
+        //                            }
+        //                        }
+                                function uploadStarted() {
+                                    $('button[id$="provUploadStarted"]').trigger('click');
                                 }
-                            }
-    //                        function uploadWidgetDropRemoveMsg() {
-    //                            $('div[id$="provUpload"] div.ui-fileupload-content div.dropMsg').remove();
-    //                        }
-    //                        $(document).ready(function () {
-    //                            uploadWidgetDropMsg();
-    //                        });
-                        </script>
-                        <!--MAD: There was a help block in here. When I removed it the background highlighting decided to creep up -->
-                        <!--MAD: Should I be hiding the upload box once one gets uploaded? I think we talked about it -->
-                        <p:fileUpload id="provUpload" 
-                                      styleClass="margin-bottom"
-                                      dragDropSupport="true"
-                                      auto="true"
-                                      multiple="false"
-                                      allowTypes="/(\.|\/)(json)$/"
-                                      fileUploadListener="#{provenanceUploadFragmentBean.handleFileUpload}" 
-                                      update="@this" 
-                                      label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
-                                      fileLimit="1" 
-                                      invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" />
+                                function uploadFinished(fileupload) {                    
+                                    if (fileupload.files.length === 0) {
+                                        $('button[id$="AllUploadsFinished"]').trigger('click');
+                                        //alert("all uploads finished");
+                                    }
+                                }
+        //                        function uploadWidgetDropRemoveMsg() {
+        //                            $('div[id$="provUpload"] div.ui-fileupload-content div.dropMsg').remove();
+        //                        }
+        //                        $(document).ready(function () {
+        //                            uploadWidgetDropMsg();
+        //                        });
+                            </script>
+                            <!--MAD: There was a help block in here. When I removed it the background highlighting decided to creep up -->
+                            <!--MAD: Should I be hiding the upload box once one gets uploaded? I think we talked about it -->
+                            <p:fileUpload id="provUpload" 
+                                          styleClass="margin-bottom"
+                                          dragDropSupport="true"
+                                          auto="true"
+                                          multiple="false"
+                                          allowTypes="/(\.|\/)(json)$/"
+                                          fileUploadListener="#{provenanceUploadFragmentBean.handleFileUpload}" 
+                                          update="provPopupOutput" 
+                                          label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
+                                          oncomplete="bind_bsui_components();"
+                                          fileLimit="1" 
+                                          invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" />
 
+                            <p:message for="provUpload" id="provUploadMessage" display="text" />
+                            <!--oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));" -->
 
-                        <p:message for="provUpload" id="provUploadMessage" display="text" />
-                        <!--oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));" -->
-                                
-                        <!--<p:commandButton id="AllUploadsFinished" action="# {EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" style="display:none"/> 
-                        -->
-                    </ui:fragment>
-                
+                            <!--<p:commandButton id="AllUploadsFinished" action="# {EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" style="display:none"/> 
+                            -->
+                        </ui:fragment>
+
+                    </div>
                 </div>
-            </div>
-            <div class="form-group text-left">
-                <div class="col-sm-12">
-                    <p class="help-block">#{bundle['file.editProvenanceDialog.description.tip']}</p>
+                <div class="form-group text-left">
+                    <div class="col-sm-12">
+                        <p class="help-block">#{bundle['file.editProvenanceDialog.description.tip']}</p>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group text-left">
-                <label for="provenanceAddDescription" class="col-sm-4 control-label">
-                    #{bundle['file.editProvenanceDialog.description']}
-                </label>
-                <div class="col-sm-8">
-                    <div class="row form-inline">
-                        <div class="col-sm-12">
-                            <p:inputTextarea id="provenanceAddDescription" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{EditDatafilesPage.newCategoryName}" 
-                                             placeholder="#{bundle['file.editProvenanceDialog.description.placeholder']}"
-                                             onkeypress="if (event.keyCode == 13) {
-                                                     return false;
-                                                 }"
-                                             style="width:98%; margin-top:.5em;"/>
-                            <p:message for="provenanceAddDescription" display="text" />
+                <div class="form-group text-left">
+                    <label for="provenanceAddDescription" class="col-sm-4 control-label">
+                        #{bundle['file.editProvenanceDialog.description']}
+                    </label>
+                    <div class="col-sm-8">
+                        <div class="row form-inline">
+                            <div class="col-sm-12">
+                                <p:inputTextarea id="provenanceFreeform" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{provenanceUploadFragmentBean.freeformText}" 
+                                                placeholder="#{bundle['file.editProvenanceDialog.description.placeholder']}"
+                                                onkeypress="if (event.keyCode == 13) {
+                                                        return false;
+                                                    }"
+                                                style="width:98%; margin-top:.5em;"/>
+                                <p:message for="provenanceFreeform" display="text" />
+                            </div>
                         </div>
                     </div>
                 </div>
+            <div class="button-block">
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editProvenancePopup').hide()" actionListener="#{provenanceUploadFragmentBean.saveUploadedContent()}"/>
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();PF('blockFileForm').hide();"  />
             </div>
-        </div>
-        <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editProvenancePopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
-            <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
-        </div>
+        </p:outputPanel>
     </p:dialog>
 </ui:composition>
