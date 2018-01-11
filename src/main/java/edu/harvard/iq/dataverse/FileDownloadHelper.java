@@ -7,11 +7,11 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -26,7 +26,9 @@ import javax.inject.Named;
  @ViewScoped
  @Named
 public class FileDownloadHelper implements java.io.Serializable {
-    
+
+    private static final Logger logger = Logger.getLogger(FileDownloadHelper.class.getCanonicalName());
+
     @Inject
     DataverseSession session;
 
@@ -38,7 +40,10 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
-    
+
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
     public FileDownloadHelper() {
@@ -104,26 +109,17 @@ public class FileDownloadHelper implements java.io.Serializable {
             return false;
         } 
         
-        // --------------------------------------------------------------------        
-        // Grab the fileMetadata.id and restriction flag                
-        // --------------------------------------------------------------------
         Long fid = fileMetadata.getId();
         //logger.info("calling candownloadfile on filemetadata "+fid);
+        // Note that `isRestricted` at the FileMetadata level is for expressing intent by version. Enforcement is done with `isRestricted` at the DataFile level.
         boolean isRestrictedFile = fileMetadata.isRestricted();
         
-        // --------------------------------------------------------------------
         // Has this file been checked? Look at the DatasetPage hash
-        // --------------------------------------------------------------------
         if (this.fileDownloadPermissionMap.containsKey(fid)){
             // Yes, return previous answer
             //logger.info("using cached result for candownloadfile on filemetadata "+fid);
             return this.fileDownloadPermissionMap.get(fid);
         }
-        //----------------------------------------------------------------------
-        //(0) Before we do any testing - if version is deaccessioned and user
-        // does not have edit dataset permission then may download
-        //----------------------------------------------------------------------
-        
        if (fileMetadata.getDatasetVersion().isDeaccessioned()) {
            if (this.doesSessionUserHavePermission(Permission.EditDataset, fileMetadata)) {
                // Yes, save answer and return true
@@ -135,66 +131,20 @@ public class FileDownloadHelper implements java.io.Serializable {
            }
        }
 
-        // --------------------------------------------------------------------
-        // (1) Is the file Unrestricted ?        
-        // --------------------------------------------------------------------
         if (!isRestrictedFile){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
         }
         
-        // --------------------------------------------------------------------
-        // Conditions (2) through (4) are for Restricted files
-        // --------------------------------------------------------------------
-        
-        // --------------------------------------------------------------------
-        // (2) In Dataverse 4.3 and earlier we required that users be authenticated
-        // to download files, but in developing the Private URL feature, we have
-        // added a new subclass of "User" called "PrivateUrlUser" that returns false
-        // for isAuthenticated but that should be able to download restricted files
-        // when given the Member role (which includes the DownloadFile permission).
-        // This is consistent with how Builtin and Shib users (both are
-        // AuthenticatedUsers) can download restricted files when they are granted
-        // the Member role. For this reason condition 2 has been changed. Previously,
-        // we required isSessionUserAuthenticated to return true. Now we require
-        // that the User is not an instance of GuestUser, which is similar in
-        // spirit to the previous check.
-        // --------------------------------------------------------------------
-
-        if (session.getUser() instanceof GuestUser){
-            this.fileDownloadPermissionMap.put(fid, false);
-            return false;
-        }
-
-        
-        // --------------------------------------------------------------------
-        // (3) Does the User have DownloadFile Permission at the **Dataset** level 
-        // --------------------------------------------------------------------
-        
-
-        if (this.doesSessionUserHavePermission(Permission.DownloadFile, fileMetadata)){
-            // Yes, save answer and return true
+        // See if the DataverseRequest, which contains IP Groups, has permission to download the file.
+        if (permissionService.requestOn(dvRequestService.getDataverseRequest(), fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
+            logger.fine("The DataverseRequest (User plus IP address) has access to download the file.");
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
         }
 
-  
-        // --------------------------------------------------------------------
-        // (4) Does the user has DownloadFile permission on the DataFile            
-        // --------------------------------------------------------------------
-        /*
-        if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
-            this.fileDownloadPermissionMap.put(fid, true);
-            return true;
-        }
-        */
-        
-        // --------------------------------------------------------------------
-        // (6) No download....
-        // --------------------------------------------------------------------
         this.fileDownloadPermissionMap.put(fid, false);
-       
         return false;
     }
    
