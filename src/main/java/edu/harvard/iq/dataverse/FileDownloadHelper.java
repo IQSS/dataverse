@@ -205,7 +205,9 @@ public class FileDownloadHelper implements java.io.Serializable {
                             valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
                             if (cqr.getResponse() == null ||  cqr.getResponse().isEmpty()){
                                 cqr.setValidationMessage(BundleUtil.getStringFromBundle("requiredField"));                               
-                            }                           
+                            } else{
+                                cqr.setValidationMessage(""); 
+                            }                          
                         }
                     }
                 }
