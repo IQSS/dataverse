@@ -161,7 +161,7 @@ public class FileDownloadHelper implements java.io.Serializable {
                              new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
                  }
             if (dataset.getGuestbook().isInstitutionRequired()) {
-                 boolean institutionValid = (guestbookResponse.getEmail() != null && !guestbookResponse.getEmail().isEmpty());
+                 boolean institutionValid = (guestbookResponse.getInstitution()!= null && !guestbookResponse.getInstitution().isEmpty());
                  if (!institutionValid) {
                      institutionField.setValid(false);
                      FacesContext.getCurrentInstance().addMessage(institutionField.getClientId(),
@@ -169,14 +169,14 @@ public class FileDownloadHelper implements java.io.Serializable {
                  }
                 valid &= institutionValid;
             }
-                           valid &= testResponseLength(guestbookResponse.getInstitution());
+                valid &= testResponseLength(guestbookResponse.getInstitution());
                  if (! testResponseLength(guestbookResponse.getInstitution())){
                     institutionField.setValid(false);
                      FacesContext.getCurrentInstance().addMessage(institutionField.getClientId(),
                              new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
                  }
             if (dataset.getGuestbook().isPositionRequired()) {
-                 boolean positionValid = (guestbookResponse.getEmail() != null && !guestbookResponse.getEmail().isEmpty());
+                 boolean positionValid = (guestbookResponse.getPosition()!= null && !guestbookResponse.getPosition().isEmpty());
                  if (!positionValid) {
                      positionField.setValid(false);
                      FacesContext.getCurrentInstance().addMessage(positionField.getClientId(),

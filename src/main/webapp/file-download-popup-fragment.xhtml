@@ -116,7 +116,7 @@
                         <ui:repeat value="#{guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
                             <div class="text-left">
                                 <label class="control-label">
-                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
+                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString} "/>
                                     <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
                                 </label>
                                 <p:inputText id="customQuestionResponse"
