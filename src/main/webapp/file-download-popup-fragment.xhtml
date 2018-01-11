@@ -173,8 +173,8 @@
                 <f:param name="DO_GB_VALIDATION" value="true"/> 
             </p:commandLink>
             <p:commandLink type="button" process="@this" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
-                           action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool)}" target="_blank"
-                           update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
+                           action="#{fileDownloadHelper.explore(guestbookResponse, fileMetadata, tool)}" target="_blank"
+                           update="guestbookUIFragment">
                 #{bundle['acceptTerms']}
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>
