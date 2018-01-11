@@ -147,6 +147,7 @@
         </div>
         <div class="button-block">
             <p:commandLink type="button" process="@this" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'explore' 
+                                                                               and guestbookResponse.fileFormat != 'externalTool'
                                                                                and guestbookResponse.fileFormat != 'subset'
                                                                                 and guestbookResponse.fileFormat != 'worldMap'}"
                            actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
@@ -170,6 +171,12 @@
                            update="guestbookUIFragment" >
                 #{bundle['acceptTerms']} 
                 <f:param name="DO_GB_VALIDATION" value="true"/> 
+            </p:commandLink>
+            <p:commandLink type="button" process="@this" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
+                           action="#{fileDownloadHelper.explore(guestbookResponse, fileMetadata, tool)}" target="_blank"
+                           update="guestbookUIFragment">
+                #{bundle['acceptTerms']}
+                <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>
             <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>

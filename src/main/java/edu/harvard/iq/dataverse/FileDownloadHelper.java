@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
@@ -96,6 +97,7 @@ public class FileDownloadHelper implements java.io.Serializable {
 
 
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
+//    private List<ExternalToolHandler> externalToolHandlers;
 
      public void nameValueChangeListener(AjaxBehaviorEvent e) {
          String name= (String) ((UIOutput) e.getSource()).getValue();
@@ -260,7 +262,20 @@ public class FileDownloadHelper implements java.io.Serializable {
         requestContext.execute("PF('downloadPopup').hide()"); 
         return retVal;
     }
-    
+
+     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalToolHandler externalToolHandler) {
+
+         RequestContext requestContext = RequestContext.getCurrentInstance();
+         boolean valid = validateGuestbookResponse(guestbookResponse);
+
+         if (!valid) {
+             return;
+         }
+         guestbookResponse.setDownloadtype("Explore");
+         fileDownloadService.explore(guestbookResponse, fmd, externalToolHandler);
+         requestContext.execute("PF('downloadPopup').hide()");
+     }
+
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         
         RequestContext requestContext = RequestContext.getCurrentInstance();
@@ -463,5 +478,5 @@ public class FileDownloadHelper implements java.io.Serializable {
     public void setSession(DataverseSession session) {
         this.session = session;
     }
-    
-}
+
+ }

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -147,8 +148,30 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
-    
-    
+
+    public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalToolHandler externalToolHandler) {
+        if (externalToolHandler == null) {
+            // Must be from the dataset page.
+            externalToolHandler = guestbookResponse.getExternalToolHandler();
+        }
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        logger.fine("Exploring with " + toolUrl);
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(toolUrl);
+        } catch (IOException ex) {
+            logger.info("Problem exploring with " + toolUrl + " - " + ex);
+        }
+        if (guestbookResponse != null && guestbookResponse.isWriteResponse()
+                && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
+            if (guestbookResponse.getDataFile() == null && fmd != null) {
+                guestbookResponse.setDataFile(fmd.getDataFile());
+            }
+            if (fmd == null || !fmd.getDatasetVersion().isDraft()) {
+                writeGuestbookResponseRecord(guestbookResponse);
+            }
+        }
+    }
+
     public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
 
         if (guestbookResponse != null && guestbookResponse.isWriteResponse() 

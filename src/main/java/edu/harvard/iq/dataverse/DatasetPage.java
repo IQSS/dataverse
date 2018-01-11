@@ -89,6 +89,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
@@ -256,6 +257,7 @@ public class DatasetPage implements java.io.Serializable {
     
     List<ExternalTool> allTools = new ArrayList<>();
     Map<Long,List<ExternalTool>> queriedFileTools = new HashMap<>(); 
+    Map<Long, List<ExternalToolHandler>> externalToolHandlersByFileId = new HashMap<>();
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -4050,13 +4052,38 @@ public class DatasetPage implements java.io.Serializable {
         
         DataFile dataFile = datafileService.find(fileId);         
         fileTools = externalToolService.findExternalToolsByFile(allTools, dataFile);
+        // TODO: Do we even need "configure" tools right now? Should we delete all this code?
+        List<ExternalTool> onlyConfigureTools = new ArrayList<>();
+        for (ExternalTool fileTool : fileTools) {
+            if (ExternalTool.Type.CONFIGURE.equals(fileTool.getType())) {
+                onlyConfigureTools.add(fileTool);
+            }
+        }
+        fileTools = onlyConfigureTools;
         
         queriedFileTools.put(fileId, fileTools); //add externalTools to map so we don't have to do the lifting again
         
         return fileTools;    
     }
-    
 
+    public List<ExternalToolHandler> getExternalToolHandlersForDataFile(Long fileId) {
+        List<ExternalToolHandler> externalToolHandlers = externalToolHandlersByFileId.get(fileId);
+        if (externalToolHandlers != null) { //if already queried before and added to list
+            return externalToolHandlers;
+        }
+        DataFile dataFile = datafileService.find(fileId);
+        externalToolHandlers = new ArrayList<>();
+        for (ExternalTool externalTool : allTools) {
+            if (ExternalTool.Type.EXPLORE.equals(externalTool.getType())) {
+                if (dataFile.isTabularData()) {
+                    // TODO: What about the API Token? Data Explorer doesn't need it but TwoRavens will if it's made into an external tool.
+                    externalToolHandlers.add(new ExternalToolHandler(externalTool, dataFile, null));
+                }
+            }
+        }
+        externalToolHandlersByFileId.put(fileId, externalToolHandlers); //add externalTools to map so we don't have to do the lifting again
+        return externalToolHandlers;
+    }
     
     Boolean thisLatestReleasedVersion = null;
     

@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.IOException;
@@ -782,6 +783,20 @@ public class GuestbookResponseServiceBean {
             in.setWriteResponse(false);
         }
         
+        return in;
+    }
+
+    public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format, ExternalToolHandler externalToolHandler) {
+        if (in != null && fm.getDataFile() != null) {
+            in.setFileFormat(format);
+            in.setDataFile(fm.getDataFile());
+        }
+        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
+            in.setWriteResponse(false);
+        }
+        if (in != null && externalToolHandler != null) {
+            in.setExternalToolHandler(externalToolHandler);
+        }
         return in;
     }
 

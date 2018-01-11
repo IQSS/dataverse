@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.externaltools;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.ReservedWord;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public class ExternalToolHandler {
 
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
+    public static final String TYPE = "type";
     public static final String TOOL_URL = "toolUrl";
     public static final String TOOL_PARAMETERS = "toolParameters";
 
@@ -75,15 +77,14 @@ public class ExternalToolHandler {
         return "?" + String.join("&", params);
     }
 
-    // TODO: Make this parser much smarter in the future. Tools like Data Explorer will want
-    // to use reserved words within a value like this:
-    // "uri": "{siteUrl}/api/access/datafile/{fileId}/metadata/ddi"
     private String getQueryParam(String key, String value) {
         ReservedWord reservedWord = ReservedWord.fromString(value);
         switch (reservedWord) {
             case FILE_ID:
                 // getDataFile is never null because of the constructor
                 return key + "=" + getDataFile().getId();
+            case SITE_URL:
+                return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
             case API_TOKEN:
                 String apiTokenString = null;
                 ApiToken theApiToken = getApiToken();

@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -35,6 +38,13 @@ public class ExternalTool implements Serializable {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
+    /**
+     * Whether the tool is an "explore" tool or a "configure" tool, for example.
+     */
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Type type;
+
     @Column(nullable = false)
     private String toolUrl;
 
@@ -59,11 +69,40 @@ public class ExternalTool implements Serializable {
     public ExternalTool() {
     }
 
-    public ExternalTool(String displayName, String description, String toolUrl, String toolParameters) {
+    public ExternalTool(String displayName, String description, Type type, String toolUrl, String toolParameters) {
         this.displayName = displayName;
         this.description = description;
+        this.type = type;
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
+    }
+
+    public enum Type {
+
+        EXPLORE("explore"),
+        CONFIGURE("configure");
+
+        private final String text;
+
+        private Type(final String text) {
+            this.text = text;
+        }
+
+        public static Type fromString(String text) {
+            if (text != null) {
+                for (Type type : Type.values()) {
+                    if (text.equals(type.text)) {
+                        return type;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("Type must be one of these values: " + Arrays.asList(Type.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
     }
 
     public Long getId() {
@@ -90,6 +129,10 @@ public class ExternalTool implements Serializable {
         this.description = description;
     }
 
+    public Type getType() {
+        return type;
+    }
+
     public String getToolUrl() {
         return toolUrl;
     }
@@ -111,6 +154,7 @@ public class ExternalTool implements Serializable {
         jab.add("id", getId());
         jab.add(ExternalToolHandler.DISPLAY_NAME, getDisplayName());
         jab.add(ExternalToolHandler.DESCRIPTION, getDescription());
+        jab.add(ExternalToolHandler.TYPE, getType().text);
         jab.add(ExternalToolHandler.TOOL_URL, getToolUrl());
         jab.add(ExternalToolHandler.TOOL_PARAMETERS, getToolParameters());
         return jab;
