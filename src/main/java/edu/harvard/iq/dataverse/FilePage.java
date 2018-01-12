@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -65,8 +64,8 @@ public class FilePage implements java.io.Serializable {
     private Dataset dataset;
     private List<DatasetVersion> datasetVersionsForTab;
     private List<FileMetadata> fileMetadatasForTab;
-    private List<ExternalTool> externalTools;
-    private List<ExternalToolHandler> externalToolHandlers;
+    private List<ExternalTool> configureTools;
+    private List<ExternalTool> exploreTools;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -163,27 +162,11 @@ public class FilePage implements java.io.Serializable {
            
           //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
 
-            List<ExternalTool> allTools = externalToolService.findAll();
-            
-            externalTools = externalToolService.findExternalToolsByFile(allTools, file);
-            // TODO: Do we even need "configure" tools right now? Should we delete all this code?
-            List<ExternalTool> onlyConfigureTools = new ArrayList<>();
-            for (ExternalTool externalTool : externalTools) {
-                if (ExternalTool.Type.CONFIGURE.equals(externalTool.getType())) {
-                    onlyConfigureTools.add(externalTool);
-                }
+            if (file.isTabularData()) {
+                configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
+                exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
             }
-            externalTools = onlyConfigureTools;
 
-            externalToolHandlers = new ArrayList<>();
-            for (ExternalTool externalTool : allTools) {
-                if (ExternalTool.Type.EXPLORE.equals(externalTool.getType())) {
-                    if (file.isTabularData()) {
-                        externalToolHandlers.add(new ExternalToolHandler(externalTool, file, null));
-                    }
-                }
-            }
-            
         } else {
 
             return permissionsWrapper.notFound();
@@ -788,12 +771,12 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
     }
 
-    public List<ExternalTool> getExternalTools() {
-        return externalTools;
+    public List<ExternalTool> getConfigureTools() {
+        return configureTools;
     }
 
-    public List<ExternalToolHandler> getExternalToolHandlers() {
-        return externalToolHandlers;
+    public List<ExternalTool> getExploreTools() {
+        return exploreTools;
     }
-    
+
 }

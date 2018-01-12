@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -83,7 +83,7 @@ public class GuestbookResponse implements Serializable {
     private boolean writeResponse = true;
 
     @Transient
-    private ExternalToolHandler externalToolHandler;
+    private ExternalTool externalTool;
 
     public boolean isWriteResponse() {
         return writeResponse;
@@ -110,12 +110,12 @@ public class GuestbookResponse implements Serializable {
         this.fileFormat = downloadFormat;
     }
 
-    public ExternalToolHandler getExternalToolHandler() {
-        return externalToolHandler;
+    public ExternalTool getExternalTool() {
+        return externalTool;
     }
 
-    public void setExternalToolHandler(ExternalToolHandler externalToolHandler) {
-        this.externalToolHandler = externalToolHandler;
+    public void setExternalTool(ExternalTool externalTool) {
+        this.externalTool = externalTool;
     }
 
     public GuestbookResponse(){

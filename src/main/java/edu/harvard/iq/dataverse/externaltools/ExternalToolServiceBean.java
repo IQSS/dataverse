@@ -38,6 +38,21 @@ public class ExternalToolServiceBean {
         return typedQuery.getResultList();
     }
 
+
+    /**
+     * @return A list of tools or an empty list.
+     */
+    public List<ExternalTool> findByType(ExternalTool.Type type) {
+        List<ExternalTool> externalTools = new ArrayList<>();
+        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
+        typedQuery.setParameter("type", type);
+        List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
+        if (toolsFromQuery != null) {
+            externalTools = toolsFromQuery;
+        }
+        return externalTools;
+    }
+
     public ExternalTool findById(long id) {
         TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.id = :id", ExternalTool.class);
         typedQuery.setParameter("id", id);

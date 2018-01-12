@@ -7,8 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
@@ -263,7 +262,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         return retVal;
     }
 
-     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalToolHandler externalToolHandler) {
+     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
 
          RequestContext requestContext = RequestContext.getCurrentInstance();
          boolean valid = validateGuestbookResponse(guestbookResponse);
@@ -271,8 +270,9 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (!valid) {
              return;
          }
+         // Rather that putting "Explore" in the database, we *could* put externalTool.getDisplayName() for "Data Explorer" or whatever.
          guestbookResponse.setDownloadtype("Explore");
-         fileDownloadService.explore(guestbookResponse, fmd, externalToolHandler);
+         fileDownloadService.explore(guestbookResponse, fmd, externalTool);
          requestContext.execute("PF('downloadPopup').hide()");
      }
 

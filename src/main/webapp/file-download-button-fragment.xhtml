@@ -48,21 +48,21 @@
     </ui:fragment>
 
     <!--DROPDOWN EXPLORE BUTTON (NOT A SINGLE EXPLORE BUTTON): Multiple tools-->
-    <!--externalToolHandlers is set as a ui:param by the file and dataset pages-->
-    <div class="btn-group" jsf:rendered="#{not empty externalToolHandlers or (twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+    <!--exploreTools is set as a ui:param by the file and dataset pages-->
+    <div class="btn-group" jsf:rendered="#{not empty exploreTools or (twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
         <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
         </button>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <!--external tools-->
-            <ui:repeat var="tool" value="#{externalToolHandlers}">
+            <ui:repeat var="tool" value="#{exploreTools}">
                 <li>
                     <h:commandLink rendered="#{!downloadPopupRequired}"
                                    styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                    action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}" target="_blank">
-                        #{tool.externalTool.displayName}
+                        #{tool.displayName}
                     </h:commandLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
@@ -70,7 +70,7 @@
                                    process="@this"
                                    update="@widgetVar(downloadPopup)"
                                    oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                        #{tool.externalTool.displayName}
+                        #{tool.displayName}
                     </p:commandLink>
                 </li>
             </ui:repeat>
@@ -114,7 +114,7 @@
     </div>
 
     <!--SINGLE EXPLORE BUTTON: TwoRavens only-->
-    <ui:fragment rendered="#{ twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and empty externalToolHandlers}">
+    <ui:fragment rendered="#{ twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and empty exploreTools}">
         <!-- TwoRavens Explore button ONLY ... not WorldMap -->
         <h:commandLink rendered="#{!downloadPopupRequired}"
                        type="button" 
@@ -135,7 +135,7 @@
     </ui:fragment>
 
     <!--SINGLE EXPLORE BUTTON: WorldMap only-->
-    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and !(twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata)) and empty externalToolHandlers}">
+    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and !(twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata)) and empty exploreTools}">
         <!-- WorldMap Explore button ONLY ... not TwoRavens -->
         <h:commandLink pt:role="button" rendered="#{!downloadPopupRequired}"
                        type="button" 

@@ -89,7 +89,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
@@ -255,9 +254,10 @@ public class DatasetPage implements java.io.Serializable {
     
     private Boolean hasRsyncScript = false;
     
-    List<ExternalTool> allTools = new ArrayList<>();
-    Map<Long,List<ExternalTool>> queriedFileTools = new HashMap<>(); 
-    Map<Long, List<ExternalToolHandler>> externalToolHandlersByFileId = new HashMap<>();
+    List<ExternalTool> configureTools = new ArrayList<>();
+    List<ExternalTool> exploreTools = new ArrayList<>();
+    Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
+    Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -1531,9 +1531,10 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
         }
-        
-        allTools = externalToolService.findAll();
-        
+
+        configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
+        exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
+
         return null;
     }
     
@@ -4044,47 +4045,28 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
     
-    public List<ExternalTool> getExternalToolsForDataFile(Long fileId) {
-        List<ExternalTool> fileTools = queriedFileTools.get(fileId);
-        if(fileTools != null) { //if already queried before and added to list
-            return fileTools;
-        }
-        
-        DataFile dataFile = datafileService.find(fileId);         
-        fileTools = externalToolService.findExternalToolsByFile(allTools, dataFile);
-        // TODO: Do we even need "configure" tools right now? Should we delete all this code?
-        List<ExternalTool> onlyConfigureTools = new ArrayList<>();
-        for (ExternalTool fileTool : fileTools) {
-            if (ExternalTool.Type.CONFIGURE.equals(fileTool.getType())) {
-                onlyConfigureTools.add(fileTool);
-            }
-        }
-        fileTools = onlyConfigureTools;
-        
-        queriedFileTools.put(fileId, fileTools); //add externalTools to map so we don't have to do the lifting again
-        
-        return fileTools;    
-    }
-
-    public List<ExternalToolHandler> getExternalToolHandlersForDataFile(Long fileId) {
-        List<ExternalToolHandler> externalToolHandlers = externalToolHandlersByFileId.get(fileId);
-        if (externalToolHandlers != null) { //if already queried before and added to list
-            return externalToolHandlers;
+    public List<ExternalTool> getConfigureToolsForDataFile(Long fileId) {
+        List<ExternalTool> cachedConfigTools = configureToolsByFileId.get(fileId);
+        if (cachedConfigTools != null) { //if already queried before and added to list
+            return cachedConfigTools;
         }
         DataFile dataFile = datafileService.find(fileId);
-        externalToolHandlers = new ArrayList<>();
-        for (ExternalTool externalTool : allTools) {
-            if (ExternalTool.Type.EXPLORE.equals(externalTool.getType())) {
-                if (dataFile.isTabularData()) {
-                    // TODO: What about the API Token? Data Explorer doesn't need it but TwoRavens will if it's made into an external tool.
-                    externalToolHandlers.add(new ExternalToolHandler(externalTool, dataFile, null));
-                }
-            }
-        }
-        externalToolHandlersByFileId.put(fileId, externalToolHandlers); //add externalTools to map so we don't have to do the lifting again
-        return externalToolHandlers;
+        cachedConfigTools = ExternalToolServiceBean.findExternalToolsByFile(configureTools, dataFile);
+        configureToolsByFileId.put(fileId, cachedConfigTools); //add to map so we don't have to do the lifting again
+        return cachedConfigTools;
     }
-    
+
+    public List<ExternalTool> getExploreToolsForDataFile(Long fileId) {
+        List<ExternalTool> cachedExploreTools = exploreToolsByFileId.get(fileId);
+        if (cachedExploreTools != null) { //if already queried before and added to list
+            return cachedExploreTools;
+        }
+        DataFile dataFile = datafileService.find(fileId);
+        cachedExploreTools = ExternalToolServiceBean.findExternalToolsByFile(exploreTools, dataFile);
+        exploreToolsByFileId.put(fileId, cachedExploreTools); //add to map so we don't have to do the lifting again
+        return cachedExploreTools;
+    }
+
     Boolean thisLatestReleasedVersion = null;
     
     public boolean isThisLatestReleasedVersion() {
