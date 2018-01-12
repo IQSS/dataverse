@@ -96,7 +96,6 @@ public class FileDownloadHelper implements java.io.Serializable {
 
 
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
-//    private List<ExternalToolHandler> externalToolHandlers;
 
      public void nameValueChangeListener(AjaxBehaviorEvent e) {
          String name= (String) ((UIOutput) e.getSource()).getValue();
@@ -478,5 +477,5 @@ public class FileDownloadHelper implements java.io.Serializable {
     public void setSession(DataverseSession session) {
         this.session = session;
     }
-
- }
+    
+}
