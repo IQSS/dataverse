@@ -24,4 +24,5 @@ These "superuser" tasks are managed via the new page called the Dashboard. A use
    ip-groups
    monitoring
    maintenance
+   backups
    troubleshooting
