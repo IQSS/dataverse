@@ -22,12 +22,6 @@ public class ExternalToolHandler {
 
     private static final Logger logger = Logger.getLogger(ExternalToolHandler.class.getCanonicalName());
 
-    public static final String DISPLAY_NAME = "displayName";
-    public static final String DESCRIPTION = "description";
-    public static final String TYPE = "type";
-    public static final String TOOL_URL = "toolUrl";
-    public static final String TOOL_PARAMETERS = "toolParameters";
-
     private final ExternalTool externalTool;
     private final DataFile dataFile;
 

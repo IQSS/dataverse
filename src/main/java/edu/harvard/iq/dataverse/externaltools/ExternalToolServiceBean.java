@@ -1,11 +1,11 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
-import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.DESCRIPTION;
-import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.DISPLAY_NAME;
-import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.TOOL_PARAMETERS;
-import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.TOOL_URL;
-import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.TYPE;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;

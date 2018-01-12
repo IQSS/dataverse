@@ -20,6 +20,12 @@ import javax.persistence.Id;
 @Entity
 public class ExternalTool implements Serializable {
 
+    public static final String DISPLAY_NAME = "displayName";
+    public static final String DESCRIPTION = "description";
+    public static final String TYPE = "type";
+    public static final String TOOL_URL = "toolUrl";
+    public static final String TOOL_PARAMETERS = "toolParameters";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -152,11 +158,11 @@ public class ExternalTool implements Serializable {
     public JsonObjectBuilder toJson() {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("id", getId());
-        jab.add(ExternalToolHandler.DISPLAY_NAME, getDisplayName());
-        jab.add(ExternalToolHandler.DESCRIPTION, getDescription());
-        jab.add(ExternalToolHandler.TYPE, getType().text);
-        jab.add(ExternalToolHandler.TOOL_URL, getToolUrl());
-        jab.add(ExternalToolHandler.TOOL_PARAMETERS, getToolParameters());
+        jab.add(DISPLAY_NAME, getDisplayName());
+        jab.add(DESCRIPTION, getDescription());
+        jab.add(TYPE, getType().text);
+        jab.add(TOOL_URL, getToolUrl());
+        jab.add(TOOL_PARAMETERS, getToolParameters());
         return jab;
     }
 
