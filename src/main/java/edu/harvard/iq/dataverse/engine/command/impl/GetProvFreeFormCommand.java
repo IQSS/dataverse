@@ -11,26 +11,27 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.EditDataset)
-public class PersistProvFreeFormCommand extends AbstractCommand<DataFile> {
+/**
+ * This command gets returns the freeform provenance input
+ *  To be honest a command feels a bit overkill, but it feels complete with all the other needed prov commands
+ */
+public class GetProvFreeFormCommand extends AbstractCommand<String> {
 
-    private static final Logger logger = Logger.getLogger(PersistProvFreeFormCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(GetProvFreeFormCommand.class.getCanonicalName());
 
     private final DataFile dataFile;
-    private final String userInput;
 
-    public PersistProvFreeFormCommand(DataverseRequest aRequest, DataFile dataFile, String userInput) {
+    public GetProvFreeFormCommand(DataverseRequest aRequest, DataFile dataFile) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
-        this.userInput = userInput;
     }
 
     @Override
-    public DataFile execute(CommandContext ctxt) throws CommandException {
+    public String execute(CommandContext ctxt) throws CommandException {
         FileMetadata fileMetadata = dataFile.getFileMetadata();
-        fileMetadata.setProvFreeForm(userInput);
-        DataFile savedDataFile = ctxt.files().save(dataFile);
-        logger.info("prov free-form: " + savedDataFile.getFileMetadata().getProvFreeForm());
-        return savedDataFile; //MAD: Maybe this should return the prov freeform instead of the datafile?
+        
+        //logger.info("prov free-form: " + fileMetadata.getProvFreeForm());
+        return fileMetadata.getProvFreeForm();
     }
 
 }

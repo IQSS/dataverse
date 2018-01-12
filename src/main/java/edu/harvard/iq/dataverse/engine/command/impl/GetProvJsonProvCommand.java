@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -23,28 +22,38 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
 @RequiredPermissions(Permission.EditDataset)
-public class UpdateProvJsonProvCommand extends AbstractCommand<JsonObject> {
+public class GetProvJsonProvCommand extends AbstractCommand<JsonObject> {
 
-    private static final Logger logger = Logger.getLogger(UpdateProvJsonProvCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(GetProvJsonProvCommand.class.getCanonicalName());
 
     private final DataFile dataFile;
-    private final String userInput;
 
-    public UpdateProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String userInput) {
+    public GetProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
-        this.userInput = userInput;
     }
 
-    //Calls the already existing delete and create commands for updating
     @Override
     public JsonObject execute(CommandContext ctxt) throws CommandException {
-        //MAD: Do/Can I catch the errors from these and throw them in a way specific to update?
-        //MAD: If the first one fails will the second one go
-        
-        ctxt.engine().submit(new DeleteProvJsonProvCommand(getRequest(), dataFile));
-        return ctxt.engine().submit(new PersistProvJsonProvCommand(getRequest(), dataFile, userInput));
-        
+
+        //JsonObjectBuilder response = Json.createObjectBuilder();
+
+        final String provJsonExtension = "prov-json.json";
+
+        //TODO: pulled code from persist ProvJson, maybe that should just point here?
+        try {
+            StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
+            InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
+            JsonObject jsonObject = null;
+            if(null != inputStream) {
+                JsonReader jsonReader = Json.createReader(inputStream);
+                jsonObject = jsonReader.readObject();
+            }
+            return jsonObject;
+        } catch (IOException ex) {
+            String error = "Exception caught in DataAccess.getStorageIO(dataFile) getting file. Error: " + ex;
+            throw new IllegalCommandException(error, this);
+        }
     }
 
 }

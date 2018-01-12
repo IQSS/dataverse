@@ -28,12 +28,11 @@
  
                         <!--MAD: upload file ui fragment from above -->
                         <ui:fragment id="provUploadFragment"> <!--rendered="# {datasetPage || EditDatafilesPage.showFileUploadFragment()}"> -->
-                            <div>
+                            <div jsf:rendered="#{null != provenanceUploadFragmentBean.jsonFileName}">
                                 <!-- need to conditionally load the json here. I have no idea how to load this aux file -->
-                                <div id="provFileText"> #{provenanceUploadFragmentBean.tempJsonFileName} </div>
-                                <!--<p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="# {bundle.saveChanges}" oncomplete="PF('editProvenancePopup').hide()" update=":datasetForm:filesTable" actionListener="# {EditDatafilesPage.saveFileTagsAndCategories()}"/>
-                                <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="# {bundle.cancel}" onclick="PF('editProvenancePopup').hide();PF('blockFileForm').hide();"  update=":datasetForm:filesTable" actionListener="# {EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/> -->
-                            
+                                <div id="provFileText"> #{provenanceUploadFragmentBean.jsonFileName} </div>
+                                <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput" actionListener="#{provenanceUploadFragmentBean.updateJsonRemoveState()}"/>
+                                <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.preview}"/>
                             </div>
                             <script>
                                 //MAD: do we need the method right below? Does it init the fileUpload var?
@@ -98,7 +97,7 @@
                     <div class="col-sm-8">
                         <div class="row form-inline">
                             <div class="col-sm-12">
-                                <p:inputTextarea id="provenanceFreeform" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{provenanceUploadFragmentBean.freeformText}" 
+                                <p:inputTextarea id="provenanceFreeform" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{provenanceUploadFragmentBean.freeformTextInput}" 
                                                 placeholder="#{bundle['file.editProvenanceDialog.description.placeholder']}"
                                                 onkeypress="if (event.keyCode == 13) {
                                                         return false;
@@ -110,7 +109,7 @@
                     </div>
                 </div>
             <div class="button-block">
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editProvenancePopup').hide()" actionListener="#{provenanceUploadFragmentBean.saveUploadedContent()}"/>
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editProvenancePopup').hide()" actionListener="#{provenanceUploadFragmentBean.saveContent()}"/>
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();PF('blockFileForm').hide();"  />
             </div>
         </p:outputPanel>

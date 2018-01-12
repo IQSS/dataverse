@@ -22,7 +22,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
 @RequiredPermissions(Permission.EditDataset)
-public class PersistProvJsonProvCommand extends AbstractCommand<JsonObjectBuilder> {
+public class PersistProvJsonProvCommand extends AbstractCommand<JsonObject> {
 
     private static final Logger logger = Logger.getLogger(PersistProvJsonProvCommand.class.getCanonicalName());
 
@@ -36,16 +36,8 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObjectBuilde
     }
 
     @Override
-    public JsonObjectBuilder execute(CommandContext ctxt) throws CommandException {
-        StringReader rdr = new StringReader(userInput);
-        try {
-            JsonObject jsonObj = Json.createReader(rdr).readObject();
-        } catch (JsonException ex) {
-            String error = "A valid JSON object could not be found. PROV-JSON format is expected.";
-            throw new IllegalCommandException(error, this);
-        }
-        JsonObjectBuilder response = Json.createObjectBuilder();
-        /**
+    public JsonObject execute(CommandContext ctxt) throws CommandException {
+       /**
          * TODO: We are not yet validating the JSON received as PROV-JSON, but
          * we could some day.
          *
@@ -57,7 +49,17 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObjectBuilde
          * A number of libraries for JSON schema validation are available at
          * json-schema.org/implementations.html." It links to
          * https://www.w3.org/Submission/prov-json/schema
+         * 
+         * The below chunk just validates that the input is basic json.
          */
+        StringReader rdr = new StringReader(userInput);
+        try {
+            JsonObject jsonObj = Json.createReader(rdr).readObject();
+        } catch (JsonException ex) {
+            String error = "A valid JSON object could not be found. PROV-JSON format is expected.";
+            throw new IllegalCommandException(error, this);
+        }
+
         // Write to StorageIO.
         // "json.json" looks a little redundand but the standard is called PROV-JSON and it's nice to see .json on disk.
         final String provJsonExtension = "prov-json.json";
@@ -75,8 +77,7 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObjectBuilde
             InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
             JsonReader jsonReader = Json.createReader(inputStream);
             JsonObject jsonObject = jsonReader.readObject();
-            response.add("message", "PROV-JSON provenance data saved: " + jsonObject.toString());
-            return response;
+            return jsonObject;
         } catch (IOException ex) {
             String error = "Exception caught in DataAccess.getStorageIO(dataFile) after creating file. Error: " + ex;
             throw new IllegalCommandException(error, this);

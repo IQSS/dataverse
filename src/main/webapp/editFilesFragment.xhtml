@@ -266,7 +266,7 @@
                                                actionListener="#{EditDatafilesPage.refreshProvenancePopUp(fileMetadata)}"
                                                update=":datasetForm:editProvenancePopup"
                                                oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
-                                               <f:actionListener binding="#{provenanceUploadFragmentBean.setFileId(fileMetadata.dataFile.id)}" />
+                                               <f:actionListener binding="#{provenanceUploadFragmentBean.init(fileMetadata.dataFile.id)}" />
                                                 #{bundle['file.provenance']} 
                                     </p:commandLink>    
                                 </li> 

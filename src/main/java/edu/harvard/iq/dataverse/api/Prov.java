@@ -30,7 +30,10 @@ public class Prov extends AbstractApiBean {
     @Consumes("application/json")
     public Response addProvJson(String body, @PathParam("id") String idSupplied) {
         try {
-            return ok(execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied), body)));
+            JsonObject jsonObject = execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied), body));
+            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            jsonResponse.add("message", "PROV-JSON provenance data saved: " + jsonObject.toString());
+            return ok(jsonResponse);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -68,9 +71,9 @@ public class Prov extends AbstractApiBean {
         }
         try {
             DataFile savedDataFile = execCommand(new PersistProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied), provFreeForm));
-            JsonObjectBuilder response = Json.createObjectBuilder();
-            response.add("message", "Free-form provenance data saved: " + savedDataFile.getFileMetadata().getProvFreeForm());
-            return ok(response);
+            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            jsonResponse.add("message", "Free-form provenance data saved: " + savedDataFile.getFileMetadata().getProvFreeForm());
+            return ok(jsonResponse);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
