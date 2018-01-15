@@ -277,7 +277,7 @@
                                         <!-- Compute on compute batch button -->
                                         <ui:fragment>
                                         <li>
-                                            <h:outputLink value="#{DatasetPage.batchComputeUrl}">
+                                            <h:outputLink value="#{DatasetPage.batchComputeUrl}" styleClass="btn btn-access #{DatasetPage.isBatchListEmpty() ? 'disabled' : ''}">
                                                 <h:outputText id="compute-batch-button" value="#{bundle['dataset.compute.computeBatchCompute']}" />
                                             </h:outputLink>
                                         </li>

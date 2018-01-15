@@ -184,12 +184,9 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     PrivateUrlServiceBean privateUrlService;
     @EJB
-<<<<<<< HEAD
     Cart cart;
-=======
+    @EJB
     ExternalToolServiceBean externalToolService;
-
->>>>>>> develop
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -394,11 +391,23 @@ public class DatasetPage implements java.io.Serializable {
             for (Entry<String,String> entry : contents) {
                 String datasetName = entry.getKey();
                 String containerName = entry.getValue();
+                datasetName = datasetName.replace(" ", "%20");
                 url += "&" + datasetName + "=" + containerName;
             }
             return url;
         }
         return "";
+    }
+    
+    public boolean isBatchListEmpty() {
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+            String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
+            List<Entry<String,String>> contents = cart.getContents();
+            if (contents.size() == 0) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private String fileLabelSearchTerm;
