@@ -2,7 +2,7 @@
 echo "This script is highly experimental and makes many assumptions about how Dataverse is running in Vagrant. Please consult the TwoRavens section of the Dataverse Installation Guide instead."
 exit 1
 cd /root
-yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 yum install -y R R-devel
 # FIXME: /dataverse is mounted in Vagrant but not other places
 yum install -y /dataverse/doc/sphinx-guides/source/_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.6-rpm0.x86_64.rpm

@@ -5,6 +5,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <h:head>
@@ -188,16 +189,21 @@
                                 <div class="form-group text-left">
                                     <div class="col-sm-12">
                                         <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
-                                            <h:graphicImage rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
-                                            <h:outputFormat value=" #{LoginPage.loginButtonText}"/>
+                                            <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
+					    <h:outputFormat rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
+					    <h:outputFormat rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{bundle['login.button.orcid']}"/>
                                         </h:outputLink>
-                                        <ui:fragment rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}">
+                                        <ui:fragment rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}">
                                             <p class="help-block small" style="margin-top:1em;">
                                                 ORCID is an open, non-profit, community-based effort to provide a registry of unique researcher identifiers
                                                 and a transparent method of linking research activities and outputs to these identifiers. ORCID is unique in
                                                 its ability to reach across disciplines, research sectors, and national boundaries and its cooperation with
-                                                other identifier systems. Find out more at <a href="http://orcid.org/about" target="_blank">orcid.org/about</a>.
-                                            </p>
+                                                other identifier systems. Find out more at <a href="https://orcid.org/about" target="_blank">orcid.org/about</a>.
+						</p>
+						<p class="help-block small" style="margin-top:1em;">
+						This repository uses your ORCID for authentication (so you don't need another username/password combination).
+						Having your ORCID associated with your datasets also makes it easier for people to find the datasets you have published.
+						</p>
                                         </ui:fragment>
                                     </div>
                                 </div>

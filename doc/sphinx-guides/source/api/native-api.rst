@@ -158,7 +158,7 @@ Export the metadata of the current version of the dataset in various formats see
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, and ``dataverse_json``.
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , and ``dataverse_json``.
 
 |CORS| Lists all the file metadata, for the given dataset and version::
 
@@ -775,30 +775,6 @@ List a role assignee (i.e. a user or a group)::
     GET http://$SERVER/api/admin/assignee/$identifier
 
 The ``$identifier`` should start with an ``@`` if it's a user. Groups start with ``&``. "Built in" users and groups start with ``:``. Private URL users start with ``#``.
-
-IpGroups
-^^^^^^^^
-
-Lists all the ip groups::
-
-  GET http://$SERVER/api/admin/groups/ip
-
-Adds a new ip group. POST data should specify the group in JSON format. Examples are available at the ``data`` folder. Using this method, an IP Group is always created, but its ``alias`` might be different than the one appearing in the
-JSON file, to ensure it is unique. ::
-
-  POST http://$SERVER/api/admin/groups/ip
-
-Creates or updates the ip group ``$groupAlias``. ::
-
-    POST http://$SERVER/api/admin/groups/ip/$groupAlias
-
-Returns a the group in a JSON format. ``$groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. ::
-
-  GET http://$SERVER/api/admin/groups/ip/$groupIdtf
-
-Deletes the group specified by ``groupIdtf``. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. Note that a group can be deleted only if there are no roles assigned to it. ::
-
-  DELETE http://$SERVER/api/admin/groups/ip/$groupIdtf
 
 Saved Search
 ^^^^^^^^^^^^

@@ -10,16 +10,22 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
+    
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
                  scrollRows="25" scrollable="true" liveScroll="true"
-                 scrollHeight="92%" scrollWidth="100%" style="margin-right:1px;"
+                 scrollHeight="90%" scrollWidth="100%" style="margin-right:1px;"
                  value="#{DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
+        <p:ajax  event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" /> 
+        <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
+        <p:ajax event="rowSelect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
+        <p:ajax event="rowSelectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
+        <p:ajax event="rowUnselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
+        <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this"/>
         <f:facet name="header">
             <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.showComputeButton()}">
                 <!-- Cloud Storage Access -->
@@ -199,7 +205,7 @@
             </div>
         </f:facet>
         
-        <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"/>
+        <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"  />
         <p:column class="col-file-thumb" style="width:64px !important;">
             <div class="thumbnail-block text-center">
                 <!-- Thumbnail Preview -->
@@ -327,9 +333,12 @@
                                         #{bundle['file.tags']} 
                             </p:commandLink>    
                         </li>                                                               
+
                     </ul>
                     <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                 </div>
+                
+                
                 
                 <!-- DOWNLOAD -->
                 <div jsf:id="downloadButtonBlock" class="btn-group" 
@@ -369,12 +378,15 @@
                 #{bundle['file.ingestInProgress']}
             </div>
             
-            <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
-                <ui:include src="file-setup-button.xhtml">
-                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
-                    <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                </ui:include>
-            </ui:fragment>
+            <!---Modular configure-->
+            
+                <ui:fragment rendered="#{!widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id).size() > 0 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                    <ui:include src="file-configure-dropdown-fragment.xhtml">
+                        <ui:param name="externalTools" value="#{DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                        <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
+                        <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                    </ui:include>
+                </ui:fragment>
 
             <div class="btn-group" jsf:rendered="#{!settingsWrapper.rsyncDownload}">
                 <ui:include src="file-download-button-fragment.xhtml">

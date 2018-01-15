@@ -62,4 +62,9 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
                 : Collections.singleton(Permission.ManageDatasetPermissions));
     }
 
+    @Override
+    public String describe() {
+        return grantee + " has been given " + role + " on " + defPoint.accept(DvObject.NameIdPrinter);
+    }
+
 }

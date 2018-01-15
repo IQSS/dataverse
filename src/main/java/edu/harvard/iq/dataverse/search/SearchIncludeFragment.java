@@ -1150,7 +1150,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return "";
         }
 
-        if (datafile.getChecksumValue() != null && datafile.getChecksumValue() != "") {
+        if (datafile.getChecksumValue() != null && !StringUtils.isEmpty(datafile.getChecksumValue())) {
             if (datafile.getChecksumType() != null) {
                 return " " + datafile.getChecksumType() + ": " + datafile.getChecksumValue() + " ";
             }

@@ -29,6 +29,7 @@ import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -539,6 +540,32 @@ public class UtilIT {
                 .body(groupBuilder.build().toString())
                 .contentType(ContentType.JSON)
                 .post("/api/dataverses/" + dataverseToCreateGroupIn + "/groups");
+        return response;
+    }
+
+    static Response getIpGroups() {
+        Response response = given()
+                .get("api/admin/groups/ip");
+        return response;
+    }
+
+    static Response getIpGroup(String ipGroupIdentifier) {
+        Response response = given()
+                .get("api/admin/groups/ip/" + ipGroupIdentifier);
+        return response;
+    }
+
+    static Response createIpGroup(JsonObject jsonObject) {
+        Response response = given()
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON)
+                .post("api/admin/groups/ip");
+        return response;
+    }
+
+    static Response deleteIpGroup(String ipGroupIdentifier) {
+        Response response = given()
+                .delete("api/admin/groups/ip/" + ipGroupIdentifier);
         return response;
     }
 
@@ -1136,6 +1163,29 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .get("/api/builtin-users/" + username + "/api-token?username=" + username + "&password=" + password);
         return response;
+    }
+
+    static Response getExternalTools() {
+        return given()
+                .get("/api/admin/externalTools");
+    }
+
+    static Response getExternalToolsByFileId(long fileId) {
+        return given()
+                .get("/api/admin/externalTools/file/" + fileId);
+    }
+
+    static Response addExternalTool(JsonObject jsonObject) {
+        RequestSpecification requestSpecification = given();
+            requestSpecification = given()
+                    .body(jsonObject.toString())
+                    .contentType(ContentType.JSON);
+        return requestSpecification.post("/api/admin/externalTools");
+    }
+
+    static Response deleteExternalTool(long externalToolid) {
+        return given()
+                .delete("/api/admin/externalTools/" + externalToolid);
     }
 
     @Test

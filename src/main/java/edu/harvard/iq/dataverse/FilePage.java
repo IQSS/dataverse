@@ -22,6 +22,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -30,9 +32,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -66,7 +66,7 @@ public class FilePage implements java.io.Serializable {
     private Dataset dataset;
     private List<DatasetVersion> datasetVersionsForTab;
     private List<FileMetadata> fileMetadatasForTab;
-
+    private List<ExternalTool> externalTools;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -93,6 +93,8 @@ public class FilePage implements java.io.Serializable {
     DataverseSession session;
     @EJB
     EjbDataverseEngine commandEngine;
+    @EJB
+    ExternalToolServiceBean externalToolService;
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -159,6 +161,12 @@ public class FilePage implements java.io.Serializable {
            
            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
            
+          //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
+
+            List<ExternalTool> allTools = externalToolService.findAll();
+            
+            externalTools = externalToolService.findExternalToolsByFile(allTools, file);
+            
         } else {
 
             return permissionsWrapper.notFound();
@@ -764,4 +772,8 @@ public class FilePage implements java.io.Serializable {
     }
     
 
+    public List<ExternalTool> getExternalTools() {
+        return externalTools;
+    }
+    
 }

@@ -284,27 +284,32 @@ You can configure this redirect properly in your cloud environment to generate a
 Amazon S3 Storage
 +++++++++++++++++
 
-For institutions and organizations looking to use Amazon's S3 cloud storage for their installation, this can be set up manually through creation of a credentials file or automatically via the aws console commands. 
+For institutions and organizations looking to use Amazon's S3 cloud storage for their installation, this can be set up manually through creation of the credentials and config files or automatically via the aws console commands. 
 
 You'll need an AWS account with an associated S3 bucket for your installation to use. From the S3 management console (e.g. `<https://console.aws.amazon.com/>`_), you can poke around and get familiar with your bucket. We recommend using IAM (Identity and Access Management) to create a user with full S3 access and nothing more, for security reasons. See `<http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_ for more info on this process.
 
-Make note of the bucket's name and the region its data is hosted in. Dataverse and the aws SDK rely on the placement of a key file located in ``~/.aws/credentials``, which can be generated via either of these two methods.
+Make note of the bucket's name and the region its data is hosted in. Dataverse and the AWS SDK make use of "AWS credentials profile file" and "AWS config profile file" located in ``~/.aws/`` where ``~`` is the home directory of the user you run Glassfish as. This file can be generated via either of two methods described below. It's also possible to use IAM Roles rather than the credentials file. Please note that in this case you will need anyway the config file to specify the region.
 
-Setup aws manually
-^^^^^^^^^^^^^^^^^^
+Set Up credentials File Manually
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To create ``credentials`` manually, you will need to generate a key/secret key. The first step is to log onto your aws web console (e.g. `<https://console.aws.amazon.com/>`_). If you have created a user in AWS IAM, you can click on that user and generate the keys needed for dataverse. 
+To create the ``credentials`` file manually, you will need to generate a key/secret key. The first step is to log onto your aws web console (e.g. `<https://console.aws.amazon.com/>`_). If you have created a user in AWS IAM, you can click on that user and generate the keys needed for Dataverse.
 
-Once you have acquired the keys, they need to be added to``credentials``. The format for credentials is as follows:
+Once you have acquired the keys, they need to be added to the ``credentials`` file. The format for credentials is as follows:
 
 | ``[default]``
 | ``aws_access_key_id = <insert key, no brackets>``
 | ``aws_secret_access_key = <insert secret key, no brackets>``
 
-Place this file in a folder named ``.aws`` under the home directory for the user running your dataverse installation.
+You must also specify the AWS region, in the ``config`` file, for example:
 
-Setup aws via command line tools
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| ``[default]``
+| ``region = us-east-1``
+
+Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish instance. (From the `AWS Command Line Interface Documentation <http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_: "In order to separate credentials from less sensitive options, region and output format are stored in a separate file named config in the same folder")
+
+Set Up Access Configuration Via Command Line Tools
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
@@ -314,9 +319,14 @@ First, we'll get our access keys set up. If you already have your access keys co
 
 ``aws configure``
 
-You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account. The subsequent config steps after the access keys are up to you. For reference, these keys are stored in ``~/.aws/credentials``.
+You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account. The subsequent config steps after the access keys are up to you. For reference, the keys will be stored in ``~/.aws/credentials``, and your AWS access region in ``~/.aws/config``. 
 
-Configure dataverse to use aws/S3
+Using an IAM Role with EC2
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are hosting Dataverse on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead of the credentials file (the file at ``~/.aws/credentials`` mentioned above). Please note that you will still need the ``~/.aws/config`` file to specify the region. For more information on this option, see http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+
+Configure Dataverse to Use AWS/S3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 With your access to your bucket in place, we'll want to navigate to ``/usr/local/glassfish4/glassfish/bin/`` and execute the following ``asadmin`` commands to set up the proper JVM options. Recall that out of the box, Dataverse is configured to use local file storage. You'll need to delete the existing storage driver before setting the new one.
@@ -384,6 +394,13 @@ Download this sample: :download:`custom-header.html </_static/installation/files
 Once you have the location of your custom header HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
+
+If you have enabled a custom header or navbar logo, you might prefer to disable the theme of the root dataverse. You can do so by setting ``:DisableRootDataverseTheme`` to ``true`` like this:
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:DisableRootDataverseTheme``
+
+Please note: Disabling the display of the root dataverse theme also disables your ability to edit it. Remember that dataverse owners can set their dataverses to "inherit theme" from the root. Those dataverses will continue to inherit the root dataverse theme (even though it no longer displays on the root). If you would like to edit the root dataverse theme in the future, you will have to re-enable it first.
+
 
 Custom Footer
 +++++++++++++
@@ -676,6 +693,11 @@ See :ref:`Branding Your Installation` above.
 
 :HeaderCustomizationFile
 ++++++++++++++++++++++++
+
+See :ref:`Branding Your Installation` above.
+
+:DisableRootDataverseTheme
+++++++++++++++++++++++++++
 
 See :ref:`Branding Your Installation` above.
 

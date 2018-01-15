@@ -24,15 +24,20 @@
 	    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
 	    <meta name="DC.type" content="Dataset"/>
 	    <meta name="DC.title" content="#{DatasetPage.title}"/>
-	    <meta name="DC.date" content="#{DatasetPage.publicationDate}"/>
+            <meta name="DC.date" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
 	    <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
             <meta name="DC.description" content="#{DatasetPage.description}" />
 	    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
             <meta name="DC.creator" content="#{author}"/>
 	    </ui:repeat>
-            <ui:repeat var="subject" value="#{DatasetPage.datasetSubjects}">
+            <ui:repeat var="subject" value="#{DatasetPage.workingVersion.datasetSubjects}">
             <meta name="DC.subject" content="#{subject}"/>
 	    </ui:repeat>
+	    </ui:define>
+	    <ui:define name="jsonld_header">
+                <script type="application/ld+json">
+                    <h:outputText value="#{DatasetPage.jsonLd}"/>
+                </script>
 	    </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
@@ -1228,14 +1233,22 @@
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
                     
+                    <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
+                            id="configureToolPopup" styleClass="smallPopUp">
+
+                            <ui:include src="file-configure-popup-fragment.xhtml">
+                                <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                            </ui:include>
+
+                    </p:dialog>
+                    
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
 
                         <ui:include src="file-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                            <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
-                            <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}" rendered="#{!settingsWrapper.rsyncDownload}"/>
+                            <ui:param name="guestbookResponse" value="#{DatasetPage.fileDownloadHelper.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
                             <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                             <ui:param name="twoRavensHelper" value="#{DatasetPage.twoRavensHelper}"/>
@@ -1243,8 +1256,6 @@
 
                     </p:dialog>
                     
-
-
                     
                     <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}" widgetVar="requestAccessPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
@@ -1264,18 +1275,7 @@
                             </ui:include>
                         </div>
                     </p:dialog>
-
-                    <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true">
-                        <p class="help-block">
-                            <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
-                        </p>
-                        <div class="button-block">
-                            <button type="button" class="btn btn-default" onclick="PF('mapData_popup').hide();PF('blockDatasetForm').hide();">
-                                #{bundle.close}
-                            </button>
-                        </div>
-                    </p:dialog>
-
+                   
                     <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
                             <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
@@ -1407,7 +1407,7 @@
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
                                 <o:param>
-                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                    <a href="/dataverse/#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
                                         <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
                                     </a>
                                 </o:param>
@@ -1477,12 +1477,12 @@
                             <span class="glyphicon glyphicon-exclamation-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
                                 <o:param>
-                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                    <a href="/dataverse/#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
                                         <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
                                     </a>
                                 </o:param>
                                 <o:param>
-                                    <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.owner.alias}" title="#{DatasetPage.dataset.owner.owner.displayName}">
+                                    <a href="/dataverse/#{DatasetPage.dataset.owner.owner.alias}" title="#{DatasetPage.dataset.owner.owner.displayName}">
                                         <h:outputText value="#{DatasetPage.dataset.owner.owner.displayName}"/>
                                     </a>
                                 </o:param>

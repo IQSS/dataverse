@@ -73,15 +73,23 @@
                                 
                                 <div class="button-container btn-group" jsf:rendered="#{!widgetWrapper.widgetView}">
                                     <!-- Map Data/Set Up Button Block -->
-                                    <ui:fragment rendered="#{(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))  
-                                                                or (!FilePage.fileMetadata.datasetVersion.deaccessioned or 
-                                                                  (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
-                                        <ui:include src="file-setup-button.xhtml">
-                                            <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
-                                            <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
-                                        </ui:include>
-                                    </ui:fragment>
+                                    
+                                    
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() 
+                                                             and (FilePage.getExternalTools().size() > 0
+                                                             or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">		
+                                        <ui:include src="file-configure-dropdown-fragment.xhtml">
+                                            <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
+                                            <ui:param name="fileId" value="#{FilePage.fileMetadata.dataFile.id}"/>
+                                            <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>		
+                                            <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>		
+                                        </ui:include>		
+                                    </ui:fragment>	
+                                    
+                                    
                                     <!-- END: Map Data/Set Up Button Block -->
+                                    
+                                    
                                     <!-- Edit Button Group -->
                                     <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                              and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
@@ -139,6 +147,10 @@
                                                     <h:outputText value= "#{bundle['file.delete']}"/>
                                                 </p:commandLink>
                                             </li>
+                                            <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
+                                            <li>
+                                            </li>
+                                            </ui:fragment>
                                         </ul>
                                     </div>
                                     <!-- END: Edit Button Group -->
@@ -457,6 +469,17 @@
                              </ui:include>
                         </div>
                     </p:dialog>
+                    
+                    <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
+                        id="configureToolPopup" styleClass="smallPopUp" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
+
+                        <ui:include src="file-configure-popup-fragment.xhtml">
+                            <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
+                            <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
+                        </ui:include>
+
+                    </p:dialog>
+                    
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
                         <p class="help-block">
@@ -528,14 +551,7 @@
                             <p:commandButton value="#{bundle.close}" onclick="PF('fileAlreadyReplacedPrevious').hide();"/>
                         </div>
                     </p:dialog>
-                    <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}" widgetVar="requestAccessPopup" modal="true">
-                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-                        <ui:include src="file-request-access-popup-fragment.xhtml">
-                            <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                            <ui:param name="fileDownloadHelper" value="#{FilePage.fileDownloadHelper}"/>
-                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                        </ui:include>
-                    </p:dialog>                   
+                 
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.compute.fileRestricted']}" widgetVar="computeAccessDeniedPopup" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.compute.fileAccessDenied']}</p>
                         <div class="button-block">
