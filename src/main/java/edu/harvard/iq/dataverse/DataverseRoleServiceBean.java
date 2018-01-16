@@ -226,15 +226,15 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	 * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser, edu.harvard.iq.dataverse.Dataverse)
 	 */
 	public List<RoleAssignment> directRoleAssignments( RoleAssignee roas, DvObject dvo ) {
-		if ( roas==null ) {
-                    throw new IllegalArgumentException("RoleAssignee cannot be null");
-                }
-		TypedQuery<RoleAssignment> query = em.createNamedQuery(
-				"RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
-				RoleAssignment.class);
-		query.setParameter("assigneeIdentifier", roas.getIdentifier());
-		query.setParameter("definitionPointId", dvo.getId());
-		return query.getResultList();
+            if ( roas==null ) {
+                throw new IllegalArgumentException("RoleAssignee cannot be null");
+            }
+            TypedQuery<RoleAssignment> query = em.createNamedQuery(
+                            "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
+                            RoleAssignment.class);
+            query.setParameter("assigneeIdentifier", roas.getIdentifier());
+            query.setParameter("definitionPointId", dvo.getId());
+            return query.getResultList();
 	}
 	
 	/**

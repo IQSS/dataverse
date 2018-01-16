@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -14,6 +15,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
+import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 
 /**
@@ -24,6 +26,8 @@ import javax.validation.ConstraintViolation;
 public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     
     final DatasetVersion newVersion;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
     
     public UpdateDatasetVersionCommand(DataverseRequest aRequest, DatasetVersion theNewVersion) {
         super(aRequest, theNewVersion.getDataset());
@@ -36,7 +40,7 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         
         Dataset ds = newVersion.getDataset();
-        ctxt.permissions().checkEditDatasetLock(ds, getRequest(), this);
+        permissionsWrapper.checkEditDatasetLock(ds, getRequest(), this);
         DatasetVersion latest = ds.getLatestVersion();
         
         if ( latest == null ) {

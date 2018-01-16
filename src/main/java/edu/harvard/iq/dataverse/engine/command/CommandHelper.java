@@ -23,9 +23,9 @@ public class CommandHelper {
      * not annotated.
 	 */
     public Map<String, Set<Permission>> permissionsRequired(Class<? extends Command> cmdClass) {
-		RequiredPermissions requiredPerms = cmdClass.getAnnotation(RequiredPermissions.class);
+        RequiredPermissions requiredPerms = cmdClass.getAnnotation(RequiredPermissions.class);
         if (requiredPerms == null) {
-			// try for the permission map
+            // try for the permission map
             RequiredPermissionsMap reqPermMap = cmdClass.getAnnotation(RequiredPermissionsMap.class);
             if (reqPermMap == null) {
                 // No annotations here. Look up the class hierachy
@@ -37,18 +37,17 @@ public class CommandHelper {
                      + ", and its superclasses, do not declare required permissions.");
                 }
             }
-			Map<String, Set<Permission>> retVal = new TreeMap<>();
+            Map<String, Set<Permission>> retVal = new TreeMap<>();
             for (RequiredPermissions rp : reqPermMap.value()) {
                 retVal.put(rp.dataverseName(), asPermissionSet(rp.value()));
-			}
-			return retVal;
-			
-		} else {
-			Permission[] required = requiredPerms.value();
-			return Collections.singletonMap(requiredPerms.dataverseName(),
-                    asPermissionSet(required));
-		}
-	}
+            }
+            return retVal;
+
+        } else {
+            Permission[] required = requiredPerms.value();
+            return Collections.singletonMap(requiredPerms.dataverseName(), asPermissionSet(required));
+        }
+    }
 	
 	/**
      * Given a command, returns the set of permissions needed to be able to

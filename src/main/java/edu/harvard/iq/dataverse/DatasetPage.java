@@ -79,6 +79,7 @@ import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
@@ -2722,7 +2723,10 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isLockedFromEdits() {
         
         try {
-            permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+            //command.getRequiredPermissions()
+            //doesSessionUserHaveDataSetPermission(dvRequestService.getDataverseRequest(), dataset, null /*Permission permissionToCheck*/);
+            
+            permissionsWrapper.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
         } catch (IllegalCommandException ex) {
             return true;
         }
@@ -2732,7 +2736,7 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isLockedFromDownload(){
         
         try {
-            permissionService.checkDownloadFileLock(dataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+            permissionsWrapper.checkDownloadFileLock(dataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
         } catch (IllegalCommandException ex) {
             return true;
         }

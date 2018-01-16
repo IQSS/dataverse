@@ -9,9 +9,13 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -55,8 +59,11 @@ public class PermissionsWrapper implements java.io.Serializable {
             return false;
         }
 
+        //if command map has dataverse added
         if (commandMap.containsKey(dvo.getId())) {
             Map<Class<? extends Command<?>>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
+            
+            //if internal map of commands for the dataverse contains the command
             if (dvoCommandMap.containsKey(command)) {
                 return dvoCommandMap.get(command);
             } else {
@@ -142,6 +149,50 @@ public class PermissionsWrapper implements java.io.Serializable {
         return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.EditDataset);
     }
     
+    public void checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
+        if (dataset.isLocked()) {
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                // The "InReview" lock is not really a lock for curators. They can still make edits.
+                if (!doesSessionUserHaveDataSetPermissions(dvRequestService.getDataverseRequest(), dataset, new PublishDatasetCommand(dataset, dataverseRequest, true))) {
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
+                }
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "Workflow"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
+        }
+    }
+    
+    public void checkDownloadFileLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
+        if (dataset.isLocked()) {
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                // The "InReview" lock is not really a lock for curators or contributors. They can still download.                
+                //if (!isUserAllowedOn(dataverseRequest.getUser(), new UpdateDatasetCommand(dataset, dataverseRequest), dataset)) {
+                if (!doesSessionUserHaveDataSetPermissions(dvRequestService.getDataverseRequest(), dataset, new UpdateDatasetCommand(dataset, dataverseRequest))) {
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowedInReview"), command);
+                }
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "Workflow"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+            }
+        }
+    }
             
     
     /**
@@ -178,6 +229,25 @@ public class PermissionsWrapper implements java.io.Serializable {
         // return true/false
         return hasPermission;
     }
+    
+    //Takes in a command, gets the permissions to check and calls the individual permissions check
+    public boolean doesSessionUserHaveDataSetPermissions(DataverseRequest req, Dataset dataset, Command command){
+        Map<String, Set<Permission>> permissionsToCheck = command.getRequiredPermissions();
+        Iterator it = permissionsToCheck.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, Set<Permission>> pair = (Map.Entry)it.next();
+
+            for (Permission p : pair.getValue()) {
+                if(!doesSessionUserHaveDataSetPermission(req, dataset, p)) {
+                    return false;
+                }
+            }
+            //it.remove(); // if modifications done to iterator, avoids a ConcurrentModificationException. None done currently
+        }
+
+        return true;
+    }
+    
     /**
      *  Does this dvoObject have "Permission.DownloadFile"?
      * @param dvo
