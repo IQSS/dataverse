@@ -43,6 +43,7 @@ public class DeleteProvJsonProvCommand extends AbstractVoidCommand {
         try {
             StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
             dataAccess.deleteAuxObject(provJsonExtension);             //MAD: do we need to do anything else other than catch things?
+            logger.info("provenance json delete passed io step");
         } catch (IOException ex) {
             String error = "Exception caught deleting provenance aux object: " + ex;
             throw new IllegalCommandException(error, this);

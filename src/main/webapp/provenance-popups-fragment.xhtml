@@ -30,21 +30,11 @@
                         <ui:fragment id="provUploadFragment"> <!--rendered="# {datasetPage || EditDatafilesPage.showFileUploadFragment()}"> -->
                             <div jsf:rendered="#{null != provenanceUploadFragmentBean.jsonFileName}">
                                 <!-- need to conditionally load the json here. I have no idea how to load this aux file -->
-                                <div id="provFileText"> #{provenanceUploadFragmentBean.jsonFileName} </div>
-                                <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput" actionListener="#{provenanceUploadFragmentBean.updateJsonRemoveState()}"/>
+                                <div id="provFileText"> #{bundle['file.editProvenanceDialog.fileDisplayName']} </div>
+                                <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput" actionListener="#{provenanceUploadFragmentBean.updateJsonRemoveState()}" oncomplete="PF('provUpload').hide();"/>
                                 <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.preview}"/>
                             </div>
                             <script>
-                                //MAD: do we need the method right below? Does it init the fileUpload var?
-        ////MAD: commenting this all out for now just to get something running. Probably isn't breaking things tho...
-        //                        function uploadWidgetDropMsg() {
-        //                            var fileUpload = $('div[id$="provUpload"] div.ui-fileupload-content');
-        //                            if ($(fileUpload).children('#dragdropMsg').length) {
-        //                                // do nothing
-        //                            } else {
-        //                                $(fileUpload).prepend('<div id="dragdropMsg"># {bundle['file.fromDropbox.description']}</div>');
-        //                            }
-        //                        }
                                 function uploadStarted() {
                                     $('button[id$="provUploadStarted"]').trigger('click');
                                 }
@@ -54,12 +44,6 @@
                                         //alert("all uploads finished");
                                     }
                                 }
-        //                        function uploadWidgetDropRemoveMsg() {
-        //                            $('div[id$="provUpload"] div.ui-fileupload-content div.dropMsg').remove();
-        //                        }
-        //                        $(document).ready(function () {
-        //                            uploadWidgetDropMsg();
-        //                        });
                             </script>
                             <!--MAD: There was a help block in here. When I removed it the background highlighting decided to creep up -->
                             <!--MAD: Should I be hiding the upload box once one gets uploaded? I think we talked about it -->
@@ -72,7 +56,7 @@
                                           fileUploadListener="#{provenanceUploadFragmentBean.handleFileUpload}" 
                                           update="provPopupOutput" 
                                           label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
-                                          oncomplete="bind_bsui_components();"
+                                          oncomplete="bind_bsui_components();PF('provUpload').hide();"
                                           fileLimit="1" 
                                           invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" />
 
@@ -109,9 +93,17 @@
                     </div>
                 </div>
             <div class="button-block">
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editProvenancePopup').hide()" actionListener="#{provenanceUploadFragmentBean.saveContent()}"/>
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();PF('blockFileForm').hide();"  />
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" onclick="PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show();"/>
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();"  />
             </div>
         </p:outputPanel>
+    </p:dialog>
+    <p:dialog id="confirmProvenancePopup" header="#{bundle['file.confirmProvenanceDialog']}" modal="true" visible="false" styleClass="smallPopUp" widgetVar="confirmProvenancePopup">
+        <div class="form-group text-left">
+            <h:outputText value="#{bundle['file.confirmProvenanceDialog.tip']}" styleClass="glyphicon-warning-sign"/>
+        </div>
+        <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();" actionListener="#{provenanceUploadFragmentBean.saveContent()}"/>
+        <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();"  />
+
     </p:dialog>
 </ui:composition>
