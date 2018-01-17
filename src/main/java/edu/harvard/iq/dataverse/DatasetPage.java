@@ -4044,27 +4044,38 @@ public class DatasetPage implements java.io.Serializable {
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
-    
+
     public List<ExternalTool> getConfigureToolsForDataFile(Long fileId) {
-        List<ExternalTool> cachedConfigTools = configureToolsByFileId.get(fileId);
-        if (cachedConfigTools != null) { //if already queried before and added to list
-            return cachedConfigTools;
-        }
-        DataFile dataFile = datafileService.find(fileId);
-        cachedConfigTools = ExternalToolServiceBean.findExternalToolsByFile(configureTools, dataFile);
-        configureToolsByFileId.put(fileId, cachedConfigTools); //add to map so we don't have to do the lifting again
-        return cachedConfigTools;
+        return getCachedToolsForDataFile(fileId, ExternalTool.Type.CONFIGURE);
     }
 
     public List<ExternalTool> getExploreToolsForDataFile(Long fileId) {
-        List<ExternalTool> cachedExploreTools = exploreToolsByFileId.get(fileId);
-        if (cachedExploreTools != null) { //if already queried before and added to list
-            return cachedExploreTools;
+        return getCachedToolsForDataFile(fileId, ExternalTool.Type.EXPLORE);
+    }
+
+    public List<ExternalTool> getCachedToolsForDataFile(Long fileId, ExternalTool.Type type) {
+        Map<Long, List<ExternalTool>> cachedToolsByFileId = new HashMap<>();
+        List<ExternalTool> externalTools = new ArrayList<>();
+        switch (type) {
+            case EXPLORE:
+                cachedToolsByFileId = exploreToolsByFileId;
+                externalTools = exploreTools;
+                break;
+            case CONFIGURE:
+                cachedToolsByFileId = configureToolsByFileId;
+                externalTools = configureTools;
+                break;
+            default:
+                break;
+        }
+        List<ExternalTool> cachedTools = cachedToolsByFileId.get(fileId);
+        if (cachedTools != null) { //if already queried before and added to list
+            return cachedTools;
         }
         DataFile dataFile = datafileService.find(fileId);
-        cachedExploreTools = ExternalToolServiceBean.findExternalToolsByFile(exploreTools, dataFile);
-        exploreToolsByFileId.put(fileId, cachedExploreTools); //add to map so we don't have to do the lifting again
-        return cachedExploreTools;
+        cachedTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
+        cachedToolsByFileId.put(fileId, cachedTools); //add to map so we don't have to do the lifting again
+        return cachedTools;
     }
 
     Boolean thisLatestReleasedVersion = null;
