@@ -17,4 +17,6 @@ public interface Cart {
     public List<Entry<String,String>> getContents();
 
     public void remove();
+    
+    public Entry<String,String> createEntry(String title, String containerName);
 }

@@ -91,6 +91,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import java.util.AbstractMap;
 import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
@@ -375,13 +376,28 @@ public class DatasetPage implements java.io.Serializable {
         }
         return list;
     }
+    
+    public boolean checkCartForItem(String title, String containerName) {
+        List<Entry<String,String>> contents = cart.getContents();
+        return contents.contains(cart.createEntry(title, containerName));
+    }
 
     public void addItemtoCart(String title, String containerName) throws Exception{
-        cart.addItem(title, containerName);
+        try {
+            cart.addItem(title, containerName);
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+        } catch (Exception ex){
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+        }
     }
     
     public void removeCartItem(String title, String containerName) throws Exception {
-        cart.removeItem(title, containerName);
+        try {
+            cart.removeItem(title, containerName);
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+        } catch (Exception ex){
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+        }
     }
     
     public String getBatchComputeUrl() {
