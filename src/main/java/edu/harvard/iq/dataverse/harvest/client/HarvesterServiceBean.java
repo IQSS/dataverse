@@ -40,11 +40,8 @@ import org.xml.sax.SAXException;
 
 import com.lyncode.xoai.model.oaipmh.Header;
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -210,7 +207,7 @@ public class HarvesterServiceBean {
                     } else {
                         hdLogger.log(Level.INFO, "(All harvested content already reindexed)");
                     }
-                 //*/
+                 */
             }
             //mailService.sendHarvestNotification(...getSystemEmail(), harvestingDataverse.getName(), logFileName, logTimestamp, harvestErrorOccurred.booleanValue(), harvestedDatasetIds.size(), failedIdentifiers);
         } catch (Throwable e) {

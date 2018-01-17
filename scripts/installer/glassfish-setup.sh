@@ -159,7 +159,7 @@ fi
 
 # undeploy the app, if running: 
 
-./asadmin $ASADMIN_OPTS undeploy dataverse-4.6.1
+./asadmin $ASADMIN_OPTS undeploy dataverse-4.0
 
 # avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
 #./asadmin $ASADMIN_OPTS list-jvm-options
@@ -199,9 +199,6 @@ fi
 # location of the datafiles directory: 
 # (defaults to dataverse/files in the users home directory)
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.directory=${FILES_DIR}"
-#Swift related JVM options:
-./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"
-./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-endpoint-start='http://rdgw'"
 # Rserve-related JVM options: 
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.host=${RSERVE_HOST}"
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.port=${RSERVE_PORT}"
@@ -224,7 +221,6 @@ fi
 
 # enable comet support
 ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
-
 ./asadmin $ASADMIN_OPTS delete-connector-connection-pool --cascade=true jms/__defaultConnectionFactory-Connection-Pool 
 
 # no need to explicitly delete the connector resource for the connection pool deleted in the step 

@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -44,7 +43,6 @@ import javax.inject.Named;
 import javax.validation.ConstraintViolation;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
-import java.io.IOException;
 
 /**
  *
@@ -770,7 +768,6 @@ public class FilePage implements java.io.Serializable {
         
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
     }
-    
 
     public List<ExternalTool> getExternalTools() {
         return externalTools;

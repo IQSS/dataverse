@@ -32,7 +32,6 @@ import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -89,8 +88,6 @@ public class FileUtil implements java.io.Serializable  {
     private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
     
     private static Map<String, String> STATISTICAL_FILE_EXTENSION = new HashMap<String, String>();
-
-
    
     /*
      * The following are Stata, SAS and SPSS syntax/control cards: 
@@ -1344,7 +1341,7 @@ public class FileUtil implements java.io.Serializable  {
         logger.fine("Returning file download url: " + fileDownloadUrl);
         return fileDownloadUrl;
     }
-
+    
     public static String getPublicDownloadUrl(String dataverseSiteUrl, Long fileId) {
         if (fileId == null) {
             logger.info("In getPublicDownloadUrl but fileId is null!");
@@ -1354,7 +1351,6 @@ public class FileUtil implements java.io.Serializable  {
         boolean gbRecordsWritten = false;
         String path = getFileDownloadUrlPath(downloadType, fileId, gbRecordsWritten);
         return dataverseSiteUrl + path;
-        
     }
     
     public static File inputStreamToFile(InputStream inputStream) throws IOException {

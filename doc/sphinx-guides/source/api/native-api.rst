@@ -147,12 +147,6 @@ Delete the dataset whose id is passed::
 |CORS| Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
-  
-Export the metadata of the current version of the dataset in various formats see Note below::
-
-    GET http://$SERVER/api/datasets/export?exporter=DDI&persistentId=$persistentId
-  
-    Note: Supported exporters (export formats) are DDI, DublinCore and json.
 
 |CORS| Export the metadata of the current published version of a dataset in various formats see Note below::
 

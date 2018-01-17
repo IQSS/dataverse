@@ -41,16 +41,6 @@ import java.util.List;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.GetMethod;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import edu.harvard.iq.dataverse.DataFile;
-import java.io.FileInputStream;
-
-
-import java.nio.channels.FileChannel;
-
-
 
 /**
  *
@@ -519,69 +509,6 @@ public abstract class StorageIO<T extends DvObject> {
         return varHeader;
     }
 
-    public void copyPath(Path fileSystemPath) throws IOException {
-        long newFileSize = -1; 
-        // if this is a local fileystem file, we'll use a 
-        // quick Files.copy method: 
-        if (isLocalFile()) {
-            Path outputPath = null;
-            try {
-                outputPath = getFileSystemPath();
-            } catch (IOException ex) {
-                outputPath = null;
-            }
-            if (outputPath != null) {
-                Files.copy(fileSystemPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
-                newFileSize = outputPath.toFile().length();
-            }
-            
-        } else {
-            // otherwise we'll open a writable byte channel and 
-            // copy the source file bytes using Channel.transferTo():
-            
-            WritableByteChannel writeChannel = null;
-            FileChannel readChannel = null;
-            String failureMsg = null; 
-
-            try {
-
-                open(DataAccessOption.WRITE_ACCESS);
-                writeChannel = getWriteChannel();
-                readChannel = new FileInputStream(fileSystemPath.toFile()).getChannel();
-
-                long bytesPerIteration = 16 * 1024; // 16K bytes
-                long start = 0;
-                while (start < readChannel.size()) {
-                    readChannel.transferTo(start, bytesPerIteration, writeChannel);
-                    start += bytesPerIteration;
-                }
-                newFileSize = readChannel.size(); 
-
-            } catch (IOException ioex) {
-                failureMsg = ioex.getMessage();
-                if (failureMsg == null) {
-                    failureMsg = "Unknown exception occured.";
-                }
-            } finally {
-                if (readChannel != null) {
-                    try {readChannel.close();}catch(IOException e){}
-                }
-                if (writeChannel != null) {
-                    try {writeChannel.close();}catch(IOException e){}
-                }
-            }
-            
-            if (failureMsg != null) {
-                throw new IOException(failureMsg);
-            }
-        }
-        
-        // if it has worked successfully, we also need to reset the size
-        // of the object. 
-        setSize(newFileSize);
-    }
-    
-    
     protected boolean isWriteAccessRequested(DataAccessOption... options) throws IOException {
 
         for (DataAccessOption option : options) {
