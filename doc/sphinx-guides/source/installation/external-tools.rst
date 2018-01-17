@@ -19,7 +19,7 @@ In the example above, a mix of required and optional reserved words appear that 
 
 - ``{fileId}`` (required) - The Dataverse database ID of a file the external tool has been launched on.
 - ``{siteUrl}`` (optional) - The URL of the Dataverse installation that hosts the file with the fileId above.
-- ``{apiToken}`` (optional) - The Dataverse API token of the user launching the external tool.
+- ``{apiToken}`` (optional) - The Dataverse API token of the user launching the external tool, if available.
 
 Making an External Tool Available in Dataverse
 ----------------------------------------------

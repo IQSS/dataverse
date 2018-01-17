@@ -65,7 +65,10 @@ public class ExternalToolHandler {
         queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
             queryParam.keySet().forEach((key) -> {
                 String value = queryParam.getString(key);
-                params.add(getQueryParam(key, value));
+                String param = getQueryParam(key, value);
+                if (param != null && !param.isEmpty()) {
+                    params.add(getQueryParam(key, value));
+                }
             });
         });
         return "?" + String.join("&", params);
@@ -84,12 +87,13 @@ public class ExternalToolHandler {
                 ApiToken theApiToken = getApiToken();
                 if (theApiToken != null) {
                     apiTokenString = theApiToken.getTokenString();
+                    return key + "=" + apiTokenString;
                 }
-                return key + "=" + apiTokenString;
+                break;
             default:
-                // We should never reach here.
-                return null;
+                break;
         }
+        return null;
     }
 
     public String getToolUrlWithQueryParams() {

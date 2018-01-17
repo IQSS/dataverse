@@ -89,7 +89,7 @@ public class ExternalToolHandlerTest {
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
         String result4 = externalToolHandler4.getQueryParametersForUrl();
         System.out.println("result4: " + result4);
-        assertEquals("?key1=42&key2=null", result4);
+        assertEquals("?key1=42", result4);
 
         // Two query parameters, attempt to use a reserved word that doesn't exist.
         externalTool.setToolParameters(Json.createObjectBuilder()
