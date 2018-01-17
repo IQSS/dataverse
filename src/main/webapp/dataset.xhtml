@@ -236,9 +236,10 @@
                             <!-- Contact/Share Button Group -->
                             <div class="btn-group pull-right" id="datasetButtonBar" role="group">
                                 <!-- Batch button dropdown -->
-                                <ui:fragment> <!--rendered="#{DatasetPage.sessionUserAuthenticated
+                                <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated
                                                                                   and DatasetPage.canUpdateDataset()
-                                                                                  and !DatasetPage.dataset.deaccessioned}"-->
+                                                                                  and !DatasetPage.dataset.deaccessioned
+                                                                                  and DatasetPage.showComputeButton()}">
                                     <button type="button" id="computeBatch" class="btn btn-default btn-access dropdown-toggle " data-toggle="dropdown">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.compute.computeBatchBtn']} <span class="caret"></span>
                                     </button>
@@ -263,10 +264,7 @@
                                         <!-- List compute batch button -->
                                         <ui:fragment>
                                         <li>
-                                            <p:commandLink rendered="#{( DatasetPage.sessionUserAuthenticated
-                                                         and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and 
-                                                         !(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 0)}"
-                                                           title="#{bundle['dataset.compute.computeBatchList']}"
+                                            <p:commandLink title="#{bundle['dataset.compute.computeBatchList']}"
                                                            value="#{bundle['dataset.compute.computeBatchList']}"
                                                            oncomplete="PF('cartDatasetForm').show();bind_bsui_components();"
                                                            update="cartDatasetForm">
