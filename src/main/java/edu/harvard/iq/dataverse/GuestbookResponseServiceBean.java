@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -282,7 +283,7 @@ public class GuestbookResponseServiceBean {
             if (guestbookResponseId != null) {
                 singleResult[0] = result[1];
                 if (result[2] != null) {
-                    singleResult[1] = new SimpleDateFormat("MMMM d, yyyy").format((Date) result[2]);
+                    singleResult[1] = new SimpleDateFormat("yyyy-MM-dd").format((Date) result[2]);
                 } else {
                     singleResult[1] = "N/A";
                 }
@@ -745,14 +746,14 @@ public class GuestbookResponseServiceBean {
         return guestbookResponse;
     }
     
-    public void guestbookResponseValidator(FacesContext context, UIComponent toValidate, Object value) {
-        String response = (String) value;
-
-        if (response != null && response.length() > 255) {
-            ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.guestbookResponse.guestbook.responseTooLong"), null);
-            context.addMessage(toValidate.getClientId(context), message);
+    public boolean guestbookResponseValidator( UIInput toValidate, String value) {
+        if (value != null && value.length() > 255) {
+            (toValidate).setValid(false);
+            FacesContext.getCurrentInstance().addMessage((toValidate).getClientId(),
+                           new FacesMessage( FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
+            return false;
         }
+        return true;
     }
     
     public GuestbookResponse modifyDatafile(GuestbookResponse in, FileMetadata fm) {
@@ -785,6 +786,7 @@ public class GuestbookResponseServiceBean {
     }
 
     public Boolean validateGuestbookResponse(GuestbookResponse guestbookResponse, String type) {
+
         boolean valid = true;
         Dataset dataset = guestbookResponse.getDataset();
         if (dataset.getGuestbook() != null) {
@@ -829,7 +831,7 @@ public class GuestbookResponseServiceBean {
                 }
             }
         }
-            
+  
         return valid;
     }
     

@@ -21,6 +21,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ValueChangeEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -70,10 +71,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject FileDownloadHelper fileDownloadHelper;
 
-    private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());   
     
     
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
+
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
             writeGuestbookResponseRecord(guestbookResponse);
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), guestbookResponse.isWriteResponse());
@@ -158,16 +160,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 writeGuestbookResponseRecord(guestbookResponse);
             }
         }
-        
+    
         Long datafileId;
-        
+
         if (fmd == null && guestbookResponse != null && guestbookResponse.getDataFile() != null){
             datafileId = guestbookResponse.getDataFile().getId();
         } else {
             datafileId = fmd.getDataFile().getId();
         }
         String retVal = twoRavensHelper.getDataExploreURLComplete(datafileId);
-        
+
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
             return retVal;
