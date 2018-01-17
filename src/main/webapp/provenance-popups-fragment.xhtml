@@ -52,7 +52,6 @@
                                 </script>
                             </ui:fragment>
                             <ui:fragment rendered="#{null != provenanceUploadFragmentBean.jsonFileName}">
-                                <!-- need to conditionally load the json here. I have no idea how to load this aux file -->
                                 <div id="provFileText" class="col-sm-5 text-success">
                                     <div class="margin-top-half">
                                         <span class="glyphicon glyphicon-ok"></span> #{bundle['file.editProvenanceDialog.uploadSuccess']}
@@ -61,14 +60,11 @@
                                 <div class="col-sm-7 inline-buttons">
                                     <div class="button-block">
                                         <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.preview}"/>
-                                        <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput" actionListener="#{provenanceUploadFragmentBean.updateJsonRemoveState()}" oncomplete="PF('provUpload').hide();"/>
+                                        <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput" actionListener="#{provenanceUploadFragmentBean.updateJsonRemoveState()}"/>
                                     </div>
                                 </div>
                             </ui:fragment>
                             <p:message for="provUpload" id="provUploadMessage" display="text" />
-                            <!--oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));" -->
-                            <!--<p:commandButton id="AllUploadsFinished" action="# {EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" style="display:none"/> 
-                            -->
                         </ui:fragment>
                     </div>
                 </div>

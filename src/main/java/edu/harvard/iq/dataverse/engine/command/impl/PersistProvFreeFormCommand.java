@@ -29,7 +29,7 @@ public class PersistProvFreeFormCommand extends AbstractCommand<DataFile> {
         FileMetadata fileMetadata = dataFile.getFileMetadata();
         fileMetadata.setProvFreeForm(userInput);
         DataFile savedDataFile = ctxt.files().save(dataFile);
-        logger.info("prov free-form: " + savedDataFile.getFileMetadata().getProvFreeForm());
+        //logger.info("prov free-form: " + savedDataFile.getFileMetadata().getProvFreeForm());
         return savedDataFile; //MAD: Maybe this should return the prov freeform instead of the datafile?
     }
 

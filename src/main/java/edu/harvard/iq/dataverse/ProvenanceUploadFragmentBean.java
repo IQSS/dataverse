@@ -91,32 +91,43 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     public void saveContent() {
         try {
             //"text/plain" as well?
+            logger.info("test1");
             if(null != jsonTempFile && "application/json".equalsIgnoreCase(jsonTempFile.getContentType())) { //MAD: This needs a check for whether its been saved already?
                 String jsonString = IOUtils.toString(jsonTempFile.getInputstream()); //may need to specify encoding
                 try {
+                    logger.info("test2");
                     execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), datafileService.find(fileId), jsonString)); //DataverseRequest aRequest, DataFile dataFile, String userInput)       
                     jsonTempFile = null;
                 } catch (WrappedResponse ex) {
+                    logger.info("test3");
                     Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
                     //MAD: Catch error better
                 }
             } else if(deleteStoredJson) {
+                logger.info("test4");
                 execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), datafileService.find(fileId)));
                 deleteStoredJson = false;
             }
         } catch (IOException e) {
+            logger.info("test5");
             Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, e);
             //what to do if file is not there when trying to save? Anything at all? if nothing probably should just say it throws
         } catch (WrappedResponse ex) { 
+            logger.info("test6");
             Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         try { //freeform. maybe collapse with above
-            if(!(null == freeformTextInput || freeformTextInput.equals(freeformTextStored))) {
+            if(null == freeformTextInput) {
+                freeformTextInput = "";
+            }
+            if(!(freeformTextInput.equals(freeformTextStored))) {
+                logger.info("test7");
                 execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), datafileService.find(fileId), freeformTextInput));
             }
         }        
         catch (WrappedResponse ex) {
+            logger.info("test8");
             Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         
