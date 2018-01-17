@@ -120,7 +120,7 @@ public class Dataset extends DvObjectContainer {
     
     @OneToMany(mappedBy="dataset", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLinkingDataverse> datasetLinkingDataverses;
-    
+
     public List<DatasetLinkingDataverse> getDatasetLinkingDataverses() {
         return datasetLinkingDataverses;
     }

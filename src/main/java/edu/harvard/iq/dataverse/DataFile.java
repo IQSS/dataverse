@@ -556,7 +556,6 @@ public class DataFile extends DvObject implements Comparable {
         return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
     }
 
-
     public StorageIO<DataFile> getStorageIO() throws IOException {
         StorageIO<DataFile> storageIO = DataAccess.getStorageIO(this);
         
@@ -660,7 +659,6 @@ public class DataFile extends DvObject implements Comparable {
         if ((this.getId() == null)||(serverName == null)){
             return null;
         }
-    
         return serverName + "/api/access/datafile/" + this.getId();
     }
     

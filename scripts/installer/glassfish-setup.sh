@@ -218,9 +218,9 @@ fi
 # "I am the timer server" option:
 ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
 
-
 # enable comet support
 ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
+
 ./asadmin $ASADMIN_OPTS delete-connector-connection-pool --cascade=true jms/__defaultConnectionFactory-Connection-Pool 
 
 # no need to explicitly delete the connector resource for the connection pool deleted in the step 

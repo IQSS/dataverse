@@ -1449,6 +1449,7 @@ sub setup_glassfish {
     $ENV{'SMTP_SERVER'}  = $CONFIG_DEFAULTS{'MAIL_SERVER'};
     $ENV{'FILES_DIR'} =
       $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/glassfish/domains/" . $ENV{'GLASSFISH_DOMAIN'} . "/files";
+    
     system("./glassfish-setup.sh");
 
     if ($?) {
@@ -1502,7 +1503,7 @@ sub validate_smtp_server {
 	my $mail_server_paddr = sockaddr_in( 25, $mail_server_iaddr );
 	$mail_server_proto = getprotobyname('tcp');
 
-        unless ( socket( SOCK, PF_INET, SOCK_STREAM, $mail_server_proto )
+       unless ( socket( SOCK, PF_INET, SOCK_STREAM, $mail_server_proto )
 		 && connect( SOCK, $mail_server_paddr ) )
 	{
 	    print STDERR "Could not establish connection to $CONFIG_DEFAULTS{'MAIL_SERVER'},\n";

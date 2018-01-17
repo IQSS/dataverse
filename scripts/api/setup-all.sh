@@ -54,7 +54,6 @@ curl -X PUT -d EZID "$SERVER/admin/settings/:DoiProvider"
 curl -X PUT -d / "$SERVER/admin/settings/:DoiSeparator"
 curl -X PUT -d burrito $SERVER/admin/settings/BuiltinUsers.KEY
 curl -X PUT -d localhost-only $SERVER/admin/settings/:BlockedApiPolicy
-
 echo
 
 echo "Setting up the admin user (and as superuser)"
