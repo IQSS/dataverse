@@ -783,6 +783,12 @@ public class GuestbookResponseServiceBean {
         return in;
     }
 
+    /**
+     * This method was added because on the dataset page when a popup is
+     * required, ExternalTool is null in the poup itself. The
+     * modifyDatafileAndFormat method above was copied and a new argument for
+     * ExternalTool was added.
+     */
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format, ExternalTool externalTool) {
         if (in != null && fm.getDataFile() != null) {
             in.setFileFormat(format);

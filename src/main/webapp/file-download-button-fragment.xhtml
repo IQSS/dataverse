@@ -64,6 +64,7 @@
                                    action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}" target="_blank">
                         #{tool.displayName}
                     </h:commandLink>
+                    <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse.-->
                     <p:commandLink rendered="#{downloadPopupRequired}"
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
