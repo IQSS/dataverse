@@ -59,6 +59,45 @@
                     <p:fragment id="topDatasetBlockFragment">
                     <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
                         <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
+                            <div class="btn-group pull-right" jsf:rendered="#{true or DatasetPage.sessionUserAuthenticated
+                                                                              and DatasetPage.canUpdateDataset()
+                                                                              and !DatasetPage.dataset.deaccessioned
+                                                                              and DatasetPage.showComputeButton()}">
+                                <!-- Compute Button Group -->
+                                <button type="button" id="computeBatch" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-flash"/> #{bundle['dataset.compute.computeBtn']} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu pull-left text-left" role="menu">
+                                    <li>
+                                        <!-- Add button -->
+                                        <p:commandLink action="#{DatasetPage.addItemtoCart(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}"
+                                            disabled="#{DatasetPage.locked}" value="#{bundle['dataset.compute.computeBatchAdd']}" update=":datasetForm">
+                                            <h:outputText value="#{bundle['dataset.compute.computeBatchAdd']}"/>
+                                        </p:commandLink>
+                                    </li>
+                                    <li jsf:rendered="#{DatasetPage.isBatchListEmpty()}">
+                                        <!-- Delete button -->
+                                        <p:commandLink value="#{bundle['dataset.compute.computeBatchDelete']}" action="#{DatasetPage.removeCartItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}" update=":datasetForm">  
+                                            <h:outputText value="#{bundle['dataset.compute.computeBatchDelete']}"/>
+                                        </p:commandLink>
+                                    </li>
+                                    <li jsf:rendered="#{DatasetPage.isBatchListEmpty()}">
+                                        <!-- List compute batch button -->
+                                        <p:commandLink title="#{bundle['dataset.compute.computeBatchList']}"
+                                                       value="#{bundle['dataset.compute.computeBatchList']}"
+                                                       oncomplete="PF('cartDatasetForm').show();bind_bsui_components();"
+                                                       update="cartDatasetForm">
+                                            <h:outputText value="#{bundle['dataset.compute.computeBatchList']}"/>
+                                        </p:commandLink>
+                                    </li>
+                                    <li jsf:rendered="#{DatasetPage.isBatchListEmpty()}">
+                                        <!-- Compute on compute batch button -->
+                                        <h:outputLink value="#{DatasetPage.batchComputeUrl}" target="_blank">
+                                            <h:outputText id="compute-batch-button" value="#{bundle['dataset.compute.computeBatchCompute']}" />
+                                        </h:outputLink>
+                                    </li>
+                                </ul>
+                            </div>
                             <div class="btn-group pull-right" role="group">
                                 <!-- Edit/Publish Button Group -->
                                 <!-- Publish/Submit for Review/Return to Author Button Group -->
@@ -235,53 +274,6 @@
                             
                             <!-- Contact/Share Button Group -->
                             <div class="btn-group pull-right" id="datasetButtonBar" role="group">
-                                <!-- Batch button dropdown -->
-                                <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated
-                                                                                  and DatasetPage.canUpdateDataset()
-                                                                                  and !DatasetPage.dataset.deaccessioned
-                                                                                  and DatasetPage.showComputeButton()}">
-                                    <button type="button" id="computeBatch" class="btn btn-default btn-access dropdown-toggle " data-toggle="dropdown">
-                                        <span class="glyphicon glyphicon-flash"/> #{bundle['dataset.compute.computeBatchBtn']} <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu pull-left text-left" role="menu">
-                                        <!-- Add button -->
-                                        <ui:fragment>
-                                        <li>
-                                            <p:commandLink action="#{DatasetPage.addItemtoCart(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}"
-                                                disabled="#{DatasetPage.locked}" value="#{bundle['dataset.compute.computeBatchAdd']}" update=":datasetForm">
-                                                <h:outputText value="#{bundle['dataset.compute.computeBatchAdd']}"/>
-                                            </p:commandLink>
-                                        </li>
-                                        </ui:fragment>
-                                        <!-- Delete button -->
-                                        <ui:fragment>
-                                        <li>
-                                            <p:commandLink value="#{bundle['dataset.compute.computeBatchDelete']}" action="#{DatasetPage.removeCartItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}" update=":datasetForm">  
-                                                <h:outputText value="#{bundle['dataset.compute.computeBatchDelete']}"/>
-                                            </p:commandLink>
-                                        </li>
-                                        </ui:fragment>
-                                        <!-- List compute batch button -->
-                                        <ui:fragment>
-                                        <li>
-                                            <p:commandLink title="#{bundle['dataset.compute.computeBatchList']}"
-                                                           value="#{bundle['dataset.compute.computeBatchList']}"
-                                                           oncomplete="PF('cartDatasetForm').show();bind_bsui_components();"
-                                                           update="cartDatasetForm">
-                                                <h:outputText value="#{bundle['dataset.compute.computeBatchList']}"/>
-                                            </p:commandLink>
-                                        </li>
-                                        </ui:fragment>
-                                        <!-- Compute on compute batch button -->
-                                        <ui:fragment>
-                                        <li>
-                                            <h:outputLink value="#{DatasetPage.batchComputeUrl}" styleClass="btn btn-access #{DatasetPage.isBatchListEmpty() ? 'disabled' : ''}">
-                                                <h:outputText id="compute-batch-button" value="#{bundle['dataset.compute.computeBatchCompute']}" />
-                                            </h:outputLink>
-                                        </li>
-                                        </ui:fragment>
-                                    </ul>
-                                </ui:fragment>
                                 <!-- END Batch button dropdown -->
                                 <p:commandLink class="text-button bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
