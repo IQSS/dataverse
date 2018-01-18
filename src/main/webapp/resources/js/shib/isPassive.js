@@ -24,12 +24,10 @@
 // and set cookie to stop passive login for dv
 var loginLink = document.getElementById("login");
 if(loginLink != null) {
-loginLink.onclick = function() {
-  document.cookie = "_check_is_passive=;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=" + window.location.hostname.substring(window.locatio
-n.hostname.indexOf("."));
+  loginLink.onclick = function() {
+    document.cookie = "_check_is_passive=;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=" + window.location.hostname.substring(window.location.hostname.indexOf("."));
     document.cookie = "_check_is_passive_dv=0;domain=" + window.location.hostname.substring(window.location.hostname.indexOf("."));
-
-};
+  };
 }
 
 
