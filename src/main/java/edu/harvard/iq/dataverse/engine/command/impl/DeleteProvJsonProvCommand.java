@@ -34,15 +34,14 @@ public class DeleteProvJsonProvCommand extends AbstractVoidCommand {
         this.dataFile = dataFile;
     }
 
-    //MAD: Is this the correct type to return?
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
 
-        final String provJsonExtension = "prov-json.json"; //MAD: This is hardcoded and should be global
+        final String provJsonExtension = "prov-json.json";
 
         try {
             StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
-            dataAccess.deleteAuxObject(provJsonExtension);             //MAD: do we need to do anything else other than catch things?
+            dataAccess.deleteAuxObject(provJsonExtension);
             logger.info("provenance json delete passed io step");
         } catch (IOException ex) {
             String error = "Exception caught deleting provenance aux object: " + ex;

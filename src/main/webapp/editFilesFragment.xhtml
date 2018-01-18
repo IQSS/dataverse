@@ -197,20 +197,8 @@
                             </ui:fragment>
                         </div>
                     </p:column>
-                        <!-- MAD: Remove padding and fix overlay like on dataset page -->
                     <p:column class="col-file-action text-right">
-                        
-                        
-                        
-                        <!-- per file dropdown? -->
-                        <!--MAD: A lot of this is copy paste from filesFragment. Rendered and other things are prolly wrong-->
-                            <!-- MH: Removed renders that were copied from filesFragment -->
-                        <!-- removing this column makes the formatting for the rows work, but I don't know why -->
-                        <!-- this is also breaking the size of the internal table header bar (w/ the checkbox) but I also don't know why -->
                         <f:facet name="header" class="col-file-action text-right">
-                            <!-- Button Panels -->
-                            <!-- MAD here we'd replace the group dropdown-->
-                            <!-- This NEEDS to go inside the header bar... -->
                             <div jsf:id="editFilesRestrictDeletePanel" style="margin-right:14px;" class="btn-group" jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFilesSelected']} <span class="caret"></span>
@@ -242,28 +230,14 @@
                                 </ul>
                             </div>
                         </f:facet>
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        <!--MAD: here is where the button dropdown should go. right now all the buttons are individual... -->
-                        
-                        <!-- MAD: Dropdown from filesFragment.xhtml -->
-                        <div style="margin-right:14px;" class="btn-group" > <!--jsf:rendered="" -->
+                        <div style="margin-right:14px;" class="btn-group" >
                             <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
                                     disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                 <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFile']} <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                <!-- MAD: Insert provenance option here -->
-                                <!-- MAD: Buttons from fileFragment that need to be worked with -->
                                 <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
                                     <p:commandLink id="fileProvenanceButton"
-                                               actionListener="#{EditDatafilesPage.refreshProvenancePopUp(fileMetadata)}"
                                                update=":datasetForm:editProvenancePopup"
                                                oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
                                                <f:actionListener binding="#{provenanceUploadFragmentBean.init(fileMetadata.dataFile.id)}" />
@@ -298,7 +272,6 @@
                                         <h:outputText value="#{bundle['file.delete']}"/> 
                                     </p:commandLink>
                                 </li>
-                                <!--MAD: these are weird to test, but don't forget them, from old UI and not visual in mockups -->
                                 <li>
                                     <p:commandLink id="fileSetThumbnailBtn"
                                                    rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and not EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
@@ -600,14 +573,7 @@
             <p:commandButton id="fileThumbnailConfirmCancelBtn" value="#{bundle.cancel}" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
         </div>
     </p:dialog>
-<!-- MAD: Prov popup was here -->
-    <ui:include src="provenance-popups-fragment.xhtml">
-        <!--<ui:param name="fileId" value="# {FilePage.fileMetadata.dataFile.id}"/>-->
-        
-        <!--<ui:param name="fileDownloadHelper" value="# {DatasetPage.fileDownloadHelper}"/>-->
-    </ui:include>
-
-
+    <ui:include src="provenance-popups-fragment.xhtml"/>
     <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
 

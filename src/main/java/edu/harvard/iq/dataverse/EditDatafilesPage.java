@@ -2299,11 +2299,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         refreshTabFileTagsByName();
     }
     
-    public void refreshProvenancePopUp(FileMetadata fm){
-        
-        
-    }
-    
     private List<String> tabFileTagsByName;
 
     public List<String> getTabFileTagsByName() {

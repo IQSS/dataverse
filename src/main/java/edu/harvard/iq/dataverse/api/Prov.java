@@ -43,7 +43,6 @@ public class Prov extends AbstractApiBean {
     @Path("{id}/prov-json")
     public Response removeProvJson(String body, @PathParam("id") String idSupplied) {
         try {
-            //MAD: Delete does not seem to return a code so we just say ok afterwards. Seems like what we do in other places.
             execCommand(new DeleteProvJsonProvCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
             return ok("Provenance URL deleted");
         } catch (WrappedResponse ex) {

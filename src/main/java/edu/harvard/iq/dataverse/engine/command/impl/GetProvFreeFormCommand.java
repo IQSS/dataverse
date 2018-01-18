@@ -12,8 +12,7 @@ import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.EditDataset)
 /**
- * This command gets returns the freeform provenance input
- *  To be honest a command feels a bit overkill, but it feels complete with all the other needed prov commands
+ * This command gets the freeform provenance input
  */
 public class GetProvFreeFormCommand extends AbstractCommand<String> {
 

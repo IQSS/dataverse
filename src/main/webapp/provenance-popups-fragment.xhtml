@@ -7,11 +7,8 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <!--MAD: Provenance popup, most content from metadata/tags atm. Going to make it look like the mockup and then change it...-->
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true">
-        <!-- MAD: I added a form tag here and it caused (non-provenance) file upload to break 
-                I really shouldn't be using the overarching form but I also don't know how to get around it... -->
-        <p:outputPanel id="provPopupOutput" class="form-horizontal"> <!-- <div class="form-horizontal" > jsf:rendered="# {!(empty EditDatafilesPage.fileMetadataSelectedForTagsPopup)}">-->
+        <p:outputPanel id="provPopupOutput" class="form-horizontal">
                 <div class="form-group text-left">
                     <div class="col-sm-12">
                         <p class="help-block">#{bundle['file.editProvenanceDialog.tip']}</p>
@@ -22,10 +19,8 @@
                         #{bundle['file.editProvenanceDialog.bundleFile']}
                     </label>
                     <div class="col-sm-8">
-                        <!--MAD: upload file ui fragment from above -->
-                        <!--MAD: There was a help block in here. When I removed it the background highlighting decided to creep up -->
-                        <ui:fragment id="provUploadFragment"> <!--rendered="# {datasetPage || EditDatafilesPage.showFileUploadFragment()}"> -->
-                            <ui:fragment rendered="#{null == provenanceUploadFragmentBean.jsonFileName}">
+                        <ui:fragment id="provUploadFragment">
+                            <ui:fragment rendered="#{provenanceUploadFragmentBean.jsonUploadedState == false}">
                                 <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
                                 <p:fileUpload id="provUpload" 
                                               styleClass="margin-bottom"
@@ -46,12 +41,11 @@
                                     function uploadFinished(fileupload) {                    
                                         if (fileupload.files.length === 0) {
                                             $('button[id$="AllUploadsFinished"]').trigger('click');
-                                            //alert("all uploads finished");
                                         }
                                     }
                                 </script>
                             </ui:fragment>
-                            <ui:fragment rendered="#{null != provenanceUploadFragmentBean.jsonFileName}">
+                            <ui:fragment rendered="#{provenanceUploadFragmentBean.jsonUploadedState}">
                                 <div id="provFileText" class="col-sm-5 text-success">
                                     <div class="margin-top-half">
                                         <span class="glyphicon glyphicon-ok"></span> #{bundle['file.editProvenanceDialog.uploadSuccess']}

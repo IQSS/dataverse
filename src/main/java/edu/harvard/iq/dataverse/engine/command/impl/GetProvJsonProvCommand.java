@@ -36,11 +36,8 @@ public class GetProvJsonProvCommand extends AbstractCommand<JsonObject> {
     @Override
     public JsonObject execute(CommandContext ctxt) throws CommandException {
 
-        //JsonObjectBuilder response = Json.createObjectBuilder();
-
         final String provJsonExtension = "prov-json.json";
 
-        //TODO: pulled code from persist ProvJson, maybe that should just point here?
         try {
             StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
             InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
