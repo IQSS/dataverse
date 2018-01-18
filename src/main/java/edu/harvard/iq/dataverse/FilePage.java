@@ -158,6 +158,8 @@ public class FilePage implements java.io.Serializable {
             }         
            
            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
+           
+          //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
 
             List<ExternalTool> allTools = externalToolService.findAll();
             

@@ -136,11 +136,15 @@ Can be installed with :fixedwidthplain:`yum`::
 
        yum install R R-devel
 
-EPEL distribution recommended; version 3.3.2 is **strongly** recommended.
+EPEL distribution recommended; version 3.3.2 is **strongly** recommended. Note that R 3.3.2 comes from EPEL on el6 but R 3.4.2 comes from EPEL on el7.
 
 If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ): 
 
-CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 7::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
 
        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 
