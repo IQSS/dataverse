@@ -77,8 +77,9 @@ Download Files
 
 Within the Files tab on a dataset page, you can download the files in that dataset. To download more than one file at a time, select the files you would like to download and then click the Download button above the files. The selected files will download in zip format.
 
-Tabular data files offer additional options: You can explore using the TwoRavens data visualization tool by clicking the Explore button, or choose from a number of tabular-data-specific download options available as a dropdown under the Download button.
+You may also download a file from its file page by clicking the Download button in the upper right corner of the page, or by using the Download URL listed under the Metadata tab on the lower half of the page. The Download URL can be used to directly access the file via API (or in a web browser, if needed). Certain files do not provide Download URLs for technical reasons: those that are restricted, have terms of use associated with them, or are part of a dataverse with a guestbook enabled.
 
+Tabular data files offer additional options: You can explore using the TwoRavens data visualization tool by clicking the Explore button, or choose from a number of tabular-data-specific download options available as a dropdown under the Download button.
 
 .. _rsync_download:
 
