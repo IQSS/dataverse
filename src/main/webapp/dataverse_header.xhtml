@@ -183,7 +183,7 @@
                         </li>
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
-                                <h:outputLink value="/Shibboleth.sso/Login">
+                                <h:outputLink id="login" value="/Shibboleth.sso/Login">
                                     <f:param name="target" value="#{request.contextPath.concat('/shib.xhtml').concat(navigationWrapper.redirectPage)}" />
                                     #{bundle.login}
                                 </h:outputLink>

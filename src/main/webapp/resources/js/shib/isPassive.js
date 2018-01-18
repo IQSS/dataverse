@@ -19,6 +19,20 @@
  the Shibboleth attribute that should be available after authentication.
  */
 
+
+// QDR Custom - for Jira QDR-891, remove a cookie to trigger shib passive login for any qdr drupal windows, 
+// and set cookie to stop passive login for dv
+var loginLink = document.getElementById("login");
+if(loginLink != null) {
+loginLink.onclick = function() {
+  document.cookie = "_check_is_passive=;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=" + window.location.hostname.substring(window.locatio
+n.hostname.indexOf("."));
+    document.cookie = "_check_is_passive_dv=0;domain=" + window.location.hostname.substring(window.location.hostname.indexOf("."));
+
+};
+}
+
+
 // Check for session cookie that contains the initial location
 if(document.cookie && document.cookie.search(/_check_is_passive_dv=/) >= 0){
     // If we have the opensaml::FatalProfileException GET arguments
@@ -35,7 +49,8 @@ if(document.cookie && document.cookie.search(/_check_is_passive_dv=/) >= 0){
     }
 } else {
     // Mark browser as being isPassive checked
-    document.cookie = "_check_is_passive_dv=" + window.location;
+	//QDR Custom - add a domain shared by drupal and dv components
+    document.cookie = "_check_is_passive_dv=" + window.location + ";domain=" + window.location.hostname.substring(window.location.hostname.indexOf("."));;
 
     // Redirect to Shibboleth handler
     window.location = "/Shibboleth.sso/Login?isPassive=true&target=" + encodeURIComponent("https://" + window.location.hostname + "/shib.xhtml?redirectPage=" + window.location.pathname);
