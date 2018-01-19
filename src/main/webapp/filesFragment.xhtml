@@ -287,39 +287,36 @@
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                        <div class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
-                            <li>
+                            <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                 <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
                                     <h:outputText value="#{bundle['file.delete']}"/> 
                                 </p:commandLink>
                             </li>
-                            <li>
+                            <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                 <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile" action="#{DatasetPage.editFileMetadata()}">                                         
                                     <h:outputText value="#{bundle['file.metadata']}"/>
                                 </p:commandLink>
                             </li>
                             <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
-                                <li>
+                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                     <p:commandLink oncomplete="toggle_dropdown();" 
                                                    onclick="testFilesSelectedForRestriction()">
                                         <h:outputText value="#{bundle['file.restrict']}"/>
                                     </p:commandLink>
                                 </li>
-                                <li>
+                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                     <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
                                                    action="#{DatasetPage.restrictSelectedFiles(false)}">
                                         <h:outputText value="#{bundle['file.unrestrict']}"/>
                                     </p:commandLink>
                                 </li>
                             </ui:fragment>
-                            <li>
+                            <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                 <p:commandLink id="fileCategoriesLinkTwo"    
                                                onclick="testFilesSelectedForTags()">
                                             #{bundle['file.tags']} 
                                 </p:commandLink>    
                             </li>   
-                        </div>
-
                     </ul>
                     <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                 </div>
