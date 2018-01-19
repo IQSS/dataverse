@@ -7,8 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -24,8 +24,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.faces.application.FacesMessage;
-import javax.faces.component.EditableValueHolder;
-import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
@@ -782,6 +780,26 @@ public class GuestbookResponseServiceBean {
             in.setWriteResponse(false);
         }
         
+        return in;
+    }
+
+    /**
+     * This method was added because on the dataset page when a popup is
+     * required, ExternalTool is null in the poup itself. The
+     * modifyDatafileAndFormat method above was copied and a new argument for
+     * ExternalTool was added.
+     */
+    public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format, ExternalTool externalTool) {
+        if (in != null && fm.getDataFile() != null) {
+            in.setFileFormat(format);
+            in.setDataFile(fm.getDataFile());
+        }
+        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
+            in.setWriteResponse(false);
+        }
+        if (in != null && externalTool != null) {
+            in.setExternalTool(externalTool);
+        }
         return in;
     }
 
