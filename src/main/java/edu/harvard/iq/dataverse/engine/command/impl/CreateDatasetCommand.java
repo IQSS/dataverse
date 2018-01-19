@@ -288,7 +288,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             ctxt.em().merge(datasetVersionDataverseUser);            
         }
         logger.log(Level.FINE, "after create version user " + formatter.format(new Date().getTime()));        
-//        throw new CommandException("trying to break the command structure from create dataset command", this);
         return savedDataset;
     }
     
