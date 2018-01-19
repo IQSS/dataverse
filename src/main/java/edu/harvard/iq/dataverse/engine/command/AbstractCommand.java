@@ -68,6 +68,12 @@ public abstract class AbstractCommand<R> implements Command<R> {
     public DataverseRequest getRequest() {
         return request;
     }
+    
+    @Override
+    public void onSuccess(CommandContext ctxt){
+        //default behavior is to not do anything
+        //useful specific cases in commands such as indexing or sending emails 
+    }
 
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {

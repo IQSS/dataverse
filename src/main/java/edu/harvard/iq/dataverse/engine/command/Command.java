@@ -40,7 +40,13 @@ public interface Command<R> {
 	/**
 	 * @return A map of the permissions required for this command
 	 */        
-    Map<String,Set<Permission>> getRequiredPermissions();
+        Map<String,Set<Permission>> getRequiredPermissions();
 
-    public String describe();
+        public String describe();
+        
+        /**
+         * Completes actions that should happen after the transaction 
+         * has committed to the database
+         */
+        public void onSuccess(CommandContext ctxt);
 }

@@ -35,6 +35,7 @@ import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
@@ -248,16 +249,28 @@ public class EjbDataverseEngine {
             throw re;
             
         } finally {
+            logRec.setEndTime( new java.util.Date() );
+            
             if ( logRec.getActionResult() == null ) {
                 logRec.setActionResult( ActionLogRecord.Result.OK );
+                logSvc.log(logRec);
+                try {
+                    aCommand.onSuccess(getContext());
+                } catch (Exception ex){
+                    
+                }
             } else {
                 ejbCtxt.setRollbackOnly();
+                logSvc.log(logRec);
             }
-            logRec.setEndTime( new java.util.Date() );
-            logSvc.log(logRec);
         }
     }
-
+    
+//    @TransactionAttribute(REQUIRES_NEW)
+//    public void onSuccess(Command aCommand) {
+//        aCommand.onSuccess(getContext());
+//    }
+    
     public CommandContext getContext() {
         if (ctxt == null) {
             ctxt = new CommandContext() {
