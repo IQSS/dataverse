@@ -246,20 +246,6 @@ public class FileDownloadHelper implements java.io.Serializable {
          }
 
      }
-     
-    public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-        
-        RequestContext requestContext = RequestContext.getCurrentInstance();
-        boolean valid = validateGuestbookResponse(guestbookResponse);
-                  
-         if (!valid) {
-             return "";
-         } 
-         guestbookResponse.setDownloadtype("Explore");
-         String retVal = fileDownloadService.startExploreDownloadLink(guestbookResponse, fmd);
-        requestContext.execute("PF('downloadPopup').hide()"); 
-        return retVal;
-    }
 
      public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
 

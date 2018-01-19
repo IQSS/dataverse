@@ -77,7 +77,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
-import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
@@ -183,8 +182,6 @@ public class DatasetPage implements java.io.Serializable {
     PermissionsWrapper permissionsWrapper;
     @Inject
     FileDownloadHelper fileDownloadHelper;
-    @Inject
-    TwoRavensHelper twoRavensHelper;
     @Inject
     WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject
@@ -3922,14 +3919,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setWorldMapPermissionHelper(WorldMapPermissionHelper worldMapPermissionHelper) {
         this.worldMapPermissionHelper = worldMapPermissionHelper;
-    }
-
-    public TwoRavensHelper getTwoRavensHelper() {
-        return twoRavensHelper;
-    }
-
-    public void setTwoRavensHelper(TwoRavensHelper twoRavensHelper) {
-        this.twoRavensHelper = twoRavensHelper;
     }
 
     /**

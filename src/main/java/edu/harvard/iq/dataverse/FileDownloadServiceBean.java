@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
@@ -69,7 +68,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
     
-    @Inject TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject FileDownloadHelper fileDownloadHelper;
 
@@ -193,36 +191,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-
-        if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
-                && (( fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
-            if(guestbookResponse.getDataFile() == null  && fmd != null){                
-                guestbookResponse.setDataFile(fmd.getDataFile());
-            }
-            if (fmd == null || !fmd.getDatasetVersion().isDraft()){
-                writeGuestbookResponseRecord(guestbookResponse);
-            }
-        }
-    
-        Long datafileId;
-
-        if (fmd == null && guestbookResponse != null && guestbookResponse.getDataFile() != null){
-            datafileId = guestbookResponse.getDataFile().getId();
-        } else {
-            datafileId = fmd.getDataFile().getId();
-        }
-        String retVal = twoRavensHelper.getDataExploreURLComplete(datafileId);
-
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
-            return retVal;
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
-        return retVal;
-    }
-    
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
                 
         if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
