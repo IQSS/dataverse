@@ -232,7 +232,7 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
                 
                 logger.fine("Done! Finished saving new files in permanent storage.");
                 
-                
+//                throw new CommandException("Attempting to break the command structure from CreateDataFileCommand",this);
                 return theDataFile;
     }
     
