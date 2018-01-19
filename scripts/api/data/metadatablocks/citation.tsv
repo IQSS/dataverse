@@ -14,9 +14,9 @@
 	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	ORCID	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
 	authorIdentifier	ORCID	Creator's ORCID ID		text	11	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
 	datasetContact	Contact	The contact(s) for this Data Project.		none	12		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	13	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	Data ProjectContact	citation
-	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	14	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	Data ProjectContact	citation
-	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Data Project. This will not be displayed.		email	15	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	Data ProjectContact	citation
+	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	13	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
+	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	14	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
+	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Data Project. This will not be displayed.		email	15	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	citation
 	dsDescription	Description	A summary describing the purpose, nature, and scope of the Data Project.		none	16		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the Data Project.		textbox	17	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	citation
 	dsDescriptionDate	Date	In cases where a Data Project contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	18	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dsDescription	citation
