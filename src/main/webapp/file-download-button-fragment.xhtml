@@ -49,7 +49,7 @@
 
     <!--DROPDOWN EXPLORE BUTTON (NOT A SINGLE EXPLORE BUTTON): Multiple tools-->
     <!--exploreTools is set as a ui:param by the file and dataset pages-->
-    <div class="btn-group" jsf:rendered="#{not empty exploreTools or (twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+    <div class="btn-group" jsf:rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools or (twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
         <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
