@@ -401,31 +401,25 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String getBatchComputeUrl() {
-        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-            String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
-            List<Entry<String,String>> contents = cart.getContents();
-            for (Entry<String,String> entry : contents) {
-                String datasetName = entry.getKey();
-                String containerName = entry.getValue();
-                datasetName = datasetName.replace(" ", "%20");
-                url += "&" + datasetName + "=" + containerName;
-            }
-            return url;
+        String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
+        List<Entry<String,String>> contents = cart.getContents();
+        for (Entry<String,String> entry : contents) {
+            String datasetName = entry.getKey();
+            String containerName = entry.getValue();
+            datasetName = datasetName.replace(" ", "%20");
+            url += "&" + datasetName + "=" + containerName;
         }
-        return "";
+        return url;
     }
     
     public boolean isBatchListEmpty() {
-        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-            String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
-            List<Entry<String,String>> contents = cart.getContents();
-            if (contents.size() == 0) {
-                return true;
-            }
+        List<Entry<String,String>> contents = cart.getContents();
+        if (contents.size() == 0) {
+            return true;
         }
         return false;
     }
-    
+
     private String fileLabelSearchTerm;
 
     public String getFileLabelSearchTerm() {
