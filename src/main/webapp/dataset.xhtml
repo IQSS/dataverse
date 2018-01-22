@@ -91,6 +91,12 @@
                                         </p:commandLink>
                                     </li>
                                     <li jsf:rendered="#{!DatasetPage.isBatchListEmpty()}">
+                                        <!-- Clear button -->
+                                        <p:commandLink value="#{bundle['dataset.compute.computeBatchClear']}" action="#{DatasetPage.clearCart()}" update=":datasetForm,:messagePanel">  
+                                            <h:outputText value="#{bundle['dataset.compute.computeBatchClear']}"/>
+                                        </p:commandLink>
+                                    </li>
+                                    <li jsf:rendered="#{!DatasetPage.isBatchListEmpty()}">
                                         <!-- Compute on compute batch button -->
                                         <h:outputLink value="#{DatasetPage.batchComputeUrl}" target="_blank">
                                             <h:outputText id="compute-batch-button" value="#{bundle['dataset.compute.computeBatchCompute']}" />

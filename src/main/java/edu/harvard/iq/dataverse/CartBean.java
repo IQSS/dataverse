@@ -44,7 +44,7 @@ public class CartBean implements Cart {
     }
 
     @Remove
-    public void remove() {
-        contents = null;
+    public void clear() {
+        contents.clear();
     }
 }

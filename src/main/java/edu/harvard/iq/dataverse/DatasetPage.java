@@ -400,8 +400,17 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
+    public void clearCart() throws Exception {
+        try {
+            cart.clear();
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+        } catch (Exception ex){
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+        }
+    }
+    
     public String getBatchComputeUrl() {
-        String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
+        String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "&batch";
         List<Entry<String,String>> contents = cart.getContents();
         for (Entry<String,String> entry : contents) {
             String datasetName = entry.getKey();
