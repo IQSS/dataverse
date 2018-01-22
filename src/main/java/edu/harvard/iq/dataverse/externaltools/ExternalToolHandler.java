@@ -30,8 +30,8 @@ public class ExternalToolHandler {
     /**
      * @param externalTool The database entity.
      * @param dataFile Required.
-     * @param apiToken The apiToken can be null because in the future, "explore"
-     * tools can be used anonymously.
+     * @param apiToken The apiToken can be null because "explore" tools can be
+     * used anonymously.
      */
     public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
         this.externalTool = externalTool;

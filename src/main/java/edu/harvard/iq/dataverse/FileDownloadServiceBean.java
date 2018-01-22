@@ -170,7 +170,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 dataFile = guestbookResponse.getDataFile();
             }
         }
-        // Note that the API token might be null. You can end up with "key=null" or whatever.
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
