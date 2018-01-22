@@ -130,19 +130,25 @@ Data Provenance
 
 Data Provenance is a record of where your data came from and how it reached its current form. It describes the origin of a data file, any transformations that have been made to that file, and any persons or organizations associated with that file. A data file's provenance can aid in reproducibility and compliance with legal regulations. Dataverse can help keep track of your data's provenance and make it available to those who need it.
 
-Dataverse accepts provenance information in two forms: a *Provenance Bundle File* or a free-text *Provenance Description*. A bundle file is the preferred way of submitting provenance information to Dataverse, as it allows Dataverse to automatically generate a detailed graph of the data file's provenance. Bundle files are typically generated during the process of data analysis, using provenance capture tools like provR, RDataTracker, NoWorkFlow, recordr, or CamFlow. Each data file in Dataverse can have one bundle file attached to it. Dataverse uses this bundle file to generate a provenance graph that can be viewed under the Provenance tab of the file page.
-
-If you do not have a bundle file, or if you'd like to add more provenance information in addition to a bundle file, then you can attach a *Provenance Description* to your data file. This is a free-text field that allows you to enter any information you feel might be relevant to those interested in learning about the provenance of your data. This might be a good place to describe provenance factors like what operating system you used when working with the file, what functions or libraries you used, how data was merged into the file, what version of the file you used, etc.
-
-Bundle Files and provenance text can be attached to files as part of the data file upload process, by clicking Edit -> Provenance:
+Dataverse accepts provenance information in two forms: a *Provenance Bundle File* or a free-text *Provenance Description*. You can attach this provenance information to your data files in Dataverse as part of the file upload process, by clicking Edit -> Provenance:
 
 |file-upload-prov-button|
 
-You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab. You can always add provenance to a file that has none, but you can only replace a file's provenance *before* it is published. Once you publish a file with provenance attached, that provenance is made permanent (in order to maintain a stable record of the file's history).
+This will open a window where you can add your Provenance Bundle File and/or Provenance Description:
+
+|file-upload-prov-window|  
+
+A **Bundle File** is the preferred way of submitting provenance information to Dataverse, as it allows Dataverse to automatically generate a detailed graph of the data file's provenance. Bundle files are typically generated during the process of data analysis, using provenance capture tools like provR, RDataTracker, NoWorkFlow, recordr, or CamFlow. Each data file in Dataverse can have one bundle file attached to it. Dataverse uses this bundle file to generate a provenance graph that can be viewed under the Provenance tab of the file page. Once you've added your bundle file, you can click the Preview button to make sure it's accurate.
+
+A **Provenance Description** allows you to add more provenance information in addition to or in place of a bundle file. This is a free-text field that allows you to enter any information you feel might be relevant to those interested in learning about the provenance of your data. This might be a good place to describe provenance factors like what operating system you used when working with the file, what functions or libraries you used, how data was merged into the file, what version of the file you used, etc. The Provenance Description is not as useful or trustworthy as a bundle file, but it can still provide value.
+
+You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab: 
+
+**(Insert screenshot of Provenance Tab's "Add Provenance button" here, once that functionality is developed)**
+
+You can always add provenance to a file that has none, but you can only replace a file's provenance *before* it is published. Once you publish a file with provenance attached, that provenance is made permanent (in order to maintain a stable record of the file's history).
 
 Once a data file with an attached provenance bundle is published, you can see a graph of that file's provenance under the Provenance tab on the file page.
-
-
 
 .. _rsync_upload:
 
@@ -423,4 +429,5 @@ If you deaccession the most recently published version of the dataset but not al
    :class: img-responsive
 .. |file-upload-prov-button| image:: ./img/prov1.png
    :class: img-responsive
- 
+.. |file-upload-prov-window| image:: ./img/prov2.png
+   :class: img-responsive
