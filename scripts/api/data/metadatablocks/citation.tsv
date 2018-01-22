@@ -1,47 +1,47 @@
 #metadataBlock	name	dataverseAlias	displayName												
 	citation		Citation Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	title	Title	Full title by which the Dataset is known.	Enter title...	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
+	title	Title	Full title by which the Data Project is known.	Enter title...	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
 	subtitle	Subtitle	A secondary title used to amplify or state certain limitations on the main title.		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	alternativeTitle	Alternative Title	A title by which the work is commonly referred, or an abbreviation of the title.		text	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	alternativeURL	Alternative URL	A URL where the dataset can be viewed, such as a personal or project website.  	Enter full URL, starting with http://	url	3		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	otherId	QDRID	Another unique identifier that identifies this Dataset (e.g., producer's or another repository's number).	Added by QDR staff	none	4	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	otherIdAgency	Agency	Name of agency which generated this identifier.		text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
-	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	6	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
-	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	7		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Dataset.	FamilyName, GivenName or Organization	text	8	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
+	alternativeURL	Alternative URL	A URL where the Data Project can be viewed, such as a personal or project website.  	Enter full URL, starting with http://	url	3		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	otherId	QDRID	The QDR ID assigned to the project		none	4	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherIdAgency	QDRID	Name of agency which generated this identifier.		text	5	Qualitative Data Repository	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
+	otherIdValue	Identifier	Other identifier that corresponds to this Data Project.	Added by QDR staff	text	6	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
+	author	Creator	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	7		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Data Project.	FamilyName, GivenName or Organization	text	8	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
 	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	9	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	citation
-	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	- #VALUE:	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
-	authorIdentifier	ORCID	Uniquely identifies an individual author or organization, according to various schemes.		text	11	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
-	datasetContact	Contact	The contact(s) for this Dataset.		none	12		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	ORCID	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
+	authorIdentifier	ORCID	Creator's ORCID ID		text	11	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
+	datasetContact	Contact	The contact(s) for this Data Project.		none	12		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	13	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	14	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
-	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	15	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	citation
-	dsDescription	Description	A summary describing the purpose, nature, and scope of the Dataset.		none	16		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the Dataset.		textbox	17	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	citation
-	dsDescriptionDate	Date	In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	18	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dsDescription	citation
-	subject	Subject	Domain-specific Subject Categories that are topically relevant to the Dataset.		text	19		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
-	keyword	Keywords	Key terms that describe important aspects of the Dataset.		none	20		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	keywordValue	Term	Key terms that describe important aspects of the Dataset. Can be used for building keyword indexes and for classification and retrieval purposes. A controlled vocabulary can be employed. The vocab attribute is provided for specification of the controlled vocabulary in use, such as LCSH, MeSH, or others. The vocabURI attribute specifies the location for the full controlled vocabulary.		text	21	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	citation
+	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Data Project. This will not be displayed.		email	15	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	citation
+	dsDescription	Description	A summary describing the purpose, nature, and scope of the Data Project.		none	16		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the Data Project.		textbox	17	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	citation
+	dsDescriptionDate	Date	In cases where a Data Project contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	18	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dsDescription	citation
+	subject	Subject	Domain-specific Subject Categories that are topically relevant to the Data Project.		text	19		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
+	keyword	Keywords	Key terms that describe important aspects of the Data Project.		none	20		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	keywordValue	Term	Key terms that describe important aspects of the Data Project. Can be used for building keyword indexes and for classification and retrieval purposes. A controlled vocabulary can be employed. The vocab attribute is provided for specification of the controlled vocabulary in use, such as LCSH, MeSH, or others. The vocabURI attribute specifies the location for the full controlled vocabulary.		text	21	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	citation
 	keywordVocabulary	Vocabulary	For the specification of the keyword controlled vocabulary in use, such as LCSH, MeSH, or others.	provided by QDR	text	22	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
-	keywordVocabularyURI	Vocabulary URL	Keyword vocabulary URL points to the web presence that describes the keyword vocabulary, if appropriate. Enter an absolute URL where the keyword vocabulary web site is found, such as http://www.my.org.	provided by QDR	url	23	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
+	keywordVocabularyURI	Vocabulary URL	Keyword vocabulary URL points to the web presence that describes the keyword vocabulary, if appropriate. Enter an absolute URL where the keyword vocabulary web site is found, such as http://www.my.org.	provided by QDR	url	23	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
 	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  		none	24		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	topicClassValue	Term	Topic or Subject term that is relevant to this Dataset.		text	25	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	citation
+	topicClassValue	Term	Topic or Subject term that is relevant to this Data Project.		text	25	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	citation
 	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	26	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
-	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	27	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
-	publication	Related Publication	Publications that use the data from this Dataset.		none	28		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	27	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
+	publication	Related Publication	Publications that use the data from this Data Project.		none	28		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	29	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
 	publicationIDType	Identifier Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	30	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation
 	publicationIDNumber	Identifier	The identifier for the selected ID type.		text	31	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
-	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	32	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	notesText	Notes	Additional important information about the Dataset.		textbox	33		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
-	language	Language	Language of the Dataset		text	34		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation
-	producer	Producer	Person or organization with the financial or administrative responsibility over this Dataset		none	35		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	32	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	notesText	Notes	Additional important information about the Data Project.		textbox	33		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
+	language	Language	Language of the Data Project		text	34		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation
+	producer	Producer	Person or organization with the financial or administrative responsibility over this Data Project		none	35		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	36	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation
 	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	37	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	38	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
-	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	39	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
-	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	40	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	39	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	40	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	41		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	42		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	43	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
@@ -54,11 +54,11 @@
 	distributorName	Name	Distributor name	FamilyName, GivenName or Organization	text	50	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	citation
 	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	51	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	52	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	53	"<a href=""#VALUE"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	54	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	53	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	54	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation.	YYYY-MM-DD	date	55		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	56		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.	YYYY-MM-DD	date	57		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
+	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Data Project to the repository.		text	56		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	dateOfDeposit	Deposit Date	Date that the Data Project was deposited into the repository.	YYYY-MM-DD	date	57		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	58	;	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	59	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
 	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	60	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
@@ -66,30 +66,30 @@
 	dateOfCollectionStart	Start	Date when the data collection started.	YYYY-MM-DD	date	62	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
 	dateOfCollectionEnd	End	Date when the data collection ended.	YYYY-MM-DD	date	63	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
 	kindOfData	Type of Data Project	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	64		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
-	series	Series	Information about the Dataset series.		none	65	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	seriesName	Name	Name of the dataset series to which the Dataset belongs.		text	66	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	citation
+	series	Series	Information about the Data Project series.		none	65	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	seriesName	Name	Name of the Data Project series to which the Data Project belongs.		text	66	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	citation
 	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		textbox	67	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
-	software	Software	Information about the software used to generate the Dataset.		none	68	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	softwareName	Name	Name of software used to generate the Dataset.		text	69	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	citation
-	softwareVersion	Version	Version of the software used to generate the Dataset.		text	70	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	citation
-	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	71		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	relatedDatasets	Related Datasets	Any Datasets that are related to this Dataset, such as previous research on this subject.		textbox	72		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	73		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	software	Software	Information about the software used to generate the Data Project.		none	68	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	softwareName	Name	Name of software used to generate the Data Project.		text	69	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	citation
+	softwareVersion	Version	Version of the software used to generate the Data Project.		text	70	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	citation
+	relatedMaterial	Related Material	Any material related to this Data Project.		textbox	71		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	relatedDatasets	Related Data Projects	Any Data Projects that are related to this Data Project, such as previous research on this subject.		textbox	72		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherReferences	Other References	Any references that would serve as background or supporting material to this Data Project.		text	73		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	dataSources	Data Sources	List of books, articles, serials, or machine-readable data files that served as the sources of the data collection.		textbox	74		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	77		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	country	Country / Nation	The country or nation that the Dataset is about.		text	1		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
-	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
-	city	City	The name of the city that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
-	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicCoverage	citation
-	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Dataset, e.g., village, county, region.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
-	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Dataset that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Dataset's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	6		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	westLongitude	West Longitude	Westernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180,0 <= West  Bounding Longitude Value <= 180,0.		text	7		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
-	eastLongitude	East Longitude	Easternmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180,0 <= East Bounding Longitude Value <= 180,0.		text	8		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
-	northLongitude	North Latitude	Northernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90,0 <= North Bounding Latitude Value <= 90,0.		text	9		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
-	southLongitude	South Latitude	Southernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90,0 <= South Bounding Latitude Value <= 90,0.		text	10		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	78		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	country	Country / Nation	The country or nation that the Data Project is about.		text	79		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
+	state	State / Province	The state or province that the Data Project is about. Use GeoNames for correct spelling and avoid abbreviations.		text	80		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
+	city	City	The name of the city that the Data Project is about. Use GeoNames for correct spelling and avoid abbreviations.		text	81		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
+	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	82		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicCoverage	citation
+	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Data Project, e.g., village, county, region.		text	83		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
+	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Data Project that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Data Project's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	84		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	westLongitude	West Longitude	Westernmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -180,0 <= West  Bounding Longitude Value <= 180,0.		text	85		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	eastLongitude	East Longitude	Easternmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -180,0 <= East Bounding Longitude Value <= 180,0.		text	86		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	northLongitude	North Latitude	Northernmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -90,0 <= North Bounding Latitude Value <= 90,0.		text	87		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	southLongitude	South Latitude	Southernmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -90,0 <= South Bounding Latitude Value <= 90,0.		text	88		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	subject	Agricultural Sciences	D01	0											
 	subject	Arts and Humanities	D0	1											
@@ -186,7 +186,7 @@
 	language	Georgian		50											
 	language	German		51											
 	language	Greek (modern)		52											
-	language	Guaraní		53											
+	language	Guaran?		53											
 	language	Gujarati		54											
 	language	Haitian, Haitian Creole		55											
 	language	Hausa		56											
@@ -236,8 +236,8 @@
 	language	Malay		100											
 	language	Malayalam		101											
 	language	Maltese		102											
-	language	Māori		103											
-	language	Marathi (Marāṭhī)		104											
+	language	Maori		103											
+	language	Marathi (Mara?hi)		104											
 	language	Marshallese		105											
 	language	Mongolian		106											
 	language	Nauru		107											
@@ -245,7 +245,7 @@
 	language	Northern Ndebele		109											
 	language	Nepali		110											
 	language	Ndonga		111											
-	language	Norwegian Bokmål		112											
+	language	Norwegian Bokm?l		112											
 	language	Norwegian Nynorsk		113											
 	language	Norwegian		114											
 	language	Nuosu		115											
@@ -257,7 +257,7 @@
 	language	Oriya		121											
 	language	Ossetian, Ossetic		122											
 	language	Panjabi, Punjabi		123											
-	language	Pāli		124											
+	language	Pali		124											
 	language	Persian (Farsi)		125											
 	language	Polish		126											
 	language	Pashto, Pushto		127											
@@ -267,7 +267,7 @@
 	language	Kirundi		131											
 	language	Romanian		132											
 	language	Russian		133											
-	language	Sanskrit (Saṁskṛta)		134											
+	language	Sanskrit (Sa?sk?ta)		134											
 	language	Sardinian		135											
 	language	Sindhi		136											
 	language	Northern Sami		137											
@@ -307,7 +307,7 @@
 	language	Uzbek		171											
 	language	Venda		172											
 	language	Vietnamese		173											
-	language	Volapük		174											
+	language	Volap?k		174											
 	language	Walloon		175											
 	language	Welsh		176											
 	language	Wolof		177											
@@ -318,252 +318,252 @@
 	language	Zhuang, Chuang		182											
 	language	Zulu		183											
 	language	Not applicable		184											
-	country	Afghanistan													
-	country	Albania													
-	country	Algeria													
-	country	American Samoa													
-	country	Andorra													
-	country	Angola													
-	country	Anguilla													
-	country	Antarctica													
-	country	Antigua and Barbuda													
-	country	Argentina													
-	country	Armenia													
-	country	Aruba													
-	country	Australia													
-	country	Austria													
-	country	Azerbaijan													
-	country	Bahamas													
-	country	Bahrain													
-	country	Bangladesh													
-	country	Barbados													
-	country	Belarus													
-	country	Belgium													
-	country	Belize													
-	country	Benin													
-	country	Bermuda													
-	country	Bhutan													
-	country	Bolivia, Plurinational State of													
-	country	Bonaire, Sint Eustatius and Saba													
-	country	Bosnia and Herzegovina													
-	country	Botswana													
-	country	Bouvet Island													
-	country	Brazil													
-	country	British Indian Ocean Territory													
-	country	Brunei Darussalam													
-	country	Bulgaria													
-	country	Burkina Faso													
-	country	Burundi													
-	country	Cambodia													
-	country	Cameroon													
-	country	Canada													
-	country	Cape Verde													
-	country	Cayman Islands													
-	country	Central African Republic													
-	country	Chad													
-	country	Chile													
-	country	China													
-	country	Christmas Island													
-	country	Cocos (Keeling) Islands													
-	country	Colombia													
-	country	Comoros													
-	country	Congo													
-	country	Congo, the Democratic Republic of the													
-	country	Cook Islands													
-	country	Costa Rica													
-	country	Croatia													
-	country	Cuba													
-	country	Curaçao													
-	country	Cyprus													
-	country	Czech Republic													
-	country	Côte d'Ivoire													
-	country	Denmark													
-	country	Djibouti													
-	country	Dominica													
-	country	Dominican Republic													
-	country	Ecuador													
-	country	Egypt													
-	country	El Salvador													
-	country	Equatorial Guinea													
-	country	Eritrea													
-	country	Estonia													
-	country	Ethiopia													
-	country	Falkland Islands (Malvinas)													
-	country	Faroe Islands													
-	country	Fiji													
-	country	Finland													
-	country	France													
-	country	French Guiana													
-	country	French Polynesia													
-	country	French Southern Territories													
-	country	Gabon													
-	country	Gambia													
-	country	Georgia													
-	country	Germany													
-	country	Ghana													
-	country	Gibraltar													
-	country	Greece													
-	country	Greenland													
-	country	Grenada													
-	country	Guadeloupe													
-	country	Guam													
-	country	Guatemala													
-	country	Guernsey													
-	country	Guinea													
-	country	Guinea-Bissau													
-	country	Guyana													
-	country	Haiti													
-	country	Heard Island and Mcdonald Islands													
-	country	Holy See (Vatican City State)													
-	country	Honduras													
-	country	Hong Kong													
-	country	Hungary													
-	country	Iceland													
-	country	India													
-	country	Indonesia													
-	country	Iran, Islamic Republic of													
-	country	Iraq													
-	country	Ireland													
-	country	Isle of Man													
-	country	Israel													
-	country	Italy													
-	country	Jamaica													
-	country	Japan													
-	country	Jersey													
-	country	Jordan													
-	country	Kazakhstan													
-	country	Kenya													
-	country	Kiribati													
-	country	Korea, Democratic People's Republic of													
-	country	Korea, Republic of													
-	country	Kuwait													
-	country	Kyrgyzstan													
-	country	Lao People's Democratic Republic													
-	country	Latvia													
-	country	Lebanon													
-	country	Lesotho													
-	country	Liberia													
-	country	Libya													
-	country	Liechtenstein													
-	country	Lithuania													
-	country	Luxembourg													
-	country	Macao													
-	country	Macedonia, the Former Yugoslav Republic of													
-	country	Madagascar													
-	country	Malawi													
-	country	Malaysia													
-	country	Maldives													
-	country	Mali													
-	country	Malta													
-	country	Marshall Islands													
-	country	Martinique													
-	country	Mauritania													
-	country	Mauritius													
-	country	Mayotte													
-	country	Mexico													
-	country	Micronesia, Federated States of													
-	country	Moldova, Republic of													
-	country	Monaco													
-	country	Mongolia													
-	country	Montenegro													
-	country	Montserrat													
-	country	Morocco													
-	country	Mozambique													
-	country	Myanmar													
-	country	Namibia													
-	country	Nauru													
-	country	Nepal													
-	country	Netherlands													
-	country	New Caledonia													
-	country	New Zealand													
-	country	Nicaragua													
-	country	Niger													
-	country	Nigeria													
-	country	Niue													
-	country	Norfolk Island													
-	country	Northern Mariana Islands													
-	country	Norway													
-	country	Oman													
-	country	Pakistan													
-	country	Palau													
-	country	Palestine, State of													
-	country	Panama													
-	country	Papua New Guinea													
-	country	Paraguay													
-	country	Peru													
-	country	Philippines													
-	country	Pitcairn													
-	country	Poland													
-	country	Portugal													
-	country	Puerto Rico													
-	country	Qatar													
-	country	Romania													
-	country	Russian Federation													
-	country	Rwanda													
-	country	Réunion													
-	country	Saint Barthélemy													
-	country	Saint Helena, Ascension and Tristan da Cunha													
-	country	Saint Kitts and Nevis													
-	country	Saint Lucia													
-	country	Saint Martin (French part)													
-	country	Saint Pierre and Miquelon													
-	country	Saint Vincent and the Grenadines													
-	country	Samoa													
-	country	San Marino													
-	country	Sao Tome and Principe													
-	country	Saudi Arabia													
-	country	Senegal													
-	country	Serbia													
-	country	Seychelles													
-	country	Sierra Leone													
-	country	Singapore													
-	country	Sint Maarten (Dutch part)													
-	country	Slovakia													
-	country	Slovenia													
-	country	Solomon Islands													
-	country	Somalia													
-	country	South Africa													
-	country	South Georgia and the South Sandwich Islands													
-	country	South Sudan													
-	country	Spain													
-	country	Sri Lanka													
-	country	Sudan													
-	country	Suriname													
-	country	Svalbard and Jan Mayen													
-	country	Swaziland													
-	country	Sweden													
-	country	Switzerland													
-	country	Syrian Arab Republic													
-	country	Taiwan, Province of China													
-	country	Tajikistan													
-	country	Tanzania, United Republic of													
-	country	Thailand													
-	country	Timor-Leste													
-	country	Togo													
-	country	Tokelau													
-	country	Tonga													
-	country	Trinidad and Tobago													
-	country	Tunisia													
-	country	Turkey													
-	country	Turkmenistan													
-	country	Turks and Caicos Islands													
-	country	Tuvalu													
-	country	Uganda													
-	country	Ukraine													
-	country	United Arab Emirates													
-	country	United Kingdom													
-	country	United States													
-	country	United States Minor Outlying Islands													
-	country	Uruguay													
-	country	Uzbekistan													
-	country	Vanuatu													
-	country	Venezuela, Bolivarian Republic of													
-	country	Viet Nam													
-	country	Virgin Islands, British													
-	country	Virgin Islands, U.S.													
-	country	Wallis and Futuna													
-	country	Western Sahara													
-	country	Yemen													
-	country	Zambia													
-	country	Zimbabwe													
-	country	Åland Islands													
+	country	Afghanistan		1											
+	country	Albania		2											
+	country	Algeria		3											
+	country	American Samoa		4											
+	country	Andorra		5											
+	country	Angola		6											
+	country	Anguilla		7											
+	country	Antarctica		8											
+	country	Antigua and Barbuda		9											
+	country	Argentina		10											
+	country	Armenia		11											
+	country	Aruba		12											
+	country	Australia		13											
+	country	Austria		14											
+	country	Azerbaijan		15											
+	country	Bahamas		16											
+	country	Bahrain		17											
+	country	Bangladesh		18											
+	country	Barbados		19											
+	country	Belarus		20											
+	country	Belgium		21											
+	country	Belize		22											
+	country	Benin		23											
+	country	Bermuda		24											
+	country	Bhutan		25											
+	country	Bolivia, Plurinational State of		26											
+	country	Bonaire, Sint Eustatius and Saba		27											
+	country	Bosnia and Herzegovina		28											
+	country	Botswana		29											
+	country	Bouvet Island		30											
+	country	Brazil		31											
+	country	British Indian Ocean Territory		32											
+	country	Brunei Darussalam		33											
+	country	Bulgaria		34											
+	country	Burkina Faso		35											
+	country	Burundi		36											
+	country	Cambodia		37											
+	country	Cameroon		38											
+	country	Canada		39											
+	country	Cape Verde		40											
+	country	Cayman Islands		41											
+	country	Central African Republic		42											
+	country	Chad		43											
+	country	Chile		44											
+	country	China		45											
+	country	Christmas Island		46											
+	country	Cocos (Keeling) Islands		47											
+	country	Colombia		48											
+	country	Comoros		49											
+	country	Congo		50											
+	country	Congo, the Democratic Republic of the		51											
+	country	Cook Islands		52											
+	country	Costa Rica		53											
+	country	Croatia		54											
+	country	Cuba		55											
+	country	Cura?ao		56											
+	country	Cyprus		57											
+	country	Czech Republic		58											
+	country	C?te d'Ivoire		59											
+	country	Denmark		60											
+	country	Djibouti		61											
+	country	Dominica		62											
+	country	Dominican Republic		63											
+	country	Ecuador		64											
+	country	Egypt		65											
+	country	El Salvador		66											
+	country	Equatorial Guinea		67											
+	country	Eritrea		68											
+	country	Estonia		69											
+	country	Ethiopia		70											
+	country	Falkland Islands (Malvinas)		71											
+	country	Faroe Islands		72											
+	country	Fiji		73											
+	country	Finland		74											
+	country	France		75											
+	country	French Guiana		76											
+	country	French Polynesia		77											
+	country	French Southern Territories		78											
+	country	Gabon		79											
+	country	Gambia		80											
+	country	Georgia		81											
+	country	Germany		82											
+	country	Ghana		83											
+	country	Gibraltar		84											
+	country	Greece		85											
+	country	Greenland		86											
+	country	Grenada		87											
+	country	Guadeloupe		88											
+	country	Guam		89											
+	country	Guatemala		90											
+	country	Guernsey		91											
+	country	Guinea		92											
+	country	Guinea-Bissau		93											
+	country	Guyana		94											
+	country	Haiti		95											
+	country	Heard Island and Mcdonald Islands		96											
+	country	Holy See (Vatican City State)		97											
+	country	Honduras		98											
+	country	Hong Kong		99											
+	country	Hungary		100											
+	country	Iceland		101											
+	country	India		102											
+	country	Indonesia		103											
+	country	Iran, Islamic Republic of		104											
+	country	Iraq		105											
+	country	Ireland		106											
+	country	Isle of Man		107											
+	country	Israel		108											
+	country	Italy		109											
+	country	Jamaica		110											
+	country	Japan		111											
+	country	Jersey		112											
+	country	Jordan		113											
+	country	Kazakhstan		114											
+	country	Kenya		115											
+	country	Kiribati		116											
+	country	Korea, Democratic People's Republic of		117											
+	country	Korea, Republic of		118											
+	country	Kuwait		119											
+	country	Kyrgyzstan		120											
+	country	Lao People's Democratic Republic		121											
+	country	Latvia		122											
+	country	Lebanon		123											
+	country	Lesotho		124											
+	country	Liberia		125											
+	country	Libya		126											
+	country	Liechtenstein		127											
+	country	Lithuania		128											
+	country	Luxembourg		129											
+	country	Macao		130											
+	country	Macedonia, the Former Yugoslav Republic of		131											
+	country	Madagascar		132											
+	country	Malawi		133											
+	country	Malaysia		134											
+	country	Maldives		135											
+	country	Mali		136											
+	country	Malta		137											
+	country	Marshall Islands		138											
+	country	Martinique		139											
+	country	Mauritania		140											
+	country	Mauritius		141											
+	country	Mayotte		142											
+	country	Mexico		143											
+	country	Micronesia, Federated States of		144											
+	country	Moldova, Republic of		145											
+	country	Monaco		146											
+	country	Mongolia		147											
+	country	Montenegro		148											
+	country	Montserrat		149											
+	country	Morocco		150											
+	country	Mozambique		151											
+	country	Myanmar		152											
+	country	Namibia		153											
+	country	Nauru		154											
+	country	Nepal		155											
+	country	Netherlands		156											
+	country	New Caledonia		157											
+	country	New Zealand		158											
+	country	Nicaragua		159											
+	country	Niger		160											
+	country	Nigeria		161											
+	country	Niue		162											
+	country	Norfolk Island		163											
+	country	Northern Mariana Islands		164											
+	country	Norway		165											
+	country	Oman		166											
+	country	Pakistan		167											
+	country	Palau		168											
+	country	Palestine, State of		169											
+	country	Panama		170											
+	country	Papua New Guinea		171											
+	country	Paraguay		172											
+	country	Peru		173											
+	country	Philippines		174											
+	country	Pitcairn		175											
+	country	Poland		176											
+	country	Portugal		177											
+	country	Puerto Rico		178											
+	country	Qatar		179											
+	country	Romania		180											
+	country	Russian Federation		181											
+	country	Rwanda		182											
+	country	R?union		183											
+	country	Saint Barth?lemy		184											
+	country	Saint Helena, Ascension and Tristan da Cunha		185											
+	country	Saint Kitts and Nevis		186											
+	country	Saint Lucia		187											
+	country	Saint Martin (French part)		188											
+	country	Saint Pierre and Miquelon		189											
+	country	Saint Vincent and the Grenadines		190											
+	country	Samoa		191											
+	country	San Marino		192											
+	country	Sao Tome and Principe		193											
+	country	Saudi Arabia		194											
+	country	Senegal		195											
+	country	Serbia		196											
+	country	Seychelles		197											
+	country	Sierra Leone		198											
+	country	Singapore		199											
+	country	Sint Maarten (Dutch part)		200											
+	country	Slovakia		201											
+	country	Slovenia		202											
+	country	Solomon Islands		203											
+	country	Somalia		204											
+	country	South Africa		205											
+	country	South Georgia and the South Sandwich Islands		206											
+	country	South Sudan		207											
+	country	Spain		208											
+	country	Sri Lanka		209											
+	country	Sudan		210											
+	country	Suriname		211											
+	country	Svalbard and Jan Mayen		212											
+	country	Swaziland		213											
+	country	Sweden		214											
+	country	Switzerland		215											
+	country	Syrian Arab Republic		216											
+	country	Taiwan, Province of China		217											
+	country	Tajikistan		218											
+	country	Tanzania, United Republic of		219											
+	country	Thailand		220											
+	country	Timor-Leste		221											
+	country	Togo		222											
+	country	Tokelau		223											
+	country	Tonga		224											
+	country	Trinidad and Tobago		225											
+	country	Tunisia		226											
+	country	Turkey		227											
+	country	Turkmenistan		228											
+	country	Turks and Caicos Islands		229											
+	country	Tuvalu		230											
+	country	Uganda		231											
+	country	Ukraine		232											
+	country	United Arab Emirates		233											
+	country	United Kingdom		234											
+	country	United States		235											
+	country	United States Minor Outlying Islands		236											
+	country	Uruguay		237											
+	country	Uzbekistan		238											
+	country	Vanuatu		239											
+	country	Venezuela, Bolivarian Republic of		240											
+	country	Viet Nam		241											
+	country	Virgin Islands, British		242											
+	country	Virgin Islands, U.S.		243											
+	country	Wallis and Futuna		244											
+	country	Western Sahara		245											
+	country	Yemen		246											
+	country	Zambia		247											
+	country	Zimbabwe		248											
+	country	?land Islands		249											
