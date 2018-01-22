@@ -247,7 +247,28 @@ public class FileDownloadHelper implements java.io.Serializable {
 
      }
 
-     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
+     /**
+      * This method is only invoked from a popup. A popup appears when the
+      * user might have to accept terms of use, fill in a guestbook, etc.
+      */
+     public void writeGuestbookAndLaunchExploreTool(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
+
+         /**
+          * We need externalTool to be non-null when calling "explore" below (so
+          * that we can instantiate an ExternalToolHandler) so we retrieve
+          * externalTool from a transient variable in guestbookResponse if
+          * externalTool is null. The current observation is that externalTool
+          * is null from the dataset page and non-null from the file page. See
+          * file-download-button-fragment.xhtml where the popup is launched (as
+          * needed) and file-download-popup-fragment.xhtml for the popup itself.
+          *
+          * TODO: If we could figure out a way for externalTool to always be
+          * non-null, we could remove this if statement and the transient
+          * "externalTool" variable on guestbookResponse.
+          */
+         if (externalTool == null) {
+             externalTool = guestbookResponse.getExternalTool();
+         }
 
          RequestContext requestContext = RequestContext.getCurrentInstance();
          boolean valid = validateGuestbookResponse(guestbookResponse);

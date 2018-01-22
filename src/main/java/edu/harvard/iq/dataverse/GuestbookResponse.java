@@ -85,7 +85,7 @@ public class GuestbookResponse implements Serializable {
     /**
      * This transient variable is a place to temporarily retrieve the
      * ExternalTool object from the popup when the popup is required on the
-     * dataset page.
+     * dataset page. TODO: Some day, investigate if it can be removed.
      */
     @Transient
     private ExternalTool externalTool;

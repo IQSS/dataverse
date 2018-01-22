@@ -148,14 +148,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
 
+    /**
+     * Launch an "explore" tool which is a type of ExternalTool such as
+     * TwoRavens or Data Explorer. This method may be invoked directly from the
+     * xhtml if no popup is required (no terms of use, no guestbook, etc.).
+     */
     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
-        if (externalTool == null) {
-            // Must be from the dataset page.
-            logger.fine("null, must be on dataset page");
-            externalTool = guestbookResponse.getExternalTool();
-        } else {
-            logger.fine("non-null, must be on file page");
-        }
         ApiToken apiToken = null;
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {

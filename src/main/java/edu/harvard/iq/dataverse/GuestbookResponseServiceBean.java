@@ -785,7 +785,9 @@ public class GuestbookResponseServiceBean {
 
     /**
      * This method was added because on the dataset page when a popup is
-     * required, ExternalTool is null in the poup itself.
+     * required, ExternalTool is null in the poup itself. We store ExternalTool
+     * in the GuestbookResponse as a transient variable so we have access to it
+     * later in the popup.
      */
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format, ExternalTool externalTool) {
         if (in != null && externalTool != null) {
