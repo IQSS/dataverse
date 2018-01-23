@@ -687,6 +687,19 @@ public class GuestbookResponseServiceBean {
             guestbookResponse.setDownloadtype("Subset");
         }
         if(downloadFormat.toLowerCase().equals("explore")){
+            /**
+             * TODO: Investigate this "if downloadFormat=explore" and think
+             * about deleting it. When is downloadFormat "explore"? When is this
+             * method called? Previously we were passing "explore" to
+             * modifyDatafileAndFormat for TwoRavens but now we pass
+             * "externalTool" for all external tools, including TwoRavens. When
+             * clicking "Explore" and then the name of the tool, we want the
+             * name of the exploration tool (i.e. "TwoRavens", "Data Explorer",
+             * etc.) to be persisted as the downloadType. We execute
+             * guestbookResponse.setDownloadtype(externalTool.getDisplayName())
+             * over in the "explore" method of FileDownloadServiceBean just
+             * before the guestbookResponse is written.
+             */
             guestbookResponse.setDownloadtype("Explore");
         }
         guestbookResponse.setDataset(dataset);

@@ -169,6 +169,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             }
         }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
+        guestbookResponse.setDownloadtype(externalTool.getDisplayName());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
         try {
@@ -176,7 +178,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } catch (IOException ex) {
             logger.info("Problem exploring with " + toolUrl + " - " + ex);
         }
-        // fmd is null from the popup
+        // This is the old logic from TwoRavens, null checks and all.
         if (guestbookResponse != null && guestbookResponse.isWriteResponse()
                 && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
             if (guestbookResponse.getDataFile() == null && fmd != null) {
