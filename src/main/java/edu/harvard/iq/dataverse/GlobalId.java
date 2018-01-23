@@ -41,12 +41,6 @@ public class GlobalId implements java.io.Serializable {
         this.authority = authority;
         this.identifier = identifier;
     }
-
-//    public GlobalId(Dataset dataset){
-//        this.authority = dataset.getAuthority();
-//        this.protocol = dataset.getProtocol();
-//        this.identifier = dataset.getIdentifier();
-//    }
     
     public GlobalId(DvObject dvObject)
     {

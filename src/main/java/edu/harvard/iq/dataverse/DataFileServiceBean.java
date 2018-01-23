@@ -195,14 +195,12 @@ public class DataFileServiceBean implements java.io.Serializable {
         } else {
             identifier = globalId.substring(index2 + 1).toUpperCase();
         }
-        String queryStr = "SELECT s from DataFile s where s.identifier = :identifier  and s.protocol= :protocol and s.authority= :authority";
         DataFile file = null;
         try {
-            Query query = em.createQuery(queryStr);
-            query.setParameter("identifier", identifier);
-            query.setParameter("protocol", protocol);
-            query.setParameter("authority", authority);
-            file = (DataFile) query.getSingleResult();
+            file = (DataFile) em.createNamedQuery("DataFile.findDataFileByIdProtocolAuth")
+                            .setParameter("identifier", identifier).setParameter("protocol", protocol)
+                            .setParameter("authority", authority)
+                                    .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
             // (set to .info, this can fill the log file with thousands of 
             // these messages during a large harvest run)

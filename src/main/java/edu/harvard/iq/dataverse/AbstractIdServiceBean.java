@@ -80,12 +80,6 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         return dvObjectIn.getYearPublishedCreated(); 
     }
     
-     @Override
-    public HashMap getIdentifierMetadata(DvObject dvObject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    
     @Override
     public HashMap<String, String> getMetadataForTargetURL(DvObject dvObject) {
         logger.log(Level.FINE,"getMetadataForTargetURL");

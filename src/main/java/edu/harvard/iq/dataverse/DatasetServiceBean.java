@@ -296,9 +296,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         Long dsId = dataset.getId();
         if (dsId != null) {
             try {
-                idResults = em.createNativeQuery("select o.identifier from dvobject o "
-                        + "where o.owner_Id  =  " + dsId
-                        + "").getResultList();
+                idResults = em.createNamedQuery("Dataset.findByOwnerIdentifier")
+                                .setParameter("owner_id", dsId).getResultList();
             } catch (NoResultException ex) {
                 logger.fine("No files found in dataset id " + dsId + ". Returning a count of zero.");
                 return zeroFiles;

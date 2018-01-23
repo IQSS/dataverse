@@ -144,7 +144,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             theDataset.setDoiSeparator(doiSeparator);
         }
         if (theDataset.getStorageIdentifier() == null) {
-            //FIXME: if the driver identifier is not set in the JVM options, should the storage identifier be set to file b default, or should an exception be thrown?
             if (System.getProperty("dataverse.files.storage-driver-id") != null) {
                 theDataset.setStorageIdentifier(System.getProperty("dataverse.files.storage-driver-id") + "://" + theDataset.getAuthority() + theDataset.getDoiSeparator() + theDataset.getIdentifier());
             } else {

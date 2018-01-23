@@ -37,10 +37,12 @@ import org.hibernate.validator.constraints.NotBlank;
  *
  * @author skraffmiller
  */
-@NamedQueries(
+@NamedQueries({
         @NamedQuery(name = "Dataset.findByIdentifier",
-                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier")
-)
+                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"), 
+        @NamedQuery(name = "Dataset.findByOwnerIdentifier", 
+                query = "SELECT o.identifier FROM DvObject o WHERE o.owner.id=:owner_id")
+})
 
 /*
     Below is the stored procedure for getting a numeric value from a database 
@@ -92,7 +94,6 @@ public class Dataset extends DvObjectContainer {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastExportTime;
 
-    //@NotBlank(message = "Please enter an identifier for your dataset.")
     @Column(nullable = false)
     private String identifier;
     

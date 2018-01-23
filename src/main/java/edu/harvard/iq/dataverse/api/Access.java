@@ -196,13 +196,6 @@ public class Access extends AbstractApiBean {
 
         DataFile df = findDataFileOrDieWrapper(fileId);
         GuestbookResponse gbr = null;
-        /*
-        if (gbrecs == null && df.isReleased()){
-            //commenting out for 4.6 SEK
-           // gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
-        }
-         */
-
         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
