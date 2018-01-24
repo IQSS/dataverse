@@ -26,7 +26,7 @@ public class PersistProvFreeFormCommand extends AbstractCommand<DataFile> {
 
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
-        FileMetadata fileMetadata = dataFile.getFileMetadata();
+        FileMetadata fileMetadata = dataFile.getFileMetadata(); //MAD: Calling this before the file is fully saved the metadata is returning null. not sure why. Check what tags does to deal with this?
         fileMetadata.setProvFreeForm(userInput);
         DataFile savedDataFile = ctxt.files().save(dataFile);
         return savedDataFile;

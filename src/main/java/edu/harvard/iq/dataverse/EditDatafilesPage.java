@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -109,6 +110,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject PermissionsWrapper permissionsWrapper;
     @Inject FileDownloadHelper fileDownloadHelper;
+    @Inject ProvenanceUploadFragmentBean provUploadFragmentBean;
 
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -1051,6 +1053,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
     }
     
+    //MAD: Insert prov here for save on adding addition files
     public String save() {
         
       
@@ -1254,6 +1257,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
         
+        
+        
+        
         if (mode == FileEditMode.SINGLE){
             JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
             
@@ -1269,6 +1275,14 @@ public class EditDatafilesPage implements java.io.Serializable {
             ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
         }
 
+        try {
+            //MAD: I gotta do something with: getNewFileMetadatasBeforeSave() because it isn't generated yet... Another confusing blackhole
+            provUploadFragmentBean.saveStagedProvenance(dataset);
+        } catch (AbstractApiBean.WrappedResponse ex) {
+            //MAD: Fix logging
+            Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         if (mode == FileEditMode.SINGLE && fileMetadatas.size() > 0) {
             // If this was a "single file edit", i.e. an edit request sent from 
             // the individual File Landing page, we want to redirect back to 

@@ -96,7 +96,7 @@
             <span class="glyphicon glyphicon-warning-sign"></span> <h:outputText value=" #{bundle['file.confirmProvenanceDialog.tip']}"/>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();" actionListener="#{provenanceUploadFragmentBean.saveContent()}" update=":messagePanel"/>
+            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.continue}" oncomplete="PF('confirmProvenancePopup').hide();" actionListener="#{provenanceUploadFragmentBean.stagePopupChanges()}" update=":messagePanel"/>
             <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();"/>
         </div>
     </p:dialog>
