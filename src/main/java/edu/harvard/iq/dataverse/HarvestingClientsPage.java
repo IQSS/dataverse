@@ -255,7 +255,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 this.harvestingScheduleRadio = harvestingScheduleRadioDaily;                
                 setHourOfDayAMPMfromInteger(harvestingClient.getScheduleHourOfDay());
                 
-            } else if (HarvestingClient.SCHEDULE_PERIOD_DAILY.equals(harvestingClient.getSchedulePeriod())) {
+            } else if (HarvestingClient.SCHEDULE_PERIOD_WEEKLY.equals(harvestingClient.getSchedulePeriod())) {
                 this.harvestingScheduleRadio = harvestingScheduleRadioWeekly;
                 setHourOfDayAMPMfromInteger(harvestingClient.getScheduleHourOfDay());
                 setWeekdayFromInteger(harvestingClient.getScheduleDayOfWeek());
@@ -933,7 +933,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     private Integer getWeekDayNumber (String weekDayName) {
         List<String> weekDays = getWeekDays();
-        int i = 1;
+        int i = 0;
         for (String weekDayString: weekDays) {
             if (weekDayString.equals(weekDayName)) {
                 return new Integer(i);
@@ -948,7 +948,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     }
     
     private void setWeekdayFromInteger(Integer weekday) {
-        if (weekday == null || weekday.intValue() < 1 || weekday.intValue() > 7) {
+        if (weekday == null || weekday < 1 || weekday > 7) {
             weekday = 1;
         }
         this.newHarvestingScheduleDayOfWeek = getWeekDays().get(weekday);
