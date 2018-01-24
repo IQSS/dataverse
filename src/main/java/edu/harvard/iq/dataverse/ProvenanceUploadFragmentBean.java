@@ -48,11 +48,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     
     private String freeformTextInput;
     private boolean deleteStoredJson = false; //MAD: rename to reflect that this variable is temporal
-    private DataFile activePopupDataFile;
-    HashMap<String,HashMap<String,String>> fileProvenanceUpdates = new HashMap<>();
-    
-    public static final String PROV_FREEFORM = "Prov Freeform";
-    public static final String PROV_JSON = "Prov Json";
+    private DataFile popupDataFile;
+    HashMap<String,String> jsonProvenanceUpdates = new HashMap<>();
     
     @EJB
     DataFileServiceBean dataFileService;
@@ -66,79 +63,77 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
 
     //This updates the popup for the selected file each time its open
     public void updatePopupState(DataFile file) throws WrappedResponse {
-        activePopupDataFile = file;
-        String storageId = file.getStorageIdentifier();
+        popupDataFile = file;
+        String storageId = popupDataFile.getStorageIdentifier();
         deleteStoredJson = false; //MAD: Are there other variables like this I need to init?
+        provJsonState = null;
+        freeformTextState = popupDataFile.getFileMetadata().getProvFreeForm();
         
-        if(fileProvenanceUpdates.containsKey(storageId)) { //If there is already staged provenance info
-            HashMap innerProvMap = fileProvenanceUpdates.get(storageId);
-            freeformTextState = (String) innerProvMap.get(PROV_FREEFORM);
-            provJsonState = (String) innerProvMap.get(PROV_JSON); //MAD: As also noted before, I'm throwing a bunch of different things into this string for the same tracking but its likely to get all screwed up
-            freeformTextInput = freeformTextState;
+        if(jsonProvenanceUpdates.containsKey(storageId)) { //If there is already staged provenance info 
+            provJsonState = jsonProvenanceUpdates.get(storageId); //MAD: As also noted before, I'm throwing a bunch of different things into this string for the same tracking but its likely to get all screwed up
             
-        } else if(null != file.getOwner()){//Is this file fully uploaded and already has prov data saved?     
-            JsonObject provJsonObject = execCommand(new GetProvJsonProvCommand(dvRequestService.getDataverseRequest(), activePopupDataFile));
-            provJsonState = provJsonObject.toString(); //This may not return quite what we want, this json object gets flipped around a lot --MAD
-            freeformTextState = execCommand(new GetProvFreeFormCommand(dvRequestService.getDataverseRequest(), activePopupDataFile));
-            freeformTextInput = freeformTextState;
+        //MAD: I'm unsure if checking createDate is the correct way to tell if a file is full created
+        } else if(null != popupDataFile.getCreateDate()){//Is this file fully uploaded and already has prov data saved?     
+            JsonObject provJsonObject = execCommand(new GetProvJsonProvCommand(dvRequestService.getDataverseRequest(), popupDataFile));
+            if(null != provJsonObject) {
+                provJsonState = provJsonObject.toString(); //This may not return quite what we want, this json object gets flipped around a lot --MAD
+            }
 
-        } else { //Clear the popup
-            freeformTextInput = null;
+        } else { //clear the listed uploaded file
+            //freeformTextState = null;
             jsonUploadedTempFile = null;
         }
+        freeformTextInput = freeformTextState;
     }
-
+    
     //Stores the provenance changes decided upon in the popup to be saved when all edits across files are done.
     public void stagePopupChanges() throws IOException {
-        HashMap innerProvMap = fileProvenanceUpdates.get(activePopupDataFile.getStorageIdentifier());
-        if(null == innerProvMap) { 
-            innerProvMap = new HashMap(); 
-        }
+        //HashMap innerProvMap = fileProvenanceUpdates.get(popupDataFile.getStorageIdentifier());
+                
+//        if(!jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { 
+//            innerProvMap = new HashMap(); 
+//        }
             
         if(deleteStoredJson) {
-            innerProvMap.put(PROV_JSON, null);
-            deleteStoredJson = false;
+            jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), null);
+//            innerProvMap.put(PROV_JSON, null);
+            deleteStoredJson = false; //MAD: I think this logic can be removed but I'll wait until I've got some other things working.
         }
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) {
             String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //may need to specify encoding
-            innerProvMap.put(PROV_JSON, jsonString);
+            jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), jsonString);
+//            innerProvMap.put(PROV_JSON, jsonString);
             jsonUploadedTempFile = null;
         } 
         
+        //MAD: Do I even need this freeform logic if I'm just adding it directly?
         if(null == freeformTextInput && null != freeformTextState) {
             freeformTextInput = "";
         } 
             
         if(null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) { //MAD: This is triggering even for blank, need to init the no value            
-            innerProvMap.put(PROV_FREEFORM, freeformTextInput);
+            FileMetadata fileMetadata = popupDataFile.getFileMetadata(); //MAD: Calling this before the file is fully saved the metadata is returning null. not sure why. Check what tags does to deal with this?
+            fileMetadata.setProvFreeForm(freeformTextInput);
         }
-        
-        fileProvenanceUpdates.put(activePopupDataFile.getStorageIdentifier(), innerProvMap);       
+           
     }
     
     //Saves the staged provenance data, to be called by the pages launching the popup
-    public void saveStagedProvenance(Dataset dataset) throws WrappedResponse {
-        for (Map.Entry<String, HashMap<String, String>> entry : fileProvenanceUpdates.entrySet()) {
+    public void saveStagedJsonProvenance(Dataset dataset) throws WrappedResponse {
+        for (Map.Entry<String, String> entry : jsonProvenanceUpdates.entrySet()) {
             String storageId = entry.getKey();
+            String provString = entry.getValue();
             
             DataFile df = dataFileService.findByStorageIdandDatasetVersion(storageId, dataset.getLatestVersion());
-            HashMap innerProvMap = entry.getValue();
-            if(innerProvMap.containsKey(PROV_FREEFORM)) {
-                String freeformString = (String) innerProvMap.get(PROV_FREEFORM);
-                execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), df , freeformString));
-            }
-            if(innerProvMap.containsKey(PROV_JSON)) {
-                String provString = (String) innerProvMap.get(PROV_JSON);
-                if(null == provString) {
-                    execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
-                } else {
-                    execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString));
-                    //MAD: I'm not convinced persist will override if needed and I really don't want to keep track on this end so I should update the command if needed
-                    //MAD: I could just always call delete...
-                }
+    
+            if(null == provString) {
+                execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
+            } else {
+                execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString));
+                //MAD: I'm not convinced persist will override if needed and I really don't want to keep track on this end so I should update the command if needed
+                //MAD: I could just always call delete...
             }
         }
-
     }
 
     public void updateJsonRemoveState() throws WrappedResponse {

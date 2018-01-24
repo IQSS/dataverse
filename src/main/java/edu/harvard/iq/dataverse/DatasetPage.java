@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -191,7 +192,8 @@ public class DatasetPage implements java.io.Serializable {
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
     SettingsWrapper settingsWrapper; 
-    
+    @Inject 
+    ProvenanceUploadFragmentBean provUploadFragmentBean;
 
 
     private Dataset dataset = new Dataset();
@@ -2458,7 +2460,6 @@ public class DatasetPage implements java.io.Serializable {
         */
     }
 
-    //MAD: Hook in here for save provenance (for saving dataset on start)
     public String save() {
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
@@ -2542,10 +2543,19 @@ public class DatasetPage implements java.io.Serializable {
         editMode = null;
         bulkFileDeleteInProgress = false;
 
+
+        
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
+        try {
+            provUploadFragmentBean.saveStagedJsonProvenance(dataset);
+        } catch (AbstractApiBean.WrappedResponse ex) {
+            //MAD: Fix logging
+            Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         logger.fine("Redirecting to the Dataset page.");
         
         return returnToDraftVersion();

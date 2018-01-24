@@ -62,6 +62,7 @@
                         </ui:fragment>
                     </div>
                 </div>
+            </p:outputPanel>
                 <div class="form-group text-left">
                     <div class="col-sm-12">
                         <p class="help-block">#{bundle['file.editProvenanceDialog.description.tip']}</p>
@@ -89,7 +90,7 @@
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" onclick="PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show();"/>
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();"  />
             </div>
-        </p:outputPanel>
+        
     </p:dialog>
     <p:dialog id="confirmProvenancePopup" header="#{bundle['file.confirmProvenanceDialog']}" modal="true" visible="false" styleClass="smallPopUp" widgetVar="confirmProvenancePopup">
         <div class="form-group text-left text-warning">

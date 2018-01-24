@@ -1276,8 +1276,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         try {
-            //MAD: I gotta do something with: getNewFileMetadatasBeforeSave() because it isn't generated yet... Another confusing blackhole
-            provUploadFragmentBean.saveStagedProvenance(dataset);
+            provUploadFragmentBean.saveStagedJsonProvenance(dataset);
         } catch (AbstractApiBean.WrappedResponse ex) {
             //MAD: Fix logging
             Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
