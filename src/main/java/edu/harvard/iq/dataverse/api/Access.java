@@ -183,12 +183,12 @@ public class Access extends AbstractApiBean {
         DataFile df = dataFileService.find(fileId);
         GuestbookResponse gbr = null;    
         
-        /*
+        
         if (gbrecs == null && df.isReleased()){
-            //commenting out for 4.6 SEK
-           // gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
+            // commenting out for 4.6 SEK - ??
+            gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
         }
-        */
+        
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
