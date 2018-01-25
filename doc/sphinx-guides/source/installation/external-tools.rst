@@ -24,7 +24,7 @@ External tools must be expressed in an external tool manifest file, a specific J
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/awesomeTool.json
 
-``type`` is required and must be ``explore`` or ``configure``.
+``type`` is required and must be ``explore`` or ``configure`` to make the tool appear under a button called "Explore" or "Configure", respectively. Currently external tools only operate on tabular files that have been successfully ingested. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.)
 
 In the example above, a mix of required and optional reserved words appear that can be used to insert dynamic values into tools. The supported values are:
 
