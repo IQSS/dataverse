@@ -185,7 +185,7 @@ public class Access extends AbstractApiBean {
         
         
         if (gbrecs == null && df.isReleased()){
-            // commenting out for 4.6 SEK - ??
+            // Write Guestbook record if not done previously and file is released
             gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
         }
         
