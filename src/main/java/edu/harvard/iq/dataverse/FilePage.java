@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -64,7 +63,8 @@ public class FilePage implements java.io.Serializable {
     private Dataset dataset;
     private List<DatasetVersion> datasetVersionsForTab;
     private List<FileMetadata> fileMetadatasForTab;
-    private List<ExternalTool> externalTools;
+    private List<ExternalTool> configureTools;
+    private List<ExternalTool> exploreTools;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -100,8 +100,6 @@ public class FilePage implements java.io.Serializable {
     PermissionsWrapper permissionsWrapper;
     @Inject
     FileDownloadHelper fileDownloadHelper;
-    @Inject
-    TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
 
     public WorldMapPermissionHelper getWorldMapPermissionHelper() {
@@ -161,10 +159,11 @@ public class FilePage implements java.io.Serializable {
            
           //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
 
-            List<ExternalTool> allTools = externalToolService.findAll();
-            
-            externalTools = externalToolService.findExternalToolsByFile(allTools, file);
-            
+            if (file.isTabularData()) {
+                configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
+                exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
+            }
+
         } else {
 
             return permissionsWrapper.notFound();
@@ -769,8 +768,12 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
     }
 
-    public List<ExternalTool> getExternalTools() {
-        return externalTools;
+    public List<ExternalTool> getConfigureTools() {
+        return configureTools;
     }
-    
+
+    public List<ExternalTool> getExploreTools() {
+        return exploreTools;
+    }
+
 }
