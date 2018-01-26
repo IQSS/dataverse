@@ -54,6 +54,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
@@ -436,7 +437,26 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    @GET
+    @Path("{id}/{targetDataverseAlias}/move")
+    public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias) {
+        try{
+            Dataset ds = findDatasetOrDie(id);
+            Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
+            if (target == null){
+                return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
+            }
+            
+            execCommand(new MoveDatasetCommand(
+                    createDataverseRequest(findAuthenticatedUserOrDie()), ds, target
+                    ));
+            return ok("Dataset moved successfully");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
 
+    }
     @GET
     @Path("{id}/links")
     public Response getLinks(@PathParam("id") String idSupplied ) {
