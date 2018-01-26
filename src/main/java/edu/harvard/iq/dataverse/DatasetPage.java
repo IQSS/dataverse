@@ -2550,7 +2550,7 @@ public class DatasetPage implements java.io.Serializable {
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
         try {
-            provUploadFragmentBean.saveStagedJsonProvenance(dataset);
+            provUploadFragmentBean.saveStagedJsonProvenance();
         } catch (AbstractApiBean.WrappedResponse ex) {
             //MAD: Fix logging
             Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);

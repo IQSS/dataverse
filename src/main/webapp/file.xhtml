@@ -147,6 +147,14 @@
                                                     <h:outputText value= "#{bundle['file.delete']}"/>
                                                 </p:commandLink>
                                             </li>
+                                            <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                                <p:commandLink id="fileProvenanceButton"
+                                                           update="editProvenancePopup"
+                                                           oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
+                                                           <f:actionListener binding="#{provenanceUploadFragmentBean.updatePopupState(fileMetadata.dataFile)}" />
+                                                            #{bundle['file.provenance']} 
+                                                </p:commandLink>
+                                            </li> 
                                             <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
                                             <li>
                                             </li>
@@ -472,13 +480,16 @@
                     
                     <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
                         id="configureToolPopup" styleClass="smallPopUp" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
-
                         <ui:include src="file-configure-popup-fragment.xhtml">
                             <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
                             <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
                         </ui:include>
-
                     </p:dialog>
+                    
+                    <ui:include src="provenance-popups-fragment.xhtml">
+                            <!-- <ui:param name="dataset" value="yes"/> -->
+                            <ui:param name="saveInPopup" value="true"/>
+                    </ui:include>
                     
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">

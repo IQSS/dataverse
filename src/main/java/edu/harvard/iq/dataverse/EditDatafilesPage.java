@@ -1276,7 +1276,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         try {
-            provUploadFragmentBean.saveStagedJsonProvenance(dataset);
+            provUploadFragmentBean.saveStagedJsonProvenance();
         } catch (AbstractApiBean.WrappedResponse ex) {
             //MAD: Fix logging
             Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);

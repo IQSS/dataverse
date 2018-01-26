@@ -45,6 +45,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     //These two variables hold the state of the prov variables for the current open file before any changes would be applied by the editing "session"
     private String provJsonState; 
     private String freeformTextState; 
+    private boolean saveInPopup;
+    private Dataset dataset;
     
     private String freeformTextInput;
     private boolean deleteStoredJson = false; //MAD: rename to reflect that this variable is temporal
@@ -54,7 +56,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     @EJB
     DataFileServiceBean dataFileService;
     @Inject
-    DataverseRequestServiceBean dvRequestService;
+    DataverseRequestServiceBean dvRequestService; //MAD: Make ejb? 
         
     public void handleFileUpload(FileUploadEvent event) {
         jsonUploadedTempFile = event.getFile();
@@ -63,6 +65,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
 
     //This updates the popup for the selected file each time its open
     public void updatePopupState(DataFile file) throws WrappedResponse {
+        dataset = file.getFileMetadata().getDatasetVersion().getDataset();
         popupDataFile = file;
         String storageId = popupDataFile.getStorageIdentifier();
         deleteStoredJson = false; //MAD: Are there other variables like this I need to init?
@@ -86,8 +89,12 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         freeformTextInput = freeformTextState;
     }
     
+    public void stagePopupChanges() throws IOException, WrappedResponse {
+        stagePopupChanges(false);
+    }
+    
     //Stores the provenance changes decided upon in the popup to be saved when all edits across files are done.
-    public void stagePopupChanges() throws IOException {
+    public void stagePopupChanges(boolean saveInPopup) throws IOException, WrappedResponse {
         //HashMap innerProvMap = fileProvenanceUpdates.get(popupDataFile.getStorageIdentifier());
                 
 //        if(!jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { 
@@ -115,11 +122,19 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
             FileMetadata fileMetadata = popupDataFile.getFileMetadata(); //MAD: Calling this before the file is fully saved the metadata is returning null. not sure why. Check what tags does to deal with this?
             fileMetadata.setProvFreeForm(freeformTextInput);
         }
+        
+        //MAD: This needs to be uncommented and fixed... not sure why the variable isn't passing...
+        if(saveInPopup) {
+//            Dataset ds = datasetService.findByGlobalId()
+//            //dataFileService.
+            saveStagedJsonProvenance();
+            saveStagedJsonFreeform();
+        }
            
     }
     
     //Saves the staged provenance data, to be called by the pages launching the popup
-    public void saveStagedJsonProvenance(Dataset dataset) throws WrappedResponse {
+    public void saveStagedJsonProvenance() throws WrappedResponse {
         for (Map.Entry<String, String> entry : jsonProvenanceUpdates.entrySet()) {
             String storageId = entry.getKey();
             String provString = entry.getValue();
@@ -133,6 +148,17 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 //MAD: I'm not convinced persist will override if needed and I really don't want to keep track on this end so I should update the command if needed
                 //MAD: I could just always call delete...
             }
+        }
+    }
+    
+    //This method is only needed when saving provenance from a page that does not also save changes to datafiles.
+    //MAD: I could make this better and not always commit unless there are changes, but I'm only tracking changes for one of the four pages.
+    public void saveStagedJsonFreeform() throws WrappedResponse {  
+        //DataFile df = dataFileService.findByStorageIdandDatasetVersion(popupDataFile.getStorageIdentifier(), dataset.getLatestVersion()); //MAD This doesn't return the file metadata correct...
+        if(null != popupDataFile) {
+            execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
+        } else {
+            //MAD: Throw error
         }
     }
 
