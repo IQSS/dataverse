@@ -50,6 +50,6 @@ public class Info extends AbstractApiBean {
     @GET
     @Path("apiTermsOfUse")
     public Response getTermsOfUse() {
-        return response( req -> ok(systemConfig.getApiTermsOfUse()));
+        return allowCors(response( req -> ok(systemConfig.getApiTermsOfUse())));
     }
 }
