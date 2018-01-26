@@ -108,7 +108,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
              * does NOT throw an exception if it is.
              * -- L.A. 4.5
              */
-            throw new CommandException("Dataset could not be created. Indexing failed", this);
+            throw new CommandException("Dataset could not be moved. Indexing failed", this);
             
         }
 		

@@ -438,7 +438,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
-    @GET
+    @POST
     @Path("{id}/{targetDataverseAlias}/move")
     public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias) {
         try{

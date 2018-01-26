@@ -15,9 +15,11 @@ import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -106,6 +108,16 @@ public class MoveDatasetCommandTest {
                     public Dataverse save(Dataverse dataverse) {
                         // no-op. The superclass accesses databases which we don't have.
                         return dataverse;
+                    }
+                };
+            }
+            
+            @Override
+            public IndexServiceBean index(){
+                return new IndexServiceBean(){
+                    @Override
+                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
+                        return null;
                     }
                 };
             }
