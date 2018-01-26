@@ -47,7 +47,7 @@
         </div>
     </ui:fragment>
 
-    <!--DROPDOWN EXPLORE BUTTON (NOT A SINGLE EXPLORE BUTTON): Multiple tools-->
+    <!--"Explore" button (dropdown of tools)-->
     <!--exploreTools is set as a ui:param by the file and dataset pages-->
     <!--Note that "WorldMap Explore" is not an explore tool (external tool)-->
     <div class="btn-group" jsf:rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools or (worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
@@ -96,27 +96,6 @@
             </li>                       
         </ul>
     </div>
-
-    <!--SINGLE EXPLORE BUTTON: WorldMap only-->
-    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and empty exploreTools}">
-        <!-- WorldMap Explore button ONLY ... not TwoRavens -->
-        <h:commandLink pt:role="button" rendered="#{!downloadPopupRequired}"
-                       type="button" 
-                       styleClass="btn btn-default #{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}" 
-                       disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                       title="Explore" action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
-        </h:commandLink>
-        <p:commandLink rendered="#{downloadPopupRequired}"
-                       type="button" styleClass="btn btn-default"
-                       process="@this"
-                       action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
-                       update="@widgetVar(downloadPopup)"
-                       disabled="#{fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
-                       oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
-        </p:commandLink>
-    </ui:fragment>
     
     <!-- Compute Button *File pg only*: -->
     <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{isFilePg and FilePage.showComputeButton() and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
