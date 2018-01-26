@@ -2,7 +2,8 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.ReservedWord;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +22,6 @@ public class ExternalToolHandler {
 
     private static final Logger logger = Logger.getLogger(ExternalToolHandler.class.getCanonicalName());
 
-    public static final String DISPLAY_NAME = "displayName";
-    public static final String DESCRIPTION = "description";
-    public static final String TOOL_URL = "toolUrl";
-    public static final String TOOL_PARAMETERS = "toolParameters";
-
     private final ExternalTool externalTool;
     private final DataFile dataFile;
 
@@ -34,8 +30,8 @@ public class ExternalToolHandler {
     /**
      * @param externalTool The database entity.
      * @param dataFile Required.
-     * @param apiToken The apiToken can be null because in the future, "explore"
-     * tools can be used anonymously.
+     * @param apiToken The apiToken can be null because "explore" tools can be
+     * used anonymously.
      */
     public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
         this.externalTool = externalTool;
@@ -69,32 +65,35 @@ public class ExternalToolHandler {
         queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
             queryParam.keySet().forEach((key) -> {
                 String value = queryParam.getString(key);
-                params.add(getQueryParam(key, value));
+                String param = getQueryParam(key, value);
+                if (param != null && !param.isEmpty()) {
+                    params.add(getQueryParam(key, value));
+                }
             });
         });
         return "?" + String.join("&", params);
     }
 
-    // TODO: Make this parser much smarter in the future. Tools like Data Explorer will want
-    // to use reserved words within a value like this:
-    // "uri": "{siteUrl}/api/access/datafile/{fileId}/metadata/ddi"
     private String getQueryParam(String key, String value) {
         ReservedWord reservedWord = ReservedWord.fromString(value);
         switch (reservedWord) {
             case FILE_ID:
                 // getDataFile is never null because of the constructor
                 return key + "=" + getDataFile().getId();
+            case SITE_URL:
+                return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
             case API_TOKEN:
                 String apiTokenString = null;
                 ApiToken theApiToken = getApiToken();
                 if (theApiToken != null) {
                     apiTokenString = theApiToken.getTokenString();
+                    return key + "=" + apiTokenString;
                 }
-                return key + "=" + apiTokenString;
+                break;
             default:
-                // We should never reach here.
-                return null;
+                break;
         }
+        return null;
     }
 
     public String getToolUrlWithQueryParams() {
