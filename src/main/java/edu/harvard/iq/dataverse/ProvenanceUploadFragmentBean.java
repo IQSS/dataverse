@@ -8,16 +8,13 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import java.io.IOException;
 import java.util.logging.Logger;
-import javax.faces.application.FacesMessage;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonProvCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonProvCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -27,6 +24,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.JsonObject;
 import org.apache.commons.io.IOUtils;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import javax.faces.application.FacesMessage;
 
 /**
  * This bean exists to ease the use of provenance upload functionality`
@@ -45,13 +44,14 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     //These two variables hold the state of the prov variables for the current open file before any changes would be applied by the editing "session"
     private String provJsonState; 
     private String freeformTextState; 
-    private boolean saveInPopup;
     private Dataset dataset;
     
     private String freeformTextInput;
     private boolean deleteStoredJson = false; //MAD: rename to reflect that this variable is temporal
     private DataFile popupDataFile;
-    HashMap<String,String> jsonProvenanceUpdates = new HashMap<>();
+    HashMap<DataFile,String> jsonProvenanceUpdates = new HashMap<>();
+    
+    
     
     @EJB
     DataFileServiceBean dataFileService;
@@ -102,13 +102,13 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
 //        }
             
         if(deleteStoredJson) {
-            jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), null);
+            jsonProvenanceUpdates.put(popupDataFile, null);
 //            innerProvMap.put(PROV_JSON, null);
             deleteStoredJson = false; //MAD: I think this logic can be removed but I'll wait until I've got some other things working.
         }
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) {
             String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //may need to specify encoding
-            jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), jsonString);
+            jsonProvenanceUpdates.put(popupDataFile, jsonString);
 //            innerProvMap.put(PROV_JSON, jsonString);
             jsonUploadedTempFile = null;
         } 
@@ -123,10 +123,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
             fileMetadata.setProvFreeForm(freeformTextInput);
         }
         
-        //MAD: This needs to be uncommented and fixed... not sure why the variable isn't passing...
         if(saveInPopup) {
-//            Dataset ds = datasetService.findByGlobalId()
-//            //dataFileService.
+            //MAD: Catch the error in here and do something weird to handle it? relaunch the popup with error text?
             saveStagedJsonProvenance();
             saveStagedJsonFreeform();
         }
@@ -135,26 +133,29 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     
     //Saves the staged provenance data, to be called by the pages launching the popup
     public void saveStagedJsonProvenance() throws WrappedResponse {
-        for (Map.Entry<String, String> entry : jsonProvenanceUpdates.entrySet()) {
-            String storageId = entry.getKey();
+        for (Map.Entry<DataFile, String> entry : jsonProvenanceUpdates.entrySet()) {
+            DataFile df = entry.getKey();
             String provString = entry.getValue();
-            
-            DataFile df = dataFileService.findByStorageIdandDatasetVersion(storageId, dataset.getLatestVersion());
-    
+
+            //We could instead store a hashmap of type HashMap<DataFile,String> and remove this call
+
+
             if(null == provString) {
+
                 execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
+
             } else {
                 execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString));
                 //MAD: I'm not convinced persist will override if needed and I really don't want to keep track on this end so I should update the command if needed
                 //MAD: I could just always call delete...
             }
         }
+
     }
     
     //This method is only needed when saving provenance from a page that does not also save changes to datafiles.
     //MAD: I could make this better and not always commit unless there are changes, but I'm only tracking changes for one of the four pages.
     public void saveStagedJsonFreeform() throws WrappedResponse {  
-        //DataFile df = dataFileService.findByStorageIdandDatasetVersion(popupDataFile.getStorageIdentifier(), dataset.getLatestVersion()); //MAD This doesn't return the file metadata correct...
         if(null != popupDataFile) {
             execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
         } else {

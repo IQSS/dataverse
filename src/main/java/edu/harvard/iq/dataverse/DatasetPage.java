@@ -2551,9 +2551,13 @@ public class DatasetPage implements java.io.Serializable {
 
         try {
             provUploadFragmentBean.saveStagedJsonProvenance();
+
         } catch (AbstractApiBean.WrappedResponse ex) {
-            //MAD: Fix logging
-            Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+            //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
+            
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
+            //JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("file.metadataTab.provenance.error"));
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         logger.fine("Redirecting to the Dataset page.");

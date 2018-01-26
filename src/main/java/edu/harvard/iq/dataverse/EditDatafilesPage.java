@@ -1261,10 +1261,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         
         if (mode == FileEditMode.SINGLE){
-            JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
+            //JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
             
         } else {
-            JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+            //JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
         }
 
         
@@ -1277,8 +1277,12 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         try {
             provUploadFragmentBean.saveStagedJsonProvenance();
+            
         } catch (AbstractApiBean.WrappedResponse ex) {
-            //MAD: Fix logging
+            //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
+            
+            JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
+            //JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("file.metadataTab.provenance.error"));
             Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
         }
         
