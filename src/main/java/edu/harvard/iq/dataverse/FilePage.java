@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -771,6 +773,14 @@ public class FilePage implements java.io.Serializable {
 
     public List<ExternalTool> getExternalTools() {
         return externalTools;
+    }
+    
+    //Provenance fragment bean calls this to show error dialogs after popup failure
+    public void showProvError() {
+    //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));        
+    JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.metadataTab.provenance.error"));
+    //JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
+
     }
     
 }

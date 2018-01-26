@@ -57,23 +57,31 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     DataFileServiceBean dataFileService;
     @Inject
     DataverseRequestServiceBean dvRequestService; //MAD: Make ejb? 
+    @Inject
+    FilePage filePage;
         
     public void handleFileUpload(FileUploadEvent event) {
         jsonUploadedTempFile = event.getFile();
         provJsonState = null;
     }
 
+    public void updatePopupState(DataFile file, Dataset dSet) throws WrappedResponse {
+        dataset = dSet;
+        updatePopupState(file);
+    }
+    
     //This updates the popup for the selected file each time its open
     public void updatePopupState(DataFile file) throws WrappedResponse {
-        dataset = file.getFileMetadata().getDatasetVersion().getDataset();
+        if(null == dataset ) {
+            dataset = file.getFileMetadata().getDatasetVersion().getDataset(); //DatasetVersion is null here on file upload page...
+        }
         popupDataFile = file;
-        String storageId = popupDataFile.getStorageIdentifier();
         deleteStoredJson = false; //MAD: Are there other variables like this I need to init?
         provJsonState = null;
         freeformTextState = popupDataFile.getFileMetadata().getProvFreeForm();
         
-        if(jsonProvenanceUpdates.containsKey(storageId)) { //If there is already staged provenance info 
-            provJsonState = jsonProvenanceUpdates.get(storageId); //MAD: As also noted before, I'm throwing a bunch of different things into this string for the same tracking but its likely to get all screwed up
+        if(jsonProvenanceUpdates.containsKey(popupDataFile)) { //If there is already staged provenance info 
+            provJsonState = jsonProvenanceUpdates.get(popupDataFile); //MAD: As also noted before, I'm throwing a bunch of different things into this string for the same tracking but its likely to get all screwed up
             
         //MAD: I'm unsure if checking createDate is the correct way to tell if a file is full created
         } else if(null != popupDataFile.getCreateDate()){//Is this file fully uploaded and already has prov data saved?     
@@ -94,7 +102,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     }
     
     //Stores the provenance changes decided upon in the popup to be saved when all edits across files are done.
-    public void stagePopupChanges(boolean saveInPopup) throws IOException, WrappedResponse {
+    public void stagePopupChanges(boolean saveInPopup) throws IOException{
         //HashMap innerProvMap = fileProvenanceUpdates.get(popupDataFile.getStorageIdentifier());
                 
 //        if(!jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { 
@@ -124,9 +132,15 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         }
         
         if(saveInPopup) {
-            //MAD: Catch the error in here and do something weird to handle it? relaunch the popup with error text?
-            saveStagedJsonProvenance();
-            saveStagedJsonFreeform();
+            try {
+
+                saveStagedJsonProvenance();
+                saveStagedJsonFreeform();
+            } catch (WrappedResponse ex) {
+                filePage.showProvError();
+                Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
         }
            
     }
@@ -137,13 +151,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
             DataFile df = entry.getKey();
             String provString = entry.getValue();
 
-            //We could instead store a hashmap of type HashMap<DataFile,String> and remove this call
-
-
             if(null == provString) {
-
                 execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
-
             } else {
                 execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString));
                 //MAD: I'm not convinced persist will override if needed and I really don't want to keep track on this end so I should update the command if needed
