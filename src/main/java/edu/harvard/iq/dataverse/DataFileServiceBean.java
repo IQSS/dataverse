@@ -206,11 +206,11 @@ public class DataFileServiceBean implements java.io.Serializable {
             if (query.getResultList().size() < 1) {
                 return null;
             } else {
-                //Long.valueOf(i.longValue())
-                //return findCheapAndEasy((Long) query.getSingleResult());
-                //MAD: Testing why this was blowing up...
-                Integer qr = (Integer) query.getSingleResult();
-                return findCheapAndEasy(qr.longValue());
+                return findCheapAndEasy((Long) query.getSingleResult());
+                //Pretty sure the above return will always error due to a conversion error
+                //I "reverted" my change because I ended up not using this, but here is the fix below --MAD
+//                Integer qr = (Integer) query.getSingleResult();
+//                return findCheapAndEasy(qr.longValue());
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error finding datafile by storageID and DataSetVersion: " + e.getMessage());

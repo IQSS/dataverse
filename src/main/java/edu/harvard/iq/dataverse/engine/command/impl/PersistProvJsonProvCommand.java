@@ -66,6 +66,11 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObject> {
         try {
             StorageIO<DataFile> storageIO = dataFile.getStorageIO();
             InputStream inputStream = new ByteArrayInputStream(userInput.getBytes(StandardCharsets.UTF_8.name()));
+            try {
+                storageIO.deleteAuxObject(provJsonExtension); 
+            } catch (Exception ex) {
+                //if this fails (no file to delete, etc) we keep going
+            }
             storageIO.saveInputStreamAsAux(inputStream, provJsonExtension);
         } catch (IOException ex) {
             String error = "Exception caught persisting PROV-JSON: " + ex;

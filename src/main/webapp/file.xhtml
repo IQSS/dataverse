@@ -107,6 +107,14 @@
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu pull-right text-left" role="menu">
+                                            <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                                <p:commandLink id="fileProvenanceButton"
+                                                           update="editProvenancePopup"
+                                                           oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
+                                                           <f:actionListener binding="#{provenanceUploadFragmentBean.updatePopupState(fileMetadata.dataFile)}" />
+                                                            #{bundle['file.provenance']} 
+                                                </p:commandLink>
+                                            </li> 
                                             <li>
                                                 <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE&#38;version=#{FilePage.version}">
                                                     <h:outputText id="editFile-Multi-Link" value="Metadata"/>
@@ -147,14 +155,7 @@
                                                     <h:outputText value= "#{bundle['file.delete']}"/>
                                                 </p:commandLink>
                                             </li>
-                                            <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
-                                                <p:commandLink id="fileProvenanceButton"
-                                                           update="editProvenancePopup"
-                                                           oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
-                                                           <f:actionListener binding="#{provenanceUploadFragmentBean.updatePopupState(fileMetadata.dataFile)}" />
-                                                            #{bundle['file.provenance']} 
-                                                </p:commandLink>
-                                            </li> 
+
                                             <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
                                             <li>
                                             </li>
