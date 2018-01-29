@@ -794,5 +794,10 @@ public class FilePage implements java.io.Serializable {
     public List<ExternalTool> getExploreTools() {
         return exploreTools;
     }
+    
+    //Provenance fragment bean calls this to show error dialogs after popup failure
+    public void showProvError() {
+        JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.metadataTab.provenance.error"));
+    }
 
 }
