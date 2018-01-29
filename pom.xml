@@ -461,6 +461,11 @@
             <artifactId>unirest-java</artifactId>
             <version>1.4.9</version>
         </dependency>
+        <dependency>
+            <groupId>edu.harvard.pass</groupId>
+            <artifactId>cpl</artifactId>
+            <version>3.0-beta</version>
+        </dependency>
     </dependencies>
 
     <build>

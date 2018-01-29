@@ -55,6 +55,45 @@ A command-line tool called ``jq`` ( http://stedolan.github.io/jq/ ) is required 
 
 If you are already using ``brew``, ``apt-get``, or ``yum``, you can install ``jq`` that way. Otherwise, download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your ``$PATH`` (``/usr/bin/jq`` is fine) and executable with ``sudo chmod +x /usr/bin/jq``.
 
+Core Provenance Library (CPL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Core Provenance Library (CPL) is at the core of Dataverse's support for provenance. The code can be found at https://github.com/End-to-end-provenance/core-provenance-library .
+
+Note that ``CPL.jar`` from the zip file below has been renamed and added to ``local_lib/edu/harvard/pass/cpl``.
+
+TODO: Look at this file for inspiration for tests to write: https://github.com/End-to-end-provenance/core-provenance-library/blob/v3.0-beta/bindings/java/CPL/test.java
+
+Installing CPL on Mac
+^^^^^^^^^^^^^^^^^^^^^
+
+Download https://github.com/End-to-end-provenance/core-provenance-library/releases/download/v3.0-beta/CPL.3.0-beta.zip to ``~/Downloads`. We create a directory at ``/tmp/cpl`` for unzipping because there's a little cruft (a ``__MACOSX`` directory and ``.DS_Store`` files) in the zip. We will be installating it in ``/usr/local``, which should already be writable by your user if you use Homebrew ( https://brew.sh ). If not, make it writable.
+
+- ``mkdir /tmp/cpl``
+- ``cp ~/Downloads/CPL.3.0-beta.zip /tmp/cpl``
+- ``cd /tmp/cpl``
+- ``unzip CPL.3.0-beta.zip``
+- ``cd CPL.3.0-beta``
+- ``cp libcpl.3.0.dylib /usr/local/lib``
+- ``cp libcpl-odbc.3.0.dylib /usr/local/lib``
+- ``cp libCPLDirect-java.dylib /usr/local/lib``
+- ``mkdir /usr/local/include/cpl``
+- ``cp -r include/* /usr/local/include/cpl``
+
+TODO: For Mac users, should we include CPL in Homebrew?
+
+Installing CPL on Linux
+^^^^^^^^^^^^^^^^^^^^^^^
+
+FIXME: Link to artifact created by Jenkins or similar.
+
+TODO: For RHEL and CentOS users, should we create a CPL RPM?
+
+Run CPL Configuration Script
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FIXME: Link to proper version of the script and explain what to do: https://github.com/ProvTools/prov-cpl/blob/ae58acb0250b61bb5541a4e074621839aaf52124/scripts/config/config.sh
+
 Recommendations
 ---------------
 
