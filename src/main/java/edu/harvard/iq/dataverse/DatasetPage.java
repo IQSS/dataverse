@@ -77,7 +77,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
-import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
@@ -185,8 +184,6 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     FileDownloadHelper fileDownloadHelper;
     @Inject
-    TwoRavensHelper twoRavensHelper;
-    @Inject
     WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
@@ -255,8 +252,10 @@ public class DatasetPage implements java.io.Serializable {
     
     private Boolean hasRsyncScript = false;
     
-    List<ExternalTool> allTools = new ArrayList<>();
-    Map<Long,List<ExternalTool>> queriedFileTools = new HashMap<>(); 
+    List<ExternalTool> configureTools = new ArrayList<>();
+    List<ExternalTool> exploreTools = new ArrayList<>();
+    Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
+    Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -1432,6 +1431,7 @@ public class DatasetPage implements java.io.Serializable {
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(dataset, null, session);
+                this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
                 logger.fine("Checking if rsync support is enabled.");
                 if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
                     try {
@@ -1529,9 +1529,10 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
         }
-        
-        allTools = externalToolService.findAll();
-        
+
+        configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
+        exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
+
         return null;
     }
     
@@ -3929,14 +3930,6 @@ public class DatasetPage implements java.io.Serializable {
         this.worldMapPermissionHelper = worldMapPermissionHelper;
     }
 
-    public TwoRavensHelper getTwoRavensHelper() {
-        return twoRavensHelper;
-    }
-
-    public void setTwoRavensHelper(TwoRavensHelper twoRavensHelper) {
-        this.twoRavensHelper = twoRavensHelper;
-    }
-
     /**
      * dataset title
      * @return title of workingVersion
@@ -4049,23 +4042,40 @@ public class DatasetPage implements java.io.Serializable {
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
-    
-    public List<ExternalTool> getExternalToolsForDataFile(Long fileId) {
-        List<ExternalTool> fileTools = queriedFileTools.get(fileId);
-        if(fileTools != null) { //if already queried before and added to list
-            return fileTools;
-        }
-        
-        DataFile dataFile = datafileService.find(fileId);         
-        fileTools = externalToolService.findExternalToolsByFile(allTools, dataFile);
-        
-        queriedFileTools.put(fileId, fileTools); //add externalTools to map so we don't have to do the lifting again
-        
-        return fileTools;    
-    }
-    
 
-    
+    public List<ExternalTool> getConfigureToolsForDataFile(Long fileId) {
+        return getCachedToolsForDataFile(fileId, ExternalTool.Type.CONFIGURE);
+    }
+
+    public List<ExternalTool> getExploreToolsForDataFile(Long fileId) {
+        return getCachedToolsForDataFile(fileId, ExternalTool.Type.EXPLORE);
+    }
+
+    public List<ExternalTool> getCachedToolsForDataFile(Long fileId, ExternalTool.Type type) {
+        Map<Long, List<ExternalTool>> cachedToolsByFileId = new HashMap<>();
+        List<ExternalTool> externalTools = new ArrayList<>();
+        switch (type) {
+            case EXPLORE:
+                cachedToolsByFileId = exploreToolsByFileId;
+                externalTools = exploreTools;
+                break;
+            case CONFIGURE:
+                cachedToolsByFileId = configureToolsByFileId;
+                externalTools = configureTools;
+                break;
+            default:
+                break;
+        }
+        List<ExternalTool> cachedTools = cachedToolsByFileId.get(fileId);
+        if (cachedTools != null) { //if already queried before and added to list
+            return cachedTools;
+        }
+        DataFile dataFile = datafileService.find(fileId);
+        cachedTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
+        cachedToolsByFileId.put(fileId, cachedTools); //add to map so we don't have to do the lifting again
+        return cachedTools;
+    }
+
     Boolean thisLatestReleasedVersion = null;
     
     public boolean isThisLatestReleasedVersion() {

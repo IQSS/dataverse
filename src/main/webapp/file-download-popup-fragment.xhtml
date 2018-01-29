@@ -18,6 +18,7 @@
                 <iqbs:messages collapsible="true" />
             </div>
         </p:fragment>
+        
         <div class="form-horizontal">
             <div class="form-group" jsf:rendered="#{workingVersion.termsOfUseAndAccess.license != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse}">
                 <label class="col-sm-3 control-label" for="guestbook_tou">
@@ -43,7 +44,7 @@
                     </div>
                 </div>
             </div>
-            <ui:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and downloadPopupRequired}" id="guestbookUIFragment">
+            <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and downloadPopupRequired}" id="guestbookUIFragment">
                 <p:fragment>
                     <div class="form-group">
                         <label class="col-sm-3 control-label" for="guestbookuser_nameText">
@@ -51,10 +52,13 @@
                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.nameRequired}" />
                         </label>
                         <div class="col-sm-6">
-                            <p:inputText id="guestbookuser_nameText" required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.nameRequired}"
-                                         styleClass="form-control" value="#{guestbookResponse.name}"
-                                         requiredMessage="#{bundle['requiredField']}"
-                                         validator="#{guestbookResponseService.guestbookResponseValidator}"/>
+                            <p:inputText id="guestbookuser_nameText" 
+                                         required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.nameRequired}"
+                                         styleClass="form-control" value="#{fileDownloadHelper.guestbookResponse.name}"
+                                         requiredMessage="#{bundle['requiredField']}"                                       
+                                         binding="#{fileDownloadHelper.nameField}">
+                                <p:ajax listener="#{fileDownloadHelper.nameValueChangeListener}" />
+                              </p:inputText>  
                             <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
                         </div>
                     </div>
@@ -65,10 +69,12 @@
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.emailRequired}" />
                     </label>
                     <div class="col-sm-6">
-                        <h:inputText id="guestbookuser_email" required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.emailRequired}"
+                        <p:inputText id="guestbookuser_email" required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.emailRequired}"
                                      styleClass="form-control" value="#{guestbookResponse.email}"
                                      requiredMessage="#{bundle['requiredField']}"
-                                     validator="#{guestbookResponseService.guestbookResponseValidator}"/>
+                                     binding="#{fileDownloadHelper.emailField}">
+                        <p:ajax listener="#{fileDownloadHelper.emailValueChangeListener}" />
+                        </p:inputText>  
                         <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
                     </div>
                 </div>
@@ -78,11 +84,12 @@
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.institutionRequired}" />
                     </label>
                     <div class="col-sm-6">
-                        <h:inputText id="guestbookuser_institution" required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.institutionRequired}"
+                        <p:inputText id="guestbookuser_institution" required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.institutionRequired}"
                                      styleClass="form-control" value="#{guestbookResponse.institution}"
                                      requiredMessage="#{bundle['requiredField']}"
-                                     validator="#{guestbookResponseService.guestbookResponseValidator}"
-                                     />
+                                     binding="#{fileDownloadHelper.institutionField}">
+                        <p:ajax listener="#{fileDownloadHelper.institutionValueChangeListener}" />
+                        </p:inputText>
                         <p:message id="institutionMessages" for="guestbookuser_institution" display="text"/>
                     </div>
                 </div>
@@ -92,11 +99,12 @@
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.positionRequired}" />
                     </label>
                     <div class="col-sm-6">
-                        <h:inputText id="guestbookuser_position"  required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.positionRequired}"
+                        <p:inputText id="guestbookuser_position"  required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.positionRequired}"
                                      styleClass="form-control" value="#{guestbookResponse.position}"
                                      requiredMessage="#{bundle['requiredField']}"
-                                     validator="#{guestbookResponseService.guestbookResponseValidator}"
-                                     />
+                                     binding="#{fileDownloadHelper.positionField}">
+                        <p:ajax listener="#{fileDownloadHelper.positionValueChangeListener}" />
+                        </p:inputText>
                         <p:message id="positionMessages" for="guestbookuser_position" display="text"/>
                     </div>
                 </div>
@@ -108,14 +116,16 @@
                         <ui:repeat value="#{guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
                             <div class="text-left">
                                 <label class="control-label">
-                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
+                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString} "/>
                                     <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
                                 </label>
-                                <h:inputText id="customQuestionResponse"
+                                <p:inputText id="customQuestionResponse"
                                              styleClass="form-control" value="#{customQuestionResponse.response}"
                                              required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
                                              rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"
-                                             requiredMessage="#{bundle['requiredField']}"/>
+                                             requiredMessage="#{bundle['requiredField']}">
+                                    <p:ajax listener="#{fileDownloadHelper.customQuestionValueChangeListener}"/>
+                                </p:inputText>
                                 <p:message id="cqMessages" for="customQuestionResponse" display="text"/>
                                 <p:selectOneMenu id="customQuestionResponseSelect"
                                                  styleClass="form-control" value="#{customQuestionResponse.response}"
@@ -124,38 +134,44 @@
                                                  requiredMessage="#{bundle['requiredField']}">
                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
                                     <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
+                                    <p:ajax listener="#{fileDownloadHelper.customQuestionValueChangeListener}"/>
                                 </p:selectOneMenu>
                             </div>
-                            <p:message id="cqSelectMessages" for="customQuestionResponseSelect" display="text"/>
+                                <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty customQuestionResponse.validationMessage}">
+                                    <span class="ui-message-error-detail">#{customQuestionResponse.validationMessage}</span>
+                                </div>
                         </ui:repeat>
                     </div>
                 </div>
-            </ui:fragment>
+            </p:fragment>
         </div>
         <div class="button-block">
-            <p:commandLink type="button" process="@this" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'explore' 
+            <p:commandLink type="button" process="@this" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
                                                                                and guestbookResponse.fileFormat != 'subset'
                                                                                 and guestbookResponse.fileFormat != 'worldMap'}"
-                           actionListener="#{fileDownloadService.writeGuestbookAndStartDownload(guestbookResponse)}"
-                           update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
+                           actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
+                           update="guestbookUIFragment"
+                           >
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>
             <p:commandLink type="button" process="@this" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'subset'}"
-                           actionListener="#{fileDownloadService.writeGuestbookResponseRecord(guestbookResponse)}"
-                           update="@([id$=Messages]) @form" oncomplete="if (args &amp;&amp; !args.validationFailed) {PF('downloadPopup').hide(); PF('downloadDataSubsetPopup').show();}">                                    
+                           actionListener="#{fileDownloadHelper.writeGuestbookAndOpenSubset(guestbookResponse)}"
+                           update="guestbookUIFragment @form" >                                    
                 <f:param name="DO_GB_VALIDATION" value="true"/>               
             </p:commandLink>
             <p:commandLink type="button" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
-                           actionListener="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, null)}" 
-                            update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
+                           actionListener="#{fileDownloadHelper.startWorldMapDownloadLink(guestbookResponse, null)}" 
+                            update="guestbookUIFragment" >
                 #{bundle['acceptTerms']} 
            <f:param name="DO_GB_VALIDATION" value="true"/> 
             </p:commandLink>
-            <p:commandLink type="button" process="@this" styleClass="btn btn-default"  rendered="#{guestbookResponse.fileFormat == 'explore'}"
-                           actionListener="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, null)}"                           
-                           update="@([id$=Messages])" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('downloadPopup').hide();">
-                #{bundle['acceptTerms']} 
-                <f:param name="DO_GB_VALIDATION" value="true"/> 
+            <!--On the dataset page (but not the file page), "tool" is null so we get the tool from the guestbookResponse.-->
+            <!--It's a known issue that target="_blank" doesn't work here from the popup. Instead of the tool launching in a new tab, the tool takes over the browser window.-->
+            <p:commandLink type="button" process="@this" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
+                           action="#{fileDownloadHelper.writeGuestbookAndLaunchExploreTool(guestbookResponse, fileMetadata, tool)}" target="_blank"
+                           update="guestbookUIFragment">
+                #{bundle['acceptTerms']}
+                <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>
             <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
