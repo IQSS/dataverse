@@ -25,6 +25,8 @@ import javax.inject.Named;
 import javax.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.util.ArrayList;
+import java.util.Objects;
 import javax.faces.application.FacesMessage;
 
 /**
@@ -42,21 +44,20 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     private UploadedFile jsonUploadedTempFile; 
     
     //These two variables hold the state of the prov variables for the current open file before any changes would be applied by the editing "session"
-    private String provJsonState; 
+    private String provJsonState; //This string is used in a few places mainly to check if things are null
     private String freeformTextState; 
     private Dataset dataset;
     
     private String freeformTextInput;
-    private boolean deleteStoredJson = false; //MAD: rename to reflect that this variable is temporal
+    private boolean deleteStoredJson = false;
     private DataFile popupDataFile;
-    HashMap<DataFile,String> jsonProvenanceUpdates = new HashMap<>();
-    
-    
+    private ArrayList<DataFile> jsonProvUpdateFiles = new ArrayList<>();
+    private ArrayList<String> jsonProvUpdateStrings = new ArrayList<>();
     
     @EJB
     DataFileServiceBean dataFileService;
     @Inject
-    DataverseRequestServiceBean dvRequestService; //MAD: Make ejb? 
+    DataverseRequestServiceBean dvRequestService;
     @Inject
     FilePage filePage;
         
@@ -76,15 +77,21 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
             dataset = file.getFileMetadata().getDatasetVersion().getDataset(); //DatasetVersion is null here on file upload page...
         }
         popupDataFile = file;
-        deleteStoredJson = false; //MAD: Are there other variables like this I need to init?
+        deleteStoredJson = false;
         provJsonState = null;
         freeformTextState = popupDataFile.getFileMetadata().getProvFreeForm();
         
-        if(jsonProvenanceUpdates.containsKey(popupDataFile)) { //If there is already staged provenance info 
-            provJsonState = jsonProvenanceUpdates.get(popupDataFile); //MAD: As also noted before, I'm throwing a bunch of different things into this string for the same tracking but its likely to get all screwed up
-            
-        //MAD: I'm unsure if checking createDate is the correct way to tell if a file is full created
-        } else if(null != popupDataFile.getCreateDate()){//Is this file fully uploaded and already has prov data saved?     
+        /* We are unable to use the built in Map containsKey method as DataFile equality only checks id.
+         * Id is always null before the dataset is crteated. If we updated it to also check checksum this would work.
+         * Leaving the simpler code for here if we change it
+         */
+
+        int index = getDataFileUpdateIndex(popupDataFile);
+        if(index >= 0) {
+            provJsonState = jsonProvUpdateStrings.get(index);
+        }
+        
+        else if(null != popupDataFile.getCreateDate()){//Is this file fully uploaded and already has prov data saved?     
             JsonObject provJsonObject = execCommand(new GetProvJsonProvCommand(dvRequestService.getDataverseRequest(), popupDataFile));
             if(null != provJsonObject) {
                 provJsonState = provJsonObject.toString(); //This may not return quite what we want, this json object gets flipped around a lot --MAD
@@ -101,39 +108,64 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         stagePopupChanges(false);
     }
     
+    private int getDataFileUpdateIndex(DataFile file) {
+        for(int i = 0; i < jsonProvUpdateFiles.size(); i++) {
+            DataFile listFile = jsonProvUpdateFiles.get(i);
+            if(dataFileGoodEquals(file,listFile))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    private boolean dataFileGoodEquals(DataFile f1, DataFile f2) {
+        if (null == f1 || null == f1.getChecksumType() || null == f1.getChecksumValue()
+            || null == f2 || null == f2.getChecksumType() || null == f2.getChecksumValue()) {
+            return false;
+        } 
+        
+        return Objects.equals(f1.getChecksumType(),f2.getChecksumType()) && Objects.equals(f1.getChecksumValue(),f2.getChecksumValue());
+
+    }
+    
+    private void dataFileArraysAdd(DataFile file, String s) {
+         int index = getDataFileUpdateIndex(file);
+            if(index >= 0) {
+                jsonProvUpdateStrings.set(index, s);
+            } else {
+                jsonProvUpdateFiles.add(file);
+                jsonProvUpdateStrings.add(s); //add adds to the end, so as long as we are always adding/removing/setting at the same time its ok..
+            }
+    }
+    
     //Stores the provenance changes decided upon in the popup to be saved when all edits across files are done.
     public void stagePopupChanges(boolean saveInPopup) throws IOException{
-        //HashMap innerProvMap = fileProvenanceUpdates.get(popupDataFile.getStorageIdentifier());
-                
-//        if(!jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { 
-//            innerProvMap = new HashMap(); 
-//        }
             
         if(deleteStoredJson) {
-            jsonProvenanceUpdates.put(popupDataFile, null);
-//            innerProvMap.put(PROV_JSON, null);
-            deleteStoredJson = false; //MAD: I think this logic can be removed but I'll wait until I've got some other things working.
+            dataFileArraysAdd(popupDataFile, null);
+            
+            deleteStoredJson = false;
         }
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) {
             String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //may need to specify encoding
-            jsonProvenanceUpdates.put(popupDataFile, jsonString);
-//            innerProvMap.put(PROV_JSON, jsonString);
+            
+            dataFileArraysAdd(popupDataFile, jsonString);
             jsonUploadedTempFile = null;
         } 
         
-        //MAD: Do I even need this freeform logic if I'm just adding it directly?
+        //This is probably only needed to massage freeform text for when we are using the commands from a non datafile saving page
         if(null == freeformTextInput && null != freeformTextState) {
             freeformTextInput = "";
         } 
             
-        if(null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) { //MAD: This is triggering even for blank, need to init the no value            
-            FileMetadata fileMetadata = popupDataFile.getFileMetadata(); //MAD: Calling this before the file is fully saved the metadata is returning null. not sure why. Check what tags does to deal with this?
+        if(null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) {       
+            FileMetadata fileMetadata = popupDataFile.getFileMetadata(); 
             fileMetadata.setProvFreeForm(freeformTextInput);
         }
         
         if(saveInPopup) {
             try {
-
                 saveStagedJsonProvenance();
                 saveStagedJsonFreeform();
             } catch (WrappedResponse ex) {
@@ -147,35 +179,33 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     
     //Saves the staged provenance data, to be called by the pages launching the popup
     public void saveStagedJsonProvenance() throws WrappedResponse {
-        for (Map.Entry<DataFile, String> entry : jsonProvenanceUpdates.entrySet()) {
-            DataFile df = entry.getKey();
-            String provString = entry.getValue();
+        for(int i = 0; i < jsonProvUpdateFiles.size(); i++)
+        {
+            DataFile df = jsonProvUpdateFiles.get(i);
+            String provString = jsonProvUpdateStrings.get(i);
 
             if(null == provString) {
-                execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
+                try {
+                    execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
+                } catch (WrappedResponse wr) {
+                    //do nothing, we always try to delete files set to null in the list, even if they were created and then deleted.
+                }
             } else {
                 execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString));
-                //MAD: I'm not convinced persist will override if needed and I really don't want to keep track on this end so I should update the command if needed
-                //MAD: I could just always call delete...
             }
         }
-
+        
     }
     
     //This method is only needed when saving provenance from a page that does not also save changes to datafiles.
-    //MAD: I could make this better and not always commit unless there are changes, but I'm only tracking changes for one of the four pages.
     public void saveStagedJsonFreeform() throws WrappedResponse {  
-        if(null != popupDataFile) {
-            execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
-        } else {
-            //MAD: Throw error
-        }
+        execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
     }
 
     public void updateJsonRemoveState() throws WrappedResponse {
-        if (jsonUploadedTempFile != null) {
+        if (null != jsonUploadedTempFile ) {
             jsonUploadedTempFile = null;
-        } else if (provJsonState != null) {
+        } else if (null != provJsonState) {
             provJsonState = null;
             deleteStoredJson = true;
         }        
