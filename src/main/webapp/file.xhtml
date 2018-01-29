@@ -76,10 +76,10 @@
                                     
                                     
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() 
-                                                             and (FilePage.getExternalTools().size() > 0
+                                                             and (FilePage.getConfigureTools().size() > 0
                                                              or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">		
                                         <ui:include src="file-configure-dropdown-fragment.xhtml">
-                                            <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
+                                            <ui:param name="configureTools" value="#{FilePage.getConfigureTools()}"/>
                                             <ui:param name="fileId" value="#{FilePage.fileMetadata.dataFile.id}"/>
                                             <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>		
                                             <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>		
@@ -179,6 +179,7 @@
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                                         <ui:param name="isFilePg" value="true"/>
                                         <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
+                                        <ui:param name="exploreTools" value="#{FilePage.exploreTools}"/>
                                     </ui:include>
                                 </div>
                                 <!-- END: Explore/Download/Request Button Block -->
@@ -466,7 +467,6 @@
                             <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                             <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                            <ui:param name="twoRavensHelper" value="#{FilePage.twoRavensHelper}"/>
                             <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                         </ui:include>
                     </p:dialog>

@@ -47,29 +47,36 @@
         </div>
     </ui:fragment>
 
-    <div class="btn-group" jsf:rendered="#{twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">           
-        <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
+    <!--"Explore" button (dropdown of tools)-->
+    <!--exploreTools is set as a ui:param by the file and dataset pages-->
+    <!--Note that "WorldMap Explore" is not an explore tool (external tool)-->
+    <div class="btn-group" jsf:rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools or (worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
         </button>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-            <li><!-- Two Ravens -->
-                <h:commandLink rendered="#{!downloadPopupRequired}"
-                               styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                               action="#{fileDownloadService.startExploreDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
-                    #{bundle['file.explore.twoRavens']} 
-                </h:commandLink>
-                <p:commandLink rendered="#{downloadPopupRequired}"                                            
-                               action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                               process="@this"
-                               update="@widgetVar(downloadPopup)"
-                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                    #{bundle['file.explore.twoRavens']} 
-                </p:commandLink>                          
-            </li>
-            <li><!-- WorldMap Explore -->
+            <!--external tools-->
+            <ui:repeat var="tool" value="#{exploreTools}">
+                <li>
+                    <h:commandLink rendered="#{!downloadPopupRequired}"
+                                   styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                                   disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}" target="_blank">
+                        #{tool.displayName}
+                    </h:commandLink>
+                    <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
+                    <p:commandLink rendered="#{downloadPopupRequired}"
+                                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
+                                   disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   process="@this"
+                                   update="@widgetVar(downloadPopup)"
+                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                        #{tool.displayName}
+                    </p:commandLink>
+                </li>
+            </ui:repeat>
+            <!--WorldMap Explore-->
+            <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
                 <h:commandLink rendered="#{!downloadPopupRequired}"
                                styleClass="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
@@ -89,46 +96,6 @@
             </li>                       
         </ul>
     </div>
-
-    <ui:fragment rendered="#{ twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata) and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
-        <!-- TwoRavens Explore button ONLY ... not WorldMap -->
-        <h:commandLink rendered="#{!downloadPopupRequired}"
-                       type="button" 
-                       styleClass="btn btn-default #{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                       disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                       action="#{fileDownloadService.startExploreDownloadLink( guestbookResponse, fileMetadata )}" target="_blank">
-            <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
-        </h:commandLink>
-        <p:commandLink rendered="#{downloadPopupRequired}"
-                       type="button" styleClass="btn btn-default"
-                       process="@this"
-                       action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'explore' )}"
-                       update="@widgetVar(downloadPopup)"
-                       disabled="#{fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
-                       oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
-        </p:commandLink>
-    </ui:fragment>
-
-    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata) and !(twoRavensHelper.canSeeTwoRavensExploreButtonFromPage(fileMetadata))}">
-        <!-- WorldMap Explore button ONLY ... not TwoRavens -->
-        <h:commandLink pt:role="button" rendered="#{!downloadPopupRequired}"
-                       type="button" 
-                       styleClass="btn btn-default #{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}" 
-                       disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                       title="Explore" action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
-        </h:commandLink>
-        <p:commandLink rendered="#{downloadPopupRequired}"
-                       type="button" styleClass="btn btn-default"
-                       process="@this"
-                       action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
-                       update="@widgetVar(downloadPopup)"
-                       disabled="#{fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
-                       oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
-        </p:commandLink>
-    </ui:fragment>
     
     <!-- Compute Button *File pg only*: -->
     <h:outputLink value="#{FilePage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{isFilePg and FilePage.showComputeButton() and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
