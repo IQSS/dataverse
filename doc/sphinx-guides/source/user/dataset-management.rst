@@ -427,7 +427,7 @@ If you deaccession the most recently published version of the dataset but not al
    :class: img-responsive
 .. |image3| image:: ./img/data_publishing_version_workflow.png
    :class: img-responsive
-.. |file-upload-prov-button| image:: ./img/prov1.png
+.. |file-upload-prov-button| image:: ./img/prov0.png
    :class: img-responsive
-.. |file-upload-prov-window| image:: ./img/prov2.png
+.. |file-upload-prov-window| image:: ./img/prov1.png
    :class: img-responsive
