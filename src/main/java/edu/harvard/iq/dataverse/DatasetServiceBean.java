@@ -247,17 +247,19 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiShoulder = settingsService.getValueForKey(SettingsServiceBean.Key.DoiShoulder, "");
+        if(doiShoulder.indexOf(settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, "/"))>=0) {
+          logger.warning("doiShoulder cannot contain / or doiSeparator");
+        }  
         switch (doiIdentifierType) {
             case "randomString":
                 return generateIdentifierAsRandomString(dataset, idServiceBean);
             case "sequentialNumber":
                 return generateIdentifierAsSequentialNumber(dataset, idServiceBean);
             case "shoulderWithRandomString":
-            	 String doiShoulder = settingsService.getValueForKey(SettingsServiceBean.Key.DoiShoulder, "");
             	 return doiShoulder + generateIdentifierAsRandomString(dataset, idServiceBean);
             case "shoulderWithSequentialNumber":
-           	 String doiShoulder = settingsService.getValueForKey(SettingsServiceBean.Key.DoiShoulder, "");
-           	 return doiShoulder + generateIdentifierAsSequentialNumber(dataset, idServiceBean);
+           	 	 return doiShoulder + generateIdentifierAsSequentialNumber(dataset, idServiceBean);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
                 return generateIdentifierAsRandomString(dataset, idServiceBean);
