@@ -415,7 +415,8 @@ public class DatasetPage implements java.io.Serializable {
         for (Entry<String,String> entry : contents) {
             String datasetName = entry.getKey();
             String containerName = entry.getValue();
-            datasetName = datasetName.replace(" ", "%20");
+            //TODO: figure out better solution for slashes
+            datasetName = datasetName.replace(" ", "%20").replace("/", "").replace("\\", "");
             url += "&" + datasetName + "=" + containerName;
         }
         return url;
