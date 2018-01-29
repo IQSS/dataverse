@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,6 +59,16 @@ public class GuestbookResponse implements Serializable {
     private String email;
     private String institution;
     private String position;
+    /**
+     * Possible values for downloadType include "Download", "Subset",
+     * "WorldMap", or the displayName of an ExternalTool.
+     *
+     * TODO: Types like "Download" and "Subset" and probably "WorldMap" should
+     * be defined once as constants (likely an enum) rather than having these
+     * strings duplicated in various places when setDownloadtype() is called.
+     * (Some day it would be nice to convert WorldMap into an ExternalTool but
+     * it's not worth the effort at this time.)
+     */
     private String downloadtype;
     private String sessionId;
         
@@ -80,6 +91,14 @@ public class GuestbookResponse implements Serializable {
     
     @Transient 
     private boolean writeResponse = true;
+
+    /**
+     * This transient variable is a place to temporarily retrieve the
+     * ExternalTool object from the popup when the popup is required on the
+     * dataset page. TODO: Some day, investigate if it can be removed.
+     */
+    @Transient
+    private ExternalTool externalTool;
 
     public boolean isWriteResponse() {
         return writeResponse;
@@ -104,6 +123,14 @@ public class GuestbookResponse implements Serializable {
 
     public void setFileFormat(String downloadFormat) {
         this.fileFormat = downloadFormat;
+    }
+
+    public ExternalTool getExternalTool() {
+        return externalTool;
+    }
+
+    public void setExternalTool(ExternalTool externalTool) {
+        this.externalTool = externalTool;
     }
 
     public GuestbookResponse(){
