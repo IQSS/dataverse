@@ -949,7 +949,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     private void setWeekdayFromInteger(Integer weekday) {
         if (weekday == null || weekday < 1 || weekday > 7) {
-            weekday = 1;
+            weekday = 0;  //set default to Sunday
         }
         this.newHarvestingScheduleDayOfWeek = getWeekDays().get(weekday);
     }
