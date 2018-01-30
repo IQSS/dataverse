@@ -170,6 +170,8 @@ Out of the box, Dataverse is configured for DOIs. Here are the configuration opt
 - :ref:`:Protocol <:Protocol>`
 - :ref:`:Authority <:Authority>`
 - :ref:`:DoiSeparator <:DoiSeparator>`
+- :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
+- :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 
 Configuring Dataverse for Handles
 +++++++++++++++++++++++++++++++++
@@ -792,6 +794,7 @@ We have provided an example :download:`here </_static/util/pg8-createsequence-pr
 
 Please note that ``:IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``:DataFilePIDFormat`` below for more details.
 
+.. _:DataFilePIDFormat:
 
 :DataFilePIDFormat
 ++++++++++++++++++
