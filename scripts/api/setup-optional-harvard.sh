@@ -31,7 +31,7 @@ curl -X PUT -d true "$SERVER/admin/settings/:ScrubMigrationData"
 echo  "- Enabling Shibboleth"
 curl -X POST -H "Content-type: application/json" http://localhost:8080/api/admin/authenticationProviders --upload-file ../../doc/sphinx-guides/source/_static/installation/files/etc/shibboleth/shibAuthProvider.json
 echo  "- Enabling TwoRavens"
-curl -s -X PUT -d true "$SERVER/admin/settings/:TwoRavensTabularView"
+curl -X POST -H 'Content-type: application/json' --upload-file ../../doc/sphinx-guides/source/_static/installation/files/root/external-tools/twoRavens.json http://localhost:8080/api/admin/externalTools
 echo  "- Enabling Geoconnect"
 curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectCreateEditMaps"
 curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectViewMaps"

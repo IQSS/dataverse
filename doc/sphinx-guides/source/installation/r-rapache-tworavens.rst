@@ -314,25 +314,19 @@ Compare the two files. **It is important that the two copies are identical**.
 *(Yes, this is a HACK! We are working on finding a better way to ensure this compatibility between 
 TwoRavens and Dataverse!)*
 
-e. Enable TwoRavens' Explore Button in Dataverse
-------------------------------------------------
+e. Enable TwoRavens Button in Dataverse
+---------------------------------------
 
-Now that you have installed TwoRavens, the following must be done in order to 
-integrate it with your Dataverse. 
+Now that you have installed TwoRavens, you can make it available to your users by adding it an "external tool" for your Dataverse installation. (For more on external tools in general, see the :doc:`external-tools` section.)
 
-First, enable the Data Explore option:: 
+First, download :download:`twoRavens.json <../_static/installation/files/root/external-tools/twoRavens.json>` as a starting point and edit ``toolUrl`` in that external tool manifest file to be the URL where you want TwoRavens to run. This is the URL reported by the installer script (as in the example at the end of step ``c.``, above).
 
-        curl -X PUT -d true http://localhost:8080/api/admin/settings/:TwoRavensTabularView
- 
-Once enabled, the 'Explore' button will appear next to ingested tabular data files; clicking it will redirect
+Once you have made your edits, make the tool available within Dataverse with the following curl command (assuming ``twoRavens.json`` is in your current working directory):
+
+``curl -X POST -H 'Content-type: application/json' --upload-file twoRavens.json http://localhost:8080/api/admin/externalTools``
+
+Once enabled, an "Explore" dropdown will appear next to ingested tabular data files a "TwoRavens" button; clicking it will redirect
 the user to the instance of TwoRavens, initialized with the data variables from the selected file. 
-
-Then, the TwoRavens URL must be configured in the settings of your Dataverse application - so that it knows where to redirect the user. 
-This can be done by issuing the following API call::
-
-        curl -X PUT -d {TWORAVENS_URL} http://localhost:8080/api/admin/settings/:TwoRavensUrl
-
-where :fixedwidthplain:`{TWORAVENS_URL}` is the URL reported by the installer script (as in the example at the end of step ``c.``, above).
 
 f. Perform a quick test of TwoRavens functionality
 --------------------------------------------------
