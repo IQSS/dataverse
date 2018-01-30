@@ -55,6 +55,134 @@ A command-line tool called ``jq`` ( http://stedolan.github.io/jq/ ) is required 
 
 If you are already using ``brew``, ``apt-get``, or ``yum``, you can install ``jq`` that way. Otherwise, download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your ``$PATH`` (``/usr/bin/jq`` is fine) and executable with ``sudo chmod +x /usr/bin/jq``.
 
+Core Provenance Library (CPL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Core Provenance Library (CPL) is at the core of Dataverse's support for provenance. The code can be found at https://github.com/ProvTools/prov-cpl
+
+Note that there are Java tests at https://github.com/ProvTools/prov-cpl/blob/master/bindings/java/CPL/test.java
+
+Installing CPL on Mac
+^^^^^^^^^^^^^^^^^^^^^
+
+- git clone https://github.com/ProvTools/prov-cpl
+- ``cd prov-cpl``
+- ``mkvirtualenv cpl`` (or ``workon cpl``)
+- ``cd bindings/python/CPL``
+- ``python setup.py install``
+- ``../CPLDirect``
+- ``brew install swig``
+- ``wget https://github.com/nlohmann/json/releases/download/v3.0.1/json.hpp``
+- ``mv json.hpp include``
+- ``make``
+- TODO: Once ``make`` of ``CPLDirect`` is working, move on to these steps.
+- ``python setup.py install``
+- ``cd ../../python/RestAPI``
+- ``python flaskAPI.py``
+
+Installing CPL on Ubuntu
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Step one: Build and install ``lipcpl``.
+
+git clone https://github.com/ProvTools/prov-cpl
+cd prov-cpl
+(copy Vagrant file into place)
+vagrant up
+sudo apt-get install make
+sudo apt-get install g++
+sudo apt-get install libboost-dev
+sudo apt-get install unixodbc-dev
+wget https://github.com/nlohmann/json/releases/download/v3.0.1/json.hpp
+mv json.hpp include
+sudo make install
+
+The presence of files such as `/usr/local/lib/libcpl-odbc.3.0.so` means that the `make` command above was successful.
+
+Step two: Get REST service running.
+
+cd /prov-cpl/bindings/python
+sudo apt-get install swig
+sudo apt-get install python-dev
+# 1 GB was too little memory for `make release`.
+make release
+sudo make install
+cd /prov-cpl/bindings/python/RestAPI
+sudo apt-get install python-pip
+
+cat /etc/odbcinst.ini 
+[PostgreSQL]
+Description = PostgreSQL ODBC driver (Unicode version)
+Driver = psqlodbcw.so
+
+sudo apt-get install odbc-postgresql
+
+sudo vim /etc/odbc.ini
+cat /etc/odbc.ini
+[CPL]
+Description     = PostgreSQL Core Provenance Library
+Driver          = PostgreSQL
+Server          = localhost
+Database        = cpl
+Port            = 
+Socket          = 
+Option          = 
+Stmt            = 
+User            = cpl
+Password        = cplcplcpl
+
+sudo apt-get install postgresql
+sudo /etc/init.d/postgresql start
+sudo cp -a /etc/postgresql/9.5/main/pg_hba.conf /etc/postgresql/9.5/main/pg_hba.conf.orig
+sudo vim /etc/postgresql/9.5/main/pg_hba.conf
+vagrant@ubuntu-xenial:/prov-cpl/scripts$ sudo diff -u /etc/postgresql/9.5/main/pg_hba.conf.orig /etc/postgresql/9.5/main/pg_hba.conf
+--- /etc/postgresql/9.5/main/pg_hba.conf.orig   2018-01-30 21:18:22.614242152 +0000
++++ /etc/postgresql/9.5/main/pg_hba.conf        2018-01-30 21:26:06.318242152 +0000
+@@ -82,11 +82,12 @@
+ # maintenance (custom daily cronjobs, replication, and similar tasks).
+ #
+ # Database administrative login by Unix domain socket
+-local   all             postgres                                peer
++local   all             postgres                                trust
+ 
+ # TYPE  DATABASE        USER            ADDRESS                 METHOD
+ 
+ # "local" is for Unix domain socket connections only
++local   cpl             cpl                                     peer
+ local   all             all                                     peer
+ # IPv4 local connections:
+ host    all             all             127.0.0.1/32            md5
+vagrant@ubuntu-xenial:/prov-cpl/scripts$ 
+sudo /etc/init.d/postgresql restart
+sudo -i
+su - postgres
+cd /prov-cpl/scripts
+sudo psql -U postgres postgres < postgresql-setup-default.sql
+(still postgres user, which is weird, otherwise we get a postgres error about the vagrant user)
+cd /prov-cpl/bindings/python/RestAPI
+pip install flask # This version tested: Flask-0.12.2-py2.py3-none-any.whl
+python cpl-rest.py
+(see rest-docs.txt for more)
+curl http://127.0.0.1:5000/provapi/bundle/42
+
+Installing CPL on CentOS
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+- git clone https://github.com/ProvTools/prov-cpl
+- ``cd prov-cpl``
+- ``vagrant up`` (CentOS 7 base box from Dataverse repo)
+- ``vagrant ssh``
+- ``sudo -i``
+- ``cd /prov-cpl``
+- ``yum install /usr/bin/lsb_release``
+- ``yum install /usr/bin/g++``
+- ``wget https://github.com/nlohmann/json/releases/download/v3.0.1/json.hpp``
+- ``mv json.hpp include``
+- FIXME: ``make install`` is not working because of ``json.hpp`` dependency (compiler too old for CentOS 7): https://github.com/ProvTools/prov-cpl/issues/4
+- ``make install``
+
+TODO: For RHEL and CentOS users, should we create a CPL RPM?
+
 Recommendations
 ---------------
 
