@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.users;
 
+import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
@@ -11,7 +12,10 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -105,7 +109,10 @@ public class AuthenticatedUser implements User, Serializable {
 
     @Column(nullable=true)
     private Timestamp lastApiUseTime;   // last API use with user's token
-            
+    
+    @Transient
+    private Cart cart;
+    
     private boolean superuser;
 
     /**
@@ -421,5 +428,15 @@ public class AuthenticatedUser implements User, Serializable {
         }
         return null;
     }
-
+    
+    public Cart getCart() {
+        if (cart == null){
+            cart = new Cart();
+        }
+        return cart;
+    }
+    
+    public void setCart(Cart cart) {
+        this.cart = cart;
+    }
 }

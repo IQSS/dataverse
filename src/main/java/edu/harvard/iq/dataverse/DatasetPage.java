@@ -90,6 +90,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap;
 import java.util.Collections;
 
@@ -111,6 +112,9 @@ import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.json.JSONObject;
+
+import java.net.URLEncoder;
+
 
 /**
  *
@@ -183,8 +187,6 @@ public class DatasetPage implements java.io.Serializable {
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
-    @EJB
-    Cart cart;
     @EJB
     ExternalToolServiceBean externalToolService;
     @Inject
@@ -366,67 +368,79 @@ public class DatasetPage implements java.io.Serializable {
         this.lazyModel = lazyModel;
     }
     
-    public List<String> getBatchList() {
-        List<Entry<String,String>> contents = cart.getContents();
-        List<String> list = new ArrayList<>();
-        for (Entry<String,String> entry : contents) {
-            String datasetName = entry.getKey();
-            list.add(datasetName);
+    public List<Entry<String,String>> getCartList() {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            return ((AuthenticatedUser) session.getUser()).getCart().getContents();
         }
-        return list;
+        return null;
     }
     
-    public boolean checkCartForItem(String title, String containerName) {
-        List<Entry<String,String>> contents = cart.getContents();
-        return contents.contains(cart.createEntry(title, containerName));
+    public boolean checkCartForItem(String title, String persistentId) {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            List<Entry<String,String>> contents = authUser.getCart().getContents();
+            return contents.contains(authUser.getCart().createEntry(title, persistentId));
+        }
+        return false;
     }
 
-    public void addItemtoCart(String title, String containerName) throws Exception{
-        try {
-            cart.addItem(title, containerName);
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
-        } catch (Exception ex){
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+    public void addItemtoCart(String title, String persistentId) throws Exception{
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            try {
+                authUser.getCart().addItem(title, persistentId);
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+            } catch (Exception ex){
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+            }
         }
     }
     
-    public void removeCartItem(String title, String containerName) throws Exception {
-        try {
-            cart.removeItem(title, containerName);
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
-        } catch (Exception ex){
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+    public void removeCartItem(String title, String persistentId) throws Exception {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            try {
+                authUser.getCart().removeItem(title, persistentId);
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+            } catch (Exception ex){
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+            }
         }
     }
     
     public void clearCart() throws Exception {
-        try {
-            cart.clear();
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
-        } catch (Exception ex){
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            try {
+                authUser.getCart().clear();
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+            } catch (Exception ex){
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+            }
         }
     }
     
-    public String getBatchComputeUrl() {
-        String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "&batch";
-        List<Entry<String,String>> contents = cart.getContents();
-        for (Entry<String,String> entry : contents) {
-            String datasetName = entry.getKey();
-            String containerName = entry.getValue();
-            //TODO: figure out better solution for slashes
-            datasetName = datasetName.replace(" ", "%20").replace("/", "").replace("\\", "");
-            url += "&" + datasetName + "=" + containerName;
+    public boolean isCartEmpty() {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            return authUser.getCart().getContents().isEmpty();
         }
-        return url;
+        return true;
     }
     
-    public boolean isBatchListEmpty() {
-        List<Entry<String,String>> contents = cart.getContents();
-        if (contents.size() == 0) {
-            return true;
+        
+    public String getCartComputeUrl() {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
+            List<Entry<String,String>> contents = authUser.getCart().getContents();
+            for (Entry<String,String> entry : contents) {
+                String persistentIdUrl = entry.getValue();
+                url += "&" + persistentIdUrl;
+            }
+            return URLEncoder.encode(url);
         }
-        return false;
+        return "";
     }
 
     private String fileLabelSearchTerm;
@@ -637,16 +651,11 @@ public class DatasetPage implements java.io.Serializable {
     --SF
     */
     public String getComputeUrl() throws IOException {
-        SwiftAccessIO swiftObject = getSwiftObject();
-        if (swiftObject != null) {
-            swiftObject.open();
-            if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-                return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName();
-            }
-            //assuming we are able to get a temp url for a dataset
-            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
-        }
-        return "";
+
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "&" + this.getPersistentId();
+            //WHEN we are able to get a temp url for a dataset
+            //return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+
         
     }
     
@@ -664,10 +673,10 @@ public class DatasetPage implements java.io.Serializable {
             logger.info("DatasetPage: Failed to get storageIO");
         }
         if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName();
+            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "&" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName();
         }
         
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "&" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
 
     }
     

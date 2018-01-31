@@ -70,22 +70,22 @@
                                 <ul class="dropdown-menu pull-left text-left" role="menu">
                                     <li jsf:rendered="#{true}">
                                         <!-- Compute dataset link -->
-                                        <h:outputLink value="#" target="_blank">
+                                        <h:outputLink value="#{DatasetPage.computeUrl}" target="_blank">
                                             <h:outputText value="#{bundle['dataset.compute.computeBatchSingle']}"/>
                                         </h:outputLink>
                                     </li>
-                                    <li jsf:rendered="#{!DatasetPage.isBatchListEmpty()}" class="divider"></li>
-                                    <li jsf:rendered="#{!DatasetPage.checkCartForItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}">
+                                    <li jsf:rendered="#{!DatasetPage.isCartEmpty()}" class="divider"></li>
+                                    <li jsf:rendered="#{!DatasetPage.checkCartForItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getPersistentId())}">
                                         <!-- Add link -->
-                                        <p:commandLink action="#{DatasetPage.addItemtoCart(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}"
+                                        <p:commandLink action="#{DatasetPage.addItemtoCart(DatasetPage.dataset.getDisplayName(), DatasetPage.getPersistentId())}"
                                             disabled="#{DatasetPage.locked}" value="#{bundle['dataset.compute.computeBatchAdd']}" update=":datasetForm,:messagePanel">
                                             <h:outputText value="#{bundle['dataset.compute.computeBatchAdd']}"/>
                                         </p:commandLink>
                                     </li>
-                                    <ui:fragment rendered="#{!DatasetPage.isBatchListEmpty()}">
-                                        <li jsf:rendered="#{DatasetPage.checkCartForItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}">
+                                    <ui:fragment rendered="#{!DatasetPage.isCartEmpty()}">
+                                        <li jsf:rendered="#{DatasetPage.checkCartForItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getPersistentId())}">
                                             <!-- Remove link -->
-                                            <p:commandLink value="#{bundle['dataset.compute.computeBatchRemove']}" action="#{DatasetPage.removeCartItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}" update=":datasetForm,:messagePanel">  
+                                            <p:commandLink value="#{bundle['dataset.compute.computeBatchRemove']}" action="#{DatasetPage.removeCartItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getPersistentId())}" update=":datasetForm,:messagePanel">  
                                                 <h:outputText value="#{bundle['dataset.compute.computeBatchRemove']}"/>
                                             </p:commandLink>
                                         </li>
@@ -106,7 +106,7 @@
                                         </li>
                                         <li>
                                             <!-- Compute batch link -->
-                                            <h:outputLink value="#{DatasetPage.batchComputeUrl}" target="_blank">
+                                            <h:outputLink value="#{DatasetPage.cartComputeUrl}" target="_blank">
                                                 <h:outputText id="compute-batch-button" value="#{bundle['dataset.compute.computeBatchCompute']}" />
                                             </h:outputLink>
                                         </li>
@@ -1334,17 +1334,21 @@
                                 <span class="glyphicon glyphicon-remove"/> <h:outputText value="#{bundle['dataset.compute.computeBatchClear']}"/>
                             </p:commandLink>
                         </div>
-                        <h:dataTable id="computeBatch" class="table table-striped" value="#{DatasetPage.batchList}" var='computeBatchDatasetName'>
+                        <h:dataTable id="computeBatch" class="table table-striped" value="#{DatasetPage.cartList}" var='computeCartDatasetList'>
                             <h:column>
                                 <f:facet name="header">#{bundle.dataset}</f:facet>
-                                <h:outputText value="#{computeBatchDatasetName}"/>
+                                <h:outputText value="#{computeCartDatasetList.key}"/>
                             </h:column>
                             <h:column>
-                                <p:commandButton value="#{bundle['dataset.compute.computeBatchRemove']}" action="#{DatasetPage.removeCartItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getSwiftContainerName())}" update=":datasetForm,:messagePanel"/>
+                                <f:facet name="header">#{bundle['dataset.metadata.persistentId']}</f:facet>
+                                <h:outputText value="#{computeCartDatasetList.value}"/>
+                            </h:column>
+                            <h:column>
+                                <p:commandButton value="#{bundle['dataset.compute.computeBatchRemove']}" action="#{DatasetPage.removeCartItem(computeCartDatasetList.key, computeCartDatasetList.value)}" update=":datasetForm,:messagePanel"/>
                             </h:column>
                         </h:dataTable>
                         <div class="button-block">
-                            <h:outputLink styleClass="btn btn-default" value="#{DatasetPage.batchComputeUrl}" onclick="PF('computeBatchListPopup').hide()" target="_blank">
+                            <h:outputLink styleClass="btn btn-default" value="#{DatasetPage.cartComputeUrl}" onclick="PF('computeBatchListPopup').hide()" target="_blank">
                                 <h:outputText value="#{bundle['dataset.compute.computeBatchCompute']}"/>
                             </h:outputLink>
                             <h:commandButton styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('computeBatchListPopup').hide();" type="button" />
