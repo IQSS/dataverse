@@ -72,6 +72,7 @@ public class SystemConfig {
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
 
+    // TODO: Move saneDefaultForSolrHostColonPort into the getSolrHostColonPort method.
     /**
      * A common place to find the String for a sane Solr hostname:port
      * combination.
@@ -221,6 +222,12 @@ public class SystemConfig {
     public String getSolrHostColonPort() {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
         return solrHostColonPort;
+    }
+
+    public String getProvServiceUrl() {
+        String saneDefault = "http://localhost:7777";
+        String provServiceUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ProvServiceUrl, saneDefault);
+        return provServiceUrl;
     }
 
     public int getMinutesUntilConfirmEmailTokenExpires() {

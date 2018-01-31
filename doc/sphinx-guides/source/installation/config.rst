@@ -1157,6 +1157,15 @@ You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
 
+.. _:ProvServiceUrl:
+
+:ProvServiceUrl
++++++++++++++++
+
+The provenance service URL is where the provenance system runs. Like Solr, it is an external service that Dataverse interacts with via REST API calls. Defaults to "http://localhost:7777".
+
+``curl -X PUT -d 'http://localhost:5000' http://localhost:8080/api/admin/settings/:ProvServiceUrl``
+
 .. _:ComputeBaseUrl:
 
 :ComputeBaseUrl

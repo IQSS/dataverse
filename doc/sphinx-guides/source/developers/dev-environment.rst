@@ -81,7 +81,7 @@ Download :download:`Vagrantfile <../_static/developers/prov/Vagrantfile>` and :d
 
 If you get an HTTP response and JSON output, you have successfully set up the REST service. The next step is to configure Dataverse to use it.
 
-FIXME: Add database setting similar to Solr (hostname and port) and explain how to use it.
+curl -X PUT -d 'http://localhost:7777' http://localhost:8080/api/admin/settings/:ProvServiceUrl
 
 Installing CPL on Ubuntu
 ^^^^^^^^^^^^^^^^^^^^^^^^
