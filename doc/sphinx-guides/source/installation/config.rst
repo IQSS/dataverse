@@ -319,7 +319,7 @@ You must also specify the AWS region, in the ``config`` file, for example:
 Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish instance. (From the `AWS Command Line Interface Documentation <http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_: "In order to separate credentials from less sensitive options, region and output format are stored in a separate file named config in the same folder")
 
 Set Up Access Configuration Via Command Line Tools
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
