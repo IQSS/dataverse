@@ -187,6 +187,8 @@ Here are the configuration options for handles:
 
 - :ref:`:Protocol <:Protocol>`
 - :ref:`:Authority <:Authority>`
+- :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
+- :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
