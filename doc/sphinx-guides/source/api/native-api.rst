@@ -172,7 +172,7 @@ Updates the current draft version of dataset ``$id``. If the dataset does not ha
 
 Moves a dataset whose id is passed to a dataverse whose alias is passed. ::
 
-    POST http://$SERVER/api/datasets/$id/$alias/move?key=$apiKey
+    POST http://$SERVER/api/datasets/$id/move/$alias?key=$apiKey
 
 Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
 
