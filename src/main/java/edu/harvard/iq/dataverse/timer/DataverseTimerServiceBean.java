@@ -258,8 +258,8 @@ public class DataverseTimerServiceBean implements Serializable {
             } else if (harvestingClient.getSchedulePeriod().equals(harvestingClient.SCHEDULE_PERIOD_WEEKLY)) {
                 intervalDuration = 1000 * 60 * 60 * 24 * 7;
                 initExpiration.set(Calendar.HOUR_OF_DAY, harvestingClient.getScheduleHourOfDay());
-                initExpiration.set(Calendar.DAY_OF_WEEK, harvestingClient.getScheduleDayOfWeek());
-
+                initExpiration.set(Calendar.DAY_OF_WEEK, harvestingClient.getScheduleDayOfWeek() + 1); //(saved as zero-based array but Calendar is one-based.)
+  
             } else {
                 logger.log(Level.WARNING, "Could not set timer for harvesting client id=" + harvestingClient.getId() + ", unknown schedule period: " + harvestingClient.getSchedulePeriod());
                 return;
