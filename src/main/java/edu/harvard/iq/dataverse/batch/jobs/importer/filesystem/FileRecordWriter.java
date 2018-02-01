@@ -27,12 +27,14 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import javax.annotation.PostConstruct;
@@ -86,6 +88,9 @@ public class FileRecordWriter extends AbstractItemWriter {
 
     @EJB
     AuthenticationServiceBean authenticationServiceBean;
+    
+    @EJB
+    SettingsServiceBean settingsService;
     
     @EJB
     DataFileServiceBean dataFileServiceBean;
@@ -352,6 +357,40 @@ public class FileRecordWriter extends AbstractItemWriter {
         
         dataset.getLatestVersion().getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
+        
+        IdServiceBean idServiceBean = IdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+        if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
+            packageFile.setIdentifier(dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean));
+        }
+        String nonNullDefaultIfKeyNotFound = "";
+        String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        String doiSeparator = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
+        if (packageFile.getProtocol() == null) {
+            packageFile.setProtocol(protocol);
+        }
+        if (packageFile.getAuthority() == null) {
+            packageFile.setAuthority(authority);
+        }
+        if (packageFile.getDoiSeparator() == null) {
+            packageFile.setDoiSeparator(doiSeparator);
+        }
+
+        if (!packageFile.isIdentifierRegistered()) {
+            String doiRetString = "";
+            idServiceBean = IdServiceBean.getBean(commandEngine.getContext());
+            try {
+                doiRetString = idServiceBean.createIdentifier(packageFile);
+            } catch (Throwable e) {
+                
+            }
+
+            // Check return value to make sure registration succeeded
+            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
+                packageFile.setIdentifierRegistered(true);
+                packageFile.setGlobalIdCreateTime(new Date());
+            }
+        }
 
         getJobLogger().log(Level.INFO, "Successfully created a file of type package");
         
