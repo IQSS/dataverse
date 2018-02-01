@@ -11,10 +11,13 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,8 @@ import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Context;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -49,10 +54,18 @@ public class MoveDatasetCommandTest {
     	Dataverse root, childA, childB, grandchildAA;
 	DataverseEngine testEngine;
         MetadataBlock blockA, blockB, blockC, blockD;
+        AuthenticatedUser auth, nobody;
+        @Context
+        protected HttpServletRequest httpRequest;
 	
     @Before
     public void setUp() {
 
+        auth = makeAuthenticatedUser("Super", "User");
+        auth.setSuperuser(true);
+        nobody = makeAuthenticatedUser("Nick", "Nobody");
+        nobody.setSuperuser(false);
+        
         blockA = new MetadataBlock();
         blockA.setName("blockA");
         blockA.setId(1l);
@@ -394,23 +407,23 @@ public class MoveDatasetCommandTest {
 	@Test
 	public void testValidMove() throws Exception {
                        
-            
-		testEngine.submit(new MoveDatasetCommand(null, moved, childA));
+            DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+		testEngine.submit(new MoveDatasetCommand(aRequest, moved, childA));
 		
 		assertEquals( childA, moved.getOwner() );
 		
 	}
 	
 	/**
-	 * Moving DS to DV without congruent metadata blocks.
+	 * Moving DS to its owning DV 
         * @throws java.lang.Exception
 	 */
 	@Test( expected=IllegalCommandException.class )
 	public void testInvalidMove() throws Exception {
                 
-            
+            DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
 		testEngine.submit(
-				new MoveDatasetCommand(null, moved, childB));
+				new MoveDatasetCommand(aRequest, moved, root));
 		fail();
 	}
     

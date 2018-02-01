@@ -439,23 +439,26 @@ public class Datasets extends AbstractApiBean {
     }
     
     @POST
-    @Path("{id}/{targetDataverseAlias}/move")
-    public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias) {
+    @Path("{id}/move/{targetDataverseAlias}")
+    public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias) {        
         try{
+            User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Not a superuser");
+            }
+            
             Dataset ds = findDatasetOrDie(id);
             Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
             if (target == null){
                 return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
             }
-            
             execCommand(new MoveDatasetCommand(
-                    createDataverseRequest(findAuthenticatedUserOrDie()), ds, target
+                    createDataverseRequest(u), ds, target
                     ));
             return ok("Dataset moved successfully");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-
     }
     @GET
     @Path("{id}/links")

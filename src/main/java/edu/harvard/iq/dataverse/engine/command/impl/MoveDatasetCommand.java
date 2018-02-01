@@ -7,16 +7,16 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import java.util.List;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,11 +25,10 @@ import java.util.logging.Logger;
  *
  * @author skraffmi
  */
-@RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset}),
-    @RequiredPermissions(dataverseName = "source", value = Permission.EditDataset),
-    @RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset})
-})
+
+// the permission annotation is open, since this is a superuser-only command - 
+// and that's enforced in the command body:
+@RequiredPermissions({})
 public class MoveDatasetCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(MoveDatasetCommand.class.getCanonicalName());
@@ -37,39 +36,24 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     final Dataverse destination;
 
     public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination) {
-        super(aRequest, dv("moved", moved),
-                dv("source", moved.getOwner()),
-                dv("destination", destination));
+        super(aRequest, moved);
         this.moved = moved;
         this.destination = destination;
     }
 
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
+        
+       // first check if  user is a superuser
+        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
+            throw new PermissionException("Move Dataset can only be called by superusers.",
+                this,  Collections.singleton(Permission.DeleteDatasetDraft), moved);                
+        }
+        
+        
         // validate the move makes sense
         if (moved.getOwner().equals(destination)) {
             throw new IllegalCommandException("Dataset already in this Dataverse ", this);
-        }
-
-        //Test Metadata Blocks
-        // As long as the target DV has all of the blocks contained in the source it's OK
-        // target may have more blocks.
-        List<MetadataBlock> sourceMetadataBlocks = moved.getOwner().getMetadataBlocks();
-
-        List<MetadataBlock> targetMetadataBlocks = destination.getMetadataBlocks();
-        boolean containsAll = true;
-        for (MetadataBlock mdbSource : sourceMetadataBlocks) {
-            boolean found = false;
-            for (MetadataBlock mdbTarget : targetMetadataBlocks) {
-                if (mdbTarget.equals(mdbSource)) {
-                    found = true;
-                }
-            }
-            containsAll &= found;
-        }
-
-        if (!containsAll) {
-            throw new IllegalCommandException("Metadata Blocks are incompatible for moving this Dataset ", this);
         }
 
         // OK, move
