@@ -170,7 +170,7 @@ Updates the current draft version of dataset ``$id``. If the dataset does not ha
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Moves a dataset whose id is passed to a dataverse whose alias is passed. ::
+Moves a dataset whose id is passed to a dataverse whose alias is passed. Only accessible to superusers. ::
 
     POST http://$SERVER/api/datasets/$id/move/$alias?key=$apiKey
 
