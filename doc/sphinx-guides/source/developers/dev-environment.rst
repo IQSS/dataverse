@@ -88,6 +88,51 @@ Installing CPL on Ubuntu
 
 The "Installing CPL on Mac" section above provides a setup script for Ubuntu. Give it a shot.
 
+FIXME: Integrate this list into installation script and/or a better install guide
+
+If you run into issues using the vagrant install script to install on ubuntu, here are some things to try:
+
+**Issue:** Import error
+
+ImportError: libcpl-odbc.3.so: cannot open shared object file: No such file or directory
+
+**Solution:** your library path may be incorrect, export it
+
+export LD_LIBRARY_PATH=/usr/local/lib
+
+**Issue:** ODBC connection/driver error
+
+python cpl-rest.py                   
+
+The ODBC driver reported the following while running SQLDriverConnect:
+
+IM002:1:0:[unixODBC][Driver Manager]Data source name not found, and no default driver specified
+
+Traceback (most recent call last):
+
+File "cpl-rest.py", line 5, in <module>
+
+connection = CPL.cpl_connection()
+
+File "/usr/local/lib/python2.7/dist-packages/CPL.py", line 386, in __init__
+
+CPLDirect.cpl_error_string(ret))
+
+Exception: Could not create ODBC connection Database connection error``
+
+**Solution:** ensure /etc/odbc.ini contains the correct configuration. Specifically, the driver in the guide may not exist on your system. 
+
+Call ``odbcinst -q -d`` to see list of drivers, and add one to odbc.ini (unicode is preferred if available)
+
+[CPL]
+
+Description     = PostgreSQL Core Provenance Library
+
+Driver          = PostgreSQL Unicode
+
+...
+
+
 Installing CPL on CentOS
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
