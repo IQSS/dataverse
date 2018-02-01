@@ -165,7 +165,7 @@ Dataverse installations can be configured to facilitate cloud-based storage and/
 Cloud Computing
 ~~~~~~~~~~~~~~~
 
-The "Compute" button on dataset and file pages will take you directly to the cloud computing environment that is integrated with Dataverse, allowing you to perform computations on that file or dataset.
+The "Compute" button on dataset and file pages will allow you to compute on a single dataset, multiple datasets, or a single file by giving you the option to build a compute batch and taking you directly to the cloud computing environment that is integrated with Dataverse.
 
 Cloud Storage Access
 ~~~~~~~~~~~~~~~~~~~~
