@@ -43,13 +43,16 @@ if(document.cookie && document.cookie.search(/_check_is_passive_dv=/) >= 0){
         var cookieStr = document.cookie + ";";
         var startpos = (cookieStr.indexOf('_check_is_passive_dv=')+21);
         var endpos = cookieStr.indexOf(';', startpos);
-        window.location = cookieStr.substring(startpos,endpos);
+        //QDR-901 URLs can have a ; char (we see this with a ;jsessionid=... appended to URLs before the query string)
+        // so we must encode and then decode the URL in the cookie to parse correctly (indexOf(';'... in the line above)
+        window.location = decodeURIComponent(cookieStr.substring(startpos,endpos));
     }
 } else {
     // Mark browser as being isPassive checked
 	//QDR Custom - add a domain shared by drupal and dv components
 	//QDR-901 - set cookie path to / (should really be dataverse root) to make sure passive login check only happens once, even when initial page is at a path (e.g. /dataverse/main)
-    document.cookie = "_check_is_passive_dv=" + window.location + ";path=/;domain=" + window.location.hostname.substring(window.location.hostname.indexOf("."));;
+	//QDR-901 - encode URI in cookie
+    document.cookie = "_check_is_passive_dv=" + encodeURIComponent(window.location.href) + ";path=/;domain=" + window.location.hostname.substring(window.location.hostname.indexOf("."));;
 
     // Redirect to Shibboleth handler
     //QDR-901 - include query in redirect to avoid changing result after passive check
