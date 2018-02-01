@@ -442,16 +442,13 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/move/{targetDataverseAlias}")
     public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias) {        
         try{
-            User u = findUserOrDie();
-            if (!u.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Not a superuser");
-            }
-            
+            User u = findUserOrDie();            
             Dataset ds = findDatasetOrDie(id);
             Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
             if (target == null){
                 return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
             }
+            //Command requires Super user - it will be tested by the command
             execCommand(new MoveDatasetCommand(
                     createDataverseRequest(u), ds, target
                     ));
