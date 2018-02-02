@@ -127,6 +127,7 @@ public class SearchFields {
     public static final String AFFILIATION = "affiliation_ss";
     public static final String FILE_NAME = "fileName";
     public static final String FILE_DESCRIPTION = "fileDescription";
+    public static final String FILE_PERSISTENT_ID = "filePersistentId";
     /**
      * Can be multivalued and includes both "friendly" and "group" versions:
      * "PNG Image", "image"

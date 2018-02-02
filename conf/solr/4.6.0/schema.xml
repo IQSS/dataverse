@@ -276,6 +276,8 @@
    <field name="variableLabel" type="text_en" stored="true" indexed="true" multiValued="true"/>
 
    <field name="fileDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
+   
+   <field name="filePersistentId" type="text_en" stored="true" indexed="true" multiValued="false"/>
 
    <field name="fileTypeGroupFacet" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="fileTypeDisplay" type="string" stored="true" indexed="true" multiValued="false"/>
@@ -594,6 +596,7 @@
    <!-- Dataverse 4.0: we want the "filetype_en" and "filename_without_extension_en" field in the "catchall" per https://redmine.hmdc.harvard.edu/issues/3848  -->
    <copyField source="fileType" dest="text"/>
    <copyField source="fileNameWithoutExtension" dest="text"/>
+   <copyField source="filePersistentId" dest="text"/>
    <!-- <copyField source="manu" dest="text"/> -->
    <!-- <copyField source="features" dest="text"/> -->
    <!-- <copyField source="includes" dest="text"/> -->
