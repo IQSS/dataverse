@@ -377,9 +377,12 @@ Installing CPL on CentOS
 
 We are not aware of any developers using CentOS for their development environment but the hope is that this section will grow up to the point that we can get CPL installed as a REST services on CentOS for production use. There is a known issue where the C++ compiler on CentOS 7 is too old: https://github.com/ProvTools/prov-cpl/issues/4 .
 
-FIXME: Add more RPMs to this list:
+``sudo yum install -y redhat-lsb-core centos-release-scl devtoolset-7 boost-devel unixODBC-devel``
 
-``yum install -y redhat-lsb-core gcc-c++``
+``cd /home/vagrant/prov-cpl``
+
+``sudo make install``
+
 
 TODO: For RHEL and CentOS users, should we create a CPL RPM? And a second RPM to install a REST service that depends on the first?
 
