@@ -55,95 +55,6 @@ A command-line tool called ``jq`` ( http://stedolan.github.io/jq/ ) is required 
 
 If you are already using ``brew``, ``apt-get``, or ``yum``, you can install ``jq`` that way. Otherwise, download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your ``$PATH`` (``/usr/bin/jq`` is fine) and executable with ``sudo chmod +x /usr/bin/jq``.
 
-Core Provenance Library (CPL)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Core Provenance Library (CPL) is at the core of Dataverse's support for provenance. The code can be found at https://github.com/ProvTools/prov-cpl
-
-Note that there are Java tests at https://github.com/ProvTools/prov-cpl/blob/master/bindings/java/CPL/test.java
-
-Installing CPL on Mac
-^^^^^^^^^^^^^^^^^^^^^
-
-If you're feeling adventurous, you can attempt to install CPL directly on your Mac but this is not recommended. Rather, below CPL runs as a REST service within Vagrant.
-
-First, install Vagrant and VirtualBox as described in the :doc:`tools` section.
-
-Then, clone the ``prov-cpl`` repo.
-
-git clone https://github.com/ProvTools/prov-cpl
-
-Download :download:`Vagrantfile <../_static/developers/prov/Vagrantfile>` and :download:`vagrant.sh <../_static/developers/prov/install/vagrant.sh>` and place them in the ``prov-cpl`` directory that was created when you cloned that repo. Then ``cd`` to that directory and run ``vagrant up``.
-
-``vagrant up`` is expected to take a while. A message near the end should say ``Running on http://0.0.0.0:5000/`` which indicates that the CPL REST service is running within Vagrant. The Vagrantfile above specifies that port 5000 within Vagrant should be available to your laptop on port 7777. To test this, try the following curl command from your laptop:
-
-``curl http://localhost:7777/provapi/bundle/42``
-
-If you get an HTTP response and JSON output, you have successfully set up the REST service. The next step is to configure Dataverse to use it.
-
-curl -X PUT -d 'http://localhost:7777' http://localhost:8080/api/admin/settings/:ProvServiceUrl
-
-Installing CPL on Ubuntu
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-The "Installing CPL on Mac" section above provides a setup script for Ubuntu. Give it a shot.
-
-FIXME: Integrate this list into installation script and/or a better install guide
-
-If you run into issues using the vagrant install script to install on ubuntu, here are some things to try:
-
-**Issue:** Import error
-
-ImportError: libcpl-odbc.3.so: cannot open shared object file: No such file or directory
-
-**Solution:** your library path may be incorrect, export it
-
-export LD_LIBRARY_PATH=/usr/local/lib
-
-**Issue:** ODBC connection/driver error
-
-python cpl-rest.py                   
-
-The ODBC driver reported the following while running SQLDriverConnect:
-
-IM002:1:0:[unixODBC][Driver Manager]Data source name not found, and no default driver specified
-
-Traceback (most recent call last):
-
-File "cpl-rest.py", line 5, in <module>
-
-connection = CPL.cpl_connection()
-
-File "/usr/local/lib/python2.7/dist-packages/CPL.py", line 386, in __init__
-
-CPLDirect.cpl_error_string(ret))
-
-Exception: Could not create ODBC connection Database connection error``
-
-**Solution:** ensure /etc/odbc.ini contains the correct configuration. Specifically, the driver in the guide may not exist on your system. 
-
-Call ``odbcinst -q -d`` to see list of drivers, and add one to odbc.ini (unicode is preferred if available)
-
-[CPL]
-
-Description     = PostgreSQL Core Provenance Library
-
-Driver          = PostgreSQL Unicode
-
-...
-
-
-Installing CPL on CentOS
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-We are not aware of any developers using CentOS for their development environment but the hope is that this section will grow up to the point that we can get CPL installed as a REST services on CentOS for production use. There is a known issue where the C++ compiler on CentOS 7 is too old: https://github.com/ProvTools/prov-cpl/issues/4 .
-
-FIXME: Add more RPMs to this list:
-
-``yum install /usr/bin/lsb_release /usr/bin/g++``
-
-TODO: For RHEL and CentOS users, should we create a CPL RPM? And a second RPM to install a REST service that depends on the first?
-
 Recommendations
 ---------------
 
@@ -382,6 +293,93 @@ If you have an old copy of the database and old Solr data and want to start fres
 - If you want to set some dataset-specific facets, go to the root dataverse (or any dataverse; the selections can be inherited) and click "General Information" and make choices under "Select Facets". There is a ticket to automate this: https://github.com/IQSS/dataverse/issues/619
 
 You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy and related scripts interesting because they demonstrate how we have at least partially automated the process of tearing down a Dataverse installation and having it rise again, hence the name "phoenix." See also "Fresh Reinstall" in the :doc:`/installation/installation-main` section of the Installation Guide.
+
+Provenance
+----------
+
+The provenance feature of Dataverse depends on a REST service which you must install and configure. This is similar to how Solr provides an REST API that Dataverse is configured to use. The provenance REST service is built on top of "prov-cpl" (Core Provenance Library or CPL) and the code can be found at https://github.com/ProvTools/prov-cpl .
+
+Installing CPL on Mac
+~~~~~~~~~~~~~~~~~~~~~
+
+If you're feeling adventurous, you can attempt to install CPL directly on your Mac but this is not recommended. Rather, below CPL runs as a REST service within Vagrant.
+
+First, install Vagrant and VirtualBox as described in the :doc:`tools` section.
+
+Then, clone the ``prov-cpl`` repo.
+
+git clone https://github.com/ProvTools/prov-cpl
+
+Download :download:`Vagrantfile <../_static/developers/prov/Vagrantfile>` and :download:`vagrant.sh <../_static/developers/prov/install/vagrant.sh>` and place them in the ``prov-cpl`` directory that was created when you cloned that repo. Then ``cd`` to that directory and run ``vagrant up``.
+
+``vagrant up`` is expected to take a while. A message near the end should say ``Running on http://0.0.0.0:5000/`` which indicates that the CPL REST service is running within Vagrant. The Vagrantfile above specifies that port 5000 within Vagrant should be available to your laptop on port 7777. To test this, try the following curl command from your laptop:
+
+``curl http://localhost:7777/provapi/version``
+
+If you get an HTTP response and JSON output, you have successfully set up the REST service. The next step is to configure Dataverse to use it.
+
+curl -X PUT -d 'http://localhost:7777' http://localhost:8080/api/admin/settings/:ProvServiceUrl
+
+Installing CPL on Ubuntu
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The "Installing CPL on Mac" section above provides a setup script for Ubuntu. Give it a shot.
+
+FIXME: Integrate this list into installation script and/or a better install guide
+
+If you run into issues using the vagrant install script to install on ubuntu, here are some things to try:
+
+**Issue:** Import error
+
+ImportError: libcpl-odbc.3.so: cannot open shared object file: No such file or directory
+
+**Solution:** your library path may be incorrect, export it
+
+export LD_LIBRARY_PATH=/usr/local/lib
+
+**Issue:** ODBC connection/driver error
+
+python cpl-rest.py                   
+
+The ODBC driver reported the following while running SQLDriverConnect:
+
+IM002:1:0:[unixODBC][Driver Manager]Data source name not found, and no default driver specified
+
+Traceback (most recent call last):
+
+File "cpl-rest.py", line 5, in <module>
+
+connection = CPL.cpl_connection()
+
+File "/usr/local/lib/python2.7/dist-packages/CPL.py", line 386, in __init__
+
+CPLDirect.cpl_error_string(ret))
+
+Exception: Could not create ODBC connection Database connection error``
+
+**Solution:** ensure /etc/odbc.ini contains the correct configuration. Specifically, the driver in the guide may not exist on your system. 
+
+Call ``odbcinst -q -d`` to see list of drivers, and add one to odbc.ini (unicode is preferred if available)
+
+[CPL]
+
+Description     = PostgreSQL Core Provenance Library
+
+Driver          = PostgreSQL Unicode
+
+...
+
+
+Installing CPL on CentOS
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+We are not aware of any developers using CentOS for their development environment but the hope is that this section will grow up to the point that we can get CPL installed as a REST services on CentOS for production use. There is a known issue where the C++ compiler on CentOS 7 is too old: https://github.com/ProvTools/prov-cpl/issues/4 .
+
+FIXME: Add more RPMs to this list:
+
+``yum install -y redhat-lsb-core gcc-c++``
+
+TODO: For RHEL and CentOS users, should we create a CPL RPM? And a second RPM to install a REST service that depends on the first?
 
 Shibboleth and OAuth
 --------------------
