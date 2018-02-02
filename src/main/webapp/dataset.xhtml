@@ -60,7 +60,6 @@
                     <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
                         <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
-                                                                              and DatasetPage.canUpdateDataset()
                                                                               and !DatasetPage.dataset.deaccessioned
                                                                               and DatasetPage.showComputeButton()}">
                                 <!-- Compute Button Group -->
