@@ -52,7 +52,7 @@ host    all             all             127.0.0.1/32            trust
 host    all             all             ::1/128                 trust
 PG_HBA_CONTENT
 sudo cat /etc/postgresql/9.5/main/pg_hba.conf
-sudo /etc/init.d/postgresql start
+sudo /etc/init.d/postgresql restart
 
 echo "Create database..."
 sudo psql -U postgres postgres < /prov-cpl/scripts/postgresql-setup-default.sql
