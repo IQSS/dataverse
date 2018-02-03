@@ -33,13 +33,73 @@
       }
     },
     {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "dataverse-postgresql-service"
+      },
+      "spec": {
+        "selector": {
+          "name": "iqss-dataverse-postgresql"
+        },
+        "ports": [
+          {
+            "name": "database",
+            "protocol": "TCP",
+            "port": 5432,
+            "targetPort": 5432
+          }
+        ]
+      }
+    },
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "dataverse-solr-service"
+      },
+      "spec": {
+        "selector": {
+          "name": "iqss-dataverse-solr"
+        },
+        "ports": [
+          {
+            "name": "search",
+            "protocol": "TCP",
+            "port": 8983,
+            "targetPort": 8983
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Route",
+      "metadata": {
+        "annotations": {
+          "openshift.io/host.generated": "true"
+        },
+        "name": "dataverse"
+      },
+      "spec": {
+        "port": {
+          "targetPort": "web"
+        },
+        "to": {
+          "kind": "Service",
+          "name": "dataverse-glassfish-service",
+          "weight": 100
+        }
+      }
+    },
+    {
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
         "name": "dataverse-plus-glassfish"
       },
       "spec": {
-        "dockerImageRepository": "iqss/dataverse-glassfish"
+        "dockerImageRepository": "iqss/dataverse-glassfish:latest"
       }
     },
     {
@@ -49,7 +109,7 @@
         "name": "centos-postgresql-94-centos7"
       },
       "spec": {
-        "dockerImageRepository": "centos/postgresql-94-centos7"
+        "dockerImageRepository": "centos/postgresql-94-centos7:latest"
       }
     },
     {
@@ -59,14 +119,14 @@
         "name": "iqss-dataverse-solr"
       },
       "spec": {
-        "dockerImageRepository": "iqss/dataverse-solr"
+        "dockerImageRepository": "iqss/dataverse-solr:latest"
       }
     },
     {
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "deploy-dataverse-glassfish",
+        "name": "dataverse-glassfish",
         "annotations": {
           "template.alpha.openshift.io/wait-for-ready": "true"
         }
@@ -91,6 +151,14 @@
                 ],
                 "env": [
                   {
+                    "name": "POSTGRES_SERVICE_HOST",
+                    "value": "dataverse-postgresql-service"
+                  },
+                  {
+                    "name": "SOLR_SERVICE_HOST",
+                    "value": "dataverse-solr-service"
+                  },
+                  {
                     "name": "ADMIN_PASSWORD",
                     "value": "admin"
                   },
@@ -104,7 +172,7 @@
                   },
                   {
                     "name": "POSTGRES_PASSWORD",
-                    "value": "dvnappPassword"
+                    "value": "secret"
                   },
                   {
                     "name": "POSTGRES_DATABASE",
@@ -116,7 +184,61 @@
                   "capabilities": {},
                   "privileged": false
                 }
-              },
+              }
+            ]
+          }
+        },
+        "strategy": {
+          "type": "Rolling",
+          "rollingParams": {
+            "updatePeriodSeconds": 1,
+            "intervalSeconds": 1,
+            "timeoutSeconds": 300
+          },
+          "resources": {}
+        },
+        "triggers": [
+          {
+            "type": "ImageChange",
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "dataverse-plus-glassfish"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "dataverse-plus-glassfish:latest"
+              }
+            }
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "name": "iqss-dataverse-glassfish"
+        }
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "dataverse-postgresql",
+        "annotations": {
+          "template.alpha.openshift.io/wait-for-ready": "true"
+        }
+      },
+      "spec": {
+        "template": {
+          "metadata": {
+            "labels": {
+              "name": "iqss-dataverse-postgresql"
+            }
+          },
+          "spec": {
+            "containers": [
               {
                 "name": "centos-postgresql-94-centos7",
                 "image": "centos-postgresql-94-centos7",
@@ -129,16 +251,21 @@
                 "env": [
                   {
                     "name": "POSTGRESQL_USER",
-                    "value": "pgUserValue"
+                    "value": "dvnapp"
                   },
                   {
                     "name": "POSTGRESQL_PASSWORD",
-                    "value": "pgPasswordValue"
+                    "value": "secret"
                   },
                   {
                     "name": "POSTGRESQL_DATABASE",
-                    "value": "pgDatabaseValue"
+                    "value": "dvndb"
+                  },
+                  {
+                    "name": "POSTGRESQL_ADMIN_PASSWORD",
+                    "value": "secret"
                   }
+
                 ],
                 "resources": {
                   "limits": {
@@ -150,7 +277,61 @@
                   "capabilities": {},
                   "privileged": false
                 }
-              },
+              }
+            ]
+          }
+        },
+        "strategy": {
+          "type": "Rolling",
+          "rollingParams": {
+            "updatePeriodSeconds": 1,
+            "intervalSeconds": 1,
+            "timeoutSeconds": 300
+          },
+          "resources": {}
+        },
+        "triggers": [
+          {
+            "type": "ImageChange",
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "centos-postgresql-94-centos7"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "centos-postgresql-94-centos7:latest"
+              }
+            }
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "name": "iqss-dataverse-postgresql"
+        }
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "dataverse-solr",
+        "annotations": {
+          "template.alpha.openshift.io/wait-for-ready": "true"
+        }
+      },
+      "spec": {
+        "template": {
+          "metadata": {
+            "labels": {
+              "name": "iqss-dataverse-solr"
+            }
+          },
+          "spec": {
+            "containers": [
               {
                 "name": "iqss-dataverse-solr",
                 "image": "iqss-dataverse-solr",
@@ -189,37 +370,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "dataverse-plus-glassfish"
-              ],
-              "from": {
-                "kind": "ImageStreamTag",
-                "name": "dataverse-plus-glassfish:kick-the-tires"
-              }
-            }
-          },
-          {
-            "type": "ImageChange",
-            "imageChangeParams": {
-              "automatic": true,
-              "containerNames": [
-                "centos-postgresql-94-centos7"
-              ],
-              "from": {
-                "kind": "ImageStreamTag",
-                "name": "centos-postgresql-94-centos7:latest"
-              }
-            }
-          },
-          {
-            "type": "ImageChange",
-            "imageChangeParams": {
-              "automatic": true,
-              "containerNames": [
                 "iqss-dataverse-solr"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "iqss-dataverse-solr:kick-the-tires"
+                "name": "iqss-dataverse-solr:latest"
               }
             }
           },
@@ -229,7 +384,7 @@
         ],
         "replicas": 1,
         "selector": {
-          "name": "iqss-dataverse-glassfish"
+          "name": "iqss-dataverse-solr"
         }
       }
     }
