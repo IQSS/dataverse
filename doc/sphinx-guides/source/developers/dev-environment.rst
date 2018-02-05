@@ -310,8 +310,6 @@ Then, clone the ``prov-cpl`` repo.
 
 git clone https://github.com/ProvTools/prov-cpl
 
-Until https://github.com/ProvTools/prov-cpl/issues/5 is resolved, edit ``bindings/python/RestAPI/cpl-rest.py`` and change ``app.run()`` to ``app.run(host='0.0.0.0')``.
-
 Download :download:`Vagrantfile <../_static/developers/prov/Vagrantfile>` and :download:`vagrant.sh <../_static/developers/prov/install/vagrant.sh>` and place them in the ``prov-cpl`` directory that was created when you cloned that repo. Then ``cd`` to that directory and run ``vagrant up``.
 
 ``vagrant up`` is expected to take a while. A message near the end should say ``Running on http://0.0.0.0:5000/`` which indicates that the CPL REST service is running within Vagrant. The Vagrantfile above specifies that port 5000 within Vagrant should be available to your laptop on port 7777. To test this, try the following curl command from your laptop:

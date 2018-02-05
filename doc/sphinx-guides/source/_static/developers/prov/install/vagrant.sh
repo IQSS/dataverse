@@ -62,4 +62,4 @@ sudo apt-get install -y python-pip
 sudo pip install flask
 cd /prov-cpl/bindings/python/RestAPI
 REST_SERVICE_USER=postgres # FIXME: create a "cplrest" user?
-su $REST_SERVICE_USER -s /bin/sh -c "python cpl-rest.py"
+su $REST_SERVICE_USER -s /bin/sh -c "python cpl-rest.py --host=0.0.0.0"
