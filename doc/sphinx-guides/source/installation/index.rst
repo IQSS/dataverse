@@ -20,4 +20,5 @@ Installation Guide
    geoconnect
    shibboleth
    oauth2
+   provenance
    external-tools

@@ -383,6 +383,7 @@ We are not aware of any developers using CentOS for their development environmen
 
 ``sudo make install``
 
+``sudo yum install rpmdevtools``
 
 TODO: For RHEL and CentOS users, should we create a CPL RPM? And a second RPM to install a REST service that depends on the first?
 
