@@ -1663,6 +1663,7 @@ public class ImportDDIServiceBean {
         //datasetDTO.getDataFiles().add(dfDTO);
        
         dfDTO.setStorageIdentifier( xmlr.getAttributeValue(null, "URI"));
+        dfDTO.setPidURL(xmlr.getAttributeValue(null, "pidURL"));
         fmdDTO.setDataFile(dfDTO);
 
 
