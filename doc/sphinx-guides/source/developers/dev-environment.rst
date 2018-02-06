@@ -436,9 +436,7 @@ Log into Minishift and Visit Dataverse in your Browser
 
 - https://192.168.99.100:8443
 - username: developer
-- password: developer
-
-Visit https://192.168.99.100:8443/console/project/project1/browse/routes and click http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/ or whatever is shows under "Routes External Traffic" (the IP address may be different). This assumes you named your project ``project1``.
+- password: <any password>
 
 You should be able to log in with username "dataverseAdmin" and password "admin".
 
@@ -454,7 +452,7 @@ Making Changes
 
 If you're interested in using Minishift for development and want to change the Dataverse code, you will need to get set up to create Docker images based on your changes and push them to a Docker registry such as Docker Hub. See the section below on Docker for details.
 
-Runnning Containers to Run as Root in Minishift
+Running Containers to Run as Root in Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is **not** recommended to run containers as root in Minishift because for security reasons OpenShift doesn't support running containers as root. However, it's good to know how to allow containers to run as root in case you need to work on a Docker image to make it run as non-root.
