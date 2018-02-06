@@ -64,6 +64,9 @@ If your task is to update the RPM, bump the version or release number in the spe
 
 ``cp /home/vagrant/rpmbuild/RPMS/x86_64/libcpl-3*.rpm /dataverse/doc/sphinx-guides/source/_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64``
 
+TODO: Consider what to do about the Python bindings to CPL. Over in the :doc:`/installation/provenance` section of the Installation Guide, we are going down the path of having the sysadmin installing Dataverse build the bindings but it would be better to provide a second RPM called something like ``libcpl-python`` or soemthing.
+
+TODO: Should we created an RPM called something like ``cplservice`` that creates a ``cplservice`` user, installs and init script, and contains all the Python code needed to run the CPL REST service?
 
 ----
 
