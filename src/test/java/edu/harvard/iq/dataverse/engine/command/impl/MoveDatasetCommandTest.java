@@ -54,7 +54,7 @@ import org.junit.Test;
  */
 public class MoveDatasetCommandTest {
         Dataset moved;
-    	Dataverse root, childA, childB, grandchildAA, childDraft;
+    	Dataverse root, childA, childB, grandchildAA, childDraft, grandchildBB;
 	DataverseEngine testEngine;
         MetadataBlock blockA, blockB, blockC, blockD;
         AuthenticatedUser auth, nobody;
@@ -95,6 +95,11 @@ public class MoveDatasetCommandTest {
         childDraft = new Dataverse();
         childDraft.setName("childDraft");
         childDraft.setId(5l);
+        
+        grandchildBB = new Dataverse();
+        grandchildBB.setName("grandchildBB");
+        grandchildBB.setId(6l);
+        grandchildBB.setPublicationDate(new Timestamp(new Date().getTime()));
 
         
         moved = new Dataset();
@@ -104,6 +109,7 @@ public class MoveDatasetCommandTest {
         childA.setOwner(root);
         childB.setOwner(root);
         grandchildAA.setOwner(childA);
+        grandchildBB.setOwner(childA);
         childDraft.setOwner(childA);
         
         gbA= new Guestbook();
@@ -129,7 +135,9 @@ public class MoveDatasetCommandTest {
         
         List<Guestbook> none = new ArrayList();       
         root.setGuestbooks(none);
-        childA.setGuestbooks(none);
+        grandchildBB.setGuestbooks(none);
+        grandchildBB.setGuestbookRoot(false);
+        childA.setGuestbooks(includeA);
         
         testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override
@@ -191,6 +199,21 @@ public class MoveDatasetCommandTest {
 
     }
     
+        /**
+	 * Moving to grandchildBB
+	 * Guestbook is not null because target inherits it.
+	 */
+    
+    @Test
+    public void testKeepGuestbookInherit() throws Exception {
+
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        testEngine.submit(new MoveDatasetCommand(aRequest, moved, grandchildBB));
+
+        assertNotNull(moved.getGuestbook());
+
+    }
+    
     
     /**
 	 * Moving to ChildB
@@ -199,10 +222,8 @@ public class MoveDatasetCommandTest {
     @Test
     public void testRemoveGuestbook() throws Exception {
 
-        System.out.print ("before remove: " +  moved.getGuestbook());
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(new MoveDatasetCommand(aRequest, moved, childB));
-        System.out.print ("After remove: " +  moved.getGuestbook());
         assertNull( moved.getGuestbook());
 
     }
