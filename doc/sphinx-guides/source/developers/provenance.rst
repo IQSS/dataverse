@@ -20,7 +20,7 @@ Building the Provenance RPM
 
 Dataverse maintains RPM spec files to create an RPM of provenance components for installation on RHEL/CentOS.
 
-In the Dataverse source tree, the RPM spec file can be found at ``doc/sphinx-guides/source/_static/developers/prov/libcpl.spec`` or :download:`downloaded <../_static/developers/prov/libcpl.spec>`.
+In the Dataverse source tree, the RPM spec file can be found at ``doc/sphinx-guides/source/_static/developers/prov/dataverse-provenance.spec`` or :download:`downloaded <../_static/developers/prov/dataverse-provenance.spec>`.
 
 We are using Vagrant to build the RPM. Your starting point should be the ``Vagrantfile`` in the root of this git repo, the main repo for Dataverse. In that ``Vagrantfile``, temporarily comment out any shell provisioning lines such as ``config.vm.provision "shell", path: "scripts/vagrant/setup.sh"``. We don't need to install Dataverse to build the prov RPM. We just need a bare-bones CentOS environment onto which we will install the packages we need to build the RPM.
 
@@ -38,6 +38,22 @@ The following steps are all done in the VM. Install the necessary RPMs (add the 
 
 ``sudo yum install -y redhat-lsb-core devtoolset-7 boost-devel unixODBC-devel rpm-build rpmdevtools``
 
+We need a newer version of SWIG (3.x) than is available on CentOS 7 (2.x) so we have to install it from source:
+
+``sudo yum install -y pcre-devel python-devel``
+
+``wget wget http://prdownloads.sourceforge.net/swig/swig-3.0.12.tar.gz``
+
+``tar xvfz swig-3.0.12.tar.gz``
+
+``source /opt/rh/devtoolset-7/enable``
+
+``./configure``
+
+``make``
+
+``sudo make install``
+
 Create directories used by rpmbuild:
 
 ``mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}``
@@ -48,25 +64,23 @@ Change to the directory with the spec file:
 
 Download the sources:
 
-``spectool -g libcpl.spec -C ~/rpmbuild/SOURCES``
+``spectool -g dataverse-provenance.spec -C ~/rpmbuild/SOURCES``
 
 Build the RPM:
 
-``rpmbuild -ba libcpl.spec``
+``rpmbuild -ba dataverse-provenance.spec``
 
 Verify the files in the RPM you've built:
 
-``rpm -qpl /home/vagrant/rpmbuild/RPMS/x86_64/libcpl-3.0-1.x86_64.rpm``
+``rpm -qpl /home/vagrant/rpmbuild/RPMS/x86_64/dataverse-provenance-0.1-1.x86_64.rpm``
 
 The output should include files like ``/usr/lib64/libcpl.so``.
 
 If your task is to update the RPM, bump the version or release number in the spec and add a changelog entry to the end. The resulting RPM is so small (~200KB) that we host it right in the guides at ``doc/sphinx-guides/source/_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64``. From the Vagrant environment, you can copy over a new RPM like this:
 
-``cp /home/vagrant/rpmbuild/RPMS/x86_64/libcpl-3*.rpm /dataverse/doc/sphinx-guides/source/_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64``
+``cp /home/vagrant/rpmbuild/RPMS/x86_64/dataverse-provenance-0*.rpm /dataverse/doc/sphinx-guides/source/_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64``
 
-TODO: Consider what to do about the Python bindings to CPL. Over in the :doc:`/installation/provenance` section of the Installation Guide, we are going down the path of having the sysadmin installing Dataverse build the bindings but it would be better to provide a second RPM called something like ``libcpl-python`` or soemthing.
-
-TODO: Should we created an RPM called something like ``cplservice`` that creates a ``cplservice`` user, installs and init script, and contains all the Python code needed to run the CPL REST service?
+TODO: The RPM should probably creates a ``cplservice`` Linux user and install an init script.
 
 ----
 
