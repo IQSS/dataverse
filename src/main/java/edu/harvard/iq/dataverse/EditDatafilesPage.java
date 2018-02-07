@@ -1260,10 +1260,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         
         if (mode == FileEditMode.SINGLE){
-            //JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
+            JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
             
         } else {
-            //JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+            JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
         }
 
         

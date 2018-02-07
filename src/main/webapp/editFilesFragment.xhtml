@@ -202,7 +202,7 @@
                                 </button>
                                 <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                     <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
-                                        <p:commandLink onclick="testFilesSelectedForDelete();" > 
+                                        <p:commandLink  onclick="checkFilesSelected();" > 
                                             <h:outputText value="#{bundle['file.delete']}"/> 
                                         </p:commandLink>
                                     </li>
@@ -216,7 +216,7 @@
                                             <h:outputText value="#{bundle['file.unrestrict']}"/>
                                         </p:commandLink>
                                     </li>
-                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}" jsf:rendered="#{false}">
                                         <p:commandLink id="fileCategoriesButton2"
                                                    actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
                                                    update=":datasetForm:editFileTagsPopup"
@@ -233,16 +233,18 @@
                                 <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFile']} <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
-                                    <p:commandLink id="fileProvenanceButton"
-                                               update=":datasetForm:editProvenancePopup"
-                                               oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
-                                               <f:actionListener binding="#{provenanceUploadFragmentBean.updatePopupState(fileMetadata.dataFile, EditDatafilesPage.dataset)}" />
-                                                #{bundle['file.provenance']} 
-                                    </p:commandLink>    
-                                </li> 
+                                <ui:fragment rendered="#{!empty systemConfig.provServiceUrl}">
+                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                        <p:commandLink id="fileProvenanceButton"
+                                                   update=":datasetForm:editProvenancePopup"
+                                                   oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
+                                                   <f:actionListener binding="#{provenanceUploadFragmentBean.updatePopupState(fileMetadata.dataFile, EditDatafilesPage.dataset)}" />
+                                                    #{bundle['file.provenance']} 
+                                        </p:commandLink>    
+                                    </li> 
+                                </ui:fragment>
                                 
-                                <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+                                <ui:fragment rendered="#{false and !settingsWrapper.publicInstall}">
                                     <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
                                         <p:commandLink oncomplete="toggle_dropdown();" 
                                                        onclick="testFilesSelectedForRestriction()">
@@ -264,7 +266,7 @@
                                                 #{bundle['file.tags']} 
                                     </p:commandLink>    
                                 </li>        
-                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}" jsf:rendered="#{false}">
                                     <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
                                         <h:outputText value="#{bundle['file.delete']}"/> 
                                     </p:commandLink>
@@ -570,7 +572,7 @@
             <p:commandButton id="fileThumbnailConfirmCancelBtn" value="#{bundle.cancel}" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
         </div>
     </p:dialog>
-    <ui:include src="provenance-popups-fragment.xhtml"/>
+    <ui:include rendered="#{!empty systemConfig.provServiceUrl}" src="provenance-popups-fragment.xhtml"/>
     <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
 

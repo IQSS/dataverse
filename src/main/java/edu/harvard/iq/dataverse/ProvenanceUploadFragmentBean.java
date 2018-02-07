@@ -99,10 +99,6 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         freeformTextInput = freeformTextState;
     }
     
-//    public void stagePopupChanges() throws IOException, AbstractApiBean.WrappedResponse {
-//        stagePopupChanges(false);
-//    }
-    
     //Stores the provenance changes decided upon in the popup to be saved when all edits across files are done.
     public void stagePopupChanges(boolean saveInPopup) throws IOException{
             
@@ -133,9 +129,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 filePage.showProvError();
                 Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
-        }
-           
+        } 
     }
     
     //Saves the staged provenance data, to be called by the pages launching the popup
@@ -153,7 +147,6 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString));
             }
         }
-
     }
     
     public void saveStagedJsonFreeform() throws AbstractApiBean.WrappedResponse {  
@@ -197,5 +190,12 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
             this.provenanceJson = provenanceJson;
             this.dataFile = dataFile;
         }
+    }
+    
+    public boolean provExistsInPreviousVersion(DataFile file) {
+        //how do I do this? I think I could get the datafile from the previous version and check it??? --MAD
+        
+        //file.getFileMetadata().getDatasetVersion().getDataset();
+        return false;
     }
 }

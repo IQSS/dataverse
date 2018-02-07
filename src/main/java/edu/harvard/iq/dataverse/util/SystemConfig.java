@@ -223,6 +223,12 @@ public class SystemConfig {
         return solrHostColonPort;
     }
 
+    public String getProvServiceUrl() {
+        //String saneDefault = "http://localhost:7777";
+        String provServiceUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ProvServiceUrl, null);
+        return provServiceUrl;
+    }
+    
     public int getMinutesUntilConfirmEmailTokenExpires() {
         final int minutesInOneDay = 1440;
         final int reasonableDefault = minutesInOneDay;
