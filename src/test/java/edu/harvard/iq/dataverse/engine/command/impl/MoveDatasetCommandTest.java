@@ -112,7 +112,10 @@ public class MoveDatasetCommandTest {
         
         childB.setGuestbooks(notIncludeA);
         
-
+        List<Guestbook> none = new ArrayList();       
+        root.setGuestbooks(none);
+        childA.setGuestbooks(none);
+        
         testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override
             public DataverseServiceBean dataverses() {
