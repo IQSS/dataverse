@@ -19,7 +19,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -52,7 +54,7 @@ import org.junit.Test;
  */
 public class MoveDatasetCommandTest {
         Dataset moved;
-    	Dataverse root, childA, childB, grandchildAA;
+    	Dataverse root, childA, childB, grandchildAA, childDraft;
 	DataverseEngine testEngine;
         MetadataBlock blockA, blockB, blockC, blockD;
         AuthenticatedUser auth, nobody;
@@ -73,23 +75,36 @@ public class MoveDatasetCommandTest {
         root = new Dataverse();
         root.setName("root");
         root.setId(1l);
+        root.setPublicationDate(new Timestamp(new Date().getTime()));
+        
         childA = new Dataverse();
         childA.setName("childA");
         childA.setId(2l);
+        childA.setPublicationDate(new Timestamp(new Date().getTime()));
+        
         childB = new Dataverse();
         childB.setName("childB");
         childB.setId(3l);
-                
+        childB.setPublicationDate(new Timestamp(new Date().getTime())); 
+        
         grandchildAA = new Dataverse();
         grandchildAA.setName("grandchildAA");
         grandchildAA.setId(4l);
+        grandchildAA.setPublicationDate(new Timestamp(new Date().getTime()));
+        
+        childDraft = new Dataverse();
+        childDraft.setName("childDraft");
+        childDraft.setId(5l);
+
         
         moved = new Dataset();
         moved.setOwner(root);
+        moved.setPublicationDate(new Timestamp(new Date().getTime()));
 
         childA.setOwner(root);
         childB.setOwner(root);
         grandchildAA.setOwner(childA);
+        childDraft.setOwner(childA);
         
         gbA= new Guestbook();
         gbA.setId(1l);
@@ -197,7 +212,7 @@ public class MoveDatasetCommandTest {
 	
 	/**
 	 * Moving DS to its owning DV 
-        * @throws java.lang.Exception
+        * @throws IllegalCommandException
 	 */
     @Test(expected = IllegalCommandException.class)
     public void testInvalidMove() throws Exception {
@@ -219,6 +234,18 @@ public class MoveDatasetCommandTest {
         DataverseRequest aRequest = new DataverseRequest(nobody, httpRequest);
         testEngine.submit(
                 new MoveDatasetCommand(aRequest, moved, root));
+        fail();
+    }
+    
+    	/**
+	 * Moving published  DS to unpublished DV
+        * @throws IllegalCommandException
+	 */
+    @Test(expected = IllegalCommandException.class)
+    public void testInvalidMovePublishedToUnpublished() throws Exception {
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        testEngine.submit(
+                new MoveDatasetCommand(aRequest, moved, childDraft));
         fail();
     }
          

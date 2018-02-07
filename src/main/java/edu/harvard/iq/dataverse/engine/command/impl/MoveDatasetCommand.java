@@ -57,6 +57,12 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         if (moved.getOwner().equals(destination)) {
             throw new IllegalCommandException("Dataset already in this Dataverse ", this);
         }
+        
+        // if dataset is published make sure that its target is published
+        
+        if (moved.isReleased() && !destination.isReleased()){
+            throw new IllegalCommandException("Published Dataset may not be moved to unpublished Dataverse. You may publish " + destination.getDisplayName() + " and re-try the move.", this);
+        }
                 
         //if the datasets guestbook is not contained in the new dataverse then remove it
         if (moved.getGuestbook() != null) {
