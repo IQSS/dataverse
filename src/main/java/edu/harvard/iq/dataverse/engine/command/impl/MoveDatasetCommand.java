@@ -59,12 +59,19 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         }
                 
         //if the datasets guestbook is not contained in the new dataverse then remove it
-        if (moved.getGuestbook() != null){
+        if (moved.getGuestbook() != null) {
             Guestbook gb = moved.getGuestbook();
-            List <Guestbook> gbs = destination.getGuestbooks();           
-            if(gbs == null || !gbs.contains(gb)){
+            List<Guestbook> gbs = destination.getGuestbooks();
+            boolean inheritGuestbooksValue = !destination.isGuestbookRoot();
+            if (inheritGuestbooksValue && destination.getOwner() != null) {
+                for (Guestbook pg : destination.getParentGuestbooks()) {
+
+                    gbs.add(pg);
+                }
+            }
+            if (gbs == null || !gbs.contains(gb)) {
                 moved.setGuestbook(null);
-            }            
+            }
         }
 
         // OK, move
