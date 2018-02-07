@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -17,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +56,15 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         // validate the move makes sense
         if (moved.getOwner().equals(destination)) {
             throw new IllegalCommandException("Dataset already in this Dataverse ", this);
+        }
+                
+        //if the datasets guestbook is not contained in the new dataverse then remove it
+        if (moved.getGuestbook() != null){
+            Guestbook gb = moved.getGuestbook();
+            List <Guestbook> gbs = destination.getGuestbooks();           
+            if(gbs == null || !gbs.contains(gb)){
+                moved.setGuestbook(null);
+            }            
         }
 
         // OK, move

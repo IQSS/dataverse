@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
@@ -18,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -38,6 +40,8 @@ import javax.persistence.metamodel.Metamodel;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +56,7 @@ public class MoveDatasetCommandTest {
 	DataverseEngine testEngine;
         MetadataBlock blockA, blockB, blockC, blockD;
         AuthenticatedUser auth, nobody;
+        Guestbook gbA, gbB, gbC;
         @Context
         protected HttpServletRequest httpRequest;
 	
@@ -63,6 +68,8 @@ public class MoveDatasetCommandTest {
         nobody = makeAuthenticatedUser("Nick", "Nobody");
         nobody.setSuperuser(false);
 
+        
+        
         root = new Dataverse();
         root.setName("root");
         root.setId(1l);
@@ -83,6 +90,28 @@ public class MoveDatasetCommandTest {
         childA.setOwner(root);
         childB.setOwner(root);
         grandchildAA.setOwner(childA);
+        
+        gbA= new Guestbook();
+        gbA.setId(1l);
+        gbB= new Guestbook();
+        gbB.setId(2l);
+        gbC= new Guestbook();
+        gbC.setId(3l);
+        
+        moved.setGuestbook(gbA);
+        
+        List<Guestbook> includeA = new ArrayList();
+        includeA.add(gbA);
+        includeA.add(gbB);
+        
+        grandchildAA.setGuestbooks(includeA);
+        
+        List<Guestbook> notIncludeA = new ArrayList();
+        notIncludeA.add(gbC);
+        notIncludeA.add(gbB);
+        
+        childB.setGuestbooks(notIncludeA);
+        
 
         testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override
@@ -129,6 +158,39 @@ public class MoveDatasetCommandTest {
         assertEquals(childA, moved.getOwner());
 
     }
+    
+    /**
+	 * Moving  grandchildAA
+	 * Guestbook is not null because target includes it.
+	 */
+    @Test
+    public void testKeepGuestbook() throws Exception {
+
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        testEngine.submit(new MoveDatasetCommand(aRequest, moved, grandchildAA));
+
+        assertNotNull(moved.getGuestbook());
+
+    }
+    
+    
+    /**
+	 * Moving to ChildB
+	 * Guestbook is null because target does not include it
+	 */
+    @Test
+    public void testRemoveGuestbook() throws Exception {
+
+        System.out.print ("before remove: " +  moved.getGuestbook());
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        testEngine.submit(new MoveDatasetCommand(aRequest, moved, childB));
+        System.out.print ("After remove: " +  moved.getGuestbook());
+        assertNull( moved.getGuestbook());
+
+    }
+    
+
+	
 	
 	/**
 	 * Moving DS to its owning DV 
