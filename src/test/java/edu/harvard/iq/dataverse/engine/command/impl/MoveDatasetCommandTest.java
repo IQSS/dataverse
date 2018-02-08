@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.Guestbook;
+import edu.harvard.iq.dataverse.GuestbookResponse;
+import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
@@ -53,12 +55,13 @@ import org.junit.Test;
  * @author skraffmi
  */
 public class MoveDatasetCommandTest {
-        Dataset moved;
+        Dataset moved, movedResponses;
     	Dataverse root, childA, childB, grandchildAA, childDraft, grandchildBB;
 	DataverseEngine testEngine;
         MetadataBlock blockA, blockB, blockC, blockD;
         AuthenticatedUser auth, nobody;
         Guestbook gbA, gbB, gbC;
+        GuestbookResponse gbResp;
         @Context
         protected HttpServletRequest httpRequest;
 	
@@ -105,6 +108,12 @@ public class MoveDatasetCommandTest {
         moved = new Dataset();
         moved.setOwner(root);
         moved.setPublicationDate(new Timestamp(new Date().getTime()));
+        moved.setId(1l);
+        
+        movedResponses = new Dataset();
+        movedResponses.setOwner(root);
+        movedResponses.setPublicationDate(new Timestamp(new Date().getTime()));
+        movedResponses.setId(2l);
 
         childA.setOwner(root);
         childB.setOwner(root);
@@ -120,6 +129,11 @@ public class MoveDatasetCommandTest {
         gbC.setId(3l);
         
         moved.setGuestbook(gbA);
+        movedResponses.setGuestbook(gbA);
+        
+        GuestbookResponse gbResp = new GuestbookResponse(); 
+        gbResp.setGuestbook(gbA);
+        gbResp.setDataset(movedResponses);
         
         List<Guestbook> includeA = new ArrayList();
         includeA.add(gbA);
@@ -147,6 +161,21 @@ public class MoveDatasetCommandTest {
                     public Dataverse save(Dataverse dataverse) {
                         // no-op. The superclass accesses databases which we don't have.
                         return dataverse;
+                    }
+                };
+            }
+            
+            @Override
+            public GuestbookServiceBean guestbooks() {
+                return new GuestbookServiceBean() {
+                    @Override
+                    public Long findCountResponsesForGivenDataset(Long guestbookId, Long datasetId) {
+                        //We're going to fake a response for a dataset with responses
+                        if(datasetId == 1){
+                            return new Long(0);
+                        } else{
+                            return new Long(1);
+                        }
                     }
                 };
             }
@@ -228,8 +257,19 @@ public class MoveDatasetCommandTest {
 
     }
     
-
-	
+    /*
+    Moving Dataset to target which does not contain GB
+    while there are G B responses is not allowed
+    */
+    
+    @Test(expected = IllegalCommandException.class)
+    public void testLoseGBResponses() throws Exception{
+        
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        testEngine.submit(new MoveDatasetCommand(aRequest, movedResponses, childB));
+        fail();
+        
+    }	
 	
 	/**
 	 * Moving DS to its owning DV 

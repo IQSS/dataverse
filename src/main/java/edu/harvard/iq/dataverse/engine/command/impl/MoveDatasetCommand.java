@@ -76,6 +76,11 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
             if (gbs == null || !gbs.contains(gb)) {
+                //if there are responses on this guestbook for this dataset invalidate the move.
+                long count =  ctxt.guestbooks().findCountResponsesForGivenDataset(gb.getId(), moved.getId());
+                if (count > 0){
+                    throw new IllegalCommandException("Dataset may not be moved because doing so would cause download data to be lost. ", this);
+                }
                 moved.setGuestbook(null);
             }
         }
