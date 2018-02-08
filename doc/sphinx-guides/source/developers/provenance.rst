@@ -80,8 +80,6 @@ If your task is to update the RPM, bump the version or release number in the spe
 
 ``cp /home/vagrant/rpmbuild/RPMS/x86_64/dataverse-provenance-0*.rpm /dataverse/doc/sphinx-guides/source/_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64``
 
-TODO: The RPM should probably creates a ``cplservice`` Linux user and install an init script.
-
 ----
 
 Previous: :doc:`big-data-support`

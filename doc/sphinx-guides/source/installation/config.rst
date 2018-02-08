@@ -36,14 +36,14 @@ Privacy Considerations
 
 Out of the box, Dataverse will list email addresses of the "contacts" for datasets when users visit a dataset page and click the "Export Metadata" button. If you prefer to exclude email addresses of dataset contacts from metadata export, set :ref:`:ExcludeEmailFromExport <:ExcludeEmailFromExport>` to true.
 
-Additional Recommendations
-++++++++++++++++++++++++++
 Run Glassfish as a User Other Than Root
 +++++++++++++++++++++++++++++++++++++++
 
 See the Glassfish section of :doc:`prerequisites` for details and init scripts for running Glassfish as non-root.
 
 Related to this is that you should remove ``/root/.glassfish/pass`` to ensure that Glassfish isn't ever accidentally started as root. Without the password, Glassfish won't be able to start as root, which is a good thing.
+
+It's a good idea to run services as non-root, such as Solr and the :doc:`provenance` REST service.
 
 Enforce Strong Passwords for User Accounts
 ++++++++++++++++++++++++++++++++++++++++++
