@@ -18,8 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * This may not be the best way to go about testing this functionality
- * We definitely need tests that use the RestService in our code, but as I go this is useful
+ * This should be deleted. I think my issues with the ProvenanceRestServiceBean pulling the system config are because we shouldn't use this.
  * 
  * @author madunlap
  */
@@ -27,23 +26,23 @@ public class CPLExternalIT {
     
     private static final Logger logger = Logger.getLogger(CPLExternalIT.class.getCanonicalName());
     
-    ProvenanceRestServiceBean provRest = new ProvenanceRestServiceBean(); //MAD: I tried ejb / inject, didn't work, dunno why...
+    static ProvenanceRestServiceBean provRest = new ProvenanceRestServiceBean(); //MAD: I tried ejb / inject, didn't work, dunno why...
     
     @BeforeClass
     public static void setUpClass() {
-       // provRest ;
+        provRest.setProvBaseUrl("http://10.252.76.172:7777");
+
     }
     
     @Test
     public void testVersion() throws UnirestException {
         logger.info("Version is " + provRest.getVersion());
     }
-    
-    //MAD: currently fails due to internal CPL error
+
     @Test
     public void testAnything() throws UnirestException {
 //        logger.info(provRest.postBundle().toString()); //this command should return the bundleId right?
-        logger.info(provRest.getBundle("3").get("name"));
+        logger.info(provRest.getBundleId(Long.valueOf(3)).get("name"));
 //        provRest.deleteBundle("3");
     }
     
