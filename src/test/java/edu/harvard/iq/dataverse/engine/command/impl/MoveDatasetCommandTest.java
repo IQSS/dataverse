@@ -208,7 +208,7 @@ public class MoveDatasetCommandTest {
     public void testValidMove() throws Exception {
 
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(new MoveDatasetCommand(aRequest, moved, childA));
+        testEngine.submit(new MoveDatasetCommand(aRequest, moved, childA, null));
 
         assertEquals(childA, moved.getOwner());
 
@@ -222,7 +222,7 @@ public class MoveDatasetCommandTest {
     public void testKeepGuestbook() throws Exception {
 
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(new MoveDatasetCommand(aRequest, moved, grandchildAA));
+        testEngine.submit(new MoveDatasetCommand(aRequest, moved, grandchildAA, null));
 
         assertNotNull(moved.getGuestbook());
 
@@ -237,7 +237,7 @@ public class MoveDatasetCommandTest {
     public void testKeepGuestbookInherit() throws Exception {
 
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(new MoveDatasetCommand(aRequest, moved, grandchildBB));
+        testEngine.submit(new MoveDatasetCommand(aRequest, moved, grandchildBB, null));
 
         assertNotNull(moved.getGuestbook());
 
@@ -252,24 +252,11 @@ public class MoveDatasetCommandTest {
     public void testRemoveGuestbook() throws Exception {
 
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(new MoveDatasetCommand(aRequest, moved, childB));
+        testEngine.submit(new MoveDatasetCommand(aRequest, moved, childB, true));
         assertNull( moved.getGuestbook());
 
     }
-    
-    /*
-    Moving Dataset to target which does not contain GB
-    while there are G B responses is not allowed
-    */
-    
-    @Test(expected = IllegalCommandException.class)
-    public void testLoseGBResponses() throws Exception{
-        
-        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(new MoveDatasetCommand(aRequest, movedResponses, childB));
-        fail();
-        
-    }	
+    	
 	
 	/**
 	 * Moving DS to its owning DV 
@@ -280,7 +267,7 @@ public class MoveDatasetCommandTest {
 
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, root));
+                new MoveDatasetCommand(aRequest, moved, root, false));
         fail();
     }
         
@@ -294,7 +281,7 @@ public class MoveDatasetCommandTest {
 
         DataverseRequest aRequest = new DataverseRequest(nobody, httpRequest);
         testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, root));
+                new MoveDatasetCommand(aRequest, moved, root, null));
         fail();
     }
     
@@ -306,7 +293,7 @@ public class MoveDatasetCommandTest {
     public void testInvalidMovePublishedToUnpublished() throws Exception {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, childDraft));
+                new MoveDatasetCommand(aRequest, moved, childDraft, null));
         fail();
     }
          

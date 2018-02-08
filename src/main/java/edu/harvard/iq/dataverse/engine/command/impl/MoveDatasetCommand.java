@@ -36,11 +36,13 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     private static final Logger logger = Logger.getLogger(MoveDatasetCommand.class.getCanonicalName());
     final Dataset moved;
     final Dataverse destination;
+    final Boolean force;
 
-    public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination) {
+    public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force) {
         super(aRequest, moved);
         this.moved = moved;
         this.destination = destination;
+        this.force= force;
     }
 
     @Override
@@ -76,10 +78,8 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
             if (gbs == null || !gbs.contains(gb)) {
-                //if there are responses on this guestbook for this dataset invalidate the move.
-                long count =  ctxt.guestbooks().findCountResponsesForGivenDataset(gb.getId(), moved.getId());
-                if (count > 0){
-                    throw new IllegalCommandException("Dataset may not be moved because doing so would cause download data to be lost. ", this);
+                if (force == null  || !force){
+                    throw new IllegalCommandException("Dataset guestbook is not in target dataverse. Please use the parameter ?forceMove=true to complete the move. This will delete the guestbook from the Dataset", this);
                 }
                 moved.setGuestbook(null);
             }
