@@ -34,6 +34,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import javax.inject.Inject;
 
 //see: https://github.com/ProvTools/prov-cpl/blob/master/bindings/python/RestAPI/rest-docs.txt
 
@@ -43,10 +44,12 @@ public class ProvenanceRestServiceBean {
     private static final Logger logger = Logger.getLogger(ProvenanceRestServiceBean.class.getCanonicalName());
     
     //MAD: when 4346 is combined with this code, use the ip being set there.
-    private String provBaseUrl = "http://10.252.70.78:7777";
+    private String provBaseUrl;
+    @Inject
+    SystemConfig systemConfig;
     
     public ProvenanceRestServiceBean() {
-        
+        provBaseUrl = "http://10.252.76.172:7777"; //systemConfig.getProvServiceUrl(); //cheating for now because I don't know why this is blowing up in tests
     }
     
     //MAD: I may just want to delete this
@@ -66,7 +69,7 @@ public class ProvenanceRestServiceBean {
     //	'creation_session': Long
     //}    
     public Map<String,String> getBundle(String bundleId) throws UnirestException{
-        HttpResponse<JsonNode> response = Unirest.get(provBaseUrl + "/provapi/bundle" + bundleId).asJson();
+        HttpResponse<JsonNode> response = Unirest.get(provBaseUrl + "/provapi/bundle/" + bundleId).asJson();
         logger.info(response.getStatusText());
         Map returnMap = new HashMap<String,String>();
         returnMap.put("name", response.getBody().getObject().getString("name"));
