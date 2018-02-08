@@ -8,7 +8,7 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true">
-        <p:outputPanel id="provPopupOutput" class="form-horizontal">
+        <p:outputPanel id="provPopupOutput" class="form-horizontal" rendered="#{provenanceUploadFragmentBean.provExistsInPreviousVersion() == false}">
                 <div class="form-group text-left">
                     <div class="col-sm-12">
                         <p class="help-block">#{bundle['file.editProvenanceDialog.tip']}</p>

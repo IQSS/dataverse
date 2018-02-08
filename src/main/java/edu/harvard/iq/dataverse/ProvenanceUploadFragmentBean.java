@@ -192,10 +192,9 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         }
     }
     
-    public boolean provExistsInPreviousVersion(DataFile file) {
-        //how do I do this? I think I could get the datafile from the previous version and check it??? --MAD
-        
-        //file.getFileMetadata().getDatasetVersion().getDataset();
-        return false;
+    public boolean provExistsInPreviousVersion() {
+        return (null != popupDataFile 
+                && null != popupDataFile.getFileMetadata() 
+                && popupDataFile.getFileMetadata().getCplId() != 0);
     }
 }

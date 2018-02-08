@@ -90,6 +90,10 @@ public class FileMetadata implements Serializable {
     @Column(columnDefinition = "TEXT", nullable = true)
     private String provFreeForm;
 
+    @Column //( nullable=false )
+    private int cplId;
+    
+    
     /**
      * Creates a copy of {@code this}, with identical business logic fields.
      * E.g., {@link #label} would be duplicated; {@link #version} will not.
@@ -566,4 +570,11 @@ public class FileMetadata implements Serializable {
         return jsonObj.getAsJsonObject();
     }
     
+    public int getCplId() {
+        return cplId;
+    }
+    
+    public void setCplId(int cplId) {
+        this.cplId = cplId;
+    }
 }
