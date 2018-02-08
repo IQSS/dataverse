@@ -806,6 +806,7 @@ Specify a URL where users can read your Privacy Policy, linked from the bottom o
 ++++++++++++++
 
 Specify a URL where users can read your API Terms of Use.
+API users can retrieve this URL from the SWORD Service Document or the "info" endpoint of the :doc:`/api/native-api#info`
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
@@ -870,9 +871,14 @@ After you've set ``:StatusMessageHeader`` you can also make it clickable to have
 +++++++++++++++++++++++++
 
 Set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB.
+
 Notes:
+
 - For SWORD, this size is limited by the Java Integer.MAX_VALUE of 2,147,483,647. (see: https://github.com/IQSS/dataverse/issues/2169)
+
 - If the MaxFileUploadSizeInBytes is NOT set, uploads, including SWORD may be of unlimited size.
+
+- For larger file upload sizes, you may need to configure your reverse proxy timeout. If using apache2 (httpd) with Shibboleth, add a timeout to the ProxyPass defined in etc/httpd/conf.d/ssl.conf (which is described in the :doc:`/installation/shibboleth` setup).
 
 ``curl -X PUT -d 2147483648 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
 

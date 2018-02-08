@@ -518,7 +518,10 @@ For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from 
 
   GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
 
+Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
 
+  GET http://$SERVER/api/info/apiTermsOfUse
+  
 Metadata Blocks
 ~~~~~~~~~~~~~~~
 
