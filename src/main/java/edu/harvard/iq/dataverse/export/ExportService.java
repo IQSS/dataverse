@@ -252,7 +252,6 @@ public class ExportService {
                 tempFileRequired = true;
                 tempFile = File.createTempFile("tempFileToExport", ".tmp");
                 outputStream = new FileOutputStream(tempFile);
-                logger.info("ExportService: " + ioex.getMessage());
             }
 
             try {

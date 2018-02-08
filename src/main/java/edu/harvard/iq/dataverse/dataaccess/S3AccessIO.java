@@ -593,6 +593,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     private String getDestinationKey(String auxItemTag) throws IOException {
+        open();
         if (dvObject instanceof DataFile) {
             return getMainFileKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {

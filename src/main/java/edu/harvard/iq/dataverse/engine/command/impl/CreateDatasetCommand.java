@@ -144,8 +144,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 // if setting the storage identifier through createNewStorageIO fails, dataset creation
                 // does not have to fail. we just set the storage id to a default -SF
                 String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file://";
-                theDataset.setStorageIdentifier(storageDriver + theDataset.getAuthority()+theDataset.getDoiSeparator()+theDataset.getIdentifier());
-                logger.info("Failed to create StorageIO. StorageId set to default. Not fatal." + "(" + ioex.getMessage() + ")");
+                theDataset.setStorageIdentifier(storageDriver  + "://" + theDataset.getAuthority()+theDataset.getDoiSeparator()+theDataset.getIdentifier());
+                logger.info("Failed to create StorageIO. StorageIdentifier set to default. Not fatal." + "(" + ioex.getMessage() + ")");
             }
         }
         if (theDataset.getIdentifier()==null) {
