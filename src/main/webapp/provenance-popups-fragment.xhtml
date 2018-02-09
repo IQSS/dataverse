@@ -8,89 +8,94 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true">
-        <p:outputPanel id="provPopupOutput" class="form-horizontal" rendered="#{provenanceUploadFragmentBean.provExistsInPreviousVersion() == false}">
-                <div class="form-group text-left">
-                    <div class="col-sm-12">
-                        <p class="help-block">#{bundle['file.editProvenanceDialog.tip']}</p>
-                    </div>
+        <div class="form-horizontal">
+            <p:outputPanel id="provPopupOutput" class="form-group text-left">
+                <div class="col-sm-12">
+                    <p class="help-block">
+                        <h:outputFormat value=" #{bundle['file.editProvenanceDialog.tip']}" escape="false">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.guidesVersion}"/>
+                        </h:outputFormat>
+                    </p>
                 </div>
-                <div class="form-group text-left">
-                    <label for="provenanceBundle" class="col-sm-4 control-label">
-                        #{bundle['file.editProvenanceDialog.bundleFile']}
-                    </label>
-                    <div class="col-sm-8">
-                        <ui:fragment id="provUploadFragment">
-                            <ui:fragment rendered="#{provenanceUploadFragmentBean.jsonUploadedState == false}">
-                                <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
-                                <p:fileUpload id="provUpload" 
-                                              styleClass="margin-bottom"
-                                              dragDropSupport="true"
-                                              auto="true"
-                                              multiple="false"
-                                              allowTypes="/(\.|\/)(json)$/"
-                                              fileUploadListener="#{provenanceUploadFragmentBean.handleFileUpload}" 
-                                              update="provPopupOutput" 
-                                              label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
-                                              oncomplete="bind_bsui_components();PF('provUpload').hide();"
-                                              fileLimit="1" 
-                                              invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"/>
-                                <script>
-                                    function uploadStarted() {
-                                        $('button[id$="provUploadStarted"]').trigger('click');
+                <label for="provenanceBundle" class="col-sm-4 control-label">
+                    #{bundle['file.editProvenanceDialog.bundleFile']}
+                </label>
+                <div class="col-sm-8">
+                    <ui:fragment rendered="#{provenanceUploadFragmentBean.provExistsInPreviousVersion() == true}">
+                        <p class="help-block"><span class="text-danger">#{bundle['file.editProvenanceDialog.bundleFile.alreadyPublished']}</span></p>
+                    </ui:fragment>
+                    <ui:fragment id="provUploadFragment" rendered="#{provenanceUploadFragmentBean.provExistsInPreviousVersion() == false}">
+                        <ui:fragment rendered="#{provenanceUploadFragmentBean.jsonUploadedState == false}">
+                            <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
+                            <p:fileUpload id="provUpload" 
+                                          styleClass="margin-bottom"
+                                          dragDropSupport="true"
+                                          auto="true"
+                                          multiple="false"
+                                          allowTypes="/(\.|\/)(json)$/"
+                                          fileUploadListener="#{provenanceUploadFragmentBean.handleFileUpload}" 
+                                          update="provPopupOutput" 
+                                          label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
+                                          oncomplete="bind_bsui_components();PF('provUpload').hide();"
+                                          fileLimit="1" 
+                                          invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"/>
+                            <script>
+                                function uploadStarted() {
+                                    $('button[id$="provUploadStarted"]').trigger('click');
+                                }
+                                function uploadFinished(fileupload) {                    
+                                    if (fileupload.files.length === 0) {
+                                        $('button[id$="AllUploadsFinished"]').trigger('click');
                                     }
-                                    function uploadFinished(fileupload) {                    
-                                        if (fileupload.files.length === 0) {
-                                            $('button[id$="AllUploadsFinished"]').trigger('click');
-                                        }
-                                    }
-                                </script>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{provenanceUploadFragmentBean.jsonUploadedState}">
-                                <div id="provFileText" class="col-sm-5 text-success">
-                                    <div class="margin-top-half">
-                                        <span class="glyphicon glyphicon-ok"></span> #{bundle['file.editProvenanceDialog.uploadSuccess']}
-                                    </div>
-                                </div>
-                                <div class="col-sm-7 inline-buttons">
-                                    <div class="button-block">
-                                        <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.preview}"/>
-                                        <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput" actionListener="#{provenanceUploadFragmentBean.updateJsonRemoveState()}"/>
-                                    </div>
-                                </div>
-                            </ui:fragment>
-                            <p:message for="provUpload" id="provUploadMessage" display="text" />
+                                }
+                            </script>
                         </ui:fragment>
-                    </div>
+                        <ui:fragment rendered="#{provenanceUploadFragmentBean.jsonUploadedState}">
+                            <div id="provFileText" class="col-sm-5 text-success">
+                                <div class="margin-top-half">
+                                    <span class="glyphicon glyphicon-ok"></span> #{bundle['file.editProvenanceDialog.uploadSuccess']}
+                                </div>
+                            </div>
+                            <div class="col-sm-7 inline-buttons">
+                                <div class="button-block">
+                                    <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.preview}"/>
+                                    <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput" actionListener="#{provenanceUploadFragmentBean.updateJsonRemoveState()}"/>
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        <p:message for="provUpload" id="provUploadMessage" display="text" />
+                    </ui:fragment>
                 </div>
             </p:outputPanel>
-                <div class="form-group text-left">
-                    <div class="col-sm-12">
-                        <p class="help-block">#{bundle['file.editProvenanceDialog.description.tip']}</p>
-                    </div>
+            <div class="form-group text-left">
+                <div class="col-sm-12">
+                    <p class="help-block">#{bundle['file.editProvenanceDialog.description.tip']}</p>
                 </div>
-                <div class="form-group text-left">
-                    <label for="provenanceAddDescription" class="col-sm-4 control-label">
-                        #{bundle['file.editProvenanceDialog.description']}
-                    </label>
-                    <div class="col-sm-8">
-                        <div class="row form-inline">
-                            <div class="col-sm-12">
-                                <p:inputTextarea id="provenanceFreeform" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{provenanceUploadFragmentBean.freeformTextInput}" 
-                                                placeholder="#{bundle['file.editProvenanceDialog.description.placeholder']}"
-                                                onkeypress="if (event.keyCode == 13) {
-                                                        return false;
-                                                    }"
-                                                style="width:98%; margin-top:.5em;"/>
-                                <p:message for="provenanceFreeform" display="text" />
-                            </div>
+            </div>
+            <div class="form-group text-left">
+                <label for="provenanceAddDescription" class="col-sm-4 control-label">
+                    #{bundle['file.editProvenanceDialog.description']}
+                </label>
+                <div class="col-sm-8">
+                    <div class="row form-inline">
+                        <div class="col-sm-12">
+                            <p:inputTextarea id="provenanceFreeform" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{provenanceUploadFragmentBean.freeformTextInput}" 
+                                            placeholder="#{bundle['file.editProvenanceDialog.description.placeholder']}"
+                                            onkeypress="if (event.keyCode == 13) {
+                                                    return false;
+                                                }"
+                                            style="width:98%; margin-top:.5em;"/>
+                            <p:message for="provenanceFreeform" display="text" />
                         </div>
                     </div>
                 </div>
+            </div>
             <div class="button-block">
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" onclick="PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show();"/>
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();"  />
             </div>
-        
+        </div>
     </p:dialog>
     <p:dialog id="confirmProvenancePopup" header="#{bundle['file.confirmProvenanceDialog']}" modal="true" visible="false" styleClass="smallPopUp" widgetVar="confirmProvenancePopup">
         <div class="form-group text-left text-warning">
