@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -79,6 +80,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     OAIRecordServiceBean recordService;
+    
+    @EJB
+    EjbDataverseEngine commandEngine;
+    
+    @EJB
+    SystemConfig systemConfig;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
@@ -896,5 +903,57 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.persist(workflowComment);
         return workflowComment;
     }
+    
+    @Asynchronous
+    public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
+        IdServiceBean idServiceBean = IdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
 
+        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
+        String datasetIdentifier = dataset.getIdentifier();
+        Long maxIdentifier = null;
+
+        if (systemConfig.isDataFilePIDSequentialDependent()) {
+            maxIdentifier = getMaximumExistingDatafileIdentifier(dataset);
+        }
+
+        for (DataFile datafile : dataset.getFiles()) {
+
+            if (datafile.getIdentifier() == null || datafile.getIdentifier().isEmpty()) {
+
+                if (maxIdentifier != null) {
+                    maxIdentifier++;
+                    datafile.setIdentifier(datasetIdentifier + "/" + maxIdentifier.toString());
+                } else {
+                    datafile.setIdentifier(fileService.generateDataFileIdentifier(datafile, idServiceBean));
+                }
+
+                if (datafile.getProtocol() == null) {
+                    datafile.setProtocol(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""));
+                }
+                if (datafile.getAuthority() == null) {
+                    datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority, ""));
+                }
+                if (datafile.getDoiSeparator() == null) {
+                    datafile.setDoiSeparator(settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
+                }
+            }
+
+            String doiRetString;
+
+            try {
+                logger.log(Level.FINE, "creating identifier");
+                doiRetString = idServiceBean.createIdentifier(datafile);
+            } catch (Throwable e) {
+                logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
+                doiRetString = "";
+            }
+
+            // Check return value to make sure registration succeeded
+            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
+                datafile.setIdentifierRegistered(true);
+                datafile.setGlobalIdCreateTime(new Date());
+            }
+
+        }
+    }
 }
