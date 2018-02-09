@@ -1108,7 +1108,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         } catch (CommandException cmdex) {
             logger.info("Command exception:" + cmdex.getMessage());
-        }
+        }        
         //ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false; 
         
@@ -1187,8 +1187,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             // requested that the entire dataset is updated). So we'll try to update 
             // only the filemetadatas and/or files affected, and not the 
             // entire version. 
-            // TODO: in 4.3, create SaveDataFileCommand!
-            // -- L.A. Sep. 21 2015, 4.2
             Timestamp updateTime = new Timestamp(new Date().getTime());
         
             workingVersion.setLastUpdateTime(updateTime);
