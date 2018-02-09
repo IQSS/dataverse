@@ -21,6 +21,9 @@ import org.junit.Test;
  * This should be deleted. I think my issues with the ProvenanceRestServiceBean pulling the system config are because we shouldn't use this.
  * 
  * @author madunlap
+ *
+ * Yes, I agree. Now that I've added ProvenanceRestServiceBeanIT, we can safely
+ * delete this CPLExternalIT class. --pdurbin
  */
 public class CPLExternalIT {
     

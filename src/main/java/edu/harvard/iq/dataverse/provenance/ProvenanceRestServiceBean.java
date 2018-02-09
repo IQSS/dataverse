@@ -34,7 +34,10 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import java.io.StringReader;
 import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import org.json.JSONObject;
 
 //see: https://github.com/ProvTools/prov-cpl/blob/master/bindings/python/RestAPI/rest-docs.txt
@@ -85,7 +88,9 @@ public class ProvenanceRestServiceBean {
         HttpResponse<JsonNode> response = Unirest.get(provBaseUrl + "/provapi/bundle/" + bundleId).asJson();
         logger.info(response.getStatusText());
         Map returnMap = new HashMap<String,String>();
+        // FIXME: Trying to get the id of a non-existent should simply return null rather than throwing a weird JSON exception (because "name" is null).
         returnMap.put("name", response.getBody().getObject().getString("name"));
+        // FIXME: Return standard javax.json.JsonObject (JSON-P, JRS 353) like we do in getBundleJson.
         return returnMap;
     }
  
@@ -100,6 +105,19 @@ public class ProvenanceRestServiceBean {
     //	'id': Long
     //}
     // curl -X POST -H 'Content-type: application/json' -d '{"name":"testName"}' http://localhost:7777/provapi/bundle
+    /**
+     * Use cases:
+     *
+     * - Uploading DataFile provenance (PROV-JSON file supplied by user).
+     *
+     * - Replace on DataFile with another ("file replace")
+     *
+     * - (Future) Deaccession.
+     *
+     * @param bundleName A concatenation of a datafile database id (or maybe
+     * persistent id, in the future) and a unique action being taken (newUpload,
+     * replaceFile, deaccession), separated by a dash (i.e. 42-newUpload).
+     */
     public Long createEmptyBundleFromName(String bundleName) throws UnirestException{
         HttpResponse<JsonNode> response = Unirest.post(provBaseUrl + "/provapi/bundle")
                 .header("Content-Type", "application/json")
@@ -110,24 +128,28 @@ public class ProvenanceRestServiceBean {
         }
         return response.getBody().getObject().getLong("id");
     }
-    
-    //No documentation to copy over currently but should be a delete call
-    public void deleteBundle(String bundleId) throws UnirestException{
-        HttpResponse<JsonNode> uploadRequest = Unirest.delete(provBaseUrl + "/provapi/bundle" + bundleId).asJson();
+
+    public void deleteBundle(long bundleId) throws UnirestException{
+        HttpResponse<JsonNode> uploadRequest = Unirest.delete(provBaseUrl + "/provapi/bundle/" + bundleId).asJson();
         logger.info(uploadRequest.getBody().toString());    
     }
-    
+
     //GET /provapi/bundle/<id>/json
     //exports provenance from bundle <id> as a document
     //returns:
     //{
     //	'JSON': {PROV-JSON Doc}
     //}
-    //
-    //MAD: Untested
-    public JSONObject getBundleJson(String bundleId) throws UnirestException {
-        HttpResponse<JsonNode> response = Unirest.get(provBaseUrl + "/provapi/bundle/" + bundleId).asJson();
-        return response.getBody().getObject();
+    public JsonObject getBundleJson(long bundleId) throws UnirestException {
+        HttpResponse<JsonNode> response = Unirest.get(provBaseUrl + "/provapi/bundle/" + bundleId + "/json").asJson();
+        JSONObject orgJsonObject = response.getBody().getObject();
+        /**
+         * Yes, there is some inefficiency in converting this to the standard
+         * (JRS 353) JSON-P format but it's worth using the standard to avoid
+         * having to deal with a proliferation of Java implementations for JSON.
+         */
+        JsonReader jsonReader = Json.createReader(new StringReader(orgJsonObject.toString()));
+        return jsonReader.readObject();
     }
     
     
@@ -144,6 +166,7 @@ public class ProvenanceRestServiceBean {
     //}
     //
     //MAD: Untested
+    // FIXME: Support sending standard javax.json.JsonObject (JSON-P, JRS 353) rather than org.json.JSONObject.
     public boolean uploadProvJsonForBundle(JSONObject provJson, String bundleName) throws UnirestException {
          HttpResponse<JsonNode> response = Unirest.post(provBaseUrl + "/provapi/bundle")
                 .body("{'bundle_name':'" + bundleName + "',"
