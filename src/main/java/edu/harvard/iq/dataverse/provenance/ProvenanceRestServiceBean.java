@@ -99,9 +99,11 @@ public class ProvenanceRestServiceBean {
     //{
     //	'id': Long
     //}
+    // curl -X POST -H 'Content-type: application/json' -d '{"name":"testName"}' http://localhost:7777/provapi/bundle
     public Long createEmptyBundleFromName(String bundleName) throws UnirestException{
         HttpResponse<JsonNode> response = Unirest.post(provBaseUrl + "/provapi/bundle")
-                .body("{'name':'" + bundleName + "'}")
+                .header("Content-Type", "application/json")
+                .body("{\"name\":\"" + bundleName + "\"}")
                 .asJson();
         if (response.getStatus() != 200) {
             throw new RuntimeException("Response code for provenance postBundle: " + response.getStatus() + ", " + response.getStatusText());
