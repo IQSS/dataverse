@@ -67,7 +67,7 @@ node {
     timeout(time: 2, unit: "HOURS") {
       def userInput = input message: 'Deploy to', parameters: [string(defaultValue: 'dev', description: '', name: 'deploy-to')]
       try {
-        sh "ssh qdradmin@qdr-${userInput}-ec2-01.int.qdr.org \"sudo mkdir /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\""
+        sh "ssh qdradmin@qdr-${userInput}-ec2-01.int.qdr.org \"sudo mkdir -p /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\""
         sh "rsync -av target/$POM_ARTIFACTID-$POM_VERSION.war qdradmin@qdr-${userInput}-ec2-01.int.qdr.org:/srv/dataverse-releases"
         sh "ssh qdradmin@qdr-${userInput}-ec2-01.int.qdr.org \"sudo dv-deploy /srv/dataverse-releases/$POM_ARTIFACTID-$POM_VERSION.war\""
       }
