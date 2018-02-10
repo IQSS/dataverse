@@ -14,6 +14,8 @@ node {
     * Checkout code
     */
     checkout scm
+    ARTIFACT_ID = readMavenPom().getArtifactId()
+    VERSION = readMavenPom().getVersion()
     currentBuild.result = 'SUCCESS'
     //sh(script:"curl -X POST http://graphite.int.qdr.org:81/events/ -d '{\"what\": \"deploy ${app}/${branch} to ${deployenv}\", \"tags\" : \"deployment\"}'")
   }
@@ -67,12 +69,11 @@ node {
     timeout(time: 2, unit: "HOURS") {
       def userInput = input message: 'Deploy to', parameters: [string(defaultValue: 'dev', description: '', name: 'deploy-to')]
       try {
-        notifyBuild("Creating /srv/dataverse-releases directory", "good")
-        sh "ssh qdradmin@qdr-${userInput}-ec2-01.int.qdr.org \"sudo mkdir -p /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\""
-        notifyBuild("Copying $POM_ARTIFACTID-$POM_VERSION.war", "good")
-        sh "rsync -av target/$POM_ARTIFACTID-$POM_VERSION.war qdradmin@qdr-${userInput}-ec2-01.int.qdr.org:/srv/dataverse-releases"
-        notifyBuild("Deploying $POM_ARTIFACTID-$POM_VERSION.war", "good")
-        sh "ssh qdradmin@qdr-${userInput}-ec2-01.int.qdr.org \"sudo dv-deploy /srv/dataverse-releases/$POM_ARTIFACTID-$POM_VERSION.war\""
+        sh """
+          ssh qdradmin@qdr-${userInput}-ec2-01.int.qdr.org \"sudo mkdir -p /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\"
+          rsync -av target/${ARTIFACT_ID}-${VERSION}.war qdradmin@qdr-${userInput}-ec2-01.int.qdr.org:/srv/dataverse-releases
+          ssh qdradmin@qdr-${userInput}-ec2-01.int.qdr.org \"sudo dv-deploy /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war\"
+        """
       }
       catch (e) {
         currentBuild.result = "FAILURE"
