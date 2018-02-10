@@ -3,10 +3,7 @@
 node {
   workspace = pwd()
   properties([[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
-    [ name: 'app',        $class: 'StringParameterDefinition', defaultValue: "dataverse" ],
-    [ name: 'branch',     $class: 'StringParameterDefinition', defaultValue: "${env.JOB_BASE_NAME}" ],
-    [ name: 'deployenv',  $class: 'StringParameterDefinition', defaultValue: 'dev-aws' ],
-    [ name: 'deployuser', $class: 'StringParameterDefinition', defaultValue: 'jenkins' ]
+    [ name: 'deployenv',  $class: 'StringParameterDefinition', defaultValue: 'dev' ],
   ]]])
 
   stage('Init') {
@@ -29,7 +26,7 @@ node {
       withMaven(
         jdk: 'jdk8',
         maven: 'mvn-3-5-0') {
-          sh "mvn test"
+          //sh "mvn test"
         }
     }
     catch (e) {
@@ -63,28 +60,30 @@ node {
     /*
     * Deploy
     */
+    if ("${deployenv}" != "dev") {
+      timeout(time: 2, unit: "HOURS") {
+        def DEPLOY_TARGET = input message: 'Deploy to', parameters: [string(defaultValue: 'dev', description: 'dev, stage, prod', name: 'DEPLOY_TARGET')]
+      }
+    }
+
+    notifyBuild("Deploying ${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET}", "good")
     unstash 'dataverse-war'
-    timeout(time: 2, unit: "HOURS") {
-      def DEPLOY_TARGET = input message: 'Deploy to', parameters: [string(defaultValue: 'dev', description: 'dev, stage, prod', name: 'DEPLOY_TARGET')]
-      try {
-        notifyBuild("Deploying ${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET}", "good")
-        sh """
-          ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org \"sudo mkdir -p /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\"
-          rsync -av target/${ARTIFACT_ID}-${VERSION}.war qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org:/srv/dataverse-releases
-          ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org \"sudo dv-deploy /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war\"
-        """
-        notifyBuild("Success", "good")
-        sh "curl -X POST http://graphite.int.qdr.org:81/events/ -d '{\"what\": \"${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET} from ${app}/${branch}\", \"tags\" : \"deployment\"}'"
-      }
-      catch (e) {
-        currentBuild.result = "FAILURE"
-        notifyBuild("Failed!", "danger")
-        throw e
-      }
+    try {
+      sh """
+        ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org \"sudo mkdir -p /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\"
+        rsync -av target/${ARTIFACT_ID}-${VERSION}.war qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org:/srv/dataverse-releases
+        ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org \"sudo dv-deploy /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war\"
+      """
+      notifyBuild("Success", "good")
+      sh "curl -X POST http://graphite.int.qdr.org:81/events/ -d '{\"what\": \"${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET}\", \"tags\" : \"deployment\"}'"
+    }
+    catch (e) {
+      currentBuild.result = "FAILURE"
+      notifyBuild("Failed!", "danger")
+      throw e
     }
   }
 }
-
 
 @NonCPS
 def notifyBuild(String message, String color) {
