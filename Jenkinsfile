@@ -68,7 +68,7 @@ node {
       def userInput = input message: 'Deploy to', parameters: [string(defaultValue: 'dev', description: '', name: 'deploy-to')]
       try {
         sh "ssh qdradmin@qdr-${userInput}-ec2-01.int.qdr.org \"sudo mkdir /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\""
-        sh "rsync -av target qdradmin@qdr-${userInput}-ec2-01.int.qdr.org:/srv/dataverse-releases"
+        sh "rsync -av target/*.war qdradmin@qdr-${userInput}-ec2-01.int.qdr.org:/srv/dataverse-releases"
       }
       catch (e) {
         currentBuild.result = "FAILURE"
