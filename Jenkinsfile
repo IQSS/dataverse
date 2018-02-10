@@ -74,7 +74,7 @@ node {
           ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org \"sudo dv-deploy /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war\"
         """
         notifyBuild("Success", "good")
-        sh "curl -X POST http://graphite.int.qdr.org:81/events/ -d '{\"what\": \"${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET} from ${app}/${branch}\", \"tags\" : \"deployment\"}"
+        sh "curl -X POST http://graphite.int.qdr.org:81/events/ -d '{\"what\": \"${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET} from ${app}/${branch}\", \"tags\" : \"deployment\"}'"
       }
       catch (e) {
         currentBuild.result = "FAILURE"
