@@ -17,7 +17,6 @@ node {
     ARTIFACT_ID = readMavenPom().getArtifactId()
     VERSION = readMavenPom().getVersion()
     currentBuild.result = 'SUCCESS'
-    //sh(script:"curl -X POST http://graphite.int.qdr.org:81/events/ -d '{\"what\": \"deploy ${app}/${branch} to ${deployenv}\", \"tags\" : \"deployment\"}'")
   }
 
   stage('Test') {
@@ -67,17 +66,20 @@ node {
     unstash 'dataverse-war'
 
     timeout(time: 2, unit: "HOURS") {
-      def userInput = input message: 'Deploy to', parameters: [string(defaultValue: 'dev', description: '', name: 'deploy-to')]
+      def DEPLOY_TARGET = input message: 'Deploy to', parameters: [string(defaultValue: 'dev', description: 'dev, stage, prod', name: 'DEPLOY_TARGET')]
       try {
+        notifyBuild("${BUILD_USER_ID} is deploying ${ARTIFACT_ID}-${VERSION}.war to ${DEPLOY_TARGET}", "good")
         sh """
-          ssh qdradmin@qdr-${userInput}-ec2-01.int.qdr.org \"sudo mkdir -p /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\"
-          rsync -av target/${ARTIFACT_ID}-${VERSION}.war qdradmin@qdr-${userInput}-ec2-01.int.qdr.org:/srv/dataverse-releases
-          ssh qdradmin@qdr-${userInput}-ec2-01.int.qdr.org \"sudo dv-deploy /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war\"
+          ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org \"sudo mkdir -p /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\"
+          rsync -av target/${ARTIFACT_ID}-${VERSION}.war qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org:/srv/dataverse-releases
+          ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org \"sudo dv-deploy /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war\"
         """
+        notifyBuild("Success", "good")
+        sh "curl -X POST http://graphite.int.qdr.org:81/events/ -d '{\"what\": \"${ARTIFACT_ID}-${VERSION}.war to ${DEPLOY_TARGET} from ${app}/${branch}\", \"tags\" : \"deployment\"}"
       }
       catch (e) {
         currentBuild.result = "FAILURE"
-        notifyBuild("Deploying ${app} to ${deploy-to} Failed! <$BUILD_URL/console|(See Logs)>", "danger")
+        notifyBuild("Failed!", "danger")
         throw e
       }
     }
