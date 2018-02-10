@@ -9,10 +9,6 @@ node {
     [ name: 'deployuser', $class: 'StringParameterDefinition', defaultValue: 'jenkins' ]
   ]]])
 
-  wrap([$class: 'BuildUser']) {
-    BUILD_USER_ID = env.BUILD_USER_ID
-  }
-
   stage('Init') {
     /*
     * Checkout code
@@ -24,24 +20,24 @@ node {
     currentBuild.result = 'SUCCESS'
   }
 
-  stage('Test') {
-    /*
-    * Run Unit tests
-    */
-    notifyBuild("Running Tests", "good")
-
-    try {
-      withMaven(
-        jdk: 'jdk8',
-        maven: 'mvn-3-5-0') {
-          sh "mvn test"
-        }
-    }
-    catch (e) {
-      currentBuild.result = "UNSTABLE"
-      notifyBuild("Warning: Tests Failed!", "warning")
-    }
-  }
+  // stage('Test') {
+  //   /*
+  //   * Run Unit tests
+  //   */
+  //   notifyBuild("Running Tests", "good")
+  //
+  //   try {
+  //     withMaven(
+  //       jdk: 'jdk8',
+  //       maven: 'mvn-3-5-0') {
+  //         sh "mvn test"
+  //       }
+  //   }
+  //   catch (e) {
+  //     currentBuild.result = "UNSTABLE"
+  //     notifyBuild("Warning: Tests Failed!", "warning")
+  //   }
+  // }
 
   stage('Build') {
     /*
@@ -69,6 +65,10 @@ node {
     * Deploy
     */
     unstash 'dataverse-war'
+
+    wrap([$class: 'BuildUser']) {
+      BUILD_USER_ID = env.BUILD_USER_ID
+    }
 
     timeout(time: 2, unit: "HOURS") {
       def DEPLOY_TARGET = input message: 'Deploy to', parameters: [string(defaultValue: 'dev', description: 'dev, stage, prod', name: 'DEPLOY_TARGET')]
