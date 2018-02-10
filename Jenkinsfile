@@ -9,10 +9,6 @@ node {
     [ name: 'deployuser', $class: 'StringParameterDefinition', defaultValue: 'jenkins' ]
   ]]])
 
-  wrap([$class: 'BuildUser']) {
-    def BUILD_USER_ID = env.BUILD_USER_ID
-  }
-
   stage('Init') {
     /*
     * Checkout code
@@ -20,8 +16,9 @@ node {
     checkout scm
     ARTIFACT_ID = readMavenPom().getArtifactId()
     VERSION = readMavenPom().getVersion()
-
-
+    wrap([$class: 'BuildUser']) {
+      BUILD_USER_ID = ${BUILD_USER_ID}
+   }
     currentBuild.result = 'SUCCESS'
   }
 
