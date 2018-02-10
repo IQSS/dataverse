@@ -16,28 +16,27 @@ node {
     checkout scm
     ARTIFACT_ID = readMavenPom().getArtifactId()
     VERSION = readMavenPom().getVersion()
-
     currentBuild.result = 'SUCCESS'
   }
 
-  // stage('Test') {
-  //   /*
-  //   * Run Unit tests
-  //   */
-  //   notifyBuild("Running Tests", "good")
-  //
-  //   try {
-  //     withMaven(
-  //       jdk: 'jdk8',
-  //       maven: 'mvn-3-5-0') {
-  //         sh "mvn test"
-  //       }
-  //   }
-  //   catch (e) {
-  //     currentBuild.result = "UNSTABLE"
-  //     notifyBuild("Warning: Tests Failed!", "warning")
-  //   }
-  // }
+  stage('Test') {
+    /*
+    * Run Unit tests
+    */
+    notifyBuild("Running Tests", "good")
+
+    try {
+      withMaven(
+        jdk: 'jdk8',
+        maven: 'mvn-3-5-0') {
+          sh "mvn test"
+        }
+    }
+    catch (e) {
+      currentBuild.result = "UNSTABLE"
+      notifyBuild("Warning: Tests Failed!", "warning")
+    }
+  }
 
   stage('Build') {
     /*
@@ -65,22 +64,17 @@ node {
     * Deploy
     */
     unstash 'dataverse-war'
-
-    wrap([$class: 'BuildUser']) {
-      BUILD_USER_ID = env.BUILD_USER_ID
-    }
-
     timeout(time: 2, unit: "HOURS") {
       def DEPLOY_TARGET = input message: 'Deploy to', parameters: [string(defaultValue: 'dev', description: 'dev, stage, prod', name: 'DEPLOY_TARGET')]
       try {
-        notifyBuild("${BUILD_USER_ID} is deploying ${ARTIFACT_ID}-${VERSION}.war to ${DEPLOY_TARGET}", "good")
+        notifyBuild("Deploying ${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET}", "good")
         sh """
           ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org \"sudo mkdir -p /srv/dataverse-releases; sudo chown qdradmin /srv/dataverse-releases\"
           rsync -av target/${ARTIFACT_ID}-${VERSION}.war qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org:/srv/dataverse-releases
           ssh qdradmin@qdr-${DEPLOY_TARGET}-ec2-01.int.qdr.org \"sudo dv-deploy /srv/dataverse-releases/${ARTIFACT_ID}-${VERSION}.war\"
         """
         notifyBuild("Success", "good")
-        sh "curl -X POST http://graphite.int.qdr.org:81/events/ -d '{\"what\": \"${ARTIFACT_ID}-${VERSION}.war to ${DEPLOY_TARGET} from ${app}/${branch}\", \"tags\" : \"deployment\"}"
+        sh "curl -X POST http://graphite.int.qdr.org:81/events/ -d '{\"what\": \"${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET} from ${app}/${branch}\", \"tags\" : \"deployment\"}"
       }
       catch (e) {
         currentBuild.result = "FAILURE"
