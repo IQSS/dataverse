@@ -99,7 +99,10 @@
     </p:dialog>
     <p:dialog id="confirmProvenancePopup" header="#{bundle['file.confirmProvenanceDialog']}" modal="true" visible="false" styleClass="smallPopUp" widgetVar="confirmProvenancePopup">
         <div class="form-group text-left text-warning">
-            <span class="glyphicon glyphicon-warning-sign"></span> <h:outputText value=" #{bundle['file.confirmProvenanceDialog.tip']}"/>
+            <span class="glyphicon glyphicon-warning-sign"></span> <h:outputText value=" #{bundle['file.confirmProvenanceDialog.tip1']}"/>
+        </div>
+        <div class="form-group text-left text-warning">
+            <h:outputText value=" #{bundle['file.confirmProvenanceDialog.tip2']}"/>
         </div>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.continue}" oncomplete="PF('confirmProvenancePopup').hide();" actionListener="#{provenanceUploadFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
