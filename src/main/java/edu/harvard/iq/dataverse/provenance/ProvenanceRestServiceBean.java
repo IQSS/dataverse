@@ -1,32 +1,10 @@
 package edu.harvard.iq.dataverse.provenance;
 
-import edu.harvard.iq.dataverse.search.*;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
@@ -42,27 +20,26 @@ import javax.json.JsonReader;
 import org.json.JSONObject;
 
 //see: https://github.com/ProvTools/prov-cpl/blob/master/bindings/python/RestAPI/rest-docs.txt
-
 @Stateless
 public class ProvenanceRestServiceBean {
 
     private static final Logger logger = Logger.getLogger(ProvenanceRestServiceBean.class.getCanonicalName());
-    
+
     //MAD: when 4346 is combined with this code, use the ip being set there.
     public String provBaseUrl;
-    
+
     @Inject
     SystemConfig systemConfig;
-    
+
     public void init() {
         provBaseUrl = systemConfig.getProvServiceUrl();//"http://10.252.76.172:7777";
     }
-    
+
     //for testing purposes, should be deleted I think.
     public void setProvBaseUrl(String url) {
         provBaseUrl = url;
     }
-    
+
     //MAD: I may just want to delete this
     //nothing in the docs
     //curl http://host:port/provapi/version
@@ -70,7 +47,7 @@ public class ProvenanceRestServiceBean {
         HttpResponse<JsonNode> response = Unirest.get(provBaseUrl + "/provapi/version").asJson();
         return response.getBody().getObject().getString("version");
     }
-            
+
     //all API calls return 1 of the following status codes:
     //200 - success
     //400 - invalid arguments
@@ -85,18 +62,18 @@ public class ProvenanceRestServiceBean {
     //	'creation_time': Timestamp,
     //	'creation_session': Long
     //}
-    public Map<String,String> getBundleId(Long bundleId) throws UnirestException{
+    public Map<String, String> getBundleId(Long bundleId) throws UnirestException {
         HttpResponse<JsonNode> response = Unirest.get(provBaseUrl + "/provapi/bundle/" + bundleId).asJson();
         if (response.getStatus() == 404) {
             return null;
         }
         logger.info(response.getStatusText());
-        Map returnMap = new HashMap<String,String>();
+        Map returnMap = new HashMap<String, String>();
         returnMap.put("name", response.getBody().getObject().getString("name"));
         // FIXME: Return standard javax.json.JsonObject (JSON-P, JRS 353) like we do in getBundleJson.
         return returnMap;
     }
- 
+
     //POST /provapi/bundle
     //creates a new bundle
     //params:
@@ -121,7 +98,7 @@ public class ProvenanceRestServiceBean {
      * persistent id, in the future) and a unique action being taken (newUpload,
      * replaceFile, deaccession), separated by a dash (i.e. 42-newUpload).
      */
-    public Long createEmptyBundleFromName(String bundleName) throws UnirestException{
+    public Long createEmptyBundleFromName(String bundleName) throws UnirestException {
         HttpResponse<JsonNode> response = Unirest.post(provBaseUrl + "/provapi/bundle")
                 .header("Content-Type", "application/json")
                 .body("{\"name\":\"" + bundleName + "\"}")
@@ -160,8 +137,7 @@ public class ProvenanceRestServiceBean {
         JsonReader jsonReader = Json.createReader(new StringReader(orgJsonObject.toString()));
         return jsonReader.readObject();
     }
-    
-    
+
     //POST /provapi/json
     //uploads a PROV-JSON file
     //params:
@@ -440,10 +416,4 @@ public class ProvenanceRestServiceBean {
 //}
 //returns:
 //
-
-
-
-
-    
-
 }
