@@ -5,12 +5,13 @@ import javax.json.JsonObject;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 
@@ -123,14 +124,13 @@ public class ProvenanceRestServiceBeanIT {
     public void testDeleteBundle() throws Exception {
         System.out.println("deleteBundle");
         long bundleId = provenanceRestServiceBean.createEmptyBundleFromName("deleteMe");
-        provenanceRestServiceBean.deleteBundle(bundleId);
-        // FIXME: After we are able to delete, assert that it's gone by trying to look it up.
-        boolean exitEarlyDueToBug = true;
-        if (exitEarlyDueToBug) {
-            return;
-        }
+        boolean deleted = provenanceRestServiceBean.deleteBundle(bundleId);
+        assertTrue(deleted);
+        // Make sure you can't look it up any more.
         Map<String, String> result = provenanceRestServiceBean.getBundleId(bundleId);
-        System.out.println("result: " + result);
+        assertNull(result);
+        boolean deletedUnknownId = provenanceRestServiceBean.deleteBundle(Long.MAX_VALUE);
+        assertFalse(deletedUnknownId);
     }
 
     /**

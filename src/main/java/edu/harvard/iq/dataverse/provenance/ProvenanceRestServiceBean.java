@@ -86,9 +86,11 @@ public class ProvenanceRestServiceBean {
     //}
     public Map<String,String> getBundleId(Long bundleId) throws UnirestException{
         HttpResponse<JsonNode> response = Unirest.get(provBaseUrl + "/provapi/bundle/" + bundleId).asJson();
+        if (response.getStatus() == 404) {
+            return null;
+        }
         logger.info(response.getStatusText());
         Map returnMap = new HashMap<String,String>();
-        // FIXME: Trying to get the id of a non-existent should simply return null rather than throwing a weird JSON exception (because "name" is null).
         returnMap.put("name", response.getBody().getObject().getString("name"));
         // FIXME: Return standard javax.json.JsonObject (JSON-P, JRS 353) like we do in getBundleJson.
         return returnMap;
@@ -129,9 +131,15 @@ public class ProvenanceRestServiceBean {
         return response.getBody().getObject().getLong("id");
     }
 
-    public void deleteBundle(long bundleId) throws UnirestException{
-        HttpResponse<JsonNode> uploadRequest = Unirest.delete(provBaseUrl + "/provapi/bundle/" + bundleId).asJson();
-        logger.info(uploadRequest.getBody().toString());    
+    public boolean deleteBundle(long bundleId) throws UnirestException {
+        HttpResponse<JsonNode> deleteResponse = Unirest.delete(provBaseUrl + "/provapi/bundle/" + bundleId).asJson();
+        logger.info(deleteResponse.getBody().toString());
+        int responseCode = deleteResponse.getStatus();
+        if (responseCode == 200) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     //GET /provapi/bundle/<id>/json
