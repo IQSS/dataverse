@@ -139,7 +139,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(doiSeparator);
         if (theDataset.getStorageIdentifier() == null) {
             try {
-                DataAccess.createNewStorageIO(theDataset, "dataset");
+                DataAccess.createNewStorageIO(theDataset, "placeholder");
             } catch (IOException ioex) {
                 // if setting the storage identifier through createNewStorageIO fails, dataset creation
                 // does not have to fail. we just set the storage id to a default -SF
