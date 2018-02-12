@@ -593,10 +593,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     private String getDestinationKey(String auxItemTag) throws IOException {
-        open();
         if (dvObject instanceof DataFile) {
             return getMainFileKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
+            if (key == null) {
+                open();
+            }
             return key + "/" + auxItemTag;
         } else {
             throw new IOException("S3AccessIO: This operation is only supported for Datasets and DataFiles.");
