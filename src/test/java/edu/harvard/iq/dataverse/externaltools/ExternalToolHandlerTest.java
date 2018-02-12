@@ -12,8 +12,9 @@ public class ExternalToolHandlerTest {
     // TODO: It would probably be better to split these into individual tests.
     @Test
     public void testGetToolUrlWithOptionalQueryParameters() {
+        ExternalTool.Type type = ExternalTool.Type.EXPLORE;
         String toolUrl = "http://example.com";
-        ExternalTool externalTool = new ExternalTool("displayName", "description", toolUrl, "{}");
+        ExternalTool externalTool = new ExternalTool("displayName", "description", type, toolUrl, "{}");
 
         // One query parameter, not a reserved word, no {fileId} (required) used.
         externalTool.setToolParameters(Json.createObjectBuilder()
@@ -88,13 +89,13 @@ public class ExternalToolHandlerTest {
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
         String result4 = externalToolHandler4.getQueryParametersForUrl();
         System.out.println("result4: " + result4);
-        assertEquals("?key1=42&key2=null", result4);
+        assertEquals("?key1=42", result4);
 
         // Two query parameters, attempt to use a reserved word that doesn't exist.
         externalTool.setToolParameters(Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                .add("key1", "{siteUrl}")
+                                .add("key1", "{junk}")
                         )
                         .add(Json.createObjectBuilder()
                                 .add("key2", "{apiToken}")
@@ -111,7 +112,7 @@ public class ExternalToolHandlerTest {
             expectedException = ex;
         }
         assertNotNull(expectedException);
-        assertEquals("Unknown reserved word: {siteUrl}", expectedException.getMessage());
+        assertEquals("Unknown reserved word: {junk}", expectedException.getMessage());
 
     }
 

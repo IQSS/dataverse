@@ -52,7 +52,6 @@ The script will prompt you for some configuration values. If this is a test/eval
 - Name of the Postgres User: dvnapp
 - Postgres user password: secret
 - Remote Solr indexing service: LOCAL
-- Will this Dataverse be using TwoRavens application: NOT INSTALLED
 - Rserve Server: localhost
 - Rserve Server Port: 6311
 - Rserve User Name: rserve
@@ -60,7 +59,6 @@ The script will prompt you for some configuration values. If this is a test/eval
 - Administration Email address for the installation;
 - Postgres admin password - We'll need it in order to create the database and user for the Dataverse to use, without having to run the installer as root. If you don't know your Postgres admin password, you may simply set the authorization level for localhost to "trust" in the PostgreSQL ``pg_hba.conf`` file (See the PostgreSQL section in the Prerequisites). If this is a production evnironment, you may want to change it back to something more secure, such as "password" or "md5", after the installation is complete.
 - Network address of a remote Solr search engine service (if needed) - In most cases, you will be running your Solr server on the same host as the Dataverse application (then you will want to leave this set to the default value of ``LOCAL``). But in a serious production environment you may set it up on a dedicated separate server.
-- The URL of the TwoRavens application GUI, if this Dataverse node will be using a companion TwoRavens installation. Otherwise, leave it set to ``NOT INSTALLED``. 
 
 If desired, these default values can be configured by creating a ``default.config`` (example :download:`here <../_static/util/default.config>`) file in the installer's working directory with new values (if this file isn't present, the above defaults will be used).
 

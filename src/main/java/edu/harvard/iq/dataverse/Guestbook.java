@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.ManyToOne;
 import javax.persistence.OrderBy;
@@ -295,6 +296,15 @@ public class Guestbook implements Serializable {
 
     public void setResponseCountDataverse(Long responseCountDataverse) {
         this.responseCountDataverse = responseCountDataverse;
+    }
+    
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Guestbook)) {
+            return false;
+        }
+        Guestbook other = (Guestbook) object;
+        return Objects.equals(getId(), other.getId());
     }
     
     
