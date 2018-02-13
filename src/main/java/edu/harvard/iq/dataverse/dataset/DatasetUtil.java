@@ -267,7 +267,7 @@ public class DatasetUtil {
         StorageIO<Dataset> dataAccess = null;
                 
         try{
-             dataAccess = DataAccess.createNewStorageIO(dataset,"file");
+             dataAccess = DataAccess.createNewStorageIO(dataset,"placeholder");
         }
         catch(IOException ioex){
             //TODO: Add a suitable waing message
