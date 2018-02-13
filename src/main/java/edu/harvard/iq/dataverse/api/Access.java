@@ -184,11 +184,6 @@ public class Access extends AbstractApiBean {
         GuestbookResponse gbr = null;    
         
         
-        if (gbrecs == null && df.isReleased()){
-            // Write Guestbook record if not done previously and file is released
-            gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
-        }
-        
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -198,6 +193,13 @@ public class Access extends AbstractApiBean {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
+        
+        if (gbrecs == null && df.isReleased()){
+            // Write Guestbook record if not done previously and file is released
+            User apiTokenUser = findAPITokenUser(apiToken);
+            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
+        }
+               
         // This will throw a WebApplicationException, with the correct 
         // exit code, if access isn't authorized: 
         checkAuthorization(df, apiToken);
@@ -1135,5 +1137,32 @@ public class Access extends AbstractApiBean {
         
         return false; 
     }   
+    
+
+        
+    private User findAPITokenUser(String apiToken) {
+        User apiTokenUser = null;
+
+        if ((apiToken != null) && (apiToken.length() != 64)) {
+            // We'll also try to obtain the user information from the API token, 
+            // if supplied: 
+
+            try {
+                logger.fine("calling apiTokenUser = findUserOrDie()...");
+                apiTokenUser = findUserOrDie();
+                return apiTokenUser;
+            } catch (WrappedResponse wr) {
+                logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
+                return null;
+            }
+
+        }
+        return apiTokenUser;
+    }
+
+
+
+            
+            
             
 }
