@@ -72,6 +72,9 @@ public class ProvIT {
         deleteProvJson.prettyPrint();
         deleteProvJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
+        // TODO: Test that if provenance already exists in CPL (e.g. cplId in fileMetadata is not 0) upload returns error.
+        //       There are currently no api endpoints to set up up this test.
 
         //Provenance FreeForm
         JsonObject provFreeFormGood = Json.createObjectBuilder()

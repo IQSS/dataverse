@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonProvCommand;
 import java.io.StringReader;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonException;
@@ -18,6 +20,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 @Path("files")
 public class Prov extends AbstractApiBean {
@@ -30,7 +34,14 @@ public class Prov extends AbstractApiBean {
     @Consumes("application/json")
     public Response addProvJson(String body, @PathParam("id") String idSupplied) {
         try {
-            JsonObject jsonObject = execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied), body));
+            DataFile dataFile;
+            dataFile = findDataFileOrDie(idSupplied);
+            if(null == dataFile.getFileMetadata()) { // can happen when a datafile is not fully initialized, though unlikely in our current implementation
+                return error(BAD_REQUEST, "Invalid DataFile Id, file not fully initialized");
+            } else if (dataFile.getFileMetadata().getCplId() != 0) {
+                return error(METHOD_NOT_ALLOWED, "File provenance has already exists in the CPL system and cannot be uploaded.");
+            }
+            JsonObject jsonObject = execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), dataFile , body));
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
             jsonResponse.add("message", "PROV-JSON provenance data saved: " + jsonObject.toString());
             return ok(jsonResponse);
