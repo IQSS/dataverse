@@ -313,31 +313,7 @@
                                     </button>
                                 </div>
                             </p:dialog>
-                            <!-- END: Contact/Share Button Group -->                            
-                            <!-- View Dataset Versions Button -->
-                            <!-- 4.2.1: replaced permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset') with DatasetPage.canViewUnpublishedDataset() -->
-                            <div class="btn-group pull-left" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1 or (DatasetPage.releasedVersionTabList.size() == 1 and DatasetPage.dataset.latestVersion.draft and DatasetPage.canViewUnpublishedDataset())}">
-                                <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                    View Dataset Versions <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu" role="menu">
-                                    <ui:repeat value="#{DatasetPage.versionTabList}" var="versionLinks">
-                                        <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
-                                            <h:outputLink styleClass="ui-commandlink ui-widget" value="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionState}"
-                                                          rendered="#{!(DatasetPage.workingVersion == versionLinks) and !(versionLinks.released or versionLinks.deaccessioned)}">
-                                                <h:outputText value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></h:outputLink>
-                                            <h:outputText styleClass="ui-commandlink ui-widget ui-state-disabled #{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" value="#{versionLinks.versionState}"
-                                                          rendered="#{(DatasetPage.workingVersion == versionLinks) and !(versionLinks.released or versionLinks.deaccessioned)}"/>
-                                            <h:outputLink styleClass="ui-commandlink ui-widget" value="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}"
-                                                          rendered="#{!(DatasetPage.workingVersion == versionLinks) and (versionLinks.released or versionLinks.deaccessioned)}">
-                                                <h:outputText value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></h:outputLink>
-                                            <h:outputText styleClass="ui-commandlink ui-widget ui-state-disabled #{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}"
-                                                          rendered="#{(DatasetPage.workingVersion == versionLinks) and !(versionLinks.draft)}"/>
-                                        </li>
-                                    </ui:repeat>
-                                </ul>
-                            </div>
-                            <!-- END: Dataset Versions Button -->
+                            <!-- END: Contact/Share Button Group -->
 
                             <!-- Metrics -->
                             <div id="metrics-block" class="col-xs-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">

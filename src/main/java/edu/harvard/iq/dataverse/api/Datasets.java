@@ -54,6 +54,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
@@ -436,7 +437,27 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-
+    
+    @POST
+    @Path("{id}/move/{targetDataverseAlias}")
+    public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {        
+        try{
+            System.out.print("force: " + force);
+            User u = findUserOrDie();            
+            Dataset ds = findDatasetOrDie(id);
+            Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
+            if (target == null){
+                return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
+            }            
+            //Command requires Super user - it will be tested by the command
+            execCommand(new MoveDatasetCommand(
+                    createDataverseRequest(u), ds, target, force
+                    ));
+            return ok("Dataset moved successfully");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
     @GET
     @Path("{id}/links")
     public Response getLinks(@PathParam("id") String idSupplied ) {

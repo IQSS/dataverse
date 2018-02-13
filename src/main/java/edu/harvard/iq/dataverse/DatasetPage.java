@@ -2791,29 +2791,35 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
+    private Boolean lockedFromEditsVar;
+    private Boolean lockedFromDownloadVar;    
     /**
      * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
      * For all other locks edit should be locked for all editors.
      */
     public boolean isLockedFromEdits() {
-        
-        try {
-            permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
-        } catch (IllegalCommandException ex) {
-            return true;
+        if(null == lockedFromEditsVar) {
+            try {
+                permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+                lockedFromEditsVar = false;
+            } catch (IllegalCommandException ex) {
+                lockedFromEditsVar = true;
+            }
         }
-        return false;
+        return lockedFromEditsVar;
     }
     
     public boolean isLockedFromDownload(){
-        
-        try {
-            permissionService.checkDownloadFileLock(dataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
-        } catch (IllegalCommandException ex) {
-            return true;
+        if(null == lockedFromDownloadVar) {
+            try {
+                permissionService.checkDownloadFileLock(dataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+                lockedFromDownloadVar = false;
+            } catch (IllegalCommandException ex) {
+                lockedFromDownloadVar = true;
+                return true;
+            }
         }
-        return false;
-        
+        return lockedFromDownloadVar;
     }
 
     public void setLocked(boolean locked) {
