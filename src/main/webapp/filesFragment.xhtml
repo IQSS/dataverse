@@ -221,9 +221,14 @@
         </p:column>
         <p:column class="col-file-metadata">
             
-            <ui:fragment>
+            <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalId}">
                 <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
                 <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalId).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                    #{fileMetadata.label}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty fileMetadata.dataFile.globalId}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
                     #{fileMetadata.label}
                 </a>
             </ui:fragment>

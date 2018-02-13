@@ -917,8 +917,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
         for (DataFile datafile : dataset.getFiles()) {
+            logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
 
             if (datafile.getIdentifier() == null || datafile.getIdentifier().isEmpty()) {
+
+                logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
 
                 if (maxIdentifier != null) {
                     maxIdentifier++;
@@ -936,22 +939,27 @@ public class DatasetServiceBean implements java.io.Serializable {
                 if (datafile.getDoiSeparator() == null) {
                     datafile.setDoiSeparator(settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
                 }
-            }
 
-            String doiRetString;
+                logger.info("identifier: " + datafile.getIdentifier());
 
-            try {
-                logger.log(Level.FINE, "creating identifier");
-                doiRetString = idServiceBean.createIdentifier(datafile);
-            } catch (Throwable e) {
-                logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
-                doiRetString = "";
-            }
+                String doiRetString;
 
-            // Check return value to make sure registration succeeded
-            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
-                datafile.setIdentifierRegistered(true);
-                datafile.setGlobalIdCreateTime(new Date());
+                try {
+                    logger.log(Level.FINE, "creating identifier");
+                    doiRetString = idServiceBean.createIdentifier(datafile);
+                } catch (Throwable e) {
+                    logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
+                    doiRetString = "";
+                }
+
+                // Check return value to make sure registration succeeded
+                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
+                    datafile.setIdentifierRegistered(true);
+                    datafile.setGlobalIdCreateTime(new Date());
+                }
+                
+                DataFile merged = em.merge(datafile);
+                merged = null; 
             }
 
         }

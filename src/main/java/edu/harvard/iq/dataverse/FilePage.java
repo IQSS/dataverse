@@ -131,8 +131,30 @@ public class FilePage implements java.io.Serializable {
                                   fileId = file.getId();
                }
 
-            } else if (fileId == null){
+            }
+            
+            if (file == null || fileId == null){
                return permissionsWrapper.notFound();
+            }
+            
+            // Is the Dataset harvested?
+            if (file.getOwner().isHarvested()) {
+                // if so, we'll simply forward to the remote URL for the original
+                // source of this harvested dataset:
+                String originalSourceURL = file.getOwner().getRemoteArchiveURL();
+                if (originalSourceURL != null && !originalSourceURL.equals("")) {
+                    logger.fine("redirecting to "+originalSourceURL);
+                    try {
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
+                    } catch (IOException ioex) {
+                        // must be a bad URL...
+                        // we don't need to do anything special here - we'll redirect
+                        // to the local 404 page, below.
+                        logger.warning("failed to issue a redirect to "+originalSourceURL);
+                    }
+                }
+
+                return permissionsWrapper.notFound();
             }
 
                 RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;

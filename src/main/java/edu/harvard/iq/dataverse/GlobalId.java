@@ -78,6 +78,9 @@ public class GlobalId implements java.io.Serializable {
     }
 
     public String toString() {
+        if (protocol == null || authority == null || identifier == null) {
+            return "";
+        }
         return protocol + ":" + authority + "/" + identifier;
     }
     

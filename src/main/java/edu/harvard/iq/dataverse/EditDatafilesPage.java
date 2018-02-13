@@ -1104,7 +1104,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                     maxIdentifier++;
                     dataFileIdentifier = datasetIdentifier + "/" + maxIdentifier.toString();
                 }
-                commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest(), dataFileIdentifier));
+                //commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest(), dataFileIdentifier));
+                commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest(), dataFileIdentifier, true));
             }
         } catch (CommandException cmdex) {
             logger.info("Command exception:" + cmdex.getMessage());
@@ -1267,8 +1268,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }
-           
-        newFiles.clear();
+        
+        if (newFiles.size() > 0) {
+            logger.info("clearing newfiles list; starting async job for obtaining persistent ids for files.");
+            newFiles.clear();
+            datasetService.obtainPersistentIdentifiersForDatafiles(dataset);
+        }
                 
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
