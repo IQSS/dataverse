@@ -437,7 +437,7 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public /*ZippedDownloadInstance*/ Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public /*ZippedDownloadInstance*/ Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         // create a Download Instance without, without a primary Download Info object:
         //ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
 
@@ -461,6 +461,8 @@ public class Access extends AbstractApiBean {
                 ? headers.getHeaderString(API_KEY_HEADER) 
                 : apiTokenParam;
         
+        User apiTokenUser = findAPITokenUser(apiToken); //for use in adding gb records if necessary
+               
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
@@ -495,7 +497,10 @@ public class Access extends AbstractApiBean {
                                     }
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                    
+                                            if (gbrecs == null && file.isReleased()){
+                                                GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                                                guestbookResponseService.save(gbr);
+                                            }
                                     if (zipper == null) {
                                         // This is the first file we can serve - so we now know that we are going to be able 
                                         // to produce some output.
