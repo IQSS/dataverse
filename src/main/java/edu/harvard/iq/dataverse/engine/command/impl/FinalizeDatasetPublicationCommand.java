@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -29,6 +30,9 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 /**
  *
@@ -177,6 +181,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     }
     
     private void updateFiles(Timestamp updateTime, CommandContext ctxt) throws CommandException {
+        boolean provEnabled = ctxt.systemConfig().getProvServiceUrl() != null;
         for (DataFile dataFile : theDataset.getFiles()) {
             if (dataFile.getPublicationDate() == null) {
                 // this is a new, previously unpublished file, so publish by setting date
@@ -237,6 +242,27 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 if (dataFile.equals(theDataset.getThumbnailFile())) {
                     theDataset.setThumbnailFile(null);
                 }
+            }
+            if (provEnabled) {
+                logger.info("let's do prov stuff of file id " + dataFile.getId());
+                try {
+                    // FIXME: It's bizarre to have to call setProvBaseUrl like this. Fix it.
+                    ctxt.provenanceRestService().setProvBaseUrl(ctxt.systemConfig().getProvServiceUrl());
+                    // FIXME: What should the bundle id be?
+                    Long bundleId = ctxt.provenanceRestService().createEmptyBundleFromName("FIXME");
+                    JsonObjectBuilder innerJson = Json.createObjectBuilder();
+                    // FIXME: What JSON should we send to the prov service?
+                    innerJson.add("foo", "bar");
+                    JsonObject provJson = innerJson.build();
+                    // FIXME: What should this bundleName be?
+                    String bundleName = bundleId + "-uploadJson";
+                    JsonObject returnFromUpload = ctxt.provenanceRestService().uploadProvJsonForBundle(provJson, bundleName);
+                    logger.info("return from upload: " + returnFromUpload);
+                } catch (UnirestException ex) {
+                    logger.info("Problem calling into prov service: " + ex);
+                }
+            } else {
+                logger.info("on file id " + dataFile.getId() + " but prov is not enabled");
             }
         }
     }

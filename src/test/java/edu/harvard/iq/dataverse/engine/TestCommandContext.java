@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.provenance.ProvenanceRestServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -201,6 +202,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DataCaptureModuleServiceBean dataCaptureModule() {
+        return null;
+    }
+
+    @Override
+    public ProvenanceRestServiceBean provenanceRestService() {
         return null;
     }
 }

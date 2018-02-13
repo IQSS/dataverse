@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.provenance.ProvenanceRestServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import java.util.Map;
@@ -149,6 +150,9 @@ public class EjbDataverseEngine {
 
     @EJB
     DataCaptureModuleServiceBean dataCaptureModule;
+
+    @EJB
+    ProvenanceRestServiceBean provenanceRestService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -435,6 +439,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DataCaptureModuleServiceBean dataCaptureModule() {
                     return dataCaptureModule;
+                }
+
+                @Override
+                public ProvenanceRestServiceBean provenanceRestService() {
+                    return provenanceRestService;
                 }
 
             };

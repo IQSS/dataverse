@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.provenance.ProvenanceRestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -123,4 +124,6 @@ public interface CommandContext {
     public MapLayerMetadataServiceBean mapLayerMetadata();
 
     public DataCaptureModuleServiceBean dataCaptureModule();
+
+    public ProvenanceRestServiceBean provenanceRestService();
 }

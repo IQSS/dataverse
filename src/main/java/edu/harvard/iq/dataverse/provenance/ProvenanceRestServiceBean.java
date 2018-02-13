@@ -285,6 +285,15 @@ public class ProvenanceRestServiceBean {
 //{
 //	'id': Long
 //}
+    /**
+     * Need IRI per Dataverse-installation.
+     *
+     * @param prefix Short, three characters
+     */
+    public static void createObject(String prefix, String name, String type, String bundleId) {
+        // FIXME: Implement me. Add function for addBundlePrefix too.
+    }
+
 //
 //POST /provapi/lookup/object
 //looks up an object

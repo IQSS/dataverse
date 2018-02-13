@@ -20,6 +20,58 @@ public class ProvIT {
     }
 
     @Test
+    public void testPublish() {
+
+        Response createDepositor = UtilIT.createRandomUser();
+        createDepositor.prettyPrint();
+        createDepositor.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String usernameForDepositor = UtilIT.getUsernameFromResponse(createDepositor);
+        String apiTokenForDepositor = UtilIT.getApiTokenFromResponse(createDepositor);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiTokenForDepositor);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiTokenForDepositor);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response authorAddsFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiTokenForDepositor);
+        authorAddsFile.prettyPrint();
+        authorAddsFile.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
+                .statusCode(OK.getStatusCode());
+
+        Long dataFileId = JsonPath.from(authorAddsFile.getBody().asString()).getLong("data.files[0].dataFile.id");
+        System.out.println("datafile id: " + dataFileId);
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiTokenForDepositor);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId.toString(), "major", apiTokenForDepositor);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String apiToken = apiTokenForDepositor;
+        Response exportProv = UtilIT.exportProv(dataFileId.toString(), apiToken);
+        exportProv.prettyPrint();
+        exportProv.then().assertThat()
+                // FIXME: assert what to expect in the body
+                .statusCode(OK.getStatusCode());
+    }
+
+    @Test
     public void testAddProvFile() {
 
         Response createDepositor = UtilIT.createRandomUser();
@@ -67,7 +119,7 @@ public class ProvIT {
         uploadProvJson.then().assertThat()
                 .body("data.message", equalTo("PROV-JSON provenance data saved: {\"prov\":true,\"foo\":\"bar\"}"))
                 .statusCode(OK.getStatusCode());
-        
+
         Response deleteProvJson = UtilIT.deleteProvJson(dataFileId.toString(), apiTokenForDepositor);
         deleteProvJson.prettyPrint();
         deleteProvJson.then().assertThat()
@@ -82,7 +134,7 @@ public class ProvIT {
         uploadProvFreeForm.then().assertThat()
                 .body("data.message", equalTo("Free-form provenance data saved: I inherited this file from my grandfather."))
                 .statusCode(OK.getStatusCode());
-        
+
         Response deleteProvFreeForm = UtilIT.deleteProvFreeForm(dataFileId.toString(), apiTokenForDepositor);
         deleteProvFreeForm.prettyPrint();
         deleteProvFreeForm.then().assertThat()
