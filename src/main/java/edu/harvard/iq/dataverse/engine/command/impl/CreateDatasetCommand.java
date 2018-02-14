@@ -34,15 +34,15 @@ import javax.validation.ConstraintViolation;
  */
 @RequiredPermissions(Permission.AddDataset)
 public class CreateDatasetCommand extends AbstractCommand<Dataset> {
-    
+
     private static final Logger logger = Logger.getLogger(CreateDatasetCommand.class.getCanonicalName());
-    
+
     private final Dataset theDataset;
     private final boolean registrationRequired;
     // TODO: rather than have a boolean, create a sub-command for creating a dataset during import
     private final ImportUtil.ImportType importType;
     private final Template template;
-    
+
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset.getOwner());
         this.theDataset = theDataset;
@@ -50,7 +50,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         this.importType = null;
         this.template = null;
     }
-    
+
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired) {
         super(aRequest, theDataset.getOwner());
         this.theDataset = theDataset;
@@ -58,7 +58,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         this.importType = null;
         this.template = null;
     }
-    
+
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, ImportUtil.ImportType importType) {
         super(aRequest, theDataset.getOwner());
         this.theDataset = theDataset;
@@ -66,7 +66,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         this.importType = importType;
         this.template = null;
     }
-    
+
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, ImportUtil.ImportType importType, Template template) {
         super(aRequest, theDataset.getOwner());
         this.theDataset = theDataset;
@@ -74,17 +74,17 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         this.importType = importType;
         this.template = template;
     }
-    
+
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
-        
+
         IdServiceBean idServiceBean = IdServiceBean.getBean(theDataset.getProtocol(), ctxt);
-        
+
         if (theDataset.getIdentifier() == null || theDataset.getIdentifier().isEmpty()) {
-            
+
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
-            
+
         }
         if ((importType != ImportType.MIGRATION && importType != ImportType.HARVEST) && !ctxt.datasets().isIdentifierUniqueInDatabase(theDataset.getIdentifier(), theDataset, idServiceBean)) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
@@ -107,11 +107,11 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             }
             throw new IllegalCommandException(validationFailedString, this);
         }
-        
+
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
-        
+
         theDataset.setCreateDate(new Timestamp(new Date().getTime()));
-        
+
         Iterator<DatasetField> dsfIt = dsv.getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
             if (dsfIt.next().removeBlankDatasetFieldValues()) {
@@ -132,33 +132,19 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         String nonNullDefaultIfKeyNotFound = "";
-//<<<<<<< HEAD
-//        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-//        String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-//        String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-//        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-//        if (theDataset.getProtocol() == null) {
-//            theDataset.setProtocol(protocol);
-//        }
-//        if (theDataset.getAuthority() == null) {
-//            theDataset.setAuthority(authority);
-//        }
-//        if (theDataset.getDoiSeparator() == null) {
-//            theDataset.setDoiSeparator(doiSeparator);
-//        }
-//        if (theDataset.getStorageIdentifier() == null) {
-//            if (System.getProperty("dataverse.files.storage-driver-id") != null) {
-//                theDataset.setStorageIdentifier(System.getProperty("dataverse.files.storage-driver-id") + "://" + theDataset.getAuthority() + theDataset.getDoiSeparator() + theDataset.getIdentifier());
-//            } else {
-//                theDataset.setStorageIdentifier("file://" + theDataset.getAuthority() + theDataset.getDoiSeparator() + theDataset.getIdentifier());
-//=======
-        String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String    authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String  doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        if (theDataset.getProtocol()==null) theDataset.setProtocol(protocol);
-        if (theDataset.getAuthority()==null) theDataset.setAuthority(authority);
-        if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(doiSeparator);
+        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
+        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        if (theDataset.getProtocol() == null) {
+            theDataset.setProtocol(protocol);
+        }
+        if (theDataset.getAuthority() == null) {
+            theDataset.setAuthority(authority);
+        }
+        if (theDataset.getDoiSeparator() == null) {
+            theDataset.setDoiSeparator(doiSeparator);
+        }
         if (theDataset.getStorageIdentifier() == null) {
             try {
                 DataAccess.createNewStorageIO(theDataset, "placeholder");
@@ -166,7 +152,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 // if setting the storage identifier through createNewStorageIO fails, dataset creation
                 // does not have to fail. we just set the storage id to a default -SF
                 String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
-                theDataset.setStorageIdentifier(storageDriver  + "://" + theDataset.getAuthority()+theDataset.getDoiSeparator()+theDataset.getIdentifier());
+                theDataset.setStorageIdentifier(storageDriver + "://" + theDataset.getAuthority() + theDataset.getDoiSeparator() + theDataset.getIdentifier());
                 logger.info("Failed to create StorageIO. StorageIdentifier set to default. Not fatal." + "(" + ioex.getMessage() + ")");
             }
         }
@@ -184,9 +170,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             
                         -- L.A. 4.6.2
              */
-            
+
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
-            
+
         }
         logger.fine("Saving the files permanently.");
         //ctxt.ingest().addFiles(dsv, theDataset.getFiles());
@@ -206,8 +192,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
             // Check return value to make sure registration succeeded
             if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataset.getIdentifier())) {
-                    theDataset.setGlobalIdCreateTime(createDate);
-                    theDataset.setIdentifierRegistered(true);
+                theDataset.setGlobalIdCreateTime(createDate);
+                theDataset.setIdentifierRegistered(true);
             }
 
         } else // If harvest or migrate, and this is a released dataset, we don't need to register,
@@ -216,7 +202,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             theDataset.setGlobalIdCreateTime(new Date());
             theDataset.setIdentifierRegistered(true);
         }
-        
+
         if (registrationRequired && !theDataset.isIdentifierRegistered()) {
             throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
         }
@@ -228,10 +214,10 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             String privateUrlToken = null;
             ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getRequest().getUser(), savedDataset, privateUrlToken));
         }
-        
+
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         savedDataset = ctxt.em().merge(savedDataset);
-        
+
         //If the Id type is sequential and Dependent then write file idenitifiers outside the command
         String datasetIdentifier = theDataset.getIdentifier();
         Long maxIdentifier = null;
@@ -247,11 +233,11 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             }
             ctxt.engine().submit(new CreateDataFileCommand(dataFile, dsv, getRequest(), dataFileIdentifier));
         }
-        
+
         if (template != null) {
             ctxt.templates().incrementUsageCount(template.getId());
         }
-        
+
         logger.fine("Checking if rsync support is enabled.");
         if (DataCaptureModuleUtil.rsyncSupportEnabled(ctxt.settings().getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             try {
@@ -262,14 +248,14 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             }
         }
         logger.fine("Done with rsync request, if any.");
-        
+
         try {
             /**
              * @todo Do something with the result. Did it succeed or fail?
              */
             boolean doNormalSolrDocCleanUp = true;
             ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
-            
+
         } catch (Exception e) { // RuntimeException e ) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage()); //, e);
             /**
@@ -286,37 +272,37 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
              * indexDataset() does NOT throw an exception if it is. -- L.A. 4.5
              */
             throw new CommandException("Dataset could not be created. Indexing failed", this);
-            
+
         }
         logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));
 
         // if we are not migrating, assign the user to this version
-        if (importType == null || importType.equals(ImportType.NEW)) {            
-            DatasetVersionUser datasetVersionDataverseUser = new DatasetVersionUser();            
+        if (importType == null || importType.equals(ImportType.NEW)) {
+            DatasetVersionUser datasetVersionDataverseUser = new DatasetVersionUser();
             String id = getRequest().getUser().getIdentifier();
             id = id.startsWith("@") ? id.substring(1) : id;
             AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
             datasetVersionDataverseUser.setAuthenticatedUser(au);
             datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
-            datasetVersionDataverseUser.setLastUpdateDate(createDate);            
+            datasetVersionDataverseUser.setLastUpdateDate(createDate);
             if (savedDataset.getLatestVersion().getId() == null) {
                 logger.warning("CreateDatasetCommand: savedDataset version id is null");
             } else {
-                datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());                
-            }            
-            ctxt.em().merge(datasetVersionDataverseUser);            
+                datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
+            }
+            ctxt.em().merge(datasetVersionDataverseUser);
         }
-        logger.log(Level.FINE, "after create version user " + formatter.format(new Date().getTime()));        
+        logger.log(Level.FINE, "after create version user " + formatter.format(new Date().getTime()));
         return savedDataset;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 97 * hash + Objects.hashCode(this.theDataset);
         return hash;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -328,7 +314,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         final CreateDatasetCommand other = (CreateDatasetCommand) obj;
         return Objects.equals(this.theDataset, other.theDataset);
     }
-    
+
     @Override
     public String toString() {
         return "[DatasetCreate dataset:" + theDataset.getId() + "]";
