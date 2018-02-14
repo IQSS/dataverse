@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -15,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -130,24 +132,42 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         String nonNullDefaultIfKeyNotFound = "";
-        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        if (theDataset.getProtocol() == null) {
-            theDataset.setProtocol(protocol);
-        }
-        if (theDataset.getAuthority() == null) {
-            theDataset.setAuthority(authority);
-        }
-        if (theDataset.getDoiSeparator() == null) {
-            theDataset.setDoiSeparator(doiSeparator);
-        }
+//<<<<<<< HEAD
+//        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+//        String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+//        String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
+//        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+//        if (theDataset.getProtocol() == null) {
+//            theDataset.setProtocol(protocol);
+//        }
+//        if (theDataset.getAuthority() == null) {
+//            theDataset.setAuthority(authority);
+//        }
+//        if (theDataset.getDoiSeparator() == null) {
+//            theDataset.setDoiSeparator(doiSeparator);
+//        }
+//        if (theDataset.getStorageIdentifier() == null) {
+//            if (System.getProperty("dataverse.files.storage-driver-id") != null) {
+//                theDataset.setStorageIdentifier(System.getProperty("dataverse.files.storage-driver-id") + "://" + theDataset.getAuthority() + theDataset.getDoiSeparator() + theDataset.getIdentifier());
+//            } else {
+//                theDataset.setStorageIdentifier("file://" + theDataset.getAuthority() + theDataset.getDoiSeparator() + theDataset.getIdentifier());
+//=======
+        String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        String    authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        String  doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
+        String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        if (theDataset.getProtocol()==null) theDataset.setProtocol(protocol);
+        if (theDataset.getAuthority()==null) theDataset.setAuthority(authority);
+        if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(doiSeparator);
         if (theDataset.getStorageIdentifier() == null) {
-            if (System.getProperty("dataverse.files.storage-driver-id") != null) {
-                theDataset.setStorageIdentifier(System.getProperty("dataverse.files.storage-driver-id") + "://" + theDataset.getAuthority() + theDataset.getDoiSeparator() + theDataset.getIdentifier());
-            } else {
-                theDataset.setStorageIdentifier("file://" + theDataset.getAuthority() + theDataset.getDoiSeparator() + theDataset.getIdentifier());
+            try {
+                DataAccess.createNewStorageIO(theDataset, "placeholder");
+            } catch (IOException ioex) {
+                // if setting the storage identifier through createNewStorageIO fails, dataset creation
+                // does not have to fail. we just set the storage id to a default -SF
+                String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
+                theDataset.setStorageIdentifier(storageDriver  + "://" + theDataset.getAuthority()+theDataset.getDoiSeparator()+theDataset.getIdentifier());
+                logger.info("Failed to create StorageIO. StorageIdentifier set to default. Not fatal." + "(" + ioex.getMessage() + ")");
             }
         }
         if (theDataset.getIdentifier() == null) {
