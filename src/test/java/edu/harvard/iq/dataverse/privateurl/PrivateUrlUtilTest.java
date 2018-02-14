@@ -239,13 +239,13 @@ public class PrivateUrlUtilTest {
         assertEquals("UNKNOWN", PrivateUrlUtil.getDraftUrl(draft));
     }
 
-//    @Test
-//    public void testGetDraftUrlNoGlobalId() throws Exception {
-//        DatasetVersion draft = new DatasetVersion();
-//        Dataset dataset = new Dataset();
-//        draft.setDataset(dataset);
-//        assertEquals("UNKNOWN", PrivateUrlUtil.getDraftUrl(draft));
-//    }
+    @Test
+    public void testGetDraftUrlNoGlobalId() throws Exception {
+        DatasetVersion draft = new DatasetVersion();
+        Dataset dataset = new Dataset();
+        draft.setDataset(dataset);
+        assertEquals("UNKNOWN", PrivateUrlUtil.getDraftUrl(draft));
+    }
 
     @Test
     public void testGetDraftUrlSuccess() throws Exception {
