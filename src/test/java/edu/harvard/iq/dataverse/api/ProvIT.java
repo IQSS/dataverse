@@ -67,7 +67,8 @@ public class ProvIT {
         Response exportProv = UtilIT.exportProv(dataFileId.toString(), apiToken);
         exportProv.prettyPrint();
         exportProv.then().assertThat()
-                // FIXME: assert what to expect in the body
+                // FIXME: assert what to expect in the body. Not this made up "event" stuff:
+                .body("data.exportProv.JSON", equalTo("{\"entity\":{\"event\":{\"prov:type\":\"fileUploaded\"}}}"))
                 .statusCode(OK.getStatusCode());
     }
 

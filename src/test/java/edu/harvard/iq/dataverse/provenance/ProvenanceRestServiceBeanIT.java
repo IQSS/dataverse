@@ -2,11 +2,13 @@ package edu.harvard.iq.dataverse.provenance;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import java.io.StringReader;
 import java.util.Map;
 import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -139,9 +141,38 @@ public class ProvenanceRestServiceBeanIT {
         long bundleId = provenanceRestServiceBean.createEmptyBundleFromName("justAnIdWithoutJsonUploadedYet");
         JsonObject result = provenanceRestServiceBean.getBundleJson(bundleId);
         System.out.println("result: " + result);
+        // We haven't uploaded any JSON yet, so we expect "null" in the "JSON" object.
         assertEquals("null", result.getString("JSON"));
+        // Now let's upload some JSON
+        // FIXME: What JSON should we send to the prov service? "entity" seems to be required. See also testUploadProvJsonForBundle below for a more real example involving a news item.
+        JsonObjectBuilder innerJson = Json.createObjectBuilder();
+        innerJson.add("entity", Json.createObjectBuilder()
+                .add("event", Json.createObjectBuilder()
+                        .add("prov:type", "fileUploaded"))
+        );
+        JsonObject provJson = innerJson.build();
+        System.out.println("uploading JSON for bundle id " + bundleId);
+        // TODO: What would a better bundle name be?
+        String bundleName = bundleId + "-uploadJson";
+        JsonObject jsonUploadResponse = provenanceRestServiceBean.uploadProvJsonForBundle(provJson, bundleName);
+        System.out.println("jsonUploadResponse: " + jsonUploadResponse);
+        // FIXME: What should we call this id? It's one higher than the bundle id?
+        int idInJson = (int) bundleId + 1;
+        assertEquals(idInJson, jsonUploadResponse.getInt("id"));
+        JsonObject jsonOut = provenanceRestServiceBean.getBundleJson(idInJson);
+        System.out.println("outer json out: " + jsonOut.toString());
+        System.out.println("outer json out (pretty print): " + JsonUtil.prettyPrint(jsonOut.toString()));
+        String innerJsonAsString = jsonOut.getString("JSON");
+        JsonReader jsonReader = Json.createReader(new StringReader(innerJsonAsString));
+        JsonObject innerJsonOut = jsonReader.readObject();
+        System.out.println("inner json out: " + JsonUtil.prettyPrint(jsonOut.getString("JSON")));
+        // FIXME: For real what JSON should we expect to be exported when you click "Export Provenance" from Dataverse?
+        assertEquals("fileUploaded", innerJsonOut.getJsonObject("entity").getJsonObject("event").getString("prov:type"));
+
+        // Let's try getting JSON from a bundleId that doesn't exist
         JsonObject maxResult = provenanceRestServiceBean.getBundleJson(Long.MAX_VALUE);
         System.out.println("maxResult: " + maxResult);
+        assertEquals("null", result.getString("JSON"));
     }
 
     /**

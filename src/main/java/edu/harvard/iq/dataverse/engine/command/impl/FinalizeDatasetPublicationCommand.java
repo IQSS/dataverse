@@ -244,18 +244,25 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 }
             }
             if (provEnabled) {
-                logger.info("let's do prov stuff of file id " + dataFile.getId());
+                logger.info("let's do prov stuff on file id " + dataFile.getId());
                 try {
                     // FIXME: It's bizarre to have to call setProvBaseUrl like this. Fix it.
                     ctxt.provenanceRestService().setProvBaseUrl(ctxt.systemConfig().getProvServiceUrl());
-                    // FIXME: What should the bundle id be?
+                    // FIXME: What should the bundle id be? Not "FIXME".
                     Long bundleId = ctxt.provenanceRestService().createEmptyBundleFromName("FIXME");
+                    if (dataFile.getFileMetadata() != null && dataFile.getFileMetadata().getDatasetVersion().equals(theDataset.getLatestVersion())) {
+                        // FIXME: Should this be an int or a long?
+                        dataFile.getFileMetadata().setCplId(bundleId.intValue());
+                    }
                     JsonObjectBuilder innerJson = Json.createObjectBuilder();
-                    // FIXME: What JSON should we send to the prov service?
-                    innerJson.add("foo", "bar");
+                    // FIXME: What JSON should we send to the prov service? "entity" seems to be required and must have an object in it.
+                    innerJson.add("entity", Json.createObjectBuilder()
+                            .add("event", Json.createObjectBuilder()
+                                    .add("prov:type", "fileUploaded"))
+                    );
                     JsonObject provJson = innerJson.build();
-                    // FIXME: What should this bundleName be?
-                    String bundleName = bundleId + "-uploadJson";
+                    // FIXME: What should this bundleName be? Should we append "-uploadJson" or something?
+                    String bundleName = bundleId.toString();
                     JsonObject returnFromUpload = ctxt.provenanceRestService().uploadProvJsonForBundle(provJson, bundleName);
                     logger.info("return from upload: " + returnFromUpload);
                 } catch (UnirestException ex) {

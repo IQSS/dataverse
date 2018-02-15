@@ -94,17 +94,32 @@ public class Prov extends AbstractApiBean {
         }
     }
 
+    /**
+     * @param datafileId
+     * @return PROV-JSON wrapped in more JSON.
+     */
     @GET
     @Path("{id}/prov")
-    public Response exportProv(@PathParam("id") String idSupplied) {
+    public Response exportProv(@PathParam("id") String datafileId) {
         try {
-            // FIXME: Don't hard code this as 94, obviously. Look up the bundleId based on the file id/PID.
-            long bundleId = 94;
+            DataFile dataFile = findDataFileOrDie(datafileId);
+            // TODO: Support multiple versions of the file? Since the cplId is in the FileMetadata?
+            int cplId = dataFile.getFileMetadata().getCplId();
+            // FIXME: Why is the bundleId the cplId plus one? What's going on here?
+            int bundleId = cplId + 1;
+            logger.info("Calling getBundleJson on id " + bundleId);
             JsonObject jsonObject = provenanceRestSvc.getBundleJson(bundleId);
             // FIXME: How should this JSON look?
-            return ok(Json.createObjectBuilder().add("exportProv", jsonObject));
+            // TODO: Whatever JSON comes out, try uploading it here to see how it looks: http://camflow.org/demo
+            return ok(Json.createObjectBuilder()
+                    .add("exportProv", jsonObject)
+                    .add("cplId", cplId)
+                    .add("bundleId", bundleId)
+            );
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
         } catch (Exception ex) {
-            return error(BAD_REQUEST, "error!");
+            return error(BAD_REQUEST, "UnirestException? Details: " + ex);
         }
     }
 
