@@ -76,6 +76,11 @@ public class MoveDataverseCommandTest {
                                 public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
                                     return null;
                                 }
+                                
+                                @Override
+                                public void indexDataverseRecursively(Dataverse datverse, boolean doNormalSolrDocCleanUp) {
+                                    
+                                }
                             };
      
                         }
