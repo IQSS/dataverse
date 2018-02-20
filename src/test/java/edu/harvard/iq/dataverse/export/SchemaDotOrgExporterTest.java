@@ -159,7 +159,6 @@ public class SchemaDotOrgExporterTest {
         JsonObject json2 = jsonReader2.readObject();
         assertEquals("http://schema.org", json2.getString("@context"));
         assertEquals("Dataset", json2.getString("@type"));
-        //assertEquals("http://dx.doi.org/myAuthority/myIdentifier", json2.getString("identifier"));
         assertEquals("https://doi.org/myAuthority/myIdentifier", json2.getString("identifier"));
         assertEquals("Darwin's Finches", json2.getString("name"));
         assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
