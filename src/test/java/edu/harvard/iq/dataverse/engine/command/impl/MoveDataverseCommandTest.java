@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -7,7 +9,11 @@ import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Future;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Before;
@@ -21,6 +27,7 @@ public class MoveDataverseCommandTest {
 	
 	Dataverse root, childA, childB, grandchildAA;
 	DataverseEngine testEngine;
+        Boolean force;
 	
 	@Before
 	public void setUp() {
@@ -40,17 +47,48 @@ public class MoveDataverseCommandTest {
 		childA.setOwner( root );
 		childB.setOwner( root );
 		grandchildAA.setOwner( childA );
-		
+		force = false;
 		
 		testEngine = new TestDataverseEngine( new TestCommandContext(){
 			@Override
 			public DataverseServiceBean dataverses() {
-				return new DataverseServiceBean(){
-					@Override
-					public Dataverse save(Dataverse dataverse) {
-						// no-op. The superclass accesses databases which we don't have.
-						return dataverse;
-			}};}});
+                            return new DataverseServiceBean(){
+                                @Override
+                                public Dataverse save(Dataverse dataverse) {
+                                        // no-op. The superclass accesses databases which we don't have.
+                                        return dataverse;
+                                }
+                                @Override
+                                public List<Dataverse> findByOwnerId(Long ownerId) {
+                                    return new ArrayList<>();
+                                }
+                            };
+                        }
+                        @Override
+                        public IndexServiceBean index(){
+                            return new IndexServiceBean(){
+                                @Override
+                                public Future<String> indexDataverse(Dataverse dataverse){
+                                    return null;
+                                }
+                                
+                                @Override
+                                public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
+                                    return null;
+                                }
+                            };
+     
+                        }
+                        @Override
+                        public DatasetServiceBean datasets() {
+                            return new DatasetServiceBean() {
+                                @Override
+                                public List<Dataset> findByOwnerId(Long ownerId) {
+                                    return new ArrayList<>();
+                                }
+                            };
+                        }
+                });
 	}
 	
 	/**
@@ -60,7 +98,7 @@ public class MoveDataverseCommandTest {
 	@Test
 	public void testValidMove() throws Exception {
 		testEngine.submit(
-				new MoveDataverseCommand(null, childB, childA));
+				new MoveDataverseCommand(null, childB, childA, force));
 		
 		assertEquals( childA, childB.getOwner() );
 		assertEquals( Arrays.asList(root, childA), childB.getOwners() );
@@ -72,7 +110,7 @@ public class MoveDataverseCommandTest {
 	@Test( expected=IllegalCommandException.class )
 	public void testInvalidMove() throws Exception {
 		testEngine.submit(
-				new MoveDataverseCommand(null, childA, grandchildAA));
+				new MoveDataverseCommand(null, childA, grandchildAA, force));
 		fail();
 	}
 	

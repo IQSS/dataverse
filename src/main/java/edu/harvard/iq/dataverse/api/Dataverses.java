@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
@@ -759,6 +760,25 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        }
+    }
+    
+    @POST
+    @Path("{id}/move/{targetDataverseAlias}") 
+    public Response moveDataverse(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {        
+        try{
+            User u = findUserOrDie();            
+            Dataverse dv = findDataverseOrDie(id);
+            Dataverse target = findDataverseOrDie(targetDataverseAlias);
+            if (target == null){
+                return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
+            }            
+            execCommand(new MoveDataverseCommand(
+                    createDataverseRequest(u), dv, target, force
+                    ));
+            return ok("Dataverse moved successfully");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
         }
     }
 
