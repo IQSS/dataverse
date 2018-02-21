@@ -4,3 +4,4 @@ ALTER TABLE externaltool ALTER COLUMN type SET NOT NULL;
 UPDATE guestbookresponse SET downloadtype = 'TwoRavens' WHERE downloadtype = 'Explore';
 ALTER TABLE filemetadata ADD COLUMN provfreeform text;
 ALTER TABLE filemetadata ADD COLUMN cplid character varying(255);
+ALTER TABLE filemetadata ADD COLUMN provbundleobjname text;

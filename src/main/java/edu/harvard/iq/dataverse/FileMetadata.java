@@ -89,11 +89,15 @@ public class FileMetadata implements Serializable {
      */
     @Column(columnDefinition = "TEXT", nullable = true)
     private String provFreeForm;
+    
+    //The json name in the uploaded prov json bundle, identified by the user as the final state of their file
+    @Column(columnDefinition = "TEXT")
+    private String provBundleObjName;
 
+    //The id given for the datafile by CPL.
     @Column //( nullable=false )
     private int cplId;
-    
-    
+        
     /**
      * Creates a copy of {@code this}, with identical business logic fields.
      * E.g., {@link #label} would be duplicated; {@link #version} will not.
@@ -577,4 +581,13 @@ public class FileMetadata implements Serializable {
     public void setCplId(int cplId) {
         this.cplId = cplId;
     }
+    
+    public String getProvJsonObjName() {
+        return provBundleObjName;
+    }
+    
+    public void setProvJsonObjName(String name) {
+        this.provBundleObjName = name;
+    }
+    
 }

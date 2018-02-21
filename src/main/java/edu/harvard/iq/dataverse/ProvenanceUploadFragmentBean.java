@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -9,7 +12,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonProvCommand;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -17,15 +19,15 @@ import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.JsonObject;
 import org.apache.commons.io.IOUtils;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import javax.faces.application.FacesMessage;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.json.JsonObject;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * This bean exists to ease the use of provenance upload popup functionality`
@@ -37,7 +39,7 @@ import javax.faces.application.FacesMessage;
 @Named
 public class ProvenanceUploadFragmentBean extends AbstractApiBean implements java.io.Serializable{
     
-    private static final Logger logger = Logger.getLogger(EditDatafilesPage.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(ProvenanceUploadFragmentBean.class.getCanonicalName());
     
     private UploadedFile jsonUploadedTempFile; 
     
@@ -49,6 +51,11 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     private String freeformTextInput;
     private boolean deleteStoredJson = false;
     private DataFile popupDataFile;
+    
+    //MAD: Unsure if these annotations are needed
+    @NotBlank(message = "Please enter a valid email address.")
+    @ValidateEmail(message = "Please enter a valid email address.")
+    String dropdownSelectedJsonName;
    
     //This map uses storageIdentifier as the key.
     //UpdatesEntry is an object containing the DataFile and the provJson string.
@@ -84,7 +91,6 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         provJsonState = null;
         freeformTextState = popupDataFile.getFileMetadata().getProvFreeForm();
         
-         
         if(jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { //If there is already staged provenance info 
             provJsonState = jsonProvenanceUpdates.get(popupDataFile.getStorageIdentifier()).provenanceJson;
             
@@ -197,5 +203,84 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         return (null != popupDataFile 
                 && null != popupDataFile.getFileMetadata() 
                 && popupDataFile.getFileMetadata().getCplId() != 0);
+    }
+    
+    //MAD: Incomplete, I may have to take the actual json parser approach afterall..
+    //This method takes a simple regex-based approach to finding all "name" tags. 
+    //Because we want them no matter where in the JSON and because we need regex to match,
+    //this was easier and more efficient than a recursive json parsing approach.
+    
+    
+    
+//    public Set<String> parseStringForNames(String jsonString) throws IOException {
+//        //List <String> theNames = new ArrayList<>();
+//        Matcher m = Pattern.compile(nameRegex).matcher(jsonString);
+//        while (m.find()) {
+//            theNames.add(m.group());
+//        }
+//        
+//        return theNames;
+//    }
+
+    private static final String nameRegex = "name";
+    private HashSet<String> provJsonParsedNames = new HashSet<>();
+    
+    
+    public ArrayList<String> generateAndReturnPJParsedNames() throws IOException {
+        String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //MAD: this only works I think if the file is first uploaded... Probably gotta pull it out of the staged changes as well for editing before publish...
+        JsonParser parser = new JsonParser();
+        com.google.gson.JsonObject jsonObject = parser.parse(jsonString).getAsJsonObject(); //provJsonState is a weird variable and I shouldn't be using it at least without checking over logic again
+
+        recurseNames(jsonObject);
+
+        return getProvJsonParsedNames();
+    }
+    
+    public ArrayList<String> getProvJsonParsedNames() throws IOException {
+        //if(null == provJsonParsedNames) { //MAD: This may not be the right way to do this, and if so may need to do more sanitization as its before other sanitization
+            //String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+
+        //}
+        return new ArrayList<String>(provJsonParsedNames);
+    }
+    
+    //MAD: first just try to get all names, later we'll do it conditionally and stuff
+    //MAD: This StackOverflow had good info https://stackoverflow.com/questions/15658124/finding-deeply-nested-key-value-in-json
+    protected JsonElement recurseNames(JsonElement element) {
+        if(element.isJsonObject()) {
+            com.google.gson.JsonObject jsonObject = element.getAsJsonObject();
+            Set<Map.Entry<String,JsonElement>> entrySet = jsonObject.entrySet();
+            entrySet.forEach((s) -> {
+                Matcher m = Pattern.compile(nameRegex).matcher(s.getKey());
+                if(m.find()) { 
+                    try { 
+                        provJsonParsedNames.add(s.getValue().getAsString());
+                    } catch (ClassCastException | IllegalStateException e) { 
+                        //if not a string don't care skip
+                    }
+                } else if(!s.getValue().isJsonPrimitive()){
+                    recurseNames(s.getValue());
+                }
+            });
+          
+        } else if(element.isJsonArray()) {
+            JsonArray jsonArray = element.getAsJsonArray();
+            for (JsonElement childElement : jsonArray) {
+                JsonElement result = recurseNames(childElement);
+                if(result != null) {
+                    return result;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    public String getDropdownSelectedJsonName() {
+        return dropdownSelectedJsonName;
+    }
+
+    public void setDropdownSelectedJsonName(String dropdownSelectedJsonName) {
+        this.dropdownSelectedJsonName = dropdownSelectedJsonName;
     }
 }

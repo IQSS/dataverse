@@ -68,6 +68,23 @@
                     </ui:fragment>
                 </div>
             </p:outputPanel>
+            
+            
+            
+            
+            
+            <!-- validator="# {provenanceUploadFragmentBean.validateUserEmail}"  -->
+            <p:autoComplete id="provJsonNameDropdown" 
+                dropdown="true" scrollHeight="180" style="width:100%;"
+                minQueryLength="0" queryDelay="1000"
+                value="#{provenanceUploadFragmentBean.dropdownSelectedJsonName}" 
+                completeMethod="#{provenanceUploadFragmentBean.generateAndReturnPJParsedNames()}" 
+                onclick="PF('provJsonNameDropdown').search(PF('provJsonNameDropdown').input.val())"
+                />
+            <p:message for="provJsonNameDropdown" display="text"/>
+
+            
+            
             <div class="form-group text-left">
                 <div class="col-sm-12">
                     <p class="help-block">#{bundle['file.editProvenanceDialog.description.tip']}</p>
