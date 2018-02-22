@@ -72,17 +72,25 @@
             
             
             
-            
+            <!-- MAD: This is broken. I probably need to create a converter as well as expose the EntityFileData class -->
             <!-- validator="# {provenanceUploadFragmentBean.validateUserEmail}"  -->
             <p:autoComplete id="provJsonNameDropdown" 
                 dropdown="true" scrollHeight="180" style="width:100%;"
                 minQueryLength="0" queryDelay="1000"
-                value="#{provenanceUploadFragmentBean.dropdownSelectedJsonName}" 
+                value="#{provenanceUploadFragmentBean.dropdownSelectedEntity}" 
                 completeMethod="#{provenanceUploadFragmentBean.generateAndReturnPJParsedNames()}" 
                 onclick="PF('provJsonNameDropdown').search(PF('provJsonNameDropdown').input.val())"
-                />
+                var="provEntityFileData" itemLabel="#{provEntityFileData.fileName}" itemValue="#{provEntityFileData}"
+                converter="provEntityFileDataConverter">
+                <p:column>
+                    <h:outputText value="#{provEntityFileData.fileName}" />
+                    <h:outputText value="#{provEntityFileData.entityName}" /> <!--why can't this see it..., compare to another -->
+                </p:column>
+            </p:autoComplete>
             <p:message for="provJsonNameDropdown" display="text"/>
 
+            
+            
             
             
             <div class="form-group text-left">
@@ -104,7 +112,7 @@
                                                 }"
                                             style="width:98%; margin-top:.5em;"/>
                             <p:message for="provenanceFreeform" display="text" />
-                        </div>
+                        </div>  
                     </div>
                 </div>
             </div>

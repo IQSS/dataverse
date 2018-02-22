@@ -91,7 +91,7 @@ public class FileMetadata implements Serializable {
     private String provFreeForm;
     
     //The json name in the uploaded prov json bundle, identified by the user as the final state of their file
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String provBundleObjName;
 
     //The id given for the datafile by CPL.

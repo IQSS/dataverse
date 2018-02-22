@@ -1275,7 +1275,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         try {
-            provUploadFragmentBean.saveStagedJsonProvenance();
+            provUploadFragmentBean.saveStagedProvJson();
             
         } catch (AbstractApiBean.WrappedResponse ex) {
             //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.

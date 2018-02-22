@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -27,16 +28,27 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObject> {
     private static final Logger logger = Logger.getLogger(PersistProvJsonProvCommand.class.getCanonicalName());
 
     private final DataFile dataFile;
-    private final String userInput;
+    private final String jsonInput;
+    private final String entityName;
 
-    public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String userInput) {
+    public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
-        this.userInput = userInput;
+        this.jsonInput = jsonInput;
+        this.entityName = entityName;
     }
 
     @Override
     public JsonObject execute(CommandContext ctxt) throws CommandException {
+        //First, save the name of the entity in the json so CPL can later connect the uploaded json
+        if(null == entityName || "".equals(entityName)) {
+            String error = "A valid entityName must be provided to connect the DataFile to the provenance data.";
+            throw new IllegalCommandException(error, this);
+        }
+        FileMetadata fileMetadata = dataFile.getFileMetadata();
+        fileMetadata.setProvJsonObjName(entityName);
+        ctxt.files().save(dataFile); 
+        
        /**
          * TODO: We are not yet validating the JSON received as PROV-JSON, but
          * we could some day.
@@ -52,7 +64,7 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObject> {
          * 
          * The below chunk just validates that the input is basic json.
          */
-        StringReader rdr = new StringReader(userInput);
+        StringReader rdr = new StringReader(jsonInput);
         try {
             JsonObject jsonObj = Json.createReader(rdr).readObject();
         } catch (JsonException ex) {
@@ -65,7 +77,7 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObject> {
         final String provJsonExtension = "prov-json.json";
         try {
             StorageIO<DataFile> storageIO = dataFile.getStorageIO();
-            InputStream inputStream = new ByteArrayInputStream(userInput.getBytes(StandardCharsets.UTF_8.name()));
+            InputStream inputStream = new ByteArrayInputStream(jsonInput.getBytes(StandardCharsets.UTF_8.name()));
             storageIO.saveInputStreamAsAux(inputStream, provJsonExtension);
         } catch (IOException ex) {
             String error = "Exception caught persisting PROV-JSON: " + ex;

@@ -18,6 +18,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
@@ -32,7 +33,7 @@ public class Prov extends AbstractApiBean {
     @POST
     @Path("{id}/prov-json")
     @Consumes("application/json")
-    public Response addProvJson(String body, @PathParam("id") String idSupplied) {
+    public Response addProvJson(String body, @PathParam("id") String idSupplied, @QueryParam("entityName") String entityName) {
         try {
             DataFile dataFile;
             dataFile = findDataFileOrDie(idSupplied);
@@ -41,7 +42,7 @@ public class Prov extends AbstractApiBean {
             } else if (dataFile.getFileMetadata().getCplId() != 0) {
                 return error(METHOD_NOT_ALLOWED, "File provenance has already exists in the CPL system and cannot be uploaded.");
             }
-            JsonObject jsonObject = execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), dataFile , body));
+            JsonObject jsonObject = execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), dataFile , body, entityName));
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
             jsonResponse.add("message", "PROV-JSON provenance data saved: " + jsonObject.toString());
             return ok(jsonResponse);

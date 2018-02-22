@@ -53,9 +53,9 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     private DataFile popupDataFile;
     
     //MAD: Unsure if these annotations are needed
-    @NotBlank(message = "Please enter a valid email address.")
-    @ValidateEmail(message = "Please enter a valid email address.")
-    String dropdownSelectedJsonName;
+    //@NotBlank(message = "Please enter a valid email address.")
+    //@ValidateEmail(message = "Please enter a valid email address.")
+    ProvEntityFileData dropdownSelectedEntity;
    
     //This map uses storageIdentifier as the key.
     //UpdatesEntry is an object containing the DataFile and the provJson string.
@@ -108,15 +108,24 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     
     //Stores the provenance changes decided upon in the popup to be saved when all edits across files are done.
     public void stagePopupChanges(boolean saveInPopup) throws IOException{
-            
+        //MAD: In here I need to use the dropdownSelectedEntity to save the selected entity name to the filemetadata    
+        
         if(deleteStoredJson) {
             jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), new UpdatesEntry(popupDataFile, null));
+            
+            FileMetadata fileMetadata = popupDataFile.getFileMetadata();
+            fileMetadata.setProvJsonObjName(null);
             deleteStoredJson = false;
         }
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) {
             String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //may need to specify encoding
             jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), new UpdatesEntry(popupDataFile, jsonString));
             jsonUploadedTempFile = null;
+            
+            //storing the entity name associated with the DataFile. This is required data to get this far.
+            //MAD: Make sure this is done in the api call for prov json as well
+            FileMetadata fileMetadata = popupDataFile.getFileMetadata();
+            fileMetadata.setProvJsonObjName(dropdownSelectedEntity.getEntityName());
         } 
         
         if(null == freeformTextInput && null != freeformTextState) {
@@ -130,8 +139,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         
         if(saveInPopup) {
             try {
-                saveStagedJsonProvenance();
-                saveStagedJsonFreeform();
+                saveStagedProvJson();
+                saveStagedProvFreeform();
             } catch (AbstractApiBean.WrappedResponse ex) {
                 filePage.showProvError();
                 Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
@@ -140,7 +149,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     }
     
     //Saves the staged provenance data, to be called by the pages launching the popup
-    public void saveStagedJsonProvenance() throws AbstractApiBean.WrappedResponse {
+    //Also called when saving happens in the popup on file page
+    public void saveStagedProvJson() throws AbstractApiBean.WrappedResponse {
         for (Map.Entry<String, UpdatesEntry> mapEntry : jsonProvenanceUpdates.entrySet()) {
             DataFile df = mapEntry.getValue().dataFile;
             String provString = mapEntry.getValue().provenanceJson;
@@ -151,13 +161,16 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 //do nothing, we always first try to delete the files in this list
             }
             if(null != provString) {
-                execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString));
+                execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName));
             }
         }
     }
     
-    public void saveStagedJsonFreeform() throws AbstractApiBean.WrappedResponse {  
-            execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
+    //Only called when saving the provenance data in the popup on the file page
+    public void saveStagedProvFreeform() throws AbstractApiBean.WrappedResponse {  
+        //MAD: This is broken due to 
+        //"Exception Description: The object [edu.harvard.iq.dvn.core.study.FileMetadata[id=96]] cannot be merged because it has changed or been deleted since it was last read. "
+        //execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
     }
 
     public void updateJsonRemoveState() throws AbstractApiBean.WrappedResponse {
@@ -205,82 +218,114 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 && popupDataFile.getFileMetadata().getCplId() != 0);
     }
     
-    //MAD: Incomplete, I may have to take the actual json parser approach afterall..
-    //This method takes a simple regex-based approach to finding all "name" tags. 
-    //Because we want them no matter where in the JSON and because we need regex to match,
-    //this was easier and more efficient than a recursive json parsing approach.
-    
-    
-    
-//    public Set<String> parseStringForNames(String jsonString) throws IOException {
-//        //List <String> theNames = new ArrayList<>();
-//        Matcher m = Pattern.compile(nameRegex).matcher(jsonString);
-//        while (m.find()) {
-//            theNames.add(m.group());
-//        }
-//        
-//        return theNames;
-//    }
-
     private static final String nameRegex = "name";
-    private HashSet<String> provJsonParsedNames = new HashSet<>();
+    private HashMap<String,ProvEntityFileData> provJsonParsedEntities = new HashMap<>();
     
     
-    public ArrayList<String> generateAndReturnPJParsedNames() throws IOException {
+    public ArrayList<ProvEntityFileData> generateAndReturnPJParsedNames() throws IOException {
         String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //MAD: this only works I think if the file is first uploaded... Probably gotta pull it out of the staged changes as well for editing before publish...
         JsonParser parser = new JsonParser();
         com.google.gson.JsonObject jsonObject = parser.parse(jsonString).getAsJsonObject(); //provJsonState is a weird variable and I shouldn't be using it at least without checking over logic again
 
         recurseNames(jsonObject);
 
-        return getProvJsonParsedNames();
+        return getProvJsonParsedEntitiesArray();
     }
     
-    public ArrayList<String> getProvJsonParsedNames() throws IOException {
+    //MAD: I don't know how to return this now that its a more complex data structure... what does the popup want
+    public ArrayList<ProvEntityFileData> getProvJsonParsedEntitiesArray() throws IOException {
         //if(null == provJsonParsedNames) { //MAD: This may not be the right way to do this, and if so may need to do more sanitization as its before other sanitization
             //String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream());
-
         //}
-        return new ArrayList<String>(provJsonParsedNames);
+        return new ArrayList<>(provJsonParsedEntities.values());
+    }
+    
+    public ProvEntityFileData getEntityByEntityName(String entityName) {
+        return provJsonParsedEntities.get(entityName);
+    }
+    
+//    //MAD: I don't know how to return this now that its a more complex data structure... what does the popup want
+//    public HashMap<String,ProvEntityFileData> getProvJsonParsedEntitiesMap() throws IOException {
+//        //if(null == provJsonParsedNames) { //MAD: This may not be the right way to do this, and if so may need to do more sanitization as its before other sanitization
+//            //String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+//        //}
+//        return provJsonParsedEntities;
+//    }
+    
+    protected JsonElement recurseNames(JsonElement element) {
+        return recurseNames(element, null, false);
     }
     
     //MAD: first just try to get all names, later we'll do it conditionally and stuff
     //MAD: This StackOverflow had good info https://stackoverflow.com/questions/15658124/finding-deeply-nested-key-value-in-json
-    protected JsonElement recurseNames(JsonElement element) {
+    protected JsonElement recurseNames(JsonElement element, String outerKey, boolean atEntity) {
+        //changes needed:
+        //only inside entity
+        //need to temporarilly display name of each entity "p1", "p2", the file name stored in that and the type?
+        //"rdt:name" : "test.R",
+        //"rdt:type" : "Finish",
+        //we only need the entity json name to send to prov CPL
+        //
+        //so we need to know when we are inside of entity 
+        //we also need to know when we are inside of each entity so we correctly connect the values
+        //each option will need to be stored in a list of arrays I think? 
         if(element.isJsonObject()) {
             com.google.gson.JsonObject jsonObject = element.getAsJsonObject();
             Set<Map.Entry<String,JsonElement>> entrySet = jsonObject.entrySet();
             entrySet.forEach((s) -> {
-                Matcher m = Pattern.compile(nameRegex).matcher(s.getKey());
-                if(m.find()) { 
-                    try { 
-                        provJsonParsedNames.add(s.getValue().getAsString());
-                    } catch (ClassCastException | IllegalStateException e) { 
-                        //if not a string don't care skip
+                if(atEntity) {
+                    //MAD: this may need checks to ensure its a string, not a null, etc 
+                    //https://stackoverflow.com/questions/9324760/gson-jsonobject-unsupported-operation-exception-null-getasstring
+                    String key = s.getKey();
+                    String value = s.getValue().getAsString();
+                    
+                    if(key.equals("name") || key.endsWith(":name")) {
+                        ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
+                        e.fileName = value;
+                    } else if(key.equals("type") || key.endsWith(":type")) {
+                        ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
+                        e.fileType = value;
                     }
-                } else if(!s.getValue().isJsonPrimitive()){
-                    recurseNames(s.getValue());
+                } 
+                if(null != outerKey && outerKey.equals("entity")) { //collapse these?
+                    provJsonParsedEntities.put(s.getKey(), new ProvEntityFileData(s.getKey(), null, null)); //we are storing the entity name both as the key and in the object, the former for access and the later for ease of use when converted to a list
+                    recurseNames(s.getValue(),s.getKey(),true);
+                } else {
+                    recurseNames(s.getValue(),s.getKey(),false);
                 }
+                
+//                ///old
+//                Matcher m = Pattern.compile(nameRegex).matcher(s.getKey());
+//                if(m.find()) { 
+//                    try { 
+//                        provJsonParsedNames.add(s.getValue().getAsString());
+//                    } catch (ClassCastException | IllegalStateException e) { 
+//                        //if not a string don't care skip
+//                    }
+//                } else if(!s.getValue().isJsonPrimitive()){
+//                    recurseNames(s.getValue());
+//                }
             });
           
-        } else if(element.isJsonArray()) {
-            JsonArray jsonArray = element.getAsJsonArray();
-            for (JsonElement childElement : jsonArray) {
-                JsonElement result = recurseNames(childElement);
-                if(result != null) {
-                    return result;
-                }
-            }
-        }
+        } //MAD: todo address this
+//        else if(element.isJsonArray()) { //MAD: I'm unsure if this happens at all in cpl...
+//            JsonArray jsonArray = element.getAsJsonArray();
+//            for (JsonElement childElement : jsonArray) {
+//                JsonElement result = recurseNames(childElement);
+//                if(result != null) {
+//                    return result;
+//                }
+//            }
+//        }
         
         return null;
     }
     
-    public String getDropdownSelectedJsonName() {
-        return dropdownSelectedJsonName;
+    public ProvEntityFileData getDropdownSelectedEntity() {
+        return dropdownSelectedEntity;
     }
 
-    public void setDropdownSelectedJsonName(String dropdownSelectedJsonName) {
-        this.dropdownSelectedJsonName = dropdownSelectedJsonName;
+    public void setDropdownSelectedEntity(ProvEntityFileData entity) {
+        this.dropdownSelectedEntity = entity;
     }
 }
