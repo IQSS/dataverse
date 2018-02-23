@@ -8,6 +8,11 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true">
+        <p:fragment id="assignMessages">
+            <div class="messagePanel">
+                <iqbs:messages collapsible="true" />
+            </div>
+        </p:fragment>
         <div class="form-horizontal">
             <p:outputPanel id="provPopupOutput" class="form-group text-left">
                 <div class="col-sm-12">
@@ -66,16 +71,23 @@
                         </ui:fragment>
                         <p:message for="provUpload" id="provUploadMessage" display="text" />
                     </ui:fragment>
+                    <!-- dropdown for selecting the provenance entity connected to the DataFile. -->
+                </div>
+                <label for="provenanceBundle" class="col-sm-4 control-label" jsf:rendered="#{provenanceUploadFragmentBean.jsonUploadedState}">
+                    #{bundle['file.editProvenanceDialog.bundleEntity']}
+                </label>
+                <div class="col-sm-8">
                     <ui:fragment rendered="#{provenanceUploadFragmentBean.jsonUploadedState}">
                         <!-- groupBy="# {roleAssignee.identifier.startsWith('@')?'Users':'Groups'}"  -->
                         <p:autoComplete id="provJsonNameDropdown" 
+                            required="#{provenanceUploadFragmentBean.jsonUploadedState}"
                             dropdown="true" scrollHeight="180" style="width:100%;"
                             minQueryLength="0" queryDelay="1000"
-                            value="#{provenanceUploadFragmentBean.dropdownSelectedEntity}" 
+                            value="#{provenanceUploadFragmentBean.dropdownSelectedEntity}"
                             completeMethod="#{provenanceUploadFragmentBean.getProvJsonParsedEntitiesArray()}" 
                             onclick="PF('provJsonNameDropdown').search(PF('provJsonNameDropdown').input.val())"
                             var="provEntityFileData" itemLabel="#{provEntityFileData.fileName}" itemValue="#{provEntityFileData}"
-                            forceSelection="true" required="#{provenanceUploadFragmentBean.jsonUploadedState}"
+                            forceSelection="true" 
                             converter="provEntityFileDataConverter">
                             <p:column>
                                 <h:outputText value="#{provEntityFileData.fileName}" />
@@ -91,14 +103,6 @@
                     </ui:fragment>
                 </div>
             </p:outputPanel>
-            
-            
-            
-
-
-            
-            
-            
             
             <div class="form-group text-left">
                 <div class="col-sm-12">
@@ -124,7 +128,7 @@
                 </div>
             </div>
             <div class="button-block">
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" onclick="PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show();"/>
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" update="provPopupOutput" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();"  />
             </div>
         </div>

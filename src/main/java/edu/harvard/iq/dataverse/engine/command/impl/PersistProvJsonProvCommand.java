@@ -30,12 +30,22 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObject> {
     private final DataFile dataFile;
     private final String jsonInput;
     private final String entityName;
+    private final boolean saveContext;
 
     public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
         this.jsonInput = jsonInput;
         this.entityName = entityName;
+        this.saveContext = false;
+    }
+    
+    public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName, boolean saveContext) {
+        super(aRequest, dataFile);
+        this.dataFile = dataFile;
+        this.jsonInput = jsonInput;
+        this.entityName = entityName;
+        this.saveContext = saveContext;
     }
 
     @Override
@@ -47,7 +57,9 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObject> {
         }
         FileMetadata fileMetadata = dataFile.getFileMetadata();
         fileMetadata.setProvJsonObjName(entityName);
-        ctxt.files().save(dataFile); 
+        if(saveContext) {
+            ctxt.files().save(dataFile);
+        }
         
        /**
          * TODO: We are not yet validating the JSON received as PROV-JSON, but

@@ -79,6 +79,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         generateAndReturnPJParsedNames();
 
         //provJsonState = null; //MAD why am I doing this? Hopefully removing it doesn't blow up my world...
+                                //I get it now... I nulling this to track if remove needed to happen
     }
 
     public void updatePopupState(DataFile file, Dataset dSet) throws AbstractApiBean.WrappedResponse, IOException {
@@ -141,17 +142,38 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         
         if(null == freeformTextInput && null != freeformTextState) {
             freeformTextInput = "";
-        } 
+        }
+        
             
         if(null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) {
             FileMetadata fileMetadata = popupDataFile.getFileMetadata();
             fileMetadata.setProvFreeForm(freeformTextInput);
+        } 
+
+//MAD: When this case happens delete should be called anyways which will clean up
+//        if(null == storedSelectedEntityName && null != dropdownSelectedEntity) {
+//            freeformTextInput = "";
+//        } 
+        
+        if(null != storedSelectedEntityName && null != dropdownSelectedEntity && !storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName())) {
+            FileMetadata fileMetadata = popupDataFile.getFileMetadata();
+            fileMetadata.setProvJsonObjName(dropdownSelectedEntity.getEntityName());
         }
         
         if(saveInPopup) {
             try {
-                saveStagedProvJson();
-                saveStagedProvFreeform();
+                saveStagedProvJson(true);
+                //We cannot just call the two prov saving commands back to back because of how context save functions
+                //Instead we only trigger the command for saving freeform provenance if the prov json doesn't already trigger it.
+                //We do not need to call the freeform command if json is already being saved because it is already in the metadata
+                //and we are only saving one file so we can tell if that file will be saved. --MAD
+                if(jsonProvenanceUpdates.entrySet().isEmpty()) {
+                    //This is a little extra weird because I'm now leveraging the context save in the freeform command to also save the selected entity
+                    FileMetadata fileMetadata = popupDataFile.getFileMetadata();
+                    fileMetadata.setProvJsonObjName(dropdownSelectedEntity.getEntityName());
+                    execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
+                }
+                
             } catch (AbstractApiBean.WrappedResponse ex) {
                 filePage.showProvError();
                 Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
@@ -161,37 +183,43 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     
     //Saves the staged provenance data, to be called by the pages launching the popup
     //Also called when saving happens in the popup on file page
-    public void saveStagedProvJson() throws AbstractApiBean.WrappedResponse {
+    
+    public void saveStagedProvJson() throws WrappedResponse {
+        saveStagedProvJson(false);
+    }
+    
+    public void saveStagedProvJson(boolean saveContext) throws AbstractApiBean.WrappedResponse {
         for (Map.Entry<String, UpdatesEntry> mapEntry : jsonProvenanceUpdates.entrySet()) {
             DataFile df = mapEntry.getValue().dataFile;
             String provString = mapEntry.getValue().provenanceJson;
 
             try {
-                execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
+                execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, (saveContext && null == provString)));
             } catch (AbstractApiBean.WrappedResponse wr) {
                 //do nothing, we always first try to delete the files in this list
             }
-            if(null != provString) {
-                execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName));
+            if(null != provString ) {
+                execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName, saveContext));
             }
         }
     }
-    
-    //Only called when saving the provenance data in the popup on the file page
-    public void saveStagedProvFreeform() throws AbstractApiBean.WrappedResponse {  
-        //MAD: This is broken due to 
-        //"Exception Description: The object [edu.harvard.iq.dvn.core.study.FileMetadata[id=96]] cannot be merged because it has changed or been deleted since it was last read. "
-        //execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
-    }
 
+    //MAD: I gotta remove the bundle entity with this remove
     public void updateJsonRemoveState() throws AbstractApiBean.WrappedResponse {
         if (jsonUploadedTempFile != null) {
             jsonUploadedTempFile = null;
+            provJsonState = null;
         } else if (provJsonState != null) {
             provJsonState = null;
             deleteStoredJson = true;
         }        
+        //MAD: Gonna see what this clears up
+        dropdownSelectedEntity = null;
+        storedSelectedEntityName = null;
+        provJsonParsedEntities = null;
     }
+    //MAD: this method is called a ton on page load. Is that to be expected
+    //god I wonder if its doing it per row...
     public boolean getJsonUploadedState() {
         return null != jsonUploadedTempFile || null != provJsonState;   
     }
