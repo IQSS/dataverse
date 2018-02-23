@@ -56,6 +56,9 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     //@NotBlank(message = "Please enter a valid email address.")
     //@ValidateEmail(message = "Please enter a valid email address.")
     ProvEntityFileData dropdownSelectedEntity;
+    String storedSelectedEntityName;
+    
+    private HashMap<String,ProvEntityFileData> provJsonParsedEntities = new HashMap<>();
    
     //This map uses storageIdentifier as the key.
     //UpdatesEntry is an object containing the DataFile and the provJson string.
@@ -70,18 +73,21 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     @Inject
     FilePage filePage;
         
-    public void handleFileUpload(FileUploadEvent event) {
+    public void handleFileUpload(FileUploadEvent event) throws IOException {
         jsonUploadedTempFile = event.getFile();
-        provJsonState = null;
+        provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+        generateAndReturnPJParsedNames();
+
+        //provJsonState = null; //MAD why am I doing this? Hopefully removing it doesn't blow up my world...
     }
 
-    public void updatePopupState(DataFile file, Dataset dSet) throws AbstractApiBean.WrappedResponse {
+    public void updatePopupState(DataFile file, Dataset dSet) throws AbstractApiBean.WrappedResponse, IOException {
         dataset = dSet;
         updatePopupState(file);
     }
     
     //This updates the popup for the selected file each time its open
-    public void updatePopupState(DataFile file) throws AbstractApiBean.WrappedResponse {
+    public void updatePopupState(DataFile file) throws AbstractApiBean.WrappedResponse, IOException {
         if(null == dataset ) {
             dataset = file.getFileMetadata().getDatasetVersion().getDataset(); //DatasetVersion is null here on file upload page...
         }
@@ -90,14 +96,19 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         deleteStoredJson = false;
         provJsonState = null;
         freeformTextState = popupDataFile.getFileMetadata().getProvFreeForm();
+        storedSelectedEntityName = popupDataFile.getFileMetadata().getProvJsonObjName();
         
         if(jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { //If there is already staged provenance info 
             provJsonState = jsonProvenanceUpdates.get(popupDataFile.getStorageIdentifier()).provenanceJson;
+            generateAndReturnPJParsedNames(); //MAD: using this inside this method is creating an unneeded data structure
+            setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             
         } else if(null != popupDataFile.getCreateDate()){//Is this file fully uploaded and already has prov data saved?     
             JsonObject provJsonObject = execCommand(new GetProvJsonProvCommand(dvRequestService.getDataverseRequest(), popupDataFile));
             if(null != provJsonObject) {
                 provJsonState = provJsonObject.toString();
+                generateAndReturnPJParsedNames();
+                setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             }
 
         } else { //clear the listed uploaded file
@@ -118,7 +129,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
             deleteStoredJson = false;
         }
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) {
-            String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //may need to specify encoding
+            String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //may need to specify encoding //MAD: May be able to use provJsonState instead
             jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), new UpdatesEntry(popupDataFile, jsonString));
             jsonUploadedTempFile = null;
             
@@ -217,26 +228,20 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 && null != popupDataFile.getFileMetadata() 
                 && popupDataFile.getFileMetadata().getCplId() != 0);
     }
-    
-    private static final String nameRegex = "name";
-    private HashMap<String,ProvEntityFileData> provJsonParsedEntities = new HashMap<>();
+
     
     
     public ArrayList<ProvEntityFileData> generateAndReturnPJParsedNames() throws IOException {
-        String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //MAD: this only works I think if the file is first uploaded... Probably gotta pull it out of the staged changes as well for editing before publish...
+       // String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //MAD: this only works I think if the file is first uploaded... Probably gotta pull it out of the staged changes as well for editing before publish...
         JsonParser parser = new JsonParser();
-        com.google.gson.JsonObject jsonObject = parser.parse(jsonString).getAsJsonObject(); //provJsonState is a weird variable and I shouldn't be using it at least without checking over logic again
+        com.google.gson.JsonObject jsonObject = parser.parse(provJsonState).getAsJsonObject(); //provJsonState is a weird variable and I shouldn't be using it at least without checking over logic again
 
         recurseNames(jsonObject);
 
         return getProvJsonParsedEntitiesArray();
     }
     
-    //MAD: I don't know how to return this now that its a more complex data structure... what does the popup want
     public ArrayList<ProvEntityFileData> getProvJsonParsedEntitiesArray() throws IOException {
-        //if(null == provJsonParsedNames) { //MAD: This may not be the right way to do this, and if so may need to do more sanitization as its before other sanitization
-            //String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream());
-        //}
         return new ArrayList<>(provJsonParsedEntities.values());
     }
     
