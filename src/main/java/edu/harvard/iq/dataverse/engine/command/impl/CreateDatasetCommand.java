@@ -231,7 +231,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 maxIdentifier++;
                 dataFileIdentifier = datasetIdentifier + "/" + maxIdentifier.toString();
             }
-            ctxt.engine().submit(new CreateDataFileCommand(dataFile, dsv, getRequest(), dataFileIdentifier));
+            ctxt.engine().submit(new CreateDataFileCommand(dataFile, dsv, getRequest(), dataFileIdentifier, true));//skip registration
         }
 
         if (template != null) {

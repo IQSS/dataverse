@@ -203,6 +203,13 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
         logger.log(Level.FINE,"publicizeIdentifier - dvObject");
+        if(!dvObject.isIdentifierRegistered()){
+            try {
+                createIdentifier(dvObject);
+            } catch (Throwable e){
+                return false;
+            }
+        }
         return updateIdentifierStatus(dvObject, "public");
     }
 

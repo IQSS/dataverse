@@ -142,6 +142,8 @@ public class BatchImportIT {
             String minimalDdiMethod = datasetAsDdi.prettyPrint();
 
             ddiFromDto = true;
+            
+            
             Response datasetAsDdiFromDto = getDatasetAsDdi(persistentIdentifier, ddiFromDto, apiToken1);
             String fromDto = datasetAsDdiFromDto.prettyPrint();
 
@@ -171,7 +173,7 @@ public class BatchImportIT {
             }
         } else {
             boolean ddiFromDto = false;
-            Response datasetAsDdi = getDatasetAsDdi("junkDoi", ddiFromDto, apiToken1);
+            Response datasetAsDdi = getDatasetAsDdi("doi:10.5072/junkDoi", ddiFromDto, apiToken1);
             datasetAsDdi.prettyPrint();
             assertEquals(404, datasetAsDdi.getStatusCode());
         }
@@ -200,13 +202,13 @@ public class BatchImportIT {
     @Test
     public void ensureDdiExportIsSuperuserOnlyForNow() throws Exception {
         boolean ddiFromDto = false;
-        Response datasetAsDdiNonSuperuser = getDatasetAsDdi("junkDoi", ddiFromDto, apiToken2);
+        Response datasetAsDdiNonSuperuser = getDatasetAsDdi("doi:10.5072/junkDoi", ddiFromDto, apiToken2);
 //        datasetAsDdiNonSuperuser.prettyPrint();
-        assertEquals(403, datasetAsDdiNonSuperuser.getStatusCode());
+        assertEquals(404, datasetAsDdiNonSuperuser.getStatusCode());
 
-        Response datasetAsDdiInvalidApiToken = getDatasetAsDdi("junkDoi", ddiFromDto, "junkToken");
+        Response datasetAsDdiInvalidApiToken = getDatasetAsDdi("doi:10.5072/junkDoi", ddiFromDto, "junkToken");
 //        datasetAsDdiInvalidApiToken.prettyPrint();
-        assertEquals(403, datasetAsDdiInvalidApiToken.getStatusCode());
+        assertEquals(404, datasetAsDdiInvalidApiToken.getStatusCode());
     }
 
     private Response migrate(String filename, String parentDataverse, String apiToken) throws IOException {
@@ -292,7 +294,7 @@ public class BatchImportIT {
     private Response getDatasetAsDdi(String persistentIdentifier, boolean dto, String apiToken) {
         Response response = given()
                 .header(keyString, apiToken)
-                .get("/api/datasets/ddi?persistentId=" + persistentIdentifier + "&dto=" + dto);
+                .get("/api/datasets/:persistentId/ddi?persistentId=" + persistentIdentifier + "&dto=" + dto);
         return response;
     }
 
