@@ -65,7 +65,7 @@
                             <div class="col-sm-7 inline-buttons">
                                 <div class="button-block">
                                     <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.preview}"/>
-                                    <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput" immediate="true" actionListener="#{provenanceUploadFragmentBean.updateJsonRemoveState()}"/>
+                                    <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput" immediate="true" actionListener="#{provenanceUploadFragmentBean.removeJsonAndRelatedData()}"/>
                                 </div>
                             </div>
                         </ui:fragment>

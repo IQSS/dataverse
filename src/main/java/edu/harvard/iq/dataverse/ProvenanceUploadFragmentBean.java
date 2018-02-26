@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonProvCommand;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.faces.application.FacesMessage;
 import javax.json.JsonObject;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -73,10 +75,17 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     @Inject
     FilePage filePage;
         
-    public void handleFileUpload(FileUploadEvent event) throws IOException {
+    public void handleFileUpload(FileUploadEvent event) {
         jsonUploadedTempFile = event.getFile();
-        provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
-        generateAndReturnPJParsedNames();
+        try {
+            provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+            generateAndReturnPJParsedNames();
+        } catch (Exception e) {
+            Logger.getLogger(ProvenanceUploadFragmentBean.class.getName())
+                    .log(Level.SEVERE, "Exception occurred while handling upload of provenance json", e);
+            removeJsonAndRelatedData();
+            //MAD: We should throw a user-facing error when this fails
+        }
 
         //provJsonState = null; //MAD why am I doing this? Hopefully removing it doesn't blow up my world...
                                 //I get it now... I nulling this to track if remove needed to happen
@@ -204,16 +213,12 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         }
     }
 
-    //MAD: I gotta remove the bundle entity with this remove
-    public void updateJsonRemoveState() throws AbstractApiBean.WrappedResponse {
-        if (jsonUploadedTempFile != null) {
-            jsonUploadedTempFile = null;
-            provJsonState = null;
-        } else if (provJsonState != null) {
-            provJsonState = null;
+    public void removeJsonAndRelatedData() {
+        if (provJsonState != null) {
             deleteStoredJson = true;
-        }        
-        //MAD: Gonna see what this clears up
+        }
+        jsonUploadedTempFile = null;
+        provJsonState = null;      
         dropdownSelectedEntity = null;
         storedSelectedEntityName = null;
         provJsonParsedEntities = null;
@@ -257,13 +262,10 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 && popupDataFile.getFileMetadata().getCplId() != 0);
     }
 
-    
-    
     public ArrayList<ProvEntityFileData> generateAndReturnPJParsedNames() throws IOException {
-       // String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //MAD: this only works I think if the file is first uploaded... Probably gotta pull it out of the staged changes as well for editing before publish...
+        // String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //MAD: this only works I think if the file is first uploaded... Probably gotta pull it out of the staged changes as well for editing before publish...
         JsonParser parser = new JsonParser();
         com.google.gson.JsonObject jsonObject = parser.parse(provJsonState).getAsJsonObject(); //provJsonState is a weird variable and I shouldn't be using it at least without checking over logic again
-
         recurseNames(jsonObject);
 
         return getProvJsonParsedEntitiesArray();
@@ -276,14 +278,6 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     public ProvEntityFileData getEntityByEntityName(String entityName) {
         return provJsonParsedEntities.get(entityName);
     }
-    
-//    //MAD: I don't know how to return this now that its a more complex data structure... what does the popup want
-//    public HashMap<String,ProvEntityFileData> getProvJsonParsedEntitiesMap() throws IOException {
-//        //if(null == provJsonParsedNames) { //MAD: This may not be the right way to do this, and if so may need to do more sanitization as its before other sanitization
-//            //String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream());
-//        //}
-//        return provJsonParsedEntities;
-//    }
     
     protected JsonElement recurseNames(JsonElement element) {
         return recurseNames(element, null, false);
@@ -310,14 +304,28 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                     //MAD: this may need checks to ensure its a string, not a null, etc 
                     //https://stackoverflow.com/questions/9324760/gson-jsonobject-unsupported-operation-exception-null-getasstring
                     String key = s.getKey();
-                    String value = s.getValue().getAsString();
                     
-                    if(key.equals("name") || key.endsWith(":name")) {
+                    if("name".equals(key) || key.endsWith(":name")) {
                         ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
-                        e.fileName = value;
-                    } else if(key.equals("type") || key.endsWith(":type")) {
-                        ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
-                        e.fileType = value;
+                        e.fileName = s.getValue().getAsString();
+                    } else if("type".equals(key) || key.endsWith(":type")) { //MAD: type is an object and should be treated as such... but is also a string sometimes
+                        if(s.getValue().isJsonObject()) {
+                            for ( Map.Entry tEntry : s.getValue().getAsJsonObject().entrySet()) {
+                                String tKey = (String) tEntry.getKey();
+                                if("type".equals(tKey) || tKey.endsWith(":type")) {
+                                    ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
+                                    //Object tV = tEntry.getValue();
+                                    //String value = (String) tEntry.getValue(); //MAD: This breaks but I want it to break so I can debug
+                                    String value = tEntry.getValue().toString();
+                                    e.fileType = value;
+                                }
+                            }                            
+                        } else if(s.getValue().isJsonPrimitive()){ //this still isn't checking if its a string, just if its a primitive
+                            ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
+                            String value = s.getValue().getAsString();
+                            e.fileType = value;
+                        }
+
                     }
                 } 
                 if(null != outerKey && outerKey.equals("entity")) { //collapse these?
@@ -327,17 +335,6 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                     recurseNames(s.getValue(),s.getKey(),false);
                 }
                 
-//                ///old
-//                Matcher m = Pattern.compile(nameRegex).matcher(s.getKey());
-//                if(m.find()) { 
-//                    try { 
-//                        provJsonParsedNames.add(s.getValue().getAsString());
-//                    } catch (ClassCastException | IllegalStateException e) { 
-//                        //if not a string don't care skip
-//                    }
-//                } else if(!s.getValue().isJsonPrimitive()){
-//                    recurseNames(s.getValue());
-//                }
             });
           
         } //MAD: todo address this

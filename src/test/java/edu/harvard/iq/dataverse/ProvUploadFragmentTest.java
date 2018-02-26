@@ -454,4 +454,113 @@ public class ProvUploadFragmentTest {
         //assertTrue(theNames.size() > 0);
     }
     
+    //@Test
+    public void testProvJsonWithEntityTypeObjects() throws IOException {
+        String jsonString = "{\n" +
+"    \"entity\": {\n" +
+"        \"ex:report2\": {\n" +
+"            \"prov:type\": \"report\",\n" +
+"            \"ex:version\": 2\n" +
+"        },\n" +
+"        \"ex:report1\": {\n" +
+"            \"prov:type\": \"report\",\n" +
+"            \"ex:version\": 1\n" +
+"        },\n" +
+"        \"alice:bundle2\": {\n" +
+"            \"prov:type\": {\n" +
+"                \"$\": \"prov:Bundle\",\n" +
+"                \"type\": \"xsd:QName\"\n" +
+"            }\n" +
+"        },\n" +
+"        \"bob:bundle1\": {\n" +
+"            \"prov:type\": {\n" +
+"                \"$\": \"prov:Bundle\",\n" +
+"                \"type\": \"xsd:QName\"\n" +
+"            }\n" +
+"        }\n" +
+"    },\n" +
+"    \"wasDerivedFrom\": {\n" +
+"        \"_:wDF1\": {\n" +
+"            \"prov:generatedEntity\": \"ex:report2\",\n" +
+"            \"prov:usedEntity\": \"ex:report1\"\n" +
+"        }\n" +
+"    },\n" +
+"    \"wasGeneratedBy\": {\n" +
+"        \"_:wGB1\": {\n" +
+"            \"prov:time\": \"2012-05-24T10:00:01\",\n" +
+"            \"prov:entity\": \"ex:report1\"\n" +
+"        },\n" +
+"        \"_:wGB2\": {\n" +
+"            \"prov:time\": \"2012-05-25T11:00:01\",\n" +
+"            \"prov:entity\": \"ex:report2\"\n" +
+"        },\n" +
+"        \"_:wGB3\": {\n" +
+"            \"prov:time\": \"2012-05-24T10:30:00\",\n" +
+"            \"prov:entity\": \"bob:bundle1\"\n" +
+"        },\n" +
+"        \"_:wGB4\": {\n" +
+"            \"prov:time\": \"2012-05-25T11:15:00\",\n" +
+"            \"prov:entity\": \"alice:bundle2\"\n" +
+"        }\n" +
+"    },\n" +
+"    \"wasAttributedTo\": {\n" +
+"        \"_:wAT1\": {\n" +
+"            \"prov:agent\": \"ex:Alice\",\n" +
+"            \"prov:entity\": \"alice:bundle2\"\n" +
+"        },\n" +
+"        \"_:wAT2\": {\n" +
+"            \"prov:agent\": \"ex:Bob\",\n" +
+"            \"prov:entity\": \"bob:bundle1\"\n" +
+"        }\n" +
+"    },\n" +
+"    \"bundle\": {\n" +
+"        \"alice:bundle2\": {\n" +
+"            \"wasGeneratedBy\": {\n" +
+"                \"_:wGB29\": {\n" +
+"                    \"prov:time\": \"2012-05-25T11:00:01\",\n" +
+"                    \"prov:entity\": \"ex:report2\"\n" +
+"                }\n" +
+"            },\n" +
+"            \"entity\": {\n" +
+"                \"ex:report2\": {\n" +
+"                    \"prov:type\": \"report\",\n" +
+"                    \"ex:version\": 2\n" +
+"                },\n" +
+"                \"ex:report1\": {\n" +
+"                }\n" +
+"            },\n" +
+"            \"wasDerivedFrom\": {\n" +
+"                \"_:wDF25\": {\n" +
+"                    \"prov:generatedEntity\": \"ex:report2\",\n" +
+"                    \"prov:usedEntity\": \"ex:report1\"\n" +
+"                }\n" +
+"            }\n" +
+"        },\n" +
+"        \"bob:bundle1\": {\n" +
+"            \"wasGeneratedBy\": {\n" +
+"                \"_:wGB28\": {\n" +
+"                    \"prov:time\": \"2012-05-24T10:00:01\",\n" +
+"                    \"prov:entity\": \"ex:report1\"\n" +
+"                }\n" +
+"            },\n" +
+"            \"entity\": {\n" +
+"                \"ex:report1\": {\n" +
+"                    \"prov:type\": \"report\",\n" +
+"                    \"ex:version\": 1\n" +
+"                }\n" +
+"            }\n" +
+"        }\n" +
+"    }\n" +
+"}";
+        
+        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
+        
+        provBean.recurseNames(jsonObject);
+        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
+        logger.warning("Names found: " + theNames);
+        assertTrue(theNames.size() > 0);
+    }
+    
+   
+    
 }
