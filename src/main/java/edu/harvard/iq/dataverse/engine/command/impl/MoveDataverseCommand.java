@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseFeaturedDataverse;
 import edu.harvard.iq.dataverse.Guestbook;
 import static edu.harvard.iq.dataverse.IdServiceBean.logger;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -15,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -103,18 +106,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
-        // metadata blocks
-        if (moved.getMetadataBlocks() != null) {
-            List<MetadataBlock> movedMbs = moved.getMetadataBlocks();
-            List<MetadataBlock> destinationMbs = destination.getMetadataBlocks();
-            boolean inheritMetadataBlockValue = destination.isMetadataBlockRoot();
-            if (inheritMetadataBlockValue && destination.getOwner() != null) {
-                // todo
-            }
-            
-        }
-        
+                
         // if all the dataverses TEMPLATES are not contained in the new dataverse then remove the
         // ones that aren't
         if (moved.getTemplates() != null) {
@@ -144,7 +136,17 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 } 
             }
         }
-        // what else?
+
+        // if the dataverse is featured, remove it
+        List<DataverseFeaturedDataverse> ownerFeaturedDv = moved.getOwner().getDataverseFeaturedDataverses();
+        if (ownerFeaturedDv != null) {
+            for (DataverseFeaturedDataverse dfdv: ownerFeaturedDv) {
+                if (moved.equals(dfdv.getFeaturedDataverse())) {
+                    ctxt.featuredDataverses().delete(dfdv);
+                }
+            }
+        }
+        
         
         // OK, move
         moved.setOwner(destination);
