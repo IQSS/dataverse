@@ -271,6 +271,23 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         return getProvJsonParsedEntitiesArray();
     }
     
+    public ArrayList<ProvEntityFileData> searchParsedEntities(String query) throws IOException {
+        ArrayList<ProvEntityFileData> fd = new ArrayList<>();
+        
+        for ( ProvEntityFileData s : getProvJsonParsedEntitiesArray()) {
+            if(s.entityName.contains(query) || s.fileName.contains(query) || s.fileType.contains(query)) {
+                fd.add(s);
+            }
+        }
+//MAD: This may have worked, I was returning null...        
+//        getProvJsonParsedEntitiesArray().forEach((s) -> {
+//            if(s.entityName.contains(query) || s.fileName.contains(query) || s.fileType.contains(query)) {
+//                fd.add(s);
+//            }
+//        });
+        return fd;
+    }
+    
     public ArrayList<ProvEntityFileData> getProvJsonParsedEntitiesArray() throws IOException {
         return new ArrayList<>(provJsonParsedEntities.values());
     }

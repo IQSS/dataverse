@@ -86,9 +86,9 @@
                             dropdown="true" scrollHeight="180" style="width:100%;"
                             minQueryLength="0" queryDelay="1000"
                             value="#{provenanceUploadFragmentBean.dropdownSelectedEntity}"
-                            completeMethod="#{provenanceUploadFragmentBean.getProvJsonParsedEntitiesArray()}" 
+                            completeMethod="#{provenanceUploadFragmentBean.searchParsedEntities}" 
                             onclick="PF('provJsonNameDropdown').search(PF('provJsonNameDropdown').input.val())"
-                            var="provEntityFileData" itemLabel="#{provEntityFileData.fileName}" itemValue="#{provEntityFileData}"
+                            var="provEntityFileData" itemLabel="#{provEntityFileData.fileName}#{empty provEntityFileData.fileName ? '' :' - '}#{provEntityFileData.entityName}" itemValue="#{provEntityFileData}"
                             forceSelection="true" 
                             converter="provEntityFileDataConverter">
                             <p:column headerText="#{bundle['file.editProvenanceDialog.bundleEntity.nameHeader']}">

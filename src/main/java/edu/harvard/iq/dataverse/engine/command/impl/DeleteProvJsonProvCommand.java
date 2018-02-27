@@ -53,7 +53,6 @@ public class DeleteProvJsonProvCommand extends AbstractVoidCommand {
             ctxt.files().save(dataFile); //MAD BAD 
         }
         
-        
         final String provJsonExtension = "prov-json.json";
 
         try {
