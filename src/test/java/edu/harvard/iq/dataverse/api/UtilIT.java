@@ -313,6 +313,17 @@ public class UtilIT {
         return createDatasetResponse;
     }
 
+    static Response migrateDataset(String filename, String parentDataverse, String apiToken) throws IOException {
+        if (filename == null || filename.isEmpty()) {
+            throw new IOException("null or empty filename");
+        }
+        logger.info(parentDataverse + "dataverse targeted for import of " + filename);
+        Response response = given()
+                .contentType("application/atom+xml")
+                .get("/api/batch/migrate/?dv=" + parentDataverse + "&key=" + apiToken + "&path=" + filename + "&createDV=true");
+        return response;
+    }
+
     static Response listDatasetsViaSword(String dataverseAlias, String apiToken) {
         Response response = given()
                 .auth().basic(apiToken, EMPTY_STRING)
