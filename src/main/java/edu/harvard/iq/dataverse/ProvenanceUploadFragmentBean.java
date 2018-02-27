@@ -12,6 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonProvCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,6 +63,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     String storedSelectedEntityName;
     
     private HashMap<String,ProvEntityFileData> provJsonParsedEntities = new HashMap<>();
+    
+    JsonParser parser = new JsonParser();
    
     //This map uses storageIdentifier as the key.
     //UpdatesEntry is an object containing the DataFile and the provJson string.
@@ -75,18 +79,24 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     @Inject
     FilePage filePage;
         
-    public void handleFileUpload(FileUploadEvent event) {
+    public void handleFileUpload(FileUploadEvent event) throws IOException {
         jsonUploadedTempFile = event.getFile();
-        try {
-            provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
-            generateAndReturnPJParsedNames();
-        } catch (Exception e) {
-            Logger.getLogger(ProvenanceUploadFragmentBean.class.getName())
-                    .log(Level.SEVERE, "Exception occurred while handling upload of provenance json", e);
-            removeJsonAndRelatedData();
-            //MAD: We should throw a user-facing error when this fails
-        }
 
+            provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+            try {
+                generateProvJsonParsedEntities();
+                if(provJsonParsedEntities.isEmpty()) {
+                    removeJsonAndRelatedData();
+                    JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.noEntitiesError"));
+                }
+            } catch (Exception e) {
+                Logger.getLogger(ProvenanceUploadFragmentBean.class.getName())
+                        .log(Level.SEVERE, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"), e);
+                removeJsonAndRelatedData();
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.uploadError")); 
+    //            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"));
+            }
+            
         //provJsonState = null; //MAD why am I doing this? Hopefully removing it doesn't blow up my world...
                                 //I get it now... I nulling this to track if remove needed to happen
     }
@@ -95,6 +105,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         dataset = dSet;
         updatePopupState(file);
     }
+    
     
     //This updates the popup for the selected file each time its open
     public void updatePopupState(DataFile file) throws AbstractApiBean.WrappedResponse, IOException {
@@ -110,14 +121,14 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         
         if(jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { //If there is already staged provenance info 
             provJsonState = jsonProvenanceUpdates.get(popupDataFile.getStorageIdentifier()).provenanceJson;
-            generateAndReturnPJParsedNames(); //MAD: using this inside this method is creating an unneeded data structure
+            generateProvJsonParsedEntities();
             setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             
         } else if(null != popupDataFile.getCreateDate()){//Is this file fully uploaded and already has prov data saved?     
             JsonObject provJsonObject = execCommand(new GetProvJsonProvCommand(dvRequestService.getDataverseRequest(), popupDataFile));
             if(null != provJsonObject) {
                 provJsonState = provJsonObject.toString();
-                generateAndReturnPJParsedNames();
+                generateProvJsonParsedEntities();
                 setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             }
 
@@ -184,7 +195,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 }
                 
             } catch (AbstractApiBean.WrappedResponse ex) {
-                filePage.showProvError();
+                filePage.showProvError(); //MAD: This may be doable without the new method
                 Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
             }
         } 
@@ -221,8 +232,9 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         provJsonState = null;      
         dropdownSelectedEntity = null;
         storedSelectedEntityName = null;
-        provJsonParsedEntities = null;
+        provJsonParsedEntities = new HashMap<>();
     }
+    
     //MAD: this method is called a ton on page load. Is that to be expected
     //god I wonder if its doing it per row...
     public boolean getJsonUploadedState() {
@@ -261,15 +273,6 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 && null != popupDataFile.getFileMetadata() 
                 && popupDataFile.getFileMetadata().getCplId() != 0);
     }
-
-    public ArrayList<ProvEntityFileData> generateAndReturnPJParsedNames() throws IOException {
-        // String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream()); //MAD: this only works I think if the file is first uploaded... Probably gotta pull it out of the staged changes as well for editing before publish...
-        JsonParser parser = new JsonParser();
-        com.google.gson.JsonObject jsonObject = parser.parse(provJsonState).getAsJsonObject(); //provJsonState is a weird variable and I shouldn't be using it at least without checking over logic again
-        recurseNames(jsonObject);
-
-        return getProvJsonParsedEntitiesArray();
-    }
     
     public ArrayList<ProvEntityFileData> searchParsedEntities(String query) throws IOException {
         ArrayList<ProvEntityFileData> fd = new ArrayList<>();
@@ -288,12 +291,14 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         return fd;
     }
     
-    public ArrayList<ProvEntityFileData> getProvJsonParsedEntitiesArray() throws IOException {
-        return new ArrayList<>(provJsonParsedEntities.values());
-    }
-    
     public ProvEntityFileData getEntityByEntityName(String entityName) {
         return provJsonParsedEntities.get(entityName);
+    }
+    
+        
+    public void generateProvJsonParsedEntities() throws IOException { 
+        com.google.gson.JsonObject jsonObject = parser.parse(provJsonState).getAsJsonObject(); //provJsonState is a weird variable and I shouldn't be using it at least without checking over logic again
+        recurseNames(jsonObject);
     }
     
     protected JsonElement recurseNames(JsonElement element) {
@@ -302,6 +307,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     
     //MAD: first just try to get all names, later we'll do it conditionally and stuff
     //MAD: This StackOverflow had good info https://stackoverflow.com/questions/15658124/finding-deeply-nested-key-value-in-json
+    //While this code works, there may be some edge cases when entities exist both inside and outside a nested bundle tag
     protected JsonElement recurseNames(JsonElement element, String outerKey, boolean atEntity) {
         //changes needed:
         //only inside entity
@@ -366,6 +372,11 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
 //        }
         
         return null;
+    }
+    
+        
+    public ArrayList<ProvEntityFileData> getProvJsonParsedEntitiesArray() throws IOException {
+        return new ArrayList<>(provJsonParsedEntities.values());
     }
     
     public ProvEntityFileData getDropdownSelectedEntity() {

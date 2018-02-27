@@ -9,7 +9,7 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true">
         <p:fragment id="assignMessages">
-            <div class="messagePanel">
+            <div class="popupMessagePanel">
                 <iqbs:messages collapsible="true" />
             </div>
         </p:fragment>
@@ -40,7 +40,7 @@
                                           multiple="false"
                                           allowTypes="/(\.|\/)(json)$/"
                                           fileUploadListener="#{provenanceUploadFragmentBean.handleFileUpload}" 
-                                          update="provPopupOutput" 
+                                          update="provPopupOutput,assignMessages" 
                                           label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
                                           oncomplete="bind_bsui_components();PF('provUpload').hide();"
                                           fileLimit="1" 
