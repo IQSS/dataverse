@@ -79,7 +79,6 @@ import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
-import javax.faces.context.ExternalContext;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
@@ -90,8 +89,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
-import java.io.UnsupportedEncodingException;
-import java.util.AbstractMap;
 import java.util.Collections;
 
 import javax.faces.event.AjaxBehaviorEvent;
@@ -99,19 +96,10 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-//import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.LaxRedirectStrategy;
 
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
-import org.primefaces.json.JSONObject;
 
 import java.net.URLEncoder;
 
@@ -377,9 +365,7 @@ public class DatasetPage implements java.io.Serializable {
     
     public boolean checkCartForItem(String title, String persistentId) {
         if (session.getUser() instanceof AuthenticatedUser) {
-            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
-            List<Entry<String,String>> contents = authUser.getCart().getContents();
-            return contents.contains(authUser.getCart().createEntry(title, persistentId));
+            return ((AuthenticatedUser) session.getUser()).getCart().checkCartForItem(title, persistentId);
         }
         return false;
     }
@@ -433,6 +419,9 @@ public class DatasetPage implements java.io.Serializable {
         if (session.getUser() instanceof AuthenticatedUser) {
             AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
             String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
+            if (url == null) {
+                return "";
+            }
             List<Entry<String,String>> contents = authUser.getCart().getContents();
             for (Entry<String,String> entry : contents) {
                 String persistentIdUrl = entry.getValue();

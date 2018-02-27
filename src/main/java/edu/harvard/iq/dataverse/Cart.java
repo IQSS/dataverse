@@ -12,7 +12,7 @@ public class Cart {
 
     List<Entry<String,String>> contents = new ArrayList<>();
 
-    public Entry<String,String> createEntry(String title, String persistentId) {
+    private Entry<String,String> createEntry(String title, String persistentId) {
         Entry<String,String> entry = new AbstractMap.SimpleEntry<>(title,persistentId);
         return entry;
     }
@@ -34,6 +34,10 @@ public class Cart {
 
     public List<Entry<String,String>> getContents() {
         return contents;
+    }
+    
+    public boolean checkCartForItem(String title, String persistentId) {
+        return contents.contains(createEntry(title, persistentId));
     }
 
     public void clear() {
