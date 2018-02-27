@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns="http://dublincore.org/documents/dcmi-terms/">
   <dcterms:title>Darwin's Finches</dcterms:title>
-  <dcterms:identifier>http://dx.doi.org/10.5072/FK2/PCA2E3</dcterms:identifier>
+  <dcterms:identifier>https://doi.org/10.5072/FK2/PCA2E3</dcterms:identifier>
   <dcterms:creator>Finch, Fiona</dcterms:creator>
   <dcterms:modified>2015-09-24T17:07:57Z</dcterms:modified>
   <dcterms:description>Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</dcterms:description>
