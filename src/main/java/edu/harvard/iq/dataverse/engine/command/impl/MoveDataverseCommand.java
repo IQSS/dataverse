@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFeaturedDataverse;
 import edu.harvard.iq.dataverse.Guestbook;
@@ -136,8 +135,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 } 
             }
         }
-
-        // if the dataverse is featured, remove it
+        
+        // if the dataverse is FEATURED by its parent, remove it
         List<DataverseFeaturedDataverse> ownerFeaturedDv = moved.getOwner().getDataverseFeaturedDataverses();
         if (ownerFeaturedDv != null) {
             for (DataverseFeaturedDataverse dfdv: ownerFeaturedDv) {
@@ -147,6 +146,46 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             }
         }
         
+        // if all the dataverses METADATA BLOCKS are not contained in the new dataverse then remove the
+        // ones that aren't available in the destination
+        // i.e. the case where a custom metadata block is available through a parent 
+        // but then the dataverse is moved outside of that parent-child structure
+        if (moved.getMetadataBlocks() != null) {
+            List<MetadataBlock> movedMbs = moved.getMetadataBlocks();
+            boolean inheritMbValue = destination.isMetadataBlockRoot();
+            
+            // generate list of all possible metadata block owner dataverses to check against
+            List<Dataverse> ownersToCheck = new ArrayList<>();
+            ownersToCheck.add(destination);
+            ownersToCheck.add(moved);
+            if (inheritMbValue && destination.getOwners() != null) {
+                for (Dataverse owner : destination.getOwners()) {
+                    ownersToCheck.add(owner);
+                }
+            }
+            
+            // determine which metadata blocks to keep selected 
+            // on the moved dataverse 
+            List<MetadataBlock> metadataBlocksToKeep = new ArrayList<>();
+            Iterator<MetadataBlock> iter = movedMbs.iterator();
+            while (iter.hasNext()) {
+                MetadataBlock mb = iter.next();
+                // if the owner is null, it means that the owner is the root dataverse
+                // because technically only custom metadata blocks have owners
+                Dataverse mbOwner = (mb.getOwner() != null) ? mb.getOwner() : ctxt.dataverses().findByAlias(":root");
+                if (!ownersToCheck.contains(mbOwner)) {
+                    if (force == null  || !force) {
+                        throw new IllegalCommandException("Dataverse metadata block is not in target dataverse. Please use the parameter ?forceMove=true to complete the move. This will disassociate the metadata block from the Dataverse", this);
+                    }
+                }
+                else if (ownersToCheck.contains(mbOwner) || moved.isMetadataBlockRoot()) {
+                    // only keep metadata block if
+                    // it is being inherited from its parent
+                     metadataBlocksToKeep.add(mb);
+                }
+            }
+            moved.setMetadataBlocks(metadataBlocksToKeep);
+        }
         
         // OK, move
         moved.setOwner(destination);
