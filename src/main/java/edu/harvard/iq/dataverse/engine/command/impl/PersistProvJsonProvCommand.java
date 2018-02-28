@@ -23,33 +23,23 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
 @RequiredPermissions(Permission.EditDataset)
-public class PersistProvJsonProvCommand extends AbstractCommand<JsonObject> {
+public class PersistProvJsonProvCommand extends AbstractCommand<DataFile> {
 
     private static final Logger logger = Logger.getLogger(PersistProvJsonProvCommand.class.getCanonicalName());
 
     private final DataFile dataFile;
     private final String jsonInput;
     private final String entityName;
-    private final boolean saveContext;
 
     public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
         this.jsonInput = jsonInput;
         this.entityName = entityName;
-        this.saveContext = false;
-    }
-    
-    public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName, boolean saveContext) {
-        super(aRequest, dataFile);
-        this.dataFile = dataFile;
-        this.jsonInput = jsonInput;
-        this.entityName = entityName;
-        this.saveContext = saveContext;
     }
 
     @Override
-    public JsonObject execute(CommandContext ctxt) throws CommandException {
+    public DataFile execute(CommandContext ctxt) throws CommandException {
         //First, save the name of the entity in the json so CPL can later connect the uploaded json
         if(null == entityName || "".equals(entityName)) {
             String error = "A valid entityName must be provided to connect the DataFile to the provenance data.";
@@ -57,9 +47,8 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObject> {
         }
         FileMetadata fileMetadata = dataFile.getFileMetadata();
         fileMetadata.setProvJsonObjName(entityName);
-        if(saveContext) {
-            ctxt.files().save(dataFile);
-        }
+        DataFile df = ctxt.files().save(dataFile);
+
         
        /**
          * TODO: We are not yet validating the JSON received as PROV-JSON, but
@@ -95,17 +84,18 @@ public class PersistProvJsonProvCommand extends AbstractCommand<JsonObject> {
             String error = "Exception caught persisting PROV-JSON: " + ex;
             throw new IllegalCommandException(error, this);
         }
+        return df;
         // Read from StorageIO and show it to the user. This is sort of overkill. We're just making sure we can get it from disk.
-        try {
-            StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
-            InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
-            JsonReader jsonReader = Json.createReader(inputStream);
-            JsonObject jsonObject = jsonReader.readObject();
-            return jsonObject;
-        } catch (IOException ex) {
-            String error = "Exception caught in DataAccess.getStorageIO(dataFile) after creating file. Error: " + ex;
-            throw new IllegalCommandException(error, this);
-        }
+//        try {
+//            StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
+//            InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
+//            JsonReader jsonReader = Json.createReader(inputStream);
+//            JsonObject jsonObject = jsonReader.readObject();
+//            return jsonObject;
+//        } catch (IOException ex) {
+//            String error = "Exception caught in DataAccess.getStorageIO(dataFile) after creating file. Error: " + ex;
+//            throw new IllegalCommandException(error, this);
+//        }
     }
 
 }

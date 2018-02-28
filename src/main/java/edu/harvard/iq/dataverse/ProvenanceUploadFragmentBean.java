@@ -78,6 +78,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     DataverseRequestServiceBean dvRequestService;
     @Inject
     FilePage filePage;
+    @Inject
+    DatasetPage datasetPage;
         
     public void handleFileUpload(FileUploadEvent event) throws IOException {
         jsonUploadedTempFile = event.getFile();
@@ -182,7 +184,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         
         if(saveInPopup) {
             try {
-                saveStagedProvJson(true);
+                saveStagedProvJson();
                 //We cannot just call the two prov saving commands back to back because of how context save functions
                 //Instead we only trigger the command for saving freeform provenance if the prov json doesn't already trigger it.
                 //We do not need to call the freeform command if json is already being saved because it is already in the metadata
@@ -191,7 +193,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                     //This is a little extra weird because I'm now leveraging the context save in the freeform command to also save the selected entity
                     FileMetadata fileMetadata = popupDataFile.getFileMetadata();
                     fileMetadata.setProvJsonObjName(dropdownSelectedEntity.getEntityName());
-                    execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
+                    popupDataFile = execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
+                    savePopupDataFileToPages();
                 }
                 
             } catch (AbstractApiBean.WrappedResponse ex) {
@@ -201,25 +204,36 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         } 
     }
     
+    public void savePopupDataFileToPages() {
+        filePage.setFile(popupDataFile);
+        
+        //MAD: wrong
+        //filePage.save();
+        filePage.init();
+        //datasetPage.set
+    }
+    
     //Saves the staged provenance data, to be called by the pages launching the popup
     //Also called when saving happens in the popup on file page
     
-    public void saveStagedProvJson() throws WrappedResponse {
-        saveStagedProvJson(false);
-    }
+//    public void saveStagedProvJson() throws WrappedResponse {
+//        saveStagedProvJson(false);
+//    }
     
-    public void saveStagedProvJson(boolean saveContext) throws AbstractApiBean.WrappedResponse {
+    public void saveStagedProvJson() throws AbstractApiBean.WrappedResponse {
         for (Map.Entry<String, UpdatesEntry> mapEntry : jsonProvenanceUpdates.entrySet()) {
             DataFile df = mapEntry.getValue().dataFile;
             String provString = mapEntry.getValue().provenanceJson;
 
             try {
-                execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, (saveContext && null == provString)));
+                popupDataFile = execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
+                savePopupDataFileToPages();
             } catch (AbstractApiBean.WrappedResponse wr) {
                 //do nothing, we always first try to delete the files in this list
             }
             if(null != provString ) {
-                execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName, saveContext));
+                popupDataFile = execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName));
+                savePopupDataFileToPages();
             }
         }
     }
