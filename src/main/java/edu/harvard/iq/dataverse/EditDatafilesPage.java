@@ -1093,6 +1093,18 @@ public class EditDatafilesPage implements java.io.Serializable {
         ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false; 
         
+        try {
+            provUploadFragmentBean.saveStagedProvJson();
+            
+        } catch (AbstractApiBean.WrappedResponse ex) {
+            //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
+            
+            JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
+            //JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("file.metadataTab.provenance.error"));
+            Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+        
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.fine("issuing the dataset update command");
             // We are creating a new draft version; 
@@ -1274,17 +1286,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
         }
 
-        try {
-            provUploadFragmentBean.saveStagedProvJson();
-            
-        } catch (AbstractApiBean.WrappedResponse ex) {
-            //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
-            
-            JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
-            //JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("file.metadataTab.provenance.error"));
-            Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
         if (mode == FileEditMode.SINGLE && fileMetadatas.size() > 0) {
             // If this was a "single file edit", i.e. an edit request sent from 
             // the individual File Landing page, we want to redirect back to 
@@ -2637,7 +2638,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         fileMetadataSelectedForIngestOptionsPopup = null;
     }
 
-    private void populateFileMetadatas() {
+    public void populateFileMetadatas() {
 
         if (selectedFileIdsList != null) {
 

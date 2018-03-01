@@ -80,6 +80,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     FilePage filePage;
     @Inject
     DatasetPage datasetPage;
+    @Inject
+    EditDatafilesPage datafilesPage;
         
     public void handleFileUpload(FileUploadEvent event) throws IOException {
         jsonUploadedTempFile = event.getFile();
@@ -194,23 +196,20 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                     FileMetadata fileMetadata = popupDataFile.getFileMetadata();
                     fileMetadata.setProvJsonObjName(dropdownSelectedEntity.getEntityName());
                     popupDataFile = execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
-                    savePopupDataFileToPages();
+                    filePage.setFile(popupDataFile); //MAD: what does this do? May need to call this as well (written after the below comment)
+                    filePage.init(); //fixes issues with commands editing beforehand, this repulls the file before anything that page does.
                 }
                 
             } catch (AbstractApiBean.WrappedResponse ex) {
                 filePage.showProvError(); //MAD: This may be doable without the new method
                 Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } 
+        }
     }
     
     public void savePopupDataFileToPages() {
-        filePage.setFile(popupDataFile);
-        
-        //MAD: wrong
-        //filePage.save();
-        filePage.init();
-        //datasetPage.set
+        //datafilesPage.populateFileMetadatas();
+        datafilesPage.init();
     }
     
     //Saves the staged provenance data, to be called by the pages launching the popup
@@ -226,15 +225,17 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
             String provString = mapEntry.getValue().provenanceJson;
 
             try {
-                popupDataFile = execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
+                df = execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
                 savePopupDataFileToPages();
             } catch (AbstractApiBean.WrappedResponse wr) {
                 //do nothing, we always first try to delete the files in this list
             }
             if(null != provString ) {
-                popupDataFile = execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName));
+                df = execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName));
                 savePopupDataFileToPages();
             }
+            
+            //MAD: Should we after this be saving anything to the popup data file? probably not as the popup is closed?
         }
     }
 

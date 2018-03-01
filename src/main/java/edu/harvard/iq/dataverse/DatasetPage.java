@@ -2640,7 +2640,7 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-        public void refreshIngestLock() {
+    public void refreshIngestLock() {
         //RequestContext requestContext = RequestContext.getCurrentInstance();
         logger.fine("checking ingest lock");
         if (isStillLockedForIngest()) {
