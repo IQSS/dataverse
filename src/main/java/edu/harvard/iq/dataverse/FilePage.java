@@ -664,7 +664,6 @@ public class FilePage implements java.io.Serializable {
             dataset = fileMetadata.getDataFile().getOwner();
         }
         
-        //MAD: Can we use the file variable already existing?
         DataFile dataFileToTest = fileMetadata.getDataFile(); 
         
         DatasetVersion currentVersion = dataset.getLatestVersion();

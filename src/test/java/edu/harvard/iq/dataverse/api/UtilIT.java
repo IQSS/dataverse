@@ -916,7 +916,7 @@ public class UtilIT {
                 .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
 
-    static Response uploadProvJson(String idOrPersistentId, JsonObject jsonObject, String apiToken) {
+    static Response uploadProvJson(String idOrPersistentId, JsonObject jsonObject, String apiToken, String entityName) {
         logger.info("Uploading Provenance JSON");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -924,6 +924,7 @@ public class UtilIT {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
+        optionalQueryParam += "?entityName="+entityName;
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()

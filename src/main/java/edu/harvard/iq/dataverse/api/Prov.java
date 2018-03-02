@@ -45,7 +45,7 @@ public class Prov extends AbstractApiBean {
             //MAD: I messed with this, need to fix it VVV
             execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), dataFile , body, entityName));
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
-            //jsonResponse.add("message", "PROV-JSON provenance data saved: " + jsonObject.toString());
+            jsonResponse.add("message", "PROV-JSON provenance data saved for Data File: " + dataFile.getDisplayName());
             return ok(jsonResponse);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -70,6 +70,8 @@ public class Prov extends AbstractApiBean {
     public Response addProvFreeForm(String body, @PathParam("id") String idSupplied) {
         StringReader rdr = new StringReader(body);
         JsonObject jsonObj = null;
+        DataFile dataFile;
+        
         try {
             jsonObj = Json.createReader(rdr).readObject();
         } catch (JsonException ex) {
@@ -82,9 +84,10 @@ public class Prov extends AbstractApiBean {
             return error(BAD_REQUEST, "The JSON object you send must have a key called 'text'.");
         }
         try {
-            DataFile savedDataFile = execCommand(new PersistProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied), provFreeForm));
+            dataFile = findDataFileOrDie(idSupplied);
+            execCommand(new PersistProvFreeFormCommand(createDataverseRequest(findUserOrDie()), dataFile, provFreeForm));
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
-            jsonResponse.add("message", "Free-form provenance data saved: " + savedDataFile.getFileMetadata().getProvFreeForm());
+            jsonResponse.add("message", "Free-form provenance data saved for Data File : " + dataFile.getFileMetadata().getProvFreeForm());
             return ok(jsonResponse);
         } catch (WrappedResponse ex) {
             return ex.getResponse();

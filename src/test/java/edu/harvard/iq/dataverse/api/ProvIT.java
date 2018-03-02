@@ -58,12 +58,16 @@ public class ProvIT {
         // TODO: Test that an array fails
         JsonArray provJsonBadDueToBeingAnArray = Json.createArrayBuilder().add("bad").build();
 
+        
+        //MAD: We need json with an entity name
+        
         JsonObject provJsonGood = Json.createObjectBuilder()
                 // TODO: Some day consider sending PROV-JSON that is valid according to the schema linked from https://www.w3.org/Submission/prov-json/
                 .add("prov", true)
                 .add("foo", "bar")
                 .build();
-        Response uploadProvJson = UtilIT.uploadProvJson(dataFileId.toString(), provJsonGood, apiTokenForDepositor);
+        String entityName = "";
+        Response uploadProvJson = UtilIT.uploadProvJson(dataFileId.toString(), provJsonGood, apiTokenForDepositor, entityName);
         uploadProvJson.prettyPrint();
         uploadProvJson.then().assertThat()
                 .body("data.message", equalTo("PROV-JSON provenance data saved: {\"prov\":true,\"foo\":\"bar\"}"))
