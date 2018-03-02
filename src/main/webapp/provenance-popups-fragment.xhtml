@@ -83,8 +83,10 @@
                         <!-- groupBy="# {roleAssignee.identifier.startsWith('@')?'Users':'Groups'}"  -->
                         <p:autoComplete id="provJsonNameDropdown" 
                             required="#{provenanceUploadFragmentBean.jsonUploadedState}"
+                            requiredMessage="#{bundle['file.editProvenanceDialog.bundleEntity.requiredValidation']}"
                             dropdown="true" scrollHeight="180" style="width:100%;"
                             minQueryLength="0" queryDelay="1000"
+                            placeholder="#{bundle['file.editProvenanceDialog.bundleEntity.placeholder']}"
                             value="#{provenanceUploadFragmentBean.dropdownSelectedEntity}"
                             completeMethod="#{provenanceUploadFragmentBean.searchParsedEntities}" 
                             onclick="PF('provJsonNameDropdown').search(PF('provJsonNameDropdown').input.val())"

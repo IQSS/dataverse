@@ -52,5 +52,4 @@ public class GetProvJsonProvCommand extends AbstractCommand<JsonObject> {
             throw new IllegalCommandException(error, this);
         }
     }
-
 }

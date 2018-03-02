@@ -291,6 +291,8 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 fd.add(s);
             }
         }
+        fd.sort(null);
+        
 //MAD: This may have worked, I was returning null...        
 //        getProvJsonParsedEntitiesArray().forEach((s) -> {
 //            if(s.entityName.contains(query) || s.fileName.contains(query) || s.fileType.contains(query)) {
@@ -306,7 +308,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     
         
     public void generateProvJsonParsedEntities() throws IOException { 
-        com.google.gson.JsonObject jsonObject = parser.parse(provJsonState).getAsJsonObject(); //provJsonState is a weird variable and I shouldn't be using it at least without checking over logic again
+        com.google.gson.JsonObject jsonObject = parser.parse(provJsonState).getAsJsonObject();
         recurseNames(jsonObject);
     }
     
