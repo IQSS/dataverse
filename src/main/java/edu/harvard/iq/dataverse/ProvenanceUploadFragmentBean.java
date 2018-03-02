@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.io.IOException;
 import java.util.logging.Logger;
 import org.primefaces.event.FileUploadEvent;
@@ -186,7 +187,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         
         if(saveInPopup) {
             try {
-                saveStagedProvJson();
+                saveStagedProvJson(true);
                 //We cannot just call the two prov saving commands back to back because of how context save functions
                 //Instead we only trigger the command for saving freeform provenance if the prov json doesn't already trigger it.
                 //We do not need to call the freeform command if json is already being saved because it is already in the metadata
@@ -219,20 +220,24 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
 //        saveStagedProvJson(false);
 //    }
     
-    public void saveStagedProvJson() throws AbstractApiBean.WrappedResponse {
+    public void saveStagedProvJson(boolean saveContext) throws AbstractApiBean.WrappedResponse {
         for (Map.Entry<String, UpdatesEntry> mapEntry : jsonProvenanceUpdates.entrySet()) {
             DataFile df = mapEntry.getValue().dataFile;
+            //MAD: I'm unsure if the updating the df will update the fileMetadatas
+            
             String provString = mapEntry.getValue().provenanceJson;
 
-            try {
-                df = execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df));
-                savePopupDataFileToPages();
-            } catch (AbstractApiBean.WrappedResponse wr) {
-                //do nothing, we always first try to delete the files in this list
-            }
+            DataverseRequest dvr = dvRequestService.getDataverseRequest();
+
             if(null != provString ) {
-                df = execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName));
-                savePopupDataFileToPages();
+                //savePopupDataFileToPages();
+                df = execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName, saveContext));
+            } else {
+                //MAD: I'm not sure this'll work. Before I was calling it always and catching the abstractapi error, 
+                //but that won't work if I want to get the dataFile back. Also it kinda stunk anyways
+                //savePopupDataFileToPages();
+                df = execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, saveContext));
+                
             }
             
             //MAD: Should we after this be saving anything to the popup data file? probably not as the popup is closed?

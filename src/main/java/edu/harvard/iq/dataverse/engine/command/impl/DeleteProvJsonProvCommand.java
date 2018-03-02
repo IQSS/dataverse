@@ -28,20 +28,23 @@ public class DeleteProvJsonProvCommand extends AbstractCommand<DataFile> {
 
     private static final Logger logger = Logger.getLogger(PersistProvJsonProvCommand.class.getCanonicalName());
 
-    private final DataFile dataFile;
-
+    private DataFile dataFile;
+    private final boolean saveContext;
     
     public DeleteProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
+        this.saveContext = false;
+    }
+    
+        public DeleteProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, boolean saveContext) {
+        super(aRequest, dataFile);
+        this.dataFile = dataFile;
+        this.saveContext = saveContext;
     }
 
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
-
-        FileMetadata fileMetadata = dataFile.getFileMetadata();
-        fileMetadata.setProvJsonObjName("");
-        DataFile df = ctxt.files().save(dataFile);
         
         final String provJsonExtension = "prov-json.json";
 
@@ -53,7 +56,13 @@ public class DeleteProvJsonProvCommand extends AbstractCommand<DataFile> {
             String error = "Exception caught deleting provenance aux object: " + ex;
             throw new IllegalCommandException(error, this);
         }
-        return df;
+        
+        FileMetadata fileMetadata = dataFile.getFileMetadata();
+        fileMetadata.setProvJsonObjName("");
+        if(saveContext) {
+            dataFile = ctxt.files().save(dataFile);
+        }
+        return dataFile;
     }
 
 }

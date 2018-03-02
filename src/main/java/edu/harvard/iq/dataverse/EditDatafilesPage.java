@@ -1088,22 +1088,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return null;
             }            
         }
+
                 
         // Save the NEW files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
-        //boolean newDraftVersion = false; 
-        
-        try {
-            provUploadFragmentBean.saveStagedProvJson();
-            
-        } catch (AbstractApiBean.WrappedResponse ex) {
-            //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
-            
-            JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
-            //JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("file.metadataTab.provenance.error"));
-            Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    
+        //boolean newDraftVersion = false;    
         
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.fine("issuing the dataset update command");
@@ -1199,6 +1188,10 @@ public class EditDatafilesPage implements java.io.Serializable {
                 try {
                     //DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
                     fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
+                    
+                    
+                    
+                    
                     logger.fine("Successfully saved DataFile "+fileMetadata.getLabel()+" in the database.");
                 } catch (EJBException ex) {
                     saveError.append(ex).append(" ");
@@ -1268,7 +1261,20 @@ public class EditDatafilesPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
         
+                        
+        try {
+            provUploadFragmentBean.saveStagedProvJson(false);
+            
+        } catch (AbstractApiBean.WrappedResponse ex) {
+            //MAD: This is messy
+            //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
+            
+            JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
+            //JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("file.metadataTab.provenance.error"));
+            Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
+
         
         
         if (mode == FileEditMode.SINGLE){
@@ -1277,7 +1283,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         } else {
             JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
         }
-
         
 
         // Call Ingest Service one more time, to 

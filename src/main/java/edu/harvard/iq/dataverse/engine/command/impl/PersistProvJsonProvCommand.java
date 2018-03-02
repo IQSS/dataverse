@@ -27,15 +27,25 @@ public class PersistProvJsonProvCommand extends AbstractCommand<DataFile> {
 
     private static final Logger logger = Logger.getLogger(PersistProvJsonProvCommand.class.getCanonicalName());
 
-    private final DataFile dataFile;
+    private DataFile dataFile;
     private final String jsonInput;
     private final String entityName;
+    private final boolean saveContext;
 
     public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
         this.jsonInput = jsonInput;
         this.entityName = entityName;
+        this.saveContext = true;
+    }
+    
+    public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName, boolean saveContext) {
+        super(aRequest, dataFile);
+        this.dataFile = dataFile;
+        this.jsonInput = jsonInput;
+        this.entityName = entityName;
+        this.saveContext = saveContext;
     }
 
     @Override
@@ -45,10 +55,6 @@ public class PersistProvJsonProvCommand extends AbstractCommand<DataFile> {
             String error = "A valid entityName must be provided to connect the DataFile to the provenance data.";
             throw new IllegalCommandException(error, this);
         }
-        FileMetadata fileMetadata = dataFile.getFileMetadata();
-        fileMetadata.setProvJsonObjName(entityName);
-        DataFile df = ctxt.files().save(dataFile);
-
         
        /**
          * TODO: We are not yet validating the JSON received as PROV-JSON, but
@@ -84,7 +90,14 @@ public class PersistProvJsonProvCommand extends AbstractCommand<DataFile> {
             String error = "Exception caught persisting PROV-JSON: " + ex;
             throw new IllegalCommandException(error, this);
         }
-        return df;
+        
+        FileMetadata fileMetadata = dataFile.getFileMetadata();
+        fileMetadata.setProvJsonObjName(entityName);
+        if(saveContext) {
+            dataFile = ctxt.files().save(dataFile);
+        }
+        
+        return dataFile;
         // Read from StorageIO and show it to the user. This is sort of overkill. We're just making sure we can get it from disk.
 //        try {
 //            StorageIO<DataFile> dataAccess = dataFile.getStorageIO();

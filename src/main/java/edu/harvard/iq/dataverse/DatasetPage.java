@@ -2551,7 +2551,7 @@ public class DatasetPage implements java.io.Serializable {
 
         //TODO: Should saving provenance be called before ingest?
         try {
-            provUploadFragmentBean.saveStagedProvJson();
+            provUploadFragmentBean.saveStagedProvJson(false);
         } catch (AbstractApiBean.WrappedResponse ex) {
             //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
             
