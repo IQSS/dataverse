@@ -65,7 +65,7 @@
                             <div class="col-sm-7 inline-buttons">
                                 <div class="button-block">
                                     <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.preview}"/>
-                                    <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput" immediate="true" actionListener="#{provenanceUploadFragmentBean.removeJsonAndRelatedData()}"/>
+                                    <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput,assignMessages" immediate="true" actionListener="#{provenanceUploadFragmentBean.removeJsonAndRelatedData()}"/>
                                 </div>
                             </div>
                         </ui:fragment>
@@ -90,7 +90,10 @@
                             onclick="PF('provJsonNameDropdown').search(PF('provJsonNameDropdown').input.val())"
                             var="provEntityFileData" itemLabel="#{provEntityFileData.fileName}#{empty provEntityFileData.fileName ? '' :' - '}#{provEntityFileData.entityName}" itemValue="#{provEntityFileData}"
                             forceSelection="true" 
-                            converter="provEntityFileDataConverter">
+                            converter="provEntityFileDataConverter"
+                            onkeypress="if (event.keyCode == 13) {
+                                return false;
+                            }">
                             <p:column headerText="#{bundle['file.editProvenanceDialog.bundleEntity.nameHeader']}">
                                 <h:outputText value="#{provEntityFileData.fileName}" />
                             </p:column>
@@ -126,7 +129,7 @@
                 </div>
             </div>
             <div class="button-block">
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" update="provPopupOutput" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" update="provPopupOutput,assignMessages" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();"  />
             </div>
         </div>

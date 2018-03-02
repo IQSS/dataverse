@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.NoSuchFileException;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonException;
@@ -52,6 +54,8 @@ public class DeleteProvJsonProvCommand extends AbstractCommand<DataFile> {
             StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
             dataAccess.deleteAuxObject(provJsonExtension);
             logger.info("provenance json delete passed io step");
+        } catch (NoSuchFileException nf) {
+            //if this command is called and there is no file, we keep going
         } catch (IOException ex) {
             String error = "Exception caught deleting provenance aux object: " + ex;
             throw new IllegalCommandException(error, this);

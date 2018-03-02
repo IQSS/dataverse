@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
@@ -14,7 +13,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonProvCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,14 +23,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.faces.application.FacesMessage;
 import javax.json.JsonObject;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * This bean exists to ease the use of provenance upload popup functionality`
@@ -87,20 +80,22 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     public void handleFileUpload(FileUploadEvent event) throws IOException {
         jsonUploadedTempFile = event.getFile();
 
-            provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
-            try {
-                generateProvJsonParsedEntities();
-                if(provJsonParsedEntities.isEmpty()) {
-                    removeJsonAndRelatedData();
-                    JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.noEntitiesError"));
-                }
-            } catch (Exception e) {
-                Logger.getLogger(ProvenanceUploadFragmentBean.class.getName())
-                        .log(Level.SEVERE, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"), e);
-                removeJsonAndRelatedData();
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.uploadError")); 
-    //            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"));
-            }
+        provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+        try {
+            generateProvJsonParsedEntities();
+
+        } catch (Exception e) {
+            Logger.getLogger(ProvenanceUploadFragmentBean.class.getName())
+                    .log(Level.SEVERE, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"), e);
+            removeJsonAndRelatedData();
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.uploadError")); 
+//            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"));
+        } 
+        if(provJsonParsedEntities.isEmpty()) {
+            removeJsonAndRelatedData();
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.noEntitiesError"));
+            //throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.noEntitiesError"), null));
+        }
             
         //provJsonState = null; //MAD why am I doing this? Hopefully removing it doesn't blow up my world...
                                 //I get it now... I nulling this to track if remove needed to happen
@@ -223,21 +218,15 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     public void saveStagedProvJson(boolean saveContext) throws AbstractApiBean.WrappedResponse {
         for (Map.Entry<String, UpdatesEntry> mapEntry : jsonProvenanceUpdates.entrySet()) {
             DataFile df = mapEntry.getValue().dataFile;
-            //MAD: I'm unsure if the updating the df will update the fileMetadatas
             
             String provString = mapEntry.getValue().provenanceJson;
 
             DataverseRequest dvr = dvRequestService.getDataverseRequest();
 
             if(null != provString ) {
-                //savePopupDataFileToPages();
                 df = execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName, saveContext));
             } else {
-                //MAD: I'm not sure this'll work. Before I was calling it always and catching the abstractapi error, 
-                //but that won't work if I want to get the dataFile back. Also it kinda stunk anyways
-                //savePopupDataFileToPages();
                 df = execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, saveContext));
-                
             }
             
             //MAD: Should we after this be saving anything to the popup data file? probably not as the popup is closed?
