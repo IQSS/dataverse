@@ -234,46 +234,25 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         freeformTextState = freeformText;
     }
     
-    //for storing datafile and provjson in a map value
-    class UpdatesEntry {
-        String provenanceJson;
-        DataFile dataFile;
-        
-        UpdatesEntry(DataFile dataFile, String provenanceJson) {
-            this.provenanceJson = provenanceJson;
-            this.dataFile = dataFile;
-        }
-    }
-    
     public boolean provExistsInPreviousVersion() {
         return (null != popupDataFile 
                 && null != popupDataFile.getFileMetadata() 
                 && popupDataFile.getFileMetadata().getCplId() != 0);
     }
-    
-    public ArrayList<ProvEntityFileData> searchParsedEntities(String query) throws IOException {
-        ArrayList<ProvEntityFileData> fd = new ArrayList<>();
-        
-        for ( ProvEntityFileData s : getProvJsonParsedEntitiesArray()) {
-            if(s.entityName.contains(query) || s.fileName.contains(query) || s.fileType.contains(query)) {
-                fd.add(s);
-            }
-        }
-        fd.sort(null);
-        
-        return fd;
+
+    public ProvEntityFileData getDropdownSelectedEntity() {
+        return dropdownSelectedEntity;
     }
-    
-    public ProvEntityFileData getEntityByEntityName(String entityName) {
-        return provJsonParsedEntities.get(entityName);
+
+    public void setDropdownSelectedEntity(ProvEntityFileData entity) {
+        this.dropdownSelectedEntity = entity;
     }
-    
         
     public void generateProvJsonParsedEntities() throws IOException { 
         com.google.gson.JsonObject jsonObject = parser.parse(provJsonState).getAsJsonObject();
         recurseNames(jsonObject);
     }
-    
+        
     protected JsonElement recurseNames(JsonElement element) {
         return recurseNames(element, null, false);
     }
@@ -336,17 +315,36 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         
         return null;
     }
-    
         
     public ArrayList<ProvEntityFileData> getProvJsonParsedEntitiesArray() throws IOException {
         return new ArrayList<>(provJsonParsedEntities.values());
     }
-    
-    public ProvEntityFileData getDropdownSelectedEntity() {
-        return dropdownSelectedEntity;
+        
+    public ArrayList<ProvEntityFileData> searchParsedEntities(String query) throws IOException {
+        ArrayList<ProvEntityFileData> fd = new ArrayList<>();
+        
+        for ( ProvEntityFileData s : getProvJsonParsedEntitiesArray()) {
+            if(s.entityName.contains(query) || s.fileName.contains(query) || s.fileType.contains(query)) {
+                fd.add(s);
+            }
+        }
+        fd.sort(null);
+        
+        return fd;
     }
-
-    public void setDropdownSelectedEntity(ProvEntityFileData entity) {
-        this.dropdownSelectedEntity = entity;
+    
+    public ProvEntityFileData getEntityByEntityName(String entityName) {
+        return provJsonParsedEntities.get(entityName);
+    }
+    
+     //for storing datafile and provjson in a map value
+    class UpdatesEntry {
+        String provenanceJson;
+        DataFile dataFile;
+        
+        UpdatesEntry(DataFile dataFile, String provenanceJson) {
+            this.provenanceJson = provenanceJson;
+            this.dataFile = dataFile;
+        }
     }
 }
