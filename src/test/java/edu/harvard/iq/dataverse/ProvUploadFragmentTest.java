@@ -8,11 +8,7 @@ package edu.harvard.iq.dataverse;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonObject;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.logging.Logger;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +20,6 @@ import org.junit.Test;
 public class ProvUploadFragmentTest {
     
     private ProvenanceUploadFragmentBean provBean;
-    private static final Logger logger = Logger.getLogger(ProvenanceUploadFragmentBean.class.getCanonicalName());
     JsonParser jsonParser;
     
     @Before
@@ -36,19 +31,17 @@ public class ProvUploadFragmentTest {
     @Test
     public void testProvNamesNotInsideEntity() throws IOException {
         //name and type on their own
-        String jsonString = "{\"name\":\"testzame\",\"type\":\"ohnobutt\"}";
+        String jsonString = "{\"name\":\"testzame\",\"type\":\"ohno\"}";
         JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
         provBean.recurseNames(jsonObject);
         ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
-        logger.warning("Names found: " + theNames);
         assertFalse(theNames.size() > 0); 
         
         //name and type in an individual entity but not inside the "entity" grouping
-        jsonString = "{\"p1\":{\"name\":\"testzame\",\"name2\":\"ohnobutt\"}}";
+        jsonString = "{\"p1\":{\"name\":\"testzame\",\"name2\":\"ohno\"}}";
         JsonObject jsonObject2 = jsonParser.parse(jsonString).getAsJsonObject();
         provBean.recurseNames(jsonObject2);
         theNames = provBean.getProvJsonParsedEntitiesArray();
-        logger.warning("Names found: " + theNames);
         assertFalse(theNames.size() > 0); 
     }
     
@@ -56,7 +49,163 @@ public class ProvUploadFragmentTest {
     //also write a test of parsing different cases, we don't want to catch "fakename" but we do want to catch "rdt:name" and "name"
     
     @Test
-    public void testProvJsonWithEntity() throws IOException {
+    public void testProvNameJsonParserEmptyEntities() throws IOException {
+        String jsonString = "{\n" +
+            "\n" +
+            "\"prefix\" : {\n" +
+            "\"prov\" : \"http://www.w3.org/ns/prov#\",\n" +
+            "\"rdt\" : \"http://rdatatracker.org/\"\n" +
+            "},\n" +
+            "\"entity\":{\n" +
+            "},\n" +
+            "\"wasInformedBy\":{\n" +
+            "\n" +
+            "\"e1\" : {\n" +
+            "\"prov:informant\" : \"p1\",\n" +
+            "\"prov:informed\" : \"p2\"\n" +
+            "} ,\n" +
+            "\n" +
+            "\"e2\" : {\n" +
+            "\"prov:informant\" : \"p2\",\n" +
+            "\"prov:informed\" : \"p3\"\n" +
+            "} ,\n" +
+            "\n" +
+            "\"e3\" : {\n" +
+            "\"prov:informant\" : \"p3\",\n" +
+            "\"prov:informed\" : \"p4\"\n" +
+            "}},\n" +
+            "\"wasGeneratedBy\":{\n" +
+            "},\n" +
+            "\"used\":{\n" +
+            "}\n" +
+            "}";
+        
+        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
+        
+        provBean.recurseNames(jsonObject);
+        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
+        assertTrue(theNames.size() == 0);
+    }
+    
+    //Note: this test has entity tags in multiple places, all with unique names
+    //Only one entity is added to our list per unique name.
+    @Test
+    public void testProvJsonWithEntitiesInMultiplePlaces() throws IOException {
+        String jsonString = "{\n" +
+"    \"entity\": {\n" +
+"        \"ex:report2\": {\n" +
+"            \"prov:type\": \"report\",\n" +
+"            \"ex:name\": \"best\"\n" +
+"        },\n" +
+"        \"ex:report1\": {\n" +
+"            \"prov:type\": \"report\",\n" +
+"            \"ex:version\": 1\n" +
+"        },\n" +
+"        \"alice:bundle2\": {\n" +
+"            \"prov:type\": {\n" +
+"                \"$\": \"prov:Bundle\",\n" +
+"                \"type\": \"xsd:QName\"\n" +
+"            }\n" +
+"        },\n" +
+"        \"bob:bundle1\": {\n" +
+"            \"prov:type\": {\n" +
+"                \"$\": \"prov:Bundle\",\n" +
+"                \"type\": \"xsd:QName\"\n" +
+"            }\n" +
+"        }\n" +
+"    },\n" +
+"    \"bundle\": {\n" +
+"        \"alice:bundle2\": {\n" +
+"            \"wasGeneratedBy\": {\n" +
+"                \"_:wGB29\": {\n" +
+"                    \"prov:time\": \"2012-05-25T11:00:01\",\n" +
+"                    \"prov:entity\": \"ex:report2\"\n" +
+"                }\n" +
+"            },\n" +
+"            \"entity\": {\n" +
+"                \"ex:report3\": {\n" +
+"                    \"prov:type\": \"report\",\n" +
+"                    \"ex:version\": 2\n" +
+"                },\n" +
+"                \"ex:report4\": {\n" +
+"                }\n" +
+"            },\n" +
+"            \"wasDerivedFrom\": {\n" +
+"                \"_:wDF25\": {\n" +
+"                    \"prov:generatedEntity\": \"ex:report2\",\n" +
+"                    \"prov:usedEntity\": \"ex:report1\"\n" +
+"                }\n" +
+"            }\n" +
+"        },\n" +
+"        \"bob:bundle1\": {\n" +
+"            \"wasGeneratedBy\": {\n" +
+"                \"_:wGB28\": {\n" +
+"                    \"prov:time\": \"2012-05-24T10:00:01\",\n" +
+"                    \"prov:entity\": \"ex:report1\"\n" +
+"                }\n" +
+"            },\n" +
+"            \"entity\": {\n" +
+"                \"ex:report5\": {\n" +
+"                    \"prov:type\": \"report\",\n" +
+"                    \"ex:version\": 1\n" +
+"                }\n" +
+"            }\n" +
+"        }\n" +
+"    }\n" +
+"}";
+        
+        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
+        
+        provBean.recurseNames(jsonObject);
+        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
+        assertTrue(provBean.provJsonParsedEntities.get("ex:report5").fileType.equals("report"));
+        assertTrue(provBean.provJsonParsedEntities.get("ex:report2").fileName.equals("best"));
+        assertTrue(theNames.size() == 7);
+    }
+    
+    @Test
+    public void testProvJsonWithEntitiesInMultiplePlacesWithSameNames() throws IOException {
+        String jsonString = "{\n" +
+"    \"entity\": {\n" +
+"        \"ex:report2\": {\n" +
+"            \"prov:type\": \"report\",\n" +
+"            \"ex:version\": 2\n" +
+"        },\n" +
+"        \"ex:report1\": {\n" +
+"            \"prov:type\": \"report\",\n" +
+"            \"ex:version\": 1\n" +
+"        },\n" +
+"        \"bob:bundle1\": {\n" +
+"            \"prov:type\": {\n" +
+"                \"$\": \"prov:Bundle\",\n" +
+"                \"type\": \"xsd:QName\"\n" +
+"            }\n" +
+"        }\n" +
+"    },\n" +
+"    \"bundle\": {\n" +
+"        \"alice:bundle2\": {\n" +
+"            \"entity\": {\n" +
+"                \"ex:report2\": {\n" +
+"                    \"prov:type\": \"not report\",\n" +
+"                    \"ex:version\": 2\n" +
+"                },\n" +
+"                \"ex:report1\": {\n" +
+"                }\n" +
+"            }\n" +
+"        }\n" +
+"    }\n" +
+"}";
+        
+        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
+        
+        provBean.recurseNames(jsonObject);
+        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
+        assertTrue(provBean.provJsonParsedEntities.get("ex:report2").fileType.equals("not report"));
+        assertTrue(theNames.size() == 3); //ex:report2 & ex:report1 are repeated
+    }
+   
+    @Test
+    public void testProvLongJsonWithEntities() throws IOException {
         String jsonString = "{\n" +
             "   \"prefix\":{\n" +
             "      \"prov\":\"http://www.w3.org/ns/prov#\",\n" +
@@ -334,233 +483,6 @@ public class ProvUploadFragmentTest {
         
         provBean.recurseNames(jsonObject);
         ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
-        logger.warning("Names found: " + theNames);
-        assertTrue(theNames.size() > 0);
+        assertTrue(theNames.size() == 6);
     }
-    
-    //@Test
-    public void testProvNameJsonParser2() throws IOException {
-        String jsonString = "{\n" +
-            "\n" +
-            "\"prefix\" : {\n" +
-            "\"prov\" : \"http://www.w3.org/ns/prov#\",\n" +
-            "\"rdt\" : \"http://rdatatracker.org/\"\n" +
-            "},\n" +
-            "\"activity\":{\n" +
-            "\n" +
-            "\"p1\" : {\n" +
-            "\"rdt:name\" : \"test.R\",\n" +
-            "\"rdt:type\" : \"Start\",\n" +
-            "\"rdt:elapsedTime\" : \"8.87\",\n" +
-            "\"rdt:scriptNum\" : \"NA\",\n" +
-            "\"rdt:startLine\" : \"NA\",\n" +
-            "\"rdt:startCol\" : \"NA\",\n" +
-            "\"rdt:endLine\" : \"NA\",\n" +
-            "\"rdt:endCol\" : \"NA\"\n" +
-            "} ,\n" +
-            "\n" +
-            "\"p2\" : {\n" +
-            "\"rdt:name\" : \"library(CamFlow)\",\n" +
-            "\"rdt:type\" : \"Operation\",\n" +
-            "\"rdt:elapsedTime\" : \"8.87400000000001\",\n" +
-            "\"rdt:scriptNum\" : \"0\",\n" +
-            "\"rdt:startLine\" : \"2\",\n" +
-            "\"rdt:startCol\" : \"1\",\n" +
-            "\"rdt:endLine\" : \"2\",\n" +
-            "\"rdt:endCol\" : \"16\"\n" +
-            "} ,\n" +
-            "\n" +
-            "\"p3\" : {\n" +
-            "\"rdt:name\" : \"CamFlowVisualiser(\\\"~/Projects/HF/projects/Dprov/projects/dev\",\n" +
-            "\"rdt:type\" : \"Operation\",\n" +
-            "\"rdt:elapsedTime\" : \"8.88300000000001\",\n" +
-            "\"rdt:scriptNum\" : \"0\",\n" +
-            "\"rdt:startLine\" : \"4\",\n" +
-            "\"rdt:startCol\" : \"1\",\n" +
-            "\"rdt:endLine\" : \"4\",\n" +
-            "\"rdt:endCol\" : \"97\"\n" +
-            "} ,\n" +
-            "\n" +
-            "\"p4\" : {\n" +
-            "\"rdt:name\" : \"test.R\",\n" +
-            "\"rdt:type\" : \"Finish\",\n" +
-            "\"rdt:elapsedTime\" : \"8.88800000000001\",\n" +
-            "\"rdt:scriptNum\" : \"NA\",\n" +
-            "\"rdt:startLine\" : \"NA\",\n" +
-            "\"rdt:startCol\" : \"NA\",\n" +
-            "\"rdt:endLine\" : \"NA\",\n" +
-            "\"rdt:endCol\" : \"NA\"\n" +
-            "} ,\n" +
-            "\n" +
-            "\"environment\" : {\n" +
-            "\"rdt:name\" : \"environment\",\n" +
-            "\"rdt:architecture\" : \"x86_64\",\n" +
-            "\"rdt:operatingSystem\" : \"unix\",\n" +
-            "\"rdt:language\" : \"R\",\n" +
-            "\"rdt:rVersion\" : \"R version 3.3.1 (2016-06-21)\",\n" +
-            "\"rdt:script\" : \"/Users/hermes/Desktop/test.R\",\n" +
-            "\"rdt:sourcedScripts\" : \"\"\n" +
-            ",\n" +
-            "\"rdt:scriptTimeStamp\" : \"2016-10-07T17.19.21EDT\",\n" +
-            "\"rdt:workingDirectory\" : \"/Users/hermes/Desktop\",\n" +
-            "\"rdt:ddgDirectory\" : \"./test_ddg\",\n" +
-            "\"rdt:ddgTimeStamp\" : \"2016-10-07T17.19.50EDT\",\n" +
-            "\"rdt:rdatatrackerVersion\" : \"2.24.1\",\n" +
-            "\"rdt:InstalledPackages\": [\n" +
-            "    {\"package\":\"akima\", \"version\":\"0.5-12\"},\n" +
-            "    {\"package\":\"CamFlow\", \"version\":\"0.0.0.9000\"},\n" +
-            "    {\"package\":\"cowplot\", \"version\":\"0.6.2\"},\n" +
-            "    {\"package\":\"ggplot2\", \"version\":\"2.1.0\"},\n" +
-            "    {\"package\":\"lattice\", \"version\":\"0.20-33\"},\n" +
-            "    {\"package\":\"MASS\", \"version\":\"7.3-45\"},\n" +
-            "    {\"package\":\"permute\", \"version\":\"0.9-0\"},\n" +
-            "    {\"package\":\"plyr\", \"version\":\"1.8.4\"},\n" +
-            "    {\"package\":\"png\", \"version\":\"0.1-7\"},\n" +
-            "    {\"package\":\"RColorBrewer\", \"version\":\"1.1-2\"},\n" +
-            "    {\"package\":\"RDataTracker\", \"version\":\"2.24.1\"},\n" +
-            "    {\"package\":\"reshape\", \"version\":\"0.8.5\"},\n" +
-            "    {\"package\":\"scatterplot3d\", \"version\":\"0.3-37\"},\n" +
-            "    {\"package\":\"vegan\", \"version\":\"2.4-0\"}]\n" +
-            "}},\n" +
-            "\"entity\":{\n" +
-            "},\n" +
-            "\"wasInformedBy\":{\n" +
-            "\n" +
-            "\"e1\" : {\n" +
-            "\"prov:informant\" : \"p1\",\n" +
-            "\"prov:informed\" : \"p2\"\n" +
-            "} ,\n" +
-            "\n" +
-            "\"e2\" : {\n" +
-            "\"prov:informant\" : \"p2\",\n" +
-            "\"prov:informed\" : \"p3\"\n" +
-            "} ,\n" +
-            "\n" +
-            "\"e3\" : {\n" +
-            "\"prov:informant\" : \"p3\",\n" +
-            "\"prov:informed\" : \"p4\"\n" +
-            "}},\n" +
-            "\"wasGeneratedBy\":{\n" +
-            "},\n" +
-            "\"used\":{\n" +
-            "}\n" +
-            "}";
-        
-        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
-        
-        provBean.recurseNames(jsonObject);
-        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
-        logger.warning("Names found: " + theNames);
-        //assertTrue(theNames.size() > 0);
-    }
-    
-    //@Test
-    public void testProvJsonWithEntityTypeObjects() throws IOException {
-        String jsonString = "{\n" +
-"    \"entity\": {\n" +
-"        \"ex:report2\": {\n" +
-"            \"prov:type\": \"report\",\n" +
-"            \"ex:version\": 2\n" +
-"        },\n" +
-"        \"ex:report1\": {\n" +
-"            \"prov:type\": \"report\",\n" +
-"            \"ex:version\": 1\n" +
-"        },\n" +
-"        \"alice:bundle2\": {\n" +
-"            \"prov:type\": {\n" +
-"                \"$\": \"prov:Bundle\",\n" +
-"                \"type\": \"xsd:QName\"\n" +
-"            }\n" +
-"        },\n" +
-"        \"bob:bundle1\": {\n" +
-"            \"prov:type\": {\n" +
-"                \"$\": \"prov:Bundle\",\n" +
-"                \"type\": \"xsd:QName\"\n" +
-"            }\n" +
-"        }\n" +
-"    },\n" +
-"    \"wasDerivedFrom\": {\n" +
-"        \"_:wDF1\": {\n" +
-"            \"prov:generatedEntity\": \"ex:report2\",\n" +
-"            \"prov:usedEntity\": \"ex:report1\"\n" +
-"        }\n" +
-"    },\n" +
-"    \"wasGeneratedBy\": {\n" +
-"        \"_:wGB1\": {\n" +
-"            \"prov:time\": \"2012-05-24T10:00:01\",\n" +
-"            \"prov:entity\": \"ex:report1\"\n" +
-"        },\n" +
-"        \"_:wGB2\": {\n" +
-"            \"prov:time\": \"2012-05-25T11:00:01\",\n" +
-"            \"prov:entity\": \"ex:report2\"\n" +
-"        },\n" +
-"        \"_:wGB3\": {\n" +
-"            \"prov:time\": \"2012-05-24T10:30:00\",\n" +
-"            \"prov:entity\": \"bob:bundle1\"\n" +
-"        },\n" +
-"        \"_:wGB4\": {\n" +
-"            \"prov:time\": \"2012-05-25T11:15:00\",\n" +
-"            \"prov:entity\": \"alice:bundle2\"\n" +
-"        }\n" +
-"    },\n" +
-"    \"wasAttributedTo\": {\n" +
-"        \"_:wAT1\": {\n" +
-"            \"prov:agent\": \"ex:Alice\",\n" +
-"            \"prov:entity\": \"alice:bundle2\"\n" +
-"        },\n" +
-"        \"_:wAT2\": {\n" +
-"            \"prov:agent\": \"ex:Bob\",\n" +
-"            \"prov:entity\": \"bob:bundle1\"\n" +
-"        }\n" +
-"    },\n" +
-"    \"bundle\": {\n" +
-"        \"alice:bundle2\": {\n" +
-"            \"wasGeneratedBy\": {\n" +
-"                \"_:wGB29\": {\n" +
-"                    \"prov:time\": \"2012-05-25T11:00:01\",\n" +
-"                    \"prov:entity\": \"ex:report2\"\n" +
-"                }\n" +
-"            },\n" +
-"            \"entity\": {\n" +
-"                \"ex:report2\": {\n" +
-"                    \"prov:type\": \"report\",\n" +
-"                    \"ex:version\": 2\n" +
-"                },\n" +
-"                \"ex:report1\": {\n" +
-"                }\n" +
-"            },\n" +
-"            \"wasDerivedFrom\": {\n" +
-"                \"_:wDF25\": {\n" +
-"                    \"prov:generatedEntity\": \"ex:report2\",\n" +
-"                    \"prov:usedEntity\": \"ex:report1\"\n" +
-"                }\n" +
-"            }\n" +
-"        },\n" +
-"        \"bob:bundle1\": {\n" +
-"            \"wasGeneratedBy\": {\n" +
-"                \"_:wGB28\": {\n" +
-"                    \"prov:time\": \"2012-05-24T10:00:01\",\n" +
-"                    \"prov:entity\": \"ex:report1\"\n" +
-"                }\n" +
-"            },\n" +
-"            \"entity\": {\n" +
-"                \"ex:report1\": {\n" +
-"                    \"prov:type\": \"report\",\n" +
-"                    \"ex:version\": 1\n" +
-"                }\n" +
-"            }\n" +
-"        }\n" +
-"    }\n" +
-"}";
-        
-        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
-        
-        provBean.recurseNames(jsonObject);
-        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
-        logger.warning("Names found: " + theNames);
-        assertTrue(theNames.size() > 0);
-    }
-    
-   
-    
 }

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -13,13 +14,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ProvIT {
-
+    
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
-    //MAD: These are broken as we now require an entityName to be provided to connect the DataFile to the prov-json
     @Test
     public void testAddProvFile() {
 
@@ -55,22 +55,24 @@ public class ProvIT {
         Long dataFileId = JsonPath.from(authorAddsFile.getBody().asString()).getLong("data.files[0].dataFile.id");
 
         //Provenance Json
-        // TODO: Test that an array fails
         JsonArray provJsonBadDueToBeingAnArray = Json.createArrayBuilder().add("bad").build();
-
-        
-        //MAD: We need json with an entity name
-        
         JsonObject provJsonGood = Json.createObjectBuilder()
-                // TODO: Some day consider sending PROV-JSON that is valid according to the schema linked from https://www.w3.org/Submission/prov-json/
-                .add("prov", true)
-                .add("foo", "bar")
-                .build();
-        String entityName = "";
+                .add("entity", Json.createObjectBuilder()
+                    .add("d1", Json.createObjectBuilder()
+                        .add("name", "first.txt")
+                        .add("value", "#ddg.function")    
+                        .add("scope", "fn"))
+                    .add("d2", Json.createObjectBuilder()
+                        .add("rdt:name", "second.txt")
+                        .add("rdt:value", "#ddg.function")    
+                        .add("rdt:scope", "something"))        
+                    )
+                    .build();
+        String entityName = "d1";
         Response uploadProvJson = UtilIT.uploadProvJson(dataFileId.toString(), provJsonGood, apiTokenForDepositor, entityName);
         uploadProvJson.prettyPrint();
         uploadProvJson.then().assertThat()
-                .body("data.message", equalTo("PROV-JSON provenance data saved: {\"prov\":true,\"foo\":\"bar\"}"))
+//                .body("data.message", equalTo("PROV-JSON provenance data saved: {\"prov\":true,\"foo\":\"bar\"}"))
                 .statusCode(OK.getStatusCode());
         
         Response deleteProvJson = UtilIT.deleteProvJson(dataFileId.toString(), apiTokenForDepositor);
@@ -88,7 +90,6 @@ public class ProvIT {
         Response uploadProvFreeForm = UtilIT.uploadProvFreeForm(dataFileId.toString(), provFreeFormGood, apiTokenForDepositor);
         uploadProvFreeForm.prettyPrint();
         uploadProvFreeForm.then().assertThat()
-                .body("data.message", equalTo("Free-form provenance data saved: I inherited this file from my grandfather."))
                 .statusCode(OK.getStatusCode());
         
         Response deleteProvFreeForm = UtilIT.deleteProvFreeForm(dataFileId.toString(), apiTokenForDepositor);

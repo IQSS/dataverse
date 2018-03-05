@@ -19,8 +19,7 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
+
 
 @RequiredPermissions(Permission.EditDataset)
 public class PersistProvJsonProvCommand extends AbstractCommand<DataFile> {

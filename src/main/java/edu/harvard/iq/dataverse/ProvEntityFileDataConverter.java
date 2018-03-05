@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import javax.ejb.EJB;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -15,6 +14,7 @@ import javax.inject.Inject;
 /**
  *
  * @author madunlap
+ * To sort our entity objects in the provenance bundle dropdown
  */
 @FacesConverter("provEntityFileDataConverter")
 public class ProvEntityFileDataConverter implements Converter{
@@ -25,7 +25,6 @@ public class ProvEntityFileDataConverter implements Converter{
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
         return provBean.getEntityByEntityName(value);
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
