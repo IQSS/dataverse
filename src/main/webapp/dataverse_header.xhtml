@@ -48,12 +48,8 @@
                                 <span class="glyphicon glyphicon-search"/> #{bundle.find}
                             </button>
                         </form>
-                        <ui:fragment rendered="#{!empty settingsWrapper.get(':NavbarAboutUrl')}">
-                        <li>
-                            <h:outputLink value="#{settingsWrapper.get(':NavbarAboutUrl')}" target="_blank">
-                                #{bundle['header.about']}
-                            </h:outputLink>                         
-                        </li>
+
+						<!-- QDR - replace :NavbarAboutUrl section with About menu/submenu -->	                        
                         <li class="dropdown">
                             <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
                                 <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/qdr-publications">
