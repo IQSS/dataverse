@@ -45,7 +45,7 @@ public class MailUtilTest {
     @Test
     public void testSubjectCreateDataverse() {
         userNotification.setType(UserNotification.Type.CREATEDV);
-        assertEquals("LibraScholar: Your dataverse has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
+        assertEquals("LibraScholar: Your collection has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
     }
     
     @Test
@@ -75,7 +75,7 @@ public class MailUtilTest {
     @Test
     public void testSubjectMapLayerUpdated() {
         userNotification.setType(UserNotification.Type.MAPLAYERUPDATED);
-        assertEquals("LibraScholar: WorldMap layer added to dataset", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
+        assertEquals("LibraScholar: WorldMap layer added to data project", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
     }
     
     @Test
@@ -87,25 +87,25 @@ public class MailUtilTest {
     @Test
     public void testSubjectCreateDataset() {
         userNotification.setType(UserNotification.Type.CREATEDS);
-        assertEquals("LibraScholar: Your dataset has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
+        assertEquals("LibraScholar: Your data project has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
     }
     
     @Test
     public void testSubjectSubmittedDS() {
         userNotification.setType(UserNotification.Type.SUBMITTEDDS);
-        assertEquals("LibraScholar: Your dataset has been submitted for review", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
+        assertEquals("LibraScholar: Your data project has been submitted for review", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
     }
     
     @Test
     public void testSubjectPublishedDS() {
         userNotification.setType(UserNotification.Type.PUBLISHEDDS);
-        assertEquals("LibraScholar: Your dataset has been published", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
+        assertEquals("LibraScholar: Your data project has been published", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
     }
     
     @Test
     public void testSubjectReturnedDS() {
         userNotification.setType(UserNotification.Type.RETURNEDDS);
-        assertEquals("LibraScholar: Your dataset has been returned", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
+        assertEquals("LibraScholar: Your data project has been returned", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName));
     }
     
     @Test
