@@ -35,7 +35,7 @@ public class CreatePrivateUrlCommand extends AbstractCommand<PrivateUrl> {
             /**
              * @todo Internationalize this.
              */
-            String message = "Can't create Private URL. Dataset is null.";
+            String message = "Can't create Private URL. Data Project is null.";
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }
@@ -44,7 +44,7 @@ public class CreatePrivateUrlCommand extends AbstractCommand<PrivateUrl> {
             /**
              * @todo Internationalize this.
              */
-            String message = "Private URL already exists for dataset id " + dataset.getId() + ".";
+            String message = "Private URL already exists for data project id " + dataset.getId() + ".";
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }
@@ -53,7 +53,7 @@ public class CreatePrivateUrlCommand extends AbstractCommand<PrivateUrl> {
             /**
              * @todo Internationalize this.
              */
-            String message = "Can't create Private URL because the latest version of dataset id " + dataset.getId() + " is not a draft.";
+            String message = "Can't create Private URL because the latest version of data project id " + dataset.getId() + " is not a draft.";
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }
