@@ -1,10 +1,54 @@
 Monitoring
 ===========
 
-In production you'll want to monitor the usual suspects such as CPU, memory, free disk space, etc.
+Once you're in production, you'll want to set up some monitoring. This page may serve as a starting point for you but you are encouraged to share your ideas with the Dataverse community!
 
 .. contents:: Contents:
 	:local:
+
+Operating System Monitoring
+---------------------------
+
+In production you'll want to monitor the usual suspects such as CPU, memory, free disk space, etc. There are a variety of tools in this space but we'll highlight Munin below because it's relatively easy to set up.
+
+Munin
++++++
+
+http://munin-monitoring.org says, "A default installation provides a lot of graphs with almost no work." From RHEL or CentOS 7, you can try the following steps.
+
+Enable the EPEL yum repo (if you haven't already):
+
+``yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm``
+
+Install Munin:
+
+``yum install munin``
+
+Start Munin:
+
+``systemctl start munin-node.service``
+
+Configure Munin to start at boot:
+
+``systemctl enable munin-node.service``
+
+Create a username/password (i.e. "admin" for both):
+
+``htpasswd /etc/munin/munin-htpasswd admin``
+
+Assuming you are fronting Glassfish with Apache, prevent Apache from proxying "/munin" traffic to Glassfish by adding the following line to your Apache config:
+
+``ProxyPassMatch ^/munin !``
+
+Then reload Apache to pick up the config change:
+
+``systemctl reload httpd.service``
+
+Test auth for the web interface:
+
+``curl http://localhost/munin/ -u admin:admin``
+
+At this point, graphs should start being generated for disk, network, processes, system, etc.
 
 HTTP Traffic
 ------------
