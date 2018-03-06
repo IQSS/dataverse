@@ -51,6 +51,114 @@
 
 						<!-- QDR - replace :NavbarAboutUrl section with About menu/submenu -->	                        
                         <li class="dropdown">
+                            <div style="padding-top:15px; padding-bottom:15px; margin-left:20px;">
+                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/about">
+                                        #{bundle['header.about']}
+                                </h:outputLink> 
+                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
+                                    <b class="caret"></b>
+                                </span>
+                                <ul class="dropdown-menu" style="margin-top:-1px;">
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/about/governance">
+                                            Governance
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/contact">
+                                            Contact
+                                        </h:outputLink>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="dropdown">
+                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
+                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit">
+                                    Deposit
+                                </h:outputLink> 
+                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
+                                    <b class="caret"></b>
+                                </span>                            
+                                <ul class="dropdown-menu" style="margin-top:-1px;">
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/projects">
+                                            Project Types
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/data">
+                                            Data Types
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/activecitations">
+                                            Active Citation Compilations
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/process">
+                                            Deposit Process
+                                        </h:outputLink>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="dropdown">
+                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
+                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover">
+                                    Discover
+                                </h:outputLink> 
+                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
+                                    <b class="caret"></b>
+                                </span>
+                                <ul class="dropdown-menu" style="margin-top:-1px;">
+                                    <li>
+                                        <h:outputLink value="/">
+                                            Search and Browse Data
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover/pilots">
+                                            Pilot Projects
+                                        </h:outputLink>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="dropdown">
+                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
+                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance">
+                                    Guidance and Resources
+                                </h:outputLink> 
+                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
+                                    <b class="caret"></b>
+                                </span>
+                                <ul class="dropdown-menu" style="margin-top:-1px;">
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/managing">
+                                            Managing Data
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/citing">
+                                            Citing and Referencing Data
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/teaching">
+                                            Teaching with Data
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/workshops">
+                                            Workshops and Training
+                                        </h:outputLink>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="dropdown">
                             <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
                                 <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/qdr-publications">
                                     Publications
