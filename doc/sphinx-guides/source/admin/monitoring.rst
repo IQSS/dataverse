@@ -9,18 +9,28 @@ In production you'll want to monitor the usual suspects such as CPU, memory, fre
 HTTP Traffic
 ------------
 
-Please note that HTTP traffic for web clients that have cookies enabled (most browsers) can be tracked by Google Analytics and Piwik as explained in the :doc:`/installation/config` section of the Installation Guide.
+HTTP traffic can be monitored from the client side, the server side, or both.
 
-awstats
+Monitoring HTTP Traffic from the Client Side
+++++++++++++++++++++++++++++++++++++++++++++
+
+HTTP traffic for web clients that have cookies enabled (most browsers) can be tracked by Google Analytics and Piwik (renamed to "Matomo") as explained in the :doc:`/installation/config` section of the Installation Guide under ``:GoogleAnalyticsCode`` and ``:PiwikAnalyticsId``, respectively. You could also embed additional client side monitoring solutions by using a custom footer (``:FooterCustomizationFile``), which is described on the same page.
+
+Monitoring HTTP Traffic from the Server Side
++++++++++++++++++++++++++++++++++++++++++++++
+
+There are a wide variety of solutions available for monitoring HTTP traffic from the server side. The following are merely suggestions and a pull request against what is written here to add additional ideas is certainly welcome! Are you excited about the ELK stack (Elasticsearch, Logstash, and Kibana)? The TICK stack (Telegraph InfluxDB Chronograph and Kapacitor)? Splunk? Please consider sharing your work with the Dataverse community!
+
+AWStats
 +++++++
 
-awstats is a venerable tool for monitoring web traffic based on Apache access logs. On RHEL/CentOS 7, you can try the following steps.
+AWStats is a venerable tool for monitoring web traffic based on Apache access logs. On RHEL/CentOS 7, you can try the following steps.
 
 Enable the EPEL yum repo:
 
 ``yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm``
 
-Install awstats:
+Install AWStats:
 
 ``yum install awstats``
 
@@ -30,12 +40,14 @@ Process the logs:
 
 ``/usr/share/awstats/tools/awstats_updateall.pl now``
 
-If you get an error saying ``AWStats did not find any valid log lines that match your LogFormat parameter``, you might need to bump up the value of ``NbOfLinesForCorruptedLog`` in the config files above and re-try.
+Please note that load balancers (such as Amazon's ELB) might interfer with the ``LogFormat`` mentioned above.  To start troubleshooting errors such as ``AWStats did not find any valid log lines that match your LogFormat parameter``, you might need to bump up the value of ``NbOfLinesForCorruptedLog`` in the config files above and re-try while you interate on your Apache and AWStats config.
 
-Glassfish
----------
+Please note that the Dataverse team has attempted to parse Glassfish logs using AWStats but it didn't seem to just work and posts have been made at https://stackoverflow.com/questions/49134154/what-logformat-definition-does-awstats-require-to-parse-glassfish-http-access-logs and https://sourceforge.net/p/awstats/discussion/43428/thread/9b1befda/ that can be followed up on some day.
 
-https://github.com/IQSS/dataverse/issues/2595 contains some information on enabling monitoring of Glassfish, which is disabled by default.
+Database Connection Pool used by Glassfish
+------------------------------------------
+
+https://github.com/IQSS/dataverse/issues/2595 contains some information on enabling monitoring of Glassfish, which is disabled by default. It's a TODO to document what to do here if there is sufficient interest.
 
 
 actionlogrecord
