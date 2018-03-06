@@ -19,7 +19,7 @@ HTTP traffic for web clients that have cookies enabled (most browsers) can be tr
 Monitoring HTTP Traffic from the Server Side
 +++++++++++++++++++++++++++++++++++++++++++++
 
-There are a wide variety of solutions available for monitoring HTTP traffic from the server side. The following are merely suggestions and a pull request against what is written here to add additional ideas is certainly welcome! Are you excited about the ELK stack (Elasticsearch, Logstash, and Kibana)? The TICK stack (Telegraph InfluxDB Chronograph and Kapacitor)? Splunk? Please consider sharing your work with the Dataverse community!
+There are a wide variety of solutions available for monitoring HTTP traffic from the server side. The following are merely suggestions and a pull request against what is written here to add additional ideas is certainly welcome! Are you excited about the ELK stack (Elasticsearch, Logstash, and Kibana)? The TICK stack (Telegraph InfluxDB Chronograph and Kapacitor)? GoAccess? Prometheus? Graphite? Splunk? Please consider sharing your work with the Dataverse community!
 
 AWStats
 +++++++
