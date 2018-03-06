@@ -44,12 +44,6 @@
             <!-- start dvobject checkboxes -->
             <div id="div_dvobject_types" style="padding-bottom:10px;">
                 <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
-                    <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_dataverse" type="checkbox" value="Dataverse" checked="checked" />
-                    <label class="facetTypeLabel">
-                        <a class="mydata_dvobject_label"><i class="icon-dataverse text-icon-inline"></i><span class="facetTypeDataverse">Dataverses</span> <span id="id_dataverses_count"></span></a>
-                    </label>
-                </div>
-                <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
                     <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_dataset" type="checkbox" value="Dataset" checked="checked" />
                     <label class="facetTypeLabel">
                         <a class="mydata_dvobject_label"><i class="icon-dataset text-icon-inline"></i><span class="facetTypeDataset">Datasets</span> <span id="id_datasets_count"></span></a>
@@ -76,19 +70,6 @@
                 </ui:repeat>
             </div>
             <!-- end: publish states -->
-            <!-- start: role states -->
-            <b>Roles</b>
-            <div id="div_role_states" style="border-bottom:1px solid #ddd; padding-bottom:8px; margin-bottom:0.5em;">
-            <ui:repeat value="#{MyDataPage.roleInfoForCheckboxes}" var="roleInfoList">
-                <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
-                    <input style="margin-left:0;" name="role_ids" id="id_cbox_#{roleInfoList[2]}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
-                    <label>
-                        <a class="mydata_role_label">#{roleInfoList[1]}</a>
-                    </label>                    
-                </div>    
-            </ui:repeat>
-            </div>
-           <!-- end: role states -->
              <!--/form>-->
             <div id="div-search-params" class="well" style="display:none;"></div>
         </div><!-- end: filter column -->
