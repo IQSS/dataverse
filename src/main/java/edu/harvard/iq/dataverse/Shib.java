@@ -133,7 +133,9 @@ public class Shib implements java.io.Serializable {
             String acceptedTermsDocVerStr = getRequiredValueFromAssertion(ShibUtil.acceptedTermsDocVerAttribute);
             acceptedTermsDocVer = new Integer(acceptedTermsDocVerStr);
         } catch (Exception ex) {
-            return;
+        	//Old accounts appear to not have a value which causes an exception when converting to an Integer
+        	//No other errors known to cause this but we can catch anything else that can't be parsed, just in case.
+            acceptedTermsDocVer=0; //Treat this as never having accepted any version as though a new user  
         }
         
         int latestTermsDocVer = systemConfig.getShibAuthTermsVer();        

@@ -158,14 +158,12 @@ public class DataCitation {
         List<String> citationList = new ArrayList<>();
         citationList.add(formatString(authors, html));
         citationList.add(year);        
-        // QDRCustom: Add period to title string
-        String titleStr = title + ".";
-        citationList.add(formatString(titleStr, html, "\""));         
+        citationList.add(formatString(title, html, "\""));         
         // QDRCustom: Use "Qualitative Data Repository" as distributor name
         citationList.add(formatString("Qualitative Data Repository", html));
         // QDRCustom: Show persistentID after distributor name
         if (persistentId != null) {
-            citationList.add(formatURL(persistentId.toString(), persistentId.toURL().toString(), html));
+            citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html));
         }
         citationList.add(version);       
 
