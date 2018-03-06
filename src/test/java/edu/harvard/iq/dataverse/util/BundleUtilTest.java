@@ -34,7 +34,7 @@ public class BundleUtilTest {
         assertEquals("Your new data project named dsName (view at dsUrl ) "
                 + "was created in parentDvName (view at parentDvUrl ). "
                 + "To learn more about what you can do with a data project, "
-                + "check out the Dataset Management - Dataverse User Guide at "
+                + "check out the Dataset Management - User Guide at "
                 + "http://guides.dataverse.org/en/4.0/user/dataset-management.html .",
                 BundleUtil.getStringFromBundle("notification.email.createDataset",
                         Arrays.asList("dsName", "dsUrl", "parentDvName", "parentDvUrl", "http://guides.dataverse.org/en", "4.0")));
