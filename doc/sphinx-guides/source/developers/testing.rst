@@ -168,14 +168,33 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
   ``mvn test -Dtest=FileMetadataIT -Ddataverse.test.baseurl='http://localhost:8080'``
 
+To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt``.
+
 The Phoenix Server
 ------------------
+
+How the Phoenix Tests Work
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A server at http://phoenix.dataverse.org has been set up to test the latest code from the develop branch. Testing is done using chained builds of Jenkins jobs:
 
 - A war file is built from the latest code in develop: https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-build-develop/
 - The resulting war file is depoyed to the Phoenix server: https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-deploy-develop/
 - REST Assured Tests are run across the wire from the Jenkins server to the Phoenix server:  https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-apitest-develop/
+
+How to Run the Phoenix Tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Take a quick look at http://phoenix.dataverse.org to make sure the server is up and running Dataverse. If it's down, fix it.
+- Log into Jenkins and click "Build Now" at https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-build-develop/
+- Wait for all three chained Jenkins jobs to complete and note if they passed or failed. If you see a failure, open a GitHub issue or at least get the attention of some developers.
+
+List of Tests Run Against the Phoenix Server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We haven't thought much about a good way to publicly list the "IT" classes that are executed against the phoenix server. (Currently your best bet is to look at the ``Executing Maven`` line at the top of the "Full Log" of "Console Output" of ``phoenix.dataverse.org-apitest-develop`` Jenkins job mentioned above.) We endeavor to keep the list of tests in the "all-in-one" Docker environment described above in sync with the list of tests configured in Jenkins. That is to say, refer to :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>` mentioned in ``conf/docker-aio/readme.txt`` for the current list of IT tests that are expected to pass. Here's a dump of that file:
+
+.. literalinclude:: ../../../../conf/docker-aio/run-test-suite.sh
 
 Future Work
 -----------
@@ -198,6 +217,7 @@ Future Work on Integration Tests
 - Attempt to use @openscholar approach for running integration tests using Travis https://github.com/openscholar/openscholar/blob/SCHOLAR-3.x/.travis.yml (probably requires using Ubuntu rather than CentOS)
 - Generate code coverage reports for **integration** tests: https://github.com/pkainulainen/maven-examples/issues/3 and http://www.petrikainulainen.net/programming/maven/creating-code-coverage-reports-for-unit-and-integration-tests-with-the-jacoco-maven-plugin/
 - Consistent logging of API Tests. Show test name at the beginning and end and status codes returned.
+- expected passing and known/expected failing integration tests: https://github.com/IQSS/dataverse/issues/4438
 
 Browser-Based Testing
 ~~~~~~~~~~~~~~~~~~~~~

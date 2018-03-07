@@ -309,7 +309,7 @@ You must also specify the AWS region, in the ``config`` file, for example:
 Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish instance. (From the `AWS Command Line Interface Documentation <http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_: "In order to separate credentials from less sensitive options, region and output format are stored in a separate file named config in the same folder")
 
 Set Up Access Configuration Via Command Line Tools
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
@@ -806,7 +806,7 @@ Specify a URL where users can read your Privacy Policy, linked from the bottom o
 ++++++++++++++
 
 Specify a URL where users can read your API Terms of Use.
-API users can retrieve this URL from the SWORD Service Document or the "info" endpoint of the :doc:`/api/native-api#info`
+API users can retrieve this URL from the SWORD Service Document or the "info" section of our :doc:`/api/native-api` documentation.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
