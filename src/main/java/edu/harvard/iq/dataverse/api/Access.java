@@ -187,7 +187,7 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
+    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {                
         DataFile df = dataFileService.find(fileId);
         GuestbookResponse gbr = null;    
         
@@ -195,6 +195,11 @@ public class Access extends AbstractApiBean {
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        if (df.isHarvested()) {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            // (nobody should ever be using this API on a harvested DataFile)!
         }
         
         if (apiToken == null || apiToken.equals("")) {
@@ -445,13 +450,8 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public /*ZippedDownloadInstance*/ Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        // create a Download Instance without, without a primary Download Info object:
-        //ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
+    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
-        
-        
-        
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
@@ -562,20 +562,6 @@ public class Access extends AbstractApiBean {
         };
         return Response.ok(stream).build();
     }
-    
-    
-    /* 
-     * Geting rid of the tempPreview API - it's always been a big, fat hack. 
-     * the edit files page is now using the Base64 image strings in the preview 
-     * URLs, just like the search and dataset pages.
-    @Path("tempPreview/{fileSystemId}")
-    @GET
-    @Produces({"image/png"})
-    public InputStream tempPreview(@PathParam("fileSystemId") String fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
-
-    }*/
-    
-    
     
     @Path("fileCardImage/{fileId}")
     @GET
