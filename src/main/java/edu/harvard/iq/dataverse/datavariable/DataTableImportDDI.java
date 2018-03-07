@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -62,9 +61,9 @@ public class DataTableImportDDI {
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("dataDscr")) {
 
-                    for (Object fileId : dataTablesMap.keySet()) {
-                        Integer numberOfVariables = (Integer) varsPerFileMap.get(fileId);
-                        if (numberOfVariables != null && numberOfVariables.intValue() > 0) {
+                    for (String fileId : dataTablesMap.keySet()) {
+                        Integer numberOfVariables = varsPerFileMap.get(fileId);
+                        if (numberOfVariables != null && numberOfVariables > 0) {
                             // OK, this looks like we have found variables for this
                             // data file entry.
                         } else {
@@ -91,11 +90,11 @@ public class DataTableImportDDI {
         return null;
     }
 
-    private void processVar(XMLStreamReader xmlr, Map dataTablesMap, Map varsPerFileMap) throws XMLStreamException {
+    private void processVar(XMLStreamReader xmlr, Map<String, DataTable> dataTablesMap, Map<String, Integer> varsPerFileMap) throws XMLStreamException {
         DataVariable dv = new DataVariable();
-        dv.setInvalidRanges(new ArrayList());
-        dv.setSummaryStatistics( new ArrayList() );
-        dv.setCategories( new ArrayList() );
+        dv.setInvalidRanges(new ArrayList<>());
+        dv.setSummaryStatistics(new ArrayList<>());
+        dv.setCategories(new ArrayList<>());
         dv.setName( xmlr.getAttributeValue(null, "name") );
 
         try {
@@ -127,7 +126,7 @@ public class DataTableImportDDI {
                 }
                 else if (xmlr.getLocalName().equals("labl")) {
                     String _labl = processLabl( xmlr, LEVEL_VARIABLE );
-                    if (_labl != null && !_labl.equals("") ) {
+                    if (_labl != null && !_labl.isEmpty()) {
                         dv.setLabel( _labl );
                     }
                 } else if (xmlr.getLocalName().equals("universe")) {
@@ -142,7 +141,7 @@ public class DataTableImportDDI {
                     processCatgry( xmlr, dv );
                 } else if (xmlr.getLocalName().equals("notes")) {
                     String _note = parseNoteByType( xmlr, NOTE_TYPE_UNF );
-                    if (_note != null && !_note.equals("") ) {
+                    if (_note != null && !_note.isEmpty()) {
                         dv.setUnf( parseUNF( _note ) );
                     }
                 }
@@ -154,7 +153,7 @@ public class DataTableImportDDI {
     }
 
 
-    private void processLocation(XMLStreamReader xmlr, DataVariable dv, Map dataTablesMap, Map varsPerFileMap) throws XMLStreamException {
+    private void processLocation(XMLStreamReader xmlr, DataVariable dv, Map<String, DataTable> dataTablesMap, Map<String, Integer> varsPerFileMap) throws XMLStreamException {
 
         // fileStartPos, FileEndPos, and RecSegNo
         // if these fields don't convert to Long, just leave blank
@@ -172,27 +171,27 @@ public class DataTableImportDDI {
         if (dv.getDataTable() == null) {
             String fileId = xmlr.getAttributeValue(null, "fileid");
 
-            if (fileId != null && !fileId.equals("")) {
+            if (fileId != null && !fileId.isEmpty()) {
 
                 DataTable datatable = null;
 
                 if (dataTablesMap.get(fileId) != null) {
-                    datatable = (DataTable) dataTablesMap.get(fileId);
+                    datatable = dataTablesMap.get(fileId);
                 } else {
                     datatable = new DataTable();
                     dataTablesMap.put(fileId, datatable);
-                    varsPerFileMap.put(fileId, new Integer(0));
+                    varsPerFileMap.put(fileId, 0);
                 }
 
                 dv.setDataTable(datatable);
                 if (datatable.getDataVariables() == null) {
-                    datatable.setDataVariables(new ArrayList<DataVariable>());
+                    datatable.setDataVariables(new ArrayList<>());
                 }
                 datatable.getDataVariables().add(dv);
 
-                int filePosition = ((Integer)varsPerFileMap.get(fileId)).intValue();
+                int filePosition = varsPerFileMap.get(fileId);
                 dv.setFileOrder(filePosition++);
-                varsPerFileMap.put(fileId, new Integer(filePosition));                
+                varsPerFileMap.put(fileId, filePosition);
             }
         } else {
             throw new XMLStreamException("Empty or NULL location attribute in a variable section.");
@@ -296,7 +295,7 @@ public class DataTableImportDDI {
         cat.setMissing( "Y".equals( xmlr.getAttributeValue(null, "missing") ) ); // default is N, so null sets missing to false
         cat.setDataVariable(dv);
                 
-        if (dv.getCategories() == null || dv.getCategories().size() == 0) {
+        if (dv.getCategories() == null || dv.getCategories().isEmpty()) {
             // if this is the first category we encounter, we'll assume that this
             // categorical data/"factor" variable is ordered. 
             // But we'll switch it back to unordered later, if we encounter
@@ -324,8 +323,8 @@ public class DataTableImportDDI {
             }
         }
 
-        if (orderValue != null && orderValue.intValue() >= 0) {
-            cat.setOrder(orderValue.intValue());
+        if (orderValue != null && orderValue >= 0) {
+            cat.setOrder(orderValue);
         } else if (!cat.isMissing()) {
             // Everey category of an ordered categorical ("factor") variable
             // must have the order rank defined. Which means that if we 
@@ -342,7 +341,7 @@ public class DataTableImportDDI {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("labl")) {
                     String _labl = processLabl( xmlr, LEVEL_CATEGORY );
-                    if (_labl != null && !_labl.equals("") ) {
+                    if (_labl != null && !_labl.isEmpty()) {
                         cat.setLabel( _labl );
                     }
                 } else if (xmlr.getLocalName().equals("catValu")) {
@@ -352,7 +351,7 @@ public class DataTableImportDDI {
                     String type = xmlr.getAttributeValue(null, "type");
                     if (type == null || CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase( type ) ) {
                         String _freq = parseText(xmlr);
-                        if (_freq != null && !_freq.equals("") ) {
+                        if (_freq != null && !_freq.isEmpty()) {
                             cat.setFrequency( new Double( _freq ) );
                         }
                     }
@@ -381,7 +380,7 @@ public class DataTableImportDDI {
     }
 
     private String parseUNF(String unfString) {
-        if (unfString.indexOf("UNF:") != -1) {
+        if (unfString.contains("UNF:")) {
             return unfString.substring( unfString.indexOf("UNF:") );
         } else {
             return null;

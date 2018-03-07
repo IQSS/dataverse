@@ -7,15 +7,16 @@
     <div class="col-xs-12 col-md-3">
         <br />
         {% if numResults > 1 %}
-            Found: <b>{{ numResults }} results</b>
+            Found: <b>{{ numResultsString }} results</b>
         
         {% elif numResults == 1 %}
         Found: <b>1 result</b>
         
         {% endif %}
         {% if endCardNumber > startCardNumber  %}
-            Displaying: <b>{{ startCardNumber }} to {{ endCardNumber }}</b>
+        <br />Displaying: <b>{{ startCardNumberString }} to {{ endCardNumberString }}</b>
         {% endif %}
+        <br />
     </div>
     <div class="col-xs-12 col-md-9">
     {% if isNecessary %}

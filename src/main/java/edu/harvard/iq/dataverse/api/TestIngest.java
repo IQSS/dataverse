@@ -7,7 +7,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -15,6 +14,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedInputStream;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -32,6 +32,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.QueryParam;
 
 
 
@@ -56,8 +57,6 @@ import javax.servlet.http.HttpServletResponse;
 public class TestIngest {
     private static final Logger logger = Logger.getLogger(TestIngest.class.getCanonicalName());
     
-    @EJB
-    DataFileServiceBean dataFileService;
     @EJB 
     DatasetServiceBean datasetService; 
     @EJB
@@ -65,40 +64,31 @@ public class TestIngest {
 
     //@EJB
     
-    @Path("test/{fileName}/{fileType}")
+    @Path("test/file")
     @GET
     @Produces({ "text/plain" })
-    public String datafile(@PathParam("fileName") String fileName, @PathParam("fileType") String fileType, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+    public String datafile(@QueryParam("fileName") String fileName, @QueryParam("fileType") String fileType, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
         String output = "";
 
-        if (fileName == null || fileType == null || "".equals(fileName) || "".equals(fileType)) {
-            output = output.concat("Usage: java edu.harvard.iq.dataverse.ingest.IngestServiceBean <file> <type>.");
+        if (StringUtil.isEmpty(fileName) || StringUtil.isEmpty(fileType)) {
+            output = output.concat("Usage: /api/ingest/test/file?fileName=PATH&fileType=TYPE");
             return output; 
         }
         
         BufferedInputStream fileInputStream = null; 
         
-        String absoluteFilePath = null; 
-        if (fileType.equals("x-stata")) {
-            absoluteFilePath = "/usr/share/data/retest_stata/reingest/" + fileName;
-        } else if (fileType.equals("x-spss-sav")) {
-            absoluteFilePath = "/usr/share/data/retest_sav/reingest/" + fileName;
-        } else if (fileType.equals("x-spss-por")) {
-            absoluteFilePath = "/usr/share/data/retest_por/reingest/" + fileName; 
-        }
         
         try {
-            fileInputStream = new BufferedInputStream(new FileInputStream(new File(absoluteFilePath)));
+            fileInputStream = new BufferedInputStream(new FileInputStream(new File(fileName)));
         } catch (FileNotFoundException notfoundEx) {
             fileInputStream = null; 
         }
         
         if (fileInputStream == null) {
-            output = output.concat("Could not open file "+absoluteFilePath+".");
+            output = output.concat("Could not open file "+fileName+".");
             return output;
         }
         
-        fileType = "application/"+fileType; 
         TabularDataFileReader ingestPlugin = ingestService.getTabDataReaderByMimeType(fileType);
 
         if (ingestPlugin == null) {
@@ -123,7 +113,7 @@ public class TestIngest {
                         && tabFile != null
                         && tabFile.exists()) {
 
-                    String tabFilename = FileUtil.replaceExtension(absoluteFilePath, "tab");
+                    String tabFilename = FileUtil.replaceExtension(fileName, "tab");
                     
                     java.nio.file.Files.copy(Paths.get(tabFile.getAbsolutePath()), Paths.get(tabFilename), StandardCopyOption.REPLACE_EXISTING);
                     

@@ -19,9 +19,11 @@
 
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -61,11 +63,14 @@ import java.util.Date;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.batch.operations.JobSecurityException;
+import javax.batch.operations.NoSuchJobExecutionException;
 
 @Named
 @Dependent
@@ -164,14 +169,27 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         
         uploadFolder = jobParams.getProperty("uploadFolder");
         
+        /*
         // lock the dataset
         jobLogger.log(Level.INFO, "Locking dataset");
         String info = "Starting batch file import job.";
-        if (user.getId() != null) {
-            datasetServiceBean.addDatasetLock(dataset.getId(), user.getId(), info);
-        } else {
-            datasetServiceBean.addDatasetLock(dataset.getId(), null, info);
-        }
+        */
+        
+        // TODO: 
+        // In the current #3348 implementation, we are no longer locking the 
+        // Dataset here. Because it gets locked immediately after the user 
+        // downloads the rsync scipt. Once this branch (#3561) is merged into 
+        // #3348, let's revisit this. We should probably check here that 
+        // the dataset is locked, and that it's locked waiting for an 
+        // rsync upload to happen. And then we may want to "re-lock" it, with 
+        // the info field in the new lock specifying that there is now a 
+        // file crawler job in progress (to prevent another one from happening
+        // in parallel. -- L.A. Aug 31 2017
+        
+        //datasetServiceBean.addDatasetLock(dataset.getId(),
+        //            DatasetLock.Reason.Ingest, 
+        //            (user!=null)?user.getId():null,
+        //            info);
 
         // check constraints for running the job
         if (canRunJob()) {
@@ -200,6 +218,14 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      */
     @Override
     public void afterJob() throws Exception {
+
+        //TODO add notifications to job failure?
+        if (jobContext.getExitStatus() != null && jobContext.getExitStatus().equals("FAILED")) {
+            getJobLogger().log(Level.SEVERE, "Job Failed. See Log for more information.");
+            closeJobLoggerHandlers();
+            return;
+        }
+        
         // run reporting and notifications
         doReport();
 
@@ -210,9 +236,12 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         }
 
         // remove dataset lock
-        if (dataset != null && dataset.getId() != null) {
-            datasetServiceBean.removeDatasetLock(dataset.getId());
-        }
+        // Disabled now, see L.A.'s comment at beforeJob()
+//        if (dataset != null && dataset.getId() != null) {
+//            datasetServiceBean.removeDatasetLock(dataset.getId(), DatasetLock.Reason.Ingest);
+//        }
+
+
         getJobLogger().log(Level.INFO, "Removing dataset lock.");
         
         // job step info
@@ -222,6 +251,11 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         getJobLogger().log(Level.INFO, "Job end   = " + step.getEndTime());
         getJobLogger().log(Level.INFO, "Job exit status = " + step.getExitStatus());
         
+        closeJobLoggerHandlers();
+
+    }
+    
+    private void closeJobLoggerHandlers(){
         // close the job logger handlers
         for (Handler h:getJobLogger().getHandlers()) {
             h.close();
@@ -299,12 +333,18 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 
                 // [1] save json log to file
                 LoggingUtil.saveJsonLog(jobJson, logDir, jobId);
-                // [2] send user notifications
+                // [2] send user notifications - to all authors
                 notificationServiceBean.sendNotification(user, timestamp, notifyType, datasetVersionId);
-                // [3] send admin notification
-                AuthenticatedUser adminUser = authenticationServiceBean.getAuthenticatedUser("admin");
-                if (adminUser != null) {
-                    notificationServiceBean.sendNotification(adminUser, timestamp, notifyType, datasetVersionId);
+                Map<String, AuthenticatedUser> distinctAuthors = permissionServiceBean.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
+                distinctAuthors.values().forEach((value) -> {
+                    notificationServiceBean.sendNotification((AuthenticatedUser) value, new Timestamp(new Date().getTime()), notifyType, datasetVersionId);
+                });
+                // [3] send SuperUser notification
+                List <AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
+                if (superUsers != null && !superUsers.isEmpty()) {
+                    superUsers.forEach((au) -> {
+                        notificationServiceBean.sendNotification(au, timestamp, notifyType, datasetVersionId);                   
+                    });
                 }
                 // [4] action log: store location of the full log to avoid truncation issues
                 actionLogServiceBean.log(LoggingUtil.getActionLogRecord(user.getIdentifier(), jobExecution,
@@ -314,7 +354,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 getJobLogger().log(Level.SEVERE, "Job execution is null");
             }
 
-        } catch (Exception e) {
+        } catch (NoSuchJobExecutionException | JobSecurityException | JsonProcessingException e) {
             getJobLogger().log(Level.SEVERE, "Creating job json: " + e.getMessage());
         }
     }
@@ -325,8 +365,10 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      */
     private String getDatasetGlobalId() {
         if (jobParams.containsKey("datasetId")) {
+            
             String datasetId = jobParams.getProperty("datasetId");
-            dataset = datasetServiceBean.findByGlobalId(datasetId);
+            
+            dataset = datasetServiceBean.find(new Long(datasetId));
             getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
             return dataset.getGlobalId();
         }

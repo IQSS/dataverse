@@ -120,26 +120,19 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             //logger.fine("check version. requested: " + this.requestedVersion + " returned: " + actualVersion);
             // This may often be the case if version is not specified
             //
-            if (requestedVersion == null || requestedVersion.equals("")){
+            if (requestedVersion == null || requestedVersion.isEmpty()){
                 this.wasSpecificVersionRequested = false;         
                 return;
             }
 
             this.wasSpecificVersionRequested = true;                
 
-            if (this.requestedVersion.equalsIgnoreCase(actualVersion)){
-                this.didSpecificVersionMatch = true;
-            }else{
-                this.didSpecificVersionMatch = false;       // redundant, already the default               
-            }      
+            this.didSpecificVersionMatch = this.requestedVersion.equalsIgnoreCase(actualVersion);
             
         }
         
         public boolean wasRequestedVersionRetrieved(){
-            if (this.wasSpecificVersionRequested && !this.didSpecificVersionMatch){
-                return false;
-            }
-            return true;
+            return !(this.wasSpecificVersionRequested && !this.didSpecificVersionMatch);
         }
         
         
@@ -149,11 +142,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     } // end RetrieveDatasetVersionResponse
     
     public DatasetVersion find(Object pk) {
-        return (DatasetVersion) em.find(DatasetVersion.class, pk);
+        return em.find(DatasetVersion.class, pk);
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
-
+        //FIXME: this logic doesn't work
         Long majorVersionNumber = null;
         Long minorVersionNumber = null;
 
@@ -171,7 +164,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             return null;
         }
 
-        if (majorVersionNumber != null && minorVersionNumber != null) {
+        if (minorVersionNumber != null) {
             String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
             DatasetVersion foundDatasetVersion = null;
             try {
@@ -796,20 +789,21 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         Long datasetVersionId = solrSearchResult.getDatasetVersionId();
         Long datasetId = solrSearchResult.getEntityId();
         
-        if (dataverseId == 0 || datasetVersionId == null) {
+        if (dataverseId == 0) {
             return;
         }
         
-        Object[] searchResult = null;
+        Object[] searchResult;
         
         try {
             if (datasetId != null) {
-                searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID, t2.USEGENERICTHUMBNAIL FROM DATASETVERSION t0, DATAVERSE t1, DATASET t2 WHERE t0.ID = " 
+                searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID, t2.USEGENERICTHUMBNAIL, t3.STORAGEIDENTIFIER FROM DATASETVERSION t0, DATAVERSE t1, DATASET t2, DVOBJECT t3 WHERE t0.ID = " 
                         + datasetVersionId 
                         + " AND t1.ID = " 
                         + dataverseId
                         + " AND t2.ID = "
-                        + datasetId).getSingleResult()
+                        + datasetId
+                        + " AND t2.ID = t3.ID").getSingleResult()
                         
                         ;
             } else {
@@ -839,7 +833,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             solrSearchResult.setDataverseAlias((String) searchResult[1]);
         }
         
-        if (searchResult.length == 4) {
+        if (searchResult.length == 5) {
             Dataset datasetEntity = new Dataset();
             String globalIdentifier = solrSearchResult.getIdentifier();
             GlobalId globalId = new GlobalId(globalIdentifier);
@@ -847,14 +841,16 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             datasetEntity.setProtocol(globalId.getProtocol());
             datasetEntity.setAuthority(globalId.getAuthority());
             datasetEntity.setIdentifier(globalId.getIdentifier());
-
+            if (searchResult[4] != null) {
+                datasetEntity.setStorageIdentifier(searchResult[4].toString());
+            }
             solrSearchResult.setEntity(datasetEntity);
             if (searchResult[2] != null) {
                 // This is the image file specifically assigned as the "icon" for
                 // the dataset:
                 Long thumbnailFile_id = (Long) searchResult[2];
                 if (thumbnailFile_id != null) {
-                    DataFile thumbnailFile = null;
+                    DataFile thumbnailFile;
                     try {
                         thumbnailFile = datafileService.findCheapAndEasy(thumbnailFile_id);
                     } catch (Exception ex) {
@@ -892,9 +888,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
         logger.log(Level.FINE, "query: {0}", query);
         Query nativeQuery = em.createNativeQuery(query);
-        List<String> checksumList = nativeQuery.getResultList();
 
-        return checksumList;
+        return nativeQuery.getResultList();
     }
     
         
@@ -916,16 +911,13 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 + " AND df.md5 = '" + selectedChecksum + "';";
         
         Query nativeQuery = em.createNativeQuery(query);
-        List<String> checksumList = nativeQuery.getResultList();
+        List<?> checksumList = nativeQuery.getResultList();
 
-        if (checksumList.size() > 0){
-            return true;
-        }
-        return false;
+        return !checksumList.isEmpty();
     }
         
     
-    public List<HashMap> getBasicDatasetVersionInfo(Dataset dataset){
+    public List<HashMap<String, Object>> getBasicDatasetVersionInfo(Dataset dataset){
         
         if (dataset == null){
             throw new NullPointerException("dataset cannot be null");
@@ -942,12 +934,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         Query nativeQuery = em.createNativeQuery(query);
         List<Object[]> datasetVersionInfoList = nativeQuery.getResultList();
 
-        List<HashMap> hashList = new ArrayList<>();
+        List<HashMap<String, Object>> hashList = new ArrayList<>();
         
-        HashMap mMap;
+        HashMap<String, Object> mMap = new HashMap<>();
         for (Object[] dvInfo : datasetVersionInfoList) {
-            
-            mMap = new HashMap();
+            mMap = new HashMap<>();
             mMap.put("datasetVersionId", dvInfo[0]);
             mMap.put("datasetId", dvInfo[1]);
             mMap.put("releaseTime", dvInfo[2]);

@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -90,9 +91,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String redirectUrl;
     protected String scope;
     
-    public AbstractOAuth2AuthenticationProvider(){}
-    
-    public abstract BaseApi getApiInstance();
+    public abstract BaseApi<OAuth20Service> getApiInstance();
     
     protected abstract ParsedUserResponse parseUserResponse( String responseBody );
     
@@ -105,12 +104,13 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         if ( scope != null ) {        
             svcBuilder.scope(scope);
         }
-        return (OAuth20Service) svcBuilder.build( getApiInstance() );
+        return svcBuilder.build( getApiInstance() );
     }
     
     public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
         OAuth20Service service = getService(state, redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
+
         final String userEndpoint = getUserEndpoint(accessToken);
         
         final OAuthRequest request = new OAuthRequest(Verb.GET, userEndpoint, service);
@@ -120,13 +120,13 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         final Response response = request.send();
         int responseCode = response.getCode();
         final String body = response.getBody();        
-        logger.fine("In getUserRecord. Body: " + body);
+        logger.log(Level.FINE, "In getUserRecord. Body: {0}", body);
 
         if ( responseCode == 200 ) {
             final ParsedUserResponse parsed = parseUserResponse(body);
             return new OAuth2UserRecord(getId(), parsed.userIdInProvider,
                                         parsed.username, 
-                                        accessToken.getAccessToken(),
+                                        OAuth2TokenData.from(accessToken),
                                         parsed.displayInfo,
                                         parsed.emails);
         } else {

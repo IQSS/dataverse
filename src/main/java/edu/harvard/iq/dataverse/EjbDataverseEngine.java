@@ -22,11 +22,11 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -155,6 +155,9 @@ public class EjbDataverseEngine {
     
     @EJB
     ActionLogServiceBean logSvc;
+    
+    @EJB
+    WorkflowServiceBean workflowService;
 
     private CommandContext ctxt;
     
@@ -179,7 +182,7 @@ public class EjbDataverseEngine {
             DataverseRequest dvReq = aCommand.getRequest();
             
             Map<String, DvObject> affectedDvObjects = aCommand.getAffectedDvObjects();
-            logRec.setInfo( describe(affectedDvObjects) );
+            logRec.setInfo(aCommand.describe());
             for (Map.Entry<String, ? extends Set<Permission>> pair : requiredMap.entrySet()) {
                 String dvName = pair.getKey();
                 if (!affectedDvObjects.containsKey(dvName)) {
@@ -418,6 +421,11 @@ public class EjbDataverseEngine {
                 public DatasetVersionServiceBean datasetVersion() {
                     return datasetVersionService;
                 }
+                
+                @Override
+                public WorkflowServiceBean workflows() {
+                    return workflowService;
+                }
 
                 @Override
                 public MapLayerMetadataServiceBean mapLayerMetadata() {
@@ -434,16 +442,5 @@ public class EjbDataverseEngine {
 
         return ctxt;
     }
-    
-    
-    private String describe( Map<String, DvObject> dvObjMap ) {
-        StringBuilder sb = new StringBuilder();
-        for ( Map.Entry<String, DvObject> ent : dvObjMap.entrySet() ) {
-            DvObject value = ent.getValue();
-            sb.append(ent.getKey()).append(":");
-            sb.append( (value!=null) ? value.accept(DvObject.NameIdPrinter) : "<null>");
-            sb.append(" ");
-        }
-        return sb.toString();
-    }
+
 }

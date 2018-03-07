@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-//import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,7 +32,25 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        AllowApiTokenLookupViaApi,
+        /**
+         * Ordered, comma-separated list of custom fields to show above the fold
+         * on dataset page such as "data_type,sample,pdb"
+         */
+        CustomDatasetSummaryFields,
+        /**
+         * Defines a public installation -- all datafiles are unrestricted
+         */
+        PublicInstall,
+        /**
+         * Sets the name of your cloud computing environment.
+         * For example, "Massachusetts Open Cloud"
+         */
         CloudEnvironmentName,
+        /**
+         * Defines the base for a computing environment URL.
+         * The container name will be appended to this on the "Compute" button 
+         */
         ComputeBaseUrl,
         /**
          * For example, https://datacapture.example.org
@@ -42,6 +59,17 @@ public class SettingsServiceBean {
         RepositoryStorageAbstractionLayerUrl,
         UploadMethods,
         DownloadMethods,
+        /**
+         * Sites around the world to which data has been replicated using RSAL
+         * (Repository Storage Abstraction Layer).
+         */
+        ReplicationSites,
+        /**
+         * If the data replicated around the world using RSAL (Repository
+         * Storage Abstraction Layer) is locally available, this is its file
+         * path, such as "/programs/datagrid".
+         */
+        LocalDataAccessPath,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
@@ -160,8 +188,6 @@ public class SettingsServiceBean {
         DoiPassword,
         DoiBaseurlstring,
         */
-        /* TwoRavens location */
-        TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
@@ -221,17 +247,6 @@ public class SettingsServiceBean {
         will be available to users.
         */
         GeoconnectDebug,
-
-        /**
-        Whether to allow a user to view tabular files
-        using the TwoRavens application
-        This boolean effects whether a user may see the 
-        Explore Button that links to TwoRavens
-        Default is false;
-        */
-        TwoRavensTabularView,
-                
-
         /**
          The message added to a popup upon dataset publish
          * 
@@ -279,9 +294,59 @@ public class SettingsServiceBean {
         NavbarAboutUrl,
         
         // Option to override multiple guides with a single url
-        NavbarGuidesUrl; 
-
+        NavbarGuidesUrl,
         
+        /**
+         * The theme for the root dataverse can get in the way when you try make
+         * use of HeaderCustomizationFile and LogoCustomizationFile so this is a
+         * way to disable it.
+         */
+        DisableRootDataverseTheme,
+        // Limit on how many guestbook entries to display on the guestbook-responses page:
+        GuestbookResponsesPageDisplayLimit,
+
+        /**
+         * The dictionary filepaths separated by a pipe (|)
+         */
+        PVDictionaries,
+
+//        /**
+//         * The days and minimum length for when to apply an expiration date.
+//         */
+//        PVExpirationDays,
+//        PVValidatorExpirationMaxLength,
+
+        /**
+         * The minimum length of a good, long, strong password.
+         */
+        PVGoodStrength,
+
+        /**
+         * A password minimum and maximum length
+         */
+        PVMinLength,
+        PVMaxLength,
+
+        /**
+         * One letter, 2 special characters, etc.
+         */
+        PVCharacterRules,
+
+        /**
+         * The number of M characteristics
+         */
+        PVNumberOfCharacteristics,
+        
+        /**
+         * The number of consecutive digits allowed for a password
+         */
+        PVNumberOfConsecutiveDigitsAllowed,
+        /**
+         * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
+         */
+        PVCustomPasswordResetAlertMessage
+        ;
+
         @Override
         public String toString() {
             return ":" + name();

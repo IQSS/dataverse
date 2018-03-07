@@ -33,12 +33,13 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
@@ -66,6 +67,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 //import edu.harvard.iq.dvn.unf.*;
@@ -77,6 +79,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.channels.Channel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -103,6 +106,7 @@ import javax.inject.Named;
 import javax.jms.Queue;
 import javax.jms.QueueConnectionFactory;
 import javax.annotation.Resource;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJBException;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
@@ -111,6 +115,7 @@ import javax.jms.QueueSession;
 import javax.jms.Message;
 import javax.faces.bean.ManagedBean;
 import javax.faces.application.FacesMessage;
+import javax.persistence.Query;
 
 /**
  *
@@ -186,27 +191,7 @@ public class IngestServiceBean {
             IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles);
             
             Dataset dataset = version.getDataset();
-            
-            try {
-                if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
-                    /* Note that "createDirectories()" must be used - not 
-                     * "createDirectory()", to make sure all the parent 
-                     * directories that may not yet exist are created as well. 
-                     */
 
-                    Files.createDirectories(dataset.getFileSystemDirectory());
-                }
-            } catch (IOException dirEx) {
-                logger.severe("Failed to create dataset directory " + dataset.getFileSystemDirectory().toString());
-                return; 
-                // TODO:
-                // Decide how we are communicating failure information back to 
-                // the page, and what the page should be doing to communicate
-                // it to the user - if anything. 
-                // -- L.A. 
-            }
-
-            if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
                 for (DataFile dataFile : newFiles) {
                     String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier();
 
@@ -269,27 +254,27 @@ public class IngestServiceBean {
                     
                     boolean localFile = false;
                     boolean savedSuccess = false; 
-                    DataFileIO dataAccess = null;
+                    StorageIO<DataFile> dataAccess = null;
                     
                     try {
 
-                        logger.fine("Attempting to create a new DataFileIO object for " + storageId);
-                        dataAccess = DataAccess.createNewDataFileIO(dataFile, storageId);
+                        logger.fine("Attempting to create a new storageIO object for " + storageId);
+                        dataAccess = DataAccess.createNewStorageIO(dataFile, storageId);
                         
                         if (dataAccess.isLocalFile()) {
                             localFile = true; 
                         }
 
-                        logger.fine("Successfully created a new DataFileIO object.");
+                        logger.fine("Successfully created a new storageIO object.");
                         /* 
                          This commented-out code demonstrates how to copy bytes
                          from a local InputStream (or a readChannel) into the
                          writable byte channel of a Dataverse DataAccessIO object:
                         */
                         /*
-                        dataFileIO.open(DataAccessOption.WRITE_ACCESS);
+                        storageIO.open(DataAccessOption.WRITE_ACCESS);
                                                 
-                        writeChannel = dataFileIO.getWriteChannel();
+                        writeChannel = storageIO.getWriteChannel();
                         readChannel = new FileInputStream(tempLocationPath.toFile()).getChannel();
                                                 
                         long bytesPerIteration = 16 * 1024; // 16K bytes
@@ -308,7 +293,7 @@ public class IngestServiceBean {
                             local filesystem, the DataAccessIO will simply copy 
                             the file using Files.copy, like this:
                         
-                            Files.copy(tempLocationPath, dataFileIO.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                            Files.copy(tempLocationPath, storageIO.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
                         */
                         
                         dataAccess.savePath(tempLocationPath);
@@ -373,7 +358,6 @@ public class IngestServiceBean {
                     //performPostProcessingTasks(dataFile);
                 }
                 logger.fine("Done! Finished saving new files in permanent storage.");
-            }
         }
     }
     
@@ -446,13 +430,12 @@ public class IngestServiceBean {
         }
 
         if (count > 0) {
-            String info = "Attempting to ingest " + count + " tabular data file(s).";
+            String info = "Ingest of " + count + " tabular data file(s) is in progress.";
             logger.info(info);
-            if (user != null) {
-                datasetService.addDatasetLock(dataset.getId(), user.getId(), info);
-            } else {
-                datasetService.addDatasetLock(dataset.getId(), null, info);
-            }
+            datasetService.addDatasetLock(dataset.getId(),
+                    DatasetLock.Reason.Ingest, 
+                    (user!=null)?user.getId():null,
+                    info);
 
             DataFile[] scheduledFilesArray = (DataFile[])scheduledFiles.toArray(new DataFile[count]);
             scheduledFiles = null; 
@@ -544,8 +527,10 @@ public class IngestServiceBean {
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
                 logger.fine("subsetting continuous vector");
-                DataFileIO dataFileIO = dataFile.getDataFileIO();
-                dataFileIO.open();
+
+                StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+                storageIO.open();
+
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
                     Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                     logger.fine("Calculating summary statistics on a Float vector;");
@@ -576,8 +561,10 @@ public class IngestServiceBean {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalDiscrete()
                     && dataFile.getDataTable().getDataVariables().get(i).isTypeNumeric()) {
                 logger.fine("subsetting discrete-numeric vector");
-                DataFileIO dataFileIO = dataFile.getDataFileIO();
-                dataFileIO.open();
+
+                StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+                storageIO.open();
+
                 Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 // We are discussing calculating the same summary stats for 
                 // all numerics (the same kind of sumstats that we've been calculating
@@ -610,8 +597,10 @@ public class IngestServiceBean {
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isTypeCharacter()) {
-                DataFileIO dataFileIO = dataFile.getDataFileIO();
-                dataFileIO.open();
+
+                StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+                storageIO.open();
+
                 logger.fine("subsetting character vector");
                 String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
@@ -680,24 +669,23 @@ public class IngestServiceBean {
 
         BufferedInputStream inputStream = null; 
         File additionalData = null; 
-        DataFileIO dataFileIO = null;
+        StorageIO<DataFile> storageIO = null;
                 
         try {
-            dataFileIO = dataFile.getDataFileIO();
-            dataFileIO.open();
+            storageIO = dataFile.getStorageIO();
+            storageIO.open();
              
-            
-            if (dataFileIO.isLocalFile()) {
-                inputStream = new BufferedInputStream(dataFileIO.getInputStream());
+            if (storageIO.isLocalFile()) {
+                inputStream = new BufferedInputStream(storageIO.getInputStream());
             } else {
-                ReadableByteChannel dataFileChannel = dataFileIO.getReadChannel();
+                ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
                 File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
                 FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();
 
-                tempIngestSourceChannel.transferFrom(dataFileChannel, 0, dataFileIO.getSize());
+                tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
                 
                 inputStream = new BufferedInputStream(new FileInputStream(tempFile));
-                logger.fine("Saved "+dataFileIO.getSize()+" bytes in a local temp file.");
+                logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
             }
         } catch (IOException ioEx) {
             dataFile.SetIngestProblem();
@@ -849,7 +837,7 @@ public class IngestServiceBean {
                 try {
                     /* Start of save as backup */
 
-                    DataFileIO dataAccess = dataFile.getDataFileIO();
+                    StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
                     dataAccess.open();
 
                     // and we want to save the original of the ingested file: 
@@ -1335,8 +1323,8 @@ public class IngestServiceBean {
          */
         if (dataFile != null && dataFile.isImage()) {
             try {
-                DataFileIO dataAccess = dataFile.getDataFileIO();
-                if (dataAccess != null) { // && dataFileIO.isLocalFile()) {
+                StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
+                if (dataAccess != null) { // && storageIO.isLocalFile()) {
 
                     if (ImageThumbConverter.isThumbnailAvailable(dataFile, ImageThumbConverter.DEFAULT_PREVIEW_SIZE)) {
                         dataFile.setPreviewImageAvailable(true);
@@ -1539,6 +1527,123 @@ public class IngestServiceBean {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
             logger.warning("failed to calculate UNF signature for variable " + varnum);
+        }
+    }
+    
+    // This method takes a list of file ids, checks the format type of the ingested 
+    // original, and attempts to fix it if it's missing. 
+    // Note the @Asynchronous attribute - this allows us to just kick off and run this 
+    // (potentially large) job in the background. 
+    // The method is called by the "fixmissingoriginaltypes" /admin api call. 
+    @Asynchronous
+    public void fixMissingOriginalTypes(List<Long> datafileIds) {
+        for (Long fileId : datafileIds) {
+            fixMissingOriginalType(fileId);
+        }
+        logger.info("Finished repairing tabular data files that were missing the original file format labels.");
+    }
+    
+    // This method fixes a datatable object that's missing the format type of 
+    // the ingested original. It will check the saved original file to 
+    // determine the type. 
+    private void fixMissingOriginalType(long fileId) {
+        DataFile dataFile = fileService.find(fileId);
+
+        if (dataFile != null && dataFile.isTabularData()) {
+            String originalFormat = dataFile.getDataTable().getOriginalFileFormat();
+            Long datatableId = dataFile.getDataTable().getId();
+            if (StringUtil.isEmpty(originalFormat) || originalFormat.equals(FileUtil.MIME_TYPE_TAB)) {
+
+                // We need to determine the mime type of the saved original
+                // and save it in the database. 
+                // 
+                // First, we need access to the file. Note that the code below 
+                // works with any supported StorageIO driver (although, as of now
+                // all the production installations out there are only using filesystem
+                // access; but just in case)
+                // The FileUtil method that determines the type takes java.io.File 
+                // as an argument. So for StorageIO drivers that provide local 
+                // file access, we'll just go directly to the stored file. For 
+                // swift and similar implementations, we'll read the saved aux 
+                // channel and save it as a local temp file. 
+                
+                StorageIO<DataFile> storageIO;
+
+                File savedOriginalFile = null;
+                boolean tempFileRequired = false;
+                
+                try {
+                    storageIO = dataFile.getStorageIO();
+                    storageIO.open();
+
+
+                    if (storageIO.isLocalFile()) {
+                        try {
+                            savedOriginalFile = storageIO.getAuxObjectAsPath(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION).toFile();
+                        } catch (IOException ioex) {
+                            // do nothing, just make sure savedOriginalFile is still null:
+                            savedOriginalFile = null;
+                        }
+                    }
+
+                    if (savedOriginalFile == null) {
+                        tempFileRequired = true;
+
+                        ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO.openAuxChannel(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        savedOriginalFile = File.createTempFile("tempSavedOriginal", ".tmp");
+                        FileChannel tempSavedOriginalChannel = new FileOutputStream(savedOriginalFile).getChannel();
+                        tempSavedOriginalChannel.transferFrom(savedOriginalChannel, 0, storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION));
+
+                    }
+                } catch (Exception ex) {
+                    logger.warning("Exception "+ex.getClass()+" caught trying to open StorageIO channel for the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
+                    savedOriginalFile = null;
+                }
+
+                if (savedOriginalFile == null) {
+                    logger.warning("Could not obtain the saved original file as a java.io.File! (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
+                    return;
+                }
+
+                String fileTypeDetermined = null;
+
+                try {
+                    fileTypeDetermined = FileUtil.determineFileType(savedOriginalFile, "");
+                } catch (IOException ioex) {
+                    logger.warning("Caught exception trying to determine original file type (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ioex.getMessage());
+                }
+                
+                // If we had to create a temp file, delete it now: 
+                if (tempFileRequired) {
+                    savedOriginalFile.delete();
+                }
+
+                if (fileTypeDetermined == null) {
+                    logger.warning("Failed to determine preserved original file type. (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
+                    return;
+                }
+                // adjust the final result:
+                // we know that this file has been successfully ingested; 
+                // so if the FileUtil is telling us it's a "plain text" file at this point,
+                // it really means it must be a CSV file. 
+                if (fileTypeDetermined.startsWith("text/plain")) {
+                    fileTypeDetermined = FileUtil.MIME_TYPE_CSV;
+                }
+                // and, finally, if it is still "application/octet-stream", it must be Excel:
+                if (FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT.equals(fileTypeDetermined)) {
+                    fileTypeDetermined = FileUtil.MIME_TYPE_XLSX;
+                }
+                logger.info("Original file type determined: " + fileTypeDetermined + " (file id=" + fileId + ", datatable id=" + datatableId + "; file path: " + savedOriginalFile.getAbsolutePath() + ")");
+
+                // save permanently in the database:
+                dataFile.getDataTable().setOriginalFileFormat(fileTypeDetermined);
+                fileService.saveDataTable(dataFile.getDataTable());
+
+            } else {
+                logger.info("DataFile id=" + fileId + "; original type already present: " + originalFormat);
+            }
+        } else {
+            logger.warning("DataFile id=" + fileId + ": No such DataFile!");
         }
     }
     

@@ -1,0 +1,16 @@
+{
+  "displayName": "Awesome Tool",
+  "description": "The most awesome tool.",
+  "type": "explore",
+  "toolUrl": "https://awesometool.com",
+  "toolParameters": {
+    "queryParameters": [
+      {
+        "fileid": "{fileId}"
+      },
+      {
+        "key": "{apiToken}"
+      }
+    ]
+  }
+}

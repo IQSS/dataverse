@@ -154,21 +154,6 @@ public class VariableCategory  implements Comparable, Serializable {
     // [TODO: double-check if we still need this method in 4.0; -- L.A., jan. 2014] 
     private transient List charList;
 
-    public List getValueCharacterList() {
-        if (charList == null) {
-            charList = new ArrayList();
-            for (int i=0; i < this.value.length(); i++) {
-                if (this.value.charAt(i) == ' ') {
-                    charList.add( "&nbsp;" );
-                } else {
-                    charList.add( this.value.charAt(i) );
-                }
-            }
-        }
-        return charList;
-    }
-    
-    
     /* 
      * Custom overrides for hashCode(), equals() and toString() methods:
      */

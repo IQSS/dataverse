@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.ManyToOne;
 import javax.persistence.OrderBy;
@@ -154,7 +155,7 @@ public class Guestbook implements Serializable {
         newGuestbook.setNameRequired(source.isNameRequired());
         newGuestbook.setPositionRequired(source.isPositionRequired());
         newGuestbook.setInstitutionRequired(source.isInstitutionRequired());
-        newGuestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
+        newGuestbook.setCustomQuestions(new ArrayList<>());
         if (!source.getCustomQuestions().isEmpty()) {
             for (CustomQuestion sq: source.getCustomQuestions()){
                 CustomQuestion target = new CustomQuestion();
@@ -165,7 +166,7 @@ public class Guestbook implements Serializable {
                 target.setDisplayOrder(sq.getDisplayOrder());
                 target.setQuestionString(sq.getQuestionString());
                 if(!sq.getCustomQuestionValues().isEmpty()){
-                    target.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
+                    target.setCustomQuestionValues(new ArrayList<>());
                     for (CustomQuestionValue scqv: sq.getCustomQuestionValues()){
                         CustomQuestionValue newVal = new CustomQuestionValue();
                         newVal.setValueString(scqv.getValueString());
@@ -191,7 +192,7 @@ public class Guestbook implements Serializable {
     }    
     
     public List<String> getRequiredAccountInformation() {
-        List<String> retList = new ArrayList();
+        List<String> retList = new ArrayList<>();
         if (nameRequired) {
             retList.add(BundleUtil.getStringFromBundle("name"));
         }
@@ -208,7 +209,7 @@ public class Guestbook implements Serializable {
     }
     
     public List<String> getOptionalAccountInformation(){
-                List <String> retList = new ArrayList();
+                List <String> retList = new ArrayList<>();
         if(!nameRequired){
            retList.add(BundleUtil.getStringFromBundle("name"));
         }
@@ -226,7 +227,7 @@ public class Guestbook implements Serializable {
     }
     
     public List<String> getRequiredQuestionsList(){
-        List <String> retList = new ArrayList();
+        List <String> retList = new ArrayList<>();
                 for (CustomQuestion cq : this.getCustomQuestions()){
                     if(cq.isRequired()){
                         retList.add(cq.getQuestionString());
@@ -236,7 +237,7 @@ public class Guestbook implements Serializable {
     }
     
     public List<String> getOptionalQuestionsList(){
-        List <String> retList = new ArrayList();
+        List <String> retList = new ArrayList<>();
                 for (CustomQuestion cq : this.getCustomQuestions()){
                     if(!cq.isRequired()){
                         retList.add(cq.getQuestionString());
@@ -295,6 +296,15 @@ public class Guestbook implements Serializable {
 
     public void setResponseCountDataverse(Long responseCountDataverse) {
         this.responseCountDataverse = responseCountDataverse;
+    }
+    
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Guestbook)) {
+            return false;
+        }
+        Guestbook other = (Guestbook) object;
+        return Objects.equals(getId(), other.getId());
     }
     
     

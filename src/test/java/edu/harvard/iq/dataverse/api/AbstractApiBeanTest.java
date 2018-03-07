@@ -32,13 +32,6 @@ public class AbstractApiBeanTest {
     }
 
     @Test
-    public void testIsNumeric() {
-        assertTrue(sut.isNumeric("1"));
-        assertTrue(sut.isNumeric("199999"));
-        assertFalse(sut.isNumeric("a"));
-    }
-
-    @Test
     public void testParseBooleanOrDie_ok() throws Exception {
         assertTrue(sut.parseBooleanOrDie("1"));
         assertTrue(sut.parseBooleanOrDie("yes"));

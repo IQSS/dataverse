@@ -7,13 +7,12 @@
 package edu.harvard.iq.dataverse.datavariable;
 
 import java.util.List;
-import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -38,17 +37,17 @@ public class VariableServiceBean {
     }
 
     public DataVariable find(Object pk) {
-        return (DataVariable) em.find(DataVariable.class, pk);
+        return em.find(DataVariable.class, pk);
     }    
     
     public List<DataVariable> findByDataFileId(Long fileId) {
-         Query query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.dataFile.id =:fileId order by o.fileOrder");
+         TypedQuery<DataVariable> query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.dataFile.id =:fileId order by o.fileOrder", DataVariable.class);
          query.setParameter("fileId", fileId);
          return query.getResultList();
     }
     
     public List<DataVariable> findByDataTableId(Long dtId) {
-         Query query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.id =:dtId order by o.fileOrder");
+         TypedQuery<DataVariable> query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.id =:dtId order by o.fileOrder", DataVariable.class);
          query.setParameter("dtId", dtId);
          return query.getResultList();
     }

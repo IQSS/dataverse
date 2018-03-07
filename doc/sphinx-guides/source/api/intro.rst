@@ -21,7 +21,7 @@ We use the term "native" to mean that the API is not based on any standard. For 
 Authentication
 --------------
 
-Most Dataverse APIs require the use of an API token. Instructions for getting a token are described in the :doc:`/user/account` section of the User Guide.
+Most Dataverse APIs require the use of an API token. (In code we sometimes call it a "key" because it's shorter.) Instructions for getting a token are described in the :doc:`/user/account` section of the User Guide.
 
 There are two ways to pass your API token to Dataverse APIs. The preferred method is to send the token in the ``X-Dataverse-key`` HTTP header, as in the following curl example::
 

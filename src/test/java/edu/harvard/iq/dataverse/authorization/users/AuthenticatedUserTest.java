@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 
 /**
  * Tested class: AuthenticatedUser.java
@@ -25,10 +26,16 @@ public class AuthenticatedUserTest {
     public AuthenticatedUserTest() {
     }
 
-    public static AuthenticatedUser testUser = MocksFactory.makeAuthenticatedUser("Homer", "Simpson");
-    public static Timestamp expResult = testUser.getCreatedTime();
+    public static AuthenticatedUser testUser;
+    public static Timestamp expResult;
     public static Timestamp loginTime = Timestamp.valueOf("2000-01-01 00:00:00.0");
     public static final String IDENTIFIER_PREFIX = "@";
+
+    @Before
+    public void setUp() {
+        testUser = MocksFactory.makeAuthenticatedUser("Homer", "Simpson");
+        expResult = testUser.getCreatedTime();
+    }
 
     @Test
     public void testGetIdentifier() {
@@ -36,8 +43,6 @@ public class AuthenticatedUserTest {
         String result = testUser.getIdentifier();
         assertEquals(testUser.getIdentifier(), result);
     }
-
-    
 
     @Test
     public void testApplyDisplayInfo() {
@@ -47,6 +52,15 @@ public class AuthenticatedUserTest {
         assertEquals(inf, testUser.getDisplayInfo());
     }
 
+    @Test
+    public void testGetDisplayInfo() {
+        System.out.println("getDisplayInfo");
+        AuthenticatedUserDisplayInfo expResult = new AuthenticatedUserDisplayInfo("Homer", "Simpson", "Homer.Simpson@someU.edu", "UnitTester", "In-Memory user");
+        AuthenticatedUserDisplayInfo result = testUser.getDisplayInfo();
+        assertEquals(expResult, result);
+
+    }
+    
     @Test
     public void testIsAuthenticated() {
         System.out.println("isAuthenticated");
@@ -88,7 +102,7 @@ public class AuthenticatedUserTest {
     @Test
     public void testGetName() {
         System.out.println("getName");
-        String expResult = "Homer Simpson";
+        String expResult = testUser.getName();
         String result = testUser.getName();
         assertEquals(expResult, result);
     }
@@ -96,7 +110,7 @@ public class AuthenticatedUserTest {
     @Test
     public void testGetEmail() {
         System.out.println("getEmail");
-        String expResult = testUser.getEmail();;
+        String expResult = testUser.getEmail();
         assertEquals(expResult, testUser.getEmail());
     }
 
@@ -229,22 +243,6 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getLastLoginTime());
     }
 
-//    @Test
-//    public void testSetLastLoginTimeToCurrentTime() {
-//        System.out.println("setLastLoginTimeToCurrentTime");
-//        testUser.setLastLoginTimeToCurrentTime();
-//        Timestamp expResult = testUser.getLastLoginTime();
-//        assertEquals(expResult, testUser.getLastLoginTime());
-//    }
-
-//    @Test
-//    public void testSetCreatedToCurrentTime() {
-//        System.out.println("setCreatedToCurrentTime");
-//        testUser.setCreatedTimeToCurrentTime();
-//        Timestamp expResult = testUser.getCreatedTime();
-//        assertEquals(expResult, testUser.getCreatedTime());
-//    }
-
     @Test
     public void testGetCreatedTime() {
         System.out.println("getCreatedTime");
@@ -282,7 +280,7 @@ public class AuthenticatedUserTest {
         Timestamp expResult = testUser.getLastApiUseTime();
         assertEquals(expResult, testUser.getLastApiUseTime());
     }
-    
+
     @Test
     public void testIsSuperuser() {
         System.out.println("isSuperuser");
@@ -328,14 +326,6 @@ public class AuthenticatedUserTest {
      * constraints on this issue these 1+1=2 type tests weren't all done.
      */
 
-//    @Test
-//    public void testGetDisplayInfo() {
-//        System.out.println("getDisplayInfo");
-//        AuthenticatedUserDisplayInfo expResult = new AuthenticatedUserDisplayInfo("Homer", "Simpson", "Homer.Simpson@someU.edu", "UnitTester", "In-Memory user");
-//        AuthenticatedUserDisplayInfo result = testUser.getDisplayInfo();
-//        assertEquals(expResult, result);
-//
-//    }
 //    @Test
 //    public void testEquals() {
 //        System.out.println("equals");

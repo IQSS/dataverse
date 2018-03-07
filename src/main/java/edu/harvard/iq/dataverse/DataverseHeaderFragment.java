@@ -64,7 +64,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     @EJB
     UserNotificationServiceBean userNotificationService;
     
-    List<Breadcrumb> breadcrumbs = new ArrayList();
+    List<Breadcrumb> breadcrumbs = new ArrayList<>();
 
     private Long unreadNotificationCount = null;
     
@@ -223,18 +223,22 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
-            redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
+            redirectPage = redirectToRoot();
         }
 
         if (StringUtils.isEmpty(redirectPage)) {
-            redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
+            redirectPage = redirectToRoot();
         }
 
         logger.log(Level.INFO, "Sending user to = " + redirectPage);
-        return redirectPage + (redirectPage.indexOf("?") == -1 ? "?" : "&") + "faces-redirect=true";
+        return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
     }
 
     private Boolean signupAllowed = null;
+    
+    private String redirectToRoot(){
+        return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
+    }
     
     public boolean isSignupAllowed() {
         if (signupAllowed != null) {
@@ -243,6 +247,18 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         boolean safeDefaultIfKeyNotFound = false;
         signupAllowed = settingsWrapper.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, safeDefaultIfKeyNotFound);
         return signupAllowed;
+    }
+
+    public boolean isRootDataverseThemeDisabled(Dataverse dataverse) {
+        if (dataverse == null) {
+            return false;
+        }
+        if (dataverse.getOwner() == null) {
+            // We're operating on the root dataverse.
+            return settingsWrapper.isRootDataverseThemeDisabled();
+        } else {
+            return false;
+        }
     }
 
     public String getSignupUrl(String loginRedirect) {

@@ -1,0 +1,16 @@
+<resource xsi:schemaLocation="http://datacite.org/schema/kernel-3 http://schema.datacite.org/meta/kernel-3/metadata.xsd"
+          xmlns="http://datacite.org/schema/kernel-3"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <identifier identifierType="DOI">10.5072/FK2/MPV9WY</identifier>
+    <creators><creator><creatorName>Markup, Marty</creatorName><affiliation>(W4C)</affiliation></creator></creators>
+    <titles>
+        <title>HTML &amp; More</title>
+    </titles>
+    <publisher>Root</publisher>
+    <publicationYear>2017</publicationYear>
+    <resourceType resourceTypeGeneral="Dataset"/>
+    <descriptions>
+        <description descriptionType="Abstract">BEGIN<br><br>END</description>
+    </descriptions>
+    <contributors><contributor contributorType="ContactPerson"><contributorName>Markup, Marty</contributorName></contributor></contributors>
+</resource>

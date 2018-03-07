@@ -15,10 +15,9 @@ Installation Guide
    prerequisites
    installation-main
    config
-   administration
    upgrading
    r-rapache-tworavens
    geoconnect
    shibboleth
    oauth2
-   data-capture-module
+   external-tools

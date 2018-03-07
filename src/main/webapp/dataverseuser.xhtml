@@ -17,8 +17,16 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
+                <script>
+                window.onpageshow = function(event) {
+                    if (event.persisted) {
+                        window.location.reload();
+                    }
+                };
+                </script>
                 <f:loadBundle basename="Bundle" var="bundle"/>
                 <f:metadata>
+                    <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
@@ -41,7 +49,7 @@
                             <ul class="dropdown-menu pull-right text-left" role="menu">
                                 <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                     <li>
-                                        <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}" 
+                                        <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
                                                        actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="bind_bsui_components();">
                                             <h:outputText value="#{bundle['account.info']}" />
                                         </p:commandLink>
@@ -125,6 +133,9 @@
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getReasonForReturn(item.theObject)}
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
@@ -136,6 +147,12 @@
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
+                                                        <!-- Reason for Return - This needs some work in the DataverseUserPage method to get it to work -->
+                                                        <ui:remove>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getReasonForReturn(item.theObject)}
+                                                        </o:param>
+                                                        </ui:remove>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'PUBLISHEDDS'}">
@@ -276,7 +293,6 @@
                                                 <ui:fragment rendered="#{item.type == 'FILESYSTEMIMPORT'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.import.filesystem']}" escape="false">
-                                                        <f:param value="#{systemConfig.dataverseSiteUrl}"/>
                                                         <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>
@@ -432,11 +448,21 @@
                                     <f:param value="&lt;/a&gt;"/>
                                 </h:outputFormat>
                             </p>
-                            <div class="highlight">
+                            <div id="apiToken" class="highlight hidden">
                                  <pre>
                                     <code class="language-html" data-lang="html">${ApiTokenPage.apiToken}</code>
                                  </pre>
                             </div>
+                            <!--Script removes "hidden" class from div containing API token to stop javascript browser exploits-->
+                            <script>
+                                $(document).ready(function() {
+                                    $("div#apiToken").removeClass("hidden");
+                                });
+                                //Produces "Are you sure you want to leave this page?" alert to allow API token to hide again
+                                $(window).on("beforeunload", function() {
+                                    $("div#apiToken").addClass("hidden");
+                                });
+                            </script>
                             <div>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}                                </button>
@@ -452,9 +478,8 @@
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
                             <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' and DataverseUserPage.nonLocalLoginEnabled}">
-                                
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> 
-                                    <h:outputText value=" #{bundle['user.signup.otherLogInOptions.tip']}" escape="false"/>
+                                <p class="help-block">
+                                    <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['user.signup.otherLogInOptions.tip']}" escape="false"/>
                                 </p>
                             </ui:fragment>
                             <div class="form-horizontal">
@@ -465,7 +490,10 @@
                                             #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         </span>
                                     </label>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-9">
+                                        <p class="help-block">#{bundle['user.username.valid']}</p>
+                                    </div>
+                                    <div class="col-sm-4 col-sm-offset-3">
                                         <p:inputText id="userName" styleClass="form-control" tabindex="1"
                                                         validator="#{DataverseUserPage.validateUserName}"
                                                         value="#{DataverseUserPage.username}"
@@ -495,7 +523,11 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['user.updatePassword.password']}</p>
+                                        <div class="help-block">
+                                            <h:outputFormat value="#{bundle['user.updatePassword.password']}" escape="false">
+                                                <f:param value="#{DataverseUserPage.passwordRequirements}"/>
+                                            </h:outputFormat>
+                                        </div>
                                     </div>
                                     <div class="col-sm-4 col-sm-offset-3">
                                         <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
@@ -599,10 +631,10 @@
                                 </ui:fragment>
                                 <div class="form-group">
                                     <div class="col-sm-12 button-block">
-                                        <p:commandButton id="save" styleClass="btn btn-default" tabindex="9" 
+                                        <p:commandButton id="save" styleClass="btn btn-default" tabindex="9"
                                                          value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}"
                                                          action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
-                                        <p:commandButton id="cancel" styleClass="btn btn-default" tabindex="10" value="#{bundle.cancel}" 
+                                        <p:commandButton id="cancel" styleClass="btn btn-default" tabindex="10" value="#{bundle.cancel}"
                                                          action="#{DataverseUserPage.cancel}" process="@this" update="@form">
                                             <p:resetInput target="@form" />
                                         </p:commandButton>

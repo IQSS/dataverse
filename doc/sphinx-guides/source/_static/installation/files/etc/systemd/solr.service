@@ -1,0 +1,13 @@
+[Unit]
+Description = Apache Solr
+After = syslog.target network.target remote-fs.target nss-lookup.target
+
+[Service]
+User = solr
+Type = simple
+WorkingDirectory = /usr/local/solr/example
+ExecStart = /usr/bin/java -jar -server /usr/local/solr/example/start.jar
+Restart=on-failure
+
+[Install]
+WantedBy = multi-user.target

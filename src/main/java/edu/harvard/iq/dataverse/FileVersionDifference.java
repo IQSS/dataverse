@@ -20,8 +20,8 @@ public class FileVersionDifference {
     private  FileMetadata originalFileMetadata;   
     private boolean details = false;
 
-    private List<FileDifferenceSummaryGroup> differenceSummaryGroups = new ArrayList();   
-    private List<FileDifferenceDetailItem> differenceDetailItems = new ArrayList();
+    private List<FileDifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();   
+    private List<FileDifferenceDetailItem> differenceDetailItems = new ArrayList<>();
     
     public FileVersionDifference(FileMetadata newFileMetadata, FileMetadata originalFileMetadata) {
 
@@ -109,10 +109,10 @@ public class FileVersionDifference {
             */
             String value1 = originalFileMetadata.getCategoriesByName().toString();
             String value2 = newFileMetadata.getCategoriesByName().toString();
-            if (value1 == null || value1.equals("") || value1.equals(" ")) {
+            if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
                 value1 = "";
             }
-            if (value2 == null || value2.equals("") || value2.equals(" ")) {
+            if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
                 value2 = "";
             }
 
@@ -219,7 +219,7 @@ public class FileVersionDifference {
         
         public FileDifferenceSummaryGroup(String name) {
             this.name = name;
-            this.fileDifferenceSummaryItems = new ArrayList();
+            this.fileDifferenceSummaryItems = new ArrayList<>();
             
         }
         
@@ -274,10 +274,7 @@ public class FileVersionDifference {
                 return false;
             }
             final FileDifferenceSummaryGroup other = (FileDifferenceSummaryGroup) obj;
-            if (!Objects.equals(this.name, other.name)) {
-                return false;
-            }
-            return true;
+            return Objects.equals(this.name, other.name);
         }
     }
     

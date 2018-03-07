@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.ValidateUserName;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
@@ -13,7 +14,6 @@ import javax.persistence.Index;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -43,7 +43,7 @@ public class BuiltinUser implements Serializable {
 
     @NotBlank(message = "Please enter a username.")
     @Size(min=2, max=60, message ="Username must be between 2 and 60 characters.")
-    @Pattern(regexp = "[a-zA-Z0-9\\_\\-\\.]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', '-', and '.'.")
+    @ValidateUserName(message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', '-', and '.'.")
     @Column(nullable = false, unique=true)  
     private String userName;
 
@@ -60,6 +60,7 @@ public class BuiltinUser implements Serializable {
     
     private int passwordEncryptionVersion; 
     private String encryptedPassword;
+
     private String affiliation;
     private String position;
     
@@ -190,5 +191,4 @@ public class BuiltinUser implements Serializable {
     public void setPasswordEncryptionVersion(int passwordEncryptionVersion) {
         this.passwordEncryptionVersion = passwordEncryptionVersion;
     }
-    
 }

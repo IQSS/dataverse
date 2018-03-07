@@ -2,9 +2,14 @@ package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -22,10 +27,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import javax.imageio.ImageIO;
+import org.apache.commons.io.IOUtils;
 
 public class DatasetUtil {
 
@@ -40,12 +48,32 @@ public class DatasetUtil {
             return thumbnails;
         }
         if (considerDatasetLogoAsCandidate) {
-            Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-            if (Files.exists(path)) {
+//            Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+//            if (Files.exists(path)) {
+//                logger.fine("Thumbnail created from dataset logo exists!");
+//                File file = path.toFile();
+//                try {
+//                    byte[] bytes = Files.readAllBytes(file.toPath());
+            StorageIO<Dataset> dataAccess = null;
+
+            try{
+                dataAccess = DataAccess.getStorageIO(dataset);
+            }
+            catch(IOException ioex){
+            }
+
+            InputStream in = null;
+            try {
+                if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
+                    in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+                }
+            } catch (Exception ioex) {
+            }
+
+            if (in != null) {
                 logger.fine("Thumbnail created from dataset logo exists!");
-                File file = path.toFile();
                 try {
-                    byte[] bytes = Files.readAllBytes(file.toPath());
+                    byte[] bytes = IOUtils.toByteArray(in);
                     String base64image = Base64.getEncoder().encodeToString(bytes);
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
                     thumbnails.add(datasetThumbnail);
@@ -87,10 +115,31 @@ public class DatasetUtil {
             return null;
         }
 
-        Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-        if (Files.exists(path)) {
+        StorageIO<Dataset> dataAccess = null;
+                
+        try{
+            dataAccess = DataAccess.getStorageIO(dataset);
+            
+        }
+        catch(IOException ioex){
+            logger.warning("Failed to initialize dataset for thumbnail " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+        }
+        
+        InputStream in = null;
+        try {
+            if (dataAccess == null) {
+                logger.info("Cannot retrieve thumbnail file.");
+            } else if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
+                in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            }
+        } catch (IOException ex) {
+            logger.info("Cannot retrieve dataset thumbnail file, will try to get thumbnail from file.");
+        }
+
+        
+        if (in != null) {
             try {
-                byte[] bytes = Files.readAllBytes(path);
+                byte[] bytes = IOUtils.toByteArray(in);
                 String base64image = Base64.getEncoder().encodeToString(bytes);
                 DatasetThumbnail datasetThumbnail = new DatasetThumbnail(FileUtil.DATA_URI_SCHEME + base64image, null);
                 logger.fine("will get thumbnail from dataset logo");
@@ -142,16 +191,34 @@ public class DatasetUtil {
         if (dataset == null) {
             return false;
         }
-        File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
-        boolean originalFileDeleted = originalFile.delete();
-        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-        boolean thumb48Deleted = thumb48.delete();
-        if (originalFileDeleted && thumb48Deleted) {
-            return true;
-        } else {
-            logger.info("One of the files wasn't deleted. Original deleted: " + originalFileDeleted + ". thumb48 deleted: " + thumb48Deleted + ".");
+        try {
+            StorageIO<Dataset> storageIO = getStorageIO(dataset);
+
+            if (storageIO == null) {
+                logger.warning("Null storageIO in deleteDatasetLogo()");
+                return false;
+            }
+
+            storageIO.deleteAuxObject(datasetLogoFilenameFinal);
+            storageIO.deleteAuxObject(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+
+        } catch (IOException ex) {
+            logger.info("Failed to delete dataset logo: " + ex.getMessage());
             return false;
         }
+        return true;
+                
+        //TODO: Is this required? 
+//        File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
+//        boolean originalFileDeleted = originalFile.delete();
+//        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+//        boolean thumb48Deleted = thumb48.delete();
+//        if (originalFileDeleted && thumb48Deleted) {
+//            return true;
+//        } else {
+//            logger.info("One of the files wasn't deleted. Original deleted: " + originalFileDeleted + ". thumb48 deleted: " + thumb48Deleted + ".");
+//            return false;
+//        }
     }
 
     /**
@@ -186,7 +253,7 @@ public class DatasetUtil {
         return null;
     }
 
-    public static Dataset persistDatasetLogoToDiskAndCreateThumbnail(Dataset dataset, InputStream inputStream) {
+    public static Dataset persistDatasetLogoToStorageAndCreateThumbnail(Dataset dataset, InputStream inputStream) {
         if (dataset == null) {
             return null;
         }
@@ -194,30 +261,32 @@ public class DatasetUtil {
         try {
             tmpFile = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
-            Logger.getLogger(DatasetUtil.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
         }
-        Path datasetDirectory = dataset.getFileSystemDirectory();
-        if (datasetDirectory != null && !Files.exists(datasetDirectory)) {
-            try {
-                Files.createDirectories(datasetDirectory);
-            } catch (IOException ex) {
-                Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
-                logger.info("Dataset directory " + datasetDirectory + " does not exist but couldn't create it. Exception: " + ex);
-                return null;
-            }
+
+        StorageIO<Dataset> dataAccess = null;
+                
+        try{
+             dataAccess = DataAccess.createNewStorageIO(dataset,"placeholder");
         }
-        File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
+        catch(IOException ioex){
+            //TODO: Add a suitable waing message
+            logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+        }
+        
+        //File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
         try {
-            Files.copy(tmpFile.toPath(), originalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            //this goes through Swift API/local storage/s3 to write the dataset thumbnail into a container
+            dataAccess.savePathAsAux(tmpFile.toPath(), datasetLogoFilenameFinal);
         } catch (IOException ex) {
-            logger.severe("Failed to original file from " + tmpFile.getAbsolutePath() + " to " + originalFile.getAbsolutePath() + ": " + ex);
+            logger.severe("Failed to move original file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
         }
-        String fileLocation = dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail;
+
         BufferedImage fullSizeImage = null;
         try {
-            fullSizeImage = ImageIO.read(originalFile);
+            fullSizeImage = ImageIO.read(tmpFile);
         } catch (IOException ex) {
-            Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
             return null;
         }
         if (fullSizeImage == null) {
@@ -228,27 +297,50 @@ public class DatasetUtil {
         int height = fullSizeImage.getHeight();
         FileChannel src = null;
         try {
-            src = new FileInputStream(originalFile).getChannel();
+            src = new FileInputStream(tmpFile).getChannel();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
             return null;
         }
         FileChannel dest = null;
         try {
-            dest = new FileOutputStream(originalFile).getChannel();
+            dest = new FileOutputStream(tmpFile).getChannel();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
             return null;
         }
         try {
             dest.transferFrom(src, 0, src.size());
         } catch (IOException ex) {
-            Logger.getLogger(ImageThumbConverter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
             return null;
         }
-        String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, fileLocation);
-        boolean originalFileWasDeleted = originalFile.delete();
-        logger.fine("Thumbnail saved to " + thumbFileLocation + ". Original file was deleted: " + originalFileWasDeleted);
+        File tmpFileForResize = null;
+        try {
+            tmpFileForResize = FileUtil.inputStreamToFile(inputStream);
+        } catch (IOException ex) {
+            logger.severe(ex.getMessage());
+            return null;
+        }
+        String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
+        logger.fine("thumbFileLocation = " + thumbFileLocation);
+        logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
+        //now we must save the updated thumbnail 
+        try {
+            dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumb48addedByImageThumbConverter);
+        } catch (IOException ex) {
+            logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+        }
+        //This deletes the tempfiles created for rescaling and encoding
+        boolean tmpFileWasDeleted = tmpFile.delete();
+        boolean originalTempFileWasDeleted = tmpFileForResize.delete();
+        try {
+            Files.delete(Paths.get(thumbFileLocation));
+        } catch (IOException ioex) {
+            logger.fine("Failed to delete temporary thumbnail file");
+        }
+        
+        logger.fine("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalTempFileWasDeleted);
         return dataset;
     }
 
@@ -281,13 +373,47 @@ public class DatasetUtil {
      * The dataset logo is the file that a user uploads which is *not* one of
      * the data files. Compare to the datavese logo. We do not save the original
      * file that is uploaded. Rather, we delete it after first creating at least
-     * one thumbnail from it.
+     * one thumbnail from it. 
      */
     public static boolean isDatasetLogoPresent(Dataset dataset) {
         if (dataset == null) {
             return false;
         }
-        return Files.exists(Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoFilenameFinal));
+
+        StorageIO<Dataset> dataAccess = null;
+
+        try {
+            dataAccess = DataAccess.getStorageIO(dataset);
+            return dataAccess.isAuxObjectCached(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+        } catch (IOException ioex) {
+        }
+        return false;
+    }
+
+    public static List<DatasetField> getDatasetSummaryFields(DatasetVersion datasetVersion, String customFields) {
+        
+        List<DatasetField> datasetFields = new ArrayList<>();
+        
+        //if customFields are empty, go with default fields. 
+        if(customFields==null || customFields.isEmpty()){
+               customFields="dsDescription,subject,keyword,publication,notesText";
+        }
+        
+        String[] customFieldList= customFields.split(",");
+        Map<String,DatasetField> DatasetFieldsSet=new HashMap<>(); 
+        
+        for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
+            DatasetFieldsSet.put(dsf.getDatasetFieldType().getName(),dsf); 
+        }
+        
+        for(String cfl : customFieldList)
+        {
+                DatasetField df = DatasetFieldsSet.get(cfl);
+                if(df!=null)
+                datasetFields.add(df);
+        }
+            
+        return datasetFields;
     }
 
 }

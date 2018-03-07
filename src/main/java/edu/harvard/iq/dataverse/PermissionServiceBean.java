@@ -26,7 +26,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -205,8 +211,7 @@ public class PermissionServiceBean {
         
         // Add permissions specifically given to the user
         permissions.addAll( permissionsForSingleRoleAssignee(req.getUser(),dvo) );
-        
-        /*
+
         Set<Group> groups = groupService.groupsFor(req,dvo);
         
         // Add permissions gained from groups
@@ -214,8 +219,7 @@ public class PermissionServiceBean {
             final Set<Permission> groupPremissions = permissionsForSingleRoleAssignee(g,dvo);
             permissions.addAll(groupPremissions);
         }
-        */
-        
+
         if ( ! req.getUser().isAuthenticated() ) {
             permissions.removeAll( PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY );
         }
@@ -418,6 +422,17 @@ public class PermissionServiceBean {
         }
         
         return usersHasPermissionOn;
+    }
+    
+    public Map<String, AuthenticatedUser> getDistinctUsersWithPermissionOn(Permission permission, DvObject dvo) {
+
+        List<AuthenticatedUser> users = getUsersWithPermissionOn(permission, dvo);
+        Map<String, AuthenticatedUser> distinctUsers = new HashMap<>();
+        users.forEach((au) -> {
+            distinctUsers.put(au.getIdentifier(), au);
+        });
+
+        return distinctUsers;
     } 
     
     public List<Long> getDvObjectsUserHasRoleOn(User user) {
@@ -527,6 +542,48 @@ public class PermissionServiceBean {
         return dataversesUserHasPermissionOn;
     }
     
+    public void checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
+        if (dataset.isLocked()) {
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                // The "InReview" lock is not really a lock for curators. They can still make edits.
+                if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
+                }
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "Workflow"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
+        }
+    }
     
-    
+    public void checkDownloadFileLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
+        if (dataset.isLocked()) {
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                // The "InReview" lock is not really a lock for curators or contributors. They can still download.                
+                if (!isUserAllowedOn(dataverseRequest.getUser(), new UpdateDatasetCommand(dataset, dataverseRequest), dataset)) {
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowedInReview"), command);
+                }
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "Workflow"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+            }
+        }
+    }
+
 }

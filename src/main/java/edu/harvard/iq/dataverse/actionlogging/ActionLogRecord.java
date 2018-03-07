@@ -41,6 +41,8 @@ public class ActionLogRecord implements java.io.Serializable {
         Auth,
         
         Admin,
+
+        ExternalTool,
         
         GlobalGroups
     }
@@ -70,6 +72,11 @@ public class ActionLogRecord implements java.io.Serializable {
     
     public ActionLogRecord(){}
     
+    /**
+     * @param anActionType
+     * @param anActionSubType
+     */
+    // TODO: Add ability to set `info` in constructor.
     public ActionLogRecord( ActionType anActionType, String anActionSubType ) {
         actionType = anActionType;
         actionSubType = anActionSubType;

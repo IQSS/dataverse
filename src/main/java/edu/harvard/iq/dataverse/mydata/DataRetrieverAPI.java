@@ -4,6 +4,7 @@
 package edu.harvard.iq.dataverse.mydata;
 
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
@@ -22,6 +23,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -67,6 +69,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     AuthenticationServiceBean authenticationService;
+    @EJB
+    DataverseServiceBean dataverseService;
     //@EJB
     //MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @EJB
@@ -452,7 +456,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true)
                 .add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,        
                         Json.createObjectBuilder()
-                                .add("pagination", pager.asJsonObjectBuilder())
+                                .add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
                                 //.add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, filterParams, this.myDataFinder))
                                 .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever))
                                 .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
@@ -521,6 +525,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
             // (a) Get core card data from solr
             // -------------------------------------------
             myDataCardInfo = doc.getJsonForMyData();
+            
+            if (!doc.getEntity().isInstanceofDataFile()){
+                String parentAlias = dataverseService.getParentAliasString(doc);
+                System.out.print("parentAlias: " + parentAlias);
+                myDataCardInfo.add("parent_alias",parentAlias);
+            }
             
             // -------------------------------------------
             // (b) Add role info

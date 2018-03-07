@@ -97,10 +97,6 @@ public class Dataverses extends AbstractApiBean {
     @Deprecated
     private static final Logger LOGGER = Logger.getLogger(Dataverses.class.getName());
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
-//    static final String DEFAULT_LOGO_BACKGROUND_COLOR = "F5F5F5";
-//    static final String DEFAULT_BACKGROUND_COLOR = "F5F5F5";
-//    static final String DEFAULT_LINK_COLOR = "428BCA";
-//    static final String DEFAULT_TEXT_COLOR = "888888";
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
@@ -245,8 +241,11 @@ public class Dataverses extends AbstractApiBean {
             }
             
             Dataset managedDs = execCommand(new CreateDatasetCommand(ds, createDataverseRequest(u)));
-            return created( "/datasets/" + managedDs.getId(),
-                    Json.createObjectBuilder().add("id", managedDs.getId()) );
+            return created("/datasets/" + managedDs.getId(),
+                    Json.createObjectBuilder()
+                            .add("id", managedDs.getId())
+                            .add("persistentId", managedDs.getGlobalId())
+            );
                 
         } catch ( WrappedResponse ex ) {
             return ex.getResponse();

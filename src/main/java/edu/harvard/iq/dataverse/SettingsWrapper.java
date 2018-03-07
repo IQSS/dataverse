@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -30,6 +31,9 @@ public class SettingsWrapper implements java.io.Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
+
+    @EJB
+    SystemConfig systemConfig;
 
     private Map<String, String> settingsMap;
     
@@ -133,10 +137,26 @@ public class SettingsWrapper implements java.io.Serializable {
         return guidesBaseUrl;
     }
 
+    public boolean isPublicInstall(){
+        return systemConfig.isPublicInstall();
+    }
+    
+    public boolean isRsyncUpload() {
+        return systemConfig.isRsyncUpload();
+    }
+    
+    public boolean isRsyncDownload() {
+        return systemConfig.isRsyncDownload();
+    }
+    
     public String getSupportTeamName() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
         return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+    }
+
+    public boolean isRootDataverseThemeDisabled() {
+        return isTrueForKey(Key.DisableRootDataverseTheme, false);
     }
 
 }

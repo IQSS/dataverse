@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<orcid-message xmlns="http://www.orcid.org/ns/orcid">
+    <message-version>1.2</message-version>
+    <orcid-profile type="user">
+        <orcid-identifier>
+            <uri>http://sandbox.orcid.org/0000-0003-2591-1698</uri>
+            <path>0000-0003-2591-1698</path>
+            <host>sandbox.orcid.org</host>
+        </orcid-identifier>
+        <orcid-preferences>
+            <locale>en</locale>
+        </orcid-preferences>
+        <orcid-history>
+            <creation-method>Member-referred</creation-method>
+            <submission-date>2016-10-12T21:59:25.760Z</submission-date>
+            <last-modified-date>2016-10-16T21:11:33.032Z</last-modified-date>
+            <claimed>true</claimed>
+            <verified-email>false</verified-email>
+            <verified-primary-email>false</verified-primary-email>
+        </orcid-history>
+        <orcid-bio>
+            <personal-details>
+                <given-names>Bob T.</given-names>
+                <family-name>Doc</family-name>
+            </personal-details>
+        </orcid-bio>
+    </orcid-profile>
+</orcid-message>

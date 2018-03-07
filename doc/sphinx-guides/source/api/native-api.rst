@@ -3,7 +3,7 @@ Native API
 
 Dataverse 4 exposes most of its GUI functionality via a REST-based API. This section describes that functionality. Most API endpoints require an API token that can be passed as the ``X-Dataverse-key`` HTTP header or in the URL as the ``key`` query parameter.
 
-.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge. 
+.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge.
 
 .. _CORS: https://www.w3.org/TR/cors/
 
@@ -24,6 +24,7 @@ If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a data
 
 Download the :download:`JSON example <../_static/api/dataverse-complete.json>` file and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
 
+- ``DEPARTMENT``
 - ``JOURNALS``
 - ``LABORATORY``
 - ``ORGANIZATIONS_INSTITUTIONS``
@@ -151,7 +152,7 @@ Delete the dataset whose id is passed::
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, and ``dataverse_json``.
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , and ``dataverse_json``.
 
 |CORS| Lists all the file metadata, for the given dataset and version::
 
@@ -169,11 +170,20 @@ Updates the current draft version of dataset ``$id``. If the dataset does not ha
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0)::
+Moves a dataset whose id is passed to a dataverse whose alias is passed. Only accessible to superusers. ::
+
+    POST http://$SERVER/api/datasets/$id/move/$alias?key=$apiKey
+
+Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
 
 .. note:: POST should be used to publish a dataset. GET is supported for backward compatibility but is deprecated and may be removed: https://github.com/IQSS/dataverse/issues/2431
+
+.. note:: When there are no default workflows, a successful publication process will result in ``200 OK`` response. When there are workflows, it is impossible for Dataverse to know
+          how long they are going to take and whether they will succeed or not (recall that some stages might require human intervention). Thus,
+          a ``202 ACCEPTED`` is returned immediately. To know whether the publication process succeeded or not, the client code has to check the status of the dataset periodically,
+          or perform some push request in the post-publish workflow.
 
 Deletes the draft version of dataset ``$id``. Only the draft version can be deleted::
 
@@ -211,7 +221,7 @@ Add a file to an existing Dataset. Description and tags are optional::
 
 A more detailed "add" example using curl::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"]}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"], "restrict":"true"}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
 
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
@@ -297,10 +307,45 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     print r.json()
     print r.status_code
 
+Submit for Review
+^^^^^^^^^^^^^^^^^
+
+When dataset authors do not have permission to publish directly, they can click the "Submit for Review" button in the web interface (see :doc:`/user/dataset-management`), or perform the equivalent operation via API::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/submitForReview?persistentId=$DOI_OR_HANDLE_OF_DATASET"
+
+The people who need to review the dataset (often curators or journal editors) can check their notifications periodically via API to see if any new datasets have been submitted for review and need their attention. See the :ref:`Notifications` section for details. Alternatively, these curators can simply check their email or notifications to know when datasets have been submitted (or resubmitted) for review.
+
+Return to Author
+^^^^^^^^^^^^^^^^
+
+After the curators or journal editors have reviewed a dataset that has been submitted for review (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to its authors. In the web interface there is a "Return to Author" button (see :doc:`/user/dataset-management`), but the interface does not provide a way to explain **why** the dataset is being returned. There is a way to do this outside of this interface, however. Instead of clicking the "Return to Author" button in the UI, a curator can write a "reason for return" into the database via API.
+
+Here's how curators can send a "reason for return" to the dataset authors. First, the curator creates a JSON file that contains the reason for return:
+
+.. literalinclude:: ../_static/api/reason-for-return.json
+
+In the example below, the curator has saved the JSON file as :download:`reason-for-return.json <../_static/api/reason-for-return.json>` in their current working directory. Then, the curator sends this JSON file to the ``returnToAuthor`` API endpoint like this::
+
+    curl -H "Content-type:application/json" -d @reason-for-return.json -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/returnToAuthor?persistentId=$DOI_OR_HANDLE_OF_DATASET"
+
+The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
+
+
 Files
 ~~~~~~~~~~~
 
 .. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
+
+Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
+    
+    PUT http://$SERVER/api/files/{id}/restrict
+
+Note that some Dataverse installations do not allow the ability to restrict files.
+
+A more detailed "restrict" example using curl::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/{id}/restrict
 
 Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
 
@@ -376,7 +421,7 @@ Example python code to replace a file.  This may be run by changing these parame
     print r.json()
     print r.status_code
 
-   
+
 
 Builtin Users
 ~~~~~~~~~~~~~
@@ -395,13 +440,6 @@ To create a builtin user via API, you must first construct a JSON document.  You
 Place this ``user-add.json`` file in your current directory and run the following curl command, substituting variables as necessary. Note that both the password of the new user and the value of ``BuiltinUsers.KEY`` are passed as query parameters::
 
   curl -d @user-add.json -H "Content-type:application/json" "$SERVER_URL/api/builtin-users?password=$NEWUSER_PASSWORD&key=$BUILTIN_USERS_KEY"
-
-Retrieving the API Token of a Builtin User
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To retrieve the API token of a builtin user, given that user's password, use the curl command below::
-
-  curl "$SERVER_URL/api/builtin-users/$DV_USER_NAME/api-token?password=$DV_USER_PASSWORD"
 
 Roles
 ~~~~~
@@ -484,7 +522,10 @@ For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from 
 
   GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
 
+Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
 
+  GET http://$SERVER/api/info/apiTermsOfUse
+  
 Metadata Blocks
 ~~~~~~~~~~~~~~~
 
@@ -495,6 +536,18 @@ Metadata Blocks
 |CORS| Return data about the block whose ``identifier`` is passed. ``identifier`` can either be the block's id, or its name::
 
   GET http://$SERVER/api/metadatablocks/$identifier
+
+.. _Notifications:
+
+Notifications
+~~~~~~~~~~~~~
+
+Get All Notifications by User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each user can get a dump of their notifications by passing in their API token::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
 
 
 Admin
@@ -559,9 +612,113 @@ Creates a global role in the Dataverse installation. The data POSTed are assumed
 
     POST http://$SERVER/api/admin/roles
 
-List all users::
+List users with the options to search and "page" through results. Only accessible to superusers. Optional parameters:
 
-    GET http://$SERVER/api/admin/authenticatedUsers
+* ``searchTerm`` A string that matches the beginning of a user identifier, first name, last name or email address.
+* ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
+* ``selectedPage`` The page of results to return.  The default is 1.
+
+::
+
+    GET http://$SERVER/api/admin/list-users
+
+
+Sample output appears below. 
+
+* When multiple pages of results exist, the ``selectedPage`` parameters may be specified.
+* Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.
+
+.. code-block:: text
+
+    {
+        "status":"OK",
+        "data":{
+            "userCount":27,
+            "selectedPage":1,
+            "pagination":{
+                "isNecessary":true,
+                "numResults":27,
+                "numResultsString":"27",
+                "docsPerPage":25,
+                "selectedPageNumber":1,
+                "pageCount":2,
+                "hasPreviousPageNumber":false,
+                "previousPageNumber":1,
+                "hasNextPageNumber":true,
+                "nextPageNumber":2,
+                "startResultNumber":1,
+                "endResultNumber":25,
+                "startResultNumberString":"1",
+                "endResultNumberString":"25",
+                "remainingResults":2,
+                "numberNextResults":2,
+                "pageNumberList":[
+                    1,
+                    2
+                ]
+            },
+            "bundleStrings":{
+                "userId":"ID",
+                "userIdentifier":"Username",
+                "lastName":"Last Name ",
+                "firstName":"First Name ",
+                "email":"Email",
+                "affiliation":"Affiliation",
+                "position":"Position",
+                "isSuperuser":"Superuser",
+                "authenticationProvider":"Authentication",
+                "roles":"Roles",
+                "createdTime":"Created Time",
+                "lastLoginTime":"Last Login Time",
+                "lastApiUseTime":"Last API Use Time"
+            },
+            "users":[
+                {
+                    "id":8,
+                    "userIdentifier":"created1",
+                    "lastName":"created1",
+                    "firstName":"created1",
+                    "email":"created1@g.com",
+                    "affiliation":"hello",
+                    "isSuperuser":false,
+                    "authenticationProvider":"BuiltinAuthenticationProvider",
+                    "roles":"Curator",
+                    "createdTime":"2017-06-28 10:36:29.444"
+                },
+                {
+                    "id":9,
+                    "userIdentifier":"created8",
+                    "lastName":"created8",
+                    "firstName":"created8",
+                    "email":"created8@g.com",
+                    "isSuperuser":false,
+                    "authenticationProvider":"BuiltinAuthenticationProvider",
+                    "roles":"Curator",
+                    "createdTime":"2000-01-01 00:00:00.0"
+                },
+                {
+                    "id":1,
+                    "userIdentifier":"dataverseAdmin",
+                    "lastName":"Admin",
+                    "firstName":"Dataverse",
+                    "email":"dataverse@mailinator2.com",
+                    "affiliation":"Dataverse.org",
+                    "position":"Admin",
+                    "isSuperuser":true,
+                    "authenticationProvider":"BuiltinAuthenticationProvider",
+                    "roles":"Admin, Contributor",
+                    "createdTime":"2000-01-01 00:00:00.0",
+                    "lastLoginTime":"2017-07-03 12:22:35.926",
+                    "lastApiUseTime":"2017-07-03 12:55:57.186"
+                }
+                
+                // ... 22 more user documents ...
+            ]
+        }
+    }
+
+.. note:: "List all users" ``GET http://$SERVER/api/admin/authenticatedUsers`` is deprecated, but supported.
+
 
 List user whose ``identifier`` (without the ``@`` sign) is passed::
 
@@ -620,30 +777,6 @@ List a role assignee (i.e. a user or a group)::
 
 The ``$identifier`` should start with an ``@`` if it's a user. Groups start with ``&``. "Built in" users and groups start with ``:``. Private URL users start with ``#``.
 
-IpGroups
-^^^^^^^^
-
-Lists all the ip groups::
-
-  GET http://$SERVER/api/admin/groups/ip
-
-Adds a new ip group. POST data should specify the group in JSON format. Examples are available at the ``data`` folder. Using this method, an IP Group is always created, but its ``alias`` might be different than the one appearing in the
-JSON file, to ensure it is unique. ::
-
-  POST http://$SERVER/api/admin/groups/ip
-
-Creates or updates the ip group ``$groupAlias``. ::
-
-    POST http://$SERVER/api/admin/groups/ip/$groupAlias
-
-Returns a the group in a JSON format. ``$groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. ::
-
-  GET http://$SERVER/api/admin/groups/ip/$groupIdtf
-
-Deletes the group specified by ``groupIdtf``. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. Note that a group can be deleted only if there are no roles assigned to it. ::
-
-  DELETE http://$SERVER/api/admin/groups/ip/$groupIdtf
-
 Saved Search
 ^^^^^^^^^^^^
 
@@ -672,7 +805,58 @@ Recalculate the UNF value of a dataset version, if it's missing, by supplying th
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
 
-.. |CORS| raw:: html 
+Workflows
+^^^^^^^^^
+
+List all available workflows in the system::
+
+   GET http://$SERVER/api/admin/workflows
+
+Get details of a workflow with a given id::
+
+   GET http://$SERVER/api/admin/workflows/$id
+
+Add a new workflow. Request body specifies the workflow properties and steps in JSON format.
+Sample ``json`` files are available at ``scripts/api/data/workflows/``::
+
+   POST http://$SERVER/api/admin/workflows
+
+Delete a workflow with a specific id::
+
+    DELETE http://$SERVER/api/admin/workflows/$id
+
+.. warning:: If the workflow designated by ``$id`` is a default workflow, a 403 FORBIDDEN response will be returned, and the deletion will be canceled.
+
+List the default workflow for each trigger type::
+
+  GET http://$SERVER/api/admin/workflows/default/
+
+Set the default workflow for a given trigger. This workflow is run when a dataset is published. The body of the PUT request is the id of the workflow. Trigger types are ``PrePublishDataset, PostPublishDataset``::
+
+  PUT http://$SERVER/api/admin/workflows/default/$triggerType
+
+Get the default workflow for ``triggerType``. Returns a JSON representation of the workflow, if present, or 404 NOT FOUND. ::
+
+  GET http://$SERVER/api/admin/workflows/default/$triggerType
+
+Unset the default workflow for ``triggerType``. After this call, dataset releases are done with no workflow. ::
+
+  DELETE http://$SERVER/api/admin/workflows/default/$triggerType
+
+Set the whitelist of IP addresses separated by a semicolon (``;``) allowed to resume workflows. Request body is a list of IP addresses allowed to send "resume workflow" messages to this Dataverse instance::
+
+  PUT http://$SERVER/api/admin/workflows/ip-whitelist
+
+Get the whitelist of IP addresses allowed to resume workflows::
+
+  GET http://$SERVER/api/admin/workflows/ip-whitelist
+
+Restore the whitelist of IP addresses allowed to resume workflows to default (localhost only)::
+
+  DELETE http://$SERVER/api/admin/workflows/ip-whitelist
+
+
+.. |CORS| raw:: html
       
       <span class="label label-success pull-right">
         CORS

@@ -2,17 +2,24 @@
 Prerequisites
 =============
 
-Before running the Dataverse installation script, you must install and configure the following software, preferably on a distribution of Linux such as RHEL or its derivatives such as CentOS. After following all the steps below (which have been written based on CentOS 6), you can proceed to the :doc:`installation-main` section.
+Before running the Dataverse installation script, you must install and configure the following software.
+
+After following all the steps below, you can proceed to the :doc:`installation-main` section.
 
 You **may** find it helpful to look at how the configuration is done automatically by various tools such as Vagrant, Puppet, or Ansible. See the :doc:`prep` section for pointers on diving into these scripts.
 
 .. contents:: |toctitle|
 	:local:
 
+Linux
+-----
+
+We assume you plan to run Dataverse on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse development team. Please be aware that while el7 (RHEL/CentOS 7) is the recommended platform, the steps below were orginally written for el6 and may need to be updated (please feel free to make a pull request!).
+
 Java
 ----
 
-Dataverse requires Java 8 (also known as 1.8).
+Dataverse requires Java SE 8 (8u74/JDK 1.8.0u74 or higher).
 
 Installing Java
 ===============
@@ -21,13 +28,13 @@ Dataverse should run fine with only the Java Runtime Environment (JRE) installed
 
 The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-On a Red Hat and similar Linux distributions, install OpenJDK with something like::
+On a RHEL/CentOS, install OpenJDK (devel version) using yum::
 
 	# yum install java-1.8.0-openjdk-devel
 
 If you have multiple versions of Java installed, Java 8 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
-On Red Hat/CentOS you can make Java 8 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+On RHEL/CentOS you can make Java 8 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
 
         # alternatives --config java
 
@@ -38,12 +45,12 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 Glassfish
 ---------
 
-Glassfish Version 4.1 is required. There are known issues with Glassfish 4.1.1 as chronicled in https://github.com/IQSS/dataverse/issues/2628 so it should be avoided until that issue is resolved.
+Glassfish Version 4.1 is required. There are known issues with newer versions of the Glassfish 4.x series so it should be avoided. For details, see https://github.com/IQSS/dataverse/issues/2628 . The issue we are using the track support for Glassfish 5 is https://github.com/IQSS/dataverse/issues/4248 .
 
 Installing Glassfish
 ====================
 
-**Important**: once Glassfish is installed, a new version of the Weld library (v2.2.10.SP1) must be downloaded and installed. This fixes a serious issue in the library supplied with Glassfish 4.1 ( see https://github.com/IQSS/dataverse/issues/647 for details). Please note that if you plan to front Glassfish with Apache you must also patch Grizzly as explained in the :doc:`shibboleth` section.
+**Note:** The Dataverse installer need not be run as root, and it is recommended that Glassfish not run as root either. We suggest the creation of a glassfish service account for this purpose.
 
 - Download and install Glassfish (installed in ``/usr/local/glassfish4`` in the example commands below)::
 
@@ -51,32 +58,47 @@ Installing Glassfish
 	# unzip glassfish-4.1.zip
 	# mv glassfish4 /usr/local
 
+If you intend to install and run Glassfish under a service account (and we hope you do), chown -R the Glassfish hierarchy to root to protect it but give the service account access to the below directories:
+
+- Set service account permissions::
+
+	# chown -R root:root /usr/local/glassfish4
+	# chown glassfish /usr/local/glassfish4/glassfish/lib
+	# chown -R glassfish:glassfish /usr/local/glassfish4/glassfish/domains/domain1
+
+After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
+
+Once Glassfish is installed, you'll need a newer version of the Weld library (v2.2.10.SP1) to fix a serious issue in the library supplied with Glassfish 4.1 (see https://github.com/IQSS/dataverse/issues/647 for details). If you plan to front Glassfish with Apache you must also patch Grizzly as explained in the :doc:`shibboleth` section.
+
 - Remove the stock Weld jar; download Weld v2.2.10.SP1 and install it in the modules folder::
 
 	# cd /usr/local/glassfish4/glassfish/modules
 	# rm weld-osgi-bundle.jar
 	# wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.10.SP1/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar
-	# /usr/local/glassfish4/bin/asadmin start-domain
 
-- Verify the Weld version::
+- Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
 
-	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
-
-- Stop Glassfish and change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
-
-	# /usr/local/glassfish4/bin/asadmin stop-domain
 	# vim /usr/local/glassfish4/glassfish/domains/domain1/config/domain.xml
 
 This recommendation comes from http://blog.c2b2.co.uk/2013/07/glassfish-4-performance-tuning.html among other places.
 
-Glassfish Init Script
-=====================
+- Start Glassfish and verify the Weld version::
 
-The Dataverse installation script will start Glassfish if necessary, but while you're configuring Glassfish, you might find the following init script helpful to have Glassfish start on boot.
+	# /usr/local/glassfish4/bin/asadmin start-domain
+	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
 
-Adjust this :download:`Glassfish init script <../_static/installation/files/etc/init.d/glassfish>` for your needs or write your own.
+Launching Glassfish on system boot
+==================================
 
-It is not necessary to have Glassfish running before you execute the Dataverse installation script because it will start Glassfish for you.
+The Dataverse installation script will start Glassfish if necessary, but you may find the following scripts helpful to launch Glassfish start automatically on boot.
+
+- This :download:`Systemd file<../_static/installation/files/etc/systemd/glassfish.service>` may be serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or Ubuntu 16+)
+- This :download:`init script<../_static/installation/files/etc/init.d/glassfish.init.service>` may be useful for RHEL/CentOS 6 or Ubuntu >= 14 if you're using a Glassfish service account, or
+- This :download:`Glassfish init script <../_static/installation/files/etc/init.d/glassfish.init.root>` may be helpful if you're just going to run Glassfish as root.
+
+It is not necessary for Glassfish to be running before you execute the Dataverse installation script; it will start Glassfish for you.
+
+Please note that you must run Glassfish in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
 PostgreSQL
 ----------
@@ -86,17 +108,15 @@ Installing PostgreSQL
 
 Version 9.x is required. Previous versions have not been tested.
 
-The version that ships with RHEL 6 and above is fine::
+The version that ships with el7 and above is fine::
 
 	# yum install postgresql-server
         # service postgresql initdb
 	# service postgresql start
 
-The standard init script that ships RHEL 6 and similar should work fine. Enable it with this command::
+The standard init script that ships with el7 should work fine. Enable it with this command::
 
         # chkconfig postgresql on
-
-
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
 =======================================================================================
@@ -166,9 +186,12 @@ With the Dataverse-specific schema in place, you can now start Solr::
 Solr Init Script
 ================
 
-The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but starting Solr with an init script is recommended. You can attempt to adjust this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.
+The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but letting the system start Solr automatically is recommended.
+ 
+- This :download:`Solr Systemd file<../_static/installation/files/etc/systemd/solr.service>` will launch Solr on boot as the solr user for RHEL/CentOS 7 or Ubuntu 16+ systems, or
+- For systems using init.d, you may attempt to adjust this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.
 
-Solr should be running before the installation script is executed.
+Solr should be running before the Dataverse installation script is executed.
 
 Securing Solr
 =============

@@ -1,0 +1,32 @@
+{
+    "name": "dump to local RSAL",
+    "steps": [
+        {
+            "provider":":internal",
+            "stepType":"log",
+            "parameters": {
+                "message": "Pre-http request"
+            }
+        },
+        {
+            "provider":":internal",
+            "stepType":"http/sr",
+            "parameters": {
+                "url":"http://localhost:5050/dump/${invocationId}",
+                "method":"POST",
+                "contentType":"text/plain",
+                "body":"${invocationId}\ndataset.id=${dataset.id} /\ndataset.identifier=${dataset.identifier} /dataset.globalId=${dataset.globalId} /\ndataset.displayName=${dataset.displayName} /\ndataset.citation=${dataset.citation} /\nminorVersion=${minorVersion} /\nmajorVersion=${majorVersion} /\nreleaseCompleted=${releaseStatus} /",
+                "expectedResponse":"OK.*",
+                "rollbackUrl":"http://localhost:5050/dump/${invocationId}",
+                "rollbackMethod":"DELETE"
+            }
+        },
+        {
+            "provider":":internal",
+            "stepType":"log",
+            "parameters": {
+                "message": "Post-http request"
+            }
+        }
+    ]
+}

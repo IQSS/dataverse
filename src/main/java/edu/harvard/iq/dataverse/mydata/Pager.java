@@ -5,21 +5,19 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
-import com.google.gson.JsonArray;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import java.io.IOException;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
 import javax.json.JsonObjectBuilder;
-import org.primefaces.json.JSONException;
-import org.primefaces.json.JSONObject;
 
 /**
  *
@@ -32,6 +30,7 @@ public class Pager {
     
     /* inputs */
     public int numResults;
+    public String numResultsString;
     public int docsPerPage = SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE;
     public int selectedPageNumber = 1;
 
@@ -45,6 +44,9 @@ public class Pager {
     public int startCardNumber = 0;
     public int endCardNumber = 0;
     
+    public String startCardNumberString;
+    public String endCardNumberString;
+
     public int remainingCards = 0;
     public int numberNextResults =0;
     
@@ -226,6 +228,17 @@ public class Pager {
         return this.pageNumberList;
     }
     
+    public Integer[] getPageListAsIntegerList(){
+
+        if (pageNumberList == null){
+            return null;
+        }
+        
+        // source: https://stackoverflow.com/questions/880581/how-to-convert-int-to-integer-in-java            
+        return Arrays.stream(pageNumberList).boxed().toArray( Integer[]::new );
+        
+
+    }
 
     /**
      * @param pageNumberList
@@ -277,7 +290,11 @@ public class Pager {
         return this.startCardNumber;
     }
     
+    public String getStartCardNumberString(){
+        
+        return this.addCommasToNumber(startCardNumber);
 
+    }
     /**
      * @param startCardNumber
      */
@@ -294,7 +311,11 @@ public class Pager {
         return this.endCardNumber;
     }
     
+    public String getEndCardNumberString(){
+        
+        return this.addCommasToNumber(endCardNumber);
 
+    }
     /**
      * @param endCardNumber
      */
@@ -316,33 +337,82 @@ public class Pager {
         return this.asJsonObjectBuilder().build().toString();
     }
     
+    
+    public String addCommasToNumber(int count){
+        
+        return NumberFormat.getInstance().format(count);
+    }
+    
+    
+    /** 
+     * Originally used for mydata. 
+     * 
+     * Variables are named using the idea of cards--as in Dataverse cards,
+     * Dataset cards, etc. on the homepage
+     * 
+     * @return 
+     */
+    public JsonObjectBuilder asJsonObjectBuilderUsingCardTerms(){
+    
+        return asJsonObjectBuilderCore(true);
+    }
+
+    /** 
+     * 
+     * Variables are named using the idea of number of results
+     * 
+     * @return 
+     */
     public JsonObjectBuilder asJsonObjectBuilder(){
+    
+        return asJsonObjectBuilderCore(false);
+    }
+
+    
+    private JsonObjectBuilder asJsonObjectBuilderCore(boolean useCardTerms){
         
         JsonObjectBuilder jsonPageInfo = Json.createObjectBuilder();
                 
        
         jsonPageInfo.add("isNecessary", this.isPagerNecessary())
                     .add("numResults", this.numResults)
+                    .add("numResultsString", this.addCommasToNumber(numResults))
                     .add("docsPerPage", this.docsPerPage)
                     .add("selectedPageNumber", this.selectedPageNumber)
                     .add("pageCount", this.pageCount)
                     .add("hasPreviousPageNumber", this.hasPreviousPageNumber())
                     .add("previousPageNumber", this.previousPageNumber)
                     .add("hasNextPageNumber", this.hasNextPageNumber())
-                    .add("nextPageNumber", this.nextPageNumber)
-                    .add("startCardNumber", this.startCardNumber)
+                    .add("nextPageNumber", this.nextPageNumber);
+        
+        if (useCardTerms){
+            jsonPageInfo.add("startCardNumber", this.startCardNumber)
                     .add("endCardNumber", this.endCardNumber)
-                    .add("remainingCards", this.remainingCards)
-                    .add("numberNextResults", this.numberNextResults);
+                    .add("startCardNumberString", this.addCommasToNumber(this.startCardNumber))
+                    .add("endCardNumberString", this.addCommasToNumber(this.endCardNumber))
+                    .add("remainingCards", this.remainingCards);
+        }else{
+            jsonPageInfo.add("startResultNumber", this.startCardNumber)
+                    .add("endResultNumber", this.endCardNumber)
+                    .add("startResultNumberString", this.addCommasToNumber(this.startCardNumber))
+                    .add("endResultNumberString", this.addCommasToNumber(this.endCardNumber))
+                    .add("remainingResults", this.remainingCards);
+            
+        }
+        
+        jsonPageInfo.add("numberNextResults", this.numberNextResults);
         
         // --------------------
         // pageNumberList
         // --------------------
         JsonArrayBuilder jsonPageNumberArrayBuilder = Json.createArrayBuilder();
-        for (int pg : this.pageNumberList){
-            jsonPageNumberArrayBuilder.add(pg);
+        if (this.pageNumberList != null) {
+            for (int pg : this.pageNumberList) {
+                jsonPageNumberArrayBuilder.add(pg);
+            }
+            jsonPageInfo.add("pageNumberList", jsonPageNumberArrayBuilder);
         }
-        jsonPageInfo.add("pageNumberList", jsonPageNumberArrayBuilder);
+
         // --------------------
    
         return jsonPageInfo;
@@ -389,6 +459,12 @@ public class Pager {
         for(int i=0; i< NUM_VISIBLE_PAGES_BUTTONS; i++){
             this.pageNumberList[i] = i + startPage;
         }        
+    }
+    
+    public String getNumResultsString(){
+        
+        return this.addCommasToNumber(numResults);
+
     }
     
     public static void main(String[] args) throws IOException {

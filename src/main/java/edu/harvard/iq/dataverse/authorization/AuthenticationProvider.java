@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 /**
  * Objects that can authenticate users. The authentication process yields a unique 
@@ -10,6 +11,13 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
  * can be queried using the {@code isXXXAllowed()} methods. If an implementation returns {@code true}
  * from one of these methods, it has to implement the matching methods.
  * 
+ * Note: If you are adding an implementation of this interface, please add a "friendly" name to the bundles.
+ *  Example:  ShibAuthenticationProvider implements this interface.
+ *            (a)  ShibAuthenticationProvider.getID() returns "ship"
+ *            (b)  Construct bundle name using String id "shib" from (a):
+ *                "authenticationProvider.name." + "ship" ->
+ *            (c)  Bundle.properties entry: "authenticationProvider.name.shib=Shibboleth"
+ *          
  * {@code AuthenticationPrvider}s are normally registered at startup in {@link AuthenticationServiceBean#startup()}.
  * 
  * @author michael
@@ -17,7 +25,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 public interface AuthenticationProvider {
     
     String getId();
-    
+        
     AuthenticationProviderDisplayInfo getInfo();
     
     default boolean isPasswordUpdateAllowed() { return false; };
@@ -35,12 +43,16 @@ public interface AuthenticationProvider {
     default String getPersistentIdUrlPrefix() { return null; };
     default String getLogo() { return null; };
     
+    
+    
     /**
      * Some providers (e.g organizational ones) provide verified email addresses.
      * @return {@code true} if we can treat email addresses coming from this provider as verified, {@code false} otherwise.
      */
     default boolean isEmailVerified() { return false; };
     
+    
+
     /**
      * Updates the password of the user whose id is passed. 
      * @param userIdInProvider User id in the provider. NOT the {@link AuthenticatedUser#id}, which is internal to the installation.
@@ -80,4 +92,37 @@ public interface AuthenticationProvider {
     default void deleteUser( String userIdInProvider ) {
         throw new UnsupportedOperationException(this.toString() + " does not implement account deletions");
     }
+ 
+    
+    /**
+     * Given the AuthenticationProvider id, return the friendly name 
+     * of the AuthenticationProvider as defined in the bundle
+     * 
+     * If no name is defined, return the id itself
+     * 
+     * @param authProviderId
+     * @return 
+     */
+    public static String getFriendlyName(String authProviderId){
+        if (authProviderId == null){
+            return BundleUtil.getStringFromBundle("authenticationProvider.name.null");
+        }
+        
+        String friendlyName = BundleUtil.getStringFromBundle("authenticationProvider.name." + authProviderId);
+        if (friendlyName == null){
+            return authProviderId;
+        }
+        return friendlyName;
+    }
+
+    /**
+     * Given the AuthenticationProvider id, 
+     * return the friendly name using the static method
+     */
+    default String getFriendlyName(){
+        // call static method
+        return BundleUtil.getStringFromBundle("authentication.human_readable." + this.getId());
+    }
+        
 }
+

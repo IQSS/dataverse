@@ -17,14 +17,11 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -36,7 +33,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 /**
@@ -82,11 +78,11 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public Dataverse find(Object pk) {
-        return (Dataverse) em.find(Dataverse.class, pk);
+        return em.find(Dataverse.class, pk);
     }
 
     public List<Dataverse> findAll() {
-        return em.createQuery("select object(o) from Dataverse as o order by o.name").getResultList();
+        return em.createQuery("select object(o) from Dataverse as o order by o.name", Dataverse.class).getResultList();
     }
 
     /**
@@ -119,27 +115,26 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<Dataverse> findByOwnerId(Long ownerId) {
-        Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name");
-        query.setParameter("ownerId", ownerId);
-        return query.getResultList();
+        String qr = "select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name";
+        return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
     }
     
     public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
-        Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name");
-        query.setParameter("ownerId", ownerId);
-        return query.getResultList();
+        String qr ="select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name";
+        return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
     }
 
     /**
+     * @return the root dataverse
      * @todo Do we really want this method to sometimes throw a
      * NoResultException which is a RuntimeException?
      */
     public Dataverse findRootDataverse() {
-        return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
+        return em.createQuery("select object(o) from Dataverse as o where o.owner.id = null", Dataverse.class).getSingleResult();
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
-        List<Dataverse> retVal = new ArrayList();       
+        List<Dataverse> retVal = new ArrayList<>();       
         List<Dataverse> previousLevel = findPublishedByOwnerId(ownerId);
         
         retVal.addAll(previousLevel);
@@ -156,6 +151,8 @@ public class DataverseServiceBean implements java.io.Serializable {
      * A lookup of a dataverse alias should be case insensitive. If "cfa"
      * belongs to the Center for Astrophysics, we don't want to allow Code for
      * America to start using "CFA". Force all queries to be lower case.
+     * @param anAlias
+     * @return 
      */
     public Dataverse findByAlias(String anAlias) {
         try {
@@ -183,7 +180,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public String determineDataversePath(Dataverse dataverse) {
-        List<String> dataversePathSegments = new ArrayList();
+        List<String> dataversePathSegments = new ArrayList<>();
         indexService.findPathSegments(dataverse, dataversePathSegments);
         StringBuilder dataversePath = new StringBuilder();
         for (String segment : dataversePathSegments) {
@@ -193,7 +190,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public MetadataBlock findMDB(Long id) {
-        return (MetadataBlock) em.find(MetadataBlock.class, id);
+        return em.find(MetadataBlock.class, id);
     }
 
     public MetadataBlock findMDBByName(String name) {
@@ -203,24 +200,26 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<MetadataBlock> findAllMetadataBlocks() {
-        return em.createQuery("select object(o) from MetadataBlock as o order by o.id").getResultList();
+        return em.createQuery("select object(o) from MetadataBlock as o order by o.id", MetadataBlock.class).getResultList();
     }
     
     public List<MetadataBlock> findSystemMetadataBlocks(){
-        return em.createQuery("select object(o) from MetadataBlock as o where o.owner.id=null  order by o.id").getResultList();
+        String qr = "select object(o) from MetadataBlock as o where o.owner.id=null  order by o.id";
+        return em.createQuery(qr, MetadataBlock.class).getResultList();
     }
     
     public List<MetadataBlock> findMetadataBlocksByDataverseId(Long dataverse_id) {
-        return em.createQuery("select object(o) from MetadataBlock as o where o.owner.id=:dataverse_id order by o.id")
+        String qr = "select object(o) from MetadataBlock as o where o.owner.id=:dataverse_id order by o.id";
+        return em.createQuery(qr, MetadataBlock.class)
                 .setParameter("dataverse_id", dataverse_id).getResultList();
     }
     
     public DataverseFacet findFacet(Long id) {
-        return (DataverseFacet) em.find(DataverseFacet.class, id);
+        return em.find(DataverseFacet.class, id);
     }
     
     public List<DataverseFacet> findAllDataverseFacets() {
-        return em.createQuery("select object(o) from DataverseFacet as o order by o.display").getResultList();
+        return em.createQuery("select object(o) from DataverseFacet as o order by o.display", DataverseFacet.class).getResultList();
     }
     
     public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {
@@ -231,7 +230,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         File dataverseLogoFile = getLogo(dataverse);
         if (dataverseLogoFile != null) {
-            String logoThumbNailPath = null;
+            String logoThumbNailPath;
 
             if (dataverseLogoFile.exists()) {
                 logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
@@ -249,7 +248,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         File dataverseLogoFile = getLogoById(dvId);
         
         if (dataverseLogoFile != null) {
-            String logoThumbNailPath = null;
+            String logoThumbNailPath;
 
             if (dataverseLogoFile.exists()) {
                 logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
@@ -313,7 +312,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         
         DataverseTheme theme = dataverse.getDataverseTheme(); 
-        if (theme != null && theme.getLogo() != null && !theme.getLogo().equals("")) {
+        if (theme != null && theme.getLogo() != null && !theme.getLogo().isEmpty()) {
             Properties p = System.getProperties();
             String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
   
@@ -334,7 +333,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null; 
         }
         
-        String logoFileName = null;
+        String logoFileName;
         
         try {
                 logoFileName = (String) em.createNativeQuery("SELECT logo FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
@@ -343,7 +342,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
         
-        if (logoFileName != null && !logoFileName.equals("")) {
+        if (logoFileName != null && !logoFileName.isEmpty()) {
             Properties p = System.getProperties();
             String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
   
@@ -364,7 +363,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null; 
         }
         
-        Object[] result = null;
+        Object[] result;
         
         try {
                 result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
@@ -385,10 +384,13 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         if (result[1] != null) {
             String format = (String) result[1];
-            if ("RECTANGLE".equals(format)) {
+            switch (format) {
+                case "RECTANGLE":
                 theme.setLogoFormat(DataverseTheme.ImageFormat.RECTANGLE);
-            } else if ("SQUARE".equals(format)) {
+                    break;
+                case "SQUARE":
                 theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
+                    break;
             }
         }
         
@@ -414,13 +416,12 @@ public class DataverseServiceBean implements java.io.Serializable {
     public List<Dataverse> filterByAliasQuery(String filterQuery) {
         //Query query = em.createNativeQuery("select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
         //Query query = em.createNamedQuery("Dataverse.filterByAlias", Dataverse.class).setParameter("alias", filterQuery.toLowerCase() + "%");
-        Query query = em.createNamedQuery("Dataverse.filterByAliasNameAffiliation", Dataverse.class)
+        List<Dataverse> ret = em.createNamedQuery("Dataverse.filterByAliasNameAffiliation", Dataverse.class)
                 .setParameter("alias", filterQuery.toLowerCase() + "%")
                 .setParameter("name", "%" + filterQuery.toLowerCase() + "%")
-                .setParameter("affiliation", "%" + filterQuery.toLowerCase() + "%");
+                .setParameter("affiliation", "%" + filterQuery.toLowerCase() + "%").getResultList();
         //logger.info("created native query: select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
         logger.info("created named query");
-        List<Dataverse> ret = query.getResultList();
         if (ret != null) {
             logger.info("results list: "+ret.size()+" results.");
         }
@@ -467,7 +468,40 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         return ret;        
     }*/
+    
+    public String getParentAliasString(SolrSearchResult solrSearchResult){
+        Long dvId = solrSearchResult.getEntityId();
+        String retVal = "";
+        
+        if (dvId == null) {
+            return retVal;
+        }
+        
+        String searchResult;
+        try {
+            System.out.print("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")");
+            searchResult = (String) em.createNativeQuery("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")").getSingleResult();
 
+        } catch (Exception ex) {
+            System.out.print("catching exception");
+            System.out.print("catching exception" + ex.getMessage());
+            return retVal;
+        }
+
+        if (searchResult == null) {
+            System.out.print("searchResult == null");
+            return retVal;
+        }
+
+        if (searchResult != null) {
+            System.out.print(searchResult);
+            return searchResult;
+        }
+        
+        return retVal;
+    }
+    
+    
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {
   
         Long dvId = solrSearchResult.getEntityId();
@@ -481,12 +515,12 @@ public class DataverseServiceBean implements java.io.Serializable {
         if (parentId != null) {
             try {
                 parentDvId = Long.parseLong(parentId);
-            } catch (Exception ex) {
+            } catch (NumberFormatException ex) {
                 parentDvId = null;
             }
         }
         
-        Object[] searchResult = null;
+        Object[] searchResult;
         
         try {
             if (parentDvId == null) {

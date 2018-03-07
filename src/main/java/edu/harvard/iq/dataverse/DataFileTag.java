@@ -82,7 +82,7 @@ public class DataFileTag implements Serializable {
     }
     
     public static List<String> listTags() {
-        List<String> retlist = new ArrayList();
+        List<String> retlist = new ArrayList<>();
         
         for(TagType t : TagType.values()) {
             retlist.add(TagTypeToLabels.get(t));
@@ -137,10 +137,7 @@ public class DataFileTag implements Serializable {
         if (this.type == null){
             return false;
         }
-        if (this.type == TagType.Geospatial){
-            return true;
-        }
-        return false;
+        return this.type == TagType.Geospatial;
     }
     
     @Override
@@ -157,10 +154,7 @@ public class DataFileTag implements Serializable {
             return false;
         }
         DataFileTag other = (DataFileTag) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
     @Override
@@ -183,11 +177,7 @@ public class DataFileTag implements Serializable {
             throw new NullPointerException("label cannot be null");
         }
        
-        if (TagLabelToTypes.containsKey(label)){
-            return true;
-        }
-    
-        return false;
+        return TagLabelToTypes.containsKey(label);
     }
     
     public TagType getDataFileTagFromLabel(String label){

@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
+import edu.harvard.iq.dataverse.DataFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,7 +20,7 @@ import java.util.logging.Logger;
  *
  * @author Leonid Andreev
  */
-public class InputStreamIO extends DataFileIO {
+public class InputStreamIO extends StorageIO<DataFile> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.InputStreamIO");
 
@@ -50,6 +51,11 @@ public class InputStreamIO extends DataFileIO {
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+    
+    @Override
+    public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
+        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver."); 
     }
     
     @Override
@@ -89,6 +95,11 @@ public class InputStreamIO extends DataFileIO {
     @Override
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+    
+    @Override
+    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
+        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver."); 
     }
     
     @Override
@@ -138,4 +149,10 @@ public class InputStreamIO extends DataFileIO {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: there is no output stream associated with this object.");
     }
 
+    @Override
+    public InputStream getAuxFileAsInputStream(String auxItemTag) {
+        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver."); 
+    }
+
+  
 }

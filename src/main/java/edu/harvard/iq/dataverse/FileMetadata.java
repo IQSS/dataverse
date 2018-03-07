@@ -64,6 +64,13 @@ public class FileMetadata implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String description = "";
     
+    /**
+     * At the FileMetadata level, "restricted" is a historical indication of the
+     * data owner's intent for the file by version. Permissions are actually
+     * enforced based on the "restricted" boolean at the *DataFile* level. On
+     * publish, the latest intent is copied from the FileMetadata level to the
+     * DataFile level.
+     */
     @Expose
     private boolean restricted;
 
@@ -160,8 +167,8 @@ public class FileMetadata implements Serializable {
             return ret;
         }
         
-        for (int idx=0; idx < fileCategories.size(); idx++){
-            ret.add(fileCategories.get(idx).getName());
+        for (DataFileCategory fileCategory : fileCategories) {
+            ret.add(fileCategory.getName());
         }
         // fileCategories.stream()
         //              .map(x -> ret.add(x.getName()));
@@ -178,8 +185,8 @@ public class FileMetadata implements Serializable {
             return builder;
         }
         
-        for (int idx=0; idx < fileCategories.size(); idx++){
-            builder.add(fileCategories.get(idx).getName());
+        for (DataFileCategory fileCategory : fileCategories) {
+            builder.add(fileCategory.getName());
         }
 
         //fileCategories.stream()
@@ -197,16 +204,16 @@ public class FileMetadata implements Serializable {
 
         if (newCategoryNames != null) {
 
-            for (int i = 0; i < newCategoryNames.size(); i++) {
+            for (String newCategoryName : newCategoryNames) {
                 // Dataset.getCategoryByName() will check if such a category 
                 // already exists for the parent dataset; it will be created 
                 // if not. The method will return null if the supplied 
                 // category name is null or empty. -- L.A. 4.0 beta 10
-                DataFileCategory fileCategory = null;
+                DataFileCategory fileCategory;
                 try {
                     // Using "try {}" to catch any null pointer exceptions, 
                     // just in case: 
-                    fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryNames.get(i));
+                    fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryName);
                 } catch (Exception ex) {
                     fileCategory = null;
                 }
@@ -251,10 +258,10 @@ public class FileMetadata implements Serializable {
     */
     
     public void addCategoryByName(String newCategoryName) {
-        if (newCategoryName != null && !newCategoryName.equals("")) {
+        if (newCategoryName != null && !newCategoryName.isEmpty()) {
             Collection<String> oldCategoryNames = getCategoriesByName();
             if (!oldCategoryNames.contains(newCategoryName)) {
-                DataFileCategory fileCategory = null;
+                DataFileCategory fileCategory;
                 // Dataset.getCategoryByName() will check if such a category 
                 // already exists for the parent dataset; it will be created 
                 // if not. The method will return null if the supplied 
@@ -496,16 +503,16 @@ public class FileMetadata implements Serializable {
         public int compare(FileMetadata o1, FileMetadata o2) {
             return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
         }
-    };    
+    };
     
     
     
-    public String asPrettyJSON(){
+    public String toPrettyJSON(){
         
         return serializeAsJSON(true);
     }
 
-    public String asJSON(){
+    public String toJSON(){
         
         return serializeAsJSON(false);
     }

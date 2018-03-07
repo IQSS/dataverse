@@ -13,7 +13,9 @@
         <f:facet name="first">
             <title><h:outputText value="#{pageTitle}"/></title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+            <ui:remove><!-- We might want dc_meta_header or jsonld_header at the file level some day.--></ui:remove>
 	    <ui:insert name="dc_meta_header"></ui:insert>
+	    <ui:insert name="jsonld_header"></ui:insert>
             <meta http-equiv="Content-Language" content="en"/>
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -34,18 +36,16 @@
                 if (window !== top) top.location = window.location;
             </script>
         </ui:fragment>
-    </h:head>
-    <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
-        <f:loadBundle basename="Bundle" var="bundle"/>
-        <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
-        
-        <ui:fragment>
+	<ui:fragment rendered="#{!empty settingsWrapper.get(':StyleCustomizationFile')}">
             <style>
                 /* Custom CSS */
                 <o:resourceInclude path="/CustomizationFilesServlet?customFileType=style" />
             </style>
         </ui:fragment>
-                
+    </h:head>
+    <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
+        <f:loadBundle basename="Bundle" var="bundle"/>
+	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>                
         <ui:include src="dataverse_header.xhtml">
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
@@ -109,32 +109,7 @@
                 bind_bsui_components();
             });
 
-            /*
-             * Custom Popover with HTML code snippet
-             */
-            function popoverHTML() {
-                var popoverTemplateHTML = ['<div class="popover">',
-                    '<div class="arrow"></div>',
-                    '<h3 class="popover-title"></h3>',
-                    '<div class="popover-content">',
-                    '</div>',
-                    '</div>'].join('');
-
-                var popoverContentHTML = ['<code>',
-                    '<h:outputText value="#{bundle.htmlAllowedTags}" escape="true"/>',
-                    '</code>'].join('');
-
-                $('body').popover({
-                    selector: 'span.popoverHTML',
-                    title: '<h:outputText value="#{bundle.htmlAllowedTitle}"/>',
-                    trigger: 'hover',
-                    content: popoverContentHTML,
-                    template: popoverTemplateHTML,
-                    placement: "bottom",
-                    container: "#content",
-                    html: true
-                });
-            }
+            
             //]]>
         </script>
         <ui:include src="google-analytics-snippet.xhtml"></ui:include>

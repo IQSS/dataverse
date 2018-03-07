@@ -2,11 +2,15 @@ package edu.harvard.iq.dataverse.api;
 
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -50,13 +54,18 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 import java.util.List;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.userdata.UserListMaker;
+import edu.harvard.iq.dataverse.userdata.UserListResult;
+import java.util.Date;
+import java.util.ResourceBundle;
+import javax.inject.Inject;
 import javax.ws.rs.QueryParam;
 /**
  * Where the secure, setup API calls live.
@@ -74,6 +83,20 @@ public class Admin extends AbstractApiBean {
     ShibServiceBean shibService;
     @EJB
     AuthTestDataServiceBean authTestDataService;
+    @EJB
+    UserServiceBean userService;
+    @EJB
+    IngestServiceBean ingestService;
+    @EJB
+    DataFileServiceBean fileService;
+
+    // Make the session available
+    @Inject
+    DataverseSession session;    
+
+    public static final String listUsersPartialAPIPath = "list-users";
+    public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
+
 
     @Path("settings")
     @GET
@@ -221,7 +244,7 @@ public class Admin extends AbstractApiBean {
             return ok(Boolean.toString(prvs.get(0).isEnabled()));
         }
     }
-    
+
     @DELETE
     @Path("authenticationProviders/{id}/")
     public Response deleteAuthenticationProvider( @PathParam("id") String id ) {
@@ -241,7 +264,7 @@ public class Admin extends AbstractApiBean {
     public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
         AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
         if (authenticatedUser != null) {
-            return ok(jsonForAuthUser(authenticatedUser));
+            return ok(json(authenticatedUser));
         }
         return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
     }
@@ -273,6 +296,7 @@ public class Admin extends AbstractApiBean {
         }
     }
 
+    @Deprecated
     @GET
     @Path("authenticatedUsers")
     public Response listAuthenticatedUsers() {
@@ -286,12 +310,44 @@ public class Admin extends AbstractApiBean {
         }
         JsonArrayBuilder userArray = Json.createArrayBuilder();
         authSvc.findAllAuthenticatedUsers().stream().forEach((user) -> {
-            userArray.add(jsonForAuthUser(user));
+            userArray.add(json(user));
         });
         return ok(userArray);
     }
 
+    
+    @GET
+    @Path(listUsersPartialAPIPath)
+    @Produces({"application/json"})
+    public Response filterAuthenticatedUsers(@QueryParam("searchTerm") String searchTerm,
+                        @QueryParam("selectedPage") Integer selectedPage,
+                        @QueryParam("itemsPerPage") Integer itemsPerPage
+    ) { 
+        
+        User authUser;
+        try {
+            authUser = this.findUserOrDie();
+        } catch (AbstractApiBean.WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, 
+                    ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.invalid_apikey")
+                    );
+        }
 
+        if (!authUser.isSuperuser()){
+            return error(Response.Status.FORBIDDEN, 
+                    ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
+        }
+        
+        
+        UserListMaker userListMaker = new UserListMaker(userService);      
+        
+        String sortKey = null;
+        UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, sortKey);
+
+        return ok(userListResult.toJSON());
+    }
+    
+    
     /**
      * @todo Make this support creation of BuiltInUsers.
      *
@@ -314,7 +370,7 @@ public class Admin extends AbstractApiBean {
         AuthenticatedUserDisplayInfo userDisplayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, position);
         boolean generateUniqueIdentifier = true;
         AuthenticatedUser authenticatedUser = authSvc.createAuthenticatedUser(userRecordId, proposedAuthenticatedUserIdentifier, userDisplayInfo, true);
-        return ok(jsonForAuthUser(authenticatedUser));
+        return ok(json(authenticatedUser));
     }
 
     /**
@@ -875,6 +931,27 @@ public class Admin extends AbstractApiBean {
         JsonObjectBuilder info = datasetVersionSvc.fixMissingUnf(datasetVersionId, forceRecalculate);
         return ok(info);
     }
+    
+    @Path("datafiles/integrity/fixmissingoriginaltypes")
+    @GET
+    public Response fixMissingOriginalTypes() {
+        JsonObjectBuilder info = Json.createObjectBuilder();
+        
+        List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalTypes(); 
+        
+        if (affectedFileIds.isEmpty()) {
+            info.add("message", "All the tabular files in the database already have the original types set correctly; exiting.");
+        } else {
+            for (Long fileid : affectedFileIds) {
+                logger.info("found file id: "+fileid);
+            }
+            info.add("message", "Found "+affectedFileIds.size()+" tabular files with missing original types. Kicking off an async job that will repair the files in the background.");
+        }
+        
+        ingestService.fixMissingOriginalTypes(affectedFileIds);
+        
+        return ok(info);
+    }
 
     /**
      * This method is used in API tests, called from UtilIt.java.
@@ -903,4 +980,30 @@ public class Admin extends AbstractApiBean {
         return ok(data);
     }
 
+    /**
+     * validatePassword
+     * <p>
+     * Validate a password with an API call
+     *
+     * @param password The password
+     * @return A response with the validation result.
+     */
+    @Path("validatePassword")
+    @POST
+    public Response validatePassword(String password) {
+
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        final JsonArrayBuilder errorArray = Json.createArrayBuilder();
+        errors.forEach(errorArray::add);
+        return ok(Json.createObjectBuilder()
+                .add("password", password)
+                .add("errors", errorArray)
+        );
+    }
+    
+    @GET
+    @Path("/isOrcid")
+    public Response isOrcidEnabled() {
+        return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
+    }
 }

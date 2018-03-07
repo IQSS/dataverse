@@ -82,13 +82,13 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
         }
         ScriptRequestResponse scriptRequestResponse = null;
         try {
-            scriptRequestResponse = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset.getId(), dcmBaseUrl + DataCaptureModuleServiceBean.scriptRequestPath);
+            scriptRequestResponse = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset.getIdentifier(), dcmBaseUrl + DataCaptureModuleServiceBean.scriptRequestPath);
         } catch (DataCaptureModuleException ex) {
             throw new RuntimeException("Problem making script request to Data Capture Module:  " + DataCaptureModuleUtil.getMessageFromException(ex));
         }
         String script = scriptRequestResponse.getScript();
         if (script == null || script.isEmpty()) {
-            throw new RuntimeException(errorPreamble + " The script was null or empty.");
+            logger.warning("There was a problem getting the script. DCM returned status code: "+scriptRequestResponse.getHttpStatusCode());
         }
         logger.fine("script for dataset " + dataset.getId() + ": " + script);
         return scriptRequestResponse;

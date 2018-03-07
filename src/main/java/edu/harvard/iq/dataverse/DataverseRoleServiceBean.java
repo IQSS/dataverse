@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexAsync;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -126,7 +128,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		}
 		em.refresh(assignee);
 	}
-	
+        
 	public void revoke( RoleAssignment ra ) {
 		if ( ! em.contains(ra) ) {
 			ra = em.merge(ra);
@@ -138,11 +140,34 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             indexAsync.indexRole(ra);
 	}
 	
+        // "nuclear" remove-all roles for a user or group: 
+        // (Note that all the "definition points" - i.e., the dvObjects
+        // on which the roles were assigned - need to be reindexed for permissions
+        // once the role assignments are removed!
+        public void revokeAll(RoleAssignee assignee) {
+            Set<DvObject> reindexSet = new HashSet<>();
+            
+            for (RoleAssignment ra : roleAssigneeService.getAssignmentsFor(assignee.getIdentifier())) {
+                if ( ! em.contains(ra) ) {
+			ra = em.merge(ra);
+		}
+                em.remove(ra);
+                
+                reindexSet.add(ra.getDefinitionPoint());
+            }
+            
+            indexAsync.indexRoles(reindexSet);
+        }
+	
+        
+        
 	public RoleAssignmentSet roleAssignments( User user, Dataverse dv ) {
 		RoleAssignmentSet retVal = new RoleAssignmentSet(user);
 		while ( dv != null ) {
 			retVal.add( directRoleAssignments(user, dv) );
-			if ( dv.isPermissionRoot() ) break;
+			if ( dv.isPermissionRoot() ) {
+                            break;
+                        }
 			dv = dv.getOwner();
 		}
 		return retVal;
@@ -201,7 +226,9 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	 * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser, edu.harvard.iq.dataverse.Dataverse)
 	 */
 	public List<RoleAssignment> directRoleAssignments( RoleAssignee roas, DvObject dvo ) {
-		if ( roas==null ) throw new IllegalArgumentException("RoleAssignee cannot be null");
+		if ( roas==null ) {
+                    throw new IllegalArgumentException("RoleAssignee cannot be null");
+                }
 		TypedQuery<RoleAssignment> query = em.createNamedQuery(
 				"RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
 				RoleAssignment.class);
@@ -251,7 +278,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
          that contain that permission
          */
         List<DataverseRole> rolesToCheck = findBuiltinRoles();
-        List<DataverseRole> retVal = new ArrayList();
+        List<DataverseRole> retVal = new ArrayList<>();
         rolesToCheck.addAll(findByOwnerId(ownerId));
         for (DataverseRole role : rolesToCheck) {
             if (role.permissions().contains(permissionIn)) {

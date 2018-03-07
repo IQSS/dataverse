@@ -258,7 +258,9 @@ public class SearchServiceBean {
          */
         solrQuery.addFacetField(SearchFields.TYPE);
         solrQuery.addFacetField(SearchFields.FILE_TAG);
-        solrQuery.addFacetField(SearchFields.ACCESS);
+        if (!systemConfig.isPublicInstall()) {
+            solrQuery.addFacetField(SearchFields.ACCESS);
+        }
         /**
          * @todo: do sanity checking... throw error if negative
          */
@@ -334,7 +336,6 @@ public class SearchServiceBean {
         }
 
         SolrDocumentList docs = queryResponse.getResults();
-        Iterator<SolrDocument> iter = docs.iterator();
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
 
         /**
@@ -359,8 +360,8 @@ public class SearchServiceBean {
         Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
         Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
         String baseUrl = systemConfig.getDataverseSiteUrl();
-        while (iter.hasNext()) {
-            SolrDocument solrDocument = iter.next();
+
+        for (SolrDocument solrDocument : docs) {
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
@@ -415,7 +416,7 @@ public class SearchServiceBean {
             /**
              * @todo put all this in the constructor?
              */
-            List<String> states = (ArrayList<String>) solrDocument.getFieldValue(SearchFields.PUBLICATION_STATUS);
+            List<String> states = (List<String>) solrDocument.getFieldValue(SearchFields.PUBLICATION_STATUS);
             if (states != null) {
                 // set list of all statuses
                 // this method also sets booleans for individual statuses
@@ -454,7 +455,7 @@ public class SearchServiceBean {
              */
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
-                solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
+                solrSearchResult.setHtmlUrl(baseUrl + SystemConfig.DATAVERSE_PATH + identifier);
                 // Do not set the ImageUrl, let the search include fragment fill in
                 // the thumbnail, similarly to how the dataset and datafile cards
                 // are handled. 
@@ -480,7 +481,7 @@ public class SearchServiceBean {
                 /**
                  * @todo Could use getFieldValues (plural) here.
                  */
-                ArrayList<String> datasetDescriptions = (ArrayList<String>) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
+                List<String> datasetDescriptions = (List<String>) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
                 if (datasetDescriptions != null) {
                     String firstDatasetDescription = datasetDescriptions.get(0);
                     if (firstDatasetDescription != null) {
@@ -493,12 +494,12 @@ public class SearchServiceBean {
                 solrSearchResult.setCitationHtml(citationPlainHtml);
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
-                    solrSearchResult.setTitle((String) title);
+                    solrSearchResult.setTitle(title);
                 } else {
                     logger.fine("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
                     solrSearchResult.setTitle("");
                 }
-                List<String> authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
+                List<String> authors = (List) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
                 if (authors != null) {
                     solrSearchResult.setDatasetAuthors(authors);
                 }
@@ -534,18 +535,18 @@ public class SearchServiceBean {
                 }
                 solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));
                 try {
-                    solrSearchResult.setFileChecksumType((DataFile.ChecksumType) DataFile.ChecksumType.fromString((String) solrDocument.getFieldValue(SearchFields.FILE_CHECKSUM_TYPE)));
+                    solrSearchResult.setFileChecksumType(DataFile.ChecksumType.fromString((String) solrDocument.getFieldValue(SearchFields.FILE_CHECKSUM_TYPE)));
                 } catch (IllegalArgumentException ex) {
                     logger.info("Exception setting setFileChecksumType: " + ex);
                 }
                 solrSearchResult.setFileChecksumValue((String) solrDocument.getFieldValue(SearchFields.FILE_CHECKSUM_VALUE));
                 solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
-                List<String> fileCategories = (ArrayList) solrDocument.getFieldValues(SearchFields.FILE_TAG);
+                List<String> fileCategories = (List) solrDocument.getFieldValues(SearchFields.FILE_TAG);
                 if (fileCategories != null) {
                     solrSearchResult.setFileCategories(fileCategories);
                 }
-                List<String> tabularDataTags = (ArrayList) solrDocument.getFieldValues(SearchFields.TABDATA_TAG);
+                List<String> tabularDataTags = (List) solrDocument.getFieldValues(SearchFields.TABDATA_TAG);
                 if (tabularDataTags != null) {
                     Collections.sort(tabularDataTags);
                     solrSearchResult.setTabularDataTags(tabularDataTags);
@@ -569,7 +570,7 @@ public class SearchServiceBean {
             }
         }
 
-        List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
+        List<FacetCategory> facetCategoryList = new ArrayList<>();
         List<FacetCategory> typeFacetCategories = new ArrayList<>();
         boolean hidePublicationStatusFacet = true;
         boolean draftsAvailable = false;
@@ -642,9 +643,7 @@ public class SearchServiceBean {
                 String staticSearchField = null;
                 try {
                     staticSearchField = (String) fieldObject.get(searchFieldsObject);
-                } catch (IllegalArgumentException ex) {
-                    Logger.getLogger(SearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
+                } catch (IllegalArgumentException | IllegalAccessException ex) {
                     Logger.getLogger(SearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 if (staticSearchField != null && facetField.getName().equals(staticSearchField)) {
@@ -686,7 +685,7 @@ public class SearchServiceBean {
         }
 
         // for now the only range facet is citation year
-        for (RangeFacet rangeFacet : queryResponse.getFacetRanges()) {
+        for (RangeFacet<String, String> rangeFacet : queryResponse.getFacetRanges()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
             for (Object rfObj : rangeFacet.getCounts()) {
@@ -707,9 +706,9 @@ public class SearchServiceBean {
             facetCategory.setFacetLabel(facetLabelList);
             // reverse to show the newest citation year range at the top
             List<FacetLabel> facetLabelListReversed = new ArrayList<>();
-            ListIterator li = facetLabelList.listIterator(facetLabelList.size());
+            ListIterator<FacetLabel> li = facetLabelList.listIterator(facetLabelList.size());
             while (li.hasPrevious()) {
-                facetLabelListReversed.add((FacetLabel) li.previous());
+                facetLabelListReversed.add(li.previous());
             }
             facetCategory.setFacetLabel(facetLabelListReversed);
             if (!facetLabelList.isEmpty()) {
@@ -734,7 +733,7 @@ public class SearchServiceBean {
             solrQueryResponse.setFilterQueriesActual(actualFilterQueries);
         } else {
             // how often is this null?
-            logger.fine("solrQuery.getFilterQueries() was null");
+            logger.info("solrQuery.getFilterQueries() was null");
         }
 
         solrQueryResponse.setDvObjectCounts(queryResponse.getFacetField("dvObjectType"));
