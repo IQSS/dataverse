@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -44,7 +45,10 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
              throw new IllegalCommandException("You must enter a reason for returning a dataset to the author(s).", this);
         }
          */
-        return save(ctxt);
+        ctxt.engine().submit( new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview));
+        Dataset updatedDataset = save(ctxt);
+        return updatedDataset;
+        
     }
 
     public Dataset save(CommandContext ctxt) throws CommandException {
@@ -52,9 +56,16 @@ public class ReturnDatasetToAuthorCommand extends AbstractCommand<Dataset> {
         Timestamp updateTime = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         // We set "in review" to false because now the ball is back in the author's court.
-        theDataset.getEditVersion().setInReview(false);
         theDataset.setModificationTime(updateTime);
-        
+        // TODO: ctxt.datasets().removeDatasetLocks() doesn't work. Try RemoveLockCommand?
+        AuthenticatedUser authenticatedUser = null;
+        for (DatasetLock lock : theDataset.getLocks()) {
+            if (DatasetLock.Reason.InReview.equals(lock.getReason())) {
+                theDataset.removeLock(lock);
+                // TODO: Are we supposed to remove the dataset lock from the user? What's going on here?
+                authenticatedUser = lock.getUser();
+            }
+        }
         Dataset savedDataset = ctxt.em().merge(theDataset);
         ctxt.em().flush();
 

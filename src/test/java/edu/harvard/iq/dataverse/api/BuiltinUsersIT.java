@@ -5,15 +5,25 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class BuiltinUsersIT {
@@ -28,6 +38,11 @@ public class BuiltinUsersIT {
     @BeforeClass
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
+        removeAllowApiTokenLookupViaApi.then().assertThat()
+                .statusCode(200);
+
     }
 
     @Test
@@ -57,18 +72,18 @@ public class BuiltinUsersIT {
                 .statusCode(OK.getStatusCode());
 
     }
-    
+
     @Test
     public void testLastApiUse() {
         Response createApiUser = UtilIT.createRandomUser();
         String apiUsername = UtilIT.getUsernameFromResponse(createApiUser);
         String secondApiToken = UtilIT.getApiTokenFromResponse(createApiUser);
-        
+
         Response createDataverse = UtilIT.createRandomDataverse(secondApiToken);
         String alias = UtilIT.getAliasFromResponse(createDataverse);
         Response createDatasetViaApi = UtilIT.createRandomDatasetViaNativeApi(alias, secondApiToken);
         Response getApiUserAsJson = UtilIT.getAuthenticatedUser(apiUsername, secondApiToken);
-        
+
         getApiUserAsJson.prettyPrint();
         getApiUserAsJson.then().assertThat()
                 // Checking that it's 2017 or whatever. Not y3k compliant! 
@@ -127,8 +142,8 @@ public class BuiltinUsersIT {
         createUserResponse.prettyPrint();
         assertEquals(400, createUserResponse.statusCode());
     }
-    
-    @Test 
+
+    @Test
     public void testBadCharacterInUsername() {
         String randomUsername = getRandomUsername() + "/";
         String email = randomUsername + "@mailinator.com";
@@ -136,7 +151,7 @@ public class BuiltinUsersIT {
         createUserResponse.prettyPrint();
         assertEquals(400, createUserResponse.statusCode());
     }
-    
+
     @Test
     public void testAccentInUsername() {
         String randomUsername = getRandomUsername();
@@ -162,13 +177,22 @@ public class BuiltinUsersIT {
         String createdToken = createdUser.getString("data.apiToken");
         logger.info(createdToken);
 
-        Response getApiTokenUsingUsername = getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
+        Response getApiTokenShouldFail = UtilIT.getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
+        getApiTokenShouldFail.then().assertThat()
+                .body("message", equalTo("This API endpoint has been disabled."))
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        Response setAllowApiTokenLookupViaApi = UtilIT.setSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi, "true");
+        setAllowApiTokenLookupViaApi.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getApiTokenUsingUsername = UtilIT.getApiTokenUsingUsername(usernameToCreate, usernameToCreate);
         getApiTokenUsingUsername.prettyPrint();
         assertEquals(200, getApiTokenUsingUsername.getStatusCode());
         String retrievedTokenUsingUsername = JsonPath.from(getApiTokenUsingUsername.asString()).getString("data.message");
         assertEquals(createdToken, retrievedTokenUsingUsername);
 
-        Response failExpected = getApiTokenUsingUsername("junk", "junk");
+        Response failExpected = UtilIT.getApiTokenUsingUsername("junk", "junk");
         failExpected.prettyPrint();
         assertEquals(400, failExpected.getStatusCode());
 
@@ -180,6 +204,148 @@ public class BuiltinUsersIT {
             assertEquals(createdToken, retrievedTokenUsingEmail);
         }
 
+        Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
+        removeAllowApiTokenLookupViaApi.then().assertThat()
+                .statusCode(200);
+
+    }
+
+    @Test
+    public void testValidatePasswordScrewsTightened() {
+
+        Arrays.stream(SettingsServiceBean.Key.values())
+                .filter(key -> key.name().startsWith("PV"))
+                .forEach(key -> given().delete("/api/admin/settings/" + key));
+
+        Response setCharRules = UtilIT.setSetting(SettingsServiceBean.Key.PVCharacterRules, "UpperCase:1,LowerCase:1,Digit:1,Special:1");
+        setCharRules.then().assertThat()
+                .statusCode(200);
+        Response setMinLength = UtilIT.setSetting(SettingsServiceBean.Key.PVMinLength, "8");
+        setMinLength.then().assertThat()
+                .statusCode(200);
+        Response setNumCharacteristics = UtilIT.setSetting(SettingsServiceBean.Key.PVNumberOfCharacteristics, "4");
+        setNumCharacteristics.then().assertThat()
+                .statusCode(200);
+        Response setNumConsecutiveDigitsAllowed = UtilIT.setSetting(SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed, "4");
+        setNumConsecutiveDigitsAllowed.then().assertThat()
+                .statusCode(200);
+
+        Collections.unmodifiableMap(Stream.of(
+                new AbstractMap.SimpleEntry<>(" ", Arrays.asList( // All is wrong here:
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "INSUFFICIENT_DIGIT",
+                        "INSUFFICIENT_LOWERCASE",
+                        "INSUFFICIENT_SPECIAL",
+                        "INSUFFICIENT_UPPERCASE",
+                        "NO_GOODSTRENGTH",
+                        "TOO_SHORT"
+                )),
+                new AbstractMap.SimpleEntry<>("potato", Arrays.asList( // Lowercase ok, but:
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "INSUFFICIENT_DIGIT",
+                        "INSUFFICIENT_SPECIAL",
+                        "INSUFFICIENT_UPPERCASE",
+                        "NO_GOODSTRENGTH",
+                        "TOO_SHORT"
+                )),
+                new AbstractMap.SimpleEntry<>("POTATO", Arrays.asList( // Uppercase ok, but:
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "INSUFFICIENT_DIGIT",
+                        "INSUFFICIENT_SPECIAL",
+                        "INSUFFICIENT_LOWERCASE",
+                        "NO_GOODSTRENGTH",
+                        "TOO_SHORT"
+                )),
+                new AbstractMap.SimpleEntry<>("potat  o", Arrays.asList( // Length and lowercase ok, but:
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "INSUFFICIENT_DIGIT",
+                        "INSUFFICIENT_SPECIAL",
+                        "INSUFFICIENT_UPPERCASE",
+                        "NO_GOODSTRENGTH"
+                )),
+                new AbstractMap.SimpleEntry<>("POTAT  O", Arrays.asList( // Length and uppercase ok, but:
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "INSUFFICIENT_DIGIT",
+                        "INSUFFICIENT_SPECIAL",
+                        "INSUFFICIENT_LOWERCASE",
+                        "NO_GOODSTRENGTH"
+                )),
+                new AbstractMap.SimpleEntry<>("PoTaT  O", Arrays.asList( // correct length ,lower and upper case, but:
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "INSUFFICIENT_DIGIT",
+                        "INSUFFICIENT_SPECIAL",
+                        "NO_GOODSTRENGTH"
+                )),
+                new AbstractMap.SimpleEntry<>("potat1 o", Arrays.asList( // correct length and digit, but:
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "INSUFFICIENT_SPECIAL",
+                        "INSUFFICIENT_UPPERCASE",
+                        "NO_GOODSTRENGTH"
+                )),
+                new AbstractMap.SimpleEntry<>("potat$ o", Arrays.asList( // correct length and special character, but:
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "INSUFFICIENT_DIGIT",
+                        "INSUFFICIENT_UPPERCASE",
+                        "NO_GOODSTRENGTH"
+                )),
+                new AbstractMap.SimpleEntry<>("Pot@t00000", Arrays.asList( // correct length, case, special char, but exceeds repeated character limit (illegal match error)
+                        "ILLEGAL_MATCH",
+                        "NO_GOODSTRENGTH"
+                )),
+                new AbstractMap.SimpleEntry<>("Potat$ 1234!", Collections.emptyList()), // 4 digits in a row is ok
+                new AbstractMap.SimpleEntry<>("Potat$ 01!", Collections.emptyList()), // correct length, lowercase, special character and digit. All ok...
+                new AbstractMap.SimpleEntry<>("POTAT$ o1!", Collections.emptyList()), // correct length, uppercase, special character and digit. All ok...
+                new AbstractMap.SimpleEntry<>("Potat$ o1!", Collections.emptyList()), // correct length, uppercase, lowercase and and special character. All ok...
+                new AbstractMap.SimpleEntry<>("Potat  0!", Collections.emptyList()), // correct length, uppercase, lowercase and digit. All ok...
+                new AbstractMap.SimpleEntry<>("twentycharactershere", Collections.emptyList())) // 20 character password length. All ok...
+                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
+                (password, expectedErrors) -> {
+                    final Response response = given().body(password).when().post("/api/admin/validatePassword");
+                    response.prettyPrint();
+                    final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");
+                    assertTrue(actualErrors.containsAll(expectedErrors));
+                    assertTrue(expectedErrors.containsAll(actualErrors)); // Should be fully reflexive.
+                }
+        );
+    }
+
+    @Test
+    public void testValidatePasswordsOutOfBoxSettings() {
+
+        Arrays.stream(SettingsServiceBean.Key.values())
+                .filter(key -> key.name().startsWith("PV"))
+                .forEach(key -> given().delete("/api/admin/settings/" + key));
+
+        Collections.unmodifiableMap(Stream.of(
+                new AbstractMap.SimpleEntry<>(" ", Arrays.asList( // All is wrong here:
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "INSUFFICIENT_DIGIT",
+                        "INSUFFICIENT_ALPHABETICAL",
+                        "NO_GOODSTRENGTH",
+                        "TOO_SHORT"
+                )),
+                new AbstractMap.SimpleEntry<>("potato", Arrays.asList( // Alpha ok, but:
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "INSUFFICIENT_DIGIT",
+                        "NO_GOODSTRENGTH"
+                )),
+                new AbstractMap.SimpleEntry<>("123456", Arrays.asList( // correct length and special character, but:
+                        "INSUFFICIENT_ALPHABETICAL",
+                        "INSUFFICIENT_CHARACTERISTICS",
+                        "NO_GOODSTRENGTH"
+                )),
+                new AbstractMap.SimpleEntry<>("potat1", Collections.emptyList()), // Strong enough for Dataverse 4.0.
+                new AbstractMap.SimpleEntry<>("Potat  0", Collections.emptyList()), // All ok...
+                new AbstractMap.SimpleEntry<>("                    ", Collections.emptyList())) // 20 character password length. All ok...
+                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
+                (password, expectedErrors) -> {
+                    final Response response = given().body(password).when().post("/api/admin/validatePassword");
+                    response.prettyPrint();
+                    final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");
+                    assertTrue(actualErrors.containsAll(expectedErrors));
+                    assertTrue(expectedErrors.containsAll(actualErrors)); // Should be fully reflexive.
+                }
+        );
     }
 
     private Response createUser(String username, String firstName, String lastName, String email) {
@@ -189,13 +355,6 @@ public class BuiltinUsersIT {
                 .body(userAsJson)
                 .contentType(ContentType.JSON)
                 .post("/api/builtin-users?key=" + builtinUserKey + "&password=" + password);
-        return response;
-    }
-
-    private Response getApiTokenUsingUsername(String username, String password) {
-        Response response = given()
-                .contentType(ContentType.JSON)
-                .get("/api/builtin-users/" + username + "/api-token?username=" + username + "&password=" + password);
         return response;
     }
 

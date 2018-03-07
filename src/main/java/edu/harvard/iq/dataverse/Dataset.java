@@ -9,9 +9,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Logger;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -29,7 +30,6 @@ import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -74,7 +74,6 @@ import org.hibernate.validator.constraints.NotBlank;
     @Index(columnList = "thumbnailfile_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
 public class Dataset extends DvObjectContainer {
-    private static final Logger logger = Logger.getLogger(Dataset.class.getCanonicalName());
 
     public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
@@ -89,20 +88,25 @@ public class Dataset extends DvObjectContainer {
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
+    
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastExportTime;
 
     @NotBlank(message = "Please enter an identifier for your dataset.")
     @Column(nullable = false)
     private String identifier;
+    
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("versionNumber DESC, minorVersionNumber DESC")
     private List<DatasetVersion> versions = new ArrayList<>();
-    @OneToOne(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private DatasetLock datasetLock;
+
+    @OneToMany(mappedBy = "dataset", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<DatasetLock> datasetLocks;
+    
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "thumbnailfile_id")
     private DataFile thumbnailFile;
+    
     /**
      * By default, Dataverse will attempt to show unique thumbnails for datasets
      * based on images that have been uploaded to them. Setting this to true
@@ -142,7 +146,6 @@ public class Dataset extends DvObjectContainer {
     }    
 
     public Dataset() {
-        //this.versions = new ArrayList();
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(this);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -151,7 +154,63 @@ public class Dataset extends DvObjectContainer {
         datasetVersion.setMinorVersionNumber((long) 0);
         versions.add(datasetVersion);
     }
+    
+    /**
+     * Checks whether {@code this} dataset is locked for a given reason.
+     * @param reason the reason we test for.
+     * @return {@code true} iff the data set is locked for {@code reason}.
+     */
+    public boolean isLockedFor( DatasetLock.Reason reason ) {
+        for ( DatasetLock l : getLocks() ) {
+            if ( l.getReason() == reason ) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Retrieves the dataset lock for the passed reason. 
+     * @param reason
+     * @return the dataset lock, or {@code null}.
+     */
+    public DatasetLock getLockFor( DatasetLock.Reason reason ) {
+        for ( DatasetLock l : getLocks() ) {
+            if ( l.getReason() == reason ) {
+                return l;
+            }
+        }
+        return null;
+    }
+    
+    public Set<DatasetLock> getLocks() {
+        // lazy set creation
+        if ( datasetLocks == null ) {
+            setLocks( new HashSet<>() );
+        }
+        return datasetLocks;
+    }
 
+    /**
+     * JPA use only!
+     * @param datasetLocks 
+     */
+    void setLocks(Set<DatasetLock> datasetLocks) {
+        this.datasetLocks = datasetLocks;
+    }
+    
+    public void addLock(DatasetLock datasetLock) {
+        getLocks().add(datasetLock);
+    }
+    
+    public void removeLock( DatasetLock aDatasetLock ) {
+        getLocks().remove( aDatasetLock );
+    }
+
+    public boolean isLocked() {
+        return !getLocks().isEmpty();
+    }
+    
     public String getProtocol() {
         return protocol;
     }
@@ -169,9 +228,9 @@ public class Dataset extends DvObjectContainer {
     }
 
     /**
-     * returns dataset identifier.
-     * For example, a dataset with database id (primary key) 3, persistent ID
-     * doi:10.5072/FK2/abcde, this should return "abcde".
+     * @return dataset identifier.
+     *         For example, a dataset with database id (primary key) 3, persistent ID
+     *         doi:10.5072/FK2/abcde, this should return "abcde".
      */
     public String getIdentifier() {
         return identifier;
@@ -230,25 +289,11 @@ public class Dataset extends DvObjectContainer {
     }
 
     public List<DataFile> getFiles() {
-        //logger.info("getFiles() on dataset "+this.getId());
         return files;
     }
 
     public void setFiles(List<DataFile> files) {
-        logger.info("setFiles() on dataset "+this.getId());
         this.files = files;
-    }
-
-    public DatasetLock getDatasetLock() {
-        return datasetLock;
-    }
-
-    public void setDatasetLock(DatasetLock datasetLock) {
-        this.datasetLock = datasetLock;
-    }
-
-    public boolean isLocked() {
-        return datasetLock != null;
     }
 
     public boolean isDeaccessioned() {
@@ -258,7 +303,7 @@ public class Dataset extends DvObjectContainer {
             if (testDsv.isReleased()) {
                 return false;
             }
-            //Also check for draft version
+            // Also check for draft version
             if (testDsv.isDraft()) {
                 return false;
             }
@@ -299,6 +344,7 @@ public class Dataset extends DvObjectContainer {
         //if the latest version has values get them copied over
         if (template != null) {
             dsv.updateDefaultValuesFromTemplate(template);
+            setVersions(new ArrayList());
         } else {
             latestVersion = getLatestVersionForCopy();
             
@@ -354,6 +400,8 @@ public class Dataset extends DvObjectContainer {
     /**
      * The "edit version" is the most recent *draft* of a dataset, and if the
      * latest version of a dataset is published, a new draft will be created.
+     * 
+     * @return The edit version {@code this}.
      */
     public DatasetVersion getEditVersion() {
         return getEditVersion(null);
@@ -370,7 +418,7 @@ public class Dataset extends DvObjectContainer {
         }
     }
 
-    /**
+    /*
      * @todo Investigate if this method should be deprecated in favor of
      * createNewDatasetVersion.
      */
@@ -454,18 +502,6 @@ public class Dataset extends DvObjectContainer {
             }
         }
     }
-    /*
-     public void addCategoryByName(String newCategoryName) {
-     if (newCategoryName != null && !newCategoryName.equals("")) {
-     Collection<String> oldCategoryNames = getCategoryNames();
-     if (!oldCategoryNames.contains(newCategoryName)) {
-     DataFileCategory newCategory = new DataFileCategory();
-     newCategory.setName(newCategoryName);
-     newCategory.setDataset(this);
-     this.addFileCategory(newCategory);
-     }
-     }
-     }*/
 
     public DataFileCategory getCategoryByName(String categoryName) {
         if (categoryName != null && !categoryName.isEmpty()) {
@@ -606,7 +642,6 @@ public class Dataset extends DvObjectContainer {
         this.harvestedFrom = harvestingClientConfig;
     }
     
-    
     public boolean isHarvested() {
         return this.harvestedFrom != null;
     }
@@ -614,11 +649,11 @@ public class Dataset extends DvObjectContainer {
     private String harvestIdentifier;
      
     public String getHarvestIdentifier() {
-	return harvestIdentifier;
+        return harvestIdentifier;
     }
 
     public void setHarvestIdentifier(String harvestIdentifier) {
-	this.harvestIdentifier = harvestIdentifier;
+        this.harvestIdentifier = harvestIdentifier;
     }
 
     public String getRemoteArchiveURL() {
@@ -648,8 +683,7 @@ public class Dataset extends DvObjectContainer {
 
                 String nServerURLencoded = nServerURL;
 
-                nServerURLencoded.replace(":", "%3A");
-                nServerURLencoded.replace("/", "%2F");
+                nServerURLencoded = nServerURLencoded.replace(":", "%3A").replace("/", "%2F");
 
                 String NesstarWebviewPage = nServerURL
                         + "/webview/?mode=documentation&submode=abstract&studydoc="
@@ -677,7 +711,7 @@ public class Dataset extends DvObjectContainer {
                     }
                 }
                 return this.getHarvestedFrom().getArchiveUrl();
-            }else {
+            } else {
                 return this.getHarvestedFrom().getArchiveUrl();
             }
         }
@@ -702,7 +736,12 @@ public class Dataset extends DvObjectContainer {
         Dataset other = (Dataset) object;
         return Objects.equals(getId(), other.getId());
     }
-
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
+    
     @Override
     public <T> T accept(Visitor<T> v) {
         return v.visit(this);
@@ -733,8 +772,8 @@ public class Dataset extends DvObjectContainer {
      * This saves trying to find the latestDatasetVersion, and 
      * other costly queries, etc.
      * 
-     * @param datasetVersionId
-     * @return 
+     * @param datasetVersion
+     * @return A thumbnail of the dataset (may be {@code null}).
      */
     public DatasetThumbnail getDatasetThumbnail(DatasetVersion datasetVersion) {
         return DatasetUtil.getThumbnail(this, datasetVersion);

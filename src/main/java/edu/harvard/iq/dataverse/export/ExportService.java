@@ -54,8 +54,13 @@ public class ExportService {
     }
 
     /**
-     * TODO: Audit all calls to this getInstance method that doesn't take a SettingsServiceBean as an argument to make sure nothing broke.
+     * @deprecated Use `getInstance(SettingsServiceBean settingsService)`
+     * instead. For privacy reasons, we need to pass in settingsService so that
+     * we can make a decision whether not not to exclude email addresses. No new
+     * code should call this method and it would be nice to remove calls from
+     * existing code.
      */
+    @Deprecated
     public static synchronized ExportService getInstance() {
         return getInstance(null);
     }
@@ -64,8 +69,6 @@ public class ExportService {
         ExportService.settingsService = settingsService;
         if (service == null) {
             service = new ExportService();
-        } else {
-            service.loader.reload();
         }
         return service;
     }
@@ -230,15 +233,6 @@ public class ExportService {
     // in a file in the dataset directory / container based on its DOI:
     private void cacheExport(DatasetVersion version, String format, JsonObject datasetAsJson, Exporter exporter) throws ExportException {
         try {
-            if (version.getDataset().getFileSystemDirectory() != null && !Files.exists(version.getDataset().getFileSystemDirectory())) {
-                /* Note that "createDirectories()" must be used - not 
-                     * "createDirectory()", to make sure all the parent 
-                     * directories that may not yet exist are created as well. 
-                 */
-
-                Files.createDirectories(version.getDataset().getFileSystemDirectory());
-            }
-
             // With some storage drivers, we can open a WritableChannel, or OutputStream 
             // to directly write the generated metadata export that we want to cache; 
             // Some drivers (like Swift) do not support that, and will give us an
@@ -251,7 +245,7 @@ public class ExportService {
             Dataset dataset = version.getDataset();
             StorageIO<Dataset> storageIO = null;
             try {
-                storageIO = DataAccess.createNewStorageIO(dataset, "file");
+                storageIO = DataAccess.createNewStorageIO(dataset, "placeholder");
                 Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached", DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {
@@ -262,17 +256,19 @@ public class ExportService {
 
             try {
                 Path cachedMetadataFilePath = Paths.get(version.getDataset().getFileSystemDirectory().toString(), "export_" + format + ".cached");
-                FileOutputStream cachedExportOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
-                exporter.exportDataset(version, datasetAsJson, cachedExportOutputStream);
-                cachedExportOutputStream.flush();
-                cachedExportOutputStream.close();
 
-                if (tempFileRequired) {
-                    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
-                    exporter.exportDataset(version, datasetAsJson, outputStream);
+                if (!tempFileRequired) {
+                    FileOutputStream cachedExportOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
+                    exporter.exportDataset(version, datasetAsJson, cachedExportOutputStream);
                     cachedExportOutputStream.flush();
                     cachedExportOutputStream.close();
 
+                } else {
+                    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
+                    exporter.exportDataset(version, datasetAsJson, outputStream);
+                    outputStream.flush();
+                    outputStream.close();
+                    
                     logger.fine("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
                     storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
                     boolean tempFileDeleted = tempFile.delete();

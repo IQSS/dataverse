@@ -10,6 +10,7 @@ import java.util.List;
 import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider.Credential;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 
 /**
  * An authentication provider built into the application. Uses JPA and the 
@@ -25,9 +26,11 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     private static List<Credential> CREDENTIALS_LIST;
       
     final BuiltinUserServiceBean bean;
+    private PasswordValidatorServiceBean passwordValidatorService;
 
-    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean ) {
-        bean = aBean;
+    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean, PasswordValidatorServiceBean passwordValidatorService  ) {
+        this.bean = aBean;
+        this.passwordValidatorService = passwordValidatorService;
         KEY_USERNAME_OR_EMAIL = BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail");
         KEY_PASSWORD = BundleUtil.getStringFromBundle("login.builtin.credential.password");
         CREDENTIALS_LIST = Arrays.asList(new Credential(KEY_USERNAME_OR_EMAIL), new Credential(KEY_PASSWORD, true));
@@ -118,9 +121,19 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
             } catch (PasswordResetException ex) {
                 return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
             }
-        } else {
-            return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
+//        } else {
+//            return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
         }
+        final List<String> errors = passwordValidatorService.validate(authReq.getCredential("Password"));
+        if (!errors.isEmpty()) {
+            try {
+                String passwordResetUrl = bean.requestPasswordComplianceLink(u);
+                return AuthenticationResponse.makeBreakout(u.getUserName(), passwordResetUrl);
+            } catch (PasswordResetException ex) {
+                return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
+            }
+        }
+        return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
    }
 
     @Override

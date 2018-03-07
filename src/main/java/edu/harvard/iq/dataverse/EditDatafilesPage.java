@@ -829,6 +829,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     public void deleteFiles() {
+        logger.info("entering bulk file delete (EditDataFilesPage)");
         if (isFileReplaceOperation()){
             try {
                 deleteReplacementFile();
@@ -911,7 +912,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // removing it from the fileMetadatas list, we also remove it from 
                 // the newFiles list and the dataset's files, so it never gets saved.
                 
-                if (mode != FileEditMode.CREATE) {
+                //if (mode != FileEditMode.CREATE) {
                     // If the bean is in the 'CREATE' mode, the page is using
                     // dataset.getEditVersion().getFileMetadatas() directly, 
                     // so there's no need to delete this meta from the local
@@ -921,15 +922,15 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // fileMetadatas.remove(markedForDelete);
                     // - because the filemetadata doesn't have the id yet!)
                     
-                    Iterator<FileMetadata> fmit = fileMetadatas.iterator();
-                    while (fmit.hasNext()) {
-                        FileMetadata fmd = fmit.next();
+                    Iterator<FileMetadata> fmitlocal = fileMetadatas.iterator();
+                    while (fmitlocal.hasNext()) {
+                        FileMetadata fmd = fmitlocal.next();
                         if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                            fmit.remove();
+                            fmitlocal.remove();
                             break;
                         }
                     }
-                }
+                //}
                 
                 Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
@@ -1511,7 +1512,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // -----------------------------------------------------------
             if (this.isFileReplaceOperation()){
               this.handleReplaceFileUpload(event, dropBoxStream, fileName, FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT, null, event);
-              fileMetadataSelectedForTagsPopup = fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0);
+              this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
               return;
              }
             // -----------------------------------------------------------
@@ -2083,19 +2084,16 @@ public class EditDatafilesPage implements java.io.Serializable {
  
     public boolean isLocked() {
         if (dataset != null) {
-            logger.fine("checking lock status of dataset " + dataset.getId());
+            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
             if (dataset.isLocked()) {
                 // refresh the dataset and version, if the current working
                 // version of the dataset is locked:
             }
             Dataset lookedupDataset = datasetService.find(dataset.getId());
-            DatasetLock datasetLock = null;
-            if (lookedupDataset != null) {
-                datasetLock = lookedupDataset.getDatasetLock();
-                if (datasetLock != null) {
-                    logger.fine("locked!");
-                    return true;
-                }
+            
+            if ( (lookedupDataset!=null) && lookedupDataset.isLocked() ) {
+                logger.fine("locked!");
+                return true;
             }
         }
         return false;
@@ -2126,12 +2124,12 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setFileMetadataSelected(FileMetadata fm, String guestbook) {
 
         fileMetadataSelected = fm;
-        logger.fine("set the file for the advanced options popup (" + fileMetadataSelected.getLabel() + ")");
+        logger.log(Level.FINE, "set the file for the advanced options popup ({0})", fileMetadataSelected.getLabel());
     }
 
     public FileMetadata getFileMetadataSelected() {
         if (fileMetadataSelected != null) {
-            logger.fine("returning file metadata for the advanced options popup (" + fileMetadataSelected.getLabel() + ")");
+            logger.log(Level.FINE, "returning file metadata for the advanced options popup ({0})", fileMetadataSelected.getLabel());
         } else {
             logger.fine("file metadata for the advanced options popup is null.");
         }
@@ -2225,7 +2223,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public void deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead() {
-        logger.fine("For dataset id " + dataset.getId() + " the current thumbnail is from a dataset logo rather than a dataset file, blowing away the logo and using this FileMetadata id instead: " + fileMetadataSelectedForThumbnailPopup);
+        logger.log(Level.FINE, "For dataset id {0} the current thumbnail is from a dataset logo rather than a dataset file, blowing away the logo and using this FileMetadata id instead: {1}", new Object[]{dataset.getId(), fileMetadataSelectedForThumbnailPopup});
         /**
          * @todo Rather than deleting and merging right away, try to respect how
          * this page seems to stage actions and giving the user a chance to
@@ -2254,7 +2252,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     private FileMetadata fileMetadataSelectedForTagsPopup = null; 
 
     public void  setFileMetadataSelectedForTagsPopup(FileMetadata fm){
-       fileMetadataSelectedForTagsPopup = fm; 
+        fileMetadataSelectedForTagsPopup = fm;
+        fileMetadataSelectedForTagsPopup.setDatasetVersion(this.getDataset().getLatestVersion());
     }
     
     public FileMetadata getFileMetadataSelectedForTagsPopup() {
@@ -2430,6 +2429,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // 2. Tabular DataFile Tags: 
         if (selectedTags != null) {
             for (String selectedTag : selectedTags) {
+                
                 fileMetadataSelectedForTagsPopup.addCategoryByName(selectedTag);
             }
         }

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
@@ -13,9 +14,9 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.NoOpTestEntityManager;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
-import edu.harvard.iq.dataverse.engine.TestEntityManager;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
@@ -68,29 +69,16 @@ public class ReturnDatasetToAuthorCommandTest {
 
             @Override
             public EntityManager em() {
-                return new TestEntityManager() {
-
-                    @Override
-                    public <T> T merge(T entity) {
-                        return entity;
-                    }
-                    
-                    @Override
-                    public void persist(Object entity) {
-                        //
-                    }
-
-                    @Override
-                    public void flush() {
-                        //nothing to do here
-                    }
-
-                };
+                return new NoOpTestEntityManager();
             }
 
             @Override
             public DatasetServiceBean datasets() {
                 return new DatasetServiceBean() {
+                    {
+                        em = new NoOpTestEntityManager();
+                    }
+                        
                     @Override
                     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
                         return null;
@@ -98,6 +86,11 @@ public class ReturnDatasetToAuthorCommandTest {
                     @Override 
                     public WorkflowComment addWorkflowComment(WorkflowComment comment){
                         return comment;
+                    }
+                    
+                    @Override
+                    public void removeDatasetLocks(Long datasetId, DatasetLock.Reason aReason) {
+                        
                     }
                 };
             }
@@ -168,7 +161,7 @@ public class ReturnDatasetToAuthorCommandTest {
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
-        dataset.getLatestVersion().setInReview(true);
+//        dataset.getLatestVersion().setInReview(true);
         String expected = "This dataset cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first.";
         String actual = null;
         Dataset updatedDataset = null;
@@ -184,7 +177,7 @@ public class ReturnDatasetToAuthorCommandTest {
     @Test
     public void testNotInReviewDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-        dataset.getLatestVersion().setInReview(false);
+//        dataset.getLatestVersion().setInReview(false);
         String expected = "This dataset cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first.";
         String actual = null;
         Dataset updatedDataset = null;
@@ -223,13 +216,13 @@ public class ReturnDatasetToAuthorCommandTest {
    @Test
     public void testAllGood() {
        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-        dataset.getLatestVersion().setInReview(true);
-        String actual = null;
        Dataset updatedDataset = null;
-        try {
+       try {
+           testEngine.submit( new AddLockCommand(dataverseRequest, dataset, 
+                              new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
        } catch (CommandException ex) {
-            actual = ex.getMessage();
+            System.out.println("Error updating dataset: " + ex.getMessage() );
        }
         assertNotNull(updatedDataset);
     }

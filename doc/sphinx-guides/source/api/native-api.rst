@@ -152,7 +152,7 @@ Delete the dataset whose id is passed::
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, and ``dataverse_json``.
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , and ``dataverse_json``.
 
 |CORS| Lists all the file metadata, for the given dataset and version::
 
@@ -170,11 +170,20 @@ Updates the current draft version of dataset ``$id``. If the dataset does not ha
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0)::
+Moves a dataset whose id is passed to a dataverse whose alias is passed. Only accessible to superusers. ::
+
+    POST http://$SERVER/api/datasets/$id/move/$alias?key=$apiKey
+
+Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
 
 .. note:: POST should be used to publish a dataset. GET is supported for backward compatibility but is deprecated and may be removed: https://github.com/IQSS/dataverse/issues/2431
+
+.. note:: When there are no default workflows, a successful publication process will result in ``200 OK`` response. When there are workflows, it is impossible for Dataverse to know
+          how long they are going to take and whether they will succeed or not (recall that some stages might require human intervention). Thus,
+          a ``202 ACCEPTED`` is returned immediately. To know whether the publication process succeeded or not, the client code has to check the status of the dataset periodically,
+          or perform some push request in the post-publish workflow.
 
 Deletes the draft version of dataset ``$id``. Only the draft version can be deleted::
 
@@ -412,7 +421,7 @@ Example python code to replace a file.  This may be run by changing these parame
     print r.json()
     print r.status_code
 
-   
+
 
 Builtin Users
 ~~~~~~~~~~~~~
@@ -431,13 +440,6 @@ To create a builtin user via API, you must first construct a JSON document.  You
 Place this ``user-add.json`` file in your current directory and run the following curl command, substituting variables as necessary. Note that both the password of the new user and the value of ``BuiltinUsers.KEY`` are passed as query parameters::
 
   curl -d @user-add.json -H "Content-type:application/json" "$SERVER_URL/api/builtin-users?password=$NEWUSER_PASSWORD&key=$BUILTIN_USERS_KEY"
-
-Retrieving the API Token of a Builtin User
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To retrieve the API token of a builtin user, given that user's password, use the curl command below::
-
-  curl "$SERVER_URL/api/builtin-users/$DV_USER_NAME/api-token?password=$DV_USER_PASSWORD"
 
 Roles
 ~~~~~
@@ -520,7 +522,10 @@ For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from 
 
   GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
 
+Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
 
+  GET http://$SERVER/api/info/apiTermsOfUse
+  
 Metadata Blocks
 ~~~~~~~~~~~~~~~
 
@@ -705,8 +710,9 @@ Sample output appears below.
                     "createdTime":"2000-01-01 00:00:00.0",
                     "lastLoginTime":"2017-07-03 12:22:35.926",
                     "lastApiUseTime":"2017-07-03 12:55:57.186"
-                },
-                **... 22 more user documents ...**
+                }
+                
+                // ... 22 more user documents ...
             ]
         }
     }
@@ -771,30 +777,6 @@ List a role assignee (i.e. a user or a group)::
 
 The ``$identifier`` should start with an ``@`` if it's a user. Groups start with ``&``. "Built in" users and groups start with ``:``. Private URL users start with ``#``.
 
-IpGroups
-^^^^^^^^
-
-Lists all the ip groups::
-
-  GET http://$SERVER/api/admin/groups/ip
-
-Adds a new ip group. POST data should specify the group in JSON format. Examples are available at the ``data`` folder. Using this method, an IP Group is always created, but its ``alias`` might be different than the one appearing in the
-JSON file, to ensure it is unique. ::
-
-  POST http://$SERVER/api/admin/groups/ip
-
-Creates or updates the ip group ``$groupAlias``. ::
-
-    POST http://$SERVER/api/admin/groups/ip/$groupAlias
-
-Returns a the group in a JSON format. ``$groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. ::
-
-  GET http://$SERVER/api/admin/groups/ip/$groupIdtf
-
-Deletes the group specified by ``groupIdtf``. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. Note that a group can be deleted only if there are no roles assigned to it. ::
-
-  DELETE http://$SERVER/api/admin/groups/ip/$groupIdtf
-
 Saved Search
 ^^^^^^^^^^^^
 
@@ -822,6 +804,57 @@ Dataset Integrity
 Recalculate the UNF value of a dataset version, if it's missing, by supplying the dataset version database id::
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
+
+Workflows
+^^^^^^^^^
+
+List all available workflows in the system::
+
+   GET http://$SERVER/api/admin/workflows
+
+Get details of a workflow with a given id::
+
+   GET http://$SERVER/api/admin/workflows/$id
+
+Add a new workflow. Request body specifies the workflow properties and steps in JSON format.
+Sample ``json`` files are available at ``scripts/api/data/workflows/``::
+
+   POST http://$SERVER/api/admin/workflows
+
+Delete a workflow with a specific id::
+
+    DELETE http://$SERVER/api/admin/workflows/$id
+
+.. warning:: If the workflow designated by ``$id`` is a default workflow, a 403 FORBIDDEN response will be returned, and the deletion will be canceled.
+
+List the default workflow for each trigger type::
+
+  GET http://$SERVER/api/admin/workflows/default/
+
+Set the default workflow for a given trigger. This workflow is run when a dataset is published. The body of the PUT request is the id of the workflow. Trigger types are ``PrePublishDataset, PostPublishDataset``::
+
+  PUT http://$SERVER/api/admin/workflows/default/$triggerType
+
+Get the default workflow for ``triggerType``. Returns a JSON representation of the workflow, if present, or 404 NOT FOUND. ::
+
+  GET http://$SERVER/api/admin/workflows/default/$triggerType
+
+Unset the default workflow for ``triggerType``. After this call, dataset releases are done with no workflow. ::
+
+  DELETE http://$SERVER/api/admin/workflows/default/$triggerType
+
+Set the whitelist of IP addresses separated by a semicolon (``;``) allowed to resume workflows. Request body is a list of IP addresses allowed to send "resume workflow" messages to this Dataverse instance::
+
+  PUT http://$SERVER/api/admin/workflows/ip-whitelist
+
+Get the whitelist of IP addresses allowed to resume workflows::
+
+  GET http://$SERVER/api/admin/workflows/ip-whitelist
+
+Restore the whitelist of IP addresses allowed to resume workflows to default (localhost only)::
+
+  DELETE http://$SERVER/api/admin/workflows/ip-whitelist
+
 
 .. |CORS| raw:: html
       

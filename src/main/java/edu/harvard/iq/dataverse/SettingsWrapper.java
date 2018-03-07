@@ -141,10 +141,22 @@ public class SettingsWrapper implements java.io.Serializable {
         return systemConfig.isPublicInstall();
     }
     
+    public boolean isRsyncUpload() {
+        return systemConfig.isRsyncUpload();
+    }
+    
+    public boolean isRsyncDownload() {
+        return systemConfig.isRsyncDownload();
+    }
+    
     public String getSupportTeamName() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
         return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+    }
+
+    public boolean isRootDataverseThemeDisabled() {
+        return isTrueForKey(Key.DisableRootDataverseTheme, false);
     }
 
 }

@@ -3,9 +3,10 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -18,6 +19,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -42,7 +46,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  *
@@ -76,7 +79,6 @@ public class DatasetVersion implements Serializable {
     //IMPORTANT: If you add a new value to this enum, you will also have to modify the
     // StudyVersionsFragment.xhtml in order to display the correct value from a Resource Bundle
     public enum VersionState {
-
         DRAFT, RELEASED, ARCHIVED, DEACCESSIONED
     };
 
@@ -84,15 +86,79 @@ public class DatasetVersion implements Serializable {
         NONE, CC0
     }
 
-
-    public DatasetVersion() {
-
-    }
-
+    public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
+    public static final int VERSION_NOTE_MAX_LENGTH = 1000;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    private String UNF;
 
+    @Version
+    private Long version;
+
+    private Long versionNumber;
+    private Long minorVersionNumber;
+    
+    @Column(length = VERSION_NOTE_MAX_LENGTH)
+    private String versionNote;
+    
+    /*
+     * @todo versionState should never be null so when we are ready, uncomment
+     * the `nullable = false` below.
+     */
+//    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private VersionState versionState;
+
+    @ManyToOne
+    private Dataset dataset;
+
+    @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
+    private List<FileMetadata> fileMetadatas = new ArrayList();
+    
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
+    @JoinColumn(name = "termsOfUseAndAccess_id")
+    private TermsOfUseAndAccess termsOfUseAndAccess;
+    
+    @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetField> datasetFields = new ArrayList();
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @Column( nullable=false )
+    private Date createTime;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @Column( nullable=false )
+    private Date lastUpdateTime;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date releaseTime;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date archiveTime;
+    
+    @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
+    private String archiveNote;
+    
+    private String deaccessionLink;
+
+    @Transient
+    private String contributorNames;
+    
+    @Transient 
+    private String jsonLd;
+
+    @OneToMany(mappedBy="datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetVersionUser> datasetVersionUsers;
+    
+    // Is this the right mapping and cascading for when the workflowcomments table is being used for objects other than DatasetVersion?
+    @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<WorkflowComment> workflowComments;
+
+    
     public Long getId() {
         return this.id;
     }
@@ -108,7 +174,6 @@ public class DatasetVersion implements Serializable {
     public void setUNF(String UNF) {
         this.UNF = UNF;
     }
-    
 
     /**
      * This is JPA's optimistic locking mechanism, and has no semantic meaning in the DV object model.
@@ -121,33 +186,6 @@ public class DatasetVersion implements Serializable {
     public void setVersion(Long version) {
     }
     
-    private String UNF;
-
-    @Version
-    private Long version;
-
-    private Long versionNumber;
-    private Long minorVersionNumber;
-    public static final int VERSION_NOTE_MAX_LENGTH = 1000;
-    @Column(length = VERSION_NOTE_MAX_LENGTH)
-    private String versionNote;
-    
-    /**
-     * @todo versionState should never be null so when we are ready, uncomment
-     * the `nullable = false` below.
-     */
-//    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private VersionState versionState;
-
-
-    @ManyToOne
-    private Dataset dataset;
-
-    @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
-    private List<FileMetadata> fileMetadatas = new ArrayList<>();
-
     public List<FileMetadata> getFileMetadatas() {
         return fileMetadatas;
     }
@@ -161,11 +199,6 @@ public class DatasetVersion implements Serializable {
         this.fileMetadatas = fileMetadatas;
     }
     
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
-    @JoinColumn(name = "termsOfUseAndAccess_id")
-    private TermsOfUseAndAccess termsOfUseAndAccess;
-
-
     public TermsOfUseAndAccess getTermsOfUseAndAccess() {
         return termsOfUseAndAccess;
     }
@@ -173,10 +206,6 @@ public class DatasetVersion implements Serializable {
     public void setTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
         this.termsOfUseAndAccess = termsOfUseAndAccess;
     }
-
-    @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    //@OrderBy("datasetField.displayOrder") 
-    private List<DatasetField> datasetFields = new ArrayList<>();
 
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
@@ -193,70 +222,18 @@ public class DatasetVersion implements Serializable {
         }
         this.datasetFields = datasetFields;
     }
-
-    /*
-     @OneToMany(mappedBy="studyVersion", cascade={CascadeType.REMOVE, CascadeType.PERSIST})
-     private List<VersionContributor> versionContributors;
-     */
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
-    private Date createTime;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
-    private Date lastUpdateTime;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date releaseTime;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date archiveTime;
-    public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
-    @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
-    private String archiveNote;
-    private String deaccessionLink;
-
-    private boolean inReview;
-    public void setInReview(boolean inReview){
-        this.inReview = inReview;
-    }
-
-    // Is this the right mapping and cascading for when the workflowcomments table is being used for objects other than DatasetVersion?
-    @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<WorkflowComment> workflowComments;
-
+    
     /**
      * The only time a dataset can be in review is when it is in draft.
      * @return if the dataset is being reviewed
      */
     public boolean isInReview() {
         if (versionState != null && versionState.equals(VersionState.DRAFT)) {
-            return inReview;
+            return getDataset().isLockedFor(DatasetLock.Reason.InReview);
         } else {
             return false;
         }
     }
-
-
-    
-    /**
-     * Quick hack to disable <script> tags
-     * for Terms of Use and Terms of Access.
-     * 
-     * Need to add jsoup or something similar.
-     * 
-     * @param str
-     * @return 
-     */
-    private String stripScriptTags(String str){        
-        if (str == null){
-            return null;
-        }
-
-        str = str.replaceAll("(?i)<script\\b[^<]*(?:(?!<\\/script>)<[^<]*)*<\\/script>", "");
-        str = str.replaceAll("(?i)<\\/script>", "");
-        str = str.replaceAll("(?i)<script\\b", "");
-
-        return str;
-    }
-
 
     public Date getArchiveTime() {
         return archiveTime;
@@ -329,9 +306,6 @@ public class DatasetVersion implements Serializable {
         this.releaseTime = releaseTime;
     }
 
-    @OneToMany(mappedBy="datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetVersionUser> datasetVersionUsers;
-
     public List<DatasetVersionUser> getDatasetVersionUsers() {
         return datasetVersionUsers;
     }
@@ -350,9 +324,6 @@ public class DatasetVersion implements Serializable {
         }
         return ret;
     }
-
-    @Transient
-    private String contributorNames;
 
     public String getContributorNames() {
         return contributorNames;
@@ -447,12 +418,15 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setVersionState(VersionState versionState) {
-
         this.versionState = versionState;
     }
 
     public boolean isReleased() {
         return versionState.equals(VersionState.RELEASED);
+    }
+
+    public boolean isPublished() {
+        return isReleased();
     }
 
     public boolean isDraft() {
@@ -549,7 +523,6 @@ public class DatasetVersion implements Serializable {
     }
 
     public DatasetVersion getLargestMinorRelease() {
-
         if (this.getDataset().isReleased()) {
             for (DatasetVersion testVersion : this.dataset.getVersions()) {
                 if (testVersion.getVersionNumber() != null && testVersion.getVersionNumber().equals(this.getVersionNumber())) {
@@ -745,6 +718,42 @@ public class DatasetVersion implements Serializable {
         return retList;
     }
     
+    public List<String> getTimePeriodsCovered() {
+        List <String> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCovered)) {
+                for (DatasetFieldCompoundValue timePeriodValue : dsf.getDatasetFieldCompoundValues()) {
+                    String start = "";
+                    String end = "";
+                    for (DatasetField subField : timePeriodValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCoveredStart)) {
+                            if (subField.isEmptyForDisplay()) {
+                                start = null;
+                            } else {
+                                // we want to use "getValue()", as opposed to "getDisplayValue()" here - 
+                                // as the latter method prepends the value with the word "Start:"!
+                                start = subField.getValue();
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCoveredEnd)) {
+                            if (subField.isEmptyForDisplay()) {
+                                end = null;
+                            } else {
+                                // see the comment above
+                                end = subField.getValue();
+                            }
+                        }
+
+                    }
+                    if (start != null && end != null) {
+                        retList.add(start + "/" + end);
+                    }
+                }
+            }
+        }       
+        return retList;        
+    }
+    
     /**
      * @return List of Strings containing the names of the authors.
      */
@@ -768,7 +777,55 @@ public class DatasetVersion implements Serializable {
         }
         return subjects;
     }
-
+    
+    /**
+     * @return List of Strings containing the version's Topic Classifications
+     */
+    public List<String> getTopicClassifications() {
+        return getCompoundChildFieldValues(DatasetFieldConstant.topicClassification, DatasetFieldConstant.topicClassValue);
+    }
+ 
+    /**
+     * @return List of Strings containing the version's Keywords
+     */
+    public List<String> getKeywords() {
+        return getCompoundChildFieldValues(DatasetFieldConstant.keyword, DatasetFieldConstant.keywordValue);
+    }
+    
+    /**
+     * @return List of Strings containing the version's PublicationCitations
+     */
+    public List<String> getPublicationCitationValues() {
+        return getCompoundChildFieldValues(DatasetFieldConstant.publication, DatasetFieldConstant.publicationCitation);
+    }
+    
+    /**
+     * @param parentFieldName compound dataset field A (from DatasetFieldConstant.*)
+     * @param childFieldName dataset field B, child field of A (from DatasetFieldConstant.*)
+     * @return List of values of the child field
+     */
+    public List<String> getCompoundChildFieldValues(String parentFieldName, String childFieldName) {
+        List<String> keywords = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(parentFieldName)) {
+                for (DatasetFieldCompoundValue keywordFieldValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : keywordFieldValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(childFieldName)) {
+                            String keyword = subField.getValue();
+                            // Field values should NOT be empty or, especially, null,
+                            // - in the ideal world. But as we are realizing, they CAN 
+                            // be null in real life databases. So, a check, just in case:
+                            if (!StringUtil.isEmpty(keyword)) {
+                                keywords.add(subField.getValue());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return keywords;
+    }
+    
     public String getDatasetProducersString(){
         String retVal = "";
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -1136,6 +1193,180 @@ public class DatasetVersion implements Serializable {
 
     public List<WorkflowComment> getWorkflowComments() {
         return workflowComments;
+    }
+
+    /**
+     * dataset publication date unpublished datasets will return an empty
+     * string.
+     *
+     * @return String dataset publication date in ISO 8601 format (yyyy-MM-dd).
+     */
+    public String getPublicationDateAsString() {
+        if (DatasetVersion.VersionState.DRAFT == this.getVersionState()) {
+            return "";
+        }
+        Date rel_date = this.getReleaseTime();
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+        String r = fmt.format(rel_date.getTime());
+        return r;
+    }
+
+    // TODO: Consider moving this comment into the Exporter code.
+    // The export subsystem assumes there is only
+    // one metadata export in a given format per dataset (it uses the current 
+    // released (published) version. This JSON fragment is generated for a 
+    // specific released version - and we can have multiple released versions. 
+    // So something will need to be modified to accommodate this. -- L.A.  
+    
+    public String getJsonLd() {
+        // We show published datasets only for "datePublished" field below.
+        if (!this.isPublished()) {
+            return "";
+        }
+        
+        if (jsonLd != null) {
+            return jsonLd;
+        }
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("@context", "http://schema.org");
+        job.add("@type", "Dataset");
+        job.add("identifier", this.getDataset().getPersistentURL());
+        job.add("name", this.getTitle());
+        JsonArrayBuilder authors = Json.createArrayBuilder();
+        for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
+            JsonObjectBuilder author = Json.createObjectBuilder();
+            String name = datasetAuthor.getName().getValue();
+            DatasetField authorAffiliation = datasetAuthor.getAffiliation();
+            String affiliation = null;
+            if (authorAffiliation != null) {
+                affiliation = datasetAuthor.getAffiliation().getValue();
+            }
+            // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
+            //author.add("@type", "Person");
+            author.add("name", name);
+            // We are aware that the following error is thrown by https://search.google.com/structured-data/testing-tool
+            // "The property affiliation is not recognized by Google for an object of type Thing."
+            // Someone at Google has said this is ok.
+            // This logic could be moved into the `if (authorAffiliation != null)` block above.
+            if (!StringUtil.isEmpty(affiliation)) {
+                author.add("affiliation", affiliation);
+            }
+            authors.add(author);
+        }
+        job.add("author", authors);
+        /**
+         * We are aware that there is a "datePublished" field but it means "Date
+         * of first broadcast/publication." This only makes sense for a 1.0
+         * version.
+         */
+        String datePublished = this.getDataset().getPublicationDateFormattedYYYYMMDD();
+        if (datePublished != null) {
+            job.add("datePublished", datePublished);
+        }
+        
+         /**
+         * "dateModified" is more appropriate for a version: "The date on which
+         * the CreativeWork was most recently modified or when the item's entry
+         * was modified within a DataFeed."
+         */
+        job.add("dateModified", this.getPublicationDateAsString());
+        job.add("version", this.getVersionNumber().toString());
+        job.add("description", this.getDescriptionPlainText());
+        /**
+         * "keywords" - contains subject(s), datasetkeyword(s) and topicclassification(s)
+         * metadata fields for the version. -- L.A. 
+         * (see #2243 for details/discussion/feedback from Google)
+         */
+        JsonArrayBuilder keywords = Json.createArrayBuilder();
+        
+        for (String subject : this.getDatasetSubjects()) {
+            keywords.add(subject);
+        }
+        
+        for (String topic : this.getTopicClassifications()) {
+            keywords.add(topic);
+        }
+        
+        for (String keyword : this.getKeywords()) {
+            keywords.add(keyword);
+        }
+        
+        job.add("keywords", keywords);
+        
+        /**
+         * citation: 
+         * (multiple) publicationCitation values, if present:
+         */
+        
+        List<String> publicationCitations = getPublicationCitationValues();
+        if (publicationCitations.size() > 0) {
+            JsonArrayBuilder citation = Json.createArrayBuilder();
+            for (String pubCitation : publicationCitations) {
+                //citationEntry.add("@type", "Dataset");
+                //citationEntry.add("text", pubCitation);
+                citation.add(pubCitation);
+            }
+            job.add("citation", citation);
+        }
+        
+        /**
+         * temporalCoverage:
+         * (if available)
+         */
+        
+        List<String> timePeriodsCovered = this.getTimePeriodsCovered();
+        if (timePeriodsCovered.size() > 0) {
+            JsonArrayBuilder temporalCoverage = Json.createArrayBuilder();
+            for (String timePeriod : timePeriodsCovered) {
+                temporalCoverage.add(timePeriod);
+            }
+            job.add("temporalCoverage", temporalCoverage);
+        }
+        
+        /**
+         * spatialCoverage (if available)
+         * TODO
+         * (punted, for now - see #2243)
+         * 
+         */
+        
+        /**
+         * funder (if available)
+         * TODO
+         * (punted, for now - see #2243)
+         */
+        
+        job.add("schemaVersion", "https://schema.org/version/3.3");
+        
+        TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
+        if (terms != null) {
+            JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "Dataset");
+            
+            if (TermsOfUseAndAccess.License.CC0.equals(terms.getLicense())) {
+                license.add("text", "CC0").add("url", "https://creativecommons.org/publicdomain/zero/1.0/");
+            } else {
+                String termsOfUse = terms.getTermsOfUse();
+                // Terms of use can be null if you create the dataset with JSON.
+                if (termsOfUse != null) {
+                    license.add("text", termsOfUse);
+                }
+            }
+            
+            job.add("license",license);
+        }
+        
+        job.add("includedInDataCatalog", Json.createObjectBuilder()
+                .add("@type", "DataCatalog")
+                .add("name", this.getRootDataverseNameforCitation())
+                .add("url", SystemConfig.getDataverseSiteUrlStatic())
+        );
+
+        job.add("provider", Json.createObjectBuilder()
+                .add("@type", "Organization")
+                .add("name", "Dataverse")
+        );
+        jsonLd = job.build().toString();
+        return jsonLd;
     }
 
 }

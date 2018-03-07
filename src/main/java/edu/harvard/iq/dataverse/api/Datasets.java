@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -53,7 +54,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
@@ -70,6 +73,9 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
@@ -126,9 +132,6 @@ public class Datasets extends AbstractApiBean {
     
     @EJB
     DDIExportServiceBean ddiExportService;
-    
-    @EJB
-    SystemConfig systemConfig;
     
     @EJB
     DatasetFieldServiceBean datasetfieldService;
@@ -425,16 +428,36 @@ public class Datasets extends AbstractApiBean {
             }
 
             Dataset ds = findDatasetOrDie(id);
-
-            return ok(json(execCommand(new PublishDatasetCommand(ds,
+            PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
                     createDataverseRequest(findAuthenticatedUserOrDie()),
-                    isMinor))));
+                    isMinor));
+            return res.isCompleted() ? ok(json(res.getDataset())) : accepted(json(res.getDataset()));
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
     }
-
+    
+    @POST
+    @Path("{id}/move/{targetDataverseAlias}")
+    public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {        
+        try{
+            System.out.print("force: " + force);
+            User u = findUserOrDie();            
+            Dataset ds = findDatasetOrDie(id);
+            Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
+            if (target == null){
+                return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
+            }            
+            //Command requires Super user - it will be tested by the command
+            execCommand(new MoveDatasetCommand(
+                    createDataverseRequest(u), ds, target, force
+                    ));
+            return ok("Dataset moved successfully");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
     @GET
     @Path("{id}/links")
     public Response getLinks(@PathParam("id") String idSupplied ) {
@@ -633,7 +656,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{identifier}/dataCaptureModule/checksumValidation")
     public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
-        logger.fine("jsonFromDcm: " + jsonFromDcm);
+        logger.log(Level.FINE, "jsonFromDcm: {0}", jsonFromDcm);
         AuthenticatedUser authenticatedUser = null;
         try {
             authenticatedUser = findAuthenticatedUserOrDie();
@@ -689,7 +712,9 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
             JsonObjectBuilder result = Json.createObjectBuilder();
-            boolean inReview = updatedDataset.getLatestVersion().isInReview();
+            
+            boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);
+            
             result.add("inReview", inReview);
             result.add("message", "Dataset id " + updatedDataset.getId() + " has been submitted for review.");
             return ok(result);
@@ -701,6 +726,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/returnToAuthor")
     public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
+        
         if (jsonBody == null || jsonBody.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset.");
         }
@@ -716,8 +742,8 @@ public class Datasets extends AbstractApiBean {
             }
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
-            DatasetVersion latestVersion = updatedDataset.getLatestVersion();
-            boolean inReview = latestVersion.isInReview();
+            boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);
+
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", inReview);
             result.add("message", "Dataset id " + updatedDataset.getId() + " has been sent back to the author(s).");
@@ -731,9 +757,8 @@ public class Datasets extends AbstractApiBean {
      * Add a File to an existing Dataset
      * 
      * @param idSupplied
-     * @param datasetId
      * @param jsonData
-     * @param testFileInputStream
+     * @param fileInputStream
      * @param contentDispositionHeader
      * @param formDataBodyPart
      * @return 
@@ -760,6 +785,14 @@ public class Datasets extends AbstractApiBean {
                     ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
                     );
         }
+        //---------------------------------------
+        // (1A) Make sure that the upload type is not rsync
+        // ------------------------------------- 
+        
+        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+            return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " contains " + SystemConfig.FileUploadMethods.RSYNC + ". Please use rsync file upload.");
+        }
+        
         
         // -------------------------------------
         // (2) Get the Dataset Id

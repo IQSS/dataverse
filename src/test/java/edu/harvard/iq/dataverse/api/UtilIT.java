@@ -29,6 +29,8 @@ import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -328,6 +330,17 @@ public class UtilIT {
         return updateDatasetResponse;
     }
 
+    // https://github.com/IQSS/dataverse/issues/3777
+    static Response updateDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
+       String jsonIn = getDatasetJson(pathToJsonFile);
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/:draft?persistentId=" + persistentId);
+        return response;
+    }
+
     static private String getDatasetXml(String title, String author, String description) {
         String xmlIn = "<?xml version=\"1.0\"?>\n"
                 + "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:dcterms=\"http://purl.org/dc/terms/\">\n"
@@ -344,6 +357,11 @@ public class UtilIT {
         return uploadFile(persistentId, zipfilename, apiToken);
     }
 
+    /**
+     * @deprecated switch to uploadZipFileViaSword where the path isn't hard
+     * coded.
+     */
+    @Deprecated
     public static Response uploadFile(String persistentId, String zipfilename, String apiToken) {
         String pathToFileName = "scripts/search/data/binary/" + zipfilename;
         byte[] bytes = null;
@@ -352,6 +370,33 @@ public class UtilIT {
             logger.info("Number of bytes to upload: " + bytes.length);
         } catch (IOException ex) {
             throw new RuntimeException("Problem getting bytes from " + pathToFileName + ": " + ex);
+        }
+        Response swordStatementResponse = given()
+                .body(bytes)
+                .header("Packaging", "http://purl.org/net/sword/package/SimpleZip")
+                .header("Content-Disposition", "filename=" + zipfilename)
+                /**
+                 * It's unclear why we need to add "preemptive" to auth but
+                 * without it we can't use send bytes using the body/content
+                 * method. See
+                 * https://github.com/jayway/rest-assured/issues/507#issuecomment-162963787
+                 */
+                .auth().preemptive().basic(apiToken, EMPTY_STRING)
+                .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit-media/study/" + persistentId);
+        return swordStatementResponse;
+
+    }
+
+    public static Response uploadZipFileViaSword(String persistentId, String pathToZipFile, String apiToken) {
+        File file = new File(pathToZipFile);
+        String zipfilename = file.getName();
+        byte[] bytes = null;
+        try {
+            Path path = Paths.get(pathToZipFile);
+            bytes = Files.readAllBytes(path);
+            logger.info("Number of bytes to upload: " + bytes.length);
+        } catch (IOException ex) {
+            throw new RuntimeException("Problem getting bytes from " + pathToZipFile + ": " + ex);
         }
         Response swordStatementResponse = given()
                 .body(bytes)
@@ -495,6 +540,32 @@ public class UtilIT {
                 .body(groupBuilder.build().toString())
                 .contentType(ContentType.JSON)
                 .post("/api/dataverses/" + dataverseToCreateGroupIn + "/groups");
+        return response;
+    }
+
+    static Response getIpGroups() {
+        Response response = given()
+                .get("api/admin/groups/ip");
+        return response;
+    }
+
+    static Response getIpGroup(String ipGroupIdentifier) {
+        Response response = given()
+                .get("api/admin/groups/ip/" + ipGroupIdentifier);
+        return response;
+    }
+
+    static Response createIpGroup(JsonObject jsonObject) {
+        Response response = given()
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON)
+                .post("api/admin/groups/ip");
+        return response;
+    }
+
+    static Response deleteIpGroup(String ipGroupIdentifier) {
+        Response response = given()
+                .delete("api/admin/groups/ip/" + ipGroupIdentifier);
         return response;
     }
 
@@ -1085,6 +1156,36 @@ public class UtilIT {
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
         return requestSpecification.post("/api/datasets/" + persistentIdInPath + "/dataCaptureModule/checksumValidation" + optionalQueryParam);
+    }
+
+    static Response getApiTokenUsingUsername(String username, String password) {
+        Response response = given()
+                .contentType(ContentType.JSON)
+                .get("/api/builtin-users/" + username + "/api-token?username=" + username + "&password=" + password);
+        return response;
+    }
+
+    static Response getExternalTools() {
+        return given()
+                .get("/api/admin/externalTools");
+    }
+
+    static Response getExternalToolsByFileId(long fileId) {
+        return given()
+                .get("/api/admin/externalTools/file/" + fileId);
+    }
+
+    static Response addExternalTool(JsonObject jsonObject) {
+        RequestSpecification requestSpecification = given();
+            requestSpecification = given()
+                    .body(jsonObject.toString())
+                    .contentType(ContentType.JSON);
+        return requestSpecification.post("/api/admin/externalTools");
+    }
+
+    static Response deleteExternalTool(long externalToolid) {
+        return given()
+                .delete("/api/admin/externalTools/" + externalToolid);
     }
 
     @Test

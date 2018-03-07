@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -168,14 +169,27 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         
         uploadFolder = jobParams.getProperty("uploadFolder");
         
+        /*
         // lock the dataset
         jobLogger.log(Level.INFO, "Locking dataset");
         String info = "Starting batch file import job.";
-        if (user.getId() != null) {
-            datasetServiceBean.addDatasetLock(dataset.getId(), user.getId(), info);
-        } else {
-            datasetServiceBean.addDatasetLock(dataset.getId(), null, info);
-        }
+        */
+        
+        // TODO: 
+        // In the current #3348 implementation, we are no longer locking the 
+        // Dataset here. Because it gets locked immediately after the user 
+        // downloads the rsync scipt. Once this branch (#3561) is merged into 
+        // #3348, let's revisit this. We should probably check here that 
+        // the dataset is locked, and that it's locked waiting for an 
+        // rsync upload to happen. And then we may want to "re-lock" it, with 
+        // the info field in the new lock specifying that there is now a 
+        // file crawler job in progress (to prevent another one from happening
+        // in parallel. -- L.A. Aug 31 2017
+        
+        //datasetServiceBean.addDatasetLock(dataset.getId(),
+        //            DatasetLock.Reason.Ingest, 
+        //            (user!=null)?user.getId():null,
+        //            info);
 
         // check constraints for running the job
         if (canRunJob()) {
@@ -204,6 +218,14 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      */
     @Override
     public void afterJob() throws Exception {
+
+        //TODO add notifications to job failure?
+        if (jobContext.getExitStatus() != null && jobContext.getExitStatus().equals("FAILED")) {
+            getJobLogger().log(Level.SEVERE, "Job Failed. See Log for more information.");
+            closeJobLoggerHandlers();
+            return;
+        }
+        
         // run reporting and notifications
         doReport();
 
@@ -214,9 +236,12 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         }
 
         // remove dataset lock
-        if (dataset != null && dataset.getId() != null) {
-            datasetServiceBean.removeDatasetLock(dataset.getId());
-        }
+        // Disabled now, see L.A.'s comment at beforeJob()
+//        if (dataset != null && dataset.getId() != null) {
+//            datasetServiceBean.removeDatasetLock(dataset.getId(), DatasetLock.Reason.Ingest);
+//        }
+
+
         getJobLogger().log(Level.INFO, "Removing dataset lock.");
         
         // job step info
@@ -226,6 +251,11 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         getJobLogger().log(Level.INFO, "Job end   = " + step.getEndTime());
         getJobLogger().log(Level.INFO, "Job exit status = " + step.getExitStatus());
         
+        closeJobLoggerHandlers();
+
+    }
+    
+    private void closeJobLoggerHandlers(){
         // close the job logger handlers
         for (Handler h:getJobLogger().getHandlers()) {
             h.close();

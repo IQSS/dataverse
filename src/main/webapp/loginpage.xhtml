@@ -5,6 +5,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <h:head>
@@ -72,6 +73,23 @@
                                             </div>
                                         </div>
                                     </ui:repeat>
+                                    
+                                    <!-- validation -->
+                                    <div class="form-group" jsf:rendered="#{LoginPage.requireExtraValidation}">
+                                        <div class="col-sm-offset-4 col-sm-8">
+                                            <p>
+                                                <h:outputText styleClass="highlightBold" value="#{bundle['contact.question']}"/> <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                            </p>
+                                            <h:outputFormat value="#{LoginPage.op1} + #{LoginPage.op2} = "/>
+                                            <p:inputText id="messageSum" label="Sum" size="4" value="#{LoginPage.userSum}" converterMessage="#{bundle['contact.sum.converterMessage']}"
+                                                         required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['contact.sum.required']}"
+                                                         validatorMessage="#{bundle['contact.sum.invalid']}" validator="#{LoginPage.validateUserSum}">
+                                                <f:convertNumber integerOnly="true" type="number"/>
+                                            </p:inputText>
+                                            <h:message for="messageSum" styleClass="bg-danger text-danger"/>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="form-group">
                                         <div class="col-sm-offset-4 col-sm-9 button-block">
                                             <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
@@ -117,8 +135,6 @@
                                 </div>
 
                                 <script type="text/javascript">
-                                    // TODO: get this working for https://github.com/IQSS/dataverse/issues/1551
-                                    //shibRedirectPage = '?redirectPage=' + '#{LoginPage.redirectPage}';
                                     shibRedirectPage = '';
                                 </script>
 
@@ -172,16 +188,21 @@
                                 <div class="form-group text-left">
                                     <div class="col-sm-12">
                                         <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
-                                            <h:graphicImage rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
-                                            <h:outputFormat value=" #{LoginPage.loginButtonText}"/>
+                                            <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="/resources/images/orcid_16x16.png" height="16" width="16"/>
+					    <h:outputFormat rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
+					    <h:outputFormat rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{bundle['login.button.orcid']}"/>
                                         </h:outputLink>
-                                        <ui:fragment rendered="#{LoginPage.authProvider.id == 'orcid' or LoginPage.authProvider.id == 'orcid-sandbox'}">
+                                        <ui:fragment rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}">
                                             <p class="help-block small" style="margin-top:1em;">
                                                 ORCID is an open, non-profit, community-based effort to provide a registry of unique researcher identifiers
                                                 and a transparent method of linking research activities and outputs to these identifiers. ORCID is unique in
                                                 its ability to reach across disciplines, research sectors, and national boundaries and its cooperation with
-                                                other identifier systems. Find out more at <a href="http://orcid.org/about" target="_blank">orcid.org/about</a>.
-                                            </p>
+                                                other identifier systems. Find out more at <a href="https://orcid.org/about" target="_blank">orcid.org/about</a>.
+						</p>
+						<p class="help-block small" style="margin-top:1em;">
+						This repository uses your ORCID for authentication (so you don't need another username/password combination).
+						Having your ORCID associated with your datasets also makes it easier for people to find the datasets you have published.
+						</p>
                                         </ui:fragment>
                                     </div>
                                 </div>

@@ -22,6 +22,7 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -1238,6 +1239,38 @@ public class FileUtil implements java.io.Serializable  {
         logger.fine("Download popup is not required.");
         return false;
     }
+    
+    public static boolean isRequestAccessPopupRequired(DatasetVersion datasetVersion){
+        // Each of these conditions is sufficient reason to have to 
+        // present the user with the popup: 
+        if (datasetVersion == null) {
+            logger.fine("Download popup required because datasetVersion is null.");
+            return false;
+        }
+        //0. if version is draft then Popup "not required"
+        if (!datasetVersion.isReleased()) {
+            logger.fine("Download popup required because datasetVersion has not been released.");
+            return false;
+        }
+        // 1. License and Terms of Use:
+        if (datasetVersion.getTermsOfUseAndAccess() != null) {
+            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
+                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
+                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
+                logger.fine("Download popup required because of license or terms of use.");
+                return true;
+            }
+
+            // 2. Terms of Access:
+            if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
+                logger.fine("Download popup required because of terms of access.");
+                return true;
+            }
+        }
+
+        logger.fine("Download popup is not required.");
+        return false;
+    }
 
     /**
      * Provide download URL if no Terms of Use, no guestbook, and not
@@ -1402,6 +1435,10 @@ public class FileUtil implements java.io.Serializable  {
         DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, file);
         return defaultDatasetThumbnail;
 
+    }
+    
+    public static boolean isPackageFile(DataFile dataFile) {
+        return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(dataFile.getContentType());
     }
 
 }

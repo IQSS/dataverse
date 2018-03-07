@@ -61,7 +61,7 @@ public class HarvestingServer extends AbstractApiBean {
     // TODO: this should be available to admin only.
 
     @GET
-    @Path("")
+    @Path("/")
     public Response oaiSets(@QueryParam("key") String apiKey) throws IOException {
         
 

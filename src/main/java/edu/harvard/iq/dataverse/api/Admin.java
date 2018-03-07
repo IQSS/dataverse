@@ -63,8 +63,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import java.math.BigDecimal;
+import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
 import javax.ws.rs.QueryParam;
@@ -245,7 +244,7 @@ public class Admin extends AbstractApiBean {
             return ok(Boolean.toString(prvs.get(0).isEnabled()));
         }
     }
-    
+
     @DELETE
     @Path("authenticationProviders/{id}/")
     public Response deleteAuthenticationProvider( @PathParam("id") String id ) {
@@ -265,7 +264,7 @@ public class Admin extends AbstractApiBean {
     public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
         AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
         if (authenticatedUser != null) {
-            return ok(jsonForAuthUser(authenticatedUser));
+            return ok(json(authenticatedUser));
         }
         return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
     }
@@ -311,7 +310,7 @@ public class Admin extends AbstractApiBean {
         }
         JsonArrayBuilder userArray = Json.createArrayBuilder();
         authSvc.findAllAuthenticatedUsers().stream().forEach((user) -> {
-            userArray.add(jsonForAuthUser(user));
+            userArray.add(json(user));
         });
         return ok(userArray);
     }
@@ -371,7 +370,7 @@ public class Admin extends AbstractApiBean {
         AuthenticatedUserDisplayInfo userDisplayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, position);
         boolean generateUniqueIdentifier = true;
         AuthenticatedUser authenticatedUser = authSvc.createAuthenticatedUser(userRecordId, proposedAuthenticatedUserIdentifier, userDisplayInfo, true);
-        return ok(jsonForAuthUser(authenticatedUser));
+        return ok(json(authenticatedUser));
     }
 
     /**
@@ -981,4 +980,30 @@ public class Admin extends AbstractApiBean {
         return ok(data);
     }
 
+    /**
+     * validatePassword
+     * <p>
+     * Validate a password with an API call
+     *
+     * @param password The password
+     * @return A response with the validation result.
+     */
+    @Path("validatePassword")
+    @POST
+    public Response validatePassword(String password) {
+
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        final JsonArrayBuilder errorArray = Json.createArrayBuilder();
+        errors.forEach(errorArray::add);
+        return ok(Json.createObjectBuilder()
+                .add("password", password)
+                .add("errors", errorArray)
+        );
+    }
+    
+    @GET
+    @Path("/isOrcid")
+    public Response isOrcidEnabled() {
+        return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
+    }
 }

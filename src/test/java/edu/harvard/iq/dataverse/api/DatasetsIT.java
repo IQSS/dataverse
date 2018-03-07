@@ -19,6 +19,7 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -40,6 +41,7 @@ import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -50,6 +52,26 @@ public class DatasetsIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
+        removeIdentifierGenerationStyle.then().assertThat()
+                .statusCode(200);
+
+        Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
+        removeExcludeEmail.then().assertThat()
+                .statusCode(200);
+
+        Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
+        removeDcmUrl.then().assertThat()
+                .statusCode(200);
+
+        Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
+        removeUploadMethods.then().assertThat()
+                .statusCode(200);
+    }
+
+    @AfterClass
+    public static void afterClass() {
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
         removeIdentifierGenerationStyle.then().assertThat()
@@ -215,7 +237,7 @@ public class DatasetsIT {
          */
         boolean nameRequiredForContactToAppear = true;
         if (nameRequiredForContactToAppear) {
-            assertEquals("", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact"));
+            assertEquals("Finch, Fiona", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact"));
         } else {
             assertEquals("finch@mailinator.com", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
         }
@@ -393,8 +415,8 @@ public class DatasetsIT {
                 .body("message", equalTo("Cannot publish as minor version. Re-try as major release."))
                 .statusCode(403);
 
-        Response setSequentialNumberAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
-        setSequentialNumberAsIdentifierGenerationStyle.then().assertThat()
+        Response setToExcludeEmailFromExport = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
+        setToExcludeEmailFromExport.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
@@ -851,6 +873,42 @@ public class DatasetsIT {
 
     }
 
+    @Test
+    public void testDeleteDatasetWhileFileIngesting() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        logger.info("Dataset created with id " + datasetId + " and persistent id " + persistentId);
+
+        String pathToFileThatGoesThroughIngest = "scripts/search/data/tabular/50by1000.dta";
+        Response uploadIngestableFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFileThatGoesThroughIngest, apiToken);
+        uploadIngestableFile.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response deleteDataset = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDataset.prettyPrint();
+        deleteDataset.then().assertThat()
+                .body("message", equalTo("Dataset cannot be edited due to dataset lock."))
+                .statusCode(FORBIDDEN.getStatusCode());
+
+    }
+
     /**
      * In order for this test to pass you must have the Data Capture Module (
      * https://github.com/sbgrid/data-capture-module ) running. We assume that
@@ -859,15 +917,19 @@ public class DatasetsIT {
     @Test
     public void testCreateDatasetWithDcmDependency() {
 
-        boolean disabled = true;
+        boolean disabled = false;
 
         if (disabled) {
             return;
         }
 
         // TODO: Test this with a value like "junk" rather than a valid URL which would give `java.net.MalformedURLException: no protocol`.
-//        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888/ur.py");
-        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
+        // The DCM Vagrant box runs on port 8888: https://github.com/sbgrid/data-capture-module/blob/master/Vagrantfile
+        String dcmVagrantUrl = "http://localhost:8888";
+        // The DCM mock runs on port 5000: https://github.com/sbgrid/data-capture-module/blob/master/doc/mock.md
+        String dcmMockUrl = "http://localhost:5000";
+        String dcmUrl = dcmMockUrl;
+        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, dcmUrl);
         setDcmUrl.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -952,6 +1014,11 @@ public class DatasetsIT {
                 .body("message", equalTo("User @" + noPermsUsername + " is not permitted to perform requested action."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
+        boolean stopEarlyBecauseYouDoNotHaveDcmInstalled = true;
+        if (stopEarlyBecauseYouDoNotHaveDcmInstalled) {
+            return;
+        }
+        
         boolean stopEarlyToVerifyTheScriptWasCreated = false;
         if (stopEarlyToVerifyTheScriptWasCreated) {
             logger.info("On the DCM, does /deposit/gen/upload-" + datasetId + ".bash exist? It should! Creating the dataset should be enough to create it.");
@@ -966,7 +1033,7 @@ public class DatasetsIT {
         String rsyncScript = getRsyncScript.body().asString();
         System.out.println("script:\n" + rsyncScript);
         assertTrue(rsyncScript.startsWith("#!"));
-        assertTrue(rsyncScript.contains(datasetId.toString()));
+        assertTrue(rsyncScript.contains("placeholder")); // The DCM mock script has the word "placeholder" in it.
 
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
         removeUploadMethods.then().assertThat()
@@ -1002,7 +1069,13 @@ public class DatasetsIT {
     @Test
     public void testDcmChecksumValidationMessages() throws IOException, InterruptedException {
 
-        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, "http://localhost:8888");
+        // The DCM Vagrant box runs on port 8888: https://github.com/sbgrid/data-capture-module/blob/master/Vagrantfile
+        String dcmVagrantUrl = "http://localhost:8888";
+        // The DCM mock runs on port 5000: https://github.com/sbgrid/data-capture-module/blob/master/doc/mock.md
+        String dcmMockUrl = "http://localhost:5000";
+        String dcmUrl = dcmMockUrl;
+
+        Response setDcmUrl = UtilIT.setSetting(SettingsServiceBean.Key.DataCaptureModuleUrl, dcmUrl);
         setDcmUrl.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -1088,8 +1161,11 @@ public class DatasetsIT {
         JsonObjectBuilder wrongDataset = Json.createObjectBuilder();
         String fakeDatasetId = "78921457982457921";
         wrongDataset.add("status", "validation passed");
-        UtilIT.makeSuperUser(username);
-        Response datasetNotFound = UtilIT.dataCaptureModuleChecksumValidation(fakeDatasetId, wrongDataset.build(), apiToken);
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        UtilIT.makeSuperUser(superuserUsername);
+        Response datasetNotFound = UtilIT.dataCaptureModuleChecksumValidation(fakeDatasetId, wrongDataset.build(), superuserApiToken);
         datasetNotFound.prettyPrint();
 
         datasetNotFound.then().assertThat()
@@ -1099,7 +1175,7 @@ public class DatasetsIT {
         JsonObjectBuilder badNews = Json.createObjectBuilder();
         // Status options are documented at https://github.com/sbgrid/data-capture-module/blob/master/doc/api.md#post-upload
         badNews.add("status", "validation failed");
-        Response uploadFailed = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, badNews.build(), apiToken);
+        Response uploadFailed = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, badNews.build(), superuserApiToken);
         uploadFailed.prettyPrint();
 
         uploadFailed.then().assertThat()
@@ -1116,6 +1192,10 @@ public class DatasetsIT {
         authorsGetsBadNews.then().assertThat()
                 .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
                 .statusCode(OK.getStatusCode());
+
+        Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
+        removeUploadMethods.then().assertThat()
+                .statusCode(200);
 
         String uploadFolder = identifier;
 
@@ -1155,7 +1235,7 @@ public class DatasetsIT {
         goodNews.add("status", "validation passed");
         goodNews.add("uploadFolder", uploadFolder);
         goodNews.add("totalSize", totalSize);
-        Response uploadSuccessful = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, goodNews.build(), apiToken);
+        Response uploadSuccessful = UtilIT.dataCaptureModuleChecksumValidation(datasetPersistentId, goodNews.build(), superuserApiToken);
         /**
          * Errors here are expected unless you've set doExtraTesting to true to
          * do the jobs of the rsync script and the DCM to create the files.sha
@@ -1187,6 +1267,7 @@ public class DatasetsIT {
                         .statusCode(OK.getStatusCode());
             }
         }
+        logger.info("username/password: " + username);
     }
 
 }

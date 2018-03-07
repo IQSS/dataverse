@@ -217,7 +217,7 @@ public class DataFile extends DvObject implements Comparable {
     
     /**
      * All constructors should use this method
-     * to intitialize this file replace attributes
+     * to initialize this file replace attributes
      */
     private void initFileReplaceAttributes(){
         this.rootDataFileId = ROOT_DATAFILE_ID_DEFAULT;
@@ -377,6 +377,7 @@ public class DataFile extends DvObject implements Comparable {
         }
         return "Ingest failed. No further information is available.";
     }
+    
     public boolean isTabularData() {
         return getDataTables() != null && getDataTables().size() > 0; 
     }
@@ -947,15 +948,6 @@ public class DataFile extends DvObject implements Comparable {
                    return new SimpleDateFormat("yyyy-MM-dd").format(getCreateDate()); 
         }
         return null;
-    }
-    
-    
-    public String getThumbnailString() {
-        DatasetThumbnail datasetThumbnail = FileUtil.getThumbnail(this);
-        if (datasetThumbnail == null) {
-            return null;
-        }
-        return datasetThumbnail.getBase64image();
     }
     
 

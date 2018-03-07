@@ -23,7 +23,7 @@ System Requirements
 
 Support for Shibboleth in Dataverse is built on the popular `"mod_shib" Apache module, "shibd" daemon <https://shibboleth.net/products/service-provider.html>`_, and the `Embedded Discovery Service (EDS) <https://shibboleth.net/products/embedded-discovery-service.html>`_ Javascript library, all of which are distributed by the `Shibboleth Consortium <https://shibboleth.net>`_. EDS is bundled with Dataverse, but ``mod_shib`` and ``shibd`` must be installed and configured per below.
 
-Only Red Hat Enterprise Linux (RHEL) 6 and derivatives such as CentOS have been tested (x86_64 versions) by the Dataverse team. Newer versions of RHEL and CentOS **should** work but you'll need to adjust the yum repo config accordingly. See https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not offically supported by the Shibboleth project.
+Only Red Hat Enterprise Linux (RHEL) and derivatives such as CentOS have been tested (x86_64 versions) by the Dataverse team. See https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not offically supported by the Shibboleth project.
 
 Install Apache
 ~~~~~~~~~~~~~~
@@ -45,6 +45,12 @@ Enable Shibboleth Yum Repo
 This yum repo is recommended at https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxRPMInstall
 
 ``cd /etc/yum.repos.d``
+
+If you are running el7 (RHEL/CentOS 7):
+
+``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_7/security:shibboleth.repo``
+
+If you are running el6 (RHEL/CentOS 6):
 
 ``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_CentOS-6/security:shibboleth.repo``
 
@@ -134,6 +140,12 @@ Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</Vir
 You can download a :download:`sample ssl.conf file <../_static/installation/files/etc/httpd/conf.d/ssl.conf>` to compare it against the file you edited.
 
 Note that ``/etc/httpd/conf.d/shib.conf`` and ``/etc/httpd/conf.d/shibboleth-ds.conf`` are expected to be present from installing Shibboleth via yum.
+
+You may wish to also add a timeout directive to the ProxyPass line within ssl.conf. This is especially useful for larger file uploads as apache may prematurely kill the connection before the upload is processed. 
+
+e.g. ``ProxyPass / ajp://localhost:8009/ timeout=600`` defines a timeout of 600 seconds. 
+
+Try to strike a balance with the timeout setting. Again a timeout too low will impact file uploads. A timeout too high may cause additional stress on the server as it will have to service idle clients for a longer period of time.
 
 Configure Shibboleth
 --------------------

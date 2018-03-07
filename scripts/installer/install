@@ -61,8 +61,6 @@ else
 
 	'SOLR_LOCATION', 
 	
-	'TWORAVENS_LOCATION',
-
 	'RSERVE_HOST',
 	'RSERVE_PORT',
 	'RSERVE_USER',
@@ -88,8 +86,6 @@ my %CONFIG_DEFAULTS = (
 
     'SOLR_LOCATION',     'LOCAL',
 
-    'TWORAVENS_LOCATION', 'NOT INSTALLED',
-
     'RSERVE_HOST',     'localhost',
     'RSERVE_PORT',     6311,
     'RSERVE_USER',     'rserve',
@@ -111,8 +107,6 @@ my %CONFIG_PROMPTS = (
     'POSTGRES_PASSWORD', 'Postgres user password',
 
     'SOLR_LOCATION',     'Remote SOLR indexing service',
-
-    'TWORAVENS_LOCATION', 'Will this Dataverse be using TwoRavens application',
 
     'RSERVE_HOST',     'Rserve Server',
     'RSERVE_PORT',     'Rserve Server Port',
@@ -138,8 +132,6 @@ my %CONFIG_COMMENTS = (
 
     'SOLR_LOCATION',     "? \n - Leave this set to \"LOCAL\" if the SOLR will be running on the same (this) server.\n Otherwise, please enter the host AND THE PORT NUMBER of the remote SOLR service, colon-separated\n (for example: foo.edu:8983)\n: ",
 
-    'TWORAVENS_LOCATION', "? \n - If so, please provide the complete URL of the TwoRavens GUI under rApache,\n for example, \"https://foo.edu/dataexplore/gui.html\".\n (PLEASE NOTE, TwoRavens will need to be installed separately! - see the installation docs for more info)\n: ",
-
     'RSERVE_HOST',     '',
     'RSERVE_PORT',     '',
     'RSERVE_USER',     '',
@@ -155,15 +147,14 @@ my $API_URL = "http://localhost:8080/api";
 # doesn't get paranoid)
 
 my %POSTGRES_DRIVERS = (
-    #    "8_4", "postgresql-8.3-603.jdbc4.jar",
     "8_4", "postgresql-8.4-703.jdbc4.jar",
     "9_0", "postgresql-9.0-802.jdbc4.jar",
     "9_1", "postgresql-9.1-902.jdbc4.jar",
-    "9_2", "postgresql-9.1-902.jdbc4.jar",
-    "9_3", "postgresql-9.1-902.jdbc4.jar",
-    "9_4", "postgresql-9.1-902.jdbc4.jar",
-    "9_5", "postgresql-9.1-902.jdbc4.jar",
-    "9_6", "postgresql-9.1-902.jdbc4.jar"
+    "9_2", "postgresql-9.2-1004.jdbc4.jar",
+    "9_3", "postgresql-9.3-1104.jdbc4.jar",
+    "9_4", "postgresql-9.4.1212.jar",
+    "9_5", "postgresql-42.1.4.jar",
+    "9_6", "postgresql-42.1.4.jar"
 );
 
 # A few preliminary checks:
@@ -967,6 +958,35 @@ if ( -e "/proc/meminfo" && open MEMINFO, "/proc/meminfo" ) {
 
     close MEMINFO;
 
+# TODO: Figure out how to determine the amount of memory when running in Docker
+# because we're wondering if Dataverse can run in the free OpenShift Online
+# offering that only gives you 1 GB of memory. Obviously, if this is someone's
+# first impression of Dataverse, we want to to run well! What if you try to
+# ingest a large file or perform other memory-intensive operations? For more
+# context, see https://github.com/IQSS/dataverse/issues/4040#issuecomment-331282286
+    if ( -e "/sys/fs/cgroup/memory/memory.limit_in_bytes" && open CGROUPMEM, "/sys/fs/cgroup/memory/memory.limit_in_bytes" ) {
+        print "We must be running in Docker! Fancy!\n";
+        while ( my $limitline = <CGROUPMEM> ) {
+            # The goal of this cgroup check is for
+	    # "Setting the heap limit for Glassfish to 750MB"
+	    # to change to some other value, based on memory available.
+	    print "/sys/fs/cgroup/memory/memory.limit_in_bytes: $limitline\n";
+	    my $limit_in_kb = $limitline / 1024;
+	    print "Docker limit_in_kb =  $limit_in_kb but ignoring\n";
+	    # In openshift.json, notice how PostgreSQL and Solr have
+	    # resources.limits.memory set to "256Mi".
+	    # If you try to give the Dataverse/Glassfish container twice
+	    # as much memory (512 MB) and allow $sys_mem_total to
+	    # be set below, you should see the following:
+	    # "Setting the heap limit for Glassfish to 192MB."
+	    # FIXME: dataverse.war will not deploy with only 512 GB of memory.
+	    # Again, the goal is 1 GB total (512MB + 256MB + 256MB) for
+	    # Glassfish, PostgreSQL, and Solr to fit in the free OpenShift tier.
+	    #print "setting sys_mem_total to: $limit_in_kb\n";
+	    #$sys_mem_total = $limit_in_kb;
+	}
+        close CGROUPMEM;
+    }
 }
 elsif ( -x "/usr/sbin/sysctl" ) {
     # MacOS X, probably...
@@ -1287,40 +1307,7 @@ else
     print "OK.\n\n";
 }
     
-# b. If this installation is going to be using TwoRavens, configure its location in the Dataverse settings;
-# Otherwise, set the "NO TwoRavens FOR YOU!" option in the settings:
-
-
-if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
-{
-    print "Executing " . "curl -X PUT -d " . $CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} . " " . $API_URL . "/admin/settings/:TwoRavensUrl" . "\n";
-    my $exit_code = system("curl -X PUT -d " . $CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} . " " . $API_URL . "/admin/settings/:TwoRavensUrl"); 
-    if ( $exit_code )       
-    {
-	print "WARNING: failed to configure the location of the TwoRavens app in the Dataverse settings!\n\n";
-    }
-    else 
-    {
-	print "OK.\n\n";
-    }
-
-    # (and, we also need to explicitly set the tworavens option to "true":
-    $exit_code = system("curl -X PUT -d true " . $API_URL . "/admin/settings/:TwoRavensTabularView"); 
-
-} else {
-    print "Executing " . "curl -X PUT -d false " . $API_URL . "/admin/settings/:TwoRavensTabularView" . "\n";
-    my $exit_code = system("curl -X PUT -d false " . $API_URL . "/admin/settings/:TwoRavensTabularView"); 
-    if ( $exit_code )       
-    {
-	print "WARNING: failed to disable the TwoRavens app in the Dataverse settings!\n\n";
-    }
-    else 
-    {
-	print "OK.\n\n";
-    }
-}
-
-# c. If this installation is going to be using a remote SOLR search engine service, configure its location in the settings:
+# b. If this installation is going to be using a remote SOLR search engine service, configure its location in the settings:
 
 if ($CONFIG_DEFAULTS{'SOLR_LOCATION'} ne 'LOCAL')
 {

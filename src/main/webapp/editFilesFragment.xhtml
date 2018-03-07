@@ -25,17 +25,14 @@
                     <script>
                         function uploadWidgetDropMsg() {
                             var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
-                            if ($(fileUpload).children('#dragdropMsg').length) {
-                                // do nothing
-                            } else {
-                                $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.fromDropbox.description']}</div>');
+                            if ($(fileUpload).children('#dragdropMsg').length === 0) {
+                                $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.selectToAdd.dragdropMsg']}</div>');
                             }
                         }
                         function uploadStarted() {
                             $('button[id$="uploadStarted"]').trigger('click');
                         }
                         function uploadFinished(fileupload) {
-                            
                             if (fileupload.files.length === 0) {
                                 $('button[id$="AllUploadsFinished"]').trigger('click');
                                 //alert("all uploads finished");
@@ -45,7 +42,7 @@
                             $('button[id$="dropBoxUploadFinished"]').trigger('click');
                         }
                         function uploadWidgetDropRemoveMsg() {
-                            $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
+                            $('div[id$="fileUpload"] div.ui-fileupload-content div#dragdropMsg').remove();
                         }
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
@@ -75,7 +72,7 @@
                                   process="filesTable" 
                                   update="@this" 
                                   label="#{bundle['file.selectToAddBtn']}"
-                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();uploadFinished(PF('fileUploadWidget'));"
+                                  oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));"
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
                                   sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
                                   fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" 
@@ -97,7 +94,7 @@
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
                     
                     <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
-                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" style="display:none"/> 
+                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
                     <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:filesTable" style="display:none"/>
                 </ui:fragment>
 
@@ -278,9 +275,9 @@
     </p:dialog>
     
     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
-        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
+        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
         <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">
-            <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
+            <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
             <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);"

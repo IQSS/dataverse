@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -32,6 +33,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -40,6 +42,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.Collections;
@@ -76,6 +79,7 @@ public abstract class AbstractApiBean {
     private static final String PERSISTENT_ID_KEY=":persistentId";
     public static final String STATUS_ERROR = "ERROR";
     public static final String STATUS_OK = "OK";
+    public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
 
     /**
      * Utility class to convey a proper error response using Java's exceptions.
@@ -205,6 +209,15 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DataCaptureModuleServiceBean dataCaptureModuleSvc;
+
+    @EJB
+    protected PasswordValidatorServiceBean passwordValidatorService;
+
+    @EJB
+    protected ExternalToolServiceBean externalToolService;
+
+    @EJB
+    DataFileServiceBean fileSvc;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -447,8 +460,7 @@ public abstract class AbstractApiBean {
             return engineSvc.submit(cmd);
 
         } catch (IllegalCommandException ex) {
-            throw new WrappedResponse( ex, error(Response.Status.FORBIDDEN, ex.getMessage() ) );
-
+            throw new WrappedResponse( ex, forbidden(ex.getMessage() ) );
         } catch (PermissionException ex) {
             /**
              * @todo Is there any harm in exposing ex.getLocalizedMessage()?
@@ -569,11 +581,19 @@ public abstract class AbstractApiBean {
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
-
+    
+    protected Response accepted(JsonObjectBuilder bld) {
+        return Response.accepted()
+                .entity(Json.createObjectBuilder()
+                        .add("status", STATUS_WF_IN_PROGRESS)
+                        .add("data",bld).build()
+                ).build();
+    }
+    
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", STATUS_OK).build()
+                        .add("status", STATUS_WF_IN_PROGRESS).build()
                 ).build();
     }
 
@@ -584,7 +604,11 @@ public abstract class AbstractApiBean {
     protected Response badRequest( String msg ) {
         return error( Status.BAD_REQUEST, msg );
     }
-
+    
+    protected Response forbidden( String msg ) {
+        return error( Status.FORBIDDEN, msg );
+    }
+    
     protected Response badApiKey( String apiKey ) {
         return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key '" + apiKey +"'" : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME );
     }
@@ -594,6 +618,10 @@ public abstract class AbstractApiBean {
     }
 
     protected Response permissionError( String message ) {
+        return unauthorized( message );
+    }
+    
+    protected Response unauthorized( String message ) {
         return error( Status.UNAUTHORIZED, message );
     }
 

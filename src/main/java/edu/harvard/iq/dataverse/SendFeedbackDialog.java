@@ -31,6 +31,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     private String userMessage = "";
     private String messageSubject = "";
     private String messageTo = "";
+    // FIXME: Remove "support@thedata.org". There's no reason to email the Dataverse *project*. People should email the *installation* instead.
     private String defaultRecipientEmail = "support@thedata.org";
     Long op1, op2, userSum;
     // Either the dataverse or the dataset that the message is pertaining to
@@ -161,6 +162,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
         if (op1 + op2 !=(Long)value) {
 
+            // TODO: Remove this English "Sum is incorrect" string. contactFormFragment.xhtml uses contact.sum.invalid instead.
             FacesMessage msg
                     = new FacesMessage("Sum is incorrect, please try again.");
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);

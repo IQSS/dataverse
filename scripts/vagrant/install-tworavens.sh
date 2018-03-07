@@ -2,7 +2,7 @@
 echo "This script is highly experimental and makes many assumptions about how Dataverse is running in Vagrant. Please consult the TwoRavens section of the Dataverse Installation Guide instead."
 exit 1
 cd /root
-yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 yum install -y R R-devel
 # FIXME: /dataverse is mounted in Vagrant but not other places
 yum install -y /dataverse/doc/sphinx-guides/source/_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.6-rpm0.x86_64.rpm
@@ -16,9 +16,10 @@ if [ ! -f $COMMIT ]; then
   ./r-setup.sh # This is expected to take a while. Look for lines like "Package Zelig successfully installed" and "Successfully installed Dataverse R framework".
 fi
 # FIXME: copy preprocess.R into Glassfish while running and overwrite it
-curl -X PUT -d true http://localhost:8080/api/admin/settings/:TwoRavensTabularView
+# FIXME: enable TwoRavens by POSTing twoRavens.json. See note below about port 8888 vs 8080.
+# TODO: programatically edit twoRavens.json to change "toolUrl" to "http://localhost:8888/dataexplore/gui.html"
+curl -X POST -H 'Content-type: application/json' --upload-file /dataverse/doc/sphinx-guides/source/_static/installation/files/root/external-tools/twoRavens.json http://localhost:8080/api/admin/externalTools
 # Port 8888 because we're running in Vagrant. On the dev1 server we use https://dev1.dataverse.org/dataexplore/gui.html
-curl -X PUT -d http://localhost:8888/dataexplore/gui.html http://localhost:8080/api/admin/settings/:TwoRavensUrl
 cd /root
 DIR=/var/www/html/dataexplore
 if [ ! -d $DIR ]; then

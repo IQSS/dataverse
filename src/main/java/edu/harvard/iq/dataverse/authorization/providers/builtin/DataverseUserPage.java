@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Timestamp;
@@ -104,6 +105,8 @@ public class DataverseUserPage implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     GroupServiceBean groupService;
+    @EJB
+    PasswordValidatorServiceBean passwordValidatorService;
     @Inject
     SettingsWrapper settingsWrapper;
     @Inject
@@ -121,10 +124,10 @@ public class DataverseUserPage implements java.io.Serializable {
     private EditMode editMode;
     private String redirectPage = "dataverse.xhtml";
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "The new password is blank: re-type it again.")
     private String inputPassword;
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "Please enter your current password.")
     private String currentPassword;
     private Long dataverseId;
     private List<UserNotification> notificationsList;
@@ -135,7 +138,8 @@ public class DataverseUserPage implements java.io.Serializable {
     
     private String username;
     boolean nonLocalLoginEnabled;
-    
+    private List<String> passwordErrors;
+
     public String init() {
 
         // prevent creating a user if signup not allowed.
@@ -267,25 +271,16 @@ public class DataverseUserPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Password Error", "The new password is blank: re-type it again");
+                    "Password Error", "Please enter a new password for your account.");
             context.addMessage(toValidate.getClientId(context), message);
             return;
 
         } 
 
-        int minPasswordLength = 6;
-        boolean forceNumber = true;
-        boolean forceSpecialChar = false;
-        boolean forceCapitalLetter = false;
-        int maxPasswordLength = 255;
-
-        PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
-        boolean passwordIsComplexEnough = password!= null && validator.validatePassword(password);
-        if (!passwordIsComplexEnough) {
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        this.passwordErrors = errors;
+        if (!errors.isEmpty()) {
             ((UIInput) toValidate).setValid(false);
-            String messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", messageDetail);
-            context.addMessage(toValidate.getClientId(context), message);
         }
     }
 
@@ -345,14 +340,14 @@ public class DataverseUserPage implements java.io.Serializable {
 
             // go back to where user came from
             if ("dataverse.xhtml".equals(redirectPage)) {
-                redirectPage = redirectPage + "&alias=" + dataverseService.findRootDataverse().getAlias();
+                redirectPage = redirectPage + "?alias=" + dataverseService.findRootDataverse().getAlias();
             }
 
             try {
                 redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 logger.log(Level.SEVERE, "Server does not support 'UTF-8' encoding.", ex);
-                redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
+                redirectPage = "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
             }
 
             logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
@@ -685,5 +680,9 @@ public class DataverseUserPage implements java.io.Serializable {
     public String getReasonForReturn(DatasetVersion datasetVersion) {
         // TODO: implement me! See getReasonsForReturn in api/Notifications.java
         return "";
+    }
+
+    public String getPasswordRequirements() {
+        return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
     }
 }

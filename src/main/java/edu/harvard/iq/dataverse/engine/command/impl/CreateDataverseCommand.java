@@ -78,8 +78,6 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
             created.setDefaultContributorRole(ctxt.roles().findBuiltinRoleByAlias(DataverseRole.EDITOR));
         }
         
-        // By default, themeRoot should be true
-        created.setThemeRoot(true);
         // @todo for now we are saying all dataverses are permission root
         created.setPermissionRoot(true);
         

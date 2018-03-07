@@ -36,7 +36,7 @@
                         <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']}
                     </button>
                 </ui:fragment>
-                <h:form id="shareForm" class="btn-form"
+                <h:form id="addDataForm" class="btn-form"
                         rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)
                                      or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse))}">
                     <div class="btn-group">
@@ -523,7 +523,7 @@
 
                         <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
                         
-                        <c:set var="dvParentAlias" value="#{dataversePage}?alias=#{result.dataverseAlias}"/>
+                        <c:set var="dvParentAlias" value="/dataverse/#{result.dataverseAlias}"/>
                         <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                             <h:outputText value="#{result.parent.get('name')}"/>
                         </h:outputLink>
@@ -599,7 +599,7 @@
 
                             <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}" />
 
-                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileChecksumDisplay(result.entity)}" rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity)}"/>
+                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileChecksumDisplay(result.entity)}" rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty SearchIncludeFragment.dataFileChecksumDisplay(result.entity))}"/>
 
                             <!-- if this is a tabular data file, extra information, such as the numbers of variables and observations and the unf, is displayed: -->
                             <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"
