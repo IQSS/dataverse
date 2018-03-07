@@ -126,7 +126,7 @@ public class MailServiceBean implements java.io.Serializable {
                 InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
                 for (int i = 0; i < recipients.length; i++) {
                     try {
-                        recipients[i] = new InternetAddress('"' + recipientStrings[i] + '"', "", charset);
+                        recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
                         logger.fine("Address is " + recipients[i].getAddress());
                     } catch (UnsupportedEncodingException ex) {
                         logger.severe(ex.getMessage());
