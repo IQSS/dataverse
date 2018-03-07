@@ -210,7 +210,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
                     }
                 } else {
-                    // [immediate]todo: make this mechanism configurable!
                     if (storageIO instanceof S3AccessIO && isRedirectToS3()) {
                         // [attempt to] redirect: 
                         String redirect_url_str = ((S3AccessIO)storageIO).generateTemporaryS3Url();
