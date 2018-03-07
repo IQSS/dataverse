@@ -7,7 +7,7 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true">
+    <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true" >
         <p:fragment id="assignMessages">
             <div class="popupMessagePanel">
                 <iqbs:messages collapsible="true" />
@@ -30,6 +30,7 @@
                     <ui:fragment rendered="#{provenanceUploadFragmentBean.provExistsInPreviousVersion() == true}">
                         <p class="help-block"><span class="text-danger">#{bundle['file.editProvenanceDialog.bundleFile.alreadyPublished']}</span></p>
                     </ui:fragment>
+
                     <ui:fragment id="provUploadFragment" rendered="#{provenanceUploadFragmentBean.provExistsInPreviousVersion() == false}">
                         <ui:fragment rendered="#{provenanceUploadFragmentBean.jsonUploadedState == false}">
                             <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
@@ -93,6 +94,7 @@
                             var="provEntityFileData" itemLabel="#{provEntityFileData.fileName}#{empty provEntityFileData.fileName ? '' :' - '}#{provEntityFileData.entityName}" itemValue="#{provEntityFileData}"
                             forceSelection="true" 
                             converter="provEntityFileDataConverter"
+                            styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
                             onkeypress="if (event.keyCode == 13) {
                                 return false;
                             }">
@@ -106,6 +108,9 @@
                                 <h:outputText value="#{provEntityFileData.entityName}" />
                             </p:column>
                         </p:autoComplete>
+                        <script type="text/javascript">
+                            handle_dropdown_popup_scroll();
+                        </script>
                         <p:message for="provJsonNameDropdown" display="text"/>
                     </div>
                 </div>
