@@ -304,12 +304,12 @@
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
-            <version>3.4.2</version>
+            <version>3.4.2.Final</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
-            <version>3.4.2</version>
+            <version>3.4.2.Final</version>
         </dependency>
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
