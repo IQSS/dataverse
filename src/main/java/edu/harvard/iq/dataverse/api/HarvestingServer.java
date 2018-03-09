@@ -34,6 +34,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.faces.application.FacesMessage;
 import javax.json.Json;
+import javax.json.JsonReader;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.ws.rs.DELETE;
@@ -133,49 +134,53 @@ public class HarvestingServer extends AbstractApiBean {
         }
 
         StringReader rdr = new StringReader(jsonBody);
-        JsonObject json = Json.createReader(rdr).readObject();
+        
+	try( JsonReader jrdr = Json.createReader(rdr) )
+	{
+		JsonObject json = jrdr.readObject();
 
-        OAISet set = new OAISet();
-        //Validating spec 
-        if (!StringUtils.isEmpty(spec)) {
-            if (spec.length() > 30) {
-                return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.sizelimit"));
-            }
-            if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", spec)) {
-                return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.invalid"));
-                // If it passes the regex test, check 
-            }
-            if (oaiSetService.findBySpec(spec) != null) {
-                return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.alreadyused"));
-            }
+		OAISet set = new OAISet();
+		//Validating spec 
+		if (!StringUtils.isEmpty(spec)) {
+			if (spec.length() > 30) {
+				return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.sizelimit"));
+			}
+			if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", spec)) {
+				return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.invalid"));
+				// If it passes the regex test, check 
+			}
+			if (oaiSetService.findBySpec(spec) != null) {
+				return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.alreadyused"));
+			}
 
-        } else {
-            return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.required"));
-        }
-        set.setSpec(spec);
-        String name, desc, defn;
+		} else {
+			return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.required"));
+		}
+		set.setSpec(spec);
+		String name, desc, defn;
 
-        try {
-            name = json.getString("name");
-        } catch (NullPointerException npe_name) {
-            return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.required"));
-        }
-        try {
-            defn = json.getString("definition");
-        } catch (NullPointerException npe_defn) {
-            throw new JsonParseException("definition unspecified");
-        }
-        try {
-            desc = json.getString("description");
-        } catch (NullPointerException npe_desc) {
-            desc = ""; //treating description as optional
-        }
-        set.setName(name);
-        set.setDescription(desc);
-        set.setDefinition(defn);
-        oaiSetService.save(set);
-
-        return created("/harvest/server/oaisets" + spec, oaiSetAsJson(set));
+		try {
+			name = json.getString("name");
+		} catch (NullPointerException npe_name) {
+			return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.required"));
+		}
+		try {
+			defn = json.getString("definition");
+		} catch (NullPointerException npe_defn) {
+			throw new JsonParseException("definition unspecified");
+		}
+		try {
+			desc = json.getString("description");
+		} catch (NullPointerException npe_desc) {
+			desc = ""; //treating description as optional
+		}
+		set.setName(name);
+		set.setDescription(desc);
+		set.setDefinition(defn);
+		oaiSetService.save(set);
+		return created("/harvest/server/oaisets" + spec, oaiSetAsJson(set));
+	}
+	
     }
 
     @PUT
