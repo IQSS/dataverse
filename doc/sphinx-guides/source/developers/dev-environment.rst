@@ -347,14 +347,15 @@ Install Minishift
 
 Minishift requires a hypervisor and since we already use VirtualBox for Vagrant, you should install VirtualBox from http://virtualbox.org .
 
-Download the Minishift tarball from https://docs.openshift.org/latest/minishift/getting-started/installing.html and put the ``minishift`` binary in ``/usr/local/bin`` or somewhere in your ``$PATH``. This assumes Mac or Linux.
+Download the Minishift tarball from https://docs.openshift.org/latest/minishift/getting-started/installing.html and put the ``minishift`` binary in ``/usr/local/bin`` or somewhere in your ``$PATH``. This assumes Mac or Linux. These instructions were last tested on version ``v1.14.0+1ec5877`` of Minishift.
+
 
 At this point, you might want to consider going through the Minishift quickstart to get oriented: https://docs.openshift.org/latest/minishift/getting-started/quickstart.html
 
 Start Minishift
 ~~~~~~~~~~~~~~~
 
-``minishift start --vm-driver=virtualbox``
+``minishift start --vm-driver=virtualbox --memory=4GB``
 
 Make the OpenShift Client Binary (oc) Executable
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -409,36 +410,22 @@ From the ``rsh`` prompt you could run something like the following to build conf
 
 ``curl -L localhost:8080``
 
-Make the Dataverse App Available Via HTTP
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-First, check the IP address of your minishift cluster. If this differs from the IP address used below, replace it.
-
-``minishift ip``
-
-The following curl command is expected to fail until you "expose" the HTTP service. Please note that the IP address may be different.
-
-``curl http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/api/info/version``
-
-Expose the Dataverse web service:
-
-``oc expose svc/dataverse-glassfish-service``
-
-Make Sure the Dataverse API is Working
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This should show a version number but please note that the IP address may be different:
-
-``curl http://dataverse-glassfish-service-project1.192.168.99.100.nip.io/api/info/version``
-
 Log into Minishift and Visit Dataverse in your Browser
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The idea here is that we will log into the OpenShift web interface and see the general state of Dataverse running on Minishift and click a link to the Dataverse web interface.
+
+Note that ``minishift console`` should open the OpenShift web interface in your browser. The IP address might not be "192.168.99.100" but it's used below as an example.
 
 - https://192.168.99.100:8443
 - username: developer
 - password: <any password>
 
-You should be able to log in with username "dataverseAdmin" and password "admin".
+In the OpenShift web interface you should see a link that looks something like http://dataverse-project1.192.168.99.100.nip.io but the IP address may vary. If you click it you should see the Dataverse web interface where you can log in with the username "dataverseAdmin" and the password "admin".
+
+``curl http://dataverse-project1.192.168.99.100.nip.io/api/info/version``
+
+From the perspective of the ``openshift.json`` config file, the HTTP link to Dataverse in called a route. See also ``oc expose`` documentation.
 
 Cleaning up
 ~~~~~~~~~~~
@@ -450,7 +437,22 @@ Note that it can take a few minutes for the deletion of a project to be complete
 Making Changes
 ~~~~~~~~~~~~~~
 
+Making Changes to Docker Images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 If you're interested in using Minishift for development and want to change the Dataverse code, you will need to get set up to create Docker images based on your changes and push them to a Docker registry such as Docker Hub. See the section below on Docker for details.
+
+Using Minishift for day to day Dataverse development might be something we want to investigate in the future. These blog posts talk about developing Java applications using Minishift/OpenShift:
+
+- https://blog.openshift.com/fast-iterative-java-development-on-openshift-kubernetes-using-rsync/
+- https://blog.openshift.com/debugging-java-applications-on-openshift-kubernetes/
+
+Making Changes to the OpenShift Config
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are interested in changing the OpenShift config file for Dataverse at ``conf/openshift/openshift.json`` note that in many cases once you have Dataverse running in Minishift you can use ``oc process`` and ``oc apply`` like this:
+
+``oc process -f conf/openshift/openshift.json | oc apply -f -``
 
 Running Containers to Run as Root in Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -558,6 +560,10 @@ Get Set Up to Push Docker Images to Minishift Registry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 FIXME https://docs.openshift.org/latest/minishift/openshift/openshift-docker-registry.html indicates that it should be possible to make use of the builtin registry in Minishift while iterating on Docker images but you may get "unauthorized: authentication required" when trying to push to it as reported at https://github.com/minishift/minishift/issues/817 so until we figure this out, you must push to Docker Hub instead. Run ``docker login`` and use the ``conf/docker/build.sh`` script to push Docker images you create to https://hub.docker.com/u/iqss/
+
+If you want to troubleshoot this, take a close look at the ``docker login`` command you're using to make sure the OpenShift token is being sent.
+
+An alternative to using the the Minishift Registry is to do a local build. This isn't documented but should work within Minishift because it's an all-in-one OpenShift environment. The steps at a high level are to ssh into the Minishift VM and then do a ``docker build``. For a stateful set, the image pull policy should be never.
 
 ----
 
