@@ -336,11 +336,13 @@ If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400
 OpenShift
 ---------
 
-From the Dataverse perspective, we are in the business of providing a "template" for OpenShift that describes how the various components we build our application on (Glassfish, PostgreSQL, Solr, the Dataverse war file itself, etc.) work together. We publish Docker images to DockerHub at https://hub.docker.com/u/iqss/ that are used in the OpenShift template.
+From the Dataverse perspective, we are in the business of providing a "template" for OpenShift that describes how the various components we build our application on (Glassfish, PostgreSQL, Solr, the Dataverse war file itself, etc.) work together. We publish Docker images to DockerHub at https://hub.docker.com/u/iqss/ that are used in this OpenShift template.
 
-Dataverse's (light) use of Docker is documented below in a separate section. We actually started with Docker in the context of OpenShift, which is why OpenShift is listed first.
+Dataverse's (light) use of Docker is documented below in a separate section. We actually started with Docker in the context of OpenShift, which is why OpenShift is listed first but we can imagine rearranging this in the future.
 
 The OpenShift template for Dataverse can be found at ``conf/openshift/openshift.json`` and if you need to hack on the template or related files under ``conf/docker`` it is recommended that you iterate on them using Minishift.
+
+The instructions below will walk you through spinning up Dataverse within Minishift. It is recommended that you do this on the "develop" branch to make sure everything is working before changing anything.
 
 Install Minishift
 ~~~~~~~~~~~~~~~~~
@@ -348,7 +350,6 @@ Install Minishift
 Minishift requires a hypervisor and since we already use VirtualBox for Vagrant, you should install VirtualBox from http://virtualbox.org .
 
 Download the Minishift tarball from https://docs.openshift.org/latest/minishift/getting-started/installing.html and put the ``minishift`` binary in ``/usr/local/bin`` or somewhere in your ``$PATH``. This assumes Mac or Linux. These instructions were last tested on version ``v1.14.0+1ec5877`` of Minishift.
-
 
 At this point, you might want to consider going through the Minishift quickstart to get oriented: https://docs.openshift.org/latest/minishift/getting-started/quickstart.html
 
@@ -362,10 +363,10 @@ Make the OpenShift Client Binary (oc) Executable
 
 ``eval $(minishift oc-env)``
 
-Log in to Minishift
-~~~~~~~~~~~~~~~~~~~
+Log in to Minishift from the Command Line
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Note that if you just installed Minishift, you are probably logged in already, but it doesn't hurt to log in again.
+Note that if you just installed and started Minishift, you are probably logged in already. This ``oc login`` step is included in case you aren't logged in anymore.
 
 ``oc login --username developer --password=whatever``
 
@@ -374,17 +375,45 @@ Use "developer" as the username and a couple characters as the password.
 Create a Minishift Project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Calling the project "project1" is fairly arbitrary. We'll probably want to revisit this name in the future. A project is necessary in order to create an OpenShift app.
+
 ``oc new-project project1``
+
+Note that ``oc projects`` will return a list of projects.
 
 Create a Dataverse App within the Minishift Project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run this command from inside the vanilla Dataverse application to download images from Docker Hub and use them to create a Dataverse Minishift application. Alternatively, the ``openshift.json`` file can be downloaded directly from our github repo.
+The following command operates on the ``conf/openshift/openshift.json`` file that resides in the main Dataverse git repo. It will download images from Docker Hub and use them to spin up Dataverse within Minishift/OpenShift. Later we will cover how to make changes to the images on Docker Hub.
 
 ``oc new-app conf/openshift/openshift.json``
 
+Log into Minishift and Visit Dataverse in your Browser
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After running the ``oc new-app`` command above, deployment of Dataverse within Minishift/OpenShift will begin. You should log into the OpenShift web interface to check on the status of the deployment. If you just created the Minishift VM with the ``minishift start`` command above, the ``oc new-app`` step is expected to take a while because the images need to be downloaded from Docker Hub. Also, the installation of Dataverse takes a while.
+
+Typing ``minishift console`` should open the OpenShift web interface in your browser. The IP address might not be "192.168.99.100" but it's used below as an example.
+
+- https://192.168.99.100:8443 (or URL from ``minishift console``)
+- username: developer
+- password: <any password>
+
+In the OpenShift web interface you should see a link that looks something like http://dataverse-project1.192.168.99.100.nip.io but the IP address will vary and will match the output of ``minishift ip``. Eventually, after deployment is complete, the Dataverse web interface will appear at this URL and you will be able to log in with the username "dataverseAdmin" and the password "admin".
+
+Another way to verify that Dataverse has been succesfully deployed is to make sure that the Dataverse "info" API endpoint returns a version (note that ``minishift ip`` is used because the IP address will vary):
+
+``curl http://dataverse-project1.`minishift ip`.nip.io/api/info/version``
+
+From the perspective of OpenShift and the ``openshift.json`` config file, the HTTP link to Dataverse in called a route. See also documentation for ``oc expose``.
+
+Troubleshooting
+~~~~~~~~~~~~~~~
+
+Here are some tips on troubleshooting your deployment of Dataverse to Minishift.
+
 Check Status of Dataverse Deployment to Minishift
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``oc status``
 
@@ -397,42 +426,33 @@ This is a deep dive:
 ``oc get all``
 
 Review Logs of Dataverse Deployment to Minishift
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``oc logs -c dataverse-plus-glassfish $(oc get po -o json | jq '.items[] | select(.kind=="Pod").metadata.name' -r | grep -v dataverse-glassfish-1-deploy)``
+Logs are provided in the web interface to each of the deployment configurations. The URLs should be something like this (but the IP address) will vary and you should click "View Log". The installation of Dataverse is done within the one Glassfish deployment configuration:
 
-Get a Shell (ssh/rsh) on Glassfish Server Deployed to Minishift
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- https://192.168.99.100:8443/console/project/project1/browse/dc/dataverse-glassfish
+- https://192.168.99.100:8443/console/project/project1/browse/dc/dataverse-postgresql
+- https://192.168.99.100:8443/console/project/project1/browse/dc/dataverse-solr
 
-``oc rsh $(oc get po -o json | jq '.items[] | select(.kind=="Pod").metadata.name' -r | grep -v dataverse-glassfish-1-deploy)``
+You can also see logs from each of the components (Glassfish, PostgreSQL, and Solr) from the command line with ``oc logs`` like this (just change the ``grep`` at the end):
 
-From the ``rsh`` prompt you could run something like the following to build confidence that Dataverse is running on port 8080:
+``oc logs $(oc get po -o json | jq '.items[] | select(.kind=="Pod").metadata.name' -r | grep glassfish)``
 
-``curl -L localhost:8080``
+Get a Shell (ssh/rsh) on Containers Deployed to Minishift
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Log into Minishift and Visit Dataverse in your Browser
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You can get a shell on any of the containers for each of the components (Glassfish, PostgreSQL, and Solr) with ``oc rc`` (just change the ``grep`` at the end):
 
-The idea here is that we will log into the OpenShift web interface and see the general state of Dataverse running on Minishift and click a link to the Dataverse web interface.
+``oc rsh $(oc get po -o json | jq '.items[] | select(.kind=="Pod").metadata.name' -r | grep glassfish)``
 
-Note that ``minishift console`` should open the OpenShift web interface in your browser. The IP address might not be "192.168.99.100" but it's used below as an example.
+From the ``rsh`` prompt of the Glassfish container you could run something like the following to make sure that Dataverse is running on port 8080:
 
-- https://192.168.99.100:8443
-- username: developer
-- password: <any password>
-
-In the OpenShift web interface you should see a link that looks something like http://dataverse-project1.192.168.99.100.nip.io but the IP address may vary. If you click it you should see the Dataverse web interface where you can log in with the username "dataverseAdmin" and the password "admin".
-
-``curl http://dataverse-project1.192.168.99.100.nip.io/api/info/version``
-
-From the perspective of the ``openshift.json`` config file, the HTTP link to Dataverse in called a route. See also ``oc expose`` documentation.
+``curl http://localhost:8080/api/info/version``
 
 Cleaning up
 ~~~~~~~~~~~
 
-Note that it can take a few minutes for the deletion of a project to be complete and there doesn't seem to be a great way to know when it's safe to run ``oc new-project project1`` again, slowing down the development feedback loop. FIXME: Find a way to iterate faster.
-
-``oc delete project project1``
+If you simply wanted to try out Dataverse on Minishift and want to clean up, you can run ``oc delete project project1`` to delete the project or ``minishift stop`` and ``minishift delete`` to delete the entire Minishift VM and all the Docker containers inside it.
 
 Making Changes
 ~~~~~~~~~~~~~~
@@ -440,7 +460,7 @@ Making Changes
 Making Changes to Docker Images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you're interested in using Minishift for development and want to change the Dataverse code, you will need to get set up to create Docker images based on your changes and push them to a Docker registry such as Docker Hub. See the section below on Docker for details.
+If you're interested in using Minishift for development and want to change the Dataverse code, you will need to get set up to create Docker images based on your changes and push them to a Docker registry such as Docker Hub (or Minishift's internal registry, if you can get that working, mentioned below). See the section below on Docker for details.
 
 Using Minishift for day to day Dataverse development might be something we want to investigate in the future. These blog posts talk about developing Java applications using Minishift/OpenShift:
 
@@ -450,9 +470,11 @@ Using Minishift for day to day Dataverse development might be something we want 
 Making Changes to the OpenShift Config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are interested in changing the OpenShift config file for Dataverse at ``conf/openshift/openshift.json`` note that in many cases once you have Dataverse running in Minishift you can use ``oc process`` and ``oc apply`` like this:
+If you are interested in changing the OpenShift config file for Dataverse at ``conf/openshift/openshift.json`` note that in many cases once you have Dataverse running in Minishift you can use ``oc process`` and ``oc apply`` like this (but please note that some errors and warnings are expected):
 
 ``oc process -f conf/openshift/openshift.json | oc apply -f -``
+
+The slower way to iterate on the ``openshift.json`` file is to delete the project and re-create it.
 
 Running Containers to Run as Root in Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -484,7 +506,7 @@ Docker
 From the Dataverse perspective, Docker is important for a few reasons:
 
 - We are thankful that NDS Labs did the initial work to containerize Dataverse and include it in the "workbench" we mention in the :doc:`/installation/prep` section of the Installation Guide. The workbench allows people to kick the tires on Dataverse.
-- There is interest from the community in running Dataverse on OpenShift and some initial work has been done to get Dataverse running on Minishift in Docker containers. Minishift makes use of Docker images on Docker Hub. To build new Docker images and push them to Docker Hub, you'll need to install Docker.
+- There is interest from the community in running Dataverse on OpenShift and some initial work has been done to get Dataverse running on Minishift in Docker containers. Minishift makes use of Docker images on Docker Hub. To build new Docker images and push them to Docker Hub, you'll need to install Docker. The main issue to follow is https://github.com/IQSS/dataverse/issues/4040 .
 - Docker may aid in testing efforts if we can easily spin up Docker images based on code in pull requests and run the full integration suite against those images. See the :doc:`testing` section for more information on integration tests.
 
 Installing Docker
@@ -511,7 +533,7 @@ Future production use on Minishift/OpenShift/Kubernetes
 
 When working with Docker in the context of Minishift, follow the instructions above and make sure you get the Dataverse Docker images running in Minishift before you start messing with them.
 
-As of this writing, the Dataverse Docker images we publish under https://hub.docker.com/u/iqss/ are highly experimental. They're tagged with branch names like ``kick-the-tires`` rather than release numbers.
+As of this writing, the Dataverse Docker images we publish under https://hub.docker.com/u/iqss/ are highly experimental. They were originally tagged with branch names like ``kick-the-tires`` and as of this writing the ``latest`` tag should be considered highly experimental and not for production use. See https://github.com/IQSS/dataverse/issues/4040 for the latest status and please reach out if you'd like to help!
 
 Change to the docker directory:
 
@@ -549,7 +571,6 @@ Known Issues with Dataverse Images on Docker Hub
 Again, Dataverse Docker images on Docker Hub are highly experimental at this point. As of this writing, their purpose is primarily for kicking the tires on Dataverse. Here are some known issues:
 
 - The Dataverse installer is run in the entrypoint script every time you run the image. Ideally, Dataverse would be installed in the Dockerfile instead. Dataverse is being installed in the entrypoint script because it needs PosgreSQL to be up already so that database tables can be created when the war file is deployed.
-- The Docker images have to be run as root. See the discussion above.
 - The storage should be abstracted. Storage of data files and PostgreSQL data. Probably Solr data.
 - Better tuning of memory by examining ``/sys/fs/cgroup/memory/memory.limit_in_bytes`` and incorporating this into the Dataverse installation script.
 - Only a single Glassfish server can be used. See "Dedicated timer server in a Dataverse server cluster" in the :doc:`/admin/timers` section of the Installation Guide.
