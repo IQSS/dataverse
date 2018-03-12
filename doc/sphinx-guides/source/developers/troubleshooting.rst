@@ -94,6 +94,15 @@ If you have an old copy of the database and old Solr data and want to start fres
 
 You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy and related scripts interesting because they demonstrate how we have at least partially automated the process of tearing down a Dataverse installation and having it rise again, hence the name "phoenix." See also "Fresh Reinstall" in the :doc:`/installation/installation-main` section of the Installation Guide.
 
+DataCite
+--------
+
+If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``dataverse.siteUrl`` JVM option is unset or set to localhost (``-Ddataverse.siteUrl=http://localhost:8080``). You can try something like this:
+
+``asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
+
+``asadmin create-jvm-options '-Ddataverse.siteUrl=http\://demo.dataverse.org'``
+
 ----
 
 Previous: :doc:`dev-environment` | Next: :doc:`tips`

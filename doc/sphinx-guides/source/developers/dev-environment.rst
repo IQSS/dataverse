@@ -219,15 +219,6 @@ Geoconnect works as a middle layer, allowing geospatial data files in Dataverse 
 
 As mentioned under "Architecture and Components" in the :doc:`/installation/prep` section of the Installation Guide, Geoconnect is an optional component of Dataverse, so this section is only necessary to follow it you are working on an issue related to this feature.
 
-DataCite
---------
-
-If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``dataverse.siteUrl`` JVM option is unset or set to localhost (``-Ddataverse.siteUrl=http://localhost:8080``). You can try something like this:
-
-``asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
-
-``asadmin create-jvm-options '-Ddataverse.siteUrl=http\://demo.dataverse.org'``
-
 ----
 
 Previous: :doc:`intro` | Next: :doc:`troubleshooting`
