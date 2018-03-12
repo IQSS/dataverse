@@ -83,7 +83,7 @@ public class SearchFields {
      */
     public static final String IS_HARVESTED = "isHarvested";
     /**
-     * Such as http://dx.doi.org/10.5072/FK2/HXI35W
+     * Such as https://doi.org/10.5072/FK2/HXI35W
      *
      * For files, the URL will be the parent dataset.
      */

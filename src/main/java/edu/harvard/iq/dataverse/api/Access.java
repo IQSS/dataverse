@@ -129,7 +129,10 @@ public class Access extends AbstractApiBean {
     @Path("datafile/bundle/{fileId}")
     @GET
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+ 
+
+        GuestbookResponse gbr = null;
         
         DataFile df = findDataFileOrDieWrapper(fileId);
         
@@ -140,6 +143,13 @@ public class Access extends AbstractApiBean {
         // This will throw a WebApplicationException, with the correct 
         // exit code, if access isn't authorized: 
         checkAuthorization(df, apiToken);
+        
+        if (gbrecs == null && df.isReleased()){
+            // Write Guestbook record if not done previously and file is released
+            User apiTokenUser = findAPITokenUser(apiToken);
+            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
+            guestbookResponseService.save(gbr);
+        }
         
         DownloadInfo dInfo = new DownloadInfo(df);
         BundleDownloadInstance downloadInstance = new BundleDownloadInstance(dInfo);
@@ -197,10 +207,22 @@ public class Access extends AbstractApiBean {
         DataFile df = findDataFileOrDieWrapper(fileId);
         GuestbookResponse gbr = null;
         
+        if (df.isHarvested()) {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            // (nobody should ever be using this API on a harvested DataFile)!
+        }
+        
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
+        
+        if (gbrecs == null && df.isReleased()){
+            // Write Guestbook record if not done previously and file is released
+            User apiTokenUser = findAPITokenUser(apiToken);
+            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
+        }
+               
         // This will throw a WebApplicationException, with the correct 
         // exit code, if access isn't authorized: 
         checkAuthorization(df, apiToken);
@@ -432,13 +454,8 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public /*ZippedDownloadInstance*/ Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        // create a Download Instance without, without a primary Download Info object:
-        //ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
+    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
-        
-        
-        
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
@@ -456,6 +473,8 @@ public class Access extends AbstractApiBean {
                 ? headers.getHeaderString(API_KEY_HEADER) 
                 : apiTokenParam;
         
+        User apiTokenUser = findAPITokenUser(apiToken); //for use in adding gb records if necessary
+               
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
@@ -490,7 +509,10 @@ public class Access extends AbstractApiBean {
                                     }
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                    
+                                            if (gbrecs == null && file.isReleased()){
+                                                GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                                                guestbookResponseService.save(gbr);
+                                            }
                                     if (zipper == null) {
                                         // This is the first file we can serve - so we now know that we are going to be able 
                                         // to produce some output.
@@ -1133,5 +1155,32 @@ public class Access extends AbstractApiBean {
         
         return false; 
     }   
+    
+
+        
+    private User findAPITokenUser(String apiToken) {
+        User apiTokenUser = null;
+
+        if ((apiToken != null) && (apiToken.length() != 64)) {
+            // We'll also try to obtain the user information from the API token, 
+            // if supplied: 
+
+            try {
+                logger.fine("calling apiTokenUser = findUserOrDie()...");
+                apiTokenUser = findUserOrDie();
+                return apiTokenUser;
+            } catch (WrappedResponse wr) {
+                logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
+                return null;
+            }
+
+        }
+        return apiTokenUser;
+    }
+
+
+
+            
+            
             
 }
