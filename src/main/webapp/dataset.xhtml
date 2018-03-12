@@ -452,10 +452,10 @@
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
 
                         <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
-                            <h:inputHidden value="#{DatasetPage.lockedForIngest}" id="datasetLockedForIngestVariable" />
+                            <h:inputHidden value="#{DatasetPage.lockedForAnyReason}" id="datasetLockedForAnyReasonVariable" />
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
 
-                            <p:remoteCommand name="refreshIngestLockCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshIngestLock}"/>
+                            <p:remoteCommand name="refreshAllLocksCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshAllLocks()}"/>
                             <p:remoteCommand name="refreshAllCommand" process="@this" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.refresh}"/>
 
                             <!-- see the comment in the javascript below that explains what this button is for -->
@@ -467,7 +467,7 @@
                                 });
 
                                 function refreshIfStillLocked() {
-                                    if ($('input[id$="datasetLockedForIngestVariable"]').val() === 'true') {
+                                    if ($('input[id$="datasetLockedForAnyReasonVariable"]').val() === 'true') {
                                         // if dataset is locked, instruct the page to
                                         // wait and check again:
                                         waitAndCheckLockAgain();
@@ -501,7 +501,7 @@
                                         // already completed in the background:
                                         //$('button[id$="refreshButton"]').trigger('click');
                                         //refreshLockCommand();
-                                        refreshIngestLockCommand();
+                                        refreshAllLocksCommand();
                                     }, 10000);
                                 }
                             </script>

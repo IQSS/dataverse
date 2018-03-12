@@ -75,8 +75,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // command, would be sufficient. -- L.A. Sep. 6 2017
         theDataset = ctxt.em().merge(theDataset);
         
+        //if the publisher hasn't contributed to this version
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), getUser());
-
+        
         if (ddu == null) {
             ddu = new DatasetVersionUser();
             ddu.setDatasetVersion(theDataset.getLatestVersion());

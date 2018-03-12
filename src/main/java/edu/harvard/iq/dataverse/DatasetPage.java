@@ -2633,6 +2633,8 @@ public class DatasetPage implements java.io.Serializable {
             // let's tell the page to refresh:
             logger.fine("no longer locked!");
             stateChanged = true;
+            lockedFromEditsVar = null;
+            lockedFromDownloadVar = null;
             //requestContext.execute("refreshPage();");
         }
     }
@@ -2647,6 +2649,24 @@ public class DatasetPage implements java.io.Serializable {
             // let's tell the page to refresh:
             logger.fine("no longer locked!");
             stateChanged = true;
+            lockedFromEditsVar = null;
+            lockedFromDownloadVar = null;
+            //requestContext.execute("refreshPage();");
+        }
+    }
+        
+    public void refreshAllLocks() {
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
+        logger.fine("checking all locks");
+        if (isStillLockedForAnyReason()) {
+            logger.fine("(still locked)");
+        } else {
+            // OK, the dataset is no longer locked. 
+            // let's tell the page to refresh:
+            logger.fine("no longer locked!");
+            stateChanged = true;
+            lockedFromEditsVar = null;
+            lockedFromDownloadVar = null;
             //requestContext.execute("refreshPage();");
         }
     }
@@ -2698,6 +2718,20 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
+    public boolean isStillLockedForAnyReason() {
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (testDataset != null && testDataset.getId() != null) {
+                logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
+
+                if (testDataset.getLocks().size() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public boolean isLocked() {
         if (stateChanged) {
             return false; 
@@ -2726,6 +2760,22 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
+    
+    public boolean isLockedForAnyReason() {
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (stateChanged) {
+                return false;
+            }
+
+            if (testDataset != null) {
+                if (testDataset.getLocks().size() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar;    
@@ -2734,7 +2784,7 @@ public class DatasetPage implements java.io.Serializable {
      * For all other locks edit should be locked for all editors.
      */
     public boolean isLockedFromEdits() {
-        if(null == lockedFromEditsVar) {
+        if(null == lockedFromEditsVar || stateChanged) {
             try {
                 permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
                 lockedFromEditsVar = false;
@@ -2746,7 +2796,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isLockedFromDownload(){
-        if(null == lockedFromDownloadVar) {
+        if(null == lockedFromDownloadVar || stateChanged) {
             try {
                 permissionService.checkDownloadFileLock(dataset, dvRequestService.getDataverseRequest(), new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
                 lockedFromDownloadVar = false;
@@ -2764,6 +2814,11 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void setLockedForIngest(boolean locked) {
+        // empty method, so that we can use DatasetPage.locked in a hidden 
+        // input on the page. 
+    }
+    
+    public void setLockedForAnyReason(boolean locked) {
         // empty method, so that we can use DatasetPage.locked in a hidden 
         // input on the page. 
     }
