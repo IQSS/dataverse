@@ -93,7 +93,7 @@ public class UpdateDatasetThumbnailCommandTest {
     @Test
     public void testDatasetNull() {
         dataset = null;
-        String expected = "Can't update dataset thumbnail. Dataset is null.";
+        String expected = "Can't update data project thumbnail. Data Project is null.";
         String actual = null;
         DatasetThumbnail datasetThumbnail = null;
         try {
@@ -121,7 +121,7 @@ public class UpdateDatasetThumbnailCommandTest {
 
     @Test
     public void testSetDatasetFileAsThumbnailFileNull() {
-        String expected = "A file was not selected to be the new dataset thumbnail.";
+        String expected = "A file was not selected to be the new data project thumbnail.";
         String actual = null;
         DatasetThumbnail datasetThumbnail = null;
         try {
@@ -149,7 +149,7 @@ public class UpdateDatasetThumbnailCommandTest {
 
     @Test
     public void testSetDatasetFileAsThumbnailFileThumbnailUnexpectedlyAbsent() {
-        String expected = "Dataset thumbnail is unexpectedly absent.";
+        String expected = "Data Project thumbnail is unexpectedly absent.";
         String actual = null;
         DatasetThumbnail datasetThumbnail = null;
         try {

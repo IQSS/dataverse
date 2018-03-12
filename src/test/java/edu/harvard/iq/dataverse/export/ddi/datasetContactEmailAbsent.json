@@ -4,7 +4,7 @@
     "versionState": "RELEASED",
     "versionNumber": 1,
     "versionMinorNumber": 0,
-    "citation": "Finch, Fiona, 2016, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2/G2VPE7, Root Dataverse, V1",
+    "citation": "Finch, Fiona, 2016, \"Darwin's Finches\", https://doi.org/10.5072/FK2/G2VPE7, Root Dataverse, V1",
     "metadataBlocks": {
       "citation": {
         "fields": [

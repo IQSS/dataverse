@@ -22,13 +22,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>                       
-                    <a href="/">
-                        <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
-                            <span class="navbar-brand" tabindex="1"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
-                        </ui:fragment>
-                        <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
-                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo"/>
-                    </a>
+                   <!-- QDRCustom- Remove link-to-home logo -->
                     <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
                         <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
                     </h:outputLink>
@@ -36,6 +30,7 @@
                         <span class="label label-default status">#{settingsWrapper.get(':StatusMessageHeader')}</span>
                     </ui:fragment>
                 </div>
+                <!-- QDRCustom- Menu Items -->
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
                          <li>
@@ -53,28 +48,138 @@
                                 <span class="glyphicon glyphicon-search"/> #{bundle.find}
                             </button>
                         </form>
-                        <ui:fragment rendered="#{!empty settingsWrapper.get(':NavbarAboutUrl')}">
-                        <li>
-                            <h:outputLink value="#{settingsWrapper.get(':NavbarAboutUrl')}" target="_blank">
-                                #{bundle['header.about']}
-                            </h:outputLink>                         
-                        </li>
-                        </ui:fragment>
 
-                        <li>
-                            <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/user" target="_blank">
-                                #{bundle['header.guides.user']}
-                            </h:outputLink>
+						<!-- QDR - replace :NavbarAboutUrl section with About menu/submenu -->	                        
+                        <li class="dropdown">
+                            <div style="padding-top:15px; padding-bottom:15px; margin-left:20px;">
+                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/about">
+                                        #{bundle['header.about']}
+                                </h:outputLink> 
+                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
+                                    <b class="caret"></b>
+                                </span>
+                                <ul class="dropdown-menu" style="margin-top:-1px;">
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/about/governance">
+                                            Governance
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/contact">
+                                            Contact
+                                        </h:outputLink>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
-
-                        <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
-                            <p:commandLink value="#{bundle['header.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                            </p:commandLink>
-                        </o:form>
+                        <li class="dropdown">
+                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
+                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit">
+                                    Deposit
+                                </h:outputLink> 
+                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
+                                    <b class="caret"></b>
+                                </span>                            
+                                <ul class="dropdown-menu" style="margin-top:-1px;">
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/projects">
+                                            Project Types
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/data">
+                                            Data Types
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/activecitations">
+                                            Active Citation Compilations
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit/process">
+                                            Deposit Process
+                                        </h:outputLink>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="dropdown">
+                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
+                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover">
+                                    Discover
+                                </h:outputLink> 
+                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
+                                    <b class="caret"></b>
+                                </span>
+                                <ul class="dropdown-menu" style="margin-top:-1px;">
+                                    <li>
+                                        <h:outputLink value="/">
+                                            Search and Browse Data
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover/pilots">
+                                            Pilot Projects
+                                        </h:outputLink>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="dropdown">
+                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
+                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance">
+                                    Guidance and Resources
+                                </h:outputLink> 
+                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
+                                    <b class="caret"></b>
+                                </span>
+                                <ul class="dropdown-menu" style="margin-top:-1px;">
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/managing">
+                                            Managing Data
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/citing">
+                                            Citing and Referencing Data
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/teaching">
+                                            Teaching with Data
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/guidance/workshops">
+                                            Workshops and Training
+                                        </h:outputLink>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="dropdown">
+                            <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
+                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/qdr-publications">
+                                    Publications
+                                </h:outputLink> 
+                                <span class="dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" data-hover="dropdown" aria-haspopup="true" aria-expanded="false" style="display:inline; padding-left:2px;">
+                                    <b class="caret"></b>
+                                </span>
+                                <ul class="dropdown-menu" style="margin-top:-1px;">
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/qdr-blog">
+                                            Blog
+                                        </h:outputLink>
+                                    </li>
+                                    <li>
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/qdr-publications/qdr-access">
+                                            QDR Access
+                                        </h:outputLink>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
                         <li jsf:rendered="#{dataverseSession.user.superuser}">
                             <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
                                 <h:outputText value="#{bundle['header.dashboard']}" />
@@ -82,20 +187,20 @@
                         </li>
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
-                                <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
-                                              value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}">
-                                    #{bundle['header.signUp']}
+                                <h:outputLink id="login" value="/Shibboleth.sso/Login">
+                                    <f:param name="target" value="#{request.contextPath.concat('/shib.xhtml').concat(navigationWrapper.redirectPage)}" />
+                                    #{bundle.login}
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink value="/loginpage.xhtml?#{loginRedirectPage}">
-                                    #{bundle.login}
+                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user/register">                                    
+                                    Register
                                 </h:outputLink>
                             </li>
                         </ui:fragment>
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
-                                <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
+                                <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
                                     <ui:fragment rendered="#{dataverseSession.user.superuser}">
                                         <span class="glyphicon glyphicon-user text-danger"></span>
                                     </ui:fragment>
@@ -127,8 +232,8 @@
                                         </li>
                                     </ui:remove>
                                     <li tabindex="-1">
-                                        <h:outputLink value="/dataverseuser.xhtml">
-                                            <f:param name="selectTab" value="accountInfo" />
+                                        <!-- QDRCustom- Account Info menu link -->
+                                        <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user">
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>
@@ -262,4 +367,19 @@
             </div>
         </p:fragment>
     </div>
+    
+    <!-- QDRCustom -->
+    <script>
+        $(document).ready(function () {        
+
+            $('ul.nav li.dropdown').hover(function() {
+                $(this).css('background-color', '#e7e7e7');
+                $(this).find('.dropdown-menu').stop(true, true).fadeIn(200);
+            }, function() {
+                $(this).css('background-color', 'transparent');
+                $(this).find('.dropdown-menu').stop(true, true).fadeOut(200);
+            });
+
+        });
+    </script>
 </ui:composition>

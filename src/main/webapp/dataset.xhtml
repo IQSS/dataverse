@@ -1173,8 +1173,8 @@
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
                             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
-                                <f:param value="#{navigationWrapper.redirectPage}"/>
-                                <f:param value="#{widgetWrapper.widgetView ? '_blank' : '_self'}"/>
+                                <f:param value="#{'/shib.xhtml'.concat(navigationWrapper.redirectPage)}"/>
+                                <f:param value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user/register"/>
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
