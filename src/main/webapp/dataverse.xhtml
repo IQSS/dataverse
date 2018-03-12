@@ -464,7 +464,7 @@
 
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link/Share Button Group -->
-                            <div class="btn-group pull-right" role="group">
+                            <div class="btn-group pull-right" id="dataverseButtonBar" role="group">
                                 <p:commandLink type="button" styleClass="text-button bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
                                                update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>

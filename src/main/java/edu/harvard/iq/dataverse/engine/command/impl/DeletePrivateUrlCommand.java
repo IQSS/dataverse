@@ -32,7 +32,7 @@ public class DeletePrivateUrlCommand extends AbstractVoidCommand {
             /**
              * @todo Internationalize this.
              */
-            String message = "Can't delete Private URL. Dataset is null.";
+            String message = "Can't delete Private URL. Data Project is null.";
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }

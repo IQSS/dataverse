@@ -38,6 +38,9 @@ public class ShibUtil {
     public static final String lastNameAttribute = "sn";
     public static final String emailAttribute = "mail";
     public static final String testShibIdpEntityId = "https://idp.testshib.org/idp/shibboleth";
+    
+    /* QDRCustom */
+    public static final String acceptedTermsDocVerAttribute = "employeeNumber"; 
 
     /**
      * Used to display "Harvard University", for example, based on

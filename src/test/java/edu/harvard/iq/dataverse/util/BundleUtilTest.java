@@ -21,24 +21,24 @@ public class BundleUtilTest {
     public void testGetStringFromBundleWithArguments() {
         assertEquals(null, BundleUtil.getStringFromBundle(null, null));
         String actual = BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList("http://guides.dataverse.org/en", "4.0"));
-        String expected = "You have successfully created your dataverse! To learn more about what you can do with your dataverse, check out the <a href=\"http://guides.dataverse.org/en/4.0/user/dataverse-management.html\" title=\"Dataverse Management - Dataverse User Guide\" target=\"_blank\">User Guide</a>.";
+        String expected = "You have successfully created your collection! To learn more about what you can do with your collection, check out the <a href=\"http://guides.dataverse.org/en/4.0/user/dataverse-management.html\" title=\"Dataverse Management - Dataverse User Guide\" target=\"_blank\">User Guide</a>.";
         assertEquals(expected, actual);
-        assertEquals("Your new dataverse named "
+        assertEquals("Your new collection named "
                 + "dvName (view at dvUrl ) "
                 + "was created in parentDvName (view at parentDvUrl ). To learn more "
-                + "about what you can do with your dataverse, check out "
+                + "about what you can do with your collection, check out "
                 + "the Dataverse Management - User Guide at "
                 + "http://guides.dataverse.org/en/4.0/user/dataverse-management.html .",
                 BundleUtil.getStringFromBundle("notification.email.createDataverse",
                         Arrays.asList("dvName", "dvUrl", "parentDvName", "parentDvUrl", "http://guides.dataverse.org/en", "4.0")));
-        assertEquals("Your new dataset named dsName (view at dsUrl ) "
+        assertEquals("Your new data project named dsName (view at dsUrl ) "
                 + "was created in parentDvName (view at parentDvUrl ). "
-                + "To learn more about what you can do with a dataset, "
+                + "To learn more about what you can do with a data project, "
                 + "check out the Dataset Management - User Guide at "
                 + "http://guides.dataverse.org/en/4.0/user/dataset-management.html .",
                 BundleUtil.getStringFromBundle("notification.email.createDataset",
                         Arrays.asList("dsName", "dsUrl", "parentDvName", "parentDvUrl", "http://guides.dataverse.org/en", "4.0")));
-        assertEquals("There are no dataverses, datasets, or files that match your search. "
+        assertEquals("There are no collections, data projects, or files that match your search. "
                 + "Please try a new search by using other or broader terms. You can also check out "
                 + "the <a href=\"http://guides.dataverse.org/en/4.2/user/find-use-data.html\" title=\"Finding &amp; Using "
                 + "Data - Dataverse User Guide\" target=\"_blank\">search guide</a> for tips.",
@@ -53,13 +53,13 @@ public class BundleUtilTest {
                 + "<a href=\"/dataverse/dvAlias\" title=\"DV Name\">DV Name</a>.",
                 BundleUtil.getStringFromBundle("dataverse.saved.search.success",
                         Arrays.asList("<a href=\"/dataverse/dvAlias\" title=\"DV Name\">DV Name</a>")));
-        assertEquals("Your institutional log in for TestShib Test IdP matches an email address already being used for a Dataverse "
-                + "account. By entering your current Dataverse password below, your existing Dataverse account can be "
+        assertEquals("Your institutional log in for TestShib Test IdP matches an email address already being used for a QDR "
+                + "account. By entering your current QDR password below, your existing QDR account can be "
                 + "converted to use your institutional log in. After converting, you will only need to use your institutional log in.",
                 BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessage",
                         Arrays.asList("TestShib Test IdP")));
-        assertEquals("Your institutional log in for your institution matches an email address already being used for a Dataverse "
-                + "account. By entering your current Dataverse password below, your existing Dataverse account can be "
+        assertEquals("Your institutional log in for your institution matches an email address already being used for a QDR "
+                + "account. By entering your current QDR password below, your existing QDR account can be "
                 + "converted to use your institutional log in. After converting, you will only need to use your institutional log in.",
                 BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessage",
                         Arrays.asList(BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessageDefaultInstitution"))));

@@ -25,6 +25,14 @@ public final class PasswordEncryption implements java.io.Serializable {
         String encrypt( String plainText );
         boolean check( String plainText, String hashed );
     }
+    /**
+     * Main method - QDR Custom: allow password generation, using latest algorithm, from the command line
+     */
+    
+    public static void main(String[] args) {
+    	String ep = PasswordEncryption.get().encrypt(args[0]);
+    	System.out.println(ep);
+    }
     
     /**
      * The SHA algorithm, now considered not secure enough.

@@ -178,7 +178,7 @@ public class SubmitDatasetForReviewCommandTest {
         try {
             updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
         } catch (CommandException ex) {
-            System.out.println("Error updating dataset: " + ex.getMessage() );
+            System.out.println("Error updating data project: " + ex.getMessage() );
         }
         assertNotNull(updatedDataset);
     }
