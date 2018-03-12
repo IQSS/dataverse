@@ -127,4 +127,4 @@ If you'd like to resolve the merge conflicts yourself, here are some steps to do
 
 ----
 
-Previous: :doc:`dev-environment` | Next: :doc:`testing`
+Previous: :doc:`troubleshooting` | Next: :doc:`testing`

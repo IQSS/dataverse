@@ -12,6 +12,7 @@ Developer Guide
 
    intro
    dev-environment
+   troubleshooting
    version-control
    testing
    documentation
