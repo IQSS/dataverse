@@ -2,13 +2,19 @@
 Development Environment
 =======================
 
+Here's how to set up a development environment for Dataverse. In a nutshell, you will be installing dependencies (primarily Glassfish, PostgreSQL, and Solr), building a "war" file from Java code in the Dataverse git repo, and running an installation script that deploys that war file into Glassfish and some other setup.
+
 .. contents:: |toctitle|
 	:local:
 
 Assumptions
 -----------
 
-This guide assumes you are using a Mac. With some tweaks, it's not hard to get a dev environment set up on Linux. If you are using Windows, you might have the most success using Vagrant, which is listed under the :doc:`tools` section.
+This guide assumes you are using a Mac and that you want to install the various dependencies (Glassfish, PostgreSQL, Solr, etc.) directly on your Mac. Other options are available such as spinning up Dataverse in Vagrant (see the :doc:`tools` section) or running Dataverse in Docker (see the :doc:`containers` section).
+
+If you are using Windows, you might have the most success using Vagrant, as mentioned above. Please leave a comment at https://github.com/IQSS/dataverse/issues/3927 if you have any suggestions for making Dataverse development on Windows easier.
+
+If you are Linux, you will need to make a few adjustments to the instructions below. We've seen working dev environments on Ubuntu and Fedora.
 
 Requirements
 ------------
@@ -16,37 +22,46 @@ Requirements
 Java
 ~~~~
 
-Dataverse is developed on Java 8.
+Dataverse is developed on and requires Java 8.
 
-The use of Oracle's version of Java is recommended, which can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
+On Mac, we recommend Oracle's version of Java, which can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-The version of OpenJDK available from package managers from common Linux distributions such as Ubuntu and Fedora is probably sufficient for small changes as well as day to day development.
+On Linux, you are welcome to use OpenJDK available from package managers on common Linux distributions such as Ubuntu and Fedora.
 
 Glassfish
 ~~~~~~~~~
 
 As a `Java Enterprise Edition <http://en.wikipedia.org/wiki/Java_Platform,_Enterprise_Edition>`_ 7 (Java EE 7) application, Dataverse requires an applications server to run.
 
-Glassfish 4.1 is required (not any earlier or later versions until https://github.com/IQSS/dataverse/issues/2628 is resolved), which can be downloaded from http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip . If you have downloaded Glassfish as part of a Netbeans bundle, you can manually add the proper version by clicking "Tools", "Servers", "Add Server".
+Glassfish 4.1 is required. Never versions of 4.x are known not to work ( https://github.com/IQSS/dataverse/issues/2628 ) and we have made some attempts to use Glassfish 5 ( https://github.com/IQSS/dataverse/issues/4248 ).
 
-By default, Glassfish reports analytics information. The administration guide suggests this can be disabled with ``asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes.
+To install Glassfish:
+
+- Download http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip and place in in ``/usr/local`` or the directory of your choice.
+- Run ``unzip glassfish-4.1.zip`` to unzip to ``/usr/local/glassfish4`` or another directory of your choice. Note that if you have installed Homebrew ( https://brew.sh ) on a Mac, which is recommended, ``/usr/local`` will already be writable by your user.
 
 PostgreSQL
 ~~~~~~~~~~
 
-PostgreSQL 9.x is required and can be downloaded from http://postgresql.org
+PostgreSQL 8.4 or higher is required but you are welcome to use a newer version such as 9.x or 10.x. Please let us know if you have any problems with a specific version.
+
+On Linux, you should just use the version of PostgreSQL that comes with your distribution.
+
+On Mac, there are a variety of ways to install PostgreSQL. https://www.postgresql.org/download/macosx/ lists a number of options and the "Interactive installer by EnterpriseDB" is listed first so you should probably try that one and let us know if it doesn't work. Dataverse developers have also successfully used installations of PostgreSQL from Homebrew ( https://brew.sh ).
+
+No matter how you install PostgreSQL, you should adjust the ``local`` and ``host`` lines in ``pg_hba.conf`` to send with ``trust`` and then restart PostgreSQL so that the Dataverse installer can create your database.
 
 Solr
 ~~~~
 
 Dataverse depends on `Solr <http://lucene.apache.org/solr/>`_ for browsing and search.
 
-Solr 4.6.0 is the only version that has been tested extensively and is recommended in development. Download and configuration instructions can be found below. An upgrade to newer versions of Solr is being tracked at https://github.com/IQSS/dataverse/issues/456
+Solr 4.6.0 is the only version that has been tested extensively and is recommended in development. Download and configuration instructions can be found below. An upgrade to newer versions of Solr is being tracked at https://github.com/IQSS/dataverse/issues/4158
 
 curl
 ~~~~
 
-A command-line tool called ``curl`` ( http://curl.haxx.se ) is required by the setup scripts and it is useful to have curl installed when working on APIs.
+A command-line tool called ``curl`` ( http://curl.haxx.se ) is required by the setup scripts and it is useful to have curl installed when working on APIs. ``curl`` is standard on Mac and Linux so you probably don't need to do anything but it's mentioned here for completeness.
 
 jq
 ~~
@@ -58,10 +73,10 @@ If you are already using ``brew``, ``apt-get``, or ``yum``, you can install ``jq
 Recommendations
 ---------------
 
-Mac OS X
-~~~~~~~~
+Mac OS X or Linux
+~~~~~~~~~~~~~~~~~
 
-The setup of a Dataverse development environment assumes the presence of a Unix shell (i.e. bash) so an operating system with Unix underpinnings such as Mac OS X or Linux is recommended. (The `development team at IQSS <https://dataverse.org/about>`_ has standardized Mac OS X.) Windows users are encouraged to install `Cygwin <http://cygwin.com>`_.
+The setup of a Dataverse development environment assumes the presence of a Unix shell (i.e. bash) so an operating system with Unix underpinnings such as Mac OS X or Linux is recommended. (The `development team at IQSS <https://dataverse.org/about>`_ has standardized Mac OS X.) Windows users could try installing `Cygwin <http://cygwin.com>`_ or use Vagrant, as mentioned above.
 
 Netbeans
 ~~~~~~~~
@@ -72,10 +87,7 @@ NetBeans can be downloaded from http://netbeans.org. Please make sure that you u
 
 This guide will assume you are using Netbeans for development.
 
-Additional Tools
-~~~~~~~~~~~~~~~~
-
-Please see also the :doc:`/developers/tools` page, which lists additional tools that very useful but not essential.
+Please note that if you have downloaded Glassfish as part of a Netbeans bundle, you can manually add the proper (older) version of Glassfish (4.1, as mentioned above) by clicking "Tools", "Servers", "Add Server". You can use the same interface to remove the newer version of Glassfish that's incompatible with Dataverse.
 
 Setting Up Your Dev Environment
 -------------------------------
@@ -188,6 +200,12 @@ Tips
 ----
 
 Assuming you have a working dev environment, you might want to check out the :doc:`tips` section for ways to optimize it.
+
+Additional Tools
+~~~~~~~~~~~~~~~~
+
+Please see also the :doc:`/developers/tools` page, which lists additional tools that very useful but not essential.
+
 
 Shibboleth and OAuth
 --------------------
