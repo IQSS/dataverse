@@ -46,4 +46,4 @@ Click the "Publish release" button.
 
 ----
 
-Previous: :doc:`coding-style` | Next: :doc:`tools`
+Previous: :doc:`containers` | Next: :doc:`tools`

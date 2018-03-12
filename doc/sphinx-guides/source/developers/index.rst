@@ -17,6 +17,7 @@ Developer Guide
    documentation
    debugging
    coding-style
+   containers
    making-releases
    tools
    unf/index
