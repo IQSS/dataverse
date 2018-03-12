@@ -93,7 +93,7 @@ public class CreatePrivateUrlCommandTest {
     @Test
     public void testDatasetNull() {
         dataset = null;
-        String expected = "Can't create Private URL. Dataset is null.";
+        String expected = "Can't create Private URL. Data Project is null.";
         String actual = null;
         PrivateUrl privateUrl = null;
         try {
@@ -108,7 +108,7 @@ public class CreatePrivateUrlCommandTest {
     @Test
     public void testAlreadyExists() {
         dataset.setId(privateUrlAlreadyExists);
-        String expected = "Private URL already exists for dataset id " + privateUrlAlreadyExists + ".";
+        String expected = "Private URL already exists for data project id " + privateUrlAlreadyExists + ".";
         String actual = null;
         PrivateUrl privateUrl = null;
         try {
@@ -129,7 +129,7 @@ public class CreatePrivateUrlCommandTest {
         versions.add(datasetVersion);
         dataset.setVersions(versions);
         dataset.setId(latestVersionIsNotDraft);
-        String expected = "Can't create Private URL because the latest version of dataset id " + latestVersionIsNotDraft + " is not a draft.";
+        String expected = "Can't create Private URL because the latest version of data project id " + latestVersionIsNotDraft + " is not a draft.";
         String actual = null;
         PrivateUrl privateUrl = null;
         try {

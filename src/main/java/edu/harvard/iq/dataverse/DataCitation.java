@@ -157,22 +157,26 @@ public class DataCitation {
         // first add comma separated parts        
         List<String> citationList = new ArrayList<>();
         citationList.add(formatString(authors, html));
-        citationList.add(year);
-        citationList.add(formatString(title, html, "\""));
+        citationList.add(year);        
+        citationList.add(formatString(title, html, "\""));         
+        // QDRCustom: Use "Qualitative Data Repository" as distributor name
+        citationList.add(formatString("Qualitative Data Repository", html));
+        // QDRCustom: Show persistentID after distributor name
         if (persistentId != null) {
-            citationList.add(formatURL(persistentId.toString(), persistentId.toURL().toString(), html));
+            citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html));
         }
-        citationList.add(formatString(distributors, html));
-        citationList.add(version);
+        citationList.add(version);       
 
         StringBuilder citation = new StringBuilder(
                 citationList.stream()
                 .filter(value -> !StringUtils.isEmpty(value))
-                .collect(Collectors.joining(", ")));
+                // QDRCustom: Use period to join values, not comma
+                .collect(Collectors.joining(". ")));
 
         // append UNF
         if (!StringUtils.isEmpty(UNF)) {
-            citation.append(", ").append(UNF);
+            // QDRCustom: Use period to join values, not comma
+            citation.append(". ").append(UNF);
         }
 
         for (DatasetField dsf : optionalValues) {

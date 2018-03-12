@@ -145,7 +145,7 @@ public class ReturnDatasetToAuthorCommandTest {
     @Test
     public void testDatasetNull() {
         dataset = null;
-        String expected = "Cannot return the dataset to the author(s) because it is null.";
+        String expected = "Cannot return the data project to the author(s) because it is null.";
         String actual = null;
         Dataset updatedDataset = null;
 
@@ -162,7 +162,7 @@ public class ReturnDatasetToAuthorCommandTest {
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
 //        dataset.getLatestVersion().setInReview(true);
-        String expected = "This dataset cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first.";
+        String expected = "This data project cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first.";
         String actual = null;
         Dataset updatedDataset = null;
         try {
@@ -178,7 +178,7 @@ public class ReturnDatasetToAuthorCommandTest {
     public void testNotInReviewDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
 //        dataset.getLatestVersion().setInReview(false);
-        String expected = "This dataset cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first.";
+        String expected = "This data project cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first.";
         String actual = null;
         Dataset updatedDataset = null;
         try {
@@ -222,7 +222,7 @@ public class ReturnDatasetToAuthorCommandTest {
                               new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
        } catch (CommandException ex) {
-            System.out.println("Error updating dataset: " + ex.getMessage() );
+            System.out.println("Error updating data project: " + ex.getMessage() );
        }
         assertNotNull(updatedDataset);
     }

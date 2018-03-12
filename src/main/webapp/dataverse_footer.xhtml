@@ -13,7 +13,9 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
-                    <p>
+                    <!-- QDRCustom -->
+                    <img class='footerlogo' src="/resources/qdr/images/QDR_Logo_transparent_small.png"></img>
+                    <p class='footertext'>
                         <h:outputText value="#{systemConfig.footerCopyrightAndYear}#{settingsWrapper.get(':FooterCopyright')}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
                     </p>
                 </div>
@@ -26,7 +28,8 @@
                         </h:outputFormat>
 
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
-                            <h:outputLink styleClass="margin-sides highlightBold" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="#{bundle['footer.widget.login']} #{dataverseServiceBean.findRootDataverse().displayName}">
+                            <h:outputLink styleClass="margin-sides highlightBold" value="/Shibboleth.sso/Login" target="_blank" title="#{bundle['footer.widget.login']} #{dataverseServiceBean.findRootDataverse().displayName}">
+                                    <f:param name="target" value="#{request.contextPath.concat('/shib.xhtml').concat(navigationWrapper.redirectPage)}" />
                                 #{bundle.login}
                             </h:outputLink>
                         </ui:fragment>
