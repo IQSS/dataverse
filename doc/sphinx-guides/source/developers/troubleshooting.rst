@@ -96,4 +96,4 @@ You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/
 
 ----
 
-Previous: :doc:`dev-environment` | Next: :doc:`version-control`
+Previous: :doc:`dev-environment` | Next: :doc:`tips`
