@@ -46,6 +46,10 @@ public class JhoveFileType implements java.io.Serializable  {
     public static String getJhoveConfigFile() {
         Properties p = System.getProperties();
         String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
+        if (domainRoot == null) {
+            // When testing statically from JUnit, we expect domainRoot to be null.
+            return null;
+        }
         return domainRoot+File.separator+"config"+File.separator+"jhove.conf";
     }
     
@@ -74,7 +78,9 @@ public class JhoveFileType implements java.io.Serializable  {
 
             String configFile = getJhoveConfigFile();
             logger.fine("config file: "+configFile);
-
+            if (configFile == null) {
+                logger.info("Called getJhoveConfigFile but the result was null! Configuring JHOVE is highly recommended to determine file types.");
+            }
         
             // create an instance of jhove engine
             JhoveBase jb = new JhoveBase();

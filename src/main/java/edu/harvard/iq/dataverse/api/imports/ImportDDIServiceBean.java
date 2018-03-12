@@ -47,6 +47,7 @@ public class ImportDDIServiceBean {
     public static final String NAMING_PROTOCOL_DOI = "doi";
     public static final String AGENCY_HANDLE = "handle";
     public static final String AGENCY_DOI = "DOI";
+    public static final String AGENCY_DARA = "dara"; // da|ra - http://www.da-ra.de/en/home/
     public static final String REPLICATION_FOR_TYPE = "replicationFor";
     public static final String VAR_WEIGHTED = "wgtd";
     public static final String VAR_INTERVAL_CONTIN = "contin";
@@ -91,6 +92,7 @@ public class ImportDDIServiceBean {
     public static final String NOTE_SUBJECT_LOCKSS_PERM = "LOCKSS Permission";
 
     public static final String NOTE_TYPE_REPLICATION_FOR = "DVN:REPLICATION_FOR";
+    private static final String HARVESTED_FILE_STORAGE_PREFIX = "http://";
     private XMLInputFactory xmlInputFactory = null;
          
     @EJB CustomFieldServiceBean customFieldService;
@@ -106,7 +108,7 @@ public class ImportDDIServiceBean {
 
         // Read docDescr and studyDesc into DTO objects.
         // TODO: the fileMap is likely not needed. 
-        Map fileMap = mapDDI(importType, xmlToParse, datasetDTO);
+        Map<String, String> fileMap = mapDDI(importType, xmlToParse, datasetDTO);
         if (!isMigrationImport(importType)) {
             // For migration, this filemetadata is copied in a separate SQL step
         }
@@ -133,9 +135,9 @@ public class ImportDDIServiceBean {
         return importType.equals(ImportType.MIGRATION);
     }
 
-    public Map mapDDI(ImportType importType, String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
+    public Map<String, String> mapDDI(ImportType importType, String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
 
-        Map filesMap = new HashMap();
+        Map<String, String> filesMap = new HashMap<>();
         StringReader reader = new StringReader(xmlToParse);
         XMLStreamReader xmlr = null;
         XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
@@ -146,10 +148,10 @@ public class ImportDDIServiceBean {
     }
    
  
-    public Map mapDDI(ImportType importType, File ddiFile,  DatasetDTO datasetDTO ) throws ImportException {
+    public Map<String, String> mapDDI(ImportType importType, File ddiFile,  DatasetDTO datasetDTO ) throws ImportException {
         FileInputStream in = null;
         XMLStreamReader xmlr = null;
-        Map filesMap = new HashMap();
+        Map<String, String> filesMap = new HashMap<>();
 
         try {
             in = new FileInputStream(ddiFile);
@@ -174,7 +176,7 @@ public class ImportDDIServiceBean {
         return filesMap;
     }
     
-    private void processDDI(ImportType importType, XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException, ImportException {
+    private void processDDI(ImportType importType, XMLStreamReader xmlr, DatasetDTO datasetDTO, Map<String, String> filesMap) throws XMLStreamException, ImportException {
        
         // make sure we have a codeBook
         //while ( xmlr.next() == XMLStreamConstants.COMMENT ); // skip pre root comments
@@ -199,7 +201,7 @@ public class ImportDDIServiceBean {
         processCodeBook(importType, xmlr,  datasetDTO, filesMap);
         MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation");
      
-         if (codeBookLevelId != null && !codeBookLevelId.equals("")) {
+         if (codeBookLevelId != null && !codeBookLevelId.isEmpty()) {
             if (citationBlock.getField("otherId")==null) {
                 // this means no ids were found during the parsing of the 
                 // study description section. we'll use the one we found in 
@@ -225,34 +227,44 @@ public class ImportDDIServiceBean {
         datasetVersionDTO.setMetadataBlocks(metadataBlocks);
         
         datasetVersionDTO.getMetadataBlocks().put("citation", new MetadataBlockDTO());
-        datasetVersionDTO.getMetadataBlocks().get("citation").setFields(new ArrayList<FieldDTO>());
+        datasetVersionDTO.getMetadataBlocks().get("citation").setFields(new ArrayList<>());
         datasetVersionDTO.getMetadataBlocks().put("socialscience", new MetadataBlockDTO());
-        datasetVersionDTO.getMetadataBlocks().get("socialscience").setFields(new ArrayList<FieldDTO>());
+        datasetVersionDTO.getMetadataBlocks().get("socialscience").setFields(new ArrayList<>());
         datasetVersionDTO.getMetadataBlocks().put("geospatial", new MetadataBlockDTO());
-        datasetVersionDTO.getMetadataBlocks().get("geospatial").setFields(new ArrayList<FieldDTO>());
+        datasetVersionDTO.getMetadataBlocks().get("geospatial").setFields(new ArrayList<>());
         
         return datasetDTO;
         
     }
      
     // Read the XMLStream, and populate datasetDTO and filesMap
-    private void processCodeBook(ImportType importType, XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException, ImportException {
+    private void processCodeBook(ImportType importType, XMLStreamReader xmlr, DatasetDTO datasetDTO, Map<String, String> filesMap) throws XMLStreamException, ImportException {
          for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("docDscr")) {
                     processDocDscr(xmlr, datasetDTO);
-                }
-                else if (xmlr.getLocalName().equals("stdyDscr")) {
+                } else if (xmlr.getLocalName().equals("stdyDscr")) {
                     processStdyDscr(importType, xmlr, datasetDTO);
-                }
-                else if (xmlr.getLocalName().equals("fileDscr") && !isMigrationImport(importType)) {
+                } else if (xmlr.getLocalName().equals("otherMat") && (isNewImport(importType) || isHarvestWithFilesImport(importType)) ) {
+                    processOtherMat(xmlr, datasetDTO);
+                } else if (xmlr.getLocalName().equals("fileDscr") && isHarvestWithFilesImport(importType)) { 
+                    // If this is a harvesting import, we'll attempt to extract some minimal 
+                    // file-level metadata information from the fileDscr sections as well. 
+                    // TODO: add more info here... -- 4.6
+                    processFileDscrMinimal(xmlr, datasetDTO);
+                } else if (xmlr.getLocalName().equals("fileDscr") && isNewImport(importType)) {
+                    // this is a "full" fileDscr section - Dataverses use it 
+                    // to encode *tabular* files only. It will contain the information
+                    // about variables, observations, etc. It will be complemented 
+                    // by a number of <var> entries in the dataDscr section. 
+                    // Dataverses do not use this section for harvesting exports, since 
+                    // we don't harvest tabular metadata. And all the "regular" 
+                    // file-level metadata is encoded in otherMat sections. 
+                    // The goal is to one day be able to import such tabular 
+                    // metadata using the direct (non-harvesting) import API. 
                     // EMK TODO: add this back in for ImportType.NEW
                     //processFileDscr(xmlr, datasetDTO, filesMap);
-                    
-                }
-                else if (xmlr.getLocalName().equals("otherMat") && (isNewImport(importType) || isHarvestWithFilesImport(importType)) ) {
-                    processOtherMat(xmlr, datasetDTO, filesMap);
-                }
+                } 
 
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("codeBook")) return;
@@ -307,7 +319,7 @@ public class ImportDDIServiceBean {
             throw new XMLStreamException("parser must be on START_ELEMENT to read next text", xmlr.getLocation());
         }
         int eventType = xmlr.next();
-        StringBuffer content = new StringBuffer();
+        StringBuilder content = new StringBuilder();
         while(eventType != XMLStreamConstants.END_ELEMENT ) {
             if(eventType == XMLStreamConstants.CHARACTERS
             || eventType == XMLStreamConstants.CDATA
@@ -374,13 +386,13 @@ public class ImportDDIServiceBean {
                         }
                     } else {
 
-                        List<String> relMaterial = new ArrayList<String>();
+                        List<String> relMaterial = new ArrayList<>();
                         relMaterial.add(parseText(xmlr, "relMat"));
                         getCitation(dvDTO).addField(FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.relatedMaterial, relMaterial));
                     }
                 }  
                  else if (xmlr.getLocalName().equals("relStdy")) {
-                    List<String> relStudy = new ArrayList<String>();
+                    List<String> relStudy = new ArrayList<>();
                     relStudy.add(parseText(xmlr, "relStdy"));
                     getCitation(dvDTO).addField(FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.relatedDatasets, relStudy));
                  }  else if (xmlr.getLocalName().equals("relPubl")) {
@@ -389,12 +401,12 @@ public class ImportDDIServiceBean {
                     // call new parse text logic
                     Object rpFromDDI = parseTextNew(xmlr, "relPubl");
                     if (rpFromDDI instanceof Map) {
-                        Map rpMap = (Map) rpFromDDI;
-                        addToSet(set, DatasetFieldConstant.publicationCitation, (String) rpMap.get("text"));
-                        addToSet(set, DatasetFieldConstant.publicationIDNumber, (String) rpMap.get("idNumber"));
-                        addToSet(set, DatasetFieldConstant.publicationURL, (String) rpMap.get("url"));
+                        Map<String, String> rpMap = (Map<String, String>) rpFromDDI;
+                        addToSet(set, DatasetFieldConstant.publicationCitation, rpMap.get("text"));
+                        addToSet(set, DatasetFieldConstant.publicationIDNumber,  rpMap.get("idNumber"));
+                        addToSet(set, DatasetFieldConstant.publicationURL,  rpMap.get("url"));
                         if (rpMap.get("idType")!=null) {
-                            set.add(FieldDTO.createVocabFieldDTO(DatasetFieldConstant.publicationIDType, ((String) rpMap.get("idType")).toLowerCase()));
+                            set.add(FieldDTO.createVocabFieldDTO(DatasetFieldConstant.publicationIDType, rpMap.get("idType").toLowerCase()));
                         }
                    //    rp.setText((String) rpMap.get("text"));
                         //   rp.setIdType((String) rpMap.get("idType"));
@@ -416,7 +428,7 @@ public class ImportDDIServiceBean {
 
                 } else if (xmlr.getLocalName().equals("otherRefs")) {
 
-                    List<String> otherRefs = new ArrayList<String>();
+                    List<String> otherRefs = new ArrayList<>();
                     otherRefs.add(parseText(xmlr, "otherRefs"));
                     getCitation(dvDTO).addField(FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.otherReferences, otherRefs));
 
@@ -432,12 +444,23 @@ public class ImportDDIServiceBean {
      private void processCitation(ImportType importType, XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
         DatasetVersionDTO dvDTO = datasetDTO.getDatasetVersion();
         MetadataBlockDTO citation=datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation");
+        boolean distStatementProcessed = false;
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("titlStmt")) processTitlStmt(xmlr, datasetDTO);
                 else if (xmlr.getLocalName().equals("rspStmt")) processRspStmt(xmlr,citation);
                 else if (xmlr.getLocalName().equals("prodStmt")) processProdStmt(xmlr,citation);
-                else if (xmlr.getLocalName().equals("distStmt")) processDistStmt(xmlr,citation);
+                else if (xmlr.getLocalName().equals("distStmt")) {
+                    if (distStatementProcessed) {
+                        // We've already encountered one Distribution Statement in 
+                        // this citation, we'll just skip any consecutive ones. 
+                        // This is a defensive check against duplicate distStmt
+                        // in some DDIs (notably, from ICPSR)
+                    } else {
+                        processDistStmt(xmlr,citation);
+                        distStatementProcessed = true;
+                    }
+                }
                 else if (xmlr.getLocalName().equals("serStmt")) processSerStmt(xmlr,citation);
                 else if (xmlr.getLocalName().equals("verStmt")) processVerStmt(importType, xmlr,dvDTO);
                 else if (xmlr.getLocalName().equals("notes")) {
@@ -546,7 +569,7 @@ public class ImportDDIServiceBean {
         }
         //System.out.println("formatNotesfromXML");
         // Initialize array of strings
-        List<String> noteValues = new ArrayList<String>();
+        List<String> noteValues = new ArrayList<>();
         String attrVal;
 
         // Check for "subject"
@@ -882,11 +905,23 @@ public class ImportDDIServiceBean {
 
     private void processDataColl(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
         MetadataBlockDTO socialScience =getSocialScience(dvDTO);
+        
+        String collMode = "";
+        String timeMeth = "";
+        String weight = "";
+        
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 //timeMethod
                 if (xmlr.getLocalName().equals("timeMeth")) {
-                  socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("timeMethod", parseText( xmlr, "timeMeth" )));
+                    String thisValue = parseText( xmlr, "timeMeth" );
+                    if (!StringUtil.isEmpty(thisValue)) {
+                        if (!"".equals(timeMeth)) {
+                            timeMeth = timeMeth.concat(", ");
+                        }
+                        timeMeth = timeMeth.concat(thisValue);
+                    }
+                  //socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("timeMethod", parseText( xmlr, "timeMeth" )));
                } else if (xmlr.getLocalName().equals("dataCollector")) {
                    socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("dataCollector", parseText( xmlr, "dataCollector" )));
                 // frequencyOfDataCollection    
@@ -903,7 +938,14 @@ public class ImportDDIServiceBean {
                    socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("deviationsFromSampleDesign", parseText( xmlr, "deviat" )));
                  // collectionMode
                 } else if (xmlr.getLocalName().equals("collMode")) {
-                  socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("collectionMode", parseText( xmlr, "collMode" )));                      
+                    String thisValue = parseText( xmlr, "collMode" );
+                    if (!StringUtil.isEmpty(thisValue)) {
+                        if (!"".equals(collMode)) {
+                            collMode = collMode.concat(", ");
+                        }
+                        collMode = collMode.concat(thisValue);
+                    }
+                  //socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("collectionMode", parseText( xmlr, "collMode" )));                      
                 //researchInstrument
                 } else if (xmlr.getLocalName().equals("resInstru")) {
                    socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("researchInstrument", parseText( xmlr, "resInstru" )));
@@ -916,12 +958,30 @@ public class ImportDDIServiceBean {
                 } else if (xmlr.getLocalName().equals("ConOps")) {
                        socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("controlOperations", parseText( xmlr, "ConOps" )));
                 } else if (xmlr.getLocalName().equals("weight")) {
-                        socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("weighting", parseText( xmlr, "weight" )));
+                    String thisValue = parseText( xmlr, "weight" );
+                    if (!StringUtil.isEmpty(thisValue)) {
+                        if (!"".equals(weight)) {
+                            weight = weight.concat(", ");
+                        }
+                        weight = weight.concat(thisValue);
+                    }
+                    //socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("weighting", parseText( xmlr, "weight" )));
                 } else if (xmlr.getLocalName().equals("cleanOps")) {
                        socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("cleaningOperations", parseText( xmlr, "cleanOps" )));
-                 }
+                }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
-                if (xmlr.getLocalName().equals("dataColl")) return;
+                if (xmlr.getLocalName().equals("dataColl")) {
+                    if (!StringUtil.isEmpty(timeMeth)) {
+                        socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("timeMethod", timeMeth));
+                    }
+                    if (!StringUtil.isEmpty(collMode)) {
+                        socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("collectionMode", collMode));
+                    }
+                    if (!StringUtil.isEmpty(weight)) {
+                        socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("weighting", weight));
+                    }
+                    return;
+                }
             }
         }
     }
@@ -1242,6 +1302,16 @@ public class ImportDDIServiceBean {
                         parseStudyIdHandle( parseText(xmlr), datasetDTO );
                     } else if ( AGENCY_DOI.equals( xmlr.getAttributeValue(null, "agency") ) ) {
                         parseStudyIdDOI( parseText(xmlr), datasetDTO );
+                    } else if ( AGENCY_DARA.equals( xmlr.getAttributeValue(null, "agency"))) {
+                        /* 
+                            da|ra - "Registration agency for social and economic data"
+                            (http://www.da-ra.de/en/home/)
+                            ICPSR uses da|ra to register their DOIs; so they have agency="dara" 
+                            in their IDNo entries. 
+                            Also, their DOIs are formatted differently, without the 
+                            hdl: prefix. 
+                        */
+                        parseStudyIdDoiICPSRdara( parseText(xmlr), datasetDTO );
                     } else {
                         HashSet<FieldDTO> set = new HashSet<>();
                         addToSet(set,"otherIdAgency", xmlr.getAttributeValue(null, "agency"));
@@ -1287,13 +1357,13 @@ public class ImportDDIServiceBean {
         }
     }
    private Map<String,String> parseCompoundText (XMLStreamReader xmlr, String endTag) throws XMLStreamException {
-        Map<String,String> returnMap = new HashMap<String,String>();
+        Map<String,String> returnMap = new HashMap<>();
         String text = "";
 
         while (true) {
             int event = xmlr.next();
             if (event == XMLStreamConstants.CHARACTERS) {
-                if (text != "") { text += "\n";}
+                if (!text.isEmpty()) { text += "\n";}
                 text += xmlr.getText().trim().replace('\n',' ');
             } else if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("ExtLink")) {
@@ -1314,10 +1384,10 @@ public class ImportDDIServiceBean {
          return (String) parseTextNew(xmlr,endTag);
      }
      
-     
+    // #FIXME We should really type stabalize this.
      private Object parseTextNew(XMLStreamReader xmlr, String endTag) throws XMLStreamException {
         String returnString = "";
-        Map returnMap = null;
+        Map<String, Object> returnMap = null;
 
         while (true) {
             if (!returnString.equals("")) { returnString += "\n";}
@@ -1325,15 +1395,22 @@ public class ImportDDIServiceBean {
             if (event == XMLStreamConstants.CHARACTERS) {
                 returnString += xmlr.getText().trim().replace('\n',' ');
            } else if (event == XMLStreamConstants.START_ELEMENT) {
-                if (xmlr.getLocalName().equals("p")) {
-                    returnString += "<p>" + parseText(xmlr, "p") + "</p>";
-                } else if (xmlr.getLocalName().equals("emph")) {
-                    returnString += "<em>" + parseText(xmlr, "emph") + "</em>";
-                } else if (xmlr.getLocalName().equals("hi")) {
-                    returnString += "<strong>" + parseText(xmlr, "hi") + "</strong>";
+                if (xmlr.getLocalName().equals("p") || xmlr.getLocalName().equals("br") || xmlr.getLocalName().equals("head")) {
+                    returnString += "<p>" + parseText(xmlr, xmlr.getLocalName()) + "</p>";
+                } else if (xmlr.getLocalName().equals("emph") || xmlr.getLocalName().equals("em") || xmlr.getLocalName().equals("i")) {
+                    returnString += "<em>" + parseText(xmlr, xmlr.getLocalName()) + "</em>";
+                } else if (xmlr.getLocalName().equals("hi") || xmlr.getLocalName().equals("b")) {
+                    returnString += "<strong>" + parseText(xmlr, xmlr.getLocalName()) + "</strong>";
                 } else if (xmlr.getLocalName().equals("ExtLink")) {
                     String uri = xmlr.getAttributeValue(null, "URI");
                     String text = parseText(xmlr, "ExtLink").trim();
+                    returnString += "<a href=\"" + uri + "\">" + ( StringUtil.isEmpty(text) ? uri : text) + "</a>";
+                } else if (xmlr.getLocalName().equals("a") || xmlr.getLocalName().equals("A")) {
+                    String uri = xmlr.getAttributeValue(null, "URI");
+                    if (StringUtil.isEmpty(uri)) {
+                        uri = xmlr.getAttributeValue(null, "HREF");
+                    }
+                    String text = parseText(xmlr, xmlr.getLocalName()).trim();
                     returnString += "<a href=\"" + uri + "\">" + ( StringUtil.isEmpty(text) ? uri : text) + "</a>";
                 } else if (xmlr.getLocalName().equals("list")) {
                     returnString += parseText_list(xmlr);
@@ -1343,6 +1420,8 @@ public class ImportDDIServiceBean {
                     } else {
                         returnString += parseText_citation(xmlr);
                     }
+                } else if (xmlr.getLocalName().equals("txt")) {
+                    returnString += parseText(xmlr);
                 } else {
                     throw new EJBException("ERROR occurred in mapDDI (parseText): tag not yet supported: <" + xmlr.getLocalName() + ">" );
                 }
@@ -1373,7 +1452,7 @@ public class ImportDDIServiceBean {
 
         // check type
         String listType = xmlr.getAttributeValue(null, "type");
-        if ("bulleted".equals(listType) ){
+        if ("bulleted".equals(listType) || listType == null){
             listString = "<ul>\n";
             listCloseTag = "</ul>";
         } else if ("ordered".equals(listType) ) {
@@ -1450,15 +1529,15 @@ public class ImportDDIServiceBean {
     }
   
     private String parseUNF(String unfString) {
-        if (unfString.indexOf("UNF:") != -1) {
+        if (unfString.contains("UNF:")) {
             return unfString.substring( unfString.indexOf("UNF:") );
         } else {
             return null;
         }
     }
   
-    private Map parseDVNCitation(XMLStreamReader xmlr) throws XMLStreamException {
-        Map returnValues = new HashMap();
+    private Map<String, Object> parseDVNCitation(XMLStreamReader xmlr) throws XMLStreamException {
+        Map<String, Object> returnValues = new HashMap<>();
         
         while (true) {
             int event = xmlr.next();
@@ -1475,7 +1554,7 @@ public class ImportDDIServiceBean {
                 }
                 else if (xmlr.getLocalName().equals("notes")) {
                     if (NOTE_TYPE_REPLICATION_FOR.equals(xmlr.getAttributeValue(null, "type")) ) {
-                        returnValues.put("replicationData", new Boolean(true));
+                        returnValues.put("replicationData", true);
                     }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -1524,6 +1603,31 @@ public class ImportDDIServiceBean {
        
         datasetDTO.setIdentifier(_id.substring(index2+1));
     }
+    
+    private void parseStudyIdDoiICPSRdara(String _id, DatasetDTO datasetDTO) throws ImportException{
+        /*
+            dara/ICPSR DOIs are formatted without the hdl: prefix; for example - 
+            10.3886/ICPSR06635.v1
+            so we assume that everything before the last "/" is the authority, 
+            and everything past it - the identifier:
+        */
+        
+        int index = _id.lastIndexOf('/');  
+       
+        if (index == -1) {
+            throw new ImportException("Error parsing ICPSR/dara DOI IdNo: "+_id+". '/' not found in string");
+        } 
+        
+        if (index == _id.length() - 1) {
+            throw new ImportException("Error parsing ICPSR/dara DOI IdNo: "+_id+" ends with '/'");
+        }
+        
+        datasetDTO.setAuthority(_id.substring(0, index));
+        datasetDTO.setProtocol("doi");
+        datasetDTO.setDoiSeparator("/");
+       
+        datasetDTO.setIdentifier(_id.substring(index+1));
+    }
     // Helper methods
     private MetadataBlockDTO getCitation(DatasetVersionDTO dvDTO) {
         return dvDTO.getMetadataBlocks().get("citation");
@@ -1544,7 +1648,7 @@ public class ImportDDIServiceBean {
         }
     }
     
-    private void processOtherMat(XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException {
+    private void processOtherMat(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException {
         FileMetadataDTO fmdDTO = new FileMetadataDTO();
         
         if (datasetDTO.getDatasetVersion().getFileMetadatas() == null) {
@@ -1609,7 +1713,59 @@ public class ImportDDIServiceBean {
         }
     }
 
-    private void processFileDscr(XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException {
+    // this method is for attempting to extract the minimal amount of file-level
+    // metadata from an ICPSR-supplied DDI. (they use the "fileDscr" instead of 
+    // "otherMat" for general file metadata; the only field they populate is 
+    // "fileName". -- 4.6
+    
+    private void processFileDscrMinimal(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException {
+        FileMetadataDTO fmdDTO = new FileMetadataDTO();
+        
+        if (datasetDTO.getDatasetVersion().getFileMetadatas() == null) {
+            datasetDTO.getDatasetVersion().setFileMetadatas(new ArrayList<>());
+        }
+        datasetDTO.getDatasetVersion().getFileMetadatas().add(fmdDTO);
+
+        DataFileDTO dfDTO = new DataFileDTO();
+        dfDTO.setContentType("data/various-formats"); // reserved ICPSR content type identifier
+        fmdDTO.setDataFile(dfDTO);
+        
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("fileName")) {
+                    // this is the file name: 
+                    String label = parseText(xmlr);
+                    // do some cleanup:
+                    int col = label.lastIndexOf(':');
+                    if ( col > -1) {
+                        if (col < label.length() - 1) {
+                            label = label.substring(col+1);
+                        } else {
+                            label = label.replaceAll(":", "");
+                        }
+                    }
+                    label = label.replaceAll("[#;<>\\?\\|\\*\"]", "");
+                    label = label.replaceAll("/", "-");
+                    // strip leading blanks:
+                    label = label.replaceFirst("^[ \t]*", "");
+                    fmdDTO.setLabel(label);
+                } 
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                if (xmlr.getLocalName().equals("fileDscr")) {
+                    if (fmdDTO.getLabel() == null || fmdDTO.getLabel().trim().equals("") ) {
+                        fmdDTO.setLabel("harvested file");
+                    }
+                    if (StringUtil.isEmpty(fmdDTO.getDataFile().getStorageIdentifier())) {
+                        fmdDTO.getDataFile().setStorageIdentifier(HARVESTED_FILE_STORAGE_PREFIX);
+                    }
+
+                    return;
+                }
+            }
+        }
+    }
+    
+    private void processFileDscr(XMLStreamReader xmlr, DatasetDTO datasetDTO, Map<String, Object> filesMap) throws XMLStreamException {
         FileMetadataDTO fmdDTO = new FileMetadataDTO();
         
         datasetDTO.getDatasetVersion().getFileMetadatas().add(fmdDTO);
@@ -1671,7 +1827,7 @@ public class ImportDDIServiceBean {
 
 
                     if (ddiFileId != null) {
-                        List filesMapEntry = new ArrayList();
+                        List<Object> filesMapEntry = new ArrayList<>();
                         filesMapEntry.add(fmdDTO);
                         filesMapEntry.add(dtDTO);
                         filesMap.put( ddiFileId, filesMapEntry);

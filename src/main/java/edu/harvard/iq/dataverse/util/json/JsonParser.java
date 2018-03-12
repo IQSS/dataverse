@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -23,24 +24,31 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 
 /**
  * Parses JSON objects into domain objects.
@@ -49,10 +57,16 @@ import javax.json.JsonValue;
  */
 public class JsonParser {
 
+    private static final Logger logger = Logger.getLogger(JsonParser.class.getCanonicalName());
+
     DatasetFieldServiceBean datasetFieldSvc;
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
-    boolean lenient = false;  // if lenient, we will accept alternate spellings for controlled vocabulary values
+    
+    /**
+     * if lenient, we will accept alternate spellings for controlled vocabulary values
+     */
+    boolean lenient = false;  
 
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
         this.datasetFieldSvc = datasetFieldSvc;
@@ -60,6 +74,10 @@ public class JsonParser {
         this.settingsService = settingsService;
     }
 
+    public JsonParser() {
+        this( null,null,null );
+    }
+    
     public boolean isLenient() {
         return lenient;
     }
@@ -71,6 +89,13 @@ public class JsonParser {
     public Dataverse parseDataverse(JsonObject jobj) throws JsonParseException {
         Dataverse dv = new Dataverse();
 
+        /**
+         * @todo Instead of this getMandatoryString method we should run the
+         * String through ConstraintValidator. See EMailValidatorTest and
+         * EMailValidator for examples. That way we can check not only if it's
+         * required or not but other bean validation rules such as "must match
+         * this regex".
+         */
         dv.setAlias(getMandatoryString(jobj, "alias"));
         dv.setName(getMandatoryString(jobj, "name"));
         dv.setDescription(jobj.getString("description", null));
@@ -95,7 +120,16 @@ public class JsonParser {
             dv.setDataverseTheme(theme);
             theme.setDataverse(dv);
         }
-        
+
+        dv.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED); // default
+        if (jobj.containsKey("dataverseType")) {
+            for (Dataverse.DataverseType dvtype : Dataverse.DataverseType.values()) {
+                if (dvtype.name().equals(jobj.getString("dataverseType"))) {
+                    dv.setDataverseType(dvtype);
+                }
+            }
+        }
+
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
         
@@ -186,20 +220,27 @@ public class JsonParser {
         IpGroup retVal = new IpGroup();
 
         if (obj.containsKey("id")) {
-            retVal.setId(Long.valueOf(obj.getString("id")));
+            retVal.setId(Long.valueOf(obj.getInt("id")));
         }
         retVal.setDisplayName(obj.getString("name", null));
         retVal.setDescription(obj.getString("description", null));
         retVal.setPersistedGroupAlias(obj.getString("alias", null));
 
-        JsonArray rangeArray = obj.getJsonArray("ranges");
-        for (JsonValue range : rangeArray) {
-            if (range.getValueType() == JsonValue.ValueType.ARRAY) {
-                JsonArray rr = (JsonArray) range;
-                retVal.add(IpAddressRange.make(IpAddress.valueOf(rr.getString(0)),
-                        IpAddress.valueOf(rr.getString(1))));
-
-            }
+        if ( obj.containsKey("ranges") ) {
+            obj.getJsonArray("ranges").stream()
+                    .filter( jv -> jv.getValueType()==JsonValue.ValueType.ARRAY )
+                    .map( jv -> (JsonArray)jv )
+                    .forEach( rr -> {
+                        retVal.add(
+                            IpAddressRange.make(IpAddress.valueOf(rr.getString(0)),
+                                                IpAddress.valueOf(rr.getString(1))));
+            });
+        }
+        if ( obj.containsKey("addresses") ) {
+            obj.getJsonArray("addresses").stream()
+                    .map( jsVal -> IpAddress.valueOf(((JsonString)jsVal).getString()) )
+                    .map( addr -> IpAddressRange.make(addr, addr) )
+                    .forEach( retVal::add );
         }
 
         return retVal;
@@ -253,11 +294,11 @@ public class JsonParser {
             if (versionStateStr != null) {
                 dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
             }
-            dsv.setInReview(obj.getBoolean("inReview", false));
             dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
             dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
             dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
             dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
+            dsv.setUNF(obj.getString("UNF", null));
             // Terms of Use related fields
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
             terms.setTermsOfUse(obj.getString("termsOfUse", null));           
@@ -335,10 +376,12 @@ public class JsonParser {
         if (metadatasJson != null) {
             for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
                 String label = filemetadataJson.getString("label");
+                String directoryLabel = filemetadataJson.getString("directoryLabel", null);
                 String description = filemetadataJson.getString("description", null);
 
                 FileMetadata fileMetadata = new FileMetadata();
                 fileMetadata.setLabel(label);
+                fileMetadata.setDirectoryLabel(directoryLabel);
                 fileMetadata.setDescription(description);
                 fileMetadata.setDatasetVersion(dsv);
 
@@ -354,6 +397,7 @@ public class JsonParser {
                 dsv.getDataset().getFiles().add(dataFile);
 
                 fileMetadatas.add(fileMetadata);
+                fileMetadata.setCategories(getCategories(filemetadataJson, dsv.getDataset()));
             }
         }
 
@@ -372,19 +416,45 @@ public class JsonParser {
         if (contentType == null) {
             contentType = "application/octet-stream";
         }
-        String storageIdentifier = datafileJson.getString("storageIdentifier");
-        String md5 = datafileJson.getString("md5", null);
-        
-        if (md5 == null) {
-            md5 = "unknown";
+        String storageIdentifier = datafileJson.getString("storageIdentifier", " ");
+        JsonObject checksum = datafileJson.getJsonObject("checksum");
+        if (checksum != null) {
+            // newer style that allows for SHA-1 rather than MD5
+            /**
+             * @todo Add more error checking. Do we really expect people to set
+             * file metadata without uploading files? Some day we'd like to work
+             * on a "native" API that allows for multipart upload of the JSON
+             * describing the files (this "parseDataFile" method) and the bits
+             * of the files themselves. See
+             * https://github.com/IQSS/dataverse/issues/1612
+             */
+            String type = checksum.getString("type");
+            if (type != null) {
+                String value = checksum.getString("value");
+                if (value != null) {
+                    try {
+                        dataFile.setChecksumType(DataFile.ChecksumType.fromString(type));
+                        dataFile.setChecksumValue(value);
+                    } catch (IllegalArgumentException ex) {
+                        logger.info("Invalid");
+                    }
+                }
+            }
+        } else {
+            // older, MD5 logic, still her for backward compatibility
+            String md5 = datafileJson.getString("md5", null);
+            if (md5 == null) {
+                md5 = "unknown";
+            }
+            dataFile.setChecksumType(DataFile.ChecksumType.MD5);
+            dataFile.setChecksumValue(md5);
         }
-        
+
         // TODO: 
         // unf (if available)... etc.?
         
         dataFile.setContentType(contentType);
         dataFile.setStorageIdentifier(storageIdentifier);
-        dataFile.setmd5(md5);
         
         return dataFile;
     }
@@ -633,7 +703,44 @@ public class JsonParser {
 
         return vals;
     }
-
+    
+    public Workflow parseWorkflow(JsonObject json) throws JsonParseException {
+        Workflow retVal = new Workflow();
+        validate("", json, "name", ValueType.STRING);
+        validate("", json, "steps", ValueType.ARRAY);
+        retVal.setName( json.getString("name") );
+        JsonArray stepArray = json.getJsonArray("steps");
+        List<WorkflowStepData> steps = new ArrayList<>(stepArray.size());
+        for ( JsonValue jv : stepArray ) {
+            steps.add(parseStepData((JsonObject) jv));
+        }
+        retVal.setSteps(steps);
+        return retVal;
+    }
+    
+    public WorkflowStepData parseStepData( JsonObject json ) throws JsonParseException {
+        WorkflowStepData wsd = new WorkflowStepData();
+        validate("step", json, "provider", ValueType.STRING);
+        validate("step", json, "stepType", ValueType.STRING);
+        
+        wsd.setProviderId(json.getString("provider"));
+        wsd.setStepType(json.getString("stepType"));
+        if ( json.containsKey("parameters") ) {
+            JsonObject params = json.getJsonObject("parameters");
+            Map<String,String> paramMap = new HashMap<>();
+            params.keySet().forEach(k -> paramMap.put(k,jsonValueToString(params.get(k))));
+            wsd.setStepParameters(paramMap);
+        }
+        return wsd;
+    }
+    
+    private String jsonValueToString(JsonValue jv) {
+        switch ( jv.getValueType() ) {
+            case STRING: return ((JsonString)jv).getString();
+            default: return jv.toString();
+        }
+    }
+    
     public List<ControlledVocabularyValue> parseControlledVocabularyValue(DatasetFieldType cvvType, JsonObject json) throws JsonParseException {
         if (json.getBoolean("multiple")) {
             List<ControlledVocabularyValue> vals = new LinkedList<>();
@@ -692,5 +799,43 @@ public class JsonParser {
         harvestingClient.setHarvestingSet(obj.getString("set",null));
 
         return dataverseAlias;
+    }
+
+    private List<DataFileCategory> getCategories(JsonObject filemetadataJson, Dataset dataset) {
+        JsonArray categories = filemetadataJson.getJsonArray(OptionalFileParams.CATEGORIES_ATTR_NAME);
+        if (categories == null || categories.isEmpty() || dataset == null) {
+            return null;
+        }
+        List<DataFileCategory> dataFileCategories = new ArrayList<>();
+        for (Object category : categories.getValuesAs(JsonString.class)) {
+            JsonString categoryAsJsonString;
+            try {
+                categoryAsJsonString = (JsonString) category;
+            } catch (ClassCastException ex) {
+                logger.info("ClassCastException caught in getCategories: " + ex);
+                return null;
+            }
+            DataFileCategory dfc = new DataFileCategory();
+            dfc.setDataset(dataset);
+            dfc.setName(categoryAsJsonString.getString());
+            dataFileCategories.add(dfc);
+        }
+        return dataFileCategories;
+    }
+    
+    /**
+     * Validate than a JSON object has a field of an expected type, or throw an
+     * inforamtive exception.
+     * @param objectName
+     * @param jobject
+     * @param fieldName
+     * @param expectedValueType
+     * @throws JsonParseException 
+     */
+    private void validate(String objectName, JsonObject jobject, String fieldName, ValueType expectedValueType) throws JsonParseException {
+        if ( (!jobject.containsKey(fieldName)) 
+              || (jobject.get(fieldName).getValueType()!=expectedValueType) ) {
+            throw new JsonParseException( objectName + " missing a field named '"+fieldName+"' of type " + expectedValueType );
+        }
     }
 }

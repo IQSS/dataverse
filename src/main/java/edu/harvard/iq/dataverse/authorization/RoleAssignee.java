@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
  * 
  * @author michael
  */
-public interface RoleAssignee {
+public interface RoleAssignee extends Comparable<RoleAssignee> {
 
     /**
      * A unique identifier of the role assignee within the installation. This 
@@ -24,5 +24,14 @@ public interface RoleAssignee {
     public String getIdentifier();
 
     public RoleAssigneeDisplayInfo getDisplayInfo();
+    
+    default String getSortByString(){
+        return this.getDisplayInfo().getTitle();
+    }
+       
+    @Override
+    default  int compareTo(RoleAssignee o) {
+        return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());
+    }
 
 }

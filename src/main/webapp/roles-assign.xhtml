@@ -3,6 +3,7 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <p:dialog id="userGroupDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.header']}" widgetVar="userGroupsForm" modal="true">
         <p:fragment id="assignRoleMessages">
@@ -44,8 +45,8 @@
                     <label for="assignRoleRadios" class="col-sm-2 control-label">
                         #{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                     </label>
-                    <div class="col-sm-9 form-group">
-                        <div class="col-sm-5">
+                    <div class="col-sm-10 form-group">
+                        <div class="col-sm-4">
                             <p:fragment id="availableRoles">
                                 <p:selectOneRadio id="assignRoleRadios" layout="pageDirection"
                                                   value="#{managePermissionsPage.selectedRoleId}"
@@ -57,15 +58,26 @@
                                 <p:message for="assignRoleRadios" display="text"/>
                             </p:fragment>
                         </div>
-                        <div class="col-sm-6 bg-muted">
+                        <div class="col-sm-8 bg-muted">
                             <p:fragment id="roleDetails">
                                 <div id="assignRolePermissionLabels">
                                     <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.description']}</p>
-                                    <span class="highlightBold">#{managePermissionsPage.assignedRole.name}</span>
-                                    <div class="margin-bottom">
-                                        <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
-                                            <span class="label label-default">#{prm}</span>
-                                        </ui:repeat>
+                                    <div jsf:rendered="#{!empty managePermissionsPage.assignedRole.name}">
+                                        <span class="highlightBold">#{managePermissionsPage.assignedRole.name}</span>
+                                        <div class="small" jsf:rendered="#{!empty managePermissionsPage.assignedRole.description}">#{managePermissionsPage.assignedRole.description}</div>
+                                        <div class="margin-bottom">
+                                            <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
+                                                <span class="label label-default">#{prm}</span>
+                                            </ui:repeat>
+                                        </div>
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"/>
+                                            <h:outputFormat styleClass="text-danger" value=" #{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.warning']}">
+                                                <f:param value="#{managePermissionsPage.assignedRole.name}"/>
+                                                <f:param value="#{managePermissionsPage.assignedRoleObjectTypes}"/>
+                                                <f:param value="#{managePermissionsPage.definitionLevelString}"/>
+                                            </h:outputFormat>
+                                        </p>
                                     </div>
                                 </div>
                             </p:fragment>
@@ -83,5 +95,19 @@
                 <button type="button" class="btn btn-default" onclick="PF('userGroupsForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
             </div>
         </p:fragment>
+    </p:dialog>
+    <p:dialog id="confirmFileDownloader" header="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.header']}" widgetVar="confirmFileDownloader" modal="true">
+        <p class="help-block">
+            <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.fileDownloadConfirm']}</span>
+        </p>
+        <div class="button-block">
+            
+            <!-- THIS confirmFileDownloader POPUP HAS YET TO BE WIRED UP -->
+            
+            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmFileDownloader').hide()"
+                             action="#{managePermissionsPage.assignRole}"
+                             update="assignRoleContent assignedRoles @([id$=Messages])" />
+            <button type="button" class="btn btn-default" onclick="PF('confirmFileDownloader').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+        </div>
     </p:dialog>
 </ui:composition>

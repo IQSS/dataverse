@@ -37,6 +37,7 @@ public interface Group extends RoleAssignee {
      */
     public String getDisplayName();
     
+    
     /**
      * @return Description of this group
      */

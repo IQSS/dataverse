@@ -9,15 +9,11 @@ Tabular Data File Ingest
 Contents:
 
 .. toctree::
-   :titlesonly:
-   :maxdepth: 2
 
-  supportedformats
-  ingestprocess
-  spss
-  stata
-  rdata
-  excel
-  csv
-
-
+   supportedformats
+   ingestprocess
+   spss
+   stata
+   rdata
+   excel
+   csv

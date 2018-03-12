@@ -53,8 +53,9 @@
         <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/><!-- end: checkbox column -->
 
         <!-- start: version number column -->
-        <p:column>
-            <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.dataset']}" class="col-sm-1 text-center">
+            <ui:fragment rendered="#{versionTab.released 
+                                     or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                 <ui:fragment rendered="#{!(versionTab.released or versionTab.deaccessioned)}">
                     <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalId}&#38;version=#{versionTab.versionState}" class="ui-commandlink ui-widget">
                         <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" /></a>
@@ -64,9 +65,12 @@
                         <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" /></a>
                 </ui:fragment>
             </ui:fragment>
+            <ui:fragment rendered="#{versionTab.deaccessioned and !permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset')}">
+                <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
+            </ui:fragment>
         </p:column><!-- end: version number column -->
         <!-- start: description column -->
-        <p:column>
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.summary']}">
             <ui:fragment rendered="#{versionTab.defaultVersionDifference != null}">
                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.summaryDataForNote)}">
                     <h:outputText styleClass="highlightBold" value="#{bundle['file.dataFilesTab.versions.citationMetadata']} " />
@@ -125,14 +129,14 @@
         </p:column><!-- end: description column -->
 
         <!-- contributor column -->
-        <p:column class="col-sm-3">
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-3">
             <ui:fragment rendered="#{!empty(versionTab.contributorNames)}">
                 <h:outputText value="#{versionTab.contributorNames}" />
             </ui:fragment>
         </p:column><!-- end: contributor column -->
 
         <!-- date column -->
-        <p:column class="col-sm-2">
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
             <ui:fragment><!-- rendered="#{ !empty(versionTab) and !empty(versionTab.versionDate) }"-->
                 <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
             </ui:fragment>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <h:head>
+    </h:head>  
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{bundle['confirmEmail.pageTitle']} - #{dataverseServiceBean.findRootDataverse().name}"/>
+            <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
+            <ui:define name="body">
+                <f:metadata>
+                    <f:viewParam name="token" value="#{ConfirmEmailPage.token}"/>
+                    <f:viewAction action="#{ConfirmEmailPage.init}" />
+                </f:metadata>
+
+                <!--This is just the button. The error message is added via addErrorMessage in the backing bean.-->
+                <h:form styleClass="form-horizontal" rendered="#{ConfirmEmailPage.invalidToken}">
+                    <h:commandButton styleClass="btn btn-default" value="#{bundle['confirmEmail.details.goToAccountPageButton']}" action="/dataverseuser.xhtml?selectTab=accountInfo&amp;faces-redirect=true"/>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

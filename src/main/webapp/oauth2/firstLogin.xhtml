@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <h:head>
+
+    </h:head>
+
+    <h:body>
+        <f:metadata>
+            <f:viewAction action="#{OAuth2FirstLoginPage.init()}"/>
+        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name}"/>
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h1>
+                            <h:outputText value="#{OAuth2FirstLoginPage.welcomeMessage}"/>
+                        </h1>
+                    </div>
+                </div>
+
+                <p:tabView id="tabView">
+                    <p:tab id="newAccountTab" title="#{bundle['account.info']}">
+                        <p class="help-block">
+                            <span class="glyphicon glyphicon-info-sign"/>
+                            <span>#{OAuth2FirstLoginPage.createFromWhereTip}</span>
+                        </p>
+                        <h:form id="newAccountForm" styleClass="form-horizontal">
+                            <div class="form-group">
+                                <label for="position" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.username.illegal.tip']}">
+                                        #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    </span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <p:inputText id="username" styleClass="form-control" value="#{OAuth2FirstLoginPage.username}" validator="#{OAuth2FirstLoginPage.validateUserName}"/>
+                                    <p:message for="username" display="text"/>
+                                </div>
+                                <div class="col-sm-offset-3 col-sm-9" jsf:rendered="#{OAuth2FirstLoginPage.convertFromBuiltinIsPossible}">
+                                    <p class="help-block">
+                                        <h:outputText value="#{OAuth2FirstLoginPage.suggestConvertInsteadOfCreate}" escape="false"/>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="givenName" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.firstName.tip']}">
+                                        #{bundle['user.firstName']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    </span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <p:inputText id="givenName" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.firstName}"/>
+                                    <p:message for="givenName" display="text"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="familyName" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.lastName.tip']}">
+                                        #{bundle['user.lastName']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    </span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <p:inputText id="familyName" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.lastName}"/>
+                                    <p:message for="familyName" display="text"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="selectedEmail" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.email.tip']}">
+                                        #{bundle['email']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    </span>
+                                </label>
+                                <div class="col-sm-4" jsf:rendered="#{OAuth2FirstLoginPage.getEmailsToPickFrom().size() lt 2}">
+                                    <p:inputText id="selectedEmailZeroOrOneToPickFrom" styleClass="form-control" value="#{OAuth2FirstLoginPage.selectedEmail}" validator="#{OAuth2FirstLoginPage.validateUserEmail}"/>
+                                    <p:message for="selectedEmailZeroOrOneToPickFrom" display="text"/>
+                                </div>
+                                <div class="col-sm-4" jsf:rendered="#{OAuth2FirstLoginPage.getEmailsToPickFrom().size() gt 1}">
+                                    <p:autoComplete id="selectedEmailMoreThanOneToPickFrom" 
+                                                    dropdown="true" scrollHeight="180" style="width:100%;"
+                                                    minQueryLength="2" queryDelay="1000"
+                                                    value="#{OAuth2FirstLoginPage.selectedEmail}" 
+                                                    completeMethod="#{OAuth2FirstLoginPage.getEmailsToPickFrom()}" 
+                                                    validator="#{OAuth2FirstLoginPage.validateUserEmail}" />
+                                    <p:message for="selectedEmailMoreThanOneToPickFrom" display="text"/>
+                                </div>
+                            </div>
+                            <div class="form-group" jsf:rendered="#{OAuth2FirstLoginPage.authProvider.displayIdentifier}">
+                                <label for="persistentUserId" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{OAuth2FirstLoginPage.authProvider.persistentIdDescription}">
+                                        #{OAuth2FirstLoginPage.authProvider.persistentIdName}
+                                    </span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <p class="form-control-static">
+                                        <h:graphicImage value="#{OAuth2FirstLoginPage.authProvider.logo}" height="16" width="16" rendered="#{OAuth2FirstLoginPage.authProvider.logo != null}"/>&#160;
+                                        <h:outputLink value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}" title="#{OAuth2FirstLoginPage.authProvider.persistentIdName}" target="_blank" rendered="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix != null}">
+                                            <h:outputText value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}"/>
+                                        </h:outputLink>
+                                        <h:outputText value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}" rendered="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix == null}"/>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="affiliation" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.affiliation.tip']}">
+                                        #{bundle['affiliation']} <span class="glyphicon text-danger" title="#{bundle.requiredField}"/>
+                                    </span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <p:inputText id="affiliation" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.affiliation}"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="position" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.position.tip']}">
+                                        #{bundle['user.position']} <span class="glyphicon text-danger" title="#{bundle.requiredField}"/>
+                                    </span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <p:inputText id="position" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.position}"/>
+                                </div>
+                            </div>
+                            <ui:include src="../termsofuse.xhtml"/>
+                            <div class="form-group">
+                                <div class="col-sm-12 button-block">
+                                    <p:commandButton id="createNewAccountButton"
+                                                     styleClass="btn btn-default"
+                                                     action="#{OAuth2FirstLoginPage.createNewAccount}"
+                                                     ajax="false"
+                                                     update="@all"
+                                                     value="#{bundle['user.createBtn']}"/>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:tab>
+                </p:tabView>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+    <head>
+        <title>Harvard Dataverse</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="en" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="The Dataverse Project is an open source software application to share, cite and archive data. Dataverse provides a robust infrastructure for data stewards to host and archive data, while offering researchers an easy way to share and get credit for their data." />
+        
+        <link type="image/png" rel="icon" href="https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/images/favicondataverse.png.xhtml" />
+
+        <link type="image/png" rel="image_src" href="https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/images/dataverseproject.png.xhtml" />
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css" />
+        
+        <link rel="stylesheet" href="https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/css/fontcustom.css" />
+
+        <link rel="stylesheet" href="https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/css/socicon.css" />
+
+        <link rel="stylesheet" href="https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/css/structure.css" />
+
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+        <style type="text/css">
+            @font-face {
+              font-family: "fontcustom";
+              src: url("https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.eot");
+              src: url("https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.eot?#iefix") format("embedded-opentype"),
+                   url("https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.woff") format("woff"),
+                   url("https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.ttf") format("truetype"),
+                   url("https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.svg#fontcustom") format("svg");
+              font-weight: normal;
+              font-style: normal;
+            }
+
+            @font-face {
+                font-family: 'socicon';
+                src: url('https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/socicon-font/socicon-webfont.eot');
+                src: url('https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/socicon-font/socicon-webfont.eot?#iefix') format('embedded-opentype'),
+                     url('https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/socicon-font/socicon-webfont.woff') format('woff'),
+                     url('https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/socicon-font/socicon-webfont.woff2') format('woff2'),
+                     url('https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/socicon-font/socicon-webfont.ttf') format('truetype'),
+                     url('https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/socicon-font/socicon-webfont.svg#sociconregular') format('svg');
+                font-weight: normal;
+                font-style: normal;
+                text-transform: initial;
+            }
+
+            @media screen and (-webkit-min-device-pixel-ratio:0) {
+              @font-face {
+                font-family: "fontcustom";
+                src: url("https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.svg#fontcustom") format("svg");
+              }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="dataverse-header-block">
+            <!-- Navbar Panel -->
+            <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation">
+                <div class="container">
+                    <div class="navbar-header">
+                        <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> Dataverse</span>
+                    </div>
+                    <div class="collapse navbar-collapse" id="topNavBar">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>
+                                &#160;
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Header Panel -->
+            <div style="background:#F5F5F5;" class="container bg-muted" id="dataverseHeader">
+                <div class="dataverseHeaderBlock">
+                    <div class="dataverseHeaderCell dataverseHeaderLogo">
+                        <img alt="Harvard Dataverse" src="https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/doc/sphinx-guides/source/_static/installation/files/etc/maintenance/HarvardShield_RGB.png"/>
+                    </div>
+                    <div class="dataverseHeaderCell dataverseHeaderName">
+                        <span class="dataverseHeaderDataverseName" style="color:#000000;">Harvard Dataverse</span>
+                    </div>
+                    <div class="dataverseHeaderCell dataverseHeaderTagline">
+                        <span style="color:#a51c30;">A collaboration with Harvard Library, Harvard University IT, and IQSS</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container" id="content">
+            <div class="jumbotron" style="margin-top:20px;">
+                <h2><em>We apologize for the service interruption.</em></h2>
+                <p>The Harvard Dataverse is currently undergoing maintenance. At this time both the application and APIs are not able to be used. However, the datasets stored in the Harvard Dataverse are fine and not impacted by this maintenance.</p>
+                <p>If you have any comments, questions or concerns, please reach out to support@dataverse.org.</p>
+            </div>
+        </div>
+        <div class="container" id="footer">
+            <div class="row">
+                <div class="col-sm-8 small">
+                    <p>Developed at the <a href="http://www.iq.harvard.edu/" title="Institute for Quantitative Social Science" target="_blank">Institute for Quantitative Social Science</a> &#160;|&#160; Dataverse Project on <a href="https://twitter.com/dataverseorg" target="_blank" title="Dataverse Project on Twitter"><span class="socicon socicon-twitter" title="Dataverse Project on Twitter"></span></a> &#160;|&#160; Code available at <a href="https://github.com/IQSS/dataverse" target="_blank" title="Dataverse On GitHub"><span class="socicon socicon-github" title="Dataverse On GitHub"></span></a>
+                    </p>
+                    <p>Copyright &#169; 2016, The President &#38; Fellows of Harvard College |  <a href="http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html" target="_blank">Privacy Policy</a>
+                    </p>
+                </div>
+                <div class="col-sm-4 text-right">
+                    <div class="poweredbylogo">
+                        <span>Powered by</span> 
+                        <a href="http://dataverse.org/" title="The Dataverse Project" target="_blank"><img src="https://cdn.rawgit.com/IQSS/dataverse/87cf58b5c3e8e01cf0f4891465df02334852eed3/src/main/webapp/resources/images/dataverseproject_logo.jpg" alt="The Dataverse Project" /></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

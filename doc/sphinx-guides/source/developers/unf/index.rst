@@ -1,17 +1,8 @@
 .. _unf:
 
-====================================
+=====================================
 Universal Numerical Fingerprint (UNF)
-====================================
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-  unf-v3
-  unf-v5
-  unf-v6
+=====================================
 
 .. figure:: ./img/unf-diagram.png
     :align: center
@@ -36,7 +27,17 @@ with Dataverse 2.0 and throughout the 3.* lifecycle, UNF v.5
 UNF v.6. Two parallel implementation, in R and Java, will be
 available, for cross-validation.
 
-Learn more: Micah Altman, Jeff Gill and Michael McDonald, 2003,
-`Numerical Issues in Statistical Computing for the Social Scientist
-<http://datascience.iq.harvard.edu/publications/numerical-issues-statistical-computing-social-scientist>`_,
-New York: John Wiley.
+Learn more: Micah Altman and Gary King. 2007. “A Proposed Standard for the Scholarly Citation of Quantitative Data.” D-Lib Magazine, 13. Publisher’s Version Copy at http://j.mp/2ovSzoT
+
+**Contents:**
+
+.. toctree::
+   :maxdepth: 2
+
+   unf-v3
+   unf-v5
+   unf-v6
+
+----
+
+Previous: :doc:`/developers/tools` | Next: :doc:`/developers/geospatial`

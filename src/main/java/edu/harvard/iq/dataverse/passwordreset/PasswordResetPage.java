@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -10,6 +11,9 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -18,6 +22,13 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import java.util.Date;
+import java.util.List;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
 @ViewScoped
@@ -36,9 +47,14 @@ public class PasswordResetPage implements java.io.Serializable {
     AuthenticationServiceBean authSvc;
     @Inject
     DataverseSession session;
+    @Inject
+    SettingsWrapper settingsWrapper; 
     
     @EJB
     ActionLogServiceBean actionLogSvc;
+
+    @EJB
+    PasswordValidatorServiceBean passwordValidatorService;
     
     /**
      * The unique string used to look up a user and continue the password reset
@@ -54,6 +70,7 @@ public class PasswordResetPage implements java.io.Serializable {
     /**
      * The email address that is entered to initiate the password reset process.
      */
+
     @NotBlank(message = "Please enter a valid email address.")
     @ValidateEmail(message = "Password reset page default email message.")    
     String emailAddress;
@@ -70,6 +87,8 @@ public class PasswordResetPage implements java.io.Serializable {
     String newPassword;
     
     PasswordResetData passwordResetData;
+    
+    private List<String> passwordErrors;
 
     public void init() {
         if (token != null) {
@@ -78,7 +97,9 @@ public class PasswordResetPage implements java.io.Serializable {
             if (passwordResetData != null) {
                 user = passwordResetData.getBuiltinUser();
             } else {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Reset Link", "Your password reset link is not valid."));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                        BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkTitle"),
+                        BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkDesc")));
             }
         }
     }
@@ -127,8 +148,39 @@ public class PasswordResetPage implements java.io.Serializable {
         }
     }
 
+    //Note: Ported from DataverseUserPage
+    public void validateNewPassword(FacesContext context, UIComponent toValidate, Object value) {
+        String password = (String) value;
+        if (StringUtils.isBlank(password)){
+            logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdReset.valBlankLog"));
+
+            ((UIInput) toValidate).setValid(false);
+
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesError"),
+                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesErrorDesc"));
+            context.addMessage(toValidate.getClientId(context), message);
+            return;
+
+        } 
+
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        this.passwordErrors = errors;
+        if (!errors.isEmpty()) {
+            ((UIInput) toValidate).setValid(false);
+        }
+    }
+    
+    public String getPasswordRequirements() {
+        return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
+    }
+    
     public boolean isAccountUpgrade() {
         return passwordResetData.getReason() == PasswordResetData.Reason.UPGRADE_REQUIRED;
+    }
+    
+    public boolean isPasswordCompliant() {
+        return passwordResetData.getReason() == PasswordResetData.Reason.NON_COMPLIANT_PASSWORD;
     }
     
     public String getToken() {
@@ -171,4 +223,18 @@ public class PasswordResetPage implements java.io.Serializable {
         this.passwordResetData = passwordResetData;
     }
 
+    public String getGoodPasswordDescription() {
+        // FIXME: Pass the errors in.
+        return passwordValidatorService.getGoodPasswordDescription(null);
+    }
+    
+    public String getCustomPasswordResetAlertMessage() {
+        String customPasswordResetAlertMessage = settingsWrapper.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
+        if(customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()){
+            return customPasswordResetAlertMessage;
+        } else {
+            String defaultPasswordResetAlertMessage = BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
+            return defaultPasswordResetAlertMessage;
+        }
+    }
 }

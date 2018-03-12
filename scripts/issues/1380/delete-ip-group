@@ -1,0 +1,9 @@
+#/bin/bahx
+if [ $# -eq 0 ]
+  then
+    echo "Please provide IP group id"
+    echo "e.g $0 845"
+    exit 1
+fi
+
+curl -X DELETE http://localhost:8080/api/admin/groups/ip/$1

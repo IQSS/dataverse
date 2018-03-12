@@ -19,7 +19,7 @@
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['harvestclients.title'])}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['harvestclients.title']} - #{harvestingClientsPage.dataverse.name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle['harvestclients.title']} - #{harvestingClientsPage.dataverse.name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
 
@@ -57,7 +57,7 @@
                                         <p>
                                             <h:outputFormat value="#{bundle['harvestclients.noClients.getStarted']}" escape="false">
                                                 <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                <f:param value="#{systemConfig.version}"/>
+                                                <f:param value="#{systemConfig.guidesVersion}"/>
                                             </h:outputFormat>
                                         </p>
                                     </div>
@@ -254,7 +254,7 @@
                                                         var="destDV"
                                                         itemLabel="#{destDV.alias}" itemValue="#{destDV}" converter="dataverseConverter">
                                             <p:column>
-                                                <h:outputText value="#{destDV.name} #{bundle.dataverse}"/>
+                                                <h:outputText value="#{destDV.name}"/>
                                                 <h:outputText value=" (#{destDV.affiliation})" rendered="#{!empty destDV.affiliation}"/>
                                             </p:column>
                                             <p:column>

@@ -30,7 +30,7 @@
                             <c:if test="#{managePermissionsPage.dvObject.instanceofDataverse}">
                                 <div class="panel panel-default">
                                     <div data-toggle="collapse" data-target="#panelCollapsePermissions" class="panel-heading text-info">
-                                        Permissions <span class="glyphicon glyphicon-chevron-up"/>
+                                        #{bundle['dataverse.permissions.title']} <span class="glyphicon glyphicon-chevron-up"/>
                                         
                                         <span class="text-muted small pull-right"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.permissions.description']}</span>
                                     </div>
@@ -107,15 +107,21 @@
                                         </p:commandLink>
                                     </div>
                                     <div>
-                                        <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
-                                            <p:column width="35%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
+                                        <p>
+                                            <h:outputFormat styleClass="highlightBold" value="#{managePermissionsPage.roleAssignments.size()} #{bundle['dataverse.permissionsFiles.files.roleAssignees.label']}">
+                                                <f:param value="#{managePermissionsPage.roleAssignments.size()}"/>
+                                            </h:outputFormat>
+                                        </p>
+                                        
+                                        <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}" sortBy="#{roleAssignment.assigneeDisplayInfo.title}">
+                                            <p:column width="35%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}" sortBy="#{roleAssignment.assigneeDisplayInfo.title}">
                                                 <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
                                                 <h:outputText value=" (#{roleAssignment.assigneeDisplayInfo.affiliation})" rendered="#{!empty roleAssignment.assigneeDisplayInfo.affiliation}"/>
                                             </p:column>
-                                            <p:column width="15%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.id']}">
+                                            <p:column width="15%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.id']}" sortBy="#{roleAssignment.roleAssignment.assigneeIdentifier}">
                                                 <h:outputText value="#{roleAssignment.roleAssignment.assigneeIdentifier}"/>
                                             </p:column>
-                                            <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}">
+                                            <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}" sortBy="#{roleAssignment.roleName}">
                                                 <h:outputText value="#{roleAssignment.roleName}"/>
                                             </p:column>
                                             <p:column width="30%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.action']}">
@@ -196,7 +202,7 @@
                         <ui:include src="permissions-configure.xhtml"/>
                         <div class="button-block">
                             <p:commandLink value="#{bundle['saveChanges']}" styleClass="btn btn-default"
-                                           update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])"
+                                           update=":#{p:component('configureSettings')} @([id$=assignedRoles]) assignedRoles @([id$=Messages])"
                                            actionListener="#{managePermissionsPage.saveConfiguration}"
                                            oncomplete="PF('accessForm').hide()"/>
                             <button type="button" class="btn btn-default" onclick="PF('accessForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>

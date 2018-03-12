@@ -15,24 +15,34 @@
     <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
         <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
             <li aria-expanded="true" role="tab" class="ui-state-default ui-tabs-selected ui-state-active ui-corner-top">
-                <a href="#datasetForm:tabView:dataFilesTab">Files</a>
+                <a href="#datasetForm:tabView:dataFilesTab">#{bundle['files']}</a>
             </li>
         </ul>
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
                 <!-- Upload -->
-                <ui:fragment rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}">
+                <ui:fragment id="fileUploadFragment" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
                     <script>
                         function uploadWidgetDropMsg() {
                             var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
-                            if ($(fileUpload).children('#dragdropMsg').length) {
-                                // do nothing
-                            } else {
-                                $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.fromDropbox.description']}</div>');
+                            if ($(fileUpload).children('#dragdropMsg').length === 0) {
+                                $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.selectToAdd.dragdropMsg']}</div>');
                             }
                         }
+                        function uploadStarted() {
+                            $('button[id$="uploadStarted"]').trigger('click');
+                        }
+                        function uploadFinished(fileupload) {
+                            if (fileupload.files.length === 0) {
+                                $('button[id$="AllUploadsFinished"]').trigger('click');
+                                //alert("all uploads finished");
+                            }
+                        }
+                        function dropBoxUploadFinished(fileupload) {
+                            $('button[id$="dropBoxUploadFinished"]').trigger('click');
+                        }
                         function uploadWidgetDropRemoveMsg() {
-                            $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
+                            $('div[id$="fileUpload"] div.ui-fileupload-content div#dragdropMsg').remove();
                         }
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
@@ -48,35 +58,57 @@
                         <ui:fragment rendered="true">
                         <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
                             <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                            <f:param value="#{systemConfig.version}"/>
+                            <f:param value="#{systemConfig.guidesVersion}"/>
                         </h:outputFormat>                      
                         </ui:fragment> 
                     </p>
-                    <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
-                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
-                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"
-                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
+                    <p:fileUpload id="fileUpload" 
+                                  styleClass="margin-bottom"
+                                  dragDropSupport="true"
+                                  auto="true"
+                                  multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
+                                  disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}"
+                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
+                                  process="filesTable" 
+                                  update="@this" 
+                                  label="#{bundle['file.selectToAddBtn']}"
+                                  oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));"
+                                  onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
+                                  sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
+                                  fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" 
+                                  invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
+                                  sequential="true"
+                                  widgetVar="fileUploadWidget"/>
                     <!-- Dropbox Upload -->
-                    <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
+                    <div jsf:id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{(!(empty EditDatafilesPage.dropBoxKey))}">
                         <div class="panel-body">
                             <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
-                            <p:commandButton  id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" update="filesTable,dropBoxUploadMessage" style="display:none;" />
-                            <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                            <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
+                            <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                            
                             <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                         </div>
-                        <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" />
+                        <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
                     </div>
+                    
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
+                    
+                    <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
+                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
+                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:filesTable" style="display:none"/>
                 </ui:fragment>
 
                 <!-- Files Table -->
-                <!-- _{dataverseSession.user.authenticated and ( ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" -->
-
-                <p:dataTable id="filesTable" value="#{datasetPage ? DatasetPage.workingVersion.fileMetadatas : EditDatafilesPage.fileMetadatas}"
+                <p:dataTable id="filesTable" 
+                             value="#{EditDatafilesPage.fileMetadatas}"
                              rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}"
-                             rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
-                             selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
-                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                             rowIndexVar="rowNum" 
+                             rowKey="#{fileMetadata.dataFile.storageIdentifier}"
+                             selection="#{EditDatafilesPage.selectedFiles}" 
+                             var="fileMetadata" 
+                             widgetVar="filesTable"
+                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
+                             scrollable="#{EditDatafilesPage.scrollable}" scrollHeight="#{EditDatafilesPage.scrollHeightPercentage}" scrollWidth="100%" >
                     <f:facet name="header">
                         <div jsf:id="filesHeaderBlock" class="row">
                             <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
@@ -90,7 +122,7 @@
                                 <!-- Button Panels -->
                                 <div jsf:id="editFilesRestrictDeletePanel" class="button-block pull-right text-right"
                                      jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
-                                    <div class="btn-group">
+                                    <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
                                         </button>
@@ -124,9 +156,9 @@
                                 <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                             </span>
                             <!-- Default Icon -->
-                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
-                            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
-                                <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
+                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.previewImageAvailable)}"/>
+                            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and fileMetadata.dataFile.previewImageAvailable}">
+                                <h:graphicImage value="#{EditDatafilesPage.getTemporaryPreviewAsBase64(fileMetadata.dataFile.storageIdentifier)}"/>
                                 <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
                             </ui:fragment>
                             <!-- Restricted File Icon -->
@@ -149,17 +181,13 @@
                             <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;"/>
                             <p:message for="fileName"/>
                         </ui:fragment>
-                        <!-- TYPE + SIZE + DATE + MD5 -->
+                        <!-- TYPE + SIZE + DATE + CHECKSUM -->
                         <div class="text-muted small">
                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                             <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
-                            <h:outputText id="fileCreatePublishDate" value=" - #{EditDatafilesPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
-                            <div class="mD5-block">
-                                <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and (!EditDatafilesPage.isDuplicate(fileMetadata))}"/>
-                                <h:outputText id="duplicateFileMD5" styleClass="text-danger" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal']: bundle['file.MD5']}: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and EditDatafilesPage.isDuplicate(fileMetadata)}"/>
-                                <ui:fragment rendered="#{EditDatafilesPage.isDuplicate(fileMetadata) and (empty fileMetadata.id)}">
-                                    <div style="display:inline-block;" class="ui-message ui-message-error ui-widget ui-corner-all fileDuplicateWarning"><span class="ui-message-error-detail">#{bundle['file.MD5.exists.tip']}</span></div>
-                                </ui:fragment>
+                            <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
+                            <div class="checksum-block">
+                                <h:outputText id="fileChecksum" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType : fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue};" rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"/>
                             </div>
                         </div>
                         <!-- UNF + Variables, Obsersvations -->
@@ -201,11 +229,18 @@
                                 <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
                             </p:commandLink>
                             <p:commandLink id="fileSetThumbnailBtn"
-                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}"
+                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and not EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
                                            type="button" styleClass="btn btn-default"
                                            actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
                                            update=":datasetForm:fileSetThumbnail"
                                            oncomplete="PF('fileSetThumbnail').show()">
+                                <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
+                            </p:commandLink>
+                            <p:commandLink id="fileSetThumbnailBtn2"
+                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
+                                           type="button" styleClass="btn btn-default"
+                                           actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
+                                           oncomplete="PF('fileThumbnailConfirm').show()">
                                 <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
                             </p:commandLink>
                             <p:commandLink id="advancedIngestOptionsButton"
@@ -229,14 +264,24 @@
     <!-- authentication and authorization: #dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) -->
 
     <!-- Popups -->
+    <p:dialog styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" id="fileTypeDifferentPopup" modal="true">
+        <p class="text-info"><span class="glyphicon glyphicon-info-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
+        <div class="button-block">
+            <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" 
+                             action="#{EditDatafilesPage.deleteFiles()}"
+                             update=":#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')},uploadMessage"/>
+            <p:commandButton value="#{bundle.continue}" onclick="PF('fileTypeDifferentPopup').hide()" type="button" />
+        </div>
+    </p:dialog>
+    
     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
-        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
+        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
         <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">
-            <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
+            <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
             <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);"
-                             update=":#{p:component('filesTable')},:messagePanel" action="#{EditDatafilesPage.deleteFiles()}" />
+                             update=":#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}" />
             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
         </div>
     </p:dialog>
@@ -468,6 +513,17 @@
             <p:commandButton id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="PF('fileSetThumbnail').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
         </div>
     </p:dialog>
+    <p:dialog id="fileThumbnailConfirm" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileThumbnailConfirm" modal="true">
+        <div>
+            <p class="help-block">
+                <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['file.setThumbnail.confirmation']}</span>
+            </p>
+        </div>
+        <div class="button-block">
+            <p:commandButton id="fileThumbnailConfirmCntBtn" value="#{bundle.continue}" oncomplete="PF('fileThumbnailConfirm').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
+            <p:commandButton id="fileThumbnailConfirmCancelBtn" value="#{bundle.cancel}" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
+        </div>
+    </p:dialog>
     <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
 
@@ -595,7 +651,7 @@
 
                 },
                 linkType: "direct",
-                multiselect: true,
+                multiselect: "#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}",
             };
             Dropbox.choose(options);
         }

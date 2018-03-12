@@ -6,8 +6,10 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.ResourceBundle;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,6 +20,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -84,6 +87,31 @@ public class DatasetFieldValue implements Serializable {
 
     public void setValueForEdit(String value) {
         this.value = value;
+    }
+    
+    public String getDisplayValue() {
+        String retVal = "";
+        if (!StringUtils.isBlank(this.getValue()) && !DatasetField.NA_VALUE.equals(this.getValue())) {
+            String format = this.datasetField.getDatasetFieldType().getDisplayFormat();
+            if (StringUtils.isBlank(format)) {
+                format = "#VALUE";
+            }           
+            String sanitizedValue = !this.datasetField.getDatasetFieldType().isSanitizeHtml() ? this.getValue() :  MarkupChecker.sanitizeBasicHTML(this.getValue());    
+            
+                if (!this.datasetField.getDatasetFieldType().isSanitizeHtml() && this.datasetField.getDatasetFieldType().isEscapeOutputText()){
+                    sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
+                }
+            
+            // replace the special values in the format (note: we replace #VALUE last since we don't
+            // want any issues if the value itself has #NAME in it)
+            String displayValue = format
+                    .replace("#NAME",  this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
+                    .replace("#EMAIL", ResourceBundle.getBundle("Bundle").getString("dataset.email.hiddenMessage"))
+                    .replace("#VALUE", sanitizedValue);
+            retVal = displayValue;
+        }
+
+        return retVal;
     }
 
     public int getDisplayOrder() {

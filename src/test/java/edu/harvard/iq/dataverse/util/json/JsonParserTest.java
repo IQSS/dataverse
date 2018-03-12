@@ -14,13 +14,21 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
+import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -35,8 +43,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -231,19 +243,25 @@ public class JsonParserTest {
     public void testParseCompleteDataverse() throws JsonParseException {
         
         JsonObject dvJson;
-        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataverse.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
+        try (FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-complete.json")) {
             dvJson = Json.createReader(reader).readObject();
             Dataverse actual = sut.parseDataverse(dvJson);
-            assertEquals("testDv", actual.getName());
-            assertEquals("testAlias", actual.getAlias());
-            assertEquals("Test-Driven University", actual.getAffiliation());
-            assertEquals("test Description.", actual.getDescription());
+            assertEquals("Scientific Research", actual.getName());
+            assertEquals("science", actual.getAlias());
+            assertEquals("Scientific Research University", actual.getAffiliation());
+            assertEquals("We do all the science.", actual.getDescription());
+            assertEquals("LABORATORY", actual.getDataverseType().toString());
             assertEquals(2, actual.getDataverseContacts().size());
-            assertEquals("test@example.com,test@example.org", actual.getContactEmails());
+            assertEquals("pi@example.edu,student@example.edu", actual.getContactEmails());
             assertEquals(0, actual.getDataverseContacts().get(0).getDisplayOrder());
             assertEquals(1, actual.getDataverseContacts().get(1).getDisplayOrder());
-            assertTrue(actual.isPermissionRoot());
+            /**
+             * The JSON does not specify "permissionRoot" because it's a no-op
+             * so we don't want to document it in the API Guide. It's a no-op
+             * because as of fb7e65f (4.0) all dataverses have permissionRoot
+             * hard coded to true.
+             */
+            assertFalse(actual.isPermissionRoot());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
@@ -261,6 +279,7 @@ public class JsonParserTest {
             assertEquals("testAlias", actual.getAlias());
             assertEquals("Test-Driven University", actual.getAffiliation());
             assertEquals("test Description.", actual.getDescription());
+            assertEquals("UNCATEGORIZED", actual.getDataverseType().toString());
             assertEquals("gray", actual.getDataverseTheme().getBackgroundColor());
             assertEquals("red", actual.getDataverseTheme().getLinkColor());
             assertEquals("http://www.cnn.com", actual.getDataverseTheme().getLinkUrl());
@@ -292,6 +311,7 @@ public class JsonParserTest {
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("testDv", actual.getName());
             assertEquals("testAlias", actual.getAlias());
+            assertEquals("UNCATEGORIZED", actual.getDataverseType().toString());
             assertTrue(actual.getDataverseContacts().isEmpty());
             assertEquals("", actual.getContactEmails());
             assertFalse(actual.isPermissionRoot());
@@ -425,6 +445,123 @@ public class JsonParserTest {
             DatasetVersion actual = sut.parseDatasetVersion(dsJson);
         }
     }
+    
+    @Test
+    public void testIpGroupRoundTrip() {
+        
+        IpGroup original = new IpGroup();
+        original.setDescription("Ip group description");
+        original.setDisplayName("Test-ip-group");
+        original.setId(42l);
+        original.setPersistedGroupAlias("test-ip-group");
+        original.setGroupProvider( new IpGroupProvider(null) );
+        
+        original.add( IpAddressRange.make(IpAddress.valueOf("1.2.1.1"), IpAddress.valueOf("1.2.1.10")) );
+        original.add( IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")) );
+        original.add( IpAddressRange.make(IpAddress.valueOf("1:2:3::4:5"), IpAddress.valueOf("1:2:3::4:5")) );
+        original.add( IpAddressRange.make(IpAddress.valueOf("1:2:3::3:ff"), IpAddress.valueOf("1:2:3::3:5")) );
+        
+        JsonObject serialized = JsonPrinter.json(original).build();
+        
+        System.out.println( serialized.toString() );
+        
+        IpGroup parsed = new JsonParser().parseIpGroup(serialized);
+        
+        assertEquals( original, parsed );
+        
+    }
+    
+    @Test
+    public void testIpGroupRoundTrip_singleIpv4Address() {
+        
+        IpGroup original = new IpGroup();
+        original.setDescription("Ip group description");
+        original.setDisplayName("Test-ip-group");
+        original.setId(42l);
+        original.setPersistedGroupAlias("test-ip-group");
+        original.setGroupProvider( new IpGroupProvider(null) );
+        
+        original.add( IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")) );
+        
+        JsonObject serialized = JsonPrinter.json(original).build();
+        
+        System.out.println( serialized.toString() );
+        
+        IpGroup parsed = new JsonParser().parseIpGroup(serialized);
+        
+        assertEquals( original, parsed );
+        assertTrue( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.1")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.2")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.2.1")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.0")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.250")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.1.1")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) ));
+        
+    }
+    
+    @Test
+    public void testIpGroupRoundTrip_singleIpv6Address() {
+        
+        IpGroup original = new IpGroup();
+        original.setDescription("Ip group description");
+        original.setDisplayName("Test-ip-group");
+        original.setId(42l);
+        original.setPersistedGroupAlias("test-ip-group");
+        original.setGroupProvider( new IpGroupProvider(null) );
+        
+        original.add( IpAddressRange.make(IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"),
+                                          IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) );
+        
+        JsonObject serialized = JsonPrinter.json(original).build();
+        
+        System.out.println( serialized.toString() );
+        
+        IpGroup parsed = new JsonParser().parseIpGroup(serialized);
+        
+        assertEquals( original, parsed );
+        assertTrue( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce60")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce62")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe47:ce61")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0af:fe48:ce61")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe79::22c9:d0ff:fe48:ce61")) ));
+        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
+        
+    }
+
+    @Test
+    public void testparseFiles() throws JsonParseException {
+        JsonArrayBuilder metadatasJsonBuilder = Json.createArrayBuilder();
+        JsonObjectBuilder fileMetadataGood = Json.createObjectBuilder();
+        fileMetadataGood.add("label", "myLabel");
+        JsonObjectBuilder fileGood = Json.createObjectBuilder();
+        fileMetadataGood.add("dataFile", fileGood);
+        fileMetadataGood.add("categories", Json.createArrayBuilder()
+                .add("Documentation")
+        );
+        JsonObjectBuilder fileMetadataBad = Json.createObjectBuilder();
+        fileMetadataBad.add("label", "bad");
+        JsonObjectBuilder fileBad = Json.createObjectBuilder();
+        fileMetadataBad.add("dataFile", fileBad);
+        fileMetadataBad.add("categories", Json.createArrayBuilder()
+                .add(BigDecimal.ONE)
+        );
+        metadatasJsonBuilder.add(fileMetadataGood);
+        metadatasJsonBuilder.add(fileMetadataBad);
+        JsonArray metadatasJson = metadatasJsonBuilder.build();
+        DatasetVersion dsv = new DatasetVersion();
+        Dataset dataset = new Dataset();
+        dsv.setDataset(dataset);
+        List<FileMetadata> fileMetadatas = new JsonParser().parseFiles(metadatasJson, dsv);
+        System.out.println("fileMetadatas: " + fileMetadatas);
+        assertEquals("myLabel", fileMetadatas.get(0).getLabel());
+        assertEquals("Documentation", fileMetadatas.get(0).getCategories().get(0).getName());
+        assertEquals(null, fileMetadatas.get(1).getCategories());
+        List<FileMetadata> codeCoverage = new JsonParser().parseFiles(Json.createArrayBuilder().add(Json.createObjectBuilder().add("label", "myLabel").add("dataFile", Json.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
+        assertEquals(null, codeCoverage.get(0).getCategories());
+    }
 
     JsonObject json( String s ) {
         return Json.createReader( new StringReader(s) ).readObject();
@@ -483,15 +620,18 @@ public class JsonParserTest {
         throw new IllegalArgumentException("Unknown dataset field type '" + ex.getDatasetFieldType() + "'");
     }
     
-    static class MockSettingsSvc extends SettingsServiceBean {
+    private static class MockSettingsSvc extends SettingsServiceBean {
         @Override
         public String getValueForKey( Key key /*, String defaultValue */) {
-            if (key.equals(SettingsServiceBean.Key.Authority)) {
-                return "10.5072/FK2";
-            } else if (key.equals(SettingsServiceBean.Key.Protocol)) {
-                return "doi";
-            } else if( key.equals(SettingsServiceBean.Key.DoiSeparator)) {
-                return "/";
+            switch (key) {
+                case Authority:
+                    return "10.5072/FK2";
+                case Protocol:
+                    return "doi";
+                case DoiSeparator:
+                    return "/";
+                default:
+                    break;
             }
              return null;
         }

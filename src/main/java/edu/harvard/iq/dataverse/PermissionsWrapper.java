@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
-    private final Map<Long, Map<Class<? extends Command>, Boolean>> commandMap = new HashMap<>();
+    private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> commandMap = new HashMap<>();
 
     // Maps for caching permissions lookup results:
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
@@ -42,9 +43,11 @@ public class PermissionsWrapper implements java.io.Serializable {
     /**
      * Check if the current Dataset can Issue Commands
      *
-     * @param commandName
+     * @param dvo Target dataverse object.
+     * @param command The command to execute
+     * @return {@code true} if the user can issue the command on the object.
      */
-    public boolean canIssueCommand(DvObject dvo, Class<? extends Command> command) {
+    public boolean canIssueCommand(DvObject dvo, Class<? extends Command<?>> command) {
         if ((dvo==null) || (dvo.getId()==null)){
             return false;
         }
@@ -53,7 +56,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
 
         if (commandMap.containsKey(dvo.getId())) {
-            Map<Class<? extends Command>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
+            Map<Class<? extends Command<?>>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
             if (dvoCommandMap.containsKey(command)) {
                 return dvoCommandMap.get(command);
             } else {
@@ -61,13 +64,13 @@ public class PermissionsWrapper implements java.io.Serializable {
             }
 
         } else {
-            Map newDvoCommandMap = new HashMap();
+            Map<Class<? extends Command<?>>, Boolean> newDvoCommandMap = new HashMap<>();
             commandMap.put(dvo.getId(), newDvoCommandMap);
             return addCommandtoDvoCommandMap(dvo, command, newDvoCommandMap);
         }
     }
 
-    private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command> command, Map<Class<? extends Command>, Boolean> dvoCommandMap) {
+    private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command<?>> command, Map<Class<? extends Command<?>>, Boolean> dvoCommandMap) {
         if ( dvo==null || (dvo.getId()==null) ){
             return false;
         }
@@ -118,7 +121,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (u==null){            
             return false;
         }
-        return permissionService.userOn(u, dv).has(Permission.ManageDataversePermissions);
+        return permissionService.requestOn(dvRequestService.getDataverseRequest(), dv).has(Permission.ManageDataversePermissions);
     }
     
     public boolean canManageDatasetPermissions(User u, Dataset ds) {
@@ -128,15 +131,15 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (u==null){            
             return false;
         }
-        return permissionService.userOn(u, ds).has(Permission.ManageDatasetPermissions);
+        return permissionService.requestOn(dvRequestService.getDataverseRequest(), ds).has(Permission.ManageDatasetPermissions);
     }
 
-    public boolean canViewUnpublishedDataset(User user, Dataset dataset) {
-        return doesSessionUserHaveDataSetPermission(user, dataset, Permission.ViewUnpublishedDataset);
+    public boolean canViewUnpublishedDataset(DataverseRequest dr, Dataset dataset) {
+        return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.ViewUnpublishedDataset);
     }
     
-    public boolean canUpdateDataset(User user, Dataset dataset) {
-        return doesSessionUserHaveDataSetPermission(user, dataset, Permission.EditDataset);
+    public boolean canUpdateDataset(DataverseRequest dr, Dataset dataset) {
+        return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.EditDataset);
     }
     
             
@@ -147,12 +150,12 @@ public class PermissionsWrapper implements java.io.Serializable {
      * 
      * Check Dataset related permissions
      * 
-     * @param user
+     * @param req
      * @param dataset
      * @param permissionToCheck
      * @return 
      */
-    public boolean doesSessionUserHaveDataSetPermission(User user, Dataset dataset, Permission permissionToCheck){
+    public boolean doesSessionUserHaveDataSetPermission(DataverseRequest req, Dataset dataset, Permission permissionToCheck){
         if (permissionToCheck == null){
             return false;
         }
@@ -167,8 +170,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
         
         // Check the permission
-        //
-        boolean hasPermission = this.permissionService.userOn(user, dataset).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.requestOn(req, dataset).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);
@@ -196,17 +198,16 @@ public class PermissionsWrapper implements java.io.Serializable {
 
         // Check permissions
         //
-        if (this.permissionService.on(dvo).has(Permission.DownloadFile)){
+        if ( permissionService.on(dvo).has(Permission.DownloadFile) ){
 
             // Yes, has permission, store result
-            //
-            this.fileDownloadPermissionMap.put(dvo.getId(), true);
+            fileDownloadPermissionMap.put(dvo.getId(), true);
             return true;
-        }else {
+            
+        } else {
         
             // No permission, store result
-            //
-            this.fileDownloadPermissionMap.put(dvo.getId(), false);
+            fileDownloadPermissionMap.put(dvo.getId(), false);
             return false;
         }
     }

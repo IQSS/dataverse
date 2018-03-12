@@ -12,7 +12,12 @@ import java.util.List;
  * A placeholder user provider, that authenticates everyone, using their credentials.
  * 
  * @author michael
+ *
+ * @deprecated This was a useful example of a non-builtin authentication
+ * provider but now we have OAuth and Shib examples to follow. We could consider
+ * deleting this class.
  */
+@Deprecated
 public class EchoAuthenticationProvider implements CredentialsAuthenticationProvider {
     
     private final String id;

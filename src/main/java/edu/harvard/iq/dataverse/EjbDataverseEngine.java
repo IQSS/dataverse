@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -21,11 +22,11 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -140,11 +141,23 @@ public class EjbDataverseEngine {
     @EJB
     PrivateUrlServiceBean privateUrlService;
 
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
+
+    @EJB
+    MapLayerMetadataServiceBean mapLayerMetadata;
+
+    @EJB
+    DataCaptureModuleServiceBean dataCaptureModule;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
     @EJB
     ActionLogServiceBean logSvc;
+    
+    @EJB
+    WorkflowServiceBean workflowService;
 
     private CommandContext ctxt;
     
@@ -169,7 +182,7 @@ public class EjbDataverseEngine {
             DataverseRequest dvReq = aCommand.getRequest();
             
             Map<String, DvObject> affectedDvObjects = aCommand.getAffectedDvObjects();
-            logRec.setInfo( describe(affectedDvObjects) );
+            logRec.setInfo(aCommand.describe());
             for (Map.Entry<String, ? extends Set<Permission>> pair : requiredMap.entrySet()) {
                 String dvName = pair.getKey();
                 if (!affectedDvObjects.containsKey(dvName)) {
@@ -404,21 +417,30 @@ public class EjbDataverseEngine {
                     return privateUrlService;
                 }
 
+                @Override
+                public DatasetVersionServiceBean datasetVersion() {
+                    return datasetVersionService;
+                }
+                
+                @Override
+                public WorkflowServiceBean workflows() {
+                    return workflowService;
+                }
+
+                @Override
+                public MapLayerMetadataServiceBean mapLayerMetadata() {
+                    return mapLayerMetadata;
+                }
+
+                @Override
+                public DataCaptureModuleServiceBean dataCaptureModule() {
+                    return dataCaptureModule;
+                }
+
             };
         }
 
         return ctxt;
     }
-    
-    
-    private String describe( Map<String, DvObject> dvObjMap ) {
-        StringBuilder sb = new StringBuilder();
-        for ( Map.Entry<String, DvObject> ent : dvObjMap.entrySet() ) {
-            DvObject value = ent.getValue();
-            sb.append(ent.getKey()).append(":");
-            sb.append( (value!=null) ? value.accept(DvObject.NameIdPrinter) : "<null>");
-            sb.append(" ");
-        }
-        return sb.toString();
-    }
+
 }

@@ -1,0 +1,28 @@
+@startuml
+actor user
+participant DataverseUserPage as page
+participant "provider: AuthenticationProvider" as prv
+participant AuthenticationServiceBean as authSvc
+user --> page: HTTP GET
+== page init ==
+...
+page -> authSvc : lookupProvider(session.user)
+activate authSvc
+page <-- authSvc: provider
+deactivate authSvc
+...
+
+== Can Update User? ==
+page -> prv: isUserInfoUpdateAllowed()
+activate prv
+page <-- prv: true/false
+deactivate prv
+...
+
+== Save User ==
+user --> page: save()
+page -> page: udi = createUserDisplayInfo()
+page -> prv: updateUserInfo( udi )
+page -> authSvc: updateAuthentictedUser( session.user, udi )
+
+@enduml

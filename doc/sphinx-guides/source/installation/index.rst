@@ -6,18 +6,18 @@
 Installation Guide
 ==================
 
-Contents:
+**Contents:**
 
 .. toctree::
-   :titlesonly:
-   :maxdepth: 2
 
-  intro
-  prep
-  prerequisites
-  installation-main
-  config
-  administration
-  upgrading
-  r-rapache-tworavens
-  shibboleth
+   intro
+   prep
+   prerequisites
+   installation-main
+   config
+   upgrading
+   r-rapache-tworavens
+   geoconnect
+   shibboleth
+   oauth2
+   external-tools

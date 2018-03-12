@@ -98,7 +98,12 @@ public class MarkupCheckerTest {
         safeStr = "the \n<a href=\"http://dataverse.org\" rel=\"nofollow\" target=\"_blank\">Dataverse project</a> in a new window";
         sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
-        assertTrue(safeStr.equals(sanitized));        
+        assertTrue(safeStr.equals(sanitized));      
+        
+        //test null
+        unsafeStr = null;
+        sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
+        assertNull(sanitized);
 
     }
 
@@ -107,15 +112,24 @@ public class MarkupCheckerTest {
      */
     @Test
     public void testStripAllTags() {
-        /*
+
         System.out.println("stripAllTags");
         String unsafe = "";
         String expResult = "";
         String result = MarkupChecker.stripAllTags(unsafe);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-         */
+
+        //test null
+        unsafe = null;
+        result = MarkupChecker.stripAllTags(unsafe);
+        assertNull(result);
+        
+    }
+
+    @Test
+    public void testEscapeHtml() {
+        assertEquals("foo&lt;br&gt;bar", MarkupChecker.escapeHtml("foo<br>bar"));
     }
 
 }

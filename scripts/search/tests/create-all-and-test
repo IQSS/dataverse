@@ -8,9 +8,16 @@ scripts/search/create-tree-dvs1 > /tmp/tree-dvs1
 echo "Creating some datasets"
 curl -s --insecure --data-binary @scripts/search/tests/data/dataset-trees1.xml -H 'Content-Type: application/atom+xml' -u $SPRUCEKEY: https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/spruce | xmllint -format - >/dev/null
 curl -s -X POST -H "Content-type:application/json" -d @scripts/search/tests/data/dataset-finch1.json "http://localhost:8080/api/dataverses/finches/datasets/?key=$FINCHKEY" >/dev/null
-echo "Uploading a file"
+echo "Uploading a file via the SWORD API"
 . scripts/search/assumptions
 curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H 'Content-Disposition: filename=trees.zip' -H 'Content-Type: application/zip' -H 'Packaging: http://purl.org/net/sword/package/SimpleZip' -u $SPRUCEKEY: https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/$FIRST_SPRUCE_DOI >/dev/null
+echo "Uploading a file via the native API"
+# echo $FIRST_FINCH_DOI # FIXME: Why is this empty?
+STATUS_CODE_FROM_UPLOADING_FILE_VIA_NATIVE=$(curl -H "X-Dataverse-key:$FINCHKEY" --insecure --write-out %{http_code} --silent --output /dev/null -X POST -F "file=@scripts/search/data/replace_test/growing_file/2016-01/data.tsv" -F 'jsonData={"description":"My description.","categories":["Data"]}' "http://localhost:8080/api/v1/datasets/$FIRST_FINCH_DATASET_ID/add")
+if [[ "$STATUS_CODE_FROM_UPLOADING_FILE_VIA_NATIVE" != 200 ]]; then
+  echo "Couldn't upload file to dataset $FIRST_FINCH_DATASET_ID via native API!"
+  exit 1
+fi
 # give the file a little time to ingest
 sleep 2
 echo "Everything in draft, checking permissions. Silence is golden."

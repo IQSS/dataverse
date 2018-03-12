@@ -13,8 +13,12 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -22,7 +26,6 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -95,11 +98,20 @@ public class MocksFactory {
         user.setFirstName(firstName);
         user.setPosition("In-Memory user");
         user.setUserIdentifier("unittest" + user.getId() );
+        user.setCreatedTime(new Timestamp(new Date().getTime()));
+        user.setLastLoginTime(user.getCreatedTime());
         return user;
     }
     
+    /**
+     * @return A request with a guest user.
+     */
     public static DataverseRequest makeRequest() {
-        return new DataverseRequest( makeAuthenticatedUser("Jane", "Doe"), IpAddress.valueOf("215.0.2.17") );
+        return makeRequest( GuestUser.get() );
+    }
+    
+    public static DataverseRequest makeRequest( User u ) {
+        return new DataverseRequest( u, IpAddress.valueOf("1.2.3.4") );
     }
     
     public static Dataverse makeDataverse() {
@@ -136,10 +148,10 @@ public class MocksFactory {
         final List<FileMetadata> metadatas = new ArrayList<>(10);
         final List<DataFileCategory> categories = ds.getCategories();
         Random rand = new Random();
-        for ( DataFile df : files ) {
+        files.forEach( df ->{
             df.getFileMetadata().addCategory(categories.get(rand.nextInt(categories.size())));
             metadatas.add( df.getFileMetadata() );
-        }
+        });
         ds.setFiles(files);
         final DatasetVersion initialVersion = ds.getVersions().get(0);
         initialVersion.setFileMetadatas(metadatas);
@@ -161,10 +173,10 @@ public class MocksFactory {
         final List<DataFile> files = makeFiles(10);
         final List<FileMetadata> metadatas = new ArrayList<>(10);
         Random rand = new Random();
-        for ( DataFile df : files ) {
+        files.forEach(df -> {
             df.getFileMetadata().addCategory(categories.get(rand.nextInt(categories.size())));
             metadatas.add( df.getFileMetadata() );
-        }
+        });
         retVal.setFileMetadatas(metadatas);
         
         List<DatasetField> fields = new ArrayList<>();
@@ -209,5 +221,20 @@ public class MocksFactory {
         retVal.setDatasetFieldType( fieldType );
         
         return retVal;
+    }
+    
+    public static ExplicitGroup makeExplicitGroup( String name, ExplicitGroupProvider prv ) {
+        long id = nextId();
+        ExplicitGroup eg = new ExplicitGroup(prv);
+        
+        eg.setId(id);
+        eg.setDisplayName( name==null ? "explicitGroup-" + id : name );
+        eg.setGroupAliasInOwner("eg" + id);
+        
+        return eg;
+    }
+    
+    public static ExplicitGroup makeExplicitGroup( ExplicitGroupProvider prv ) {
+        return makeExplicitGroup(null, prv);
     }
 }

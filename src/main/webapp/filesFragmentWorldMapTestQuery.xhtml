@@ -11,7 +11,7 @@
     After the query is run, the "Explore Map" button should appear for a tabular file or shapefile 
 -->
     
-<ui:fragment rendered="#{ !DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}">
+<ui:fragment rendered="#{ !DatasetPage.worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
 <!-- There is NO map data for this file -->  
     <ui:fragment rendered="#{fileMetadata.getDataFile().isTabularData()}">
     <!-- Not a shapefile, assume this is a tabular file -->

@@ -206,7 +206,7 @@ public class SavedSearchServiceBean {
         boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;
         SolrQueryResponse solrQueryResponse = searchService.search(
-                savedSearch.getCreator(),
+                new DataverseRequest(savedSearch.getCreator(), getHttpServletRequest()),
                 savedSearch.getDefinitionPoint(),
                 savedSearch.getQuery(),
                 savedSearch.getFilterQueriesAsStrings(),
@@ -297,6 +297,22 @@ public class SavedSearchServiceBean {
          * different from the one the user may have, and quite possibly more
          * privileged. It maybe safest to pass in a null http request at this
          * stage." -- michbarsinai
+         *
+         * When Saved Search was designed, there was no DataverseRequest object
+         * so what is persisted is the id of the AuthenticatedUser. When a Saved
+         * Search is later re-executed via cron, the AuthenticatedUser is used
+         * but Saved Search has no memory of which IP address was used when the
+         * Saved Search was created. The default IP address in the
+         * DataverseRequest constructor is used instead, which as of this
+         * writing is 0.0.0.0 to mean "undefined". Is this a feature or a bug?
+         * What is the expected interplay between Saved Search and IP Groups?
+         * Users might be surprised to see certain DvObjects in the results of
+         * their query when creating the Saved Search and later find that those
+         * DvObjects, which are only visible due to an IP Groups membership, are
+         * not found by Saved Search when executed by cron, for example. As of
+         * this writing Saved Search is a superuser-only feature so perhaps IP
+         * Groups are irrelevant because all DvObjects are discoverable to
+         * superusers.
          */
         return null;
     }

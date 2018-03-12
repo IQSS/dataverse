@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetInitResponse;
@@ -45,7 +44,7 @@ public class BuiltinUserServiceBean {
         return PasswordEncryption.get().encrypt(plainText);
     }
        
-    public BuiltinUser save(BuiltinUser dataverseUser) {
+    public BuiltinUser save(BuiltinUser aUser) {
         /**
          * Trim the email address no matter what the user entered or is entered
          * on their behalf in the case of Shibboleth assertions.
@@ -53,14 +52,14 @@ public class BuiltinUserServiceBean {
          * @todo Why doesn't Bean Validation report that leading and trailing
          * whitespace in an email address is a problem?
          */
-        dataverseUser.setEmail(dataverseUser.getEmail().trim());
+        aUser.setEmail(aUser.getEmail().trim());
         /**
          * We throw a proper IllegalArgumentException here because otherwise
          * from the API you get a 500 response and "Can't save user: null".
          */
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
-        Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(dataverseUser);
+        Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(aUser);
         if (violations.size() > 0) {
             StringBuilder sb = new StringBuilder();
             violations.stream().forEach((violation) -> {
@@ -68,26 +67,29 @@ public class BuiltinUserServiceBean {
             });
             throw new IllegalArgumentException("BuiltinUser could not be saved to due constraint violations: " + sb);
         }
-        if ( dataverseUser.getId() == null ) {
+        if ( aUser.getId() == null ) {
             // see that the username is unique
             if ( em.createNamedQuery("BuiltinUser.findByUserName")
-                    .setParameter("userName", dataverseUser.getUserName()).getResultList().size() > 0 ) {
-                throw new IllegalArgumentException( "BuiltinUser with username '" + dataverseUser.getUserName() + "' already exists.");
+                    .setParameter("userName", aUser.getUserName()).getResultList().size() > 0 ) {
+                throw new IllegalArgumentException( "BuiltinUser with username '" + aUser.getUserName() + "' already exists.");
             }
-            em.persist( dataverseUser );
-            return dataverseUser;
+            em.persist( aUser );
+            return aUser;
         } else {
-            return em.merge(dataverseUser);
+            return em.merge(aUser);
         }
     }
     
-    public User findByIdentifier( String idtf ) {
-        return null; // TODO implement
-    }
-	
     public BuiltinUser find(Long pk) {
         return em.find(BuiltinUser.class, pk);
     }    
+    
+    public void removeUser( String userName ) {
+        final BuiltinUser user = findByUserName(userName);
+        if ( user != null ) {
+            em.remove(user);
+        }
+    }
     
     public BuiltinUser findByUserName(String userName) {
         try {
@@ -146,6 +148,11 @@ public class BuiltinUserServiceBean {
     
     public String requestPasswordUpgradeLink( BuiltinUser aUser ) throws PasswordResetException {
         PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.UPGRADE_REQUIRED );
+        return "passwordreset.xhtml?token=" + prir.getPasswordResetData().getToken() + "&faces-redirect=true";
+    }
+    
+    public String requestPasswordComplianceLink( BuiltinUser aUser ) throws PasswordResetException {
+        PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.NON_COMPLIANT_PASSWORD );
         return "passwordreset.xhtml?token=" + prir.getPasswordResetData().getToken() + "&faces-redirect=true";
     }
 }

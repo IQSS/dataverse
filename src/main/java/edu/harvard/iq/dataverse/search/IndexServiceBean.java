@@ -113,7 +113,7 @@ public class IndexServiceBean {
     @PostConstruct
     public void init(){
         solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-        rootDataverseName = findRootDataverseCached().getName() + " " + BundleUtil.getStringFromBundle("dataverse");
+        rootDataverseName = findRootDataverseCached().getName();
     }
     
     @PreDestroy
@@ -171,7 +171,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
         } else { (this means that all dataverses are "local" - should this be removed? */
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName() + " " + BundleUtil.getStringFromBundle("dataverse")); //rootDataverseName);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName()); //rootDataverseName);
         /*}*/
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
@@ -679,7 +679,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName() + " " + BundleUtil.getStringFromBundle("dataverse")); //rootDataverseName);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName()); //rootDataverseName);
         }
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
@@ -907,7 +907,7 @@ public class IndexServiceBean {
                             datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
                         } else {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName() + " " + BundleUtil.getStringFromBundle("dataverse"));
+                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName());
                         }
                     }
                     if (fileSortByDate == null) {
@@ -950,7 +950,16 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
                     datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
                     datafileSolrInputDocument.addField(SearchFields.FILE_SIZE_IN_BYTES, fileMetadata.getDataFile().getFilesize());
-                    datafileSolrInputDocument.addField(SearchFields.FILE_MD5, fileMetadata.getDataFile().getmd5());
+                    if (DataFile.ChecksumType.MD5.equals(fileMetadata.getDataFile().getChecksumType())) {
+                        /**
+                         * @todo Someday we should probably deprecate this
+                         * FILE_MD5 in favor of a combination of
+                         * FILE_CHECKSUM_TYPE and FILE_CHECKSUM_VALUE.
+                         */
+                        datafileSolrInputDocument.addField(SearchFields.FILE_MD5, fileMetadata.getDataFile().getChecksumValue());
+                    }
+                    datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_TYPE, fileMetadata.getDataFile().getChecksumType().toString());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_VALUE, fileMetadata.getDataFile().getChecksumValue());
                     datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
                     datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
                     datafileSolrInputDocument.addField(SearchFields.UNF, fileMetadata.getDataFile().getUnf());

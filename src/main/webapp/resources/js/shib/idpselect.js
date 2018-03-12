@@ -1610,7 +1610,7 @@ function IdPSelectUI() {
         //if (preferredTile) {
             //buildTextDiv(idpEntryDiv, 'idpEntry.label');
         //} else {
-            buildTextDiv(idpEntryDiv, 'idpEntry.NoPreferred.label');
+            // buildTextDiv(idpEntryDiv, 'idpEntry.NoPreferred.label');
         //}
 
         var form = buildSelectForm();
@@ -1690,7 +1690,7 @@ function IdPSelectUI() {
         //if (preferredTile) {
             // buildTextDiv(idpListDiv, 'idpList.label');
         //} else {
-            buildTextDiv(idpListDiv, 'idpList.NoPreferred.label');
+            // buildTextDiv(idpListDiv, 'idpList.NoPreferred.label');
         //}
 
         idpSelect = document.createElement('select');

@@ -11,7 +11,10 @@ sudo mv jq /usr/bin/jq
 echo "Adding Shibboleth yum repo"
 cp /dataverse/conf/vagrant/etc/yum.repos.d/shibboleth.repo /etc/yum.repos.d
 cp /dataverse/conf/vagrant/etc/yum.repos.d/epel-apache-maven.repo /etc/yum.repos.d
-yum install -y java-1.8.0-openjdk-devel postgresql-server apache-maven httpd mod_ssl shibboleth shibboleth-embedded-ds
+# Uncomment this (and other shib stuff below) if you want
+# to use Vagrant (and maybe PageKite) to test Shibboleth.
+#yum install -y shibboleth shibboleth-embedded-ds
+yum install -y java-1.8.0-openjdk-devel postgresql-server apache-maven httpd mod_ssl unzip
 alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 alternatives --set javac /usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac
 java -version
@@ -44,20 +47,26 @@ if [ ! -d $GLASSFISH_ROOT ]; then
 else
   echo "$GLASSFISH_ROOT already exists"
 fi
-service shibd start
+#service shibd start
 service httpd stop
 cp /dataverse/conf/httpd/conf.d/dataverse.conf /etc/httpd/conf.d/dataverse.conf
 mkdir -p /var/www/dataverse/error-documents
 cp /dataverse/conf/vagrant/var/www/dataverse/error-documents/503.html /var/www/dataverse/error-documents
 service httpd start
-curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /tmp/pdurbin.pagekite.me
-cp -a /etc/shibboleth/shibboleth2.xml /etc/shibboleth/shibboleth2.xml.orig
-cp -a /etc/shibboleth/attribute-map.xml /etc/shibboleth/attribute-map.xml.orig
+#curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /tmp/pdurbin.pagekite.me
+#cp -a /etc/shibboleth/shibboleth2.xml /etc/shibboleth/shibboleth2.xml.orig
+#cp -a /etc/shibboleth/attribute-map.xml /etc/shibboleth/attribute-map.xml.orig
 # need more attributes, such as sn, givenName, mail
-cp /dataverse/conf/vagrant/etc/shibboleth/attribute-map.xml /etc/shibboleth/attribute-map.xml
+#cp /dataverse/conf/vagrant/etc/shibboleth/attribute-map.xml /etc/shibboleth/attribute-map.xml
 # FIXME: automate this?
 #curl 'https://www.testshib.org/cgi-bin/sp2config.cgi?dist=Others&hostname=pdurbin.pagekite.me' > /etc/shibboleth/shibboleth2.xml
 #cp /dataverse/conf/vagrant/etc/shibboleth/shibboleth2.xml /etc/shibboleth/shibboleth2.xml
 #service shibd restart
 #curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /downloads/pdurbin.pagekite.me
 #service httpd restart
+echo "#########################################################################################"
+echo "# This is a Vagrant test box, so we're disabling firewalld. 			      #
+echo "# Re-enable it with $ sudo systemctl enable firewalld && sudo systemctl start firewalld #"
+echo "#########################################################################################"
+systemctl disable firewalld
+systemctl stop firewalld

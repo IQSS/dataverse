@@ -20,10 +20,8 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DataFile;
-
+import edu.harvard.iq.dataverse.DvObject;
 import java.io.IOException;
-
 /**
  *
  * @author Leonid Andreev
@@ -34,21 +32,35 @@ public class DataAccess {
 
     }
 
-    public static DataFileIO createDataAccessObject (DataFile df) throws IOException {
-        return createDataAccessObject (df, null);
+    // set by the user in glassfish-setup.sh if DEFFAULT_STORAGE_DRIVER_IDENTIFIER = swift
+    // or DEFFAULT_STORAGE_DRIVER_IDENTIFIER = s3
+    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
+    
+    // The getStorageIO() methods initialize StorageIO objects for
+    // datafiles that are already saved using one of the supported Dataverse
+    // DataAccess IO drivers.
+    public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject) throws IOException {
+        return getStorageIO(dvObject, null);
     }
 
-    public static DataFileIO createDataAccessObject (DataFile df, DataAccessRequest req) throws IOException {
-
-        if (df == null ||
-                df.getStorageIdentifier() == null ||
-                df.getStorageIdentifier().equals("")) {
-            throw new IOException ("createDataAccessObject: null or invalid datafile.");
+    //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
+    public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
+        
+        if (dvObject == null
+                || dvObject.getStorageIdentifier() == null
+            || dvObject.getStorageIdentifier().isEmpty()) {
+            throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
 
-        if (df.getStorageIdentifier().startsWith("file://")
-                || (!df.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
-            return new FileAccessIO (df, req);
+        if (dvObject.getStorageIdentifier().startsWith("file://")
+                || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z0-9]*://.*"))) {
+            return new FileAccessIO<>(dvObject, req);
+        } else if (dvObject.getStorageIdentifier().startsWith("swift://")){
+            return new SwiftAccessIO<>(dvObject, req);
+        } else if (dvObject.getStorageIdentifier().startsWith("s3://")){ 
+            return new S3AccessIO<>(dvObject, req);
+        } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
+            throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
         
         // No other storage methods are supported as of now! -- 4.0.1
@@ -58,6 +70,44 @@ public class DataAccess {
         // "storage identifier". 
         // -- L.A. 4.0.2
         
-        throw new IOException ("createDataAccessObject: Unsupported storage method.");
+        throw new IOException("getDataAccessObject: Unsupported storage method.");
     }
+
+    // createDataAccessObject() methods create a *new*, empty DataAccess objects,
+    // for saving new, not yet saved datafiles.
+    public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
+
+        return createNewStorageIO(dvObject, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+    }
+
+    public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
+        if (dvObject == null
+                || storageTag == null
+            || storageTag.isEmpty()) {
+            throw new IOException("getDataAccessObject: null or invalid datafile.");
+        }
+
+        StorageIO<T> storageIO = null;
+
+        dvObject.setStorageIdentifier(storageTag);
+
+        if (driverIdentifier == null) {
+            driverIdentifier = "file";
+        }
+
+        if (driverIdentifier.equals("file")) {
+            storageIO = new FileAccessIO<>(dvObject, null);
+        } else if (driverIdentifier.equals("swift")) {
+            storageIO = new SwiftAccessIO<>(dvObject, null);
+        } else if (driverIdentifier.equals("s3")) {
+            storageIO = new S3AccessIO<>(dvObject, null);
+        } else {
+            throw new IOException("createDataAccessObject: Unsupported storage method " + driverIdentifier);
+        }
+
+        storageIO.open(DataAccessOption.WRITE_ACCESS);
+        return storageIO;
+    }
+    
+
 }

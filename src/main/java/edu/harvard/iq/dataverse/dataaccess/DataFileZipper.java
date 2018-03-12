@@ -45,20 +45,20 @@ public class DataFileZipper {
     private OutputStream outputStream = null; 
     private ZipOutputStream zipOutputStream = null;
     
-    private List fileNameList = null; // the list of file names to check for duplicates
-    private List zippedFilesList = null; // list of successfully zipped files, to update guestbooks and download counts (not yet implemented)
+    private List<String> fileNameList = null; // the list of file names to check for duplicates
+    private List<Long> zippedFilesList = null; // list of successfully zipped files, to update guestbooks and download counts (not yet implemented)
     
     private String fileManifest = "";
 
     public DataFileZipper() {
-        fileNameList = new ArrayList();
-        zippedFilesList = new ArrayList(); 
+        fileNameList = new ArrayList<>();
+        zippedFilesList = new ArrayList<>(); 
     }
     
     public DataFileZipper(OutputStream outputStream) {
         this.outputStream = outputStream;
-        fileNameList = new ArrayList();
-        zippedFilesList = new ArrayList();
+        fileNameList = new ArrayList<>();
+        zippedFilesList = new ArrayList<>();
     }
     
     public void setOutputStream(OutputStream outputStream) {
@@ -113,7 +113,7 @@ public class DataFileZipper {
             DataFile file = (DataFile) iter.next();
 
             DataAccessRequest daReq = new DataAccessRequest();
-            DataFileIO accessObject = DataAccess.createDataAccessObject(file, daReq);
+            StorageIO accessObject = DataAccess.createDataAccessObject(file, daReq);
 
             if (accessObject != null) {
                 accessObject.open();
@@ -221,7 +221,7 @@ public class DataFileZipper {
         boolean createManifest = fileManifest != null;
         
         DataAccessRequest daReq = new DataAccessRequest();
-        DataFileIO accessObject = DataAccess.createDataAccessObject(dataFile, daReq);
+        StorageIO<DataFile> accessObject = DataAccess.getStorageIO(dataFile, daReq);
 
         if (accessObject != null) {
             accessObject.open();

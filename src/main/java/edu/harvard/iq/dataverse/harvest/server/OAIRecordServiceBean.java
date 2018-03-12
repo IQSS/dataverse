@@ -30,7 +30,8 @@ import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -84,7 +85,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         
         // create Map of OaiRecords
         List<OAIRecord> oaiRecords = findOaiRecordsBySetName( setName );
-        Map<String,OAIRecord> recordMap = new HashMap();
+        Map<String,OAIRecord> recordMap = new HashMap<>();
         if (oaiRecords != null) {
             for (OAIRecord record : oaiRecords) {
                 // look for duplicates here? delete?
@@ -274,7 +275,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         logger.fine("findOAIRecordBySetNameandGlobalId; query: "+queryString+"; globalId: "+globalId+"; setName: "+setName);
                 
         
-        Query query = em.createQuery(queryString).setParameter("globalId",globalId);
+        TypedQuery query = em.createQuery(queryString, OAIRecord.class).setParameter("globalId",globalId);
         if (setName != null) { query.setParameter("setName",setName); }        
         
         try {
@@ -287,10 +288,10 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     }
     
     public List<OAIRecord> findOaiRecordsByGlobalId(String globalId) {
-        String query="SELECT h from OAIRecord as h where h.globalId = :globalId";
+        String query="SELECT object(h) from OAIRecord h where h.globalId = :globalId";
         List<OAIRecord> oaiRecords = null;
         try {
-            oaiRecords = em.createQuery(query).setParameter("globalId",globalId).getResultList();
+            oaiRecords = em.createQuery(query, OAIRecord.class).setParameter("globalId",globalId).getResultList();
         } catch (Exception ex) {
             // Do nothing, return null. 
         }
@@ -302,19 +303,63 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     }    
     
     public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until) {
+        return findOaiRecordsBySetName(setName, from, until, false);
+    }
+    
+    public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Date from, Date until) {
+        return findOaiRecordsBySetName(setName, from, until, true);
+    }
+    
+    public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until, boolean excludeSet) {
                 
-        String queryString ="SELECT object(h) from OAIRecord as h";
-        queryString += setName != null ? " where h.setName = :setName" : ""; // where h.setName is null";
+        String queryString ="SELECT object(h) from OAIRecord h where h.id is not null";
+        if (setName != null) {
+            if (excludeSet) {
+                queryString += " and h.setName is not null and h.setName != '' and h.setName != :setName";
+            } else {
+                queryString += " and h.setName = :setName";
+            } 
+        } else {
+            queryString += " and h.setName is null";
+        }
         queryString += from != null ? " and h.lastUpdateTime >= :from" : "";
-        queryString += until != null ? " and h.lastUpdateTime <= :until" : "";
+        queryString += until != null ? " and h.lastUpdateTime<=:until" : "";
+        queryString += " order by h.globalId";
 
         logger.fine("Query: "+queryString);
         
-        Query query = em.createQuery(queryString);
+        TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
         if (setName != null) { query.setParameter("setName",setName); }
-        if (from != null) { query.setParameter("from",from); }
-        if (until != null) { query.setParameter("until",until); }
+        if (from != null) { query.setParameter("from",from,TemporalType.TIMESTAMP); }
+        // In order to achieve inclusivity on the "until" matching, we need to do 
+        // the following (if the "until" parameter is supplied):
+        // 1) if the supplied "until" parameter has the time portion (and is not just
+        // a date), we'll increment it by one second. This is because the time stamps we 
+        // keep in the database also have fractional thousands of a second. 
+        // So, a record may be shown as "T17:35:45", but in the database it is 
+        // actually "17:35:45.356", so "<= 17:35:45" isn't going to work on this 
+        // time stamp! - So we want to try "<= 17:35:45" instead. 
+        // 2) if it's just a date, we'll increment it by a *full day*. Otherwise
+        // our database time stamp of 2016-10-23T17:35:45.123Z is NOT going to 
+        // match " <= 2016-10-23" - which is really going to be interpreted as 
+        // "2016-10-23T00:00:00.000". 
+        // -- L.A. 4.6
         
+        if (until != null) { 
+            // 24 * 3600 * 1000 = number of milliseconds in a day. 
+            
+            if (until.getTime() % (24 * 3600 * 1000) == 0) {
+                // The supplied "until" parameter is a date, with no time
+                // portion. 
+                logger.fine("plain date. incrementing by one day");
+                until.setTime(until.getTime()+(24 * 3600 * 1000));
+            } else {
+                logger.fine("date and time. incrementing by one second");
+                until.setTime(until.getTime()+1000);
+            }
+            query.setParameter("until",until,TemporalType.TIMESTAMP); 
+        }
+                
         try {
             return query.getResultList();      
         } catch (Exception ex) {
@@ -331,7 +376,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
         logger.fine("Query: "+queryString);
         
-        Query query = em.createQuery(queryString);
+        TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
         if (setName != null) { query.setParameter("setName",setName); }
         
         try {
@@ -350,7 +395,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
         logger.fine("Query: "+queryString);
         
-        Query query = em.createQuery(queryString);
+        TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
         if (setName != null) { query.setParameter("setName",setName); }
         
         try {

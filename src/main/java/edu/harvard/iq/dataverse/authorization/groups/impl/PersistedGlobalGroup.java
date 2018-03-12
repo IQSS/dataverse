@@ -31,7 +31,7 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     private Long id;
     
     /**
-     * A unique alias within the persisted group table. 
+     * A unique alias within the Dataverse system installation.
      */
     @Column(unique = true)
     private String persistedGroupAlias;
@@ -92,4 +92,6 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     public String toString() {
         return "[PersistedGlobalGroup " + getIdentifier() + "]";
     }
+    
+
 }

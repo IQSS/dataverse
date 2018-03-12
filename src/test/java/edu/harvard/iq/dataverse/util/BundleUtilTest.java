@@ -27,14 +27,14 @@ public class BundleUtilTest {
                 + "dvName (view at dvUrl ) "
                 + "was created in parentDvName (view at parentDvUrl ). To learn more "
                 + "about what you can do with your dataverse, check out "
-                + "the Dataverse Management - Dataverse User Guide at "
+                + "the Dataverse Management - User Guide at "
                 + "http://guides.dataverse.org/en/4.0/user/dataverse-management.html .",
                 BundleUtil.getStringFromBundle("notification.email.createDataverse",
                         Arrays.asList("dvName", "dvUrl", "parentDvName", "parentDvUrl", "http://guides.dataverse.org/en", "4.0")));
         assertEquals("Your new dataset named dsName (view at dsUrl ) "
                 + "was created in parentDvName (view at parentDvUrl ). "
                 + "To learn more about what you can do with a dataset, "
-                + "check out the Dataset Management - Dataset User Guide at "
+                + "check out the Dataset Management - User Guide at "
                 + "http://guides.dataverse.org/en/4.0/user/dataset-management.html .",
                 BundleUtil.getStringFromBundle("notification.email.createDataset",
                         Arrays.asList("dsName", "dsUrl", "parentDvName", "parentDvUrl", "http://guides.dataverse.org/en", "4.0")));
@@ -63,11 +63,6 @@ public class BundleUtilTest {
                 + "converted to use your institutional log in. After converting, you will only need to use your institutional log in.",
                 BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessage",
                         Arrays.asList(BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessageDefaultInstitution"))));
-        assertEquals("Welcome to Root Dataverse! Get started by adding or finding data. "
-                + "Have questions? Check out the <a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>."
-                + " Want to test out Dataverse features? Use our <a href=\"https://demo.dataverse.org\">Demo Site</a>.",
-                BundleUtil.getStringFromBundle("notification.welcome",
-                        Arrays.asList("Root", "<a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>", "<a href=\"https://demo.dataverse.org\">Demo Site</a>")));
     }
 
     @Test

@@ -1,5 +1,5 @@
 #!/bin/sh
 . scripts/search/export-keys
-OUTPUT=`curl -s -X POST -d @scripts/api/data/ipGroup3.json http://localhost:8080/api/admin/groups/ip -H "Content-type:application/json"`
+OUTPUT=`curl -s -X POST -d @scripts/api/data/ipGroup-all.json http://localhost:8080/api/admin/groups/ip -H "Content-type:application/json"`
 echo $OUTPUT
 echo $OUTPUT | jq .

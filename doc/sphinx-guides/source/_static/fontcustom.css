@@ -1,0 +1,70 @@
+/*
+  Icon Font: fontcustom
+*/
+
+@font-face {
+  font-family: "fontcustom";
+  src: url("./fontcustom/fontcustom_fb6bd74e6004cae7db6ffae62177daaf.eot");
+  src: url("./fontcustom/fontcustom_fb6bd74e6004cae7db6ffae62177daaf.eot?#iefix") format("embedded-opentype"),
+       url("./fontcustom/fontcustom_fb6bd74e6004cae7db6ffae62177daaf.woff2") format("woff2"),
+       url("./fontcustom/fontcustom_fb6bd74e6004cae7db6ffae62177daaf.woff") format("woff"),
+       url("./fontcustom/fontcustom_fb6bd74e6004cae7db6ffae62177daaf.ttf") format("truetype"),
+       url("./fontcustom/fontcustom_fb6bd74e6004cae7db6ffae62177daaf.svg#fontcustom") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: "fontcustom";
+    src: url("./fontcustom/fontcustom_fb6bd74e6004cae7db6ffae62177daaf.svg#fontcustom") format("svg");
+  }
+}
+
+[data-icon]:before { content: attr(data-icon); }
+
+[data-icon]:before,
+.icon-astro:before,
+.icon-audio:before,
+.icon-code:before,
+.icon-dataset:before,
+.icon-dataverse:before,
+.icon-document:before,
+.icon-file:before,
+.icon-geodata:before,
+.icon-image:before,
+.icon-network:before,
+.icon-other:before,
+.icon-package:before,
+.icon-tabular:before,
+.icon-unlock:before,
+.icon-video:before {
+  display: inline-block;
+  font-family: "fontcustom";
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-decoration: inherit;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased;
+}
+
+.icon-astro:before { content: "\f104"; }
+.icon-audio:before { content: "\f105"; }
+.icon-code:before { content: "\f10b"; }
+.icon-dataset:before { content: "\f102"; }
+.icon-dataverse:before { content: "\f100"; }
+.icon-document:before { content: "\f106"; }
+.icon-file:before { content: "\f10a"; }
+.icon-geodata:before { content: "\f107"; }
+.icon-image:before { content: "\f103"; }
+.icon-network:before { content: "\f10c"; }
+.icon-other:before { content: "\f10d"; }
+.icon-package:before { content: "\f10f"; }
+.icon-tabular:before { content: "\f108"; }
+.icon-unlock:before { content: "\f10e"; }
+.icon-video:before { content: "\f109"; }

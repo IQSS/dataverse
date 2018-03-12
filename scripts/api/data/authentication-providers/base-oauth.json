@@ -1,0 +1,8 @@
+{
+    "id":"base-oauth",
+    "factoryAlias":"oauth2",
+    "title":"sample base definition file for oauth2 providers.",
+    "subtitle":"A base file, though - do not run this.",
+    "factoryData":"type:idOfOAuthService | name1: value1|name2: value2 value2.1 value 2.1.1 | name: value42",
+    "enabled":true
+}

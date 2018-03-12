@@ -15,11 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PreDestroy;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -46,7 +45,9 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
-        metadataTemplate.setDescription(dataset.getLatestVersion().getDescription());
+        metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
+        // For debugging, set description to an unclosed tag, to make XML not well formed.
+//        metadataTemplate.setDescription("<br>");
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dataset.getLatestVersion().getTitle());
@@ -54,6 +55,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
 
         String xmlMetadata = metadataTemplate.generateXML();
+        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
 
         String status = metadata.get("_status").trim();
         String target = metadata.get("_target");
@@ -88,8 +90,14 @@ public class DOIDataCiteRegisterService {
                 try (DataCiteRESTfullClient client = openClient()) {
                     retString = client.postMetadata(xmlMetadata);
                     client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+                    
                 } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
+                    
+                } catch ( RuntimeException rte ) {
+                    logger.log(Level.SEVERE, "Error creating DOI at DataCite: {0}", rte.getMessage());
+                    logger.log(Level.SEVERE, "Exception", rte);
+                    
                 }
             }
         } else if (status.equals("unavailable")) {
@@ -118,7 +126,7 @@ public class DOIDataCiteRegisterService {
     }
 
     public HashMap<String, String> getMetadata(String identifier) throws IOException {
-        HashMap<String, String> metadata = new HashMap();
+        HashMap<String, String> metadata = new HashMap<>();
         try (DataCiteRESTfullClient client = openClient()) {
             String xmlMetadata = client.getMetadata(identifier.substring(identifier.indexOf(":") + 1));
             DataCiteMetadataTemplate template = new DataCiteMetadataTemplate(xmlMetadata);
@@ -137,7 +145,7 @@ public class DOIDataCiteRegisterService {
     }
 
     public DOIDataCiteRegisterCache findByDOI(String doi) {
-        Query query = em.createNamedQuery("DOIDataCiteRegisterCache.findByDoi",
+        TypedQuery<DOIDataCiteRegisterCache> query = em.createNamedQuery("DOIDataCiteRegisterCache.findByDoi",
                 DOIDataCiteRegisterCache.class);
         query.setParameter("doi", doi);
         List<DOIDataCiteRegisterCache> rc = query.getResultList();
@@ -227,7 +235,7 @@ class DataCiteMetadataTemplate {
             identifier = identifierElements.get(0).html();
         }
         Elements creatorElements = doc.select("creatorName");
-        creators = new ArrayList();
+        creators = new ArrayList<>();
         for (Element creatorElement : creatorElements) {
             creators.add(creatorElement.html());
         }
@@ -260,7 +268,7 @@ class DataCiteMetadataTemplate {
             if (author.getIdType() != null && author.getIdValue() != null && !author.getIdType().isEmpty() && !author.getIdValue().isEmpty() && author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
 
                 if (author.getIdType().equals("ORCID")) {
-                    creatorsElement.append("<nameIdentifier schemeURI=\"http://orcid.org/\" nameIdentifierScheme=\"ORCID\">" + author.getIdValue() + "</nameIdentifier>");
+                    creatorsElement.append("<nameIdentifier schemeURI=\"https://orcid.org/\" nameIdentifierScheme=\"ORCID\">" + author.getIdValue() + "</nameIdentifier>");
                 }
                 if (author.getIdType().equals("ISNI")) {
                     creatorsElement.append("<nameIdentifier schemeURI=\"http://isni.org/isni/\" nameIdentifierScheme=\"ISNI\">" + author.getIdValue() + "</nameIdentifier>");

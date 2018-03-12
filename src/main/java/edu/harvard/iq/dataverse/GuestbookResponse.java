@@ -6,8 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,11 +59,79 @@ public class GuestbookResponse implements Serializable {
     private String email;
     private String institution;
     private String position;
+    /**
+     * Possible values for downloadType include "Download", "Subset",
+     * "WorldMap", or the displayName of an ExternalTool.
+     *
+     * TODO: Types like "Download" and "Subset" and probably "WorldMap" should
+     * be defined once as constants (likely an enum) rather than having these
+     * strings duplicated in various places when setDownloadtype() is called.
+     * (Some day it would be nice to convert WorldMap into an ExternalTool but
+     * it's not worth the effort at this time.)
+     */
     private String downloadtype;
     private String sessionId;
-    
+        
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date responseTime;
+    
+    /*
+    Transient Values carry non-written information 
+    that will assist in the download process
+    - selected file ids is a comma delimited list that contains the file ids for multiple download
+    - fileFormat tells the download api which format a subsettable file should be downloaded as
+    - writeResponse is set to false when dataset version is draft.
+    */
+    
+    @Transient
+    private String selectedFileIds;
+    
+    @Transient 
+    private String fileFormat;
+    
+    @Transient 
+    private boolean writeResponse = true;
+
+    /**
+     * This transient variable is a place to temporarily retrieve the
+     * ExternalTool object from the popup when the popup is required on the
+     * dataset page. TODO: Some day, investigate if it can be removed.
+     */
+    @Transient
+    private ExternalTool externalTool;
+
+    public boolean isWriteResponse() {
+        return writeResponse;
+    }
+
+    public void setWriteResponse(boolean writeResponse) {
+        this.writeResponse = writeResponse;
+    }
+
+    public String getSelectedFileIds() {
+        return selectedFileIds;
+    }
+
+    public void setSelectedFileIds(String selectedFileIds) {
+        this.selectedFileIds = selectedFileIds;
+    }
+    
+    
+    public String getFileFormat() {
+        return fileFormat;
+    }
+
+    public void setFileFormat(String downloadFormat) {
+        this.fileFormat = downloadFormat;
+    }
+
+    public ExternalTool getExternalTool() {
+        return externalTool;
+    }
+
+    public void setExternalTool(ExternalTool externalTool) {
+        this.externalTool = externalTool;
+    }
 
     public GuestbookResponse(){
         

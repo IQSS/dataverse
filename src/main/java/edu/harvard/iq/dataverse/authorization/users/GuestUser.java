@@ -29,11 +29,6 @@ public class GuestUser implements User {
     public boolean isAuthenticated() { return false; }
     
     @Override
-    public boolean isBuiltInUser(){
-        return false;
-    }
-    
-    @Override
     public boolean isSuperuser() {
         return false;
     }
@@ -42,7 +37,12 @@ public class GuestUser implements User {
     public boolean equals( Object o ) {
         return (o instanceof GuestUser);
     }
-
+    
+    @Override
+    public String toString() {
+        return "[GuestUser :guest]";
+    }
+    
     @Override
     public int hashCode() {
         return 7;

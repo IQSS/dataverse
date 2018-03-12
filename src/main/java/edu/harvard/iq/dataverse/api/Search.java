@@ -101,7 +101,7 @@ public class Search extends AbstractApiBean {
                     filterQueries.add(filterDownToSubtree);
                 }
             } catch (Exception ex) {
-                return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+                return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
 
             // users can't change these (yet anyway)
@@ -110,7 +110,7 @@ public class Search extends AbstractApiBean {
             SolrQueryResponse solrQueryResponse;
             try {
                 solrQueryResponse = searchService.search(
-                        user,
+                        createDataverseRequest(user),
                         subtree,
                         query,
                         filterQueries,
@@ -132,7 +132,7 @@ public class Search extends AbstractApiBean {
                 }
                 String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
                 logger.info(message);
-                return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, message);
+                return error(Response.Status.INTERNAL_SERVER_ERROR, message);
             }
 
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
@@ -183,12 +183,12 @@ public class Search extends AbstractApiBean {
                  * @todo You get here if you pass only ":" as a query, for
                  * example. Should we return more or better information?
                  */
-                return errorResponse(Response.Status.BAD_REQUEST, solrQueryResponse.getError());
+                return error(Response.Status.BAD_REQUEST, solrQueryResponse.getError());
             }
             response.setHeader("Access-Control-Allow-Origin", "*");
-            return okResponse(value);
+            return allowCors(ok(value));
         } else {
-            return errorResponse(Response.Status.BAD_REQUEST, "q parameter is missing");
+            return allowCors(error(Response.Status.BAD_REQUEST, "q parameter is missing"));
         }
     }
 
@@ -201,13 +201,20 @@ public class Search extends AbstractApiBean {
          * see permission documents (all Solr documents, really) and we get a
          * NPE when trying to determine the DvObject type if their query matches
          * a permission document.
-         *
-         * @todo Check back on https://github.com/IQSS/dataverse/issues/1838 for
-         * when/if the Search API is opened up to not require a key.
          */
-        AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+        User userToExecuteSearchAs = GuestUser.get();
+        try {
+            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            if (authenticatedUser != null) {
+                userToExecuteSearchAs = authenticatedUser;
+            }
+        } catch (WrappedResponse ex) {
+            if (!tokenLessSearchAllowed()) {
+                throw ex;
+            }
+        }
         if (nonPublicSearchAllowed()) {
-            return authenticatedUser;
+            return userToExecuteSearchAs;
         } else {
             return GuestUser.get();
         }
@@ -216,6 +223,13 @@ public class Search extends AbstractApiBean {
     public boolean nonPublicSearchAllowed() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiNonPublicAllowed, safeDefaultIfKeyNotFound);
+    }
+
+    public boolean tokenLessSearchAllowed() {
+        boolean outOfBoxBehavior = false;
+        boolean tokenLessSearchAllowed = settingsSvc.isFalseForKey(SettingsServiceBean.Key.SearchApiRequiresToken, outOfBoxBehavior);
+        logger.fine("tokenLessSearchAllowed: " + tokenLessSearchAllowed);
+        return tokenLessSearchAllowed;
     }
 
     private boolean getDataRelatedToMe() {

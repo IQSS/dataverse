@@ -10,8 +10,8 @@
    <div class="text-right margin-bottom" 
         jsf:rendered="#{dataverseSession.user.authenticated and empty editMode and !widgetWrapper.widgetView
                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
-       <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('LICENSE')}" 
-                      update="@form,:messagePanel" oncomplete="javascript:post_edit_terms()" disabled="#{DatasetPage.locked}">
+       <p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('LICENSE')}" 
+                      update="@form,:messagePanel" oncomplete="javascript:post_edit_terms()" disabled="#{DatasetPage.lockedFromEdits}">
            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
            <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editTermsBtn']}
        </p:commandLink>
@@ -69,17 +69,13 @@
                            </div>
                        </div>
 
-                       <!-- Additional Information -->
-                       <div jsf:rendered="#{!empty editMode or empty editMode and (!empty termsOfUseAndAccess.confidentialityDeclaration 
+                       <!-- Additional Information
+                       <ui:fragment rendered="# {!empty editMode or empty editMode and (!empty termsOfUseAndAccess.confidentialityDeclaration 
                                             or !empty termsOfUseAndAccess.specialPermissions or !empty termsOfUseAndAccess.restrictions or !empty termsOfUseAndAccess.citationRequirements 
                                             or !empty termsOfUseAndAccess.depositorRequirements
-                                            or !empty termsOfUseAndAccess.conditions or !empty termsOfUseAndAccess.disclaimer)}">
-                           <p>
-                               <a data-toggle="collapse" href="#collapseTOUAdditional" aria-expanded="false" aria-controls="collapseExample">
-                                   #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo']} [+]
-                               </a>
-                           </p>
-                           <div class="collapse" id="collapseTOUAdditional" jsf:rendered="#{empty editMode}">
+                                            or !empty termsOfUseAndAccess.conditions or !empty termsOfUseAndAccess.disclaimer)}"> -->
+                       
+                           <ui:fragment rendered="#{empty editMode}">
                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.confidentialityDeclaration}">
                                    <label for="confidentialityDeclaration" class="col-sm-3 control-label">
                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
@@ -150,8 +146,8 @@
                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.disclaimer)}" escape="false"/>
                                    </div>
                                </div>
-                           </div>
-                           <div class="collapse" id="collapseTOUAdditional" jsf:rendered="#{!empty editMode}">
+                           </ui:fragment>
+                           <ui:fragment rendered="#{!empty editMode}">
                                <div class="form-group">
                                    <label for="confidentialityDeclaration" class="col-sm-3 control-label">
                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
@@ -222,9 +218,10 @@
                                        <p:inputTextarea id="disclaimer" value="#{termsOfUseAndAccess.disclaimer}" rows="5" cols="60" styleClass="form-control" />
                                    </div>
                                </div>
-                           </div>
-                       </div>
-                       <!-- END: Additional Information -->
+                           </ui:fragment>
+                       
+                       <!-- </ui:fragment>
+                       END: Additional Information -->
                    </div>
                </p:fragment>
            </div>
@@ -236,13 +233,13 @@
                                         or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
                                         or !empty termsOfUseAndAccess.studyCompletion)}" >
            <div data-toggle="collapse" data-target="#panelCollapseTOA" class="panel-heading text-info">
-               #{bundle['file.dataFilesTab.terms.list.termsOfAccess.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
+               <h:outputText value="#{settingsWrapper.publicInstall ? bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.header']}"/>
+               &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
            <div id="panelCollapseTOA" class="collapse in">
                <div class="panel-body">
                    <ui:fragment rendered="#{empty editMode}">
-                       <ui:fragment rendered="#{empty editMode and datasetPage}">
-                       <div class="form-group">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                            <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
@@ -256,7 +253,6 @@
                                </p>
                            </div>
                        </div>
-                       </ui:fragment>
                        <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.termsOfAccess}">
                            <label for="metadata_TermsAccess" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
@@ -267,8 +263,7 @@
                                <p><h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfAccess)}" escape="false"/></p>
                            </div>
                        </div>
-                       <ui:fragment rendered="#{empty editMode and datasetPage}">
-                       <div class="form-group" jsf:rendered="#{DatasetPage.restrictedFileCount > 0}">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall and (DatasetPage.restrictedFileCount > 0)}">
                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
@@ -281,7 +276,6 @@
                                </p>
                            </div>
                        </div>
-                       </ui:fragment>
                    </ui:fragment>
                    <ui:fragment rendered="#{!empty editMode}">
                        <div class="form-group">
@@ -294,7 +288,7 @@
                                <p:inputTextarea value="#{termsOfUseAndAccess.termsOfAccess}" rows="5" styleClass="form-control" />
                        </div>
                        </div>
-                       <div class="form-group">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
@@ -306,17 +300,13 @@
                        </div>
                    </ui:fragment>
 
-                   <!-- Additional Information -->
-                   <div jsf:rendered="#{!empty editMode or empty editMode and (!empty termsOfUseAndAccess.dataAccessPlace 
+                   <!-- Additional Information
+                   <ui:fragment rendered="# {!empty editMode or empty editMode and (!empty termsOfUseAndAccess.dataAccessPlace 
                                         or !empty termsOfUseAndAccess.originalArchive or !empty termsOfUseAndAccess.availabilityStatus 
                                         or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
-                                        or !empty termsOfUseAndAccess.studyCompletion)}">
-                       <p>
-                           <a data-toggle="collapse" href="#collapseRestrictedFilesAdditional" aria-expanded="false" aria-controls="collapseExample">
-                               #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo']} [+]
-                           </a>
-                       </p>
-                       <div class="collapse" id="collapseRestrictedFilesAdditional">
+                                        or !empty termsOfUseAndAccess.studyCompletion)}"> -->
+                       
+                       
                            <ui:fragment rendered="#{empty editMode}">
                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.dataAccessPlace}">
                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
@@ -441,15 +431,14 @@
                                    </div>
                                </div>
                            </ui:fragment>
-                       </div>
-                   </div>
-                   <!-- END: Additional Information -->
+                       
+                   <!-- </ui:fragment>
+                   END: Additional Information -->
                </div>
            </div>
        </div>
 
-        <ui:fragment rendered="#{managePage==false or datasetPage == true}" >  
-       <div class="panel panel-default" >
+       <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncDownload and (managePage==false or datasetPage == true)}">
            <div data-toggle="collapse" data-target="#panelCollapseGuestbook" class="panel-heading text-info">
                #{bundle['file.dataFilesTab.terms.list.guestbook']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
@@ -529,69 +518,66 @@
                    </div>
                </div>
            </div>
-       </div>
-       </ui:fragment>   
+       </div> 
     </div>
     <!-- / TERMS -->
 
-    <!-- View Guest Book -->
-    <p:dialog id="viewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
+    <!-- Preview Guestbook -->
+    <p:dialog id="previewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
         <div class="form-horizontal">
+            <p class="help-block">
+                #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}
+            </p>
             <div class="form-group">
-                <label class="col-sm-4 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">
-                       #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
-                    </span>
+                <label class="col-sm-3 control-label">
+                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
                 </label>
                 <div class="col-sm-8">
                     <p class="form-control-static">
-                     #{DatasetPage.selectedGuestbook.name}
+                        #{DatasetPage.selectedGuestbook.name}
                     </p>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-4 control-label">
+                <label class="col-sm-3 control-label">
                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}">
                        #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
                     </span>
                 </label>
-                <div class="col-sm-8" style="padding-top:8px">
-                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformation}">  
-                     #{bundle['dataset.manageGuestbooks.guestbook.requiredAccountInformation']}                                         
-                        <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredAccountInformation}" var="q">
-                            <li  style="padding-left:20px" >
-                                <h:outputText value="#{q}"/>
-                            </li>
-                        </ui:repeat>
-                        <br/>
-                    </div>
+                <div class="col-sm-8">
+                    <p class="form-control-static">
+                        <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.accountInformation']}"/>
+                        <ul>
+                            <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredAccountInformation}" var="ai">
+                                <li>
+                                    <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
+                                </li>
+                            </ui:repeat>
+                            <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalAccountInformation}" var="ai">
+                                <li>
+                                    <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </p>
                     
-                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformation}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.optionalAccountInformation']} 
-                        <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalAccountInformation}" var="q">
-                            <li  style="padding-left:20px" >
-                                <h:outputText value="#{q}"/>
-                            </li>
-                        </ui:repeat>
-                        <br/>
-                    </div>                                    
-                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredQuestionsList}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.requiredCustomQuestions']} 
-                        <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredQuestionsList}" var="q">
-                            <li  style="padding-left:20px" >
-                                <h:outputText value="#{q}"/>
-                            </li>
-                        </ui:repeat>
-                        <br/>
-                    </div>
-                    <div jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalQuestionsList}">  
-                                        #{bundle['dataset.manageGuestbooks.guestbook.optionalCustomQuestions']} 
-                        <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalQuestionsList}" var="q">
-                            <li  style="padding-left:20px" >
-                                <h:outputText value="#{q}"/>
-                            </li>
-                        </ui:repeat>
-                    </div>
+                    <ui:fragment rendered="#{!empty DatasetPage.selectedGuestbook.requiredQuestionsList or !empty DatasetPage.selectedGuestbook.optionalQuestionsList}">
+                    <p class="form-control-static">
+                        <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}"/>
+                        <ul>
+                            <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredQuestionsList}" var="q">
+                                <li>
+                                    <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
+                                </li>
+                            </ui:repeat>
+                            <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalQuestionsList}" var="q">
+                                <li>
+                                    <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </p>
+                    </ui:fragment>
                 </div>
             </div>
         </div>
@@ -601,5 +587,5 @@
             </button>
         </div>
     </p:dialog>
-    <!-- / View Guest Book -->
+    <!-- / Preview Guestbook -->
 </ui:composition>

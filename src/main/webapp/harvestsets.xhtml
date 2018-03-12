@@ -19,7 +19,7 @@
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['harvestserver.title'])}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['harvestserver.title']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle['harvestserver.title']} - #{dataverseServiceBean.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <h:form id="harvestingServiceForm" class="form-horizontal">
@@ -84,7 +84,7 @@
                                         <p>
                                             <h:outputFormat value="#{bundle['harvestserver.noSets.getStarted']}" escape="false">
                                                 <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                <f:param value="#{systemConfig.version}"/>
+                                                <f:param value="#{systemConfig.guidesVersion}"/>
                                             </h:outputFormat>
                                         </p>
                                     </div>

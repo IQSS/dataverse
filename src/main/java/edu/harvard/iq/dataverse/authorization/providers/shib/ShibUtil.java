@@ -74,22 +74,37 @@ public class ShibUtil {
     }
 
     /**
-     * @param displayName Not (yet) used. See @todo.
+     * @param firstName First or "given" name.
+     * @param lastName Last or "family" name.
+     * @param displayName Only used if first and last are not provided.
+     * @return ShibUserNameFields contains separate first and last name fields.
      *
-     * @todo Do something with displayName. By comparing displayName to the
-     * firstName and lastName strings, we should be able to figure out where the
-     * proper split is, like this:
+     * @todo Do something more intelligent with displayName. By comparing
+     * displayName to the firstName and lastName strings, we should be able to
+     * figure out where the proper split is, like this:
      *
      * - "Guido|van Rossum"
      *
      * - "Philip Seymour|Hoffman"
      *
-     * We're not sure how many Identity Providers (IdP) will send us
-     * "displayName" so we'll hold off on implementing anything for now.
+     * Also, we currently compel all Shibboleth IdPs to send us firstName and
+     * lastName so the logic to handle null/empty values for firstName and
+     * lastName is only currently exercised by the GitHub Identity Provider. As
+     * such this method should be moved out of ShibUtil and somewhere that does
+     * more generic processing of user information.
      */
     public static ShibUserNameFields findBestFirstAndLastName(String firstName, String lastName, String displayName) {
         firstName = findSingleValue(firstName);
         lastName = findSingleValue(lastName);
+        if ((firstName == null || firstName.isEmpty()) && (lastName == null || lastName.isEmpty())) {
+            // We're desperate at this point. No firstName, no lastName. Let's try to return something reasonable from displayName.
+            if (displayName != null) {
+                String[] parts = displayName.split(" ");
+                if (parts.length > 1) {
+                    return new ShibUserNameFields(parts[0], parts[1]);
+                }
+            }
+        }
         return new ShibUserNameFields(firstName, lastName);
     }
 

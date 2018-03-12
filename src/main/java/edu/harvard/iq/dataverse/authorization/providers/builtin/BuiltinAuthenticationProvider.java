@@ -1,22 +1,16 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
-import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.UserLister;
-import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
 import java.util.List;
 import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider.Credential;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.util.Set;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 
 /**
  * An authentication provider built into the application. Uses JPA and the 
@@ -24,7 +18,7 @@ import java.util.Set;
  * 
  * @author michael
  */
-public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider, UserLister, GroupProvider {
+public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider {
     
     public static final String PROVIDER_ID = "builtin";
     private static String KEY_USERNAME_OR_EMAIL;
@@ -32,17 +26,14 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     private static List<Credential> CREDENTIALS_LIST;
       
     final BuiltinUserServiceBean bean;
+    private PasswordValidatorServiceBean passwordValidatorService;
 
-    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean ) {
-        bean = aBean;
+    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean, PasswordValidatorServiceBean passwordValidatorService  ) {
+        this.bean = aBean;
+        this.passwordValidatorService = passwordValidatorService;
         KEY_USERNAME_OR_EMAIL = BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail");
         KEY_PASSWORD = BundleUtil.getStringFromBundle("login.builtin.credential.password");
         CREDENTIALS_LIST = Arrays.asList(new Credential(KEY_USERNAME_OR_EMAIL), new Credential(KEY_PASSWORD, true));
-    }
-
-    @Override
-    public List<User> listUsers() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -52,8 +43,63 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 
     @Override
     public AuthenticationProviderDisplayInfo getInfo() {
-        return new AuthenticationProviderDisplayInfo(getId(), "Build-in Provider", "Internal user repository");
+        return new AuthenticationProviderDisplayInfo(getId(), BundleUtil.getStringFromBundle("auth.providers.title.builtin"), "Internal user repository");
     }
+
+    @Override
+    public boolean isPasswordUpdateAllowed() {
+        return true;
+    }
+
+    @Override
+    public boolean isUserInfoUpdateAllowed() {
+        return true;
+    }
+
+    @Override
+    public boolean isUserDeletionAllowed() {
+        return true;
+    }
+    
+    @Override
+    public void deleteUser(String userIdInProvider) {
+        bean.removeUser(userIdInProvider);
+    }
+    
+    @Override
+    public void updatePassword(String userIdInProvider, String newPassword) {
+        BuiltinUser biUser = bean.findByUserName( userIdInProvider  );
+        biUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(newPassword),
+                                       PasswordEncryption.getLatestVersionNumber());
+        bean.save(biUser);
+    }
+
+    @Override
+    public void updateUserInfo(String userIdInProvider, AuthenticatedUserDisplayInfo updatedUserData) {
+        BuiltinUser biUser = bean.findByUserName( userIdInProvider );
+        biUser.setFirstName(updatedUserData.getFirstName());
+        biUser.setLastName(updatedUserData.getLastName());
+        biUser.setEmail( updatedUserData.getEmailAddress());
+        biUser.setAffiliation( updatedUserData.getAffiliation() );
+        biUser.setPosition(updatedUserData.getPosition());
+        
+        bean.save(biUser);
+    }
+    
+    /**
+     * Validates that the passed password is indeed the password of the user.
+     * @param userIdInProvider
+     * @param password
+     * @return {@code true} if the password matches the user's password; {@code false} otherwise.
+     */
+    @Override
+    public Boolean verifyPassword( String userIdInProvider, String password ) {
+        BuiltinUser biUser = bean.findByUserName( userIdInProvider  );
+        if ( biUser == null ) return null;
+        return PasswordEncryption.getVersion(biUser.getPasswordEncryptionVersion())
+                                 .check(password, biUser.getEncryptedPassword());
+    }
+    
 
     @Override
     public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
@@ -75,9 +121,19 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
             } catch (PasswordResetException ex) {
                 return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
             }
-        } else {
-            return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
+//        } else {
+//            return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
         }
+        final List<String> errors = passwordValidatorService.validate(authReq.getCredential("Password"));
+        if (!errors.isEmpty()) {
+            try {
+                String passwordResetUrl = bean.requestPasswordComplianceLink(u);
+                return AuthenticationResponse.makeBreakout(u.getUserName(), passwordResetUrl);
+            } catch (PasswordResetException ex) {
+                return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
+            }
+        }
+        return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
    }
 
     @Override
@@ -86,32 +142,13 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     }
 
     @Override
-    public String getGroupProviderAlias() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean isOAuthProvider() {
+        return false;
     }
 
     @Override
-    public String getGroupProviderInfo() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean isDisplayIdentifier() {
+        return false;
     }
 
-    @Override
-    public Set groupsFor(RoleAssignee u, DvObject o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Set groupsFor(DataverseRequest u, DvObject o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    @Override
-    public Group get(String groupAlias) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Set findGlobalGroups() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }

@@ -152,7 +152,6 @@ public class CreatePrivateUrlCommandTest {
         PrivateUrlUser expectedUser = new PrivateUrlUser(dataset.getId());
         assertEquals(expectedUser.getIdentifier(), privateUrl.getRoleAssignment().getAssigneeIdentifier());
         assertEquals(expectedUser.isSuperuser(), false);
-        assertEquals(expectedUser.isBuiltInUser(), false);
         assertEquals(expectedUser.isAuthenticated(), false);
         assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
         assertNotNull(privateUrl.getToken());

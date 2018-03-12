@@ -1,17 +1,16 @@
 Data Access API
 ===============
 
-.. contents:: :local:
-
-
 The Data Access API provides programmatic download access to the files stored under Dataverse. 
 More advanced features of the Access API include format-specific transformations (thumbnail generation/resizing for images; converting tabular data into alternative file formats) and access to the data-level metadata that describes the contents of the tabular files. 
 
+.. contents:: |toctitle|
+   :local:
 
 Basic File Access
 -----------------
 
-Basic acces URI: 
+Basic access URI: 
 
 ``/api/access/datafile/$id``
 
@@ -60,11 +59,11 @@ Multiple File ("bundle") download
 Returns the files listed, zipped. 
 
 Parameters: 
-~~~~~~~~~~
+~~~~~~~~~~~
 none.
 
 "All Formats" bundled access for Tabular Files. 
-----------------------------------------------
+-----------------------------------------------
 
 ``/api/access/datafile/bundle/$id``
 
@@ -78,7 +77,7 @@ It returns a zipped bundle that contains the data in the following formats:
 * File citation, in Endnote and RIS formats. 
 
 Parameters: 
-~~~~~~~~~~
+~~~~~~~~~~~
 none.
 
 Data Variable Metadata Access

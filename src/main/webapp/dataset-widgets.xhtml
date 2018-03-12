@@ -19,65 +19,166 @@
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{DatasetWidgetsPage.datasetId}"/>
                     <f:viewAction action="#{DatasetWidgetsPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.widgets.title'])}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.thumbnailsAndWidget.breadcrumbs.title'])}"/>
                 </f:metadata>
-                <div id="no-widgets-message" class="panel panel-default" jsf:rendered="#{DatasetWidgetsPage.dataset.id.intValue() > 0 and !DatasetWidgetsPage.dataset.released}">
-                    <div class="panel-body">
-                        <span class="help-block h3">#{bundle['dataset.widgets.notPublished.why.header']}</span>
-                        <ul>
-                            <li><h:outputText value="#{bundle['dataset.widgets.notPublished.why.reason1']}" escape="false"/></li>
-                            <li><h:outputText value="#{bundle['dataset.widgets.notPublished.why.reason2']}" escape="false"/></li>
-                        </ul>
-                        <span class="help-block h3">#{bundle['dataset.widgets.notPublished.how.header']}</span>
-                        <ul>
-                            <li><h:outputText value="#{bundle['dataset.widgets.notPublished.how.tip1']}" escape="false"/></li>
-                            <li><h:outputText value="#{bundle['dataset.widgets.notPublished.how.tip2']}" escape="false"/></li>
-                            <li>
-                                <h:outputFormat value="#{bundle['dataset.widgets.notPublished.how.tip3']}" escape="false">
-                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                    <f:param value="#{systemConfig.version}"/>
-                                </h:outputFormat>
-                            </li>
-                        </ul>
-                        <p>
-                            <h:outputFormat value="#{bundle['dataset.widgets.notPublished.getStarted']}" escape="false">
-                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                <f:param value="#{systemConfig.version}"/>
-                            </h:outputFormat>
-                        </p>
-                    </div>
-                </div>
+                <p:tabView rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
+                    <p:tab id="thumbnailsTab" title="#{bundle['dataset.thumbnailsAndWidget.thumbnails.title']}">
+                        <h:form id="themeWidgetsForm" styleClass="row form-horizontal">
+                            <div class="form-group" jsf:rendered="#{true or themeWidgetFragment.editDv.themeRoot}">
+                                <label class="col-sm-3 control-label" for="logoFormat">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.title']}">
+                                        #{bundle['dataset.thumbnailsAndWidget.thumbnailImage']}
+                                    </span>
+                                </label>
+                                <div class="col-sm-9">
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>               
+                                        <h:outputFormat value=" #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.tip']}" escape="false">
+                                            <f:param value="#{systemConfig.uploadLogoSizeLimit/1000}"/>
+                                        </h:outputFormat>
+                                    </p>
+                                    <div id="thumbnailPreview" class="col-sm-2 text-center">
+                                        <p>
+                                            <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"/>
+                                            <h:graphicImage value="#{DatasetWidgetsPage.datasetThumbnail.base64image}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
+                                        </p>
+                                        <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.default']}</em></span>
+                                        <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
+                                        <div jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile == true}">
+                                            <button type="button" class="btn btn-default" onclick="PF('confrmRemove').show()">#{bundle.remove}</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <div class="form-group" jsf:rendered="#{not empty DatasetWidgetsPage.datasetThumbnails}">
+                                            <label for="selectThumbnail" class="control-label">
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable.title']}">
+                                                    #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable']}
+                                                </span>
+                                            </label>
+                                            <div>
+                                                <button type="button" class="btn btn-default" onclick="PF('selectFileThumbnail').show()">#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectThumbnail']}</button>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="uploadThumbnail" class="control-label">
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.uploadNew.title']}">
+                                                    #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.uploadNew']}
+                                                </span>
+                                            </label>
+                                            <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@all" 
+                                                          sizeLimit="#{systemConfig.uploadLogoSizeLimit}" 
+                                                          oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false" 
+                                                          fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="button-block">
+                                <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.saveChanges}" action="#{DatasetWidgetsPage.save()}"/>
+                                <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.cancel()}"/>
+                            </div>
 
-                <ui:fragment rendered="#{DatasetWidgetsPage.dataset.released}">
-                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> 
-                        <h:outputFormat value=" #{bundle['dataset.widgets.tip']}" escape="false">
-                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                            <f:param value="#{systemConfig.version}"/>
-                        </h:outputFormat>
-                    </p>
-                    <div>
-                        <h5>
-                            #{bundle['dataset.widgets.citation.txt']}
-                        </h5>
-                        <p class="help-block">#{bundle['dataset.widgets.citation.tip']}</p>
-                    </div>
-                    <div>
-                        <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=citation&amp;amp;heightPx=150&quot;&gt;&lt;/script&gt;</textarea>
-                    </div>
-                    <div>
-                        <h5>
-                            #{bundle['dataset.widgets.datasetFull.txt']}
-                        </h5>
-                        <p class="help-block">#{bundle['dataset.widgets.datasetFull.tip']}</p>
-                    </div>
-                    <div>
-                        <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
-                    </div>
-                </ui:fragment>
-                <div class="button-block">
-                    <h:outputLink class="btn btn-default" value="/dataset.xhtml?persistentId=#{DatasetWidgetsPage.dataset.globalId}">
-                        <h:outputText value="#{bundle.done}"/></h:outputLink>
-                </div>
+                            <p:dialog header="#{bundle['dataset.thumbnailsAndWidget.removeThumbnail']}" widgetVar="confrmRemove" modal="true">
+                                <p class="help-block">
+                                    <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataset.thumbnailsAndWidget.removeThumbnail.tip']}</span>
+                                </p>
+                                <div class="button-block">
+                                    <p:commandLink value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()"
+                                                   action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}"
+                                                   update="@all"/>
+                                    <button type="button" class="btn btn-default" onclick="PF('confrmRemove').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                                </div> 
+                            </p:dialog>
+                            <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true">
+                                <div class="form-horizontal col-sm-12">
+                                    <div class="form-group">
+                                        <p class="help-block">#{bundle['dataset.thumbnailsAndWidget.availableThumbnails.tip']}</p>
+                                        <p:outputPanel id="customPanel">
+                                            <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo}" layout="custom" converter="dataFileConverter">
+                                                <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb}" itemValue="#{thumb.dataFile}"/>
+                                            </p:selectOneRadio>
+                                            <c:forEach items="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" varStatus="loop">
+                                                <div class="col-xs-4 text-center radio">
+                                                    <p:radioButton for="selectDatasetThumbnail" id="opt#{loop.index}" itemIndex="#{loop.index}" />
+                                                    <h:outputLabel for="opt#{loop.index}" style="padding:4px;">
+                                                        <div style="height:48px;"><img src="#{thumbnail.base64image}" alt="#{thumbnail.filename}"/></div>
+                                                        <h:outputText value="#{thumbnail.filename}"/>
+                                                    </h:outputLabel>
+                                                </div>
+                                            </c:forEach>
+                                        </p:outputPanel>
+                                    </div>
+                                </div>
+                                <div class="button-block">
+                                    <p:commandLink styleClass="btn btn-default" update="@all" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
+                                    <!-- TODO WIRE THIS BUTTON UP -->
+                                    <button type="button" onclick="PF('selectFileThumbnail').hide()" class="btn btn-default" value="#{bundle.cancel}">
+                                        #{bundle.cancel}
+                                    </button>
+                                </div>
+                            </p:dialog>
+
+                        </h:form>
+                    </p:tab>
+                    <p:tab id="widgetsTab" title="#{bundle['dataset.thumbnailsAndWidget.widgets.title']}">
+                        <div id="no-widgets-message" class="panel panel-default" jsf:rendered="#{DatasetWidgetsPage.dataset.id.intValue() > 0 and !DatasetWidgetsPage.dataset.released}">
+                            <div class="panel-body">
+                                <span class="help-block h3">#{bundle['dataset.widgets.notPublished.why.header']}</span>
+                                <ul>
+                                    <li><h:outputText value="#{bundle['dataset.widgets.notPublished.why.reason1']}" escape="false"/></li>
+                                    <li><h:outputText value="#{bundle['dataset.widgets.notPublished.why.reason2']}" escape="false"/></li>
+                                </ul>
+                                <span class="help-block h3">#{bundle['dataset.widgets.notPublished.how.header']}</span>
+                                <ul>
+                                    <li><h:outputText value="#{bundle['dataset.widgets.notPublished.how.tip1']}" escape="false"/></li>
+                                    <li><h:outputText value="#{bundle['dataset.widgets.notPublished.how.tip2']}" escape="false"/></li>
+                                    <li>
+                                        <h:outputFormat value="#{bundle['dataset.widgets.notPublished.how.tip3']}" escape="false">
+                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                            <f:param value="#{systemConfig.guidesVersion}"/>
+                                        </h:outputFormat>
+                                    </li>
+                                </ul>
+                                <p>
+                                    <h:outputFormat value="#{bundle['dataset.widgets.notPublished.getStarted']}" escape="false">
+                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                        <f:param value="#{systemConfig.guidesVersion}"/>
+                                    </h:outputFormat>
+                                </p>
+                            </div>
+                        </div>
+
+                        <ui:fragment rendered="#{DatasetWidgetsPage.dataset.released}">
+                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> 
+                                <h:outputFormat value=" #{bundle['dataset.widgets.tip']}" escape="false">
+                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                    <f:param value="#{systemConfig.guidesVersion}"/>
+                                </h:outputFormat>
+                            </p>
+                            <div>
+                                <h5>
+                                    #{bundle['dataset.widgets.citation.txt']}
+                                </h5>
+                                <p class="help-block">#{bundle['dataset.widgets.citation.tip']}</p>
+                            </div>
+                            <div>
+                                <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=citation&amp;amp;heightPx=150&quot;&gt;&lt;/script&gt;</textarea>
+                            </div>
+                            <div>
+                                <h5>
+                                    #{bundle['dataset.widgets.datasetFull.txt']}
+                                </h5>
+                                <p class="help-block">#{bundle['dataset.widgets.datasetFull.tip']}</p>
+                            </div>
+                            <div>
+                                <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
+                            </div>
+                        </ui:fragment>
+                        <div class="button-block">
+                            <h:outputLink class="btn btn-default" value="/dataset.xhtml?persistentId=#{DatasetWidgetsPage.dataset.globalId}">
+                                <h:outputText value="#{bundle.done}"/></h:outputLink>
+                        </div>
+                    </p:tab>
+                </p:tabView>
             </ui:define>
         </ui:composition>
     </h:body>

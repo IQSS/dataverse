@@ -1,0 +1,1 @@
+psql dvndb -c "select dvobject.id, name, alias, owner_id from dvobject inner join dataverse on dvobject.id = dataverse.id"

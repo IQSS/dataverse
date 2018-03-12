@@ -1,0 +1,26 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui"
+     xmlns:jsf="http://xmlns.jcp.org/jsf">
+     <c:if test="#{(not empty settingsWrapper.get(':PiwikAnalyticsId')) and (not empty settingsWrapper.get(':PiwikAnalyticsHost'))}">
+         <!-- Piwik -->
+         <script type="text/javascript">
+         var _paq = _paq || [];
+         _paq.push(['trackPageView']);
+         _paq.push(['enableLinkTracking']);
+         (function() {
+             var u="//#{settingsWrapper.get(':PiwikAnalyticsHost')}/";
+             _paq.push(['setTrackerUrl', u+'piwik.php']);
+             _paq.push(['setSiteId', #{settingsWrapper.get(':PiwikAnalyticsId')}]);
+             var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+             g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+         })();
+         </script>
+         <noscript><p><img src="//#{settingsWrapper.get(':PiwikAnalyticsHost')}/piwik.php?idsite=#{settingsWrapper.get(':PiwikAnalyticsId')}" style="border:0;" alt="" /></p></noscript>
+         <!-- End Piwik Code -->
+    </c:if>
+</ui:composition>

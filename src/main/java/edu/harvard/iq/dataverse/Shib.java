@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -295,6 +296,10 @@ public class Shib implements java.io.Serializable {
         if (au != null) {
             logger.fine("created user " + au.getIdentifier());
             logInUserAndSetShibAttributes(au);
+            /**
+             * @todo Move this to
+             * AuthenticationServiceBean.createAuthenticatedUser
+             */
             userNotificationService.sendNotification(au,
                     new Timestamp(new Date().getTime()),
                     UserNotification.Type.CREATEACC, null);
@@ -311,7 +316,7 @@ public class Shib implements java.io.Serializable {
         String lookupStringPerAuthProvider = userPersistentId;
         UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
         logger.fine("builtin username: " + builtinUsername);
-        AuthenticatedUser builtInUserToConvert = shibService.canLogInAsBuiltinUser(builtinUsername, builtinPassword);
+        AuthenticatedUser builtInUserToConvert = authSvc.canLogInAsBuiltinUser(builtinUsername, builtinPassword);
         if (builtInUserToConvert != null) {
             AuthenticatedUser au = authSvc.convertBuiltInToShib(builtInUserToConvert, shibAuthProvider.getId(), userIdentifier);
             if (au != null) {
@@ -437,9 +442,9 @@ public class Shib implements java.io.Serializable {
         String rootDvAlias = getRootDataverseAlias();
         if (includeFacetDashRedirect) {
             if (rootDvAlias != null) {
-                return plainHomepageString + "?alias=" + rootDvAlias + "&faces-redirect=true";
+                return plainHomepageString + "?alias="  + rootDvAlias + "&faces-redirect=true";
             } else {
-                return plainHomepageString + "?faces-redirect=true";
+                return  plainHomepageString + "?faces-redirect=true";
             }
         } else if (rootDvAlias != null) {
             /**

@@ -191,6 +191,15 @@ public class SolrQueryResponse {
         this.filterQueriesActual = filterQueriesActual;
     }
 
+    /**
+     * Check if the error string has been set
+     * @return 
+     */
+    public boolean hasError(){
+        return error != null;
+    }
+    
+    
     public String getError() {
         return error;
     }

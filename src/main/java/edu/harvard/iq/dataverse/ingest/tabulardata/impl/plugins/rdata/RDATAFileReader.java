@@ -629,7 +629,7 @@ public class RDATAFileReader extends TabularDataFileReader {
             //mDataTypes = fileInformation.at("dataTypes").asStrings();
 
             // Initialize variables: 
-            List<DataVariable> variableList = new ArrayList<DataVariable>();
+            List<DataVariable> variableList = new ArrayList<>();
 
             for (String varName : variableNames) {
                 DataVariable dv = new DataVariable();
@@ -639,10 +639,10 @@ public class RDATAFileReader extends TabularDataFileReader {
                 // Check if variables have real descriptive labels defined, 
                 // via the mechanismm provided by that special optional package... 
                 // (?) -- L.A. 
-                dv.setInvalidRanges(new ArrayList());
-                dv.setSummaryStatistics(new ArrayList());
+                dv.setInvalidRanges(new ArrayList<>());
+                dv.setSummaryStatistics(new ArrayList<>());
                 dv.setUnf("UNF:6:XYZXYZXYZ");
-                dv.setCategories(new ArrayList());
+                dv.setCategories(new ArrayList<>());
                 variableList.add(dv);
 
                 dv.setFileOrder(varQnty);
@@ -751,8 +751,8 @@ public class RDATAFileReader extends TabularDataFileReader {
                 LOG.fine("variable type name: " + variableTypeName);
                 LOG.fine("variable format: " + variableFormat);
 
-                for (int i = 0; i < variableLevels.length; i++) {
-                    LOG.fine("variable level: " + variableLevels[i]);
+                for (String variableLevel : variableLevels) {
+                    LOG.fine("variable level: " + variableLevel);
                 }
 
                 //dataTable.getDataVariables().get(k).setFormatSchema("RDATA");

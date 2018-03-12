@@ -1,8 +1,19 @@
 package edu.harvard.iq.dataverse.api;
 
 import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.server.ResourceConfig;
 
 @ApplicationPath("api/v1")
-public class ApiConfiguration extends Application {
+public class ApiConfiguration extends ResourceConfig {
+   
+   public ApiConfiguration() {
+       packages("edu.harvard.iq.dataverse.api");
+       packages("edu.harvard.iq.dataverse.mydata");
+       register(MultiPartFeature.class);
+   }
 }
+/*
+public class ApiConfiguration extends ResourceConfi {
+}
+*/

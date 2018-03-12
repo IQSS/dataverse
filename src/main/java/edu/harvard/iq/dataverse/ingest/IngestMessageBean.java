@@ -20,30 +20,23 @@
 
 package edu.harvard.iq.dataverse.ingest;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFile; 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.DatasetLock;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.faces.application.FacesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 
 /**
  *
@@ -81,13 +74,13 @@ public class IngestMessageBean implements MessageListener {
             while (iter.hasNext()) {
                 datafile_id = (Long) iter.next();
 
-                logger.info("Start ingest job;");
+                logger.fine("Start ingest job;");
                 try {
                     if (ingestService.ingestAsTabular(datafile_id)) {
                         //Thread.sleep(10000);
-                        logger.info("Finished ingest job;");
+                        logger.fine("Finished ingest job;");
                     } else {
-                        logger.info("Error occurred during ingest job!");
+                        logger.warning("Error occurred during ingest job!");
                     }
                 } catch (Exception ex) {
                     //ex.printStackTrace();
@@ -98,7 +91,7 @@ public class IngestMessageBean implements MessageListener {
                     // -- L.A. Aug. 13 2014; 
                     logger.info("Unknown exception occurred  during ingest (supressed stack trace); re-setting ingest status.");
                     if (datafile_id != null) {
-                        logger.info("looking up datafile for id " + datafile_id);
+                        logger.fine("looking up datafile for id " + datafile_id);
                         DataFile datafile = datafileService.find(datafile_id);
                         if (datafile != null) {
                             datafile.SetIngestProblem();
@@ -113,7 +106,7 @@ public class IngestMessageBean implements MessageListener {
                             datafile.setIngestReport(errorReport);
                             datafile.setDataTables(null);
 
-                            logger.info("trying to save datafile " + datafile_id);
+                            logger.info("trying to save datafile and the failed ingest report, id=" + datafile_id);
                             datafile = datafileService.save(datafile);
 
                             Dataset dataset = datafile.getOwner();
@@ -135,7 +128,7 @@ public class IngestMessageBean implements MessageListener {
                 if (datafile != null) {
                     Dataset dataset = datafile.getOwner();
                     if (dataset != null && dataset.getId() != null) {
-                        datasetService.removeDatasetLock(dataset.getId());
+                        datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.Ingest);
                     }
                 } 
             } 

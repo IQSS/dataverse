@@ -15,7 +15,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -55,7 +55,7 @@ public class TokenApplicationTypeServiceBean {
         if (pk==null){
             return null;
         }
-        return (TokenApplicationType) em.find(TokenApplicationType.class, pk);
+        return em.find(TokenApplicationType.class, pk);
     }
     
     /**
@@ -66,7 +66,8 @@ public class TokenApplicationTypeServiceBean {
         m = hashlib.md5()
         m.update("Give me python or give me...more time, more time -- c.mena")
         m.hexdigest()     #'266cf94160a22fe1ef118c907379cd60'
-        
+     * @param stringToHash        
+     * @return         
     */
     public String getMD5Hash(String stringToHash){
         if (stringToHash==null){
@@ -144,7 +145,8 @@ public class TokenApplicationTypeServiceBean {
     
     
     public List<TokenApplicationType> getAllTokenApplicationTypes(){
-        Query query = em.createQuery("select object(o) from TokenApplicationType order by o.modified desc");
+        String qr = "select object(o) from TokenApplicationType order by o.modified desc";
+        TypedQuery<TokenApplicationType> query = em.createQuery(qr, TokenApplicationType.class);
         return query.getResultList();
     }    
     

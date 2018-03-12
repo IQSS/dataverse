@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.export.dublincore;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -70,36 +71,40 @@ public class DublinCoreExportUtil {
             xmlw.writeAttribute("xmlns:dcterms", DCTERMS_XML_NAMESPACE);
             xmlw.writeDefaultNamespace(DCTERMS_DEFAULT_NAMESPACE);
             //xmlw.writeAttribute("xsi:schemaLocation", DCTERMS_DEFAULT_NAMESPACE+" "+DCTERMS_XML_SCHEMALOCATION);
+            createDC(xmlw, datasetDto, dcFlavor);
         } else if (DC_FLAVOR_OAI.equals(dcFlavor)) {      
             xmlw.writeStartElement("oai_dc:dc");        
             xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
             xmlw.writeAttribute("xmlns:oai_dc", OAI_DC_XML_NAMESPACE);
             xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
             xmlw.writeAttribute("xsi:schemaLocation", OAI_DC_XML_NAMESPACE+" "+OAI_DC_XML_SCHEMALOCATION);
-            writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
+            //writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
+            createOAIDC(xmlw, datasetDto, dcFlavor);
         }
         
-        createDC(xmlw, datasetDto, dcFlavor);
+        
         xmlw.writeEndElement(); // <metadata> or <oai_dc:dc>
         xmlw.flush();
     }
     
-    //TODO:
+    //UPDATED by rmo-cdsp:
     // If the requested flavor is "OAI_DC" (the minimal, original 15 field format), 
-    // we shuld NOT be exporting the extended, DCTERMS fields 
+    // we shuld NOT be exporting the extended, DCTERMS fields (aka not createDC)
     // - such as, for example, "dateSubmitted" ... (4.5.1?)
     // -- L.A. 
+    // but use createOAIDC instead (the minimal, original 15 field format)
     
     private static void createDC(XMLStreamWriter xmlw, DatasetDTO datasetDto, String dcFlavor) throws XMLStreamException {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
         String persistentAgency = datasetDto.getProtocol();
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
   
         writeFullElement(xmlw, dcFlavor+":"+"title", dto2Primitive(version, DatasetFieldConstant.title));                       
         
         xmlw.writeStartElement(dcFlavor+":"+"identifier");
-        xmlw.writeCharacters(persistentAgency + ":" + persistentAuthority + "/" + persistentId);
+        xmlw.writeCharacters(globalId.toURL().toString());
         xmlw.writeEndElement(); // decterms:identifier       
 
         writeAuthorsElement(xmlw, version, dcFlavor);
@@ -136,6 +141,43 @@ public class DublinCoreExportUtil {
         writeFullElement(xmlw, dcFlavor+":"+"license", version.getLicense());        
         writeFullElement(xmlw, dcFlavor+":"+"rights", version.getTermsOfUse()); 
         writeFullElement(xmlw, dcFlavor+":"+"rights", version.getRestrictions()); 
+
+    }
+    
+    private static void createOAIDC(XMLStreamWriter xmlw, DatasetDTO datasetDto, String dcFlavor) throws XMLStreamException {
+        DatasetVersionDTO version = datasetDto.getDatasetVersion();
+        String persistentAgency = datasetDto.getProtocol();
+        String persistentAuthority = datasetDto.getAuthority();
+        String persistentId = datasetDto.getIdentifier();
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+  
+        writeFullElement(xmlw, dcFlavor+":"+"title", dto2Primitive(version, DatasetFieldConstant.title));                       
+        
+        xmlw.writeStartElement(dcFlavor+":"+"identifier");
+        xmlw.writeCharacters(globalId.toURL().toString());
+        xmlw.writeEndElement(); // decterms:identifier       
+
+        writeAuthorsElement(xmlw, version, dcFlavor); //creator
+        
+        writeFullElement(xmlw, dcFlavor+":"+"publisher", datasetDto.getPublisher());
+        
+        writeAbstractElement(xmlw, version, dcFlavor); // Description
+        writeSubjectElement(xmlw, version, dcFlavor);   //Subjects and Key Words
+        
+        writeFullElementList(xmlw, dcFlavor+":"+"language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
+        
+        writeFullElement(xmlw, dcFlavor+":"+"date", dto2Primitive(version, DatasetFieldConstant.productionDate));  
+        
+        writeFullElement(xmlw, dcFlavor+":"+"contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
+        
+        writeContributorElement(xmlw, version, dcFlavor);
+        
+        writeFullElementList(xmlw, dcFlavor+":"+"relation", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
+        
+        writeFullElementList(xmlw, dcFlavor+":"+"type", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
+        
+        writeFullElementList(xmlw, dcFlavor+":"+"source", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
+        
 
     }
     

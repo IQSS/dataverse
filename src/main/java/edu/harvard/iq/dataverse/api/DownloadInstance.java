@@ -6,6 +6,9 @@
 package edu.harvard.iq.dataverse.api;
 
 //import java.io.ByteArrayOutputStream;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.GuestbookResponse;
 import java.util.List;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 
@@ -40,6 +43,13 @@ public class DownloadInstance {
     private DownloadInfo downloadInfo = null;
     private String conversionParam = null;
     private String conversionParamValue = null;
+    
+    private EjbDataverseEngine command;
+
+    private DataverseRequestServiceBean dataverseRequestService;
+
+    private GuestbookResponse gbr;
+      
 
     public DownloadInstance() {
         
@@ -142,4 +152,31 @@ public class DownloadInstance {
         }
         return null;
     }
+    
+    
+    public EjbDataverseEngine getCommand() {
+        return command;
+    }
+
+    public void setCommand(EjbDataverseEngine command) {
+        this.command = command;
+    }
+
+    public GuestbookResponse getGbr() {
+        return gbr;
+    }
+
+    public void setGbr(GuestbookResponse gbr) {
+        this.gbr = gbr;
+    }
+    
+    
+    public DataverseRequestServiceBean getDataverseRequestService() {
+        return dataverseRequestService;
+    }
+
+    public void setDataverseRequestService(DataverseRequestServiceBean dataverseRequestService) {
+        this.dataverseRequestService = dataverseRequestService;
+    }
+    
 }

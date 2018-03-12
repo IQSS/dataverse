@@ -443,10 +443,10 @@ public class XLSXFileReader extends TabularDataFileReader {
                         DataVariable dv = new DataVariable();
                         dv.setName(varName);
                         dv.setLabel(varName);
-                        dv.setInvalidRanges(new ArrayList());
-                        dv.setSummaryStatistics(new ArrayList());
+                        dv.setInvalidRanges(new ArrayList<>());
+                        dv.setSummaryStatistics(new ArrayList<>());
                         dv.setUnf("UNF:6:NOTCALCULATED");
-                        dv.setCategories(new ArrayList());
+                        dv.setCategories(new ArrayList<>());
                         variableList.add(dv);
 
                         dv.setTypeCharacter();
@@ -529,6 +529,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             }
         }
 
+        @Override
         public void characters(char[] ch, int start, int length)
                 throws SAXException {
             cellContents += new String(ch, start, length);

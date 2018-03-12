@@ -11,10 +11,18 @@ public class BitSet implements Serializable {
 
 	private long store = 0l;
 	
-	public static BitSet emptySet() {
+	/**
+     * Creates a new set with all bits set to 0.
+     * @return a new, empty, set.
+     */
+    public static BitSet emptySet() {
 		return new BitSet();
 	}
 	
+    /**
+     * Creates a new set with all bits set to 1.
+     * @return a new, full, set.
+     */
 	public static BitSet fullSet() {
 		return new BitSet( ~0 );
 	}

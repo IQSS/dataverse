@@ -91,7 +91,7 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         final List<DatasetVersion> currentVersions = dataset.getVersions();
         ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());
         dsvs.addAll(currentVersions);
-        dsvs.set(0, newVersion);
+        dsvs.add(0, newVersion);
         dataset.setVersions( dsvs );
         
         // TODO make async

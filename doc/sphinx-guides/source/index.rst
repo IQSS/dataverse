@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Dataverse 4.5 Guides
+Dataverse 4.8.5 Guides
 ======================
 
-These guides are for the most recent version of Dataverse. For the guides for **version 4.3.1** please go `here <http://guides.dataverse.org/en/4.3.1/>`_.
+These guides are for the most recent version of Dataverse. For the guides for **version 4.8.4** please go `here <http://guides.dataverse.org/en/4.8.4/>`_.
 
 .. toctree::
   :glob:
@@ -14,10 +14,11 @@ These guides are for the most recent version of Dataverse. For the guides for **
   :maxdepth: 2
 
   user/index
-  installation/index
-  api/index
-  developers/index
   admin/index
+  api/index
+  installation/index
+  developers/index
+  style/index
 
 How the Guides Are Organized
 =============================
@@ -64,7 +65,7 @@ The support email address is
 
 This is the same address as the Report Issue link. We try to respond
 within one business day.
-  
+
 
 Indices and tables
 ==================

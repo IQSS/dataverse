@@ -1,0 +1,15 @@
+module shibboleth 1.0;
+
+require {
+    class file {open read};
+    class sock_file write;
+    class unix_stream_socket connectto;
+    type httpd_t;
+    type initrc_t;
+    type var_run_t;
+    type var_t;
+}
+
+allow httpd_t initrc_t:unix_stream_socket connectto;
+allow httpd_t var_run_t:sock_file write;
+allow httpd_t var_t:file {open read};

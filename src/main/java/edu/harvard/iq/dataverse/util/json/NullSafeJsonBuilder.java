@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.api.Util;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -83,7 +85,7 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 		delegate.add(name, value);
 		return this;
 	}
-
+    
 	@Override
 	public NullSafeJsonBuilder addNull(String name) {
 		delegate.addNull(name);
@@ -115,6 +117,8 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 	public JsonObject build() {
 		return delegate.build();
 	}
-	
-	
+
+    public NullSafeJsonBuilder add(String name, Timestamp timestamp) {
+        return (timestamp != null) ? add(name, Util.getDateTimeFormat().format(timestamp)) : this;
+    }
 }

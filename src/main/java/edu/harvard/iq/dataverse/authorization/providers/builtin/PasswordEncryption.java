@@ -63,7 +63,12 @@ public final class PasswordEncryption implements java.io.Serializable {
 
         @Override
         public boolean check(String plainText, String hashed) {
-            return BCrypt.checkpw(plainText, hashed);
+            try {
+                return BCrypt.checkpw(plainText, hashed);
+            } catch (java.lang.IllegalArgumentException iae ) {
+                // the password was probably not hashed using bcrypt.
+                return false;
+            }
         }
     };
     
@@ -78,6 +83,9 @@ public final class PasswordEncryption implements java.io.Serializable {
      */
     private PasswordEncryption() {}
 
+    /**
+     * @return The current version of the password hashing algorithm.
+     */
     public static Algorithm get() {
         return getVersion( getLatestVersionNumber() );
     }

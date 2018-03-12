@@ -1,0 +1,163 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui"
+     xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+
+    <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+    <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.1.2/cytoscape-dagre.js"></script>
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cose-bilkent/1.0.2/cytoscape-cose-bilkent.js"></script>
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-spread/1.0.9/cytoscape-spread.js"></script>
+    <script src="https://rawgit.com/CamFlow/cytoscape.js-prov/master/cytoscape-prov-core.js"></script>
+    <script src="https://rawgit.com/CamFlow/cytoscape.js-prov/master/cytoscape-prov-json.js"></script>
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-panzoom/master/cytoscape-panzoom.js"></script>
+    
+<div id="fileForm:tabView:provenanceTab" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-helper-hidden" role="tabpanel" aria-hidden="false" style="display: block;">
+								<!-- CamFlow Visualiser -->
+<!-- the JSON, can be obtained in any manner -->
+<textarea id="provjson" name="hide" style="display:none;">{"prefix":{"ex":"http://example.org","w3":"http://www.w3.org/","tr":"http://www.w3.org/TR/2011/","process":"http://www.w3.org/2005/10/Process-20051014/tr.html#","rec54":"http://www.w3.org/2001/02pd/rec54#","email":"https://lists.w3.org/Archives/Member/w3c-archive/"},"entity":{"tr:WD-prov-dm-20111215":{"prov:type":{"$":"rec54:WD","type":"xsd:QName"},"ex:version":"2"},"tr:WD-prov-dm-20111018":{"prov:type":{"$":"rec54:WD","type":"xsd:QName"}},"email:2011Dec/0111":{"prov:type":{"$":"rec54:WD","type":"xsd:QName"}},"process:rec-advance":{}},"activity":{"ex:edit1":{"prov:type":"edit"},"ex:act2":{"prov:type":"publish"}},"wasGeneratedBy":{"_:wGB1":{"prov:activity":"ex:edit1","prov:entity":"tr:WD-prov-dm-20111215"},"_:wGB4":{"prov:activity":"ex:act2","prov:entity":"tr:WD-prov-dm-20111215"}},"agent":{"ex:Paolo":{"prov:type":{"$":"prov:Person","type":"xsd:QName"}},"ex:Simon":{"prov:type":{"$":"prov:Person","type":"xsd:QName"}},"w3:Consortium":{"prov:type":{"$":"prov:Organization","type":"xsd:QName"}}},"wasAssociatedWith":{"_:wAW1":{"prov:activity":"ex:edit1","prov:agent":"ex:Paolo","prov:role":"editor"},"_:wAW2":{"prov:activity":"ex:edit1","prov:agent":"ex:Simon","prov:role":"contributor"},"_:wAW6":{"prov:activity":"ex:act2","prov:agent":"w3:Consortium","prov:plan":"process:rec-advance"}},"wasDerivedFrom":{"_:wDF2":{"prov:generatedEntity":"tr:WD-prov-dm-20111215","prov:usedEntity":"tr:WD-prov-dm-20111018"}},"used":{"_:u2":{"prov:activity":"ex:act2","prov:entity":"email:2011Dec/0111"}}}</textarea>
+                
+<!-- graph -->
+    <script>
+      $(function(){
+          console.log('ready....');
+        var cy = window.cy = cytoscape({
+          container: document.getElementById('cy'),
+          boxSelectionEnabled: false,
+          layout: {
+            name: 'dagre',
+            rankDir: 'TB'
+          },
+          style: [
+          {
+            selector: 'node',
+            style: {
+              'content': 'data(label)',
+              'text-opacity': 0.5,
+              'text-valign': 'center',
+              'text-halign': 'right',
+              'width': 'data(weight)',
+              'height': 'data(weight)'
+            }
+          },
+          {
+            selector: 'node[type="entity"]',
+            style: {
+              'background-color': '#FFB266',
+              'shape': 'ellipse'
+            }
+          },
+          {
+            selector: 'node[type="agent"]',
+            style: {
+              'background-color': '#66FF66',
+              'shape': 'octagon'
+            }
+          },
+          {
+            selector: 'node[type="activity"]',
+            style: {
+              'background-color': '#ccd9ff',
+              'shape': 'rectangle'
+            }
+          },
+          {
+            selector: 'edge',
+            style: {
+              'label': 'data(label)',
+              'edge-text-rotation': 'autorotate',
+              'text-wrap': 'wrap',
+              'width': 3,
+              'length': 'auto',
+              'source-arrow-shape': 'triangle',
+              'line-color': 'data(color)',
+              'source-arrow-color': 'data(color)',
+              'curve-style': 'bezier',
+              'control-point-step-size': 40,
+              'font-size': 6,
+              'text-outline-color': '#FFFFFF',
+              'text-outline-width': 1,
+            }
+          },
+          {
+            selector: 'edge[type="wasGeneratedBy"]',
+            style: {
+              'line-color': '#FF0000',
+              'source-arrow-color': '#FF0000',
+            }
+          },
+          {
+            selector: ':parent',
+            style: {
+            'background-opacity': 0.333
+            }
+          },
+          {
+            selector: ':selected',
+            style: {
+              'border-width': 3,
+              'border-color': '#333'
+            }
+          },
+          {
+            selector: '.faded',
+            style: {
+              'opacity': 0.25
+            }
+          }
+          ,
+          {
+            selector: 'node.prov_successor',
+            style: {
+              'border-width': 3,
+              'border-color': 'blue'
+            }
+          }
+          ,
+          {
+            selector: 'node.prov_ancestor',
+            style: {
+              'border-width': 3,
+              'border-color': 'red'
+            }
+          }
+        ]
+        });
+        cy.panzoom({zoomOnly: true});
+        // we get the json and parse it
+        var json = document.getElementById("provjson").value;
+        cy.prov_json().parse(json);
+      });
+    </script>
+    <!-- the display area -->
+    <style>
+                    #cy {
+                            width: 100%;
+                            height: 600px;
+                            z-index: 0;
+        background-color: #EEEEEE;
+                    }
+    </style>
+    <div id="cy" width="100%" height="70%"></div>
+                
+    <script>
+            function showAncestor(){
+                    var show = document.getElementById("ancestors").checked;
+                    cy.prov_core().setShowAncestors(show);
+            }
+            function showSuccessor(){
+                    var show = document.getElementById("successors").checked;
+                    cy.prov_core().setShowSuccessors(show);
+            }
+    </script>
+    <div>
+        <li><input type="checkbox" id="ancestors" name="ancestors" value="ancestors" onclick="showAncestor();" checked="checked" />Show Ancestors</li>
+        <li><input type="checkbox" id="successors" name="successors" value="successors" onclick="showSuccessor();" checked="checked" />Show Successors</li>
+    </div>
+</div>
+</ui:composition>

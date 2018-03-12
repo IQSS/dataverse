@@ -29,10 +29,10 @@
 	topicClassValue	Term	Topic or Subject term that is relevant to this Dataset.		text	25	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	citation
 	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	26	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
 	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	27	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
-	publication	Related Publication	Publications that use the data from this Dataset.		none	28		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	29	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	30	#VALUE: 	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	31	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	publication	Related Publication	Publications that use the data from this Dataset.		none	28		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	29	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
+	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	30	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation
+	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	31	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
 	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	32	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
 	notesText	Notes	Additional important information about the Dataset.		textbox	33		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
 	language	Language	Language of the Dataset		text	34		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation
@@ -48,8 +48,8 @@
 	contributorType	Type	The type of contributor of the  resource.  		text	44	#VALUE 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation
 	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	45	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	citation
 	grantNumber	Grant Information	Grant Information		none	46	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	grantNumberAgency	Grant Agency	Grant Number Agency		text	47	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
-	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	48	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
+	grantNumberAgency	Grant Agency	Grant Number Agency		text	47	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	grantNumber	citation
+	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	48	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	grantNumber	citation
 	distributor	Distributor	The organization designated by the author or producer to generate copies of the particular work including any necessary editions or revisions.		none	49		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	distributorName	Name	Distributor name	FamilyName, GivenName or Organization	text	50	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	citation
 	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	51	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation

@@ -1,0 +1,8 @@
+{
+    "id":"google",
+    "factoryAlias":"oauth2",
+    "title":"Google",
+    "subtitle":"",
+    "factoryData":"type: google | userEndpoint: NONE | clientId: FIXME | clientSecret: FIXME",
+    "enabled":true
+}

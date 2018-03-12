@@ -1,0 +1,7 @@
+{
+  "alias":"ipGroup-dup",
+  "name":"IP Group with duplicate files (1)",
+  "description":"This is the FIRST version of the group",
+  "ranges" : [["60.0.0.0", "60.0.0.255"],
+              ["60::1", "60::ffff"]]
+}

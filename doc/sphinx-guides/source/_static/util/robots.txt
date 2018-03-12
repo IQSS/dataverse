@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /$
+Allow: /dataverse.xhtml
+Allow: /dataset.xhtml
+Disallow: /
+Crawl-delay: 20

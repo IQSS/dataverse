@@ -76,7 +76,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             for ( DatasetFieldType dt : requiredFields ) {
                 requiredFieldNames.add( dt.getName() );
             }
-            return okResponse( Json.createObjectBuilder().add("haveParents", asJsonArray(listOfIsHasParentsTrue))
+            return ok( Json.createObjectBuilder().add("haveParents", asJsonArray(listOfIsHasParentsTrue))
                     .add("noParents", asJsonArray(listOfIsHasParentsFalse))
                     .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
                     .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
@@ -107,7 +107,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     }
                 }
             }
-            return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
+            return error(Status.INTERNAL_SERVER_ERROR, sb.toString());
         }
     }
 
@@ -132,7 +132,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 parentAllowsMultiplesBoolean = parent.isAllowMultiples();
                 parentAllowsMultiplesDisplay = Boolean.toString(parentAllowsMultiplesBoolean);
             }
-            return okResponse(NullSafeJsonBuilder.jsonObjectBuilder()
+            return ok(NullSafeJsonBuilder.jsonObjectBuilder()
                     .add("name", dsf.getName())
                     .add("id", id )
                     .add("title", title)
@@ -163,7 +163,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     }
                 }
             }
-            return errorResponse( Status.INTERNAL_SERVER_ERROR, sb.toString() );
+            return error( Status.INTERNAL_SERVER_ERROR, sb.toString() );
         }
 
     }
@@ -185,7 +185,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 possibleSubjects.add(subject);
             }
         }
-        return okResponse(possibleSubjects);
+        return ok(possibleSubjects);
     }
     
     
@@ -202,10 +202,10 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             ControlledVocabularyValue naValue = new ControlledVocabularyValue();
             naValue.setStrValue(DatasetField.NA_VALUE);
             datasetFieldService.save(naValue);
-            return okResponse("NA value created.");
+            return ok("NA value created.");
 
         } else {
-            return okResponse("NA value exists.");
+            return ok("NA value exists.");
         }
     }
 
@@ -274,13 +274,13 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         } catch (FileNotFoundException e) {
             alr.setActionResult(ActionLogRecord.Result.BadRequest);
             alr.setInfo( alr.getInfo() + "// file not found");
-            return errorResponse(Status.EXPECTATION_FAILED, "File not found");
+            return error(Status.EXPECTATION_FAILED, "File not found");
             
         } catch (Exception e) {
             Logger.getLogger(DatasetFieldServiceApi.class.getName()).log(Level.WARNING, "Error parsing dataset fields:" + e.getMessage(), e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo( alr.getInfo() + "// " + e.getMessage());
-            return errorResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage());
+            return error(Status.INTERNAL_SERVER_ERROR, e.getMessage());
             
         } finally {
             if (br != null) {
@@ -294,7 +294,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             actionLogSvc.log(alr);
         }
 
-        return okResponse( Json.createObjectBuilder().add("added", responseArr) );
+        return ok( Json.createObjectBuilder().add("added", responseArr) );
     }
 
     private String parseMetadataBlock(String[] values) {

@@ -9,6 +9,7 @@ package edu.harvard.iq.dataverse.util.shapefile;
 
 //import edu.harvard.iq.dataverse.util.ZipMaker;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
+import static edu.harvard.iq.dataverse.util.ShapefileHandler.SHP_XML_EXTENSION;
 
 import java.util.Arrays;
 import java.util.List;
@@ -240,7 +241,7 @@ public class ShapefileHandlerTest {
         msgt("(3) testZippedShapefileWithExtraFiles");
                 
         // Create files and put them in a .zip
-        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf", "README.md", "shape_notes.txt"); 
+        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf", "shape1.cpg", "shape1." + SHP_XML_EXTENSION, "README.md", "shape_notes.txt"); 
         File zipfile_obj = createAndZipFiles(file_names, "shape-plus.zip");
 
         // Pass the .zip to the ShapefileHandler
@@ -261,7 +262,7 @@ public class ShapefileHandlerTest {
         assertEquals(file_groups.containsKey("shape1"), true);      
 
         // Verify the values
-        assertEquals(file_groups.get("shape1"), Arrays.asList("shp", "shx", "dbf", "prj", "pdf"));
+        assertEquals(file_groups.get("shape1"), Arrays.asList("shp", "shx", "dbf", "prj", "pdf", "cpg", SHP_XML_EXTENSION));
         assertEquals(file_groups.get("README"), Arrays.asList("md"));
         assertEquals(file_groups.get("shape_notes"), Arrays.asList("txt"));
         

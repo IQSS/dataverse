@@ -11,7 +11,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['dashboard.title']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle['dashboard.title']} - #{dataverseServiceBean.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <f:metadata>
@@ -94,9 +94,31 @@
                                                 <span class="glyphicon glyphicon-info-sign"/>
                                                 <h:outputFormat value=" #{bundle['dashboard.card.metadataexport.message']}" escape="false">
                                                     <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
-                                                    <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/api&#34; target=&#34;_blank&#34;&gt;"/>
+                                                    <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/api&#34; target=&#34;_blank&#34;&gt;"/>
                                                     <f:param value="&lt;/a&gt;"/>
                                                 </h:outputFormat>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card-box">
+                                    <h4 class="header-title">#{bundle['dashboard.card.users']}</h4>
+                                    <div class="row text-center">
+                                        <div class="col-xs-6">
+                                            <h:outputText value="#{DashboardUsersPage.getUserCount()}"/>
+                                            <p class="small text-muted">#{bundle['dashboard.card.users']}</p>
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <h:outputText value="#{DashboardUsersPage.getSuperUserCount()}"/>
+                                            <p class="small text-muted">#{bundle['dashboard.card.users.super']}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div  class="col-xs-12">
+                                            <p>
+                                                <a href="/dashboard-users.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.users.manage']}</a>
                                             </p>
                                         </div>
                                     </div>

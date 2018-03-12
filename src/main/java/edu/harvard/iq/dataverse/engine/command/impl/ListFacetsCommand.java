@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
+ * List the search facets {@link DataverseFacet} of a {@link Dataverse}.
  * @author michaelsuo
  */
 // no annotations here, since permissions are dynamically decided

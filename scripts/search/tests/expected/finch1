@@ -1,4 +1,5 @@
 [
+  "files:data.tsv",
   "datasets:Darwin's Finches",
   "dataverses:Birds",
   "dataverses:Finches",

@@ -5,16 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.SimpleTimeZone;
-import java.util.TimeZone;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -25,163 +18,180 @@ import javax.ejb.Stateless;
  * @author luopc
  */
 @Stateless
-public class DOIDataCiteServiceBean {
-    
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.DOIDataCiteServiceBean");
+public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
 
+    private static final Logger logger = Logger.getLogger(DOIDataCiteServiceBean.class.getCanonicalName());
 
-    @EJB
-    DataverseServiceBean dataverseService;
-    @EJB
-    SettingsServiceBean settingsService;
     @EJB
     DOIDataCiteRegisterService doiDataCiteRegisterService;
-    @EJB
-    SystemConfig systemConfig;
-    
-    private String DOISHOULDER = "";
-    
+
     public DOIDataCiteServiceBean() {
-        
     }
-    
-    public boolean alreadyExists (Dataset dataset){   
+
+    @Override
+    public boolean registerWhenPublished() {
+        return true;
+    }
+
+    @Override
+    public boolean alreadyExists(Dataset dataset) {
+        logger.log(Level.FINE,"alreadyExists");
         boolean alreadyExists;
         String identifier = getIdentifierFromDataset(dataset);
         try{
             alreadyExists = doiDataCiteRegisterService.testDOIExists(identifier); 
         } catch (Exception e){
-            logger.log(Level.INFO, "alreadyExists failed");
+            logger.log(Level.WARNING, "alreadyExists failed");
             return false;
         }
         return  alreadyExists;
     }
 
+    @Override
     public String createIdentifier(Dataset dataset) throws Exception {
-        String retString = "";
+        logger.log(Level.FINE,"createIdentifier");
         String identifier = getIdentifierFromDataset(dataset);
-        HashMap metadata = getMetadataFromStudyForCreateIndicator(dataset);
-        metadata.put("_status", "reserved");       
+        HashMap<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
+        metadata.put("_status", "reserved");
         try {
-            retString = doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
+            String retString = doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
+            logger.log(Level.FINE, "create DOI identifier retString : " + retString);
+            return retString;
         } catch (Exception e) {
-            logger.log(Level.INFO, "Identifier not created: create failed");
-            logger.log(Level.INFO, "String " + e.toString());
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());
+            logger.log(Level.WARNING, "Identifier not created: create failed");
+            logger.log(Level.WARNING, "String {0}", e.toString());
+            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.WARNING, "cause", e.getCause());
+            logger.log(Level.WARNING, "message {0}", e.getMessage());
             throw e;
-//            return "Identifier not created " + e.getLocalizedMessage();
         }
-        return retString;
     }
-    
-    public HashMap getIdentifierMetadata(Dataset dataset) {
+
+    @Override
+    public HashMap<String, String> getIdentifierMetadata(Dataset dataset) {
+        logger.log(Level.FINE,"getIdentifierMetadata");
         String identifier = getIdentifierFromDataset(dataset);
-        HashMap metadata = new HashMap();
+        HashMap<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {
-            logger.log(Level.INFO, "getIdentifierMetadata failed");
-            logger.log(Level.INFO, "String " + e.toString());
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());
+            logger.log(Level.WARNING, "getIdentifierMetadata failed");
+            logger.log(Level.WARNING, "String {0}", e.toString());
+            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.WARNING, "cause", e.getCause());
+            logger.log(Level.WARNING, "message {0}", e.getMessage());
             return metadata;
         }
         return metadata;
     }
 
-    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier) {
+    /**
+     * Looks up the metadata for a Global Identifier
+     * @param protocol the identifier system, e.g. "doi"
+     * @param authority the namespace that the authority manages in the identifier system
+     * @param separator the string that separates authority from local identifier part
+     * @param identifier the local identifier part
+     * @return a Map of metadata. It is empty when the lookup failed, e.g. when
+     * the identifier does not exist.
+     */
+    @Override
+    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier) {
+        logger.log(Level.FINE,"lookupMetadataFromIdentifier");
         String identifierOut = getIdentifierForLookup(protocol, authority, separator, identifier);
-        HashMap metadata = new HashMap();
+        HashMap<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifierOut);
         } catch (Exception e) {
-            logger.log(Level.INFO, "None existing so we can use this identifier");
-            logger.log(Level.INFO, "identifier: {0}", identifierOut);
+            logger.log(Level.WARNING, "None existing so we can use this identifier");
+            logger.log(Level.WARNING, "identifier: {0}", identifierOut);
             return metadata;
         }
         return metadata;
     }
 
-    public String getIdentifierForLookup(String protocol, String authority, String separator, String identifier) {
-        return protocol + ":" + authority + separator + identifier;
-    }
 
-    public String modifyIdentifier(Dataset dataset, HashMap metadata) throws Exception {
+    /**
+     * Modifies the EZID metadata for a Dataset
+     * @param dataset the Dataset whose metadata needs to be modified
+     * @param metadata the new metadata for the Dataset
+     * @return the Dataset identifier, or null if the modification failed
+     * @throws java.lang.Exception
+     */
+    @Override
+    public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception {
+        logger.log(Level.FINE,"modifyIdentifier");
         String identifier = getIdentifierFromDataset(dataset);
         try {
             doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
         } catch (Exception e) {
-            logger.log(Level.INFO, "modifyMetadata failed");
-            logger.log(Level.INFO, "String " + e.toString());
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());
+            logger.log(Level.WARNING, "modifyMetadata failed");
+            logger.log(Level.WARNING, "String " + e.toString());
+            logger.log(Level.WARNING, "localized message " + e.getLocalizedMessage());
+            logger.log(Level.WARNING, "cause " + e.getCause());
+            logger.log(Level.WARNING, "message " + e.getMessage());
             throw e;
         }
         return identifier;
     }
     
     public void deleteRecordFromCache(Dataset datasetIn){
+        logger.log(Level.FINE,"deleteRecordFromCache");
         String identifier = getIdentifierFromDataset(datasetIn);
         HashMap doiMetadata = new HashMap();
         try {
             doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {
-            logger.log(Level.INFO, "get matadata failed cannot delete");
-            logger.log(Level.INFO, "String " + e.toString());
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());
+            logger.log(Level.WARNING, "get matadata failed cannot delete");
+            logger.log(Level.WARNING, "String {0}", e.toString());
+            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.WARNING, "cause", e.getCause());
+            logger.log(Level.WARNING, "message {0}", e.getMessage());
         }
 
         String idStatus = (String) doiMetadata.get("_status");
 
         if (idStatus == null || idStatus.equals("reserved")) {
-            logger.log(Level.INFO, "Delete status is reserved..");
+            logger.log(Level.WARNING, "Delete status is reserved..");
             try {
                 doiDataCiteRegisterService.deleteIdentifier(identifier);
             } catch (Exception e) {
-                logger.log(Level.INFO, "delete failed");
-                logger.log(Level.INFO, "String " + e.toString());
-                logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-                logger.log(Level.INFO, "cause " + e.getCause());
-                logger.log(Level.INFO, "message " + e.getMessage());
+                logger.log(Level.WARNING, "delete failed");
+                logger.log(Level.WARNING, "String {0}", e.toString());
+                logger.log(Level.WARNING, "localized message {0}",  e.getLocalizedMessage());
+                logger.log(Level.WARNING, "cause", e.getCause());
+                logger.log(Level.WARNING, "message {0}", e.getMessage());
                 throw new RuntimeException(e);
             }
-            return;
         }
-        
     }
-    
 
+    @Override
     public void deleteIdentifier(Dataset datasetIn) throws Exception {
+        logger.log(Level.FINE,"deleteIdentifier");
         String identifier = getIdentifierFromDataset(datasetIn);
-        HashMap doiMetadata = new HashMap();
+        HashMap<String, String> doiMetadata = new HashMap<>();
         try {
             doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {
-            logger.log(Level.INFO, "get matadata failed cannot delete");
-            logger.log(Level.INFO, "String " + e.toString());
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());
+            logger.log(Level.WARNING, "get matadata failed cannot delete");
+            logger.log(Level.WARNING, "String {0}", e.toString());
+            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.WARNING, "cause ", e.getCause());
+            logger.log(Level.WARNING, "message {0}", e.getMessage());
         }
 
-        String idStatus = (String) doiMetadata.get("_status");
+        String idStatus = doiMetadata.get("_status");
 
         if (idStatus != null && idStatus.equals("reserved")) {
             logger.log(Level.INFO, "Delete status is reserved..");
             try {
                 doiDataCiteRegisterService.deleteIdentifier(identifier);
             } catch (Exception e) {
-                logger.log(Level.INFO, "delete failed");
-                logger.log(Level.INFO, "String " + e.toString());
-                logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-                logger.log(Level.INFO, "cause " + e.getCause());
-                logger.log(Level.INFO, "message " + e.getMessage());
+                logger.log(Level.WARNING, "delete failed");
+                logger.log(Level.WARNING, "String {0}", e.toString());
+                logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+                logger.log(Level.WARNING, "cause", e.getCause());
+                logger.log(Level.WARNING, "message {0}", e.getMessage());
             }
             return;
         }
@@ -191,121 +201,54 @@ public class DOIDataCiteServiceBean {
         }
     }
 
-    private HashMap getUpdateMetadataFromDataset(Dataset datasetIn) {
-        HashMap<String, String> metadata = new HashMap<String, String>();
-
-        String authorString = datasetIn.getLatestVersion().getAuthorsStr();
-
-        if (authorString.isEmpty()) {
-            authorString = ":unav";
-        }
-
-        String producerString = dataverseService.findRootDataverse().getName() + " Dataverse";
-
-        if (producerString.isEmpty()) {
-            producerString = ":unav";
-        }
-        metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
-        metadata.put("datacite.publisher", producerString);
-        metadata.put("datacite.publicationyear", generateYear());
-
+    @Override
+    protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
+        logger.log(Level.FINE,"getUpdateMetadataFromDataset");
+        HashMap<String, String> metadata = super.getUpdateMetadataFromDataset(datasetIn);
+        metadata.put("datacite.publicationyear", generateYear(datasetIn));
         return metadata;
     }
 
-    private HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
-        HashMap<String, String> metadata = new HashMap<String, String>();
-
-        String authorString = datasetIn.getLatestVersion().getAuthorsStr();
-
-        if (authorString.isEmpty()) {
-            authorString = ":unav";
-        }
-
-        String producerString = dataverseService.findRootDataverse().getName() + " Dataverse";
-
-        if (producerString.isEmpty()) {
-            producerString = ":unav";
-        }
-        metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
-        metadata.put("datacite.publisher", producerString);
-        metadata.put("datacite.publicationyear", generateYear());
-        metadata.put("_target", getTargetUrl(datasetIn));
+    @Override
+    public HashMap<String, String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
+        logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
+        HashMap<String, String> metadata = super.getMetadataFromStudyForCreateIndicator(datasetIn);
+        metadata.put("datacite.resourcetype", "Dataset");
         return metadata;
     }
-    
-    public HashMap getMetadataFromDatasetForTargetURL(Dataset datasetIn) {
-        HashMap<String, String> metadata = new HashMap<>();           
-        metadata.put("_target", getTargetUrl(datasetIn));
-        return metadata;
-    }
-    
-    private String getTargetUrl(Dataset datasetIn){
-           return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalId();      
+
+    @Override
+    public boolean publicizeIdentifier(Dataset dataset) {
+        logger.log(Level.FINE,"publicizeIdentifier");
+        return updateIdentifierStatus(dataset, "public");
     }
 
-    private String getIdentifierFromDataset(Dataset dataset) {
-        return dataset.getGlobalId();
-    }
-
-    public void publicizeIdentifier(Dataset dataset) throws Exception {
-        updateIdentifierStatus(dataset, "public");
-    }
-
-    private void updateIdentifierStatus(Dataset dataset, String statusIn) throws Exception  {
+    private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
+        logger.log(Level.FINE,"updateIdentifierStatus");
         String identifier = getIdentifierFromDataset(dataset);
-        HashMap metadata = getUpdateMetadataFromDataset(dataset);
-        metadata.put("_target", getTargetUrl(dataset));
+        HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
+        metadata.put("_target", getTargetUrl(dataset));
         try {
             doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
+            return true;
         } catch (Exception e) {
-            logger.log(Level.INFO, "modifyMetadata failed");
-            logger.log(Level.INFO, "String " + e.toString());
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());
-            throw  e;
+            logger.log(Level.WARNING, "modifyMetadata failed");
+            logger.log(Level.WARNING, "String {0}", e.toString());
+            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.WARNING, "cause", e.getCause());
+            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            return false;
         }
     }
-
-    public static String generateYear() {
-        StringBuilder guid = new StringBuilder();
-
-        // Create a calendar to get the date formatted properly
-        String[] ids = TimeZone.getAvailableIDs(-8 * 60 * 60 * 1000);
-        SimpleTimeZone pdt = new SimpleTimeZone(-8 * 60 * 60 * 1000, ids[0]);
-        pdt.setStartRule(Calendar.APRIL, 1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
-        pdt.setEndRule(Calendar.OCTOBER, -1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
-        Calendar calendar = new GregorianCalendar(pdt);
-        Date trialTime = new Date();
-        calendar.setTime(trialTime);
-        guid.append(calendar.get(Calendar.YEAR));
-
-        return guid.toString();
-    }
-
-    public static String generateTimeString() {
-        StringBuilder guid = new StringBuilder();
-
-        // Create a calendar to get the date formatted properly
-        String[] ids = TimeZone.getAvailableIDs(-8 * 60 * 60 * 1000);
-        SimpleTimeZone pdt = new SimpleTimeZone(-8 * 60 * 60 * 1000, ids[0]);
-        pdt.setStartRule(Calendar.APRIL, 1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
-        pdt.setEndRule(Calendar.OCTOBER, -1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
-        Calendar calendar = new GregorianCalendar(pdt);
-        Date trialTime = new Date();
-        calendar.setTime(trialTime);
-        guid.append(calendar.get(Calendar.YEAR));
-        guid.append(calendar.get(Calendar.DAY_OF_YEAR));
-        guid.append(calendar.get(Calendar.HOUR_OF_DAY));
-        guid.append(calendar.get(Calendar.MINUTE));
-        guid.append(calendar.get(Calendar.SECOND));
-        guid.append(calendar.get(Calendar.MILLISECOND));
-        double random = Math.random();
-        guid.append(random);
-
-        return guid.toString();
+    
+    @Override
+    public List<String> getProviderInformation(){
+        ArrayList <String> providerInfo = new ArrayList<>();
+        String providerName = "DataCite";
+        String providerLink = "http://status.datacite.org";
+        providerInfo.add(providerName);
+        providerInfo.add(providerLink);
+        return providerInfo;
     }
 }

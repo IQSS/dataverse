@@ -1,12 +1,18 @@
 Metadata Export
 ===============
 
-.. contents:: :local:
+.. contents:: |toctitle|
+	:local:
 
 Automatic Exports
 -----------------
 
-Unlike in DVN v3, publishing a dataset in Dataverse 4 automaticalliy starts a metadata export job, that will run in the background, asynchronously. Once completed, it will make the dataset metadata exported and cached in all the supported formats (Dublin Core, Data Documentation Initiative (DDI), and native JSON). There is no need to run the export manually.
+Publishing a dataset automatically starts a metadata export job, that will run in the background, asynchronously. Once completed, it will make the dataset metadata exported and cached in all the supported formats:
+
+- Dublin Core
+- Data Documentation Initiative (DDI)
+- Schema.org JSON-LD
+- native JSON (Dataverse-specific)
 
 A scheduled timer job that runs nightly will attempt to export any published datasets that for whatever reason haven't been exported yet. This timer is activated automatically on the deployment, or restart, of the application. So, again, no need to start or configure it manually. (See the "Application Timers" section of this guide for more information)
 

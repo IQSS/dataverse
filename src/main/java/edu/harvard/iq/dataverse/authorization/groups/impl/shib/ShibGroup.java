@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.shib;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
