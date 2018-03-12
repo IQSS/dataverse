@@ -116,7 +116,7 @@
                     "typeName": "publicationURL",
                     "multiple": false,
                     "typeClass": "primitive",
-                    "value": "http://dx.doi.org/10.1016/j.cell.2011.10.020"
+                    "value": "https://doi.org/10.1016/j.cell.2011.10.020"
                   }
                 }
               ]

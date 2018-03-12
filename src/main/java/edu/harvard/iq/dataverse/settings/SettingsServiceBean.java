@@ -183,6 +183,11 @@ public class SettingsServiceBean {
         /** DoiProvider for global id */
         DoiProvider,
         DoiSeparator,
+        /** DoiShoulder for global id - should not include DoiSeparator unless/until logic for separating authority and identifier is more robust.
+         *  This case can be handled by combining the authority and shoulder as part of the Authority setting. Use this DoiShoulder for cases where the 
+         *  character separating the shoulder from the rest of th identifier is not '/' or DoiSeparator.
+         */
+        DoiShoulder,
         /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
         DoiUsername,
         DoiPassword,
@@ -351,9 +356,20 @@ public class SettingsServiceBean {
         /**
          * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
          */
-        PVCustomPasswordResetAlertMessage
-        ;
-
+        PVCustomPasswordResetAlertMessage,
+        /**
+         * QDR Custom settings
+         * 
+         */
+        /** URL for Shibboleth Single Logout */        
+        ShibLogoutUrl,
+        /** Latest version of Terms and Conditions document */
+        ShibAuthTermsVer,
+        /** Url of integrated Drupal Site */
+        QDRDrupalSiteURL,
+        /** Base Url of this Dataverse Site */
+        QDRDataverseBaseURL;
+        
         @Override
         public String toString() {
             return ":" + name();

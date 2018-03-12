@@ -78,7 +78,7 @@ public class GlobalId implements java.io.Serializable {
         URL url = null;
         try {
             if (protocol.equals("doi")){
-               url = new URL("http://dx.doi.org/" + authority + "/" + identifier); 
+               url = new URL("https://doi.org/" + authority + "/" + identifier); 
             } else {
                url = new URL("http://hdl.handle.net/" + authority + "/" + identifier);  
             }           
