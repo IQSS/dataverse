@@ -1045,6 +1045,16 @@ or
 
 ``curl -X PUT -d hostname.domain.tld/stats http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
 
+:PiwikAnalyticsTrackerFileName
+++++++++++++++++++++++++++++++
+
+Filename for the 'php' and 'js' tracker files used in the piwik code (piwik.php and piwik.js).
+Sometimes these files are renamed in order to prevent ad-blockers (in the browser) to block the piwik tracking code.
+This sets the base name (without dot and extension), if not set it defaults to 'piwik'.
+
+``curl -X PUT -d domainstats http://localhost:8080/api/admin/settings/:PiwikAnalyticsTrackerFileName``
+
+
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
 
