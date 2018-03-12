@@ -23,6 +23,7 @@ Developer Guide
    making-releases
    tools
    unf/index
+   remote-users
    geospatial
    selinux
    big-data-support
