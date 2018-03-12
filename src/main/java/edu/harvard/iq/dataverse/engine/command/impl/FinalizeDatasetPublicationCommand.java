@@ -53,7 +53,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         registerExternalIdentifier(theDataset, ctxt);        
-
+        
         if (theDataset.getPublicationDate() == null) {
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
@@ -90,7 +90,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
         publicizeExternalIdentifier(ctxt);
-
+        
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
@@ -104,6 +104,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         // Remove locks
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.pidRegister));
         if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
             ctxt.engine().submit( 
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
@@ -168,19 +169,29 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void publicizeExternalIdentifier(CommandContext ctxt) throws CommandException {
         String protocol = theDataset.getProtocol();
         IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
-        if (idServiceBean!= null )
-        try {
-            idServiceBean.publicizeIdentifier(theDataset);
-            theDataset.setGlobalIdCreateTime(new Date());
-            theDataset.setIdentifierRegistered(true);
-            for (DataFile df: theDataset.getFiles()){
-                idServiceBean.publicizeIdentifier(df);
-                df.setGlobalIdCreateTime(new Date());
-                df.setIdentifierRegistered(true);
+        if (idServiceBean != null) {
+            try {
+                idServiceBean.publicizeIdentifier(theDataset);
+                theDataset.setGlobalIdCreateTime(new Date());
+                theDataset.setIdentifierRegistered(true);
+                //if the dataset is locked for PID registration then don't register here
+                //done asynch before calling
+                if (!theDataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
+                    for (DataFile df : theDataset.getFiles()) {
+                        idServiceBean.publicizeIdentifier(df);
+                        df.setGlobalIdCreateTime(new Date());
+                        df.setIdentifierRegistered(true);
+                    }
+                } else {
+                    DatasetLock doomed = theDataset.getLockFor(DatasetLock.Reason.pidRegister);
+                    theDataset.getLocks().remove(doomed);
+                    ctxt.em().remove(doomed);
+                    ctxt.em().flush();
+                }
+
+            } catch (Throwable e) {
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
             }
-            
-        } catch (Throwable e) {
-            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
         }
     }
     

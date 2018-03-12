@@ -1882,9 +1882,12 @@ public class DatasetPage implements java.io.Serializable {
                 // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset 
                 // has been published. If a publishing workflow is configured, this may have sent the 
                 // dataset into a workflow limbo, potentially waiting for a third party system to complete 
-                // the process. So it may be premature to show the "success" message at this point. 
+                // the process. So it may be premature to show the "success" message at this point.                
                 if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
+                } else if (dataset.isLockedFor(DatasetLock.Reason.pidRegister) || dataset.getFiles().size() > systemConfig.getPIDAsynchRegFileCount()){                    
+                    JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
+                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
                 } else {
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 }

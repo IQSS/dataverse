@@ -577,10 +577,10 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @param aReason The reason of the locks that will be removed.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void removeDatasetLocks(Long datasetId, DatasetLock.Reason aReason) {
-        Dataset dataset = em.find(Dataset.class, datasetId);
+    public void removeDatasetLocks(Long datasetId, DatasetLock.Reason aReason) {        
+        Dataset dataset = em.find(Dataset.class, datasetId);       
         new HashSet<>(dataset.getLocks()).stream()
-                .filter( l -> l.getReason() == aReason )
+                .filter( l -> l.getReason().equals(aReason))
                 .forEach( lock -> {
                     dataset.removeLock(lock);
                     

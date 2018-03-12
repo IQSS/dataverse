@@ -1,13 +1,18 @@
 package edu.harvard.iq.dataverse.workflow;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -15,6 +20,7 @@ import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +95,47 @@ public class WorkflowServiceBean {
         ctxt = refresh(ctxt);
         lockDataset(ctxt);
         forward(wf, ctxt);
+    }
+    
+    /**
+     * Starts executing workflow {@code wf} to register File PIDs
+     *
+     * @param wf the workflow to execute.
+     * @param ctxt the context in which the workflow is executed.
+     * @param cctxt context for calling command
+     * @throws CommandException If the dataset could not be locked.
+     */
+    @Asynchronous
+    public void startPIDRegister(Workflow wf, WorkflowContext ctxt, CommandContext cctxt) throws CommandException {
+        ctxt = refresh(ctxt);
+        lockDatasetForPIDRegistration(ctxt);
+        runPIDRegistration(wf, ctxt, cctxt);
+    }
+    
+    @Asynchronous
+    private void runPIDRegistration(Workflow wf, WorkflowContext ctxt, CommandContext cctxt) throws CommandException{
+        
+        String protocol = ctxt.getDataset().getProtocol();
+        Dataset theDataset = ctxt.getDataset();
+        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, cctxt);
+        if (idServiceBean!= null )
+        try {
+            for (DataFile df: theDataset.getFiles()){
+                idServiceBean.publicizeIdentifier(df);
+                df.setGlobalIdCreateTime(new Date());
+                df.setIdentifierRegistered(true);
+            }
+            
+        } catch (Throwable e) {
+            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),null); 
+        }
+        
+        try {
+             engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getDoiProvider(), ctxt.getRequest()) );                                
+            } catch (CommandException ex) {
+                logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
+                rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), 0);
+        }       
     }
 
     /**
@@ -230,6 +277,15 @@ public class WorkflowServiceBean {
         final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
 //        engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
         datasetLock.setDataset(ctxt.getDataset());
+        em.persist(datasetLock);
+        em.flush();
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    void lockDatasetForPIDRegistration( WorkflowContext ctxt ) throws CommandException {
+        final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.pidRegister, ctxt.getRequest().getAuthenticatedUser());
+        datasetLock.setDataset(ctxt.getDataset());
+        ctxt.getDataset().getLocks().add(datasetLock);
         em.persist(datasetLock);
         em.flush();
     }

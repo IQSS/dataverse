@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -11,6 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
+import java.util.Date;
 import java.util.Optional;
 import static java.util.stream.Collectors.joining;
 
@@ -29,11 +32,13 @@ import static java.util.stream.Collectors.joining;
 public class PublishDatasetCommand extends AbstractPublishDatasetCommand<PublishDatasetResult> {
 
     boolean minorRelease;
+    DataverseRequest request;
     
     public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor) {
         super(datasetIn, aRequest);
         minorRelease = minor;
         theDataset = datasetIn;
+        request = aRequest;
     }
 
     @Override
@@ -70,6 +75,17 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             return new PublishDatasetResult(theDataset, false);
             
         } else {
+            //if there are more than required size files  register them asychronously (default is 10)
+            if (theDataset.getFiles().size() >  ctxt.systemConfig().getPIDAsynchRegFileCount()){                 
+                Workflow dummy = new Workflow();
+                ctxt.workflows().startPIDRegister(dummy, buildContext(doiProvider, TriggerType.PrePublishDataset), ctxt );
+                AuthenticatedUser requestor = request.getAuthenticatedUser();
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.pidRegister, requestor);
+                lock.setDataset(theDataset);
+                lock.setStartTime(new Date());
+                ctxt.em().merge(lock);          
+                return new PublishDatasetResult(ctxt.em().merge(theDataset), false);                                
+            }
             // Synchronous publishing (no workflow involved)
             theDataset = ctxt.engine().submit( new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()) );
             return new PublishDatasetResult(ctxt.em().merge(theDataset), true);

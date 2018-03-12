@@ -888,4 +888,15 @@ public class SystemConfig {
         return false;
     }
     
+    public int getPIDAsynchRegFileCount() {
+        String fileCount = settingsService.getValueForKey(SettingsServiceBean.Key.PIDAsynchRegFileCount, "10");
+        int retVal = 10;
+        try {
+            retVal = Integer.parseInt(fileCount);
+        } catch (NumberFormatException e) {           
+            //if no number in the setting we'll return 10
+        }
+        return retVal;
+    }
+    
 }
