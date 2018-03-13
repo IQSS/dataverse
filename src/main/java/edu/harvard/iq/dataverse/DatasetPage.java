@@ -371,13 +371,15 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void addItemtoCart(String title, String persistentId) throws Exception{
-        if (session.getUser() instanceof AuthenticatedUser) {
-            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
-            try {
-                authUser.getCart().addItem(title, persistentId);
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
-            } catch (Exception ex){
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+        if (canComputeAllFiles(true)) {
+            if (session.getUser() instanceof AuthenticatedUser) {
+                AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+                try {
+                    authUser.getCart().addItem(title, persistentId);
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+                } catch (Exception ex){
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+                }
             }
         }
     }
@@ -620,13 +622,22 @@ public class DatasetPage implements java.io.Serializable {
         return result;
     }
 
-    public boolean canDownloadAllFiles(){
-       for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (!fileDownloadHelper.canDownloadFile(fmd)) {
-                return false;
-            }
+    public boolean canComputeAllFiles(boolean cart){
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+             if (!fileDownloadHelper.canDownloadFile(fmd)) {
+                 RequestContext requestContext = RequestContext.getCurrentInstance();
+                 requestContext.execute("PF('computeInvalid').show()");
+                 return false;
+             }
         }
-       return true;
+        if (!cart) {
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(getComputeUrl());
+             } catch (IOException ioex) {
+                 logger.warning("Failed to issue a redirect.");
+             }
+        }
+        return true;
     }
     /*
     in getComputeUrl(), we are sending the container/dataset name and the exipiry and signature 

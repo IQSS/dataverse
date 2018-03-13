@@ -69,9 +69,9 @@
                                 <ul class="dropdown-menu pull-left text-left" role="menu">
                                     <li>
                                         <!-- Compute dataset link -->
-                                        <h:outputLink value="#{DatasetPage.computeUrl}" target="_blank">
+                                        <h:commandLink action="#{DatasetPage.canComputeAllFiles(false)}">
                                             <h:outputText value="#{bundle['dataset.compute.computeBatchSingle']}"/>
-                                        </h:outputLink>
+                                        </h:commandLink>
                                     </li>
                                     <li jsf:rendered="#{!DatasetPage.isCartEmpty()}" class="divider"></li>
                                     <li jsf:rendered="#{!DatasetPage.checkCartForItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getPersistentId())}">
@@ -681,6 +681,12 @@
                         </ui:fragment>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadInvalid').hide();" type="button" />
+                        </div>
+                    </p:dialog>
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBatchRestrictedHeader']}" widgetVar="computeInvalid" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.compute.computeBatchRestricted']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('computeInvalid').hide();" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
