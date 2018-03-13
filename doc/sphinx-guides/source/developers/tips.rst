@@ -31,6 +31,11 @@ Netbeans Connector Chrome Extension
 
 For faster iteration while working on JSF pages, it is highly recommended that you install the Netbeans Connector Chrome Extension listed in the :doc:`tools` section. When you save XHTML or CSS files, you will see the changes immediately.
 
+Running the Dataverse ``install`` Script in Non-Interactive Mode
+----------------------------------------------------------------
+
+Rather than running the installer in "interactive" mode, it's possible to put the values in a file. See "non-interactive mode" in the :doc:`/installation/installation-main` section of the Installation Guide.
+
 Preventing Glassfish from Phoning Home
 --------------------------------------
 
