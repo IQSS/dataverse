@@ -196,7 +196,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>7.1.0</version>
+            <version>7.2.1</version>
         </dependency>
 <!--        <dependency>
              required by Solr... prevents java.lang.NoClassDefFoundError: org/apache/commons/logging/LogFactory 
