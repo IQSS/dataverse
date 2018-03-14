@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFeaturedDataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.Guestbook;
 import static edu.harvard.iq.dataverse.IdServiceBean.logger;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -75,64 +78,66 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         if (moved.isReleased() && !destination.isReleased()){
             throw new IllegalCommandException("Published Dataverse may not be moved to unpublished Dataverse. You may publish " + destination.getDisplayName() + " and re-try the move.", this);
         }
+        
+        List<Dataset> datasetChildren = findAllDataverseDatasetChildren(moved, ctxt.datasets(), ctxt.dataverses());
+        System.out.println("datasetChildren: " + datasetChildren);
+        
+        List<Dataverse> dataverseChildren = findAllDataverseDataverseChildren(moved, ctxt.datasets(), ctxt.dataverses());
+        System.out.println("dataverseChildren: " + dataverseChildren);
 
-        // if all the dataverses GUESTBOOKS are not contained in the new dataverse then remove the
+        // if all the dataverse's datasets GUESTBOOKS are not contained in the new dataverse then remove the
         // ones that aren't
         if (moved.getGuestbooks() != null) {
             List<Guestbook> movedGbs = moved.getGuestbooks();
-            List<Guestbook> desintationGbs = destination.getGuestbooks();
+            List<Guestbook> destinationGbs = destination.getGuestbooks();
             boolean inheritGuestbooksValue = !destination.isGuestbookRoot();
             if (inheritGuestbooksValue && destination.getOwner() != null) {
                 for (Guestbook pg : destination.getParentGuestbooks()) {
-                    desintationGbs.add(pg);
+                    destinationGbs.add(pg);
                 }
             }
+            // include guestbooks in moved dataverse since they will also be there
+            // in the destination
+            for (Guestbook pg : movedGbs) {
+                destinationGbs.add(pg);
+            }
             
-            Iterator<Guestbook> iter = movedGbs.iterator();
-            while (iter.hasNext()) {
-                Guestbook gb = iter.next();
-                if (desintationGbs == null || !desintationGbs.contains(gb)) {
+            for (Dataset ds : datasetChildren) { 
+                Guestbook dsgb = ds.getGuestbook();
+                if (dsgb != null && (destinationGbs == null || !destinationGbs.contains(dsgb))) {
                     if (force == null  || !force) {
-                        throw new IllegalCommandException("Dataverse guestbook is not in target dataverse. Please use the parameter ?forceMove=true to complete the move. This will delete the guestbook from the Dataverse", this);
+                        throw new IllegalCommandException("Dataset guestbook is not in target dataverse. Please use the parameter ?forceMove=true to complete the move. This will delete the guestbook from the Dataverse", this);
                     }
-                    logger.info("Attempting to remove guestbook: " + gb.getName());
-                    try {
-                        ctxt.engine().submit(new DeleteGuestbookCommand(getRequest(), moved, gb));
-                        moved.getGuestbooks().remove(gb);
-                    } catch (CommandException ex) {
-                        throw new CommandException("Failed to delete guestbook: "+ gb.getName(), this);
-                    }
+                    ds.setGuestbook(null);
                 }
             }
         }
                 
-        // if all the dataverses TEMPLATES are not contained in the new dataverse then remove the
-        // ones that aren't
+        // if the dataverses default TEMPLATE is not contained in the new dataverse then remove it
         if (moved.getTemplates() != null) {
             List<Template> movedTemplates = moved.getTemplates();
             List<Template> destinationTemplates = destination.getTemplates();
-            boolean inheritTemplateValue = destination.isTemplateRoot();
+            boolean inheritTemplateValue = !destination.isTemplateRoot();
             if (inheritTemplateValue && destination.getOwner() != null) {
                 for (Template t : destination.getParentTemplates()) {
                     destinationTemplates.add(t);
                 }
             }
-            Iterator<Template> iter = movedTemplates.iterator();
-            while (iter.hasNext()) {
-                Template t = iter.next();
-                if (destinationTemplates == null || !destinationTemplates.contains(t)) {
+            // include templates in moved dataverse since they will also be there
+            // in the destination
+            for (Template t : movedTemplates) {
+                destinationTemplates.add(t);
+            }
+            dataverseChildren.add(moved);
+            for (Dataverse dv : dataverseChildren) {
+                Template dvt = dv.getDefaultTemplate();
+                if (dvt != null && (destinationTemplates == null || !destinationTemplates.contains(dvt))) {
                     if (force == null  || !force) {
                         throw new IllegalCommandException("Dataverse template is not in target dataverse. Please use the parameter ?forceMove=true to complete the move. This will delete the template from the Dataverse", this);
                     }
-                    logger.info("Attempting to remove template: " + t.getName());
-                    try {
-                        List<Dataverse> dataverseWDefaultTemplate = ctxt.templates().findDataversesByDefaultTemplateId(t.getId());
-                        ctxt.engine().submit(new DeleteTemplateCommand(getRequest(), moved, t, dataverseWDefaultTemplate));
-                        moved.getTemplates().remove(t);
-                    } catch (CommandException ex) {
-                        throw new CommandException("Failed to delete template: "+ t.getName(), this);
-                    }
-                } 
+                    logger.info("Removing template: " + moved.getDefaultTemplate().getName());
+                    dv.setDefaultTemplate(null);
+                }
             }
         }
         
@@ -152,7 +157,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         // but then the dataverse is moved outside of that parent-child structure
         if (moved.getMetadataBlocks() != null) {
             List<MetadataBlock> movedMbs = moved.getMetadataBlocks();
-            boolean inheritMbValue = destination.isMetadataBlockRoot();
+            boolean inheritMbValue = !destination.isMetadataBlockRoot();
             
             // generate list of all possible metadata block owner dataverses to check against
             List<Dataverse> ownersToCheck = new ArrayList<>();
@@ -163,7 +168,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                     ownersToCheck.add(owner);
                 }
             }
-            
+
             // determine which metadata blocks to keep selected 
             // on the moved dataverse 
             List<MetadataBlock> metadataBlocksToKeep = new ArrayList<>();
@@ -173,12 +178,14 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 // if the owner is null, it means that the owner is the root dataverse
                 // because technically only custom metadata blocks have owners
                 Dataverse mbOwner = (mb.getOwner() != null) ? mb.getOwner() : ctxt.dataverses().findByAlias(":root");
+                System.out.println("mbOwner: " + mbOwner);
+                System.out.println("ownersToCheck: " + ownersToCheck);
                 if (!ownersToCheck.contains(mbOwner)) {
                     if (force == null  || !force) {
                         throw new IllegalCommandException("Dataverse metadata block is not in target dataverse. Please use the parameter ?forceMove=true to complete the move. This will disassociate the metadata block from the Dataverse", this);
                     }
                 }
-                else if (ownersToCheck.contains(mbOwner) || moved.isMetadataBlockRoot()) {
+                else if (ownersToCheck.contains(mbOwner) || !moved.isMetadataBlockRoot()) {
                     // only keep metadata block if
                     // it is being inherited from its parent
                      metadataBlocksToKeep.add(mb);
@@ -196,6 +203,38 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         } catch (Exception e) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage()); //, e);
             throw new CommandException("Dataverse could not be moved. Indexing failed: (" + e.getMessage() + ")", this);
+        }
+    }
+    
+    public List<Dataset> findAllDataverseDatasetChildren(Dataverse dv, DatasetServiceBean datasetService, DataverseServiceBean dataverseService) {
+        // get list of Dataverse children
+        List<Dataverse> dataverseChildren = dataverseService.findByOwnerId(dv.getId());
+        // get list of Dataset children
+        List<Dataset> datasetChildren = datasetService.findByOwnerId(dv.getId());
+        
+        if (dataverseChildren == null) {
+            return datasetChildren;
+        } else {
+            for (Dataverse childDv : dataverseChildren) {
+                datasetChildren.addAll(findAllDataverseDatasetChildren(childDv, datasetService, dataverseService));
+            }
+            return datasetChildren;
+        }
+    }
+    
+    public List<Dataverse> findAllDataverseDataverseChildren(Dataverse dv, DatasetServiceBean datasetService, DataverseServiceBean dataverseService) {
+        // get list of Dataverse children
+        List<Dataverse> dataverseChildren = dataverseService.findByOwnerId(dv.getId());
+        
+        if (dataverseChildren == null) {
+            return dataverseChildren;
+        } else {
+            List<Dataverse> newChildren = new ArrayList<>();
+            for (Dataverse childDv : dataverseChildren) {
+                newChildren.addAll(findAllDataverseDataverseChildren(childDv, datasetService, dataverseService));
+            }
+            dataverseChildren.addAll(newChildren);
+            return dataverseChildren;
         }
     }
 }

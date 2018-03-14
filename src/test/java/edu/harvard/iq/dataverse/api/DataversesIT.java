@@ -231,4 +231,31 @@ public class DataversesIT {
         assertTrue(htmlStr4.contains(expectedErrMsg));
 
     }
+    
+    @Test
+    public void testMoveDataverse() throws FileNotFoundException {
+        Response createUser = UtilIT.createRandomUser();
+        
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+        Response moveResponse = UtilIT.moveDataverse(dataverseAlias, dataverseAlias2, true, apiToken);
+        
+        moveResponse.prettyPrint();
+        moveResponse.then().assertThat().statusCode(OK.getStatusCode());
+    }
+    
+    
+    
 }

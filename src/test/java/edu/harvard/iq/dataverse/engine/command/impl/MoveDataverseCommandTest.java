@@ -4,14 +4,18 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseFeaturedDataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.NoOpTestEntityManager;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
+import edu.harvard.iq.dataverse.engine.TestEntityManager;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.ArrayList;
@@ -21,6 +25,7 @@ import java.util.concurrent.Future;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,16 +36,18 @@ import org.junit.Test;
  */
 public class MoveDataverseCommandTest {
 
-    Dataverse root, childA, childB, grandchildAA;
+    Dataverse root, childA, childB, grandchildAA, childC, childD, grandchildDD;
     DataverseEngine testEngine;
-    Boolean force;
-    AuthenticatedUser auth;
+    AuthenticatedUser auth, nobody;
     protected HttpServletRequest httpRequest;
 
     @Before
     public void setUp() {
         auth = makeAuthenticatedUser("Super", "User");
         auth.setSuperuser(true);
+        nobody = makeAuthenticatedUser("Nick", "Nobody");
+        nobody.setSuperuser(false);
+
         root = new Dataverse();
         root.setName("root");
         root.setId(1l);
@@ -57,8 +64,7 @@ public class MoveDataverseCommandTest {
         childA.setOwner( root );
         childB.setOwner( root );
         grandchildAA.setOwner( childA );
-        force = false;
-
+        
         testEngine = new TestDataverseEngine( new TestCommandContext(){
             @Override
             public DataverseServiceBean dataverses() {
@@ -116,13 +122,13 @@ public class MoveDataverseCommandTest {
      */
     @Test
     public void testValidMove() throws Exception {
-            DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
 
-            testEngine.submit(
-                            new MoveDataverseCommand(aRequest, childB, childA, force));
+        testEngine.submit(
+                        new MoveDataverseCommand(aRequest, childB, childA, null));
 
-            assertEquals( childA, childB.getOwner() );
-            assertEquals( Arrays.asList(root, childA), childB.getOwners() );
+        assertEquals( childA, childB.getOwner() );
+        assertEquals( Arrays.asList(root, childA), childB.getOwners() );
     }
 
     /**
@@ -130,10 +136,37 @@ public class MoveDataverseCommandTest {
      */
     @Test( expected=IllegalCommandException.class )
     public void testInvalidMove() throws Exception {
-            DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-            testEngine.submit(
-                            new MoveDataverseCommand(aRequest, childA, grandchildAA, force));
-            fail();
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        testEngine.submit(
+                        new MoveDataverseCommand(aRequest, childA, grandchildAA, null));
+        fail();
+    }
+    
+    /**
+     * Calling API as a non super user (illegal).
+     */
+    @Test(expected = PermissionException.class)
+    public void testNotSuperUser() throws Exception {
+        DataverseRequest aRequest = new DataverseRequest(nobody, httpRequest);
+        testEngine.submit(
+                        new MoveDataverseCommand(aRequest, childB, childA, null));
+        fail();
+    }
+    
+    @Test( expected=IllegalCommandException.class )
+    public void testMoveIntoSelf() throws Exception {
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        testEngine.submit(
+                        new MoveDataverseCommand(aRequest, childB, childB, null));
+        fail();
+    }
+    
+    @Test( expected=IllegalCommandException.class )
+    public void testMoveIntoParent() throws Exception {
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        testEngine.submit(
+                        new MoveDataverseCommand(aRequest, grandchildAA, childA, null));
+        fail();
     }
 
 }
