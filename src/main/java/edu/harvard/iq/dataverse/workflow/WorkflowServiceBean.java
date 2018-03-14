@@ -134,7 +134,7 @@ public class WorkflowServiceBean {
              engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getDoiProvider(), ctxt.getRequest()) );                                
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
-                rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), 0);
+                rollbackPIDRegistration(wf, ctxt);
         }       
     }
 
@@ -175,6 +175,26 @@ public class WorkflowServiceBean {
             pauseAndAwait(wf, ctxt, (Pending) res, pending.getPendingStepIdx());
         } else {
             executeSteps(wf, ctxt, pending.getPendingStepIdx() + 1);
+        }
+    }
+    
+    @Asynchronous
+    private void rollbackPIDRegistration(Workflow wf, WorkflowContext ctxt) {
+        ctxt = refresh(ctxt);
+       
+        logger.log( Level.INFO, "Removing registration lock");
+        try {
+            logger.log(Level.INFO, "PID Registration Failed");
+            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.pidRegister) );
+            
+            // Corner case - delete locks generated within this same transaction.
+            Query deleteQuery = em.createQuery("DELETE from DatasetLock l WHERE l.dataset.id=:id AND l.reason=:reason");
+            deleteQuery.setParameter("id", ctxt.getDataset().getId() );
+            deleteQuery.setParameter("reason", DatasetLock.Reason.Workflow );
+            deleteQuery.executeUpdate();
+            
+        } catch (CommandException ex) {
+            logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
         }
     }
 
