@@ -152,7 +152,7 @@ Delete the dataset whose id is passed::
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, and ``dataverse_json``.
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , and ``dataverse_json``.
 
 |CORS| Lists all the file metadata, for the given dataset and version::
 
@@ -169,6 +169,10 @@ Delete the dataset whose id is passed::
 Updates the current draft version of dataset ``$id``. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data. The request body is a dataset version, in json format. ::
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
+
+Moves a dataset whose id is passed to a dataverse whose alias is passed. Only accessible to superusers. ::
+
+    POST http://$SERVER/api/datasets/$id/move/$alias?key=$apiKey
 
 Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
 
@@ -437,13 +441,6 @@ Place this ``user-add.json`` file in your current directory and run the followin
 
   curl -d @user-add.json -H "Content-type:application/json" "$SERVER_URL/api/builtin-users?password=$NEWUSER_PASSWORD&key=$BUILTIN_USERS_KEY"
 
-Retrieving the API Token of a Builtin User
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To retrieve the API token of a builtin user, given that user's password, use the curl command below::
-
-  curl "$SERVER_URL/api/builtin-users/$DV_USER_NAME/api-token?password=$DV_USER_PASSWORD"
-
 Roles
 ~~~~~
 
@@ -525,7 +522,10 @@ For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from 
 
   GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
 
+Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
 
+  GET http://$SERVER/api/info/apiTermsOfUse
+  
 Metadata Blocks
 ~~~~~~~~~~~~~~~
 
@@ -776,30 +776,6 @@ List a role assignee (i.e. a user or a group)::
     GET http://$SERVER/api/admin/assignee/$identifier
 
 The ``$identifier`` should start with an ``@`` if it's a user. Groups start with ``&``. "Built in" users and groups start with ``:``. Private URL users start with ``#``.
-
-IpGroups
-^^^^^^^^
-
-Lists all the ip groups::
-
-  GET http://$SERVER/api/admin/groups/ip
-
-Adds a new ip group. POST data should specify the group in JSON format. Examples are available at the ``data`` folder. Using this method, an IP Group is always created, but its ``alias`` might be different than the one appearing in the
-JSON file, to ensure it is unique. ::
-
-  POST http://$SERVER/api/admin/groups/ip
-
-Creates or updates the ip group ``$groupAlias``. ::
-
-    POST http://$SERVER/api/admin/groups/ip/$groupAlias
-
-Returns a the group in a JSON format. ``$groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. ::
-
-  GET http://$SERVER/api/admin/groups/ip/$groupIdtf
-
-Deletes the group specified by ``groupIdtf``. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. Note that a group can be deleted only if there are no roles assigned to it. ::
-
-  DELETE http://$SERVER/api/admin/groups/ip/$groupIdtf
 
 Saved Search
 ^^^^^^^^^^^^

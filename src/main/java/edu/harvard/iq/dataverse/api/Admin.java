@@ -63,8 +63,6 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
@@ -246,7 +244,7 @@ public class Admin extends AbstractApiBean {
             return ok(Boolean.toString(prvs.get(0).isEnabled()));
         }
     }
-    
+
     @DELETE
     @Path("authenticationProviders/{id}/")
     public Response deleteAuthenticationProvider( @PathParam("id") String id ) {
@@ -1001,5 +999,11 @@ public class Admin extends AbstractApiBean {
                 .add("password", password)
                 .add("errors", errorArray)
         );
+    }
+    
+    @GET
+    @Path("/isOrcid")
+    public Response isOrcidEnabled() {
+        return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
     }
 }

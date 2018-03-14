@@ -245,7 +245,7 @@ public class ExportService {
             Dataset dataset = version.getDataset();
             StorageIO<Dataset> storageIO = null;
             try {
-                storageIO = DataAccess.createNewStorageIO(dataset, "file");
+                storageIO = DataAccess.createNewStorageIO(dataset, "placeholder");
                 Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached", DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {

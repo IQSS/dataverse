@@ -466,7 +466,7 @@ public class SearchServiceBean {
              */
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
-                solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
+                solrSearchResult.setHtmlUrl(baseUrl + SystemConfig.DATAVERSE_PATH + identifier);
                 // Do not set the ImageUrl, let the search include fragment fill in
                 // the thumbnail, similarly to how the dataset and datafile cards
                 // are handled. 

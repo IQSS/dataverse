@@ -54,6 +54,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
@@ -405,26 +406,6 @@ public class Datasets extends AbstractApiBean {
         return publishDataset(id, type);
     }
 
-    // TODO SBG: Delete me
-    @EJB
-    WorkflowServiceBean workflows;
-    
-    @PUT
-    @Path("{id}/actions/wf/{wfid}")
-    public Response DELETEME(@PathParam("id") String id, @PathParam("wfid") String wfid) {
-        try {
-            Workflow wf = workflows.getWorkflow(Long.parseLong(wfid)).get();
-            Dataset ds = findDatasetOrDie(id);
-            WorkflowContext ctxt = new WorkflowContext(createDataverseRequest(findUserOrDie()), ds, 0, 0, WorkflowContext.TriggerType.PostPublishDataset, "DataCite");
-            workflows.start(wf, ctxt);
-            return ok("Started workflow " + wf.getName() + " on dataset " + ds.getId() );
-
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
-    }
-    // TODO SBG: /Delete me
-    
     @POST
     @Path("{id}/actions/:publish")
     public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {
@@ -456,7 +437,27 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-
+    
+    @POST
+    @Path("{id}/move/{targetDataverseAlias}")
+    public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {        
+        try{
+            System.out.print("force: " + force);
+            User u = findUserOrDie();            
+            Dataset ds = findDatasetOrDie(id);
+            Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
+            if (target == null){
+                return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
+            }            
+            //Command requires Super user - it will be tested by the command
+            execCommand(new MoveDatasetCommand(
+                    createDataverseRequest(u), ds, target, force
+                    ));
+            return ok("Dataset moved successfully");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
     @GET
     @Path("{id}/links")
     public Response getLinks(@PathParam("id") String idSupplied ) {
@@ -655,7 +656,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{identifier}/dataCaptureModule/checksumValidation")
     public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
-        logger.fine("jsonFromDcm: " + jsonFromDcm);
+        logger.log(Level.FINE, "jsonFromDcm: {0}", jsonFromDcm);
         AuthenticatedUser authenticatedUser = null;
         try {
             authenticatedUser = findAuthenticatedUserOrDie();
@@ -712,13 +713,7 @@ public class Datasets extends AbstractApiBean {
             Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
             JsonObjectBuilder result = Json.createObjectBuilder();
             
-            boolean inReview = false;
-            try{
-                inReview = updatedDataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview);
-            } catch (Exception e){
-                System.out.print("submit exception: " + e.getMessage());
-                // if there's no lock then it can't be in review by definition
-            }
+            boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);
             
             result.add("inReview", inReview);
             result.add("message", "Dataset id " + updatedDataset.getId() + " has been submitted for review.");
@@ -747,12 +742,7 @@ public class Datasets extends AbstractApiBean {
             }
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
-            boolean inReview = false;
-            try{
-                inReview = updatedDataset.getDatasetLock().getReason().equals(DatasetLock.Reason.InReview);
-            } catch (Exception e){
-                // if there's no lock then it can't be in review by definition
-            }
+            boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);
 
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", inReview);
@@ -767,9 +757,8 @@ public class Datasets extends AbstractApiBean {
      * Add a File to an existing Dataset
      * 
      * @param idSupplied
-     * @param datasetId
      * @param jsonData
-     * @param testFileInputStream
+     * @param fileInputStream
      * @param contentDispositionHeader
      * @param formDataBodyPart
      * @return 

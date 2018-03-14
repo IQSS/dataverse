@@ -64,6 +64,13 @@ public class FileMetadata implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String description = "";
     
+    /**
+     * At the FileMetadata level, "restricted" is a historical indication of the
+     * data owner's intent for the file by version. Permissions are actually
+     * enforced based on the "restricted" boolean at the *DataFile* level. On
+     * publish, the latest intent is copied from the FileMetadata level to the
+     * DataFile level.
+     */
     @Expose
     private boolean restricted;
 

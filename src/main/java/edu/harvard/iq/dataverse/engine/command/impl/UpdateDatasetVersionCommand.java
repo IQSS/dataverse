@@ -36,6 +36,7 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         
         Dataset ds = newVersion.getDataset();
+        ctxt.permissions().checkEditDatasetLock(ds, getRequest(), this);
         DatasetVersion latest = ds.getLatestVersion();
         
         if ( latest == null ) {

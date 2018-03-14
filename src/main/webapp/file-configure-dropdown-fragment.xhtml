@@ -1,0 +1,54 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:pt="http://java.sun.com/jsf/passthrough"
+    xmlns:cc="http://java.sun.com/jsf/composite"
+    xmlns:o="http://omnifaces.org/ui"
+    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+        <div class="btn-group">
+            <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                <span class="glyphicon glyphicon-cog"/> #{bundle['dataset.configureBtn']} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu pull-right text-left" role="menu">
+                <!-- Worldmap unpublished -->
+                <li jsf:rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
+                    <a onclick="PF('mapData_popup').show()" href="javascript:void(0);">#{bundle['file.map']}</a>
+                </li>
+                <!-- Worldmap published -->
+                <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}">
+                    <a href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}">#{bundle['file.map']}</a>
+                </li>
+                <ui:repeat value="#{configureTools}" var="tool" rendered="#{dataverseSession.user.authenticated and canUpdateDataset and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                    <li>
+                        <p:commandLink
+                            update="@([id$=configureToolPopup])"
+                            action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
+                            oncomplete="PF('configureToolPopup').show()">
+                            <f:actionListener binding="#{configureFragmentBean.setConfigureFileId(fileId)}" />
+                            #{tool.displayName}
+                        </p:commandLink>
+                    </li>
+                </ui:repeat>
+            </ul>
+        </div>
+        
+        <!-- Configure popup MOVED TO file configure popup fragment -->
+
+          <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true" rendered="#{(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+              <p class="help-block">
+                  <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
+              </p>
+              <div class="button-block">
+                  <button type="button" class="btn btn-default" onclick="PF('mapData_popup').hide();PF('blockDatasetForm').hide();">
+                      #{bundle.close}
+                  </button>
+              </div>
+          </p:dialog>
+
+</ui:composition>

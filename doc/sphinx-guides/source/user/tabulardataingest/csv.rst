@@ -9,7 +9,7 @@ Ingest of Comma-Separated Values files as tabular data.
 
 Dataverse will make an attempt to turn CSV files uploaded by the user into tabular data, using the `Apache CSV parser <https://commons.apache.org/proper/commons-csv/>`_. 
 
-Main formatting requirements:
+Main formatting requirements
 -----------------------------
 
 The first row in the document will be treated as the CSV's header, containing variable names for each column.
@@ -38,12 +38,12 @@ are recognized as a **single** row with **5** comma-separated values (cells):
 (where ``\n`` is a new line character)
 
 
-Limitations: 
+Limitations
 ------------
 
 Compared to other formats, relatively little information about the data ("variable-level metadata") can be extracted from a CSV file. Aside from the variable names supplied in the top line, the ingest will make an educated guess about the data type of each comma-separated column. One of the supported rich file formats (Stata, SPSS and R) should be used if you need to provide more descriptive variable-level metadata (variable labels, categorical values and labels, explicitly defined data types, etc.). 
 
-Recognized data types and formatting:
+Recognized data types and formatting
 -------------------------------------
 
 The application will attempt to recognize numeric, string, and date/time values in the individual comma-separated columns.
@@ -79,7 +79,7 @@ Any non-Latin characters are allowed in character string values, **as long as th
 The most immediate implication is in the calculation of the UNF signatures for the data vectors, as different normalization rules are applied to numeric, character, and date/time values. (see the :doc:`/developers/unf/index` section for more information). If it is important to you that the UNF checksums of your data are accurately calculated, check that the numeric and date/time columns in your file were recognized as such (as ``type=numeric`` and ``type=character, category=date(time)``, respectively). If, for example, a column that was supposed to be numeric is recognized as a vector of character values (strings), double-check that the formatting of the values is consistent. Remember, a single improperly-formatted value in the column will turn it into a vector of character strings, and result in a different UNF. Fix any formatting errors you find, delete the file from the dataset, and try to ingest it again.
 
 
-Tab-delimited Data Files:
+Tab-delimited Data Files
 -------------------------
 
 Presently, tab-delimited files can be ingested by replacing the TABs with commas. 

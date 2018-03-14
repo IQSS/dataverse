@@ -6,8 +6,8 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import java.util.UUID;
 
 /**
- * The context in which the workflow is performed. Contains information steps might
- * need, such as the dataset being worked on an version data.
+ * The context in which a workflow is performed. Contains information steps might
+ * need, such as the dataset being worked on and version data.
  * 
  * Design-wise, this class allows us to add parameters to {@link WorkflowStep} without 
  * changing its method signatures, which would break break client code.
@@ -29,7 +29,16 @@ public class WorkflowContext {
     
     private String invocationId = UUID.randomUUID().toString();
 
-    public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, long nextMinorVersionNumber, TriggerType type, String doiProvider) {
+    public WorkflowContext( DataverseRequest aRequest, Dataset aDataset, String doiProvider, TriggerType aTriggerType ) {
+        this( aRequest, aDataset,
+                aDataset.getLatestVersion().getVersionNumber(), 
+                aDataset.getLatestVersion().getMinorVersionNumber(),
+                aTriggerType, 
+                doiProvider);
+    }
+    
+    public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
+                            long nextMinorVersionNumber, TriggerType type, String doiProvider) {
         this.request = request;
         this.dataset = dataset;
         this.nextVersionNumber = nextVersionNumber;
@@ -73,6 +82,5 @@ public class WorkflowContext {
     public TriggerType getType() {
         return type;
     }
-    
     
 }

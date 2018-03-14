@@ -42,6 +42,8 @@ public class SystemConfig {
 
     @EJB
     AuthenticationServiceBean authenticationService;
+    
+   public static final String DATAVERSE_PATH = "/dataverse/";
 
     /**
      * A JVM option for the advertised fully qualified domain name (hostname) of
@@ -275,6 +277,10 @@ public class SystemConfig {
      * by the Settings Service configuration.
      */
     public String getDataverseSiteUrl() {
+        return getDataverseSiteUrlStatic();
+    }
+    
+    public static String getDataverseSiteUrlStatic() {
         String hostUrl = System.getProperty(SITE_URL);
         if (hostUrl != null && !"".equals(hostUrl)) {
             return hostUrl;

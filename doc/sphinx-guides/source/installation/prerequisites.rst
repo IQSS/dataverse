@@ -2,12 +2,19 @@
 Prerequisites
 =============
 
-Before running the Dataverse installation script, you must install and configure the following software, preferably on a Linux distribution such as RHEL or CentOS. After following all the steps below (which are mostly based on CentOS 6), you can proceed to the :doc:`installation-main` section.
+Before running the Dataverse installation script, you must install and configure the following software.
+
+After following all the steps below, you can proceed to the :doc:`installation-main` section.
 
 You **may** find it helpful to look at how the configuration is done automatically by various tools such as Vagrant, Puppet, or Ansible. See the :doc:`prep` section for pointers on diving into these scripts.
 
 .. contents:: |toctitle|
 	:local:
+
+Linux
+-----
+
+We assume you plan to run Dataverse on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse development team. Please be aware that while el7 (RHEL/CentOS 7) is the recommended platform, the steps below were orginally written for el6 and may need to be updated (please feel free to make a pull request!).
 
 Java
 ----
@@ -21,13 +28,13 @@ Dataverse should run fine with only the Java Runtime Environment (JRE) installed
 
 The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-On a Red Hat and similar Linux distributions, install OpenJDK with something like::
+On a RHEL/CentOS, install OpenJDK (devel version) using yum::
 
 	# yum install java-1.8.0-openjdk-devel
 
 If you have multiple versions of Java installed, Java 8 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
-On Red Hat/CentOS you can make Java 8 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+On RHEL/CentOS you can make Java 8 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
 
         # alternatives --config java
 
@@ -38,7 +45,7 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 Glassfish
 ---------
 
-Glassfish Version 4.1 is required. There are known issues with Glassfish 4.1.1 as chronicled in https://github.com/IQSS/dataverse/issues/2628 so it should be avoided until that issue is resolved.
+Glassfish Version 4.1 is required. There are known issues with newer versions of the Glassfish 4.x series so it should be avoided. For details, see https://github.com/IQSS/dataverse/issues/2628 . The issue we are using the track support for Glassfish 5 is https://github.com/IQSS/dataverse/issues/4248 .
 
 Installing Glassfish
 ====================
@@ -73,7 +80,7 @@ Once Glassfish is installed, you'll need a newer version of the Weld library (v2
 
 	# vim /usr/local/glassfish4/glassfish/domains/domain1/config/domain.xml
 
-This recommendation comes from http://blog.c2b2.co.uk/2013/07/glassfish-4-performance-tuning.html among other places.
+This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4-performance-tuning-monitoring-and-troubleshooting.php among other places.
 
 - Start Glassfish and verify the Weld version::
 
@@ -86,7 +93,7 @@ Launching Glassfish on system boot
 The Dataverse installation script will start Glassfish if necessary, but you may find the following scripts helpful to launch Glassfish start automatically on boot.
 
 - This :download:`Systemd file<../_static/installation/files/etc/systemd/glassfish.service>` may be serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or Ubuntu 16+)
-- This :download:`init script<../_static/installation/files/etc/init.d/glassfish.init.service>` may be useful for RHEL/CentOS6 or Ubuntu >= 14 if you're using a Glassfish service account, or
+- This :download:`init script<../_static/installation/files/etc/init.d/glassfish.init.service>` may be useful for RHEL/CentOS 6 or Ubuntu >= 14 if you're using a Glassfish service account, or
 - This :download:`Glassfish init script <../_static/installation/files/etc/init.d/glassfish.init.root>` may be helpful if you're just going to run Glassfish as root.
 
 It is not necessary for Glassfish to be running before you execute the Dataverse installation script; it will start Glassfish for you.
@@ -101,17 +108,15 @@ Installing PostgreSQL
 
 Version 9.x is required. Previous versions have not been tested.
 
-The version that ships with RHEL 6 and above is fine::
+The version that ships with el7 and above is fine::
 
 	# yum install postgresql-server
         # service postgresql initdb
 	# service postgresql start
 
-The standard init script that ships RHEL 6 and similar should work fine. Enable it with this command::
+The standard init script that ships with el7 should work fine. Enable it with this command::
 
         # chkconfig postgresql on
-
-
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
 =======================================================================================
@@ -181,9 +186,12 @@ With the Dataverse-specific schema in place, you can now start Solr::
 Solr Init Script
 ================
 
-The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but starting Solr with an init script is recommended. You can attempt to adjust this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.
+The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but letting the system start Solr automatically is recommended.
+ 
+- This :download:`Solr Systemd file<../_static/installation/files/etc/systemd/solr.service>` will launch Solr on boot as the solr user for RHEL/CentOS 7 or Ubuntu 16+ systems, or
+- For systems using init.d, you may attempt to adjust this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.
 
-Solr should be running before the installation script is executed.
+Solr should be running before the Dataverse installation script is executed.
 
 Securing Solr
 =============

@@ -14,13 +14,14 @@
          _paq.push(['enableLinkTracking']);
          (function() {
              var u="//#{settingsWrapper.get(':PiwikAnalyticsHost')}/";
-             _paq.push(['setTrackerUrl', u+'piwik.php']);
+             var t="#{(empty settingsWrapper.get(':PiwikAnalyticsTrackerFileName'))?'piwik':settingsWrapper.get(':PiwikAnalyticsTrackerFileName')}";
+             _paq.push(['setTrackerUrl', u+t+'.php']);
              _paq.push(['setSiteId', #{settingsWrapper.get(':PiwikAnalyticsId')}]);
              var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-             g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+             g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+t+'.js'; s.parentNode.insertBefore(g,s);
          })();
          </script>
-         <noscript><p><img src="//#{settingsWrapper.get(':PiwikAnalyticsHost')}/piwik.php?idsite=#{settingsWrapper.get(':PiwikAnalyticsId')}" style="border:0;" alt="" /></p></noscript>
+         <noscript><p><img src="//#{settingsWrapper.get(':PiwikAnalyticsHost')}/#{(empty settingsWrapper.get(':PiwikAnalyticsTrackerFileName'))?'piwik':settingsWrapper.get(':PiwikAnalyticsTrackerFileName')}.php?idsite=#{settingsWrapper.get(':PiwikAnalyticsId')}" style="border:0;" alt="" /></p></noscript>
          <!-- End Piwik Code -->
     </c:if>
 </ui:composition>

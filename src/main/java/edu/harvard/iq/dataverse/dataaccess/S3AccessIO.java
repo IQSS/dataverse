@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
@@ -14,10 +16,12 @@ import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.MultiObjectDeleteException;
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.DataFile;
@@ -25,18 +29,25 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
@@ -67,20 +78,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         super(dvObject, req);
         this.setIsLocalFile(false);
         try {
-            awsCredentials = new ProfileCredentialsProvider().getCredentials();
-            s3 = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).withRegion(Regions.US_EAST_1).build();
+            s3 = AmazonS3ClientBuilder.standard().defaultClient();
         } catch (Exception e) {
             throw new AmazonClientException(
-                    "Cannot load the credentials from the credential profiles file. "
-                    + "Please make sure that your credentials file is at the correct "
-                    + "location (~/.aws/credentials), and is in valid format.",
+                    "Cannot instantiate a S3 client using AWS SDK defaults for credentials and region",
                     e);
         }
     }
 
     public static String S3_IDENTIFIER_PREFIX = "s3";
     
-    private AWSCredentials awsCredentials = null;
     private AmazonS3 s3 = null;
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String key;
@@ -186,6 +193,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             File inputFile = fileSystemPath.toFile();
             if (dvObject instanceof DataFile) {
                 s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
+                
                 newFileSize = inputFile.length();
             } else {
                 throw new IOException("DvObject type other than datafile is not yet supported");
@@ -205,6 +213,25 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         setSize(newFileSize);
     }
 
+    /**
+     * Implements the StorageIO saveInputStream() method. 
+     * This implementation is somewhat problematic, because S3 cannot save an object of 
+     * an unknown length. This effectively nullifies any benefits of streaming; 
+     * as we cannot start saving until we have read the entire stream. 
+     * One way of solving this would be to buffer the entire stream as byte[], 
+     * in memory, then save it... Which of course would be limited by the amount 
+     * of memory available, and thus would not work for streams larger than that. 
+     * So we have eventually decided to save save the stream to a temp file, then 
+     * save to S3. This is slower, but guaranteed to work on any size stream. 
+     * An alternative we may want to consider is to not implement this method 
+     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException, 
+     * similarly to how we handle attempts to open OutputStreams, in this and the 
+     * Swift driver. 
+     * 
+     * @param inputStream InputStream we want to save
+     * @param auxItemTag String representing this Auxiliary type ("extension")
+     * @throws IOException if anything goes wrong.
+    */
     @Override
     public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
         if (filesize == null || filesize < 0) {
@@ -235,24 +262,23 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
-        //TODO? Copying over the object to a byte array is farily inefficient.
-        // We need the length of the data to upload inputStreams (see our putObject calls).
-        // There may be ways to work around this, see https://github.com/aws/aws-sdk-java/issues/474 to start.
-        // This is out of scope of creating the S3 driver and referenced in issue #4064!
-        byte[] bytes = IOUtils.toByteArray(inputStream);
-        long length = bytes.length;
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(length);
+        String directoryString = FileUtil.getFilesTempDirectory();
+
+        Random rand = new Random();
+        Path tempPath = Paths.get(directoryString, Integer.toString(rand.nextInt(Integer.MAX_VALUE)));
+        File tempFile = createTempFile(tempPath, inputStream);
+        
         try {
-            s3.putObject(bucketName, key, inputStream, metadata);
+            s3.putObject(bucketName, key, tempFile);
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3 Storage.";
             }
-
+            tempFile.delete();
             throw new IOException(failureMsg);
         }
+        tempFile.delete();
         setSize(s3.getObjectMetadata(bucketName, key).getContentLength());
     }
 
@@ -336,7 +362,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String destinationKey = getDestinationKey(auxItemTag);
         try {
             File inputFile = fileSystemPath.toFile();
-            s3.putObject(new PutObjectRequest(bucketName, destinationKey, inputFile));
+            s3.putObject(new PutObjectRequest(bucketName, destinationKey, inputFile));            
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.savePathAsAux():    " + ase.getMessage());
             throw new IOException("S3AccessIO: Failed to save path as an auxiliary object.");
@@ -367,31 +393,71 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    //todo: add new method with size?
-    //or just check the data file content size?
-    // this method copies a local InputStream into this DataAccess Auxiliary location:
+    /**
+     * Implements the StorageIO saveInputStreamAsAux() method. 
+     * This implementation is problematic, because S3 cannot save an object of 
+     * an unknown length. This effectively nullifies any benefits of streaming; 
+     * as we cannot start saving until we have read the entire stream. 
+     * One way of solving this would be to buffer the entire stream as byte[], 
+     * in memory, then save it... Which of course would be limited by the amount 
+     * of memory available, and thus would not work for streams larger than that. 
+     * So we have eventually decided to save save the stream to a temp file, then 
+     * save to S3. This is slower, but guaranteed to work on any size stream. 
+     * An alternative we may want to consider is to not implement this method 
+     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException, 
+     * similarly to how we handle attempts to open OutputStreams, in this and the 
+     * Swift driver. 
+     * 
+     * @param inputStream InputStream we want to save
+     * @param auxItemTag String representing this Auxiliary type ("extension")
+     * @throws IOException if anything goes wrong.
+    */
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
+
+        String directoryString = FileUtil.getFilesTempDirectory();
+
+        Random rand = new Random();
+        String pathNum = Integer.toString(rand.nextInt(Integer.MAX_VALUE));
+        Path tempPath = Paths.get(directoryString, pathNum);
+        File tempFile = createTempFile(tempPath, inputStream);
+        
         String destinationKey = getDestinationKey(auxItemTag);
-        byte[] bytes = IOUtils.toByteArray(inputStream);
-        long length = bytes.length;
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(length);
+        
         try {
-            s3.putObject(bucketName, destinationKey, inputStream, metadata);
+            s3.putObject(bucketName, destinationKey, tempFile);
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
 
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Unknown exception occured while saving a local InputStream as S3Object";
             }
+            tempFile.delete();
             throw new IOException(failureMsg);
         }
+        tempFile.delete();
     }
+    
+    //Helper method for supporting saving streams with unknown length to S3
+    //We save those streams to a file and then upload the file
+    private File createTempFile(Path path, InputStream inputStream) throws IOException {
 
+        File targetFile = new File(path.toUri()); //File needs a name
+        OutputStream outStream = new FileOutputStream(targetFile);
+
+        byte[] buffer = new byte[8 * 1024];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            outStream.write(buffer, 0, bytesRead);
+        }
+        IOUtils.closeQuietly(inputStream);
+        IOUtils.closeQuietly(outStream);
+        return targetFile;
+    } 
+    
     @Override
     public List<String> listAuxObjects() throws IOException {
         if (!this.canWrite()) {
@@ -405,7 +471,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         List<S3ObjectSummary> storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
         try {
             while (storedAuxFilesList.isTruncated()) {
-                logger.fine("S3 listAuxObjects: going to second page of list");
+                logger.fine("S3 listAuxObjects: going to next page of list");
                 storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
                 storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
             }
@@ -416,7 +482,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         for (S3ObjectSummary item : storedAuxFilesSummary) {
             String destinationKey = item.getKey();
-            String fileName = destinationKey.substring(destinationKey.lastIndexOf("/"));
+            String fileName = destinationKey.substring(destinationKey.lastIndexOf(".") + 1);
             logger.fine("S3 cached aux object fileName: " + fileName);
             ret.add(fileName);
         }
@@ -534,6 +600,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (dvObject instanceof DataFile) {
             return getMainFileKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
+            if (key == null) {
+                open();
+            }
             return key + "/" + auxItemTag;
         } else {
             throw new IOException("S3AccessIO: This operation is only supported for Datasets and DataFiles.");
@@ -558,5 +627,58 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         
         return key;
+    }
+    
+    public String generateTemporaryS3Url() throws IOException {
+        //Questions:
+        // Q. Should this work for private and public?
+        // A. Yes! Since the URL has a limited, short life span. -- L.A. 
+        // Q. how long should the download url work?
+        // A. 1 hour by default seems like an OK number. Making it configurable seems like a good idea too. -- L.A.
+        if (s3 == null) {
+            throw new IOException("ERROR: s3 not initialised. ");
+        }
+        if (dvObject instanceof DataFile) {
+            key = getMainFileKey();
+            java.util.Date expiration = new java.util.Date();
+            long msec = expiration.getTime();
+            msec += 1000 * getUrlExpirationMinutes();
+            expiration.setTime(msec);
+
+            GeneratePresignedUrlRequest generatePresignedUrlRequest = 
+                          new GeneratePresignedUrlRequest(bucketName, key);
+            generatePresignedUrlRequest.setMethod(HttpMethod.GET); // Default.
+            generatePresignedUrlRequest.setExpiration(expiration);
+            ResponseHeaderOverrides responseHeaders = new ResponseHeaderOverrides();
+            responseHeaders.setContentDisposition("attachment; filename="+this.getDataFile().getDisplayName());
+            responseHeaders.setContentType(this.getDataFile().getContentType());
+            generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
+
+            URL s = s3.generatePresignedUrl(generatePresignedUrlRequest); 
+
+            return s.toString();
+        } else if (dvObject instanceof Dataset) {
+            throw new IOException("Data Access: GenerateTemporaryS3Url: Invalid DvObject type : Dataset");
+        } else if (dvObject instanceof Dataverse) {
+            throw new IOException("Data Access: Invalid DvObject type : Dataverse");
+        } else {
+            throw new IOException("Data Access: Invalid DvObject type");
+        }
+    }
+    
+    private int getUrlExpirationMinutes() {
+        String optionValue = System.getProperty("dataverse.files.s3-url-expiration-minutes"); 
+        if (optionValue != null) {
+            Integer num; 
+            try {
+                num = new Integer(optionValue);
+            } catch (NumberFormatException ex) {
+                num = null; 
+            }
+            if (num != null) {
+                return num;
+            }
+        }
+        return 60; 
     }
 }
