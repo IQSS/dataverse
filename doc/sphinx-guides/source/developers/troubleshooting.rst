@@ -8,7 +8,7 @@ Troubleshooting
 Troubleshooting Your Dev Environment
 ------------------------------------
 
-We've described above the "happy path" of when everything goes right with setting up your Dataverse development environment. Here are some common problems and solutions for when things go wrong.
+Over in the :doc:`dev-environment` section we described above the "happy path" of when everything goes right with setting up your Dataverse development environment. Here are some common problems and solutions for when things go wrong.
 
 context-root in glassfish-web.xml Munged by Netbeans
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,4 +107,4 @@ If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400
 
 ----
 
-Previous: :doc:`dev-environment` | Next: :doc:`tips`
+Previous: :doc:`tips` | Next: :doc:`tips`

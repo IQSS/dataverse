@@ -64,7 +64,7 @@ On Linux, you should just use the version of PostgreSQL that comes with your dis
 
 On Mac, there are a variety of ways to install PostgreSQL. https://www.postgresql.org/download/macosx/ lists a number of options and the "Interactive installer by EnterpriseDB" is listed first so you should probably try that one and let us know if it doesn't work. Dataverse developers have also successfully used installations of PostgreSQL from Homebrew ( https://brew.sh ).
 
-No matter how you install PostgreSQL, you should adjust the ``local`` and ``host`` lines in ``pg_hba.conf`` to send with ``trust`` and then restart PostgreSQL so that the Dataverse installer can create your database. Dataverse doesn't require ``trust`` in production environments but this topic is out scope for the dev guide.
+No matter how you install PostgreSQL, you should adjust the ``local`` and ``host`` lines in ``pg_hba.conf`` to end with ``trust`` and then restart PostgreSQL so that the Dataverse installer can create your database. Dataverse doesn't require ``trust`` in production environments but this topic is out scope for the dev guide.
 
 Install and Configure Solr
 --------------------------
@@ -146,8 +146,6 @@ The script will prompt you for some configuration values. It is recommended that
 
 The script calls another script in the same directory called ``glassfish-setup.sh`` which calls a series of ``asadmin`` commands to configure Glassfish.
 
-FIXME: Add a "dev" mode to the installer to allow REST Assured tests to be run. For now, refer to the steps in the :doc:`testing` section.
-
 Verify Dataverse is Running
 ---------------------------
 
@@ -157,8 +155,10 @@ Congratulations! At this point you should be able to log into Dataverse with the
 - username: dataverseAdmin
 - password: admin
 
-If something has gone terribly wrong, please see the :doc:`troubleshooting` section.
+If you can log in, great! You're almost ready to start hacking on code. However, initial deployment of the Dataverse war file was does by the ``install`` script and you need to get set up to deploy the war file from an IDE such as Netbeans or the command line. This is the first topic under :doc:`tips`, where you should go next.
+
+If something has gone terribly wrong with any of the steps above, please see the :doc:`troubleshooting` section and don't be shy about reaching out as explained under "Getting Help" in the :doc:`intro` section.
 
 ----
 
-Previous: :doc:`intro` | Next: :doc:`troubleshooting`
+Previous: :doc:`intro` | Next: :doc:`tips`

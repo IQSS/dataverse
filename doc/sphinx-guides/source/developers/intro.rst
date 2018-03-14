@@ -14,6 +14,9 @@ This guide is intended primarily for developers who want to work on the main Dat
 
 To get started, you'll want to set up your :doc:`dev-environment` and make sure you understand the branching strategy described in the :doc:`version-control` section and how to make a pull request. :doc:`testing` is expected. Opinions about :doc:`coding-style` are welcome!
 
+Getting Help
+------------
+
 If you have any questions at all, please reach out to other developers per https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md
 
 Roadmap
