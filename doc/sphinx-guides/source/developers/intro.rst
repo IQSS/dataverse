@@ -17,7 +17,14 @@ To get started, you'll want to set up your :doc:`dev-environment` and make sure 
 Getting Help
 ------------
 
-If you have any questions at all, please reach out to other developers per https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md
+If you have any questions at all, please reach out to other developers via the channels listed in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md such as http://chat.dataverse.org (#dataverse on freenode), the `dataverse-dev <https://groups.google.com/forum/#!forum/dataverse-dev>`_ mailing list, `community calls <https://dataverse.org/community-calls>`_, or support@dataverse.org.
+
+Core Technologies
+-----------------
+
+Dataverse is a `Java EE <http://en.wikipedia.org/wiki/Java_Platform,_Enterprise_Edition>`_ application that is compiled into a war file and deployed to an application server (Glassfish) which is configured to work with a relational database (PostgreSQL) and a search engine (Solr).
+
+We make use of a variety of Java EE technologies such as JPA, JAX-RS, JMS, and JSF. The front end is built using PrimeFaces and Bootstrap.
 
 Roadmap
 -------
@@ -28,6 +35,11 @@ Kanban Board
 ------------
 
 You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://waffle.io/IQSS/dataverse
+
+Issue Tracker
+-------------
+
+We use GitHub Issues as our issue tracker: https://github.com/IQSS/dataverse/issues
 
 Related Guides
 --------------

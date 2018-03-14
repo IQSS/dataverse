@@ -120,10 +120,10 @@ From the terminal, ``ssh-keygen`` will create new ssh keys for you:
 
 - public key: ``~/.ssh/id_rsa.pub`` - After you've created your ssh keys, add the public key to your GitHub account.
 
-Cloning the Project from Netbeans
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Git on Mac
+~~~~~~~~~~
 
-From Netbeans, click "Team" then "Remote" then "Clone". Under "Repository URL", enter the `"ssh clone URL" <https://help.github.com/articles/which-remote-url-should-i-use/#cloning-with-ssh>`_ for your fork (if you do not have push access to the repo under IQSS) or ``git@github.com:IQSS/dataverse.git`` (if you do have push access to the repo under IQSS). See also https://netbeans.org/kb/docs/ide/git.html#github
+On a Mac, you won't have git installed unless you have "Command Line Developer Tools" installed but running ``git clone`` for the first time will prompt you to install them.
 
 ----
 
