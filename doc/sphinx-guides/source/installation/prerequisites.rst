@@ -168,25 +168,31 @@ Installing Solr
 
 Download and install Solr with these commands::
 
-	# wget https://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz
-	# tar xvzf solr-4.6.0.tgz 
-	# rsync -auv solr-4.6.0 /usr/local/
-	# cd /usr/local/solr-4.6.0/example/solr/collection1/conf/
+	# wget https://archive.apache.org/dist/lucene/solr/7.2.1/solr-7.2.1.tgz
+	# tar xvzf solr-7.2.1.tgz 
+	# rsync -auv solr-7.2.1 /usr/local/
+	# cd /usr/local/solr-7.2.1/server/solr
+        # cp -r configsets\_default .
+        # mv _default collection1
+        # cd collection1/conf/
 	# cp -a schema.xml schema.xml.orig
+        # cp -a solrconfig.xml solrconfig.xml.orig
 
-The reason for backing up the ``schema.xml`` file is that Dataverse requires a custom Solr schema to operate. This ``schema.xml`` file is contained in the "dvinstall" zip supplied in each Dataverse release at https://github.com/IQSS/dataverse/releases . Download this zip file, extract ``schema.xml`` from it, and put it into place (in the same directory as above)::
+The reason for backing up the ``schema.xml`` & ``solrconfig.xml``  file is that Dataverse requires a custom Solr configuration and schema to operate. These files are contained in the "dvinstall" zip supplied in each Dataverse release at https://github.com/IQSS/dataverse/releases . Download this zip file, extract ``schema.xml`` & ``solrconfig.xml`` from it, and put it into place (in the same directory as above)::
 
 	# cp /tmp/schema.xml schema.xml
+	# cp /tmp/solrconfig.xml solrconfig.xml
 
-With the Dataverse-specific schema in place, you can now start Solr::
+With the Dataverse-specific schema in place, you can now start Solr and create the core that will be used to manage search information::
 
-	# cd /usr/local/solr-4.6.0/example
-	# java -jar start.jar
+	# cd /usr/local/solr-7.2.1
+	# bin/solr start
+        # bin/solr create_core -c collection1 -d server/solr/collection1/conf/
 
 Solr Init Script
 ================
 
-The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but letting the system start Solr automatically is recommended.
+The command above will start Solr which is good for a quick sanity check that Solr accepted the schema file, but letting the system start Solr automatically is recommended.
  
 - This :download:`Solr Systemd file<../_static/installation/files/etc/systemd/solr.service>` will launch Solr on boot as the solr user for RHEL/CentOS 7 or Ubuntu 16+ systems, or
 - For systems using init.d, you may attempt to adjust this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.

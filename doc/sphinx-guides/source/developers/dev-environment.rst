@@ -41,7 +41,7 @@ Solr
 
 Dataverse depends on `Solr <http://lucene.apache.org/solr/>`_ for browsing and search.
 
-Solr 4.6.0 is the only version that has been tested extensively and is recommended in development. Download and configuration instructions can be found below. An upgrade to newer versions of Solr is being tracked at https://github.com/IQSS/dataverse/issues/456
+Solr 7.2.1 is the version that has been tested extensively and is recommended in development. Download and configuration instructions can be found below.
 
 curl
 ~~~~
@@ -143,17 +143,19 @@ Installing and Running Solr
 
 A Dataverse-specific ``schema.xml`` configuration file (described below) is required.
 
-Download solr-4.6.0.tgz from http://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz to any directory you like but in the example below, we have downloaded the tarball to a directory called "solr" in our home directory. For now we are using the "example" template but we are replacing ``schema.xml`` with our own. We will also assume that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects.
+Download solr-7.2.1.tgz from http://archive.apache.org/dist/lucene/solr/7.2.1/solr-7.2.1.tgz to any directory you like but in the example below, we have downloaded the tarball to a directory called "solr" in our home directory. For now we are using the "_default" configset but we are replacing ``schema.xml`` and ``solrconfig.xml``  with our own. Note that our xml files switch solr from a managed schema to the classic schema type (see https://lucene.apache.org/solr/guide/6_6/schema-factory-definition-in-solrconfig.html for details). We will also assume that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects.
 
 - ``cd ~/solr``
-- ``tar xvfz solr-4.6.0.tgz``
-- ``cd solr-4.6.0/example``
-- ``cp ~/NetBeansProjects/dataverse/conf/solr/4.6.0/schema.xml solr/collection1/conf/schema.xml``
-- ``java -jar start.jar``
+- ``tar xvfz solr-7.2.1.tgz``
+- ``cd solr-7.2.1/server/solr``
+- ``cp -r configsets\_default .``
+- ``mv _default collection1``
+- ``cp ~/NetBeansProjects/dataverse/conf/solr/7.2.1/schema.xml solr-7.2.1/server/solr/collection1/conf/schema.xml``
+- ``cp ~/NetBeansProjects/dataverse/conf/solr/7.2.1/solrconfig.xml solr-7.2.1/server/solr/collection1/conf/solrconfig.xml``
+- ``bin/solr start``
+- ``bin/solr create_core -c collection1 -d server/solr/collection1/conf/``
 
-Please note: If you prefer, once the proper ``schema.xml`` file is in place, you can simply double-click "start.jar" rather that running ``java -jar start.jar`` from the command line. Figuring out how to stop Solr after double-clicking it is an exercise for the reader.
-
-Once Solr is up and running you should be able to see a "Solr Admin" dashboard at http://localhost:8983/solr
+Once Solr is up and running you should be able to see a "Solr Admin" dashboard at http://localhost:8983/
 
 Once some dataverses, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/schema/fields
 
