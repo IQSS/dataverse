@@ -2,7 +2,7 @@
 Development Environment
 =======================
 
-We'll try to help you get your development environment up and running as quickly as possible!
+These instructions are purposefully opinionated and terse to help you get your development environment up and running as quickly as possible! Please note that familiarity with running commands from the terminal is assumed.
 
 .. contents:: |toctitle|
 	:local:
@@ -22,39 +22,87 @@ We regret to say that development of Dataverse on Windows is not well supported.
 How to Set Up a Dataverse Dev Environment
 -----------------------------------------
 
-You are welcome to skip around through these installation steps as long as you run the ``install`` script last.
-
 Install Java
 ~~~~~~~~~~~~
 
-Dataverse is developed on and requires Java 8.
+Dataverse is developed on and requires Java 8. New versions of Java are not supported.
 
-On Mac, we recommend Oracle's version of Java, which can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
+On Mac, we recommend Oracle's version of Java, which can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html and note that you should select "JDK".
 
 On Linux, you are welcome to use the OpenJDK available from package managers.
+
+Install Netbeans or Maven
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+While you are welcome to use any editor or IDE you wish, Netbeans is recommended because it is free of cost, works cross platform, has good support for Java EE projects, and has Maven (the build tool we use) built in.
+
+Netbeans can be downloaded from http://netbeans.org and you should select the "Java EE" version.
+
+Below we describe how to build the Dataverse war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
+
+Clone the Dataverse Git Repo
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Dataverse code is at https://github.com/IQSS/dataverse so you'll want to fork that repo and clone your fork with a command that looks something like this:
+
+``git clone git@github.com:[your GitHub user or organization]/dataverse.git``
+
+Build the Dataverse war File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Launch Netbeans and click "File" and then "Open Project" and navigate to the directory where you ran ``git clone`` above and double-click "dataverse" to open the project. Then click "Run" in the menu and then "Build Project (dataverse)". The first time you build the war file, it will take a few minutes while dependencies are downloaded from Maven Central. Feel free to move on to other steps but check back for "BUILD SUCCESS" at the end.
+
+If you installed Maven instead of Netbeans, you probably know that the command you want is ``mvn package``.
+
+Install Homebrew (Mac Only)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On Mac, install Homebrew to simplify the steps below: https://brew.sh
+
+Install jq
+~~~~~~~~~~
+
+On Mac, run ``brew install jq``.
+
+On Linux, install ``jq`` from your package manager or download a binary from http://stedolan.github.io/jq/
 
 Install Glassfish
 ~~~~~~~~~~~~~~~~~
 
 Glassfish 4.1 is required. Newer versions of 4.x are known not to work ( https://github.com/IQSS/dataverse/issues/2628 ) and we have made some attempts to use Glassfish 5 ( https://github.com/IQSS/dataverse/issues/4248 ).
 
-To install Glassfish:
+To install Glassfish, run the following commands:
 
-- Download http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip and place it in ``/usr/local`` or the directory of your choice.
-- Run ``unzip glassfish-4.1.zip`` to unzip to ``/usr/local/glassfish4`` or another directory of your choice. Note that if you have installed Homebrew ( https://brew.sh ) on a Mac ``/usr/local`` will already be writable by your user.
+``cd /usr/local``
 
-There is nothing you need to configure for Glassfish but you should make note of the installation location if it differs from ``/usr/local/glassfish4`` because you will need to supply it to the Dataverse installer, described below.
+``sudo curl -O http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip``
+
+``sudo unzip glassfish-4.1.zip``
+
+``sudo chown -R $USER /usr/local/glassfish4``
 
 Install and Configure PostgreSQL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PostgreSQL 8.4 or higher is required but you are welcome to use a newer version. In practice, 9.x is run most commonly in production environments. Please let us know if you have any problems with a specific version.
+PostgreSQL 9.4 or older is required because of the drivers we have checked into the code.
 
-On Linux, you should just use the version of PostgreSQL that comes with your distribution.
+On Mac, there are a variety of ways to install PostgreSQL listed at https://www.postgresql.org/download/macosx/ and we recommend the first one called "Interactive installer by EnterpriseDB". We've tested version 9.4.17. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
-On Mac, there are a variety of ways to install PostgreSQL. https://www.postgresql.org/download/macosx/ lists a number of options and the "Interactive installer by EnterpriseDB" is listed first so you should probably try that one and let us know if it doesn't work. Dataverse developers have also successfully used installations of PostgreSQL from Homebrew ( https://brew.sh ).
+Next, make a backup of the ``pg_hba.conf`` file like this:
 
-No matter how you install PostgreSQL, you should adjust the ``local`` and ``host`` lines in ``pg_hba.conf`` to end with ``trust`` and then restart PostgreSQL so that the Dataverse installer can create your database. Dataverse doesn't require ``trust`` in production environments but this topic is out scope for the dev guide.
+``sudo cp /Library/PostgreSQL/9.4/data/pg_hba.conf /Library/PostgreSQL/9.4/data/pg_hba.conf.orig``
+
+Then edit ``pg_hba.conf`` with an editor such as vi:
+
+``sudo vi /Library/PostgreSQL/9.4/data/pg_hba.conf``
+
+In the "METHOD" column, change all instances of "md5" to "trust".
+
+In the Finder, click "Applications" then "PostgreSQL 9.4" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
+
+Next, launch the "pgAdmin III" application from the same folder. Under "Servers" double click "PostgreSQL 9.4 (localhost)". When you are prompted for a password, leave it blank and click "OK". If you can get in without a password, your editing of "pg_hba.conf" above worked.
+
+On Linux, you should just install PostgreSQL from your package manager without worring about the version as long as it's 9.x. Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
 Install and Configure Solr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,13 +111,11 @@ Dataverse depends on `Solr <http://lucene.apache.org/solr/>`_ for browsing and s
 
 Solr 4.6.0 is the only version that has been tested extensively by the Dataverse team and is recommended in development. We are aware that this version of Solr is old and upgrading to a newer version is being tracked at https://github.com/IQSS/dataverse/issues/4158 .
 
-First, decide where you would like to install Solr and create a directory for it. In the example below, we create a directory called "solr" in our home directory (``~``).
+``sudo mkdir /usr/local/solr``
 
-``mkdir ~/solr``
+``sudo chown $USER /usr/local/solr``
 
-Change into the directory you created, download the Solr tarball, and uncompress it:
-
-``cd ~/solr``
+``cd /usr/local/solr``
 
 ``curl -O http://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz``
 
@@ -89,38 +135,6 @@ Assuming you are still in the ``solr-4.6.0/example`` directory, you can start So
 
 Once Solr is running you should be able to see a "Solr Admin" dashboard at http://localhost:8983/solr and Dataverse-specific fields (with "dataset" in name, for example) at http://localhost:8983/solr/schema/fields
 
-Install jq
-~~~~~~~~~~
-
-A command-line tool called ``jq`` ( http://stedolan.github.io/jq/ ) is required by the setup scripts.
-
-If you are already using ``brew`` ( https://brew.sh ), ``apt-get``, or ``yum``, you can install ``jq`` that way. Otherwise, download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your ``$PATH`` (``/usr/bin/jq`` is fine) and executable with ``sudo chmod +x /usr/bin/jq``. After you've set it up, you should be able to open a new terminal window and type ``jq`` and see some output.
-
-Install Netbeans or Maven
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-While you are welcome to use any editor or IDE you wish, Netbeans is recommended because it is free of cost, works cross platform, has good support for Java EE projects, and has Maven (the build tool we use) built in.
-
-Netbeans can be downloaded from http://netbeans.org. It's a good idea to select an option that contains the Jave EE features when choosing your download bundle but it's possible to add them after installation. Go ahead and install JUnit if you are prompted to do so.
-
-Below we describe how to build the Dataverse war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
-
-Clone the Dataverse Git Repo
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Dataverse code is at https://github.com/IQSS/dataverse so you'll want to fork that repo and clone your fork with a command that looks something like this:
-
-``git clone git@github.com:[your GitHub user or organization]/dataverse.git``
-
-Build the Dataverse war File
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The first time you build the war file, it may take a few minutes while dependencies are downloaded from Maven Central.
-
-From Netbeans, click "File" and then "Open Project" and navigate to the directory where you ran ``git clone`` above and double-click "dataverse". Then click "Run" and then "Build Project (dataverse)". Look for "BUILD SUCCESS" at the end.
-
-If you installed Maven instead of Netbeans, you probably know that the command you want is ``mvn package``.
-
 Run the Dataverse ``install`` Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -130,7 +144,9 @@ Navigate to the directory where you cloned the Dataverse git repo and run these 
 
 ``./install``
 
-The script will prompt you for some configuration values.
+It's fine to accept the default values.
+
+After a while you will see ``Enter admin user name [Enter to accept default]>`` and you can just hit Enter.
 
 Verify Dataverse is Running
 ---------------------------
