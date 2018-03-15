@@ -23,9 +23,9 @@ Assuming you installed Glassfish in ``/usr/local/glassfish4``, run the following
 
 ``/usr/local/glassfish4/bin/asadmin list-applications``
 
-You will probably see something like ``dataverse  <ejb, web>`` or a similar line with a version number such as ``dataverse-4.8.5  <ejb, web>`` as the output. To undeploy, use whichever version you see like this:
+You will probably see something like ``dataverse-4.8.5  <ejb, web>`` as the output. To undeploy, use whichever version you see like this:
 
-``/usr/local/glassfish4/bin/asadmin undeploy dataverse``
+``/usr/local/glassfish4/bin/asadmin undeploy dataverse-4.8.5``
 
 Now that Glassfish doesn't have anything deployed, we can proceed with getting Netbeans set up to deploy the code.
 
@@ -34,16 +34,14 @@ Add Glassfish 4.1 as a Server in Netbeans
 
 As mentioned in the :doc:`dev-environment` section, Dataverse only works with a specific version of Glassfish so you need to make sure Netbeans is deploying to that version rather than a newer version of Glassfish that may have come bundled with Netbeans.
 
-Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Glassfish Server" and set the installation location to ``/usr/local/glassfish4`` or wherever you installed Glassfish. The default are fine so you can click "Finish". You might want to click "Remove Server" on the newer version of Glassfish so avoid confusion.
+Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Glassfish Server" and set the installation location to ``/usr/local/glassfish4``. The default are fine so you can click "Next" and "Finish". To avoid confusing, click "Remove Server" on the newer version of Glassfish that came bundled with Glassfish.
 
-At this point you can manage Glassfish using Netbeans. Click "Window" and then "Services". Expand "Servers" and note that you can right-click Glassfish to stop and start it. When Dataverse is deployed, you will be able to see it under "Applications".
+At this point you can manage Glassfish using Netbeans. Click "Window" and then "Services". Expand "Servers" and right-click Glassfish to stop and then start it so that it appears in the Output window. Note that you can expand "Glassfish" and "Applications" to see if any applications are deployed.
 
 Ensure that Dataverse Will Be Deployed to Glassfish 4.1
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you have configured Netbeans to only know about a single Glassfish server, this step may not be necessary but it doesn't hurt to familiarize yourself with the "Run" dialog, especially "Server", "Context Path", "Browser", and "Deploy on Save".
-
-Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and adjust "Server" to be your installation of Glassfish 4.1. Click OK.
+Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and change "Server" from "No Server Selected" to your installation of Glassfish 4.1. Click OK.
 
 Make a Small Change to the Code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,7 +65,11 @@ After deployment, check the build number in the lower right to make sure it has 
 
 ``curl http://localhost:8080/api/info/version``
 
-If you can see the change, great! Please go fix a bug or work on a feature! :) Rather than making any commits to the "develop" branch, you should create a new branch as described in the :doc:`version-control` section.
+If you can see the change, great! Please go fix a bug or work on a feature! :)
+
+Actually, before you start changing any code, you should create a branch as explained in the :doc:`version-control` section.
+
+While it's fresh in your mind, if you have any suggestions on how to make the setup of a development environment easier, please get in touch!
 
 Netbeans Connector Chrome Extension
 -----------------------------------
