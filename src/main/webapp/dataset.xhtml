@@ -676,17 +676,11 @@
                     <!-- Popups -->
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
-                        <ui:fragment   rendered="#{DatasetPage.dataset.fileAccessRequest}"  >
+                        <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
                             <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.requestAccessToRestrictedFiles']}</p>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadInvalid').hide();" type="button" />
-                        </div>
-                    </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBatchRestrictedHeader']}" widgetVar="computeInvalid" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.compute.computeBatchRestricted']}</p>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('computeInvalid').hide();" type="button" />
+                            <p:commandButton value="#{bundle.close}" onclick="PF('downloadInvalid').hide();" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
@@ -780,10 +774,10 @@
                                     PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.compute.datasetCompute']}" widgetVar="datasetComputeAccessDeniedPopup" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.compute.datasetComputeDisabled']}</p>
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBtn']}" widgetVar="computeInvalid" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.compute.computeBatchRestricted']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('datasetComputeAccessDeniedPopup').hide();" type="button" />
+                            <p:commandButton value="#{bundle.close}" onclick="PF('computeInvalid').hide();" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true">
