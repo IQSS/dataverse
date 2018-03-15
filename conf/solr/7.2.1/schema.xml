@@ -180,7 +180,7 @@
 <field name="fileAccess" type="string" stored="true" indexed="true" multiValued="true"/>
 
 <!-- Added for Dataverse 4.0 alpha 1: static "parent" fields not copied to "catchall" field https://redmine.hmdc.harvard.edu/issues/3603  -->
-<!-- We index parentid and parentname as a debugging aid in case we want to match on it with an explict query like curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=parentid%3A42' or curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=parentname%3Abirds' -->
+<!-- We index parentid and parentname as a debugging aid in case we want to match on it with an explict query like curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=parentId%3A42' or curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=parentName%3Abirds' -->
 <!-- TODO: store parentid as a long instead of a string  -->
 <field name="parentId" type="string" stored="true" indexed="true" multiValued="false"/>
 <field name="parentIdentifier" type="string" stored="true" indexed="true" multiValued="false"/>
