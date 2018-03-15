@@ -120,6 +120,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     public List<Long> findAllLocalDatasetIds() {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.harvestedFrom IS null ORDER BY o.id", Long.class).getResultList();
     }
+    
+    public List<Long> findAllUnindexed() {
+        return em.createQuery("SELECT o.id FROM Dataset o WHERE o.indexTime IS null ORDER BY o.id DESC", Long.class).getResultList();
+    }
 
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
