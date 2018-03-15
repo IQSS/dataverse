@@ -60,10 +60,8 @@ node {
     /*
     * Deploy
     */
-    if ("${DEPLOY_TARGET}" != "dev") {
-      timeout(time: 2, unit: "HOURS") {
-        def DEPLOY_TARGET = input message: 'Deploy to', parameters: [string(defaultValue: "${DEPLOY_TARGET}", description: 'dev, stage, prod', name: 'DEPLOY_TARGET')]
-      }
+    timeout(time: 2, unit: "HOURS") {
+      def DEPLOY_TARGET = input message: 'Deploy to', parameters: [string(defaultValue: "${DEPLOY_TARGET}", description: 'dev, stage, prod', name: 'DEPLOY_TARGET')]
     }
 
     notifyBuild("Deploying ${ARTIFACT_ID}-${VERSION} to ${DEPLOY_TARGET}", "good")
