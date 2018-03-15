@@ -80,7 +80,7 @@ Once Glassfish is installed, you'll need a newer version of the Weld library (v2
 
 	# vim /usr/local/glassfish4/glassfish/domains/domain1/config/domain.xml
 
-This recommendation comes from http://blog.c2b2.co.uk/2013/07/glassfish-4-performance-tuning.html among other places.
+This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4-performance-tuning-monitoring-and-troubleshooting.php among other places.
 
 - Start Glassfish and verify the Weld version::
 

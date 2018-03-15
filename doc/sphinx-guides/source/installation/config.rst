@@ -353,6 +353,14 @@ Then, we'll need to identify which S3 bucket we're using. Replace ``your_bucket_
 
 ``./asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=your_bucket_name"``
 
+Optionally, you can have users download files from S3 directly rather than having files pass from S3 through Glassfish to your users. To accomplish this, set ``dataverse.files.s3-download-redirect`` to ``true`` like this:
+
+``./asadmin create-jvm-options "-Ddataverse.files.s3-download-redirect=true"``
+
+If you enable ``dataverse.files.s3-download-redirect`` as described above, note that the S3 URLs expire after an hour by default but you can configure the expiration time using the ``dataverse.files.s3-url-expiration-minutes`` JVM option. Here's an example of setting the expiration time to 120 minutes:
+
+``./asadmin create-jvm-options "-D dataverse.files.s3-url-expiration-minutes=120"``
+
 Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
 .. _Branding Your Installation:
@@ -820,7 +828,7 @@ Specify a URL where users can read your Privacy Policy, linked from the bottom o
 ++++++++++++++
 
 Specify a URL where users can read your API Terms of Use.
-API users can retrieve this URL from the SWORD Service Document or the "info" endpoint of the :doc:`/api/native-api#info`
+API users can retrieve this URL from the SWORD Service Document or the "info" section of our :doc:`/api/native-api` documentation.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
@@ -1050,6 +1058,16 @@ Host FQDN or URL of your Piwik instance before the ``/piwik.php``. Examples:
 or
 
 ``curl -X PUT -d hostname.domain.tld/stats http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
+
+:PiwikAnalyticsTrackerFileName
+++++++++++++++++++++++++++++++
+
+Filename for the 'php' and 'js' tracker files used in the piwik code (piwik.php and piwik.js).
+Sometimes these files are renamed in order to prevent ad-blockers (in the browser) to block the piwik tracking code.
+This sets the base name (without dot and extension), if not set it defaults to 'piwik'.
+
+``curl -X PUT -d domainstats http://localhost:8080/api/admin/settings/:PiwikAnalyticsTrackerFileName``
+
 
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++

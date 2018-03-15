@@ -99,7 +99,7 @@
         "name": "dataverse-plus-glassfish"
       },
       "spec": {
-        "dockerImageRepository": "iqss/dataverse-glassfish:latest"
+        "dockerImageRepository": "iqss/dataverse-glassfish"
       }
     },
     {
@@ -109,7 +109,7 @@
         "name": "centos-postgresql-94-centos7"
       },
       "spec": {
-        "dockerImageRepository": "centos/postgresql-94-centos7:latest"
+        "dockerImageRepository": "centos/postgresql-94-centos7"
       }
     },
     {
@@ -119,7 +119,7 @@
         "name": "iqss-dataverse-solr"
       },
       "spec": {
-        "dockerImageRepository": "iqss/dataverse-solr:latest"
+        "dockerImageRepository": "iqss/dataverse-solr"
       }
     },
     {
