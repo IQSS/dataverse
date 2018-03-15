@@ -277,17 +277,21 @@ Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your clo
 - Compute on multiple datasets
 - Compute on a single datafile
 
-The compute buttons on dataset and file pages will link validated users to your computing environment. If a user is computing on one or multiple datasets, the compute button will redirect to:
+The compute buttons on dataset and file pages will link validated users to your computing environment. If a user is computing on one dataset, the compute button will redirect to:
 
-``:ComputeBaseUrl&datasetPersistentId&anotherDatasetPersistentId&anotherDatasetPersistentId&...``
+``:ComputeBaseUrl?datasetPersistentId``
+
+If a user is computing on multiple datasets, the compute button will redirect to:
+
+``:ComputeBaseUrl/multiparty?datasetPersistentId&anotherDatasetPersistentId&anotherDatasetPersistentId&...``
 
 If a user is computing on a single file, depending on the configuration of your installation, the compute button will either redirect to: 
 
-``:ComputeBaseUrl&datasetPersistentId=yourObject``
+``:ComputeBaseUrl?datasetPersistentId=yourObject``
 
 if your installation's :ref:`:PublicInstall` setting is true, or:
 
-``:ComputeBaseUrl&datasetPersistentId=yourObject&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
+``:ComputeBaseUrl?datasetPersistentId=yourObject&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
 
 You can configure this redirect properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
 

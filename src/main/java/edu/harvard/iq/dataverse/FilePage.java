@@ -632,9 +632,9 @@ public class FilePage implements java.io.Serializable {
             swiftObject.open();
             //generate a temp url for a file
             if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "&" + this.getFile().getOwner().getGlobalId() + "=" + swiftObject.getSwiftFileName();
+                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalId() + "=" + swiftObject.getSwiftFileName();
             }
-            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "&" + this.getFile().getOwner().getGlobalId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
         }
         return "";
         }

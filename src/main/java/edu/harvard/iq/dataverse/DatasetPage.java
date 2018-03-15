@@ -424,12 +424,14 @@ public class DatasetPage implements java.io.Serializable {
             if (url == null) {
                 return "";
             }
+            // url indicates that you are computing with multiple datasets
+            url += "/multiparty?";
             List<Entry<String,String>> contents = authUser.getCart().getContents();
             for (Entry<String,String> entry : contents) {
                 String persistentIdUrl = entry.getValue();
-                url += "&" + persistentIdUrl;
+                url +=  persistentIdUrl + "&";
             }
-            return URLEncoder.encode(url);
+            return url.substring(0, url.length() - 1);
         }
         return "";
     }
@@ -652,7 +654,7 @@ public class DatasetPage implements java.io.Serializable {
     */
     public String getComputeUrl() throws IOException {
 
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "&" + this.getPersistentId();
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId();
             //WHEN we are able to get a temp url for a dataset
             //return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
 
@@ -673,10 +675,10 @@ public class DatasetPage implements java.io.Serializable {
             logger.info("DatasetPage: Failed to get storageIO");
         }
         if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "&" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName();
+            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName();
         }
         
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "&" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
 
     }
     
