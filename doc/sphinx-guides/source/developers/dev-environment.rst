@@ -15,7 +15,7 @@ The quickest way to get Dataverse running is to install VirtualBox and Vagrant a
 Supported Operating Systems
 ---------------------------
 
-The setup of a Dataverse development environment assumes the presence of a Unix shell (i.e. bash) and standard Unix utilities (i.e curl) so an operating system with Unix underpinnings such as Mac OS X or Linux is required. Development on a Mac, Ubuntu, or Fedora is recommended.
+The setup of a Dataverse development environment assumes the presence of a Unix shell (i.e. bash) and standard Unix utilities (i.e curl) so an operating system with Unix underpinnings such as Mac OS X or Linux is required.
 
 We regret to say that development of Dataverse on Windows is not well supported. Please provide suggestions at https://github.com/IQSS/dataverse/issues/3927 or on the `"Do you want to develop on Windows?" thread <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_ on our mailing list. Your best option at this point is probably the Vagrant environment for Dataverse described in the :doc:`tools` section. If you can help us describe how Windows 10 users can make use of the new `Windows Subsystem for Linux (WSL) <https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux>`_ feature, please get in touch.
 
@@ -31,7 +31,7 @@ Dataverse is developed on and requires Java 8.
 
 On Mac, we recommend Oracle's version of Java, which can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-On Linux, you are welcome to use the OpenJDK available from package managers on common Linux distributions such as Ubuntu and Fedora.
+On Linux, you are welcome to use the OpenJDK available from package managers.
 
 Install Glassfish
 ~~~~~~~~~~~~~~~~~
@@ -40,7 +40,7 @@ Glassfish 4.1 is required. Newer versions of 4.x are known not to work ( https:/
 
 To install Glassfish:
 
-- Download http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip and place in in ``/usr/local`` or the directory of your choice.
+- Download http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip and place it in ``/usr/local`` or the directory of your choice.
 - Run ``unzip glassfish-4.1.zip`` to unzip to ``/usr/local/glassfish4`` or another directory of your choice. Note that if you have installed Homebrew ( https://brew.sh ) on a Mac ``/usr/local`` will already be writable by your user.
 
 There is nothing you need to configure for Glassfish but you should make note of the installation location if it differs from ``/usr/local/glassfish4`` because you will need to supply it to the Dataverse installer, described below.
@@ -75,7 +75,7 @@ Change into the directory you created, download the Solr tarball, and uncompress
 
 ``tar xvfz solr-4.6.0.tgz``
 
-A Dataverse-specific ``schema.xml`` configuration file is required, which we download from the "develop" branch on GitHub and use to overwrite the defaul ``schema.xml`` file:
+A Dataverse-specific ``schema.xml`` configuration file is required, which we download from the "develop" branch on GitHub and use to overwrite the default ``schema.xml`` file:
 
 ``cd solr-4.6.0/example``
 
@@ -99,7 +99,7 @@ If you are already using ``brew`` ( https://brew.sh ), ``apt-get``, or ``yum``, 
 Install Netbeans or Maven
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-While you are welcome to use any editor or IDE you wish (or none at all), Netbeans 8+ is recommended because it is free of cost, works cross platform, has good support for Java EE projects, and has Maven (the build tool we use) built in.
+While you are welcome to use any editor or IDE you wish, Netbeans 8+ is recommended because it is free of cost, works cross platform, has good support for Java EE projects, and has Maven (the build tool we use) built in.
 
 Netbeans can be downloaded from http://netbeans.org. It's a good idea to select an option that contains the Jave EE features when choosing your download bundle but it's possible to add them after installation. Go ahead and install JUnit if you are prompted to do so.
 
