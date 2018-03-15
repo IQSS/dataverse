@@ -176,7 +176,7 @@ Load/Performance Testing
 Locust
 ~~~~~~
 
-Load and performance testing is conducted on an as-needed basis but we're open to automating it. As of this writing Locust ( https://locust.io ) scripts at https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests have been used but (FIXME!) our process is not well documented. Note that the scripts in ``tests/locust`` are not actively used and should be cleaned up and moved under ``tests/performance``.
+Load and performance testing is conducted on an as-needed basis but we're open to automating it. As of this writing Locust ( https://locust.io ) scripts at https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests have been used.
 
 download-files.sh script
 ~~~~~~~~~~~~~~~~~~~~~~~~
