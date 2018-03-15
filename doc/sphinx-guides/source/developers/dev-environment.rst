@@ -99,7 +99,7 @@ If you are already using ``brew`` ( https://brew.sh ), ``apt-get``, or ``yum``, 
 Install Netbeans or Maven
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-While you are welcome to use any editor or IDE you wish, Netbeans 8+ is recommended because it is free of cost, works cross platform, has good support for Java EE projects, and has Maven (the build tool we use) built in.
+While you are welcome to use any editor or IDE you wish, Netbeans is recommended because it is free of cost, works cross platform, has good support for Java EE projects, and has Maven (the build tool we use) built in.
 
 Netbeans can be downloaded from http://netbeans.org. It's a good idea to select an option that contains the Jave EE features when choosing your download bundle but it's possible to add them after installation. Go ahead and install JUnit if you are prompted to do so.
 
@@ -108,7 +108,7 @@ Below we describe how to build the Dataverse war file with Netbeans but if you p
 Clone the Dataverse Git Repo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Dataverse code is at https://github.com/IQSS/dataverse so you'll want to fork the repo and clone your fork with a command that looks something like this:
+The Dataverse code is at https://github.com/IQSS/dataverse so you'll want to fork that repo and clone your fork with a command that looks something like this:
 
 ``git clone git@github.com:[your GitHub user or organization]/dataverse.git``
 
@@ -144,7 +144,7 @@ After the script has finished, you should be able to log into Dataverse with the
 Next Steps
 ----------
 
-If you can log in to Dataverse, great! You're almost ready to start hacking on code. However, initial deployment of the Dataverse war file was does by the ``install`` script and you need to get set up to deploy the war file from an IDE such as Netbeans or the command line. This is the first topic under :doc:`tips`, where you should go next.
+If you can log in to Dataverse, great! You're almost ready to start hacking on code. However, initial deployment of the Dataverse war file was done by the ``install`` script and you need to get set up to deploy the war file from an IDE such as Netbeans or the command line. This is the first topic under :doc:`tips`, where you should go next.
 
 If something has gone terribly wrong with any of the steps above, please see the :doc:`troubleshooting` section and don't be shy about reaching out as explained under "Getting Help" in the :doc:`intro` section.
 

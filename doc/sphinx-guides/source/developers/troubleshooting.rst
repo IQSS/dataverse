@@ -2,16 +2,13 @@
 Troubleshooting
 ===============
 
+Over in the :doc:`dev-environment` section we described the "happy path" of when everything goes right as you set up your Dataverse development environment. Here are some common problems and solutions for when things go wrong.
+
 .. contents:: |toctitle|
 	:local:
 
-Troubleshooting Your Dev Environment
-------------------------------------
-
-Over in the :doc:`dev-environment` section we described above the "happy path" of when everything goes right with setting up your Dataverse development environment. Here are some common problems and solutions for when things go wrong.
-
 context-root in glassfish-web.xml Munged by Netbeans
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------------------------
 
 For unknown reasons, Netbeans will sometimes change the following line under ``src/main/webapp/WEB-INF/glassfish-web.xml``:
 
@@ -22,11 +19,11 @@ Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will delete
 The solution is to put the file back to how it was before Netbeans touched it. If anyone knows of an open Netbeans bug about this, please let us know.
 
 Configuring / Troubleshooting Mail Host
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------
 
 If you have trouble with the SMTP server, consider editing the ``install`` script to disable the SMTP check.
 
-Out of the box, no emails will be sent from your development environment. This is because you have to set the ``:SystemEmail`` setting and make sure you've configured your SMTP correctly.
+Out of the box, no emails will be sent from your development environment. This is because you have to set the ``:SystemEmail`` setting and make sure you've configured your SMTP server correctly.
 
 You can configure ``:SystemEmail`` like this:
 
@@ -83,14 +80,14 @@ These properties can be tailored to your own preferred mail service, but if all 
 + If you're seeing a "Connection refused" / similar error upon email sending, try another port.
 
 Rebuilding Your Dev Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 If you have an old copy of the database and old Solr data and want to start fresh, here are the recommended steps:
 
 - drop your old database
 - clear out your existing Solr index: ``scripts/search/clear``
 - run the installer script above - it will create the db, deploy the app, populate the db with reference data and run all the scripts that create the domain metadata fields. You no longer need to perform these steps separately.
-- confirm you are using the latest Dataverse-specific Solr schema.xml per the "Installing and Running Solr" section of this guide
+- confirm you are using the latest Dataverse-specific Solr schema.xml
 - confirm http://localhost:8080 is up
 - If you want to set some dataset-specific facets, go to the root dataverse (or any dataverse; the selections can be inherited) and click "General Information" and make choices under "Select Facets". There is a ticket to automate this: https://github.com/IQSS/dataverse/issues/619
 
@@ -107,4 +104,4 @@ If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400
 
 ----
 
-Previous: :doc:`tips` | Next: :doc:`tips`
+Previous: :doc:`tips` | Next: :doc:`version-control`

@@ -50,7 +50,7 @@ Make a Small Change to the Code
 
 Let's make a tiny change to the code, compile the war file, deploy it, and verify that that we can see the change.
 
-One of the smallest changes we can make is adjusting the build number that appears in the lower right of ver page.
+One of the smallest changes we can make is adjusting the build number that appears in the lower right of every page.
 
 From the root of the git repo, run the following command to set the build number to the word "hello" (or whatever you want):
 
@@ -77,17 +77,17 @@ For faster iteration while working on JSF pages, it is highly recommended that y
 Deploying With ``asadmin``
 --------------------------
 
-For developers not using an IDE such as Netbeans, or deploying to a non-local system for development, code can be deployed manually using the ``asadmin`` command.
+Sometimes you want to deploy code without using Netbeans or from the command line on a server you have ssh'ed into.
+
+For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/glassfish4`` or wherever you have installed Glassfish.
 
 There are four steps to this process:
 
 1. Build the war file: ``mvn package``
-2. Undeploy the Dataverse application (if necessary): ``asadmin undeploy dataverse-VERSION``
-3. Copy the war file to the development server (if necessary)
-4. Deploy the new code: ``asadmin deploy /path/to/dataverse-VERSION.war``
-
-The :doc:`/installation/installation-main` section of the Installation Guide has more information on this topic.
-
+2. Check which version of Dataverse is deployed: ``./asadmin list-applications``
+3. Undeploy the Dataverse application (if necessary): ``./asadmin undeploy dataverse-VERSION``
+4. Copy the war file to the server (if necessary)
+5. Deploy the new code: ``./asadmin deploy /path/to/dataverse-VERSION.war``
 
 Running the Dataverse ``install`` Script in Non-Interactive Mode
 ----------------------------------------------------------------
