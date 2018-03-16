@@ -1,0 +1,14 @@
+[Unit]
+Description = Dataverse Provenance Service
+After = syslog.target network.target remote-fs.target nss-lookup.target
+
+[Service]
+User = cplservice
+Type = simple
+WorkingDirectory = /home/cplservice
+Environment='LD_LIBRARY_PATH=/usr/local/lib'
+ExecStart = /bin/python /usr/local/dataverse-provenance/cpl-rest.py --host=127.0.0.1 --port=5000
+Restart=on-failure
+
+[Install]
+WantedBy = multi-user.target

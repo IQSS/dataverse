@@ -75,6 +75,7 @@ Optional Components
 
 There are a number of optional components you may choose to install or configure, including:
 
+- Provenance: describes the history of a digital object. For details, see the :doc:`provenance` section.
 - R, rApache, Zelig, and TwoRavens: :doc:`/user/data-exploration/tworavens` describes the feature and :doc:`r-rapache-tworavens` describes how to install these components. :doc:`external-tools` explains how third-party tools like TwoRavens can be added to Dataverse.
 - Dropbox integration: for uploading files from the Dropbox API.
 - Apache: a web server that can "reverse proxy" Glassfish applications and rewrite HTTP traffic.

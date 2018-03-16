@@ -36,14 +36,14 @@ Privacy Considerations
 
 Out of the box, Dataverse will list email addresses of the "contacts" for datasets when users visit a dataset page and click the "Export Metadata" button. If you prefer to exclude email addresses of dataset contacts from metadata export, set :ref:`:ExcludeEmailFromExport <:ExcludeEmailFromExport>` to true.
 
-Additional Recommendations
-++++++++++++++++++++++++++
 Run Glassfish as a User Other Than Root
 +++++++++++++++++++++++++++++++++++++++
 
 See the Glassfish section of :doc:`prerequisites` for details and init scripts for running Glassfish as non-root.
 
 Related to this is that you should remove ``/root/.glassfish/pass`` to ensure that Glassfish isn't ever accidentally started as root. Without the password, Glassfish won't be able to start as root, which is a good thing.
+
+It's a good idea to run services as non-root, such as Solr and the :doc:`provenance` REST service.
 
 Enforce Strong Passwords for User Accounts
 ++++++++++++++++++++++++++++++++++++++++++
@@ -1188,6 +1188,15 @@ It is recommended that you configure additional error handling for your Service 
 You can set the value of "#THIS PAGE#" to the url of your Dataverse homepage, or any other page on your site that is accessible to anonymous users and will have the isPassive.js file loaded.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
+
+.. _:ProvServiceUrl:
+
+:ProvServiceUrl
++++++++++++++++
+
+The provenance service URL is where the provenance system runs. Like Solr, it is an external service that Dataverse interacts with via REST API calls. Defaults to "http://localhost:7777".
+
+``curl -X PUT -d 'http://localhost:5000' http://localhost:8080/api/admin/settings/:ProvServiceUrl``
 
 .. _:ComputeBaseUrl:
 

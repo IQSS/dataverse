@@ -294,6 +294,72 @@ If you have an old copy of the database and old Solr data and want to start fres
 
 You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy and related scripts interesting because they demonstrate how we have at least partially automated the process of tearing down a Dataverse installation and having it rise again, hence the name "phoenix." See also "Fresh Reinstall" in the :doc:`/installation/installation-main` section of the Installation Guide.
 
+Provenance
+----------
+
+The provenance feature of Dataverse depends on a REST service which you must install and configure. This is similar to how Solr provides an REST API that Dataverse is configured to use. The provenance REST service is built on top of "prov-cpl" (Core Provenance Library or CPL) and the code can be found at https://github.com/ProvTools/prov-cpl .
+
+Installing CPL on Mac
+~~~~~~~~~~~~~~~~~~~~~
+
+If you're feeling adventurous, you can attempt to install CPL directly on your Mac but this is not recommended. Rather, below CPL runs as a REST service within Vagrant.
+
+First, install Vagrant and VirtualBox as described in the :doc:`tools` section.
+
+Then, clone the ``prov-cpl`` repo.
+
+git clone https://github.com/ProvTools/prov-cpl
+
+Download :download:`Vagrantfile <../_static/developers/prov/Vagrantfile>` and :download:`vagrant.sh <../_static/developers/prov/install/vagrant.sh>` and place them in the ``prov-cpl`` directory that was created when you cloned that repo. Then ``cd`` to that directory and run ``vagrant up``.
+
+``vagrant up`` is expected to take a while. A message near the end should say ``Running on http://0.0.0.0:5000/`` which indicates that the CPL REST service is running within Vagrant. The Vagrantfile above specifies that port 5000 within Vagrant should be available to your laptop on port 7777. To test this, try the following curl command from your laptop:
+
+``curl http://localhost:7777/provapi/version``
+
+If you get an HTTP response and JSON output, you have successfully set up the REST service. The next step is to configure Dataverse to use it.
+
+curl -X PUT -d 'http://localhost:7777' http://localhost:8080/api/admin/settings/:ProvServiceUrl
+
+Installing CPL on Ubuntu
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Vagrant environment described in the "Installing CPL on Mac" section above should work find on Ubuntu. That is to say, hopefully, you can just run ``vagrant up`` and a prov REST service will be up and running.
+
+Alternatively, if you are interested in installing the components directly onto your Ubuntu laptop, take a look at the script that the Vagrant environment uses and see if you can get everything working. The script seems to work fine on Ubuntu 16.04 (the Vagrant VM) but on newer versions of Ubuntu, some tweaks may be necessary and are noted below.
+
+**Issue:** Import error
+
+``ImportError: libcpl-odbc.3.so: cannot open shared object file: No such file or directory``
+
+**Solution:** your library path may be incorrect, export it
+
+``export LD_LIBRARY_PATH=/usr/local/lib``
+
+**Issue:** ODBC connection/driver error
+
+``python cpl-rest.py --host=0.0.0.0``
+
+.. code-block:: bash
+
+    The ODBC driver reported the following while running SQLDriverConnect:
+    IM002:1:0:[unixODBC][Driver Manager]Data source name not found, and no default driver specified
+    Traceback (most recent call last):
+    File "cpl-rest.py", line 5, in <module>
+    connection = CPL.cpl_connection()
+    File "/usr/local/lib/python2.7/dist-packages/CPL.py", line 386, in __init__
+    CPLDirect.cpl_error_string(ret))
+    Exception: Could not create ODBC connection Database connection error``
+
+**Solution:** ensure ``/etc/odbc.ini`` contains the correct configuration. Specifically, the driver in the guide may not exist on your system. 
+
+Call ``odbcinst -q -d`` to see list of drivers, and add one to ``odbc.ini`` (unicode is preferred if available)
+
+.. code-block:: bash
+
+    [CPL]
+    Description     = PostgreSQL Core Provenance Library
+    Driver          = PostgreSQL Unicode
+
 Shibboleth and OAuth
 --------------------
 
