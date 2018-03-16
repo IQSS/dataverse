@@ -23,6 +23,7 @@
                 <!-- Upload -->
                 <ui:fragment id="fileUploadFragment" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
                     <script>
+//<![CDATA[
                         function uploadWidgetDropMsg() {
                             var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
                             if ($(fileUpload).children('#dragdropMsg').length === 0) {
@@ -30,6 +31,11 @@
                             }
                         }
                         function uploadStarted() {
+                            var errors = document.getElementsByClassName("ui-fileupload-error");
+                            for(i=errors.length-1; i >=0; i--) {
+                            	errors[i].parentNode.removeChild(errors[i]);
+                            }
+                 	
                             $('button[id$="uploadStarted"]').trigger('click');
                         }
                         function uploadFinished(fileupload) {
@@ -47,6 +53,7 @@
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
                         });
+//]]>
                     </script>
                     <p class="help-block">
                         <span class="glyphicon glyphicon-info-sign"/>
@@ -74,6 +81,7 @@
                                   label="#{bundle['file.selectToAddBtn']}"
                                   oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));"
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
+                                  onerror="javascript:reportUploadFailure();"
                                   sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
                                   fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" 
                                   invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
@@ -655,5 +663,30 @@
             };
             Dropbox.choose(options);
         }
+//<![CDATA[
+        
+        function reportUploadFailure(fileUpload) {
+            //if(typeof window.event !== 'undefined') {
+            //  alert(window.event.srcElement.status);
+            //}
+            var status = arguments.callee.caller.caller.arguments[1].jqXHR.status;
+            var statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
+            var name = arguments.callee.caller.caller.arguments[1].files[0].name;
+            var x = document.getElementsByClassName("ui-fileupload-preview");
+
+            for(i=0; i < x.length; i++) {
+              if(x[i].nextSibling.innerHTML == name) {
+                var node = document.createElement("TD");
+                node.title=statusText;
+                node.classList.add('ui-fileupload-error');
+                var textnode = document.createTextNode("Upload unsuccessful (Error " + status + ").");
+                node.appendChild(textnode);
+                x[i].parentNode.appendChild(node);
+                
+              }
+            }
+          }
+//]]>
+
     </script>
 </ui:composition>
