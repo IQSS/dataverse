@@ -73,9 +73,9 @@ ${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd
 ${SOLR_SCHEMA}:		../../conf/solr/7.2.1/schema.xml
 	@echo copying Solr schema file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/solr/4.6.0/schema.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.2.1/schema.xml ${INSTALLER_ZIP_DIR}
 
 ${SOLR_SCHEMA}:		../../conf/solr/7.2.1/solrconfig.xml
 	@echo copying Solr config file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/solr/4.6.0/solrconfig.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.2.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
