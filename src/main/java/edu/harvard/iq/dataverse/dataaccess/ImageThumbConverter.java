@@ -269,7 +269,7 @@ public class ImageThumbConverter {
         try {
             storageIO.open();
         } catch (IOException ioex) {
-            logger.warning("caught Exception trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
+            logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
         }
 
@@ -407,7 +407,7 @@ public class ImageThumbConverter {
         try {
             cached = storageIO.isAuxObjectCached(THUMBNAIL_SUFFIX + size);
         } catch (Exception ioex) {
-            logger.fine("caught IO exception while checking for a cached thumbnail (file " + storageIO.getDataFile().getStorageIdentifier() + ")");
+            logger.fine("caught Exception while checking for a cached thumbnail (file " + storageIO.getDataFile().getStorageIdentifier() + ")");
             return false;
         }
 
