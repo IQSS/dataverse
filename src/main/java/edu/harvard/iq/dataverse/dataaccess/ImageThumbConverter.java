@@ -217,7 +217,7 @@ public class ImageThumbConverter {
                 //inputStream = storageIO.getInputStream();
                 pdfFileChannel = storageIO.getReadChannel();
             } catch (Exception ioex) {
-                logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier());
+                logger.warning("caught Exception trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier());
                 return false;
             }
 
@@ -269,7 +269,7 @@ public class ImageThumbConverter {
         try {
             storageIO.open();
         } catch (IOException ioex) {
-            logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
+            logger.warning("caught Exception trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
         }
 
@@ -671,7 +671,7 @@ public class ImageThumbConverter {
         try {
             rescaleImage(fullSizeImage, width, height, size, outputFileStream);
         } catch (Exception ioex) {
-            logger.warning("caught IO exceptiopn trying to create rescaled image " + outputLocation);
+            logger.warning("caught Exceptiopn trying to create rescaled image " + outputLocation);
             return null;
         }
 
