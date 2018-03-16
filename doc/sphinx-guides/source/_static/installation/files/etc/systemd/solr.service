@@ -6,7 +6,7 @@ After = syslog.target network.target remote-fs.target nss-lookup.target
 User = solr
 Type = simple
 WorkingDirectory = /usr/local/solr-7.2.1
-ExecStart = bin/solr start
+ExecStart = bin/solr start -m 1g
 Restart=on-failure
 
 [Install]

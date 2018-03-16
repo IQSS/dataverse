@@ -6,21 +6,20 @@
 # chkconfig: 35 92 08
 # description: Starts and stops Apache Solr
 
-SOLR_DIR="/usr/local/solr-4.6.0/example"
-JAVA_OPTIONS="-Xmx1024m -DSTOP.PORT=8079 -DSTOP.KEY=mustard -jar start.jar"
-LOG_FILE="/var/log/solr.log"
-JAVA="/usr/bin/java"
+SOLR_DIR="/usr/local/solr-7.2.1"
+SOLR_COMMAND="bin/solr"
+SOLR_ARGS="-m 1g"
 
 case $1 in
     start)
         echo "Starting Solr"
         cd $SOLR_DIR
-        $JAVA $JAVA_OPTIONS 2> $LOG_FILE &
+        $SOLR_COMMAND start $SOLR_ARGS
         ;;
     stop)
         echo "Stopping Solr"
         cd $SOLR_DIR
-        $JAVA $JAVA_OPTIONS --stop
+        $SOLR_COMMAND stop $SOLR_ARGS
         ;;
     restart)
         $0 stop

@@ -152,6 +152,7 @@ Download solr-7.2.1.tgz from http://archive.apache.org/dist/lucene/solr/7.2.1/so
 - ``mv _default collection1``
 - ``cp ~/NetBeansProjects/dataverse/conf/solr/7.2.1/schema.xml solr-7.2.1/server/solr/collection1/conf/schema.xml``
 - ``cp ~/NetBeansProjects/dataverse/conf/solr/7.2.1/solrconfig.xml solr-7.2.1/server/solr/collection1/conf/solrconfig.xml``
+- ``cd ~/solr/solr-7.2.1``
 - ``bin/solr start``
 - ``bin/solr create_core -c collection1 -d server/solr/collection1/conf/``
 
