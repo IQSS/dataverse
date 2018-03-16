@@ -10,7 +10,7 @@ These instructions are purposefully opinionated and terse to help you get your d
 Quick Start
 -----------
 
-The quickest way to get Dataverse running is to use Vagrant as described in the :doc:`tools` section. The recommended way is described below.
+The quickest way to get Dataverse running is to use Vagrant as described in the :doc:`tools` section, but for day to day development work, we recommended the following setup.
 
 Set Up Dependencies
 -------------------
@@ -20,12 +20,12 @@ Supported Operating Systems
 
 Mac OS X or Linux is required because the setup scripts assume the presence of standard Unix utilities.
 
-Windows is not supported, unfortuantely. For the current status of Windows support, see https://github.com/IQSS/dataverse/issues/3927 or our community list thread `"Do you want to develop on Windows?" <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_
+Windows is not supported, unfortunately. For the current status of Windows support, see https://github.com/IQSS/dataverse/issues/3927 or our community list thread `"Do you want to develop on Windows?" <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_
 
 Install Java
 ~~~~~~~~~~~~
 
-Dataverse is requires Java 8.
+Dataverse requires Java 8.
 
 On Mac, we recommend Oracle's version of the JDK, which can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
@@ -34,7 +34,7 @@ On Linux, you are welcome to use the OpenJDK available from package managers.
 Install Netbeans or Maven
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-NetBeans IDE (Jave EE bundle) is recommended, and can be downloaded from http://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Java EE projects, and includes a required build tool, Maven.
+NetBeans IDE (Java EE bundle) is recommended, and can be downloaded from http://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Java EE projects, and includes a required build tool, Maven.
 
 Below we describe how to build the Dataverse war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
 
@@ -102,7 +102,7 @@ In the Finder, click "Applications" then "PostgreSQL 9.4" and launch the "Reload
 
 Next, launch the "pgAdmin III" application from the same folder. Under "Servers" double click "PostgreSQL 9.4 (localhost)". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
 
-On Linux, you should just install PostgreSQL from your package manager without worring about the version as long as it's 9.x. Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
+On Linux, you should just install PostgreSQL from your package manager without worrying about the version as long as it's 9.x. Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
 Install Solr
 ~~~~~~~~~~~~
