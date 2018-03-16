@@ -4,7 +4,7 @@ Could be potentially usable for normal development as well.
 
 
 Initial setup (aka - do once):
-- Do surgery on glassfish4 and solr4.6.0 following guides, place results in `conf/docker-aio/dv/deps` as `glassfish4dv.tgz` and `solr-4.6.0dv.tgz` respectively. If you `cd conf/docker-aio` and run `./0prep_deps.sh` these tarballs will be constructed for you.
+- Do surgery on glassfish4 and solr7.2.1 following guides, place results in `conf/docker-aio/dv/deps` as `glassfish4dv.tgz` and `solr-7.2.1dv.tgz` respectively. If you `cd conf/docker-aio` and run `./0prep_deps.sh` these tarballs will be constructed for you.
 
 Per-build:
 - `cd conf/docker-aio`, and run `1prep.sh` to copy files for integration test data into docker build context; `1prep.sh` will also build the war file and installation zip file
