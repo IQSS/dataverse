@@ -32,7 +32,7 @@ Now that Glassfish doesn't have anything deployed, we can proceed with getting N
 Add Glassfish 4.1 as a Server in Netbeans
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As mentioned in the :doc:`dev-environment` section, Dataverse only works with a specific version of Glassfish so you need to make sure Netbeans is deploying to that version rather than a newer version of Glassfish that may have come bundled with Netbeans.
+Dataverse only works with a specific version of Glassfish (see https://github.com/IQSS/dataverse/issues/2628 ) so you need to make sure Netbeans is deploying to that version rather than a newer version of Glassfish that may have come bundled with Netbeans.
 
 Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Glassfish Server" and set the installation location to ``/usr/local/glassfish4``. The default are fine so you can click "Next" and "Finish". To avoid confusing, click "Remove Server" on the newer version of Glassfish that came bundled with Glassfish.
 
