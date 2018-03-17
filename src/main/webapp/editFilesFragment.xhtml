@@ -31,6 +31,8 @@
                             }
                         }
                         function uploadStarted() {
+                        	// If this is not the first upload, remove error messages since 
+                        	// the upload of any files that failed will be tried again.
                             var errors = document.getElementsByClassName("ui-fileupload-error");
                             for(i=errors.length-1; i >=0; i--) {
                             	errors[i].parentNode.removeChild(errors[i]);
@@ -44,6 +46,31 @@
                                 //alert("all uploads finished");
                             }
                         }
+                        function uploadFailure(fileUpload) {
+                        	// This handles HTTP errors (non-20x reponses) such as 413 (Request too large) and 504 (Gateway timeout)
+                        	// where the upload call to the server fails (the server doesn't receive the request)
+                        	// It notifies the user and provides info about the error (status, statusText)
+                        	// On some browsers, the status is available in an event: window.event.srcElement.status
+                        	// but others, (Firefox) don't support this. The calls below retrieve the status and other info 
+                        	// from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
+                        			
+                            var status = arguments.callee.caller.caller.arguments[1].jqXHR.status;
+                            var statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
+                            var name = arguments.callee.caller.caller.arguments[1].files[0].name;
+                            var x = document.getElementsByClassName("ui-fileupload-preview");
+
+                            for(i=0; i < x.length; i++) {
+                              if(x[i].nextSibling.innerHTML == name) {
+                                var node = document.createElement("TD");
+                                node.title=statusText;
+                                node.classList.add('ui-fileupload-error');
+                                var textnode = document.createTextNode("Upload unsuccessful (Error " + status + ").");
+                                node.appendChild(textnode);
+                                x[i].parentNode.appendChild(node);
+                                
+                              }
+                            }
+                          }
                         function dropBoxUploadFinished(fileupload) {
                             $('button[id$="dropBoxUploadFinished"]').trigger('click');
                         }
@@ -663,30 +690,5 @@
             };
             Dropbox.choose(options);
         }
-//<![CDATA[
-        
-        function reportUploadFailure(fileUpload) {
-            //if(typeof window.event !== 'undefined') {
-            //  alert(window.event.srcElement.status);
-            //}
-            var status = arguments.callee.caller.caller.arguments[1].jqXHR.status;
-            var statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
-            var name = arguments.callee.caller.caller.arguments[1].files[0].name;
-            var x = document.getElementsByClassName("ui-fileupload-preview");
-
-            for(i=0; i < x.length; i++) {
-              if(x[i].nextSibling.innerHTML == name) {
-                var node = document.createElement("TD");
-                node.title=statusText;
-                node.classList.add('ui-fileupload-error');
-                var textnode = document.createTextNode("Upload unsuccessful (Error " + status + ").");
-                node.appendChild(textnode);
-                x[i].parentNode.appendChild(node);
-                
-              }
-            }
-          }
-//]]>
-
     </script>
 </ui:composition>
