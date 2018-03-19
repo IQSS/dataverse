@@ -40,4 +40,4 @@ Learn more: Micah Altman and Gary King. 2007. “A Proposed Standard for the Sch
 
 ----
 
-Previous: :doc:`/developers/tools` | Next: :doc:`/developers/geospatial`
+Previous: :doc:`/developers/tools` | Next: :doc:`/developers/remote-users`
