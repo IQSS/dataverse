@@ -27,6 +27,9 @@ chkconfig postgresql on
 GLASSFISH_USER=glassfish
 echo "Ensuring Unix user '$GLASSFISH_USER' exists"
 useradd $GLASSFISH_USER || :
+SOLR_USER=solr
+echo "Ensuring Unix user '$SOLR_USER' exists"
+useradd $SOLR_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
 GLASSFISH_ZIP="$DOWNLOAD_DIR/glassfish-4.1.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-7.2.1.tgz"
