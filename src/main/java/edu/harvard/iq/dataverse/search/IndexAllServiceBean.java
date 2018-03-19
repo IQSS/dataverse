@@ -59,7 +59,7 @@ public class IndexAllServiceBean {
         JsonObjectBuilder previewOfWorkload = Json.createObjectBuilder();
         JsonObjectBuilder dvContainerIds = Json.createObjectBuilder();
         
-        List<Long> dataverseIds = dataverseService.findAllUnindexed();
+        List<Long> dataverseIds = dataverseService.findDataverseIdsForIndexing(skipIndexed);
         
         JsonArrayBuilder dataverseIdsJson = Json.createArrayBuilder();
         //List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
@@ -67,10 +67,7 @@ public class IndexAllServiceBean {
             dataverseIdsJson.add(id);
         }
         
-        // List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
-        // Note: no support for "partitions" in this experimental branch. 
-        // The method below returns the ids of all the unindexed datasets.
-        List<Long> datasetIds = datasetService.findAllUnindexed();
+        List<Long> datasetIds = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
 
         JsonArrayBuilder datasetIdsJson = Json.createArrayBuilder();
         for (Long id : datasetIds) {
@@ -121,7 +118,8 @@ public class IndexAllServiceBean {
         // List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         // Note: no support for "partitions" in this experimental branch. 
         // The method below returns the ids of all the unindexed dataverses.
-        List<Long> dataverseIds = dataverseService.findAllUnindexed();
+        List<Long> dataverseIds = dataverseIds = dataverseService.findDataverseIdsForIndexing(skipIndexed);
+        
         int dataverseIndexCount = 0;
         int dataverseFailureCount = 0;
         //for (Dataverse dataverse : dataverses) {
@@ -141,16 +139,11 @@ public class IndexAllServiceBean {
 
         int datasetIndexCount = 0;
         int datasetFailureCount = 0;
-        // List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
-        // Note: no support for "partitions" in this experimental branch. 
-        // The method below returns the ids of all the unindexed datasets.
-        List<Long> datasetIds = datasetService.findAllUnindexed();
+        List<Long> datasetIds = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Long id : datasetIds) {
             try {
                 datasetIndexCount++;
-                //Dataset dataset = datasetService.find(id);
                 logger.info("indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + " (id=" + id + ")");
-                //Future<String> result = indexService.indexDatasetInNewTransaction(dataset);
                 Future<String> result = indexService.indexDatasetInNewTransaction(id);
             } catch (Exception e) {
                 //We want to keep running even after an exception so throw some more info into the log
