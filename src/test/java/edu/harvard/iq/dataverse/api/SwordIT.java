@@ -258,14 +258,15 @@ public class SwordIT {
         assertEquals("trees.png", filename);
 
         Response attemptToDownloadUnpublishedFileWithoutApiToken = UtilIT.downloadFile(fileId);
+        attemptToDownloadUnpublishedFileWithoutApiToken.prettyPrint();
         attemptToDownloadUnpublishedFileWithoutApiToken.then().assertThat()
-                .body("html.head.title", equalTo("403 Not Authorized - Root"))
+                .body("status", equalTo("ERROR"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response attemptToDownloadUnpublishedFileUnauthApiToken = UtilIT.downloadFile(fileId, apiTokenNoPrivs);
         attemptToDownloadUnpublishedFileUnauthApiToken.prettyPrint();
         attemptToDownloadUnpublishedFileUnauthApiToken.then().assertThat()
-                .body("html.head.title", equalTo("403 Not Authorized - Root"))
+                .body("status", equalTo("ERROR"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response downloadUnpublishedFileWithValidApiToken = UtilIT.downloadFile(fileId, apiToken);

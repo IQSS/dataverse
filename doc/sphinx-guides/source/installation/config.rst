@@ -852,6 +852,14 @@ Set ``:GuidesVersion`` to override the version number in the URL of guides. For 
 
 ``curl -X PUT -d 1234-new-feature http://localhost:8080/api/admin/settings/:GuidesVersion``
 
+:NavbarSupportUrl
++++++++++++++++++
+Set ``:NavbarSupportUrl`` to a fully-qualified url which will be used for the "Support" link in the navbar.
+
+Note that this will override the default behaviour for the "Support" menu option, which is to display the dataverse 'feedback' dialog.
+
+``curl -X PUT -d http://dataverse.example.edu/supportpage.html http://localhost:8080/api/admin/settings/:NavbarSupportUrl``
+
 :MetricsUrl
 +++++++++++
 
