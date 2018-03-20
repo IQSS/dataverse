@@ -80,7 +80,7 @@ public class SearchServiceBean {
     private SolrClient solrServer;
     
     @PostConstruct
-    public void init(){
+    public void init() {
         String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
         solrServer = new HttpSolrClient.Builder(urlString).build();
     }
