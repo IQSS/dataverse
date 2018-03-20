@@ -17,13 +17,12 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -53,10 +52,8 @@ import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-//import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
-//import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -122,7 +119,7 @@ public class IndexServiceBean {
     
     @PreDestroy
     public void close(){
-        if(solrServer != null){
+        if (solrServer != null) {
             try {
                 solrServer.close();
             } catch (IOException e) {
@@ -1393,10 +1390,8 @@ public class IndexServiceBean {
         QueryResponse queryResponse = null;
         try {
             queryResponse = solrServer.query(solrQuery);
-        } catch (SolrServerException ex) {
+        } catch (SolrServerException | IOException ex) {
             throw new SearchException("Error searching Solr for " + type, ex);
-        } catch (IOException e) {
-            logger.warning("Solr query error: " + e);
         }
         SolrDocumentList results = queryResponse.getResults();
         for (SolrDocument solrDocument : results) {
@@ -1429,10 +1424,8 @@ public class IndexServiceBean {
         QueryResponse queryResponse = null;
         try {
             queryResponse = solrServer.query(solrQuery);
-        } catch (SolrServerException ex) {
+        } catch (SolrServerException | IOException ex) {
             throw new SearchException("Error searching Solr for dataset parent id " + parentDatasetId, ex);
-        } catch (IOException e) {
-            logger.warning("Solr query error: " + e);
         }
         SolrDocumentList results = queryResponse.getResults();
         for (SolrDocument solrDocument : results) {
