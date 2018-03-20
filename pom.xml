@@ -576,47 +576,25 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.0.0</version>
-            </plugin>
-            <!-- v4.8: The truezip-maven-plugin below deletes two copies of a file that the AWS SDK bundle
-            includes called javamail.providers which breaks system emails. TODO: make our own AWS SDK without Amazon SES.
-            - bsilverstein 8/8/2017 -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>truezip-maven-plugin</artifactId>
-                <version>1.1</version>
-                <executions>
-                    <execution>
-                        <id>remove-javamail-providers-from-exploded</id>
-                        <goals>
-                            <goal>remove</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <fileset>
-                                <directory>target/dataverse-${project.version}/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
-                                <includes>
-                                    <include>javamail.providers</include>
-                                </includes>
-                            </fileset>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>remove-javamail-providers-from-war</id>
-                        <goals>
-                            <goal>remove</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <fileset>
-                                <directory>target/dataverse-${project.version}.war/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
-                                <includes>
-                                    <include>javamail.providers</include>
-                                </includes>
-                            </fileset>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+	</plugin>
+	<plugin>
+		<artifactId>exec-maven-plugin</artifactId>
+		<groupId>org.codehaus.mojo</groupId>
+		<executions>
+			<execution>
+				<id>run make clean in installer directory</id>
+				<phase>clean</phase>
+				<goals>
+					<goal>exec</goal>
+				</goals>
+				<configuration>
+					<executable>make</executable>
+					<commandlineArgs>clean</commandlineArgs>
+					<workingDirectory>scripts/installer</workingDirectory>
+				</configuration>
+			</execution>
+		</executions>
+	</plugin>
         </plugins>
     </build>
 
