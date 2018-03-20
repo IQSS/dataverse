@@ -224,7 +224,6 @@ public class SystemConfig {
     }
 
     public String getProvServiceUrl() {
-        //String saneDefault = "http://localhost:7777";
         String provServiceUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ProvServiceUrl, null);
         return provServiceUrl;
     }

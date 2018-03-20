@@ -45,6 +45,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     //These two variables hold the state of the prov variables for the current open file before any changes would be applied by the editing "session"
     private String provJsonState;
     private String freeformTextState; 
+    
     private Dataset dataset;
     
     private String freeformTextInput;
@@ -61,7 +62,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     //This map uses storageIdentifier as the key.
     //UpdatesEntry is an object containing the DataFile and the provJson string.
     //Originally there was a Hashmap<DataFile,String> to store this data 
-    //but equality is "broken"for entities like DataFile --mad 4.8.5
+    //but equality is "broken" for entities like DataFile --mad 4.8.5
     HashMap<String,UpdatesEntry> jsonProvenanceUpdates = new HashMap<>();
     
     @EJB
@@ -91,7 +92,6 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         if(provJsonParsedEntities.isEmpty()) {
             removeJsonAndRelatedData();
             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.noEntitiesError"));
-            //throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.noEntitiesError"), null));
         }
 
     }
@@ -119,7 +119,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
             generateProvJsonParsedEntities();
             setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             
-        } else if(null != popupDataFile.getCreateDate()){//Is this file fully uploaded and already has prov data saved?     
+        } else if(null != popupDataFile.getCreateDate()){ //Is this file fully uploaded and already has prov data saved?     
             JsonObject provJsonObject = execCommand(new GetProvJsonProvCommand(dvRequestService.getDataverseRequest(), popupDataFile));
             if(null != provJsonObject) {
                 provJsonState = provJsonObject.toString();
@@ -257,10 +257,11 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         return recurseNames(element, null, false);
     }
     
-    //Parsing recurser for prov json. Pulls out all names/types inside entity, including the name of each entry inside entity
-    //Note that if a later entity is found with the same entity name (not name tag) its parsed contents will replace values that are stored
-    //Current parsing code does not parse json arrays. My understanding of the schema is that these do not take place
-    //Schema: https://www.w3.org/Submission/2013/SUBM-prov-json-20130424/schema
+    /** Parsing recurser for prov json. Pulls out all names/types inside entity, including the name of each entry inside entity
+     * Note that if a later entity is found with the same entity name (not name tag) its parsed contents will replace values that are stored
+     * Current parsing code does not parse json arrays. My understanding of the schema is that these do not take place
+     * Schema: https://www.w3.org/Submission/2013/SUBM-prov-json-20130424/schema
+     */
     protected JsonElement recurseNames(JsonElement element, String outerKey, boolean atEntity) {
         //we need to know when we are inside of entity 
         //we also need to know when we are inside of each entity so we correctly connect the values

@@ -97,17 +97,6 @@ public class PersistProvJsonProvCommand extends AbstractCommand<DataFile> {
         }
         
         return dataFile;
-        // Read from StorageIO and show it to the user. This is sort of overkill. We're just making sure we can get it from disk.
-//        try {
-//            StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
-//            InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
-//            JsonReader jsonReader = Json.createReader(inputStream);
-//            JsonObject jsonObject = jsonReader.readObject();
-//            return jsonObject;
-//        } catch (IOException ex) {
-//            String error = "Exception caught in DataAccess.getStorageIO(dataFile) after creating file. Error: " + ex;
-//            throw new IllegalCommandException(error, this);
-//        }
     }
 
 }

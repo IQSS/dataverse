@@ -2549,7 +2549,6 @@ public class DatasetPage implements java.io.Serializable {
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
-        //TODO: Should saving provenance be called before ingest?
         try {
             provUploadFragmentBean.saveStagedProvJson(false);
         } catch (AbstractApiBean.WrappedResponse ex) {

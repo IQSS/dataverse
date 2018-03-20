@@ -1188,10 +1188,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 try {
                     //DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
                     fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
-                    
-                    
-                    
-                    
                     logger.fine("Successfully saved DataFile "+fileMetadata.getLabel()+" in the database.");
                 } catch (EJBException ex) {
                     saveError.append(ex).append(" ");
@@ -2641,7 +2637,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         fileMetadataSelectedForIngestOptionsPopup = null;
     }
 
-    public void populateFileMetadatas() {
+    private void populateFileMetadatas() {
 
         if (selectedFileIdsList != null) {
 
