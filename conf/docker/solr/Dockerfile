@@ -12,8 +12,8 @@ COPY solr/7.2.1/solrconfig.xml /tmp
 RUN cd /tmp && wget https://archive.apache.org/dist/lucene/solr/7.2.1/solr-7.2.1.tgz  && \
 	tar xvzf solr-7.2.1.tgz  && \
 	mv solr-7.2.1 /usr/local/  && \
+	cp -r /usr/local/solr-7.2.1/server/solr/configsets/_default /usr/local/solr-7.2.1/server/solr/collection1 && \
 	cd /usr/local/solr-7.2.1/server/solr/collection1/conf/  && \
-	mv schema.xml schema.xml.backup  && \
         mv solrconfig.xml solrconfig.xml.backup  && \
 	cp /tmp/schema.xml . && \
         cp /tmp/solrconfig.xml . && \
