@@ -2,8 +2,11 @@
 
 sudo -u postgres /usr/bin/postgres -D /var/lib/pgsql/data &
 cd /opt/solr-7.2.1/
-bin/solr stop &
+# TODO: Run Solr as non-root and remove "-force".
+bin/solr start -force
+bin/solr create_core -c collection1 -d server/solr/collection1/conf -force
 
+# TODO: Run Glassfish as non-root.
 cd /opt/glassfish4
 bin/asadmin start-domain
 sleep infinity

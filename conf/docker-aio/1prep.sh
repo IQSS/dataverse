@@ -16,7 +16,7 @@ cp doc/sphinx-guides/source/_static/util/createsequence.sql conf/docker-aio/test
 
 # not using dvinstall.zip for setupIT.bash; but still used in install.bash for normal ops
 mvn clean
-./scripts/database/homebrew/custom-build-number
+./scripts/installer/custom-build-number
 mvn package
 cd scripts/installer
 make clean
