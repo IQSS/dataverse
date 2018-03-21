@@ -7,6 +7,7 @@ DB_SCRIPT=${INSTALLER_ZIP_DIR}/reference_data.sql
 JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
 JHOVE_SCHEMA=${INSTALLER_ZIP_DIR}/jhoveConfig.xsd
 SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml
+SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
 INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
 
 installer:	dvinstall.zip
@@ -14,9 +15,9 @@ installer:	dvinstall.zip
 clean: 
 	/bin/rm -rf ${INSTALLER_ZIP_DIR} dvinstall.zip
 
-dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${INSTALL_SCRIPT}
+dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
 	@echo making installer...
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${INSTALL_SCRIPT}
+	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
 	@echo 
 	@echo "Done!"
 
@@ -75,7 +76,7 @@ ${SOLR_SCHEMA}:		../../conf/solr/7.2.1/schema.xml
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/solr/7.2.1/schema.xml ${INSTALLER_ZIP_DIR}
 
-${SOLR_SCHEMA}:		../../conf/solr/7.2.1/solrconfig.xml
+${SOLR_CONFIG}:		../../conf/solr/7.2.1/solrconfig.xml
 	@echo copying Solr config file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/solr/7.2.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
