@@ -174,11 +174,10 @@ Download and install Solr with these commands::
 	# cd /usr/local/solr-7.2.1/server/solr
         # cp -r configsets\_default .
         # mv _default collection1
-        # cd collection1/conf/
-	# cp -a schema.xml schema.xml.orig
+        # cd collection1/conf
         # cp -a solrconfig.xml solrconfig.xml.orig
 
-The reason for backing up the ``schema.xml`` & ``solrconfig.xml``  file is that Dataverse requires a custom Solr configuration and schema to operate. These files are contained in the "dvinstall" zip supplied in each Dataverse release at https://github.com/IQSS/dataverse/releases . Download this zip file, extract ``schema.xml`` & ``solrconfig.xml`` from it, and put it into place (in the same directory as above)::
+Dataverse requires a custom Solr configuration and schema to operate and are contained in the "dvinstall.zip" file in each Dataverse release at https://github.com/IQSS/dataverse/releases . Download this zip file, extract ``schema.xml`` & ``solrconfig.xml`` from it, and put it into place (in the same directory as above)::
 
 	# cp /tmp/schema.xml schema.xml
 	# cp /tmp/solrconfig.xml solrconfig.xml

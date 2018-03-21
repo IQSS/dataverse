@@ -69,7 +69,7 @@ Solr
 schema.xml
 ++++++++++
 
-The :doc:`prerequisites` section explained that Dataverse requires specific Solr schema & config files called ``schema.xml`` & ``solrconfig.xml`` respectively, that can be found in the Dataverse distribution. You should have already replaced the default ``example/solr/collection1/conf/schema.xml`` & ``example/solr/collection1/conf/solrconfig.xml`` file that ships with Solr.
+The :doc:`prerequisites` section explained that Dataverse requires specific Solr schema and config files called ``schema.xml`` and ``solrconfig.xml`` respectively, that can be found in the Dataverse distribution. You should have already replaced the default ``example/solr/collection1/conf/schema.xml`` and ``example/solr/collection1/conf/solrconfig.xml`` file that ships with Solr.
 
 jetty.xml
 +++++++++
