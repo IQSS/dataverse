@@ -8,20 +8,7 @@ RUN yum install -y wget unzip perl git java-1.8.0-openjdk-devel postgresql.x86_6
 COPY solr/7.2.1/schema.xml /tmp
 COPY solr/7.2.1/solrconfig.xml /tmp
 
-
-RUN cd /tmp && wget https://archive.apache.org/dist/lucene/solr/7.2.1/solr-7.2.1.tgz  && \
-	tar xvzf solr-7.2.1.tgz  && \
-	mv solr-7.2.1 /usr/local/  && \
-	cp -r /usr/local/solr-7.2.1/server/solr/configsets/_default /usr/local/solr-7.2.1/server/solr/collection1 && \
-	cd /usr/local/solr-7.2.1/server/solr/collection1/conf/  && \
-        mv solrconfig.xml solrconfig.xml.backup  && \
-	cp /tmp/schema.xml . && \
-        cp /tmp/solrconfig.xml . && \
-	rm /tmp/solr-7.2.1.tgz
-
-RUN ln -s /usr/local/solr-7.2.1/server/logs /var/log/solr
-
-VOLUME  /usr/local/solr-7.2.1/server/solr/collection1/data
+RUN cd /tmp && wget https://archive.apache.org/dist/lucene/solr/7.2.1/solr-7.2.1.tgz
 
 EXPOSE 8983
 
