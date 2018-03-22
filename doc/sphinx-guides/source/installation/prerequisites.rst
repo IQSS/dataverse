@@ -182,11 +182,15 @@ Dataverse requires a custom Solr configuration and schema to operate and are con
 	# cp /tmp/schema.xml schema.xml
 	# cp /tmp/solrconfig.xml solrconfig.xml
 
+Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example results matching on the name of a dataset. If you would like to remove this, edit your solrconfig.xml and remove the ``<str name="qf">`` element and its contents.
+
 With the Dataverse-specific schema in place, you can now start Solr and create the core that will be used to manage search information::
 
 	# cd /usr/local/solr-7.2.1
 	# bin/solr start
         # bin/solr create_core -c collection1 -d server/solr/collection1/conf/
+
+
 
 Solr Init Script
 ================
