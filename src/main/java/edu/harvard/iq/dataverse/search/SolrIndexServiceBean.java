@@ -72,7 +72,7 @@ public class SolrIndexServiceBean {
             try {
                 solrServer.close();
             } catch (IOException e) {
-                logger.severe("Solr closing error: " + e);
+                logger.warning("Solr closing error: " + e);
             }
 
             solrServer = null;
