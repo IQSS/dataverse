@@ -15,17 +15,8 @@
  
           ga('create', "#{settingsWrapper.get(':GoogleAnalyticsCode')}", 'auto');
 
-          ga('send', 'pageview', {
-            'hitType': 'social',
-            'socialNetwork': 'facebook',
-            'socialAction': 'send',
-            'socialTarget': '#{systemConfig.dataverseSiteUrl}',
-            'page': '#{systemConfig.pageURLWithQueryString}'
-          }, {
-            'hitType': 'social',
-            'socialNetwork': 'twitter',
-            'socialAction': 'tweet',
-            'socialTarget': '#{systemConfig.dataverseSiteUrl}',
+          ga('send', {
+            'hitType': 'pageview',
             'page': '#{systemConfig.pageURLWithQueryString}'
           });
         </c:if>
