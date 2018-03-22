@@ -624,7 +624,7 @@ public class DatasetPage implements java.io.Serializable {
         return result;
     }
 
-    public boolean canComputeAllFiles(boolean cart){
+    public boolean canComputeAllFiles(boolean isCartCompute){
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
              if (!fileDownloadHelper.canDownloadFile(fmd)) {
                  RequestContext requestContext = RequestContext.getCurrentInstance();
@@ -632,7 +632,7 @@ public class DatasetPage implements java.io.Serializable {
                  return false;
              }
         }
-        if (!cart) {
+        if (!isCartCompute) {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(getComputeUrl());
              } catch (IOException ioex) {
