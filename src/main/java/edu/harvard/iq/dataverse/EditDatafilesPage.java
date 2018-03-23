@@ -1257,17 +1257,17 @@ public class EditDatafilesPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
         
-                        
-        try {
-            provUploadFragmentBean.saveStagedProvJson(false);
-            
-        } catch (AbstractApiBean.WrappedResponse ex) {
-            //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
-            
-            JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
-            Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+        if(systemConfig.isProvCollectionEnabled()) {        
+            try {
+                provUploadFragmentBean.saveStagedProvJson(false);
+
+            } catch (AbstractApiBean.WrappedResponse ex) {
+                //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
+
+                JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
+                Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-        
 
         
         

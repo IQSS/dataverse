@@ -2549,14 +2549,16 @@ public class DatasetPage implements java.io.Serializable {
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
-        try {
-            provUploadFragmentBean.saveStagedProvJson(false);
-        } catch (AbstractApiBean.WrappedResponse ex) {
-            //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
-            
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
-            //JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("file.metadataTab.provenance.error"));
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
+        if(systemConfig.isProvCollectionEnabled()) {
+            try {
+                provUploadFragmentBean.saveStagedProvJson(false);
+            } catch (AbstractApiBean.WrappedResponse ex) {
+                //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
+
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
+                //JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("file.metadataTab.provenance.error"));
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         logger.fine("Redirecting to the Dataset page.");
