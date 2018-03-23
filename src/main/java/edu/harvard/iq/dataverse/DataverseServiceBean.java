@@ -550,4 +550,40 @@ public class DataverseServiceBean implements java.io.Serializable {
             }
         }
     }
+    
+    // function to recursively find all children of a dataverse that 
+    // are also of type dataverse
+    public List<Dataverse> findAllDataverseDataverseChildren(Dataverse dv) {
+        // get list of Dataverse children
+        List<Dataverse> dataverseChildren = findByOwnerId(dv.getId());
+        
+        if (dataverseChildren == null) {
+            return dataverseChildren;
+        } else {
+            List<Dataverse> newChildren = new ArrayList<>();
+            for (Dataverse childDv : dataverseChildren) {
+                newChildren.addAll(findAllDataverseDataverseChildren(childDv));
+            }
+            dataverseChildren.addAll(newChildren);
+            return dataverseChildren;
+        }
+    }
+    
+    // function to recursively find all children of a dataverse that are 
+    // of type dataset
+    public List<Dataset> findAllDataverseDatasetChildren(Dataverse dv) {
+        // get list of Dataverse children
+        List<Dataverse> dataverseChildren = findByOwnerId(dv.getId());
+        // get list of Dataset children
+        List<Dataset> datasetChildren = datasetService.findByOwnerId(dv.getId());
+        
+        if (dataverseChildren == null) {
+            return datasetChildren;
+        } else {
+            for (Dataverse childDv : dataverseChildren) {
+                datasetChildren.addAll(findAllDataverseDatasetChildren(childDv));
+            }
+            return datasetChildren;
+        }
+    }
 }  
