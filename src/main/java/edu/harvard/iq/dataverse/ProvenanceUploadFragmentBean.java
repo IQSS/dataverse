@@ -234,7 +234,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         freeformTextState = freeformText;
     }
     
-    public boolean provExistsInPreviousVersion() {
+    public boolean provExistsInPreviousPublishedVersion() {
         return (null != popupDataFile 
                 && null != popupDataFile.getFileMetadata() 
                 && popupDataFile.getFileMetadata().getCplId() != 0);

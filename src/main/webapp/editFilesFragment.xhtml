@@ -233,7 +233,7 @@
                                 <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFile']} <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                <ui:fragment rendered="#{!empty systemConfig.provServiceUrl}">
+                                <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
                                     <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
                                         <p:commandLink id="fileProvenanceButton"
                                                    update=":datasetForm:editProvenancePopup"
@@ -572,7 +572,7 @@
             <p:commandButton id="fileThumbnailConfirmCancelBtn" value="#{bundle.cancel}" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
         </div>
     </p:dialog>
-    <ui:include rendered="#{!empty systemConfig.provServiceUrl}" src="provenance-popups-fragment.xhtml"/>
+    <ui:include rendered="#{systemConfig.provCollectionEnabled}" src="provenance-popups-fragment.xhtml"/>
     <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
 

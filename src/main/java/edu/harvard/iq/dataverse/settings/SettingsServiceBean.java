@@ -53,11 +53,10 @@ public class SettingsServiceBean {
          */
         ComputeBaseUrl,
         /**
-         * The provenance service URL is where the provenance system runs (i.e.
-         * "http://localhost:7777"). Like Solr, it is an external service that
-         * Dataverse interacts with via REST API calls.
+         * Enables the provenance collection popup.
+         * Allows users to 
          */
-        ProvServiceUrl,
+        ProvCollectionEnabled,
         /**
          * For example, https://datacapture.example.org
          */

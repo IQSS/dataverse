@@ -223,9 +223,13 @@ public class SystemConfig {
         return solrHostColonPort;
     }
 
-    public String getProvServiceUrl() {
-        String provServiceUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ProvServiceUrl, null);
-        return provServiceUrl;
+    public boolean isProvCollectionEnabled() {
+        String provCollectionEnabled = settingsService.getValueForKey(SettingsServiceBean.Key.ProvCollectionEnabled, null);
+        if("true".equalsIgnoreCase(provCollectionEnabled)){         
+            return true;
+        }
+        return false;
+
     }
     
     public int getMinutesUntilConfirmEmailTokenExpires() {
