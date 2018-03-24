@@ -214,8 +214,8 @@ In the Terms tab, which can also be found by clicking on the Edit dropdown butto
 CC0 Waiver + Dataset Terms of Use 
 ---------------------------------
 
-Starting with Dataverse version 4.0, all new datasets will default to a `CC0 public domain dedication 
-<https://creativecommons.org/publicdomain/zero/1.0/>`_ . CC0 facilitates reuse and extensibility of research data. 
+Starting with Dataverse version 4.0, all new datasets create through the web UI will default to a `CC0 public domain dedication 
+<https://creativecommons.org/publicdomain/zero/1.0/>`_ (this default is not applied to datasets created through the native API). CC0 facilitates reuse and extensibility of research data. 
 Our `Community Norms <http://best-practices.dataverse.org/harvard-policies/community-norms.html>`_ as well as good scientific
 practices expect that proper credit is given via citation. If you are unable to give your datasets a CC0 waiver you may enter 
 your own custom Terms of Use for your Datasets.
