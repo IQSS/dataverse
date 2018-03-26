@@ -904,6 +904,22 @@ public class DatasetServiceBean implements java.io.Serializable {
         return workflowComment;
     }
     
+    /*
+     Experimental asynchronous method for requesting persistent identifiers for 
+     datafiles. We decided not to run this method on upload/create (so files 
+     will not have persistent ids while in draft; when the draft is published, 
+     we will force obtaining persistent ids for all the files in the version. 
+     
+     If we go back to trying to register global ids on create, care will need to 
+     be taken to make sure the asynchronous changes below are not conflicting with 
+     the changes from file ingest (which may be happening in parallel, also 
+     asynchronously). We would also need to lock the dataset (similarly to how 
+     tabular ingest logs the dataset), to prevent the user from publishing the
+     version before all the identifiers get assigned - otherwise more conflicts 
+     are likely. (It sounds like it would make sense to treat these two tasks -
+     persistent identifiers for files and ingest - as one post-upload job, so that 
+     they can be run in sequence). -- L.A. Mar. 2018
+    */
     @Asynchronous
     public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
         IdServiceBean idServiceBean = IdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());

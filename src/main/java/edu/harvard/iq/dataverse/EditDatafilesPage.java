@@ -1270,9 +1270,16 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         
         if (newFiles.size() > 0) {
-            logger.info("clearing newfiles list; starting async job for obtaining persistent ids for files.");
+            logger.fine("clearing newfiles list.");
             newFiles.clear();
+            /*
+             - We decided not to bother obtaining persistent ids for new files 
+             as they are uploaded and created. The identifiers will be assigned 
+             later, when the version is published. 
+             
+            logger.info("starting async job for obtaining persistent ids for files.");
             datasetService.obtainPersistentIdentifiersForDatafiles(dataset);
+            */
         }
                 
         workingVersion = dataset.getEditVersion();
