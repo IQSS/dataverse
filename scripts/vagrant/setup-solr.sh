@@ -10,7 +10,7 @@ su $SOLR_USER -s /bin/sh -c "cd $SOLR_HOME/solr-7.2.1/server/solr && cp -r confi
 su $SOLR_USER -s /bin/sh -c "cp /conf/solr/7.2.1/schema.xml $SOLR_HOME/solr-7.2.1/server/solr/collection1/conf/schema.xml"
 su $SOLR_USER -s /bin/sh -c "cp /conf/solr/7.2.1/solrconfig.xml $SOLR_HOME/solr-7.2.1/server/solr/collection1/conf/solrconfig.xml"
 su $SOLR_USER -s /bin/sh -c "cd $SOLR_HOME/solr-7.2.1 && bin/solr start && bin/solr create_core -c collection1 -d server/solr/collection1/conf/"
-cp /dataverse/conf/vagrant/etc/init.d/solr /etc/init.d/solr
+cp /dataverse/doc/sphinx-guides/source/_static/installation/files/etc/init.d/solr /etc/init.d/solr
 chmod 755 /etc/init.d/solr
 /etc/init.d/solr stop
 /etc/init.d/solr start
