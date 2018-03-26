@@ -123,9 +123,7 @@ To install Solr, execute the following commands:
 
 ``cd solr-7.2.1/server/solr``
 
-``cp -r configsets/_default .``
-
-``mv _default collection1``
+``cp -r configsets/_default collection1``
 
 ``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.2.1/schema.xml``
 
