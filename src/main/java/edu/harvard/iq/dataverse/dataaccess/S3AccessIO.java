@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -650,7 +651,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             generatePresignedUrlRequest.setMethod(HttpMethod.GET); // Default.
             generatePresignedUrlRequest.setExpiration(expiration);
             ResponseHeaderOverrides responseHeaders = new ResponseHeaderOverrides();
-            responseHeaders.setContentDisposition("attachment; filename="+this.getDataFile().getDisplayName());
+            //responseHeaders.setContentDisposition("attachment; filename="+this.getDataFile().getDisplayName());
+            // Encode the file name explicitly specifying the encoding as UTF-8:
+            // (otherwise S3 may not like non-ASCII characters!)
+            responseHeaders.setContentDisposition("attachment; filename="+URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8"));
             responseHeaders.setContentType(this.getDataFile().getContentType());
             generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
 
