@@ -654,7 +654,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             //responseHeaders.setContentDisposition("attachment; filename="+this.getDataFile().getDisplayName());
             // Encode the file name explicitly specifying the encoding as UTF-8:
             // (otherwise S3 may not like non-ASCII characters!)
-            responseHeaders.setContentDisposition("attachment; filename="+URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8"));
+            // Most browsers are happy with just "filename="+URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8") 
+            // in the header. But Firefox appears to require that "UTF8" is 
+            // specified explicitly, as below:
+            responseHeaders.setContentDisposition("attachment; filename*=UTF-8''"+URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8"));
+            // - without it, download will work, but Firefox will leave the special
+            // characters in the file name encoded. For example, the file name 
+            // will look like "1976%E2%80%932016.txt" instead of "1976–2016.txt", 
+            // where the dash is the "long dash", represented by a 3-byte UTF8 
+            // character "\xE2\x80\x93"
+            
             responseHeaders.setContentType(this.getDataFile().getContentType());
             generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
 
