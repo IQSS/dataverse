@@ -71,6 +71,8 @@ public interface IdServiceBean {
         String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         return getBean(protocol, ctxt);
     }
+    
+     DvObject generateIdentifier(DvObject dvObject);
 
 
 }

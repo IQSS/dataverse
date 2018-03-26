@@ -246,6 +246,9 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     public String createIdentifier(DvObject dvObject) throws Throwable {
 
             logger.log(Level.FINE, "createIdentifier");
+            if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+                dvObject = generateIdentifier(dvObject);
+            }
             String identifier = getIdentifier(dvObject);
             HashMap<String, String> metadata = getMetadataForCreateIndicator(dvObject);
             metadata.put("datacite.resourcetype", "Dataset");
@@ -260,6 +263,7 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
                 logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
                 logger.log(Level.WARNING, "cause", e.getCause());
                 logger.log(Level.WARNING, "message {0}", e.getMessage());
+                logger.log(Level.WARNING, "identifier: ", identifier);
                 throw e;
             }
     }

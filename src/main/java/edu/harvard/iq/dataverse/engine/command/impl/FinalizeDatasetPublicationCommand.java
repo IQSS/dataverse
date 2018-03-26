@@ -74,7 +74,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // comes from there. There's a chance that the final merge, at the end of this
         // command, would be sufficient. -- L.A. Sep. 6 2017
         theDataset = ctxt.em().merge(theDataset);
-        
         //if the publisher hasn't contributed to this version
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), getUser());
         
@@ -91,7 +90,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
         publicizeExternalIdentifier(ctxt);
-        
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
@@ -170,29 +168,19 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void publicizeExternalIdentifier(CommandContext ctxt) throws CommandException {
         String protocol = theDataset.getProtocol();
         IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
-        if (idServiceBean != null) {
-            try {
-                idServiceBean.publicizeIdentifier(theDataset);
-                theDataset.setGlobalIdCreateTime(new Date());
-                theDataset.setIdentifierRegistered(true);
-                //if the dataset is locked for PID registration then don't register here
-                //done asynch before calling
-                if (!theDataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
-                    for (DataFile df : theDataset.getFiles()) {
-                        idServiceBean.publicizeIdentifier(df);
-                        df.setGlobalIdCreateTime(new Date());
-                        df.setIdentifierRegistered(true);
-                    }
-                } else {
-                    DatasetLock doomed = theDataset.getLockFor(DatasetLock.Reason.pidRegister);
-                    theDataset.getLocks().remove(doomed);
-                    ctxt.em().remove(doomed);
-                    ctxt.em().flush();
-                }
-
-            } catch (Throwable e) {
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
+        try {
+            idServiceBean.publicizeIdentifier(theDataset);
+            theDataset.setGlobalIdCreateTime(new Date());
+            theDataset.setIdentifierRegistered(true);
+            for (DataFile df : theDataset.getFiles()) {
+                idServiceBean.publicizeIdentifier(df);
+                df.setGlobalIdCreateTime(new Date());
+                df.setIdentifierRegistered(true);
+                DataFile merged = ctxt.em().merge(df);
+                merged = null;
             }
+        } catch (Throwable e) {
+            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
         }
     }
     

@@ -362,7 +362,8 @@
                                                     #{FilePage.file.getGlobalId()}
                                                 </div>
                                             </div>
-                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable}">
+                                            <!--Only show Public download url if identifier is available -->
+                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable and FilePage.file.identifier != null}">
                                                 <label class="col-sm-3 control-label">                                                   
                                                    #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
                                                 </label>

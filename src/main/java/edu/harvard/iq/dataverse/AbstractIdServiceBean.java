@@ -1,10 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import static edu.harvard.iq.dataverse.IdServiceBean.logger;
-import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.text.SimpleDateFormat;
 
 import javax.ejb.EJB;
 import java.util.*;
@@ -19,6 +16,12 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
     DataverseServiceBean dataverseService;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    EjbDataverseEngine commandEngine;
+    @EJB
+    DatasetServiceBean datasetService;
+    @EJB
+    DataFileServiceBean datafileService;
     @EJB
     SystemConfig systemConfig;
 
@@ -87,5 +90,28 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         metadata.put("_target", getTargetUrl(dvObject));
         return metadata;
     }
+    
+    @Override
+    public DvObject generateIdentifier(DvObject dvObject) {
 
+        String protocol = dvObject.getProtocol() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : dvObject.getProtocol();
+        String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
+        String doiSeparator = dvObject.getDoiSeparator() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator) : dvObject.getDoiSeparator();
+        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, commandEngine.getContext());
+        if (dvObject.isInstanceofDataset()) {
+            dvObject.setIdentifier(datasetService.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
+        } else {
+            dvObject.setIdentifier(datafileService.generateDataFileIdentifier((DataFile) dvObject, idServiceBean));
+        }
+        if (dvObject.getProtocol() == null) {
+            dvObject.setProtocol(protocol);
+        }
+        if (dvObject.getAuthority() == null) {
+            dvObject.setAuthority(authority);
+        }
+        if (dvObject.getDoiSeparator() == null) {
+            dvObject.setDoiSeparator(doiSeparator);
+        }
+        return dvObject;
+    }
 }

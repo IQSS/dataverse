@@ -52,6 +52,9 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     @Override
     public String createIdentifier(DvObject dvObject) throws Exception {
         logger.log(Level.FINE,"createIdentifier");
+            if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+                dvObject = generateIdentifier(dvObject);
+            }
             String identifier = getIdentifier(dvObject);
             HashMap<String, String> metadata = getMetadataForCreateIndicator(dvObject);
         metadata.put("_status", "reserved");

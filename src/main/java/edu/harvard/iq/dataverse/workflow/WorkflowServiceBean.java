@@ -97,46 +97,8 @@ public class WorkflowServiceBean {
         forward(wf, ctxt);
     }
     
-    /**
-     * Starts executing workflow {@code wf} to register File PIDs
-     *
-     * @param wf the workflow to execute.
-     * @param ctxt the context in which the workflow is executed.
-     * @param cctxt context for calling command
-     * @throws CommandException If the dataset could not be locked.
-     */
-    @Asynchronous
-    public void startPIDRegister(Workflow wf, WorkflowContext ctxt, CommandContext cctxt) throws CommandException {
-        ctxt = refresh(ctxt);
-        lockDatasetForPIDRegistration(ctxt);
-        runPIDRegistration(wf, ctxt, cctxt);
-    }
-    
-    @Asynchronous
-    private void runPIDRegistration(Workflow wf, WorkflowContext ctxt, CommandContext cctxt) throws CommandException{
-        
-        String protocol = ctxt.getDataset().getProtocol();
-        Dataset theDataset = ctxt.getDataset();
-        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, cctxt);
-        if (idServiceBean!= null )
-        try {
-            for (DataFile df: theDataset.getFiles()){
-                idServiceBean.publicizeIdentifier(df);
-                df.setGlobalIdCreateTime(new Date());
-                df.setIdentifierRegistered(true);
-            }
-            
-        } catch (Throwable e) {
-            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),null); 
-        }
-        
-        try {
-             engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getDoiProvider(), ctxt.getRequest()) );                                
-            } catch (CommandException ex) {
-                logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
-                rollbackPIDRegistration(wf, ctxt);
-        }       
-    }
+
+
 
     /**
      * Starting the resume process for a pending workflow. We first delete the
@@ -175,26 +137,6 @@ public class WorkflowServiceBean {
             pauseAndAwait(wf, ctxt, (Pending) res, pending.getPendingStepIdx());
         } else {
             executeSteps(wf, ctxt, pending.getPendingStepIdx() + 1);
-        }
-    }
-    
-    @Asynchronous
-    private void rollbackPIDRegistration(Workflow wf, WorkflowContext ctxt) {
-        ctxt = refresh(ctxt);
-       
-        logger.log( Level.INFO, "Removing registration lock");
-        try {
-            logger.log(Level.INFO, "PID Registration Failed");
-            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.pidRegister) );
-            
-            // Corner case - delete locks generated within this same transaction.
-            Query deleteQuery = em.createQuery("DELETE from DatasetLock l WHERE l.dataset.id=:id AND l.reason=:reason");
-            deleteQuery.setParameter("id", ctxt.getDataset().getId() );
-            deleteQuery.setParameter("reason", DatasetLock.Reason.Workflow );
-            deleteQuery.executeUpdate();
-            
-        } catch (CommandException ex) {
-            logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
         }
     }
 
@@ -297,15 +239,6 @@ public class WorkflowServiceBean {
         final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
 //        engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
         datasetLock.setDataset(ctxt.getDataset());
-        em.persist(datasetLock);
-        em.flush();
-    }
-    
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void lockDatasetForPIDRegistration( WorkflowContext ctxt ) throws CommandException {
-        final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.pidRegister, ctxt.getRequest().getAuthenticatedUser());
-        datasetLock.setDataset(ctxt.getDataset());
-        ctxt.getDataset().getLocks().add(datasetLock);
         em.persist(datasetLock);
         em.flush();
     }

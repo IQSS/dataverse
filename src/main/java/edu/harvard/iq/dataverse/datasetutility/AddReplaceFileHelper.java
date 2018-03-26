@@ -1427,6 +1427,7 @@ public class AddReplaceFileHelper{
                     maxIdentifier++;
                     dataFileIdentifier = datasetIdentifier + "/" + maxIdentifier.toString();
                 }
+                //commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequest, dataFileIdentifier));
                 commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequest, dataFileIdentifier, true));
             }
         } catch (CommandException cmdex) {

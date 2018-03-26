@@ -6,6 +6,10 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -902,6 +906,14 @@ public class DatasetServiceBean implements java.io.Serializable {
     public WorkflowComment addWorkflowComment(WorkflowComment workflowComment) {
         em.persist(workflowComment);
         return workflowComment;
+    }
+    
+    @Asynchronous
+    public void callFinalizePublishCommandAsynchronously(Dataset theDataset, CommandContext ctxt, DataverseRequest request) throws CommandException {
+
+        String nonNullDefaultIfKeyNotFound = "";
+        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, doiProvider, request));
     }
     
     /*
