@@ -339,17 +339,17 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    public HashMap getIdentifierMetadata(Dataset dataset)  {
+    public Map<String,String> getIdentifierMetadata(Dataset dataset)  {
         throw new NotImplementedException();
     }
 
     @Override
-    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier)  {
+    public Map<String,String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier)  {
         throw new NotImplementedException();
     }
 
     @Override
-    public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception  {
+    public String modifyIdentifier(Dataset dataset, Map<String, String> metadata) throws Exception  {
         logger.log(Level.FINE,"modifyIdentifier");
         reRegisterHandle(dataset);
         return getIdentifierFromDataset(dataset);

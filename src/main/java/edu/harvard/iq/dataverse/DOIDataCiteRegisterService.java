@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
@@ -40,7 +41,7 @@ public class DOIDataCiteRegisterService {
         return new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
     }
 
-    public String createIdentifier(String identifier, HashMap<String, String> metadata, Dataset dataset) throws IOException {
+    public String createIdentifier(String identifier, Map<String, String> metadata, Dataset dataset) throws IOException {
         DataCiteMetadataTemplate metadataTemplate = new DataCiteMetadataTemplate();
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));

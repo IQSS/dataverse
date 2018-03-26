@@ -15,11 +15,10 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -44,7 +43,7 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
         }
 
         IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), ctxt);
-        HashMap<String, String> metadata = idServiceBean.getMetadataFromDatasetForTargetURL(target);
+        Map<String, String> metadata = idServiceBean.getMetadataFromDatasetForTargetURL(target);
         try {
             String doiRetString = idServiceBean.modifyIdentifier(target, metadata);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {

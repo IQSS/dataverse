@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+import static edu.harvard.iq.dataverse.IdServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,9 +21,9 @@ public interface IdServiceBean {
 
     String createIdentifier(Dataset dataset) throws Throwable;
 
-    HashMap getIdentifierMetadata(Dataset dataset);
+    Map<String,String> getIdentifierMetadata(Dataset dataset);
 
-    HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier);
+    Map<String,String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier);
 
     /**
      * Concatenate the parts that make up a Global Identifier.
@@ -34,44 +35,52 @@ public interface IdServiceBean {
      */
     String getIdentifierForLookup(String protocol, String authority, String separator, String identifier);
 
-    String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception;
+    String modifyIdentifier(Dataset dataset, Map<String, String> metadata) throws Exception;
 
     void deleteIdentifier(Dataset datasetIn) throws Exception;
 
-    HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn);
+    Map<String,String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn);
 
-    HashMap getMetadataFromDatasetForTargetURL(Dataset datasetIn);
+    Map<String,String> getMetadataFromDatasetForTargetURL(Dataset datasetIn);
 
     String getIdentifierFromDataset(Dataset dataset);
 
     boolean publicizeIdentifier(Dataset studyIn);
-
+    
     static IdServiceBean getBean(String protocol, CommandContext ctxt) {
-        logger.log(Level.FINE, "getting bean, protocol={0}", protocol);
-        String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        if (protocol == null){
-            protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        final Function<CommandContext, IdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
+        if ( protocolHandler != null ) {
+            return protocolHandler.apply(ctxt);
+        } else {
+            logger.log(Level.SEVERE, "Unknown protocol: {0}", protocol);
+            return null;
         }
-        if ("hdl".equals(protocol))
-            return (ctxt.handleNet());
-        else if (protocol.equals("doi"))
-            if (doiProvider.equals("EZID"))
-                return ctxt.doiEZId();
-            else if (doiProvider.equals("DataCite"))
-                return ctxt.doiDataCite();
-            else logger.log(Level.SEVERE,"Unknown doiProvider: " + doiProvider);
-        else logger.log(Level.SEVERE,"Unknown protocol: " + protocol);
-        return null;
     }
 
     static IdServiceBean getBean(CommandContext ctxt) {
-        logger.log(Level.FINE,"getting bean with protocol from context");
-
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        return getBean(protocol, ctxt);
+        return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
     }
 
+}
 
+/**
+ * Static utility class for dispatching implementing beans, based on protocol and providers.
+ * @author michael
+ */
+class BeanDispatcher {
+    static final Map<String, Function<CommandContext, IdServiceBean>> DISPATCHER = new HashMap<>();
+
+    static {
+        DISPATCHER.put("hdl", ctxt->ctxt.handleNet() );
+        DISPATCHER.put("doi", ctxt->{
+            String doiProvider = ctxt.settings().getValueForKey(Key.DoiProvider, "");
+            switch ( doiProvider ) {
+                case "EZID": return ctxt.doiEZId();
+                case "DataCite": return ctxt.doiDataCite();
+                default: 
+                    logger.log(Level.SEVERE, "Unknown doiProvider: {0}", doiProvider);
+                    return null;
+            }
+        });
+    }
 }

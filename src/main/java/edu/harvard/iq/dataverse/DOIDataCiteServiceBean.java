@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -51,11 +52,11 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     public String createIdentifier(Dataset dataset) throws Exception {
         logger.log(Level.FINE,"createIdentifier");
         String identifier = getIdentifierFromDataset(dataset);
-        HashMap<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
+        Map<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
         metadata.put("_status", "reserved");
         try {
             String retString = doiDataCiteRegisterService.createIdentifier(identifier, metadata, dataset);
-            logger.log(Level.FINE, "create DOI identifier retString : " + retString);
+            logger.log(Level.FINE, "create DOI identifier retString : {0}", retString);
             return retString;
         } catch (Exception e) {
             logger.log(Level.WARNING, "Identifier not created: create failed");
@@ -68,7 +69,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    public HashMap<String, String> getIdentifierMetadata(Dataset dataset) {
+    public Map<String, String> getIdentifierMetadata(Dataset dataset) {
         logger.log(Level.FINE,"getIdentifierMetadata");
         String identifier = getIdentifierFromDataset(dataset);
         HashMap<String, String> metadata = new HashMap<>();
@@ -95,7 +96,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
      * the identifier does not exist.
      */
     @Override
-    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier) {
+    public Map<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier) {
         logger.log(Level.FINE,"lookupMetadataFromIdentifier");
         String identifierOut = getIdentifierForLookup(protocol, authority, separator, identifier);
         HashMap<String, String> metadata = new HashMap<>();
@@ -118,7 +119,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
      * @throws java.lang.Exception
      */
     @Override
-    public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception {
+    public String modifyIdentifier(Dataset dataset, Map<String, String> metadata) throws Exception {
         logger.log(Level.FINE,"modifyIdentifier");
         String identifier = getIdentifierFromDataset(dataset);
         try {
@@ -202,17 +203,17 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
+    protected Map<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
-        HashMap<String, String> metadata = super.getUpdateMetadataFromDataset(datasetIn);
+        Map<String, String> metadata = super.getUpdateMetadataFromDataset(datasetIn);
         metadata.put("datacite.publicationyear", generateYear(datasetIn));
         return metadata;
     }
 
     @Override
-    public HashMap<String, String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
+    public Map<String, String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
         logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
-        HashMap<String, String> metadata = super.getMetadataFromStudyForCreateIndicator(datasetIn);
+        Map<String, String> metadata = super.getMetadataFromStudyForCreateIndicator(datasetIn);
         metadata.put("datacite.resourcetype", "Dataset");
         return metadata;
     }
@@ -226,7 +227,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
         logger.log(Level.FINE,"updateIdentifierStatus");
         String identifier = getIdentifierFromDataset(dataset);
-        HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
+        Map<String, String> metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
         metadata.put("_target", getTargetUrl(dataset));
         try {

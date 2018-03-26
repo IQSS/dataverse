@@ -75,12 +75,13 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     public String createIdentifier(Dataset dataset) throws Exception {
         logger.log(Level.FINE,"createIdentifier");
         String identifier = getIdentifierFromDataset(dataset);
-        HashMap<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
+        Map<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
         metadata.put("datacite.resourcetype", "Dataset");
         metadata.put("_status", "reserved");
+        HashMap<String,String> hmmd = (metadata instanceof HashMap) ? (HashMap)metadata : new HashMap<>(metadata);
         try {
-            String retString = ezidService.createIdentifier(identifier, metadata);
-            logger.log(Level.FINE, "create DOI identifier retString : " + retString);
+            String retString = ezidService.createIdentifier(identifier, hmmd);
+            logger.log(Level.FINE, "create DOI identifier retString : {0}", retString);
             return retString;
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "Identifier not created: create failed");
@@ -94,7 +95,7 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
 
 
     @Override
-    public HashMap<String, String> getIdentifierMetadata(Dataset dataset) {
+    public Map<String, String> getIdentifierMetadata(Dataset dataset) {
         logger.log(Level.FINE,"getIdentifierMetadata");
         String identifier = getIdentifierFromDataset(dataset);
         HashMap<String, String> metadata = new HashMap<>();
@@ -124,7 +125,7 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
      * the identifier does not exist.
      */
     @Override
-    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier) {
+    public Map<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier) {
         logger.log(Level.FINE,"lookupMetadataFromIdentifier");
         String identifierOut = getIdentifierForLookup(protocol, authority, separator, identifier);
         HashMap<String, String> metadata = new HashMap<>();
@@ -146,11 +147,12 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
      * @return the Dataset identifier, or null if the modification failed
      */
     @Override
-    public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception {
+    public String modifyIdentifier(Dataset dataset, Map<String, String> metadata) throws Exception {
         logger.log(Level.FINE,"modifyIdentifier");
         String identifier = getIdentifierFromDataset(dataset);
         try {
-            ezidService.setMetadata(identifier, metadata);
+            ezidService.setMetadata(identifier,
+                (metadata instanceof HashMap) ? (HashMap)metadata : new HashMap<>(metadata));
             return identifier;
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
@@ -216,12 +218,15 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
         logger.log(Level.FINE,"updateIdentifierStatus");
         String identifier = getIdentifierFromDataset(dataset);
-        HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
+        Map<String, String> metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
         metadata.put("_target", getTargetUrl(dataset));
         try {
-            ezidService.setMetadata(identifier, metadata);
+            // ezID API requires HashMap, not just any map.
+            ezidService.setMetadata(identifier,
+                (metadata instanceof HashMap) ? (HashMap)metadata : new HashMap<>(metadata));
             return true;
+            
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
             logger.log(Level.WARNING, "String {0}", e.toString());

@@ -27,7 +27,7 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
     }
 
     @Override
-    public HashMap<String, String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
+    public Map<String, String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
         logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
         HashMap<String, String> metadata = new HashMap<>();
 
@@ -37,7 +37,7 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         return metadata;
     }
 
-    protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
+    protected Map<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
         HashMap<String, String> metadata = new HashMap<>();
         metadata = addBasicMetadata(datasetIn, metadata);

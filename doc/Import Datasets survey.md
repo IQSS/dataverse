@@ -7,7 +7,7 @@ This is a list of commands, what they actually do, and some recommendations abou
 * `FinalizeDatasetPublicationCommand` Does most of the heavy lifting: Permissions, notifications, file permissions, etc. **Handles DOI creation**. Kicks off the post-publish workflow, if any.
 * `UpdateDatasetVersionCommand` updates a dataset version, if it is the edit version (otherwise throws `IllegalCommandException`). Validates and updates related fields, but generally takes the updated Java Dataset object and puts it into the DB.
 * `UpdateDatasetThumbnailCommand` Creates/return thumbnails for Dataset. Not relevant to this effort.
-* `UpdateDatasetTargetURLCommand` **Super-user only** Sets the persistent identifier of a dataset using its metadata. This action is for both internal database and the external ID provider. 
+* `UpdateDatasetTargetURLCommand` **Super-user only** Sets the persistent identifier of a dataset using its metadata. This action affects both internal database and the external ID provider. 
 * `DestroyDatasetCommand` **Super-user only**. Deletes datasets, even if they are published.
 * `DeleteDatasetVersionCommand` Deletes the *draft* version of a dataset. May destroy the dataset, if all it has is a draft (so, not published and no more versions left after the draft is deleted).
     - TODO: Rename command to `DeleteDatasetDraftVersionCommand`.
@@ -17,6 +17,7 @@ This is a list of commands, what they actually do, and some recommendations abou
     - TODO: Clean up migration stuff
     - consolidate functionality with `UpdateDatasetVersionCommand`.
 * `CreateDatasetCommand` Creates a dataset and a dataset version. Functionality supports harvest and migration as well as normal creation, so the logic is quite complex and long. Serious code duplication with `CreateDatasetVersionCommand`. Might be able to re-use it altogether here (pending JPA issues with created ids etc. But should be able to work.)
+    - Has a more detailed constraint violation report.
     -  TODO: break, consolidate, tidy, remove duplications.
 * `DataFile`, `Dataset`, `DatasetVersion`: Cleanup as we go (some deprecated methods can be removed). 
 
@@ -25,7 +26,6 @@ This is a list of commands, what they actually do, and some recommendations abou
 * Registration Performed by `FinalizeDatasetPublicationCommand`, in methods `registerExternalIdentifier` and `publicizeExternalIdentifier`.
 * `IdServiceBean` an interface for service beans with a static dispatcher for getting an actual bean based on the protocol and DOI provider. All these service beans extend `AbstractIdServiceBean`, which implements `IdSeviceBean`. Aforementioned methods use it.
     - TODO: Rename to `PersistenIdentifierServiceBean`, use better code for dispatch.
-    - Has a more detailed constraint violation report.
 
 ## Migration
 * Can be refactored out, thanks to Ellen's ImportUtil.MIGRATION flag. :heart_eyes_cat:
@@ -42,7 +42,9 @@ This is a list of commands, what they actually do, and some recommendations abou
 * Refactor out migration?
     *  *Decision* YES.
 * Creation of new datasets: We can either have a single command with multiple modes (native new, harvest, import), or three different commands with as much code reuse as possible. Need to decide on this.
+    - *Decision* Separate commands
 * Do we have a task to clean up deprecated code? Seems like something we need to, and is quite easy.
 
 ## Done log
 * Removed deprecated `name` field from `DataFile` (including related methods which were not used).
+* `IdServiceBean`: Code cleanup for dispatch and code-to-interface (rather than implementing classes).
