@@ -37,6 +37,7 @@
     - Both endpoints accept parameters for triggering workflows (yes/no) and publishing (yes/no). If no publishing, the version stays at DRAFT mode.
         + Also, no publish effectively means no workflow (since no reason to run the workflow, event if there is one).
 * Creation of new datasets: We can either have a single command with multiple modes (native new, harvest, import), or three different commands with as much code reuse as possible. Need to decide on this.
+* Do we have a task to clean up deprecated code? Seems like something we need to, and is quite easy.
 
 ## Done log
 * Removed deprecated `name` field from `DataFile` (including related methods which were not used).
