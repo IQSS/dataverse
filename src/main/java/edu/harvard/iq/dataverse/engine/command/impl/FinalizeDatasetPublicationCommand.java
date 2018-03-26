@@ -55,6 +55,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         registerExternalIdentifier(theDataset, ctxt);        
 
         if (theDataset.getPublicationDate() == null) {
+            // first publication
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
         } 
@@ -117,13 +118,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         });
         
-        Dataset resultSet = ctxt.em().merge(theDataset);
+        Dataset readyDataset = ctxt.em().merge(theDataset);
         
-        if(resultSet != null) {
+        if(readyDataset != null) {
             notifyUsersDatasetPublish(ctxt, theDataset);
         }
         
-        return resultSet;
+        return readyDataset;
     }
 
     /**
@@ -160,7 +161,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     }
                     dv = dv.getOwner();
                 }
-                break;
+                break; // we just update the field whose name is DatasetFieldConstant.subject
             }
         }
     }
@@ -168,11 +169,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = theDataset.getProtocol();
         IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
-        if (idServiceBean!= null )
-        try {
-            idServiceBean.publicizeIdentifier(dataset);
-        } catch (Throwable e) {
-            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
+        if (idServiceBean!= null ){
+            try {
+                idServiceBean.publicizeIdentifier(dataset);
+            } catch (Throwable e) {
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
+            }
         }
     }
     

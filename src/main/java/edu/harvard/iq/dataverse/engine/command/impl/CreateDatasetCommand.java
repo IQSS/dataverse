@@ -126,7 +126,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         dsv.setLastUpdateTime(createDate);
         theDataset.setModificationTime(createDate);
         for (DataFile dataFile: theDataset.getFiles() ){
-            dataFile.setCreator((AuthenticatedUser)  getRequest().getUser());
+            dataFile.setCreator((AuthenticatedUser) getRequest().getUser());
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         String nonNullDefaultIfKeyNotFound = "";
@@ -145,7 +145,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 // does not have to fail. we just set the storage id to a default -SF
                 String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
                 theDataset.setStorageIdentifier(storageDriver  + "://" + theDataset.getAuthority()+theDataset.getDoiSeparator()+theDataset.getIdentifier());
-                logger.info("Failed to create StorageIO. StorageIdentifier set to default. Not fatal." + "(" + ioex.getMessage() + ")");
+                logger.log(Level.INFO, "Failed to create StorageIO. StorageIdentifier set to default. Not fatal.({0})", ioex.getMessage());
             }
         }
         if (theDataset.getIdentifier()==null) {
@@ -170,30 +170,32 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         ctxt.ingest().addFiles(dsv, theDataset.getFiles());
         logger.log(Level.FINE,"doiProvider={0} protocol={1}  importType={2}  GlobalIdCreateTime=={3}", new Object[]{doiProvider, protocol,  importType, theDataset.getGlobalIdCreateTime()});
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
-        if ((importType == null || importType.equals(ImportType.NEW))
-                && theDataset.getGlobalIdCreateTime() == null) {
-                String doiRetString = "";
-                idServiceBean = IdServiceBean.getBean(ctxt);
-                try{
-                    logger.log(Level.FINE,"creating identifier");
-                    doiRetString = idServiceBean.createIdentifier(theDataset);
-                } catch (Throwable e){
-                    logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
-                }
+        if ( (importType == null || importType.equals(ImportType.NEW))
+              && theDataset.getGlobalIdCreateTime() == null) {
+            String doiRetString = "";
+            idServiceBean = IdServiceBean.getBean(ctxt);
+            try{
+                logger.log(Level.FINE,"creating identifier");
+                doiRetString = idServiceBean.createIdentifier(theDataset);
+            } catch (Throwable e){
+                logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
+            }
 
-                // Check return value to make sure registration succeeded
-                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataset.getIdentifier())) {
-                    theDataset.setGlobalIdCreateTime(createDate);
-                }
-        } else // If harvest or migrate, and this is a released dataset, we don't need to register,
-        // so set the globalIdCreateTime to now
-        if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED)) {
-            theDataset.setGlobalIdCreateTime(new Date());
+            // Check return value to make sure registration succeeded
+            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataset.getIdentifier())) {
+                theDataset.setGlobalIdCreateTime(createDate);
+            }
+        } else {
+            // If harvest or migrate, and this is a released dataset, we don't need to register,
+            // so set the globalIdCreateTime to now
+            if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED)) {
+                theDataset.setGlobalIdCreateTime(new Date());
+            }
         }
         
-        if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
+        if (registrationRequired && (theDataset.getGlobalIdCreateTime() == null)) {
             throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
-               }
+        }
         logger.log(Level.FINE, "after doi {0}", formatter.format(new Date().getTime()));
         Dataset savedDataset = ctxt.em().merge(theDataset);
         logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));
@@ -201,12 +203,12 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (importType==null || importType.equals(ImportType.NEW)) {
             String privateUrlToken = null;
             ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getRequest().getUser(), savedDataset, privateUrlToken));
-         }
+        }
         
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         savedDataset = ctxt.em().merge(savedDataset);
         
-        if(template != null){
+        if ( template != null ) {
             ctxt.templates().incrementUsageCount(template.getId());
         }
 
@@ -214,22 +216,19 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (DataCaptureModuleUtil.rsyncSupportEnabled(ctxt.settings().getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             try {
                 ScriptRequestResponse scriptRequestResponse = ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), savedDataset));
-                logger.fine("script: " + scriptRequestResponse.getScript());
+                logger.log(Level.FINE, "script: {0}", scriptRequestResponse.getScript());
             } catch (RuntimeException ex) {
-                logger.info("Problem getting rsync script: " + ex.getLocalizedMessage());
+                logger.log(Level.WARNING, "Problem getting rsync script: {0}", ex.getLocalizedMessage());
             }
         }
         logger.fine("Done with rsync request, if any.");
 
         try {
-            /**
-             * @todo Do something with the result. Did it succeed or fail?
-             */
             boolean doNormalSolrDocCleanUp = true;
             ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
         
         } catch ( Exception e ) { // RuntimeException e ) {
-            logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage()); //, e);
+            logger.log(Level.WARNING, "Exception while indexing:{0}", e.getMessage()); 
             /**
              * Even though the original intention appears to have been to allow the 
              * dataset to be successfully created, even if an exception is thrown during 
@@ -265,7 +264,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             }       
             ctxt.em().merge(datasetVersionDataverseUser); 
         }
-           logger.log(Level.FINE,"after create version user "  + formatter.format(new Date().getTime()));       
+        logger.log(Level.FINE, "after create version user {0}", formatter.format(new Date().getTime()));       
         return savedDataset;
     }
 

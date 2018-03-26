@@ -40,9 +40,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     public PublishDatasetResult execute(CommandContext ctxt) throws CommandException {
 
         verifyCommandArguments();
+        // Invariant: If we're here, publishing the dataset makes sense, from a
+        //            "business logic" point of view.
 
-        String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, "");
         
         // Set the version numbers:
 

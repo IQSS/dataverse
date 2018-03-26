@@ -317,19 +317,19 @@ public class BuiltinUsersIT {
                 .forEach(key -> given().delete("/api/admin/settings/" + key));
 
         Collections.unmodifiableMap(Stream.of(
-                new AbstractMap.SimpleEntry<>(" ", Arrays.asList( // All is wrong here:
+                new AbstractMap.SimpleEntry<>(" ", Arrays.<String>asList( // All is wrong here:
                         "INSUFFICIENT_CHARACTERISTICS",
                         "INSUFFICIENT_DIGIT",
                         "INSUFFICIENT_ALPHABETICAL",
                         "NO_GOODSTRENGTH",
                         "TOO_SHORT"
                 )),
-                new AbstractMap.SimpleEntry<>("potato", Arrays.asList( // Alpha ok, but:
+                new AbstractMap.SimpleEntry<>("potato", Arrays.<String>asList( // Alpha ok, but:
                         "INSUFFICIENT_CHARACTERISTICS",
                         "INSUFFICIENT_DIGIT",
                         "NO_GOODSTRENGTH"
                 )),
-                new AbstractMap.SimpleEntry<>("123456", Arrays.asList( // correct length and special character, but:
+                new AbstractMap.SimpleEntry<>("123456", Arrays.<String>asList( // correct length and special character, but:
                         "INSUFFICIENT_ALPHABETICAL",
                         "INSUFFICIENT_CHARACTERISTICS",
                         "NO_GOODSTRENGTH"

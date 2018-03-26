@@ -47,7 +47,7 @@ public interface IdServiceBean {
     boolean publicizeIdentifier(Dataset studyIn);
 
     static IdServiceBean getBean(String protocol, CommandContext ctxt) {
-        logger.log(Level.FINE,"getting bean, protocol=" + protocol);
+        logger.log(Level.FINE, "getting bean, protocol={0}", protocol);
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         if (protocol == null){
@@ -69,7 +69,7 @@ public interface IdServiceBean {
         logger.log(Level.FINE,"getting bean with protocol from context");
 
         String nonNullDefaultIfKeyNotFound = "";
-        String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         return getBean(protocol, ctxt);
     }
 

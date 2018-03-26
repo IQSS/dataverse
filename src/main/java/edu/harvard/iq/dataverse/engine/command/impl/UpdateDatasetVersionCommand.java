@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
+import static java.util.stream.Collectors.joining;
 import javax.validation.ConstraintViolation;
 
 /**
@@ -37,6 +38,7 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         
         Dataset ds = newVersion.getDataset();
         ctxt.permissions().checkEditDatasetLock(ds, getRequest(), this);
+        // Invariant: Dataset is not locked
         DatasetVersion latest = ds.getLatestVersion();
         
         if ( latest == null ) {
@@ -48,17 +50,16 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         }
         
         DatasetVersion edit = ds.getEditVersion();
-        edit.setDatasetFields( newVersion.getDatasetFields() );
-   
+        edit.setDatasetFields(newVersion.getDatasetFields());
+  
         edit.setDatasetFields(edit.initDatasetFields());
 
         Set<ConstraintViolation> constraintViolations = edit.validate();
         if (!constraintViolations.isEmpty()) {
-            String validationFailedString = "Validation failed:";
-            for (ConstraintViolation constraintViolation : constraintViolations) {
-                validationFailedString += " " + constraintViolation.getMessage();
-            }
-            throw new IllegalCommandException(validationFailedString, this);
+            String validationFailedReason = constraintViolations.stream()
+                                .map( ConstraintViolation::getMessage )
+                                .collect( joining(", ", "Validation Failed: ", ".") );
+            throw new IllegalCommandException(validationFailedReason, this);
         }
 
         Iterator<DatasetField> dsfIt = edit.getDatasetFields().iterator();
@@ -67,9 +68,6 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
                 dsfIt.remove();
             }
         }
-        
-        
-        
         
         Timestamp now = new Timestamp(new Date().getTime());
         edit.setLastUpdateTime(now);

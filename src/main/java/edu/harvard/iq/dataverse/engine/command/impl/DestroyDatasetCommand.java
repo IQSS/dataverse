@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.search.IndexResponse;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -58,7 +57,6 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         // explicitly, or we'll get a constraint violation when deleting:
         doomed.setThumbnailFile(null);
         final Dataset managedDoomed = ctxt.em().merge(doomed);
-
         
         List<String> datasetAndFileSolrIdsToDelete = new ArrayList<>();
         // files need to iterate through and remove 'by hand' to avoid

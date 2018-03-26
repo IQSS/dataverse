@@ -72,8 +72,6 @@ public class DataFile extends DvObject implements Comparable {
     
     public static final Long ROOT_DATAFILE_ID_DEFAULT = (long) -1;
     
-    private String name;
-    
     @Expose
     @NotBlank
     @Column( nullable = false )
@@ -223,16 +221,6 @@ public class DataFile extends DvObject implements Comparable {
         this.rootDataFileId = ROOT_DATAFILE_ID_DEFAULT;
         this.previousDataFileId = null;
     }
-    
-    // The dvObject field "name" should not be used in
-    // datafile objects.
-    // The file name must be stored in the file metadata.
-    @Deprecated
-    public DataFile(String name, String contentType) {
-        this.name = name;
-        this.contentType = contentType;
-        this.fileMetadatas = new ArrayList<>();
-    }    
     
     @Override
     public boolean isEffectivelyPermissionRoot() {
@@ -402,19 +390,6 @@ public class DataFile extends DvObject implements Comparable {
      */
     public String getOriginalFormatLabel() {
         return FileUtil.getUserFriendlyOriginalType(this);
-    }
-   
-    // The dvObject field "name" should not be used in
-    // datafile objects.
-    // The file name must be stored in the file metadata.
-    @Deprecated
-    public String getName() {
-        return name;
-    }
-
-    @Deprecated
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getContentType() {
@@ -741,7 +716,8 @@ public class DataFile extends DvObject implements Comparable {
 
     @Override
     protected String toStringExtras() {
-        return "name:" + getName();
+        FileMetadata fmd = getLatestFileMetadata();
+        return "label:" + (fmd!=null? fmd.getLabel() : "[no metadata]");
     }
 	
 	@Override
@@ -749,31 +725,15 @@ public class DataFile extends DvObject implements Comparable {
 		return v.visit(this);
 	}
         
+    @Override
     public String getDisplayName() {
-        // @todo should we show the published version label instead?
-        // currently this method is not being used
        return getLatestFileMetadata().getLabel(); 
-       /*
-       Taking out null check to see if npe persists.
-       Really shouldn't need it 
-       a file should always have a latest metadata
-       
-               ////if (getLatestFileMetadata() != null) {
-           return getLatestFileMetadata().getLabel(); 
-       // }
-       // logger.fine("DataFile getLatestFileMetadata is null for DataFile id = " + this.getId());
-       // return "";
-       
-       */
-
-
     }
     
     @Override
     public int compareTo(Object o) {
         DataFile other = (DataFile) o;
         return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
-
     }
     
     /**
