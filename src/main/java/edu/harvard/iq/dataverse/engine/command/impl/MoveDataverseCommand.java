@@ -59,6 +59,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
 
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
+        boolean removeGuestbook = false, removeTemplate = false, removeFeatDv = false, removeMetadataBlock = false;
+        
         // first check if user is a superuser
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Move Dataset can only be called by superusers.",
@@ -101,7 +103,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 Guestbook dsgb = ds.getGuestbook();
                 if (dsgb != null && (destinationGbs == null || !destinationGbs.contains(dsgb))) {
                     if (force == null || !force) {
-                        throw new IllegalCommandException("Dataset guestbook is not in target dataverse. Please use the parameter ?forceMove=true to complete the move. This will delete the guestbook from the Dataverse", this);
+                        removeGuestbook = true;
+                        break;
                     }
                     ds.setGuestbook(null);
                 }
@@ -123,9 +126,9 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 Template dvt = dv.getDefaultTemplate();
                 if (dvt != null && (destinationTemplates == null || !destinationTemplates.contains(dvt))) {
                     if (force == null || !force) {
-                        throw new IllegalCommandException("Dataverse template is not in target dataverse. Please use the parameter ?forceMove=true to complete the move. This will delete the template from the Dataverse", this);
+                        removeTemplate = true;
+                        break;
                     }
-                    logger.info("Removing template: " + moved.getDefaultTemplate().getName());
                     dv.setDefaultTemplate(null);
                 }
             }
@@ -135,11 +138,10 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         List<DataverseFeaturedDataverse> ownerFeaturedDv = moved.getOwner().getDataverseFeaturedDataverses();
         if (ownerFeaturedDv != null) {
             for (DataverseFeaturedDataverse dfdv : ownerFeaturedDv) {
-                System.out.println(dfdv);
-                System.out.println(dfdv.getFeaturedDataverse());
                 if (moved.equals(dfdv.getFeaturedDataverse())) {
                     if (force == null || !force) {
-                        throw new IllegalCommandException("Dataverse is featured in current dataverse. Please use the parameter ?forceMove=true to complete the move. This will unfeature the Dataverse", this);
+                        removeFeatDv = true;
+                        break;
                     }
                     ctxt.featuredDataverses().delete(dfdv);
                 }
@@ -174,7 +176,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                     Dataverse mbOwner = (mb.getOwner() != null) ? mb.getOwner() : ctxt.dataverses().findByAlias(":root");
                     if (!ownersToCheck.contains(mbOwner)) {
                         if (force == null || !force) {
-                            throw new IllegalCommandException("Dataverse metadata block is not in target dataverse. Please use the parameter ?forceMove=true to complete the move. This will disassociate the metadata block from the Dataverse", this);
+                            removeMetadataBlock = true;
+                            break;
                         }
                     } else if (ownersToCheck.contains(mbOwner) || inheritMbValue) {
                         // only keep metadata block if
@@ -182,10 +185,29 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                         metadataBlocksToKeep.add(mb);
                     }
                 }
-                dv.setMetadataBlocks(metadataBlocksToKeep);
+                if (force != null && force) {
+                    dv.setMetadataBlocks(metadataBlocksToKeep);
+                }
             }
         }
-
+        
+        if (removeGuestbook || removeTemplate || removeFeatDv || removeMetadataBlock) {
+            StringBuilder errorString = new StringBuilder();
+            if (removeGuestbook) {
+                errorString.append("Dataset guestbook is not in target dataverse. ");
+            } 
+            if (removeTemplate) {
+                errorString.append("Dataverse template is not in target dataverse. ");
+            } 
+            if (removeFeatDv) {
+                errorString.append("Dataverse is featured in current dataverse. ");
+            }
+            if (removeMetadataBlock) {
+               errorString.append("Dataverse metadata block is not in target dataverse. ");
+            }
+            errorString.append("Please use the parameter ?forceMove=true to complete the move. This will remove anything from the dataverse that is not compatible with the target dataverse.");
+            throw new IllegalCommandException(errorString.toString(), this);
+        }
         // OK, move
         moved.setOwner(destination);
         ctxt.dataverses().save(moved);
