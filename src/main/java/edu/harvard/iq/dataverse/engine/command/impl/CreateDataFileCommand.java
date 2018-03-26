@@ -91,9 +91,15 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
 
         IdServiceBean idServiceBean = IdServiceBean.getBean(theDataFile.getProtocol(), ctxt);
 
-//        if (!skipAssigningIdentifier) {
-// SEK 2/26/18
-// We Still want to create the identifier and add it to the dvobject record for the file - just not actually register it
+        if (!skipAssigningIdentifier) {
+            /* 
+              The code below is for assigning and registering the persistent identifier
+              for this DataFile. We decided not to assign global ids for files on create -
+              instead they will be assigned and registered when the version is published. 
+              But if it is necessary for this file to have a global id right way, make
+              sure to call the Command with skipAssigningIdentifier = false;
+              -- L.A. Mar. 2018
+            */
             if (theDataFile.getIdentifier() == null || theDataFile.getIdentifier().isEmpty()) {
                 if (this.identifier == null) {
                     theDataFile.setIdentifier(ctxt.files().generateDataFileIdentifier(theDataFile, idServiceBean));
@@ -115,8 +121,8 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
                 theDataFile.setDoiSeparator(doiSeparator);
             }
 
-            //register identifier if not done before and not "skipAssigningIdentifier
-            if (!theDataFile.isIdentifierRegistered() && !skipAssigningIdentifier) { 
+            // register
+            if (!theDataFile.isIdentifierRegistered()) {
                 String doiRetString = "";
                 idServiceBean = IdServiceBean.getBean(ctxt);
                 try {
@@ -132,6 +138,8 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
                     theDataFile.setGlobalIdCreateTime(new Date());
                 }
             }
+        }
+    
 
 
         boolean metadataExtracted = false;
