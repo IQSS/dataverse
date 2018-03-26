@@ -1,6 +1,8 @@
 # Import Dataset Survey
 
 ## Dataset-related commands - current
+This is a list of commands, what they actually do, and some recommendations about what to do with them, in the context of the current refactoring.
+
 * `PublishDatasetCommand` verifies that the dataset version publication is legal from a business logic POV. Either kicks off a workflow (aynsc), or  goes directly to `FinalizeDatasetPublicationCommand`.
 * `FinalizeDatasetPublicationCommand` Does most of the heavy lifting: Permissions, notifications, file permissions, etc. **Handles DOI creation**. Kicks off the post-publish workflow, if any.
 * `UpdateDatasetVersionCommand` updates a dataset version, if it is the edit version (otherwise throws `IllegalCommandException`). Validates and updates related fields, but generally takes the updated Java Dataset object and puts it into the DB.
@@ -31,11 +33,14 @@
 ## Questions
 * Why does the `Dataset` has a publication date? Can't this be inferred from the dataset versions it has? (probably not part of this refactor, though.)
 * Exporting formats - can this be done asynchronously? Why wait for this possibly long process? Note that we explicitly ignore any failures of this (`FinalizeDatasetPublicatinoCommand#exportMetadata`, line 134).
+    - *Decision* Use async (but alidate with related programmers first).
 * Are we OK with this:
     - Import: POST a JSON with dataset data and a *single* dataset version
     - Migrate: Start same as import, with the dataset version being the first dataset version. Then POST additional versions, one at a time, to a different endpoint.
     - Both endpoints accept parameters for triggering workflows (yes/no) and publishing (yes/no). If no publishing, the version stays at DRAFT mode.
         + Also, no publish effectively means no workflow (since no reason to run the workflow, event if there is one).
+* Refactor out migration?
+    *  *Decision* YES.
 * Creation of new datasets: We can either have a single command with multiple modes (native new, harvest, import), or three different commands with as much code reuse as possible. Need to decide on this.
 * Do we have a task to clean up deprecated code? Seems like something we need to, and is quite easy.
 
