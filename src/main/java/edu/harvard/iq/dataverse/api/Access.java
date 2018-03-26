@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.BibtexCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -23,7 +22,6 @@ import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -63,6 +61,8 @@ import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServiceUnavailableException;
@@ -140,8 +140,7 @@ public class Access extends AbstractApiBean {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
-        // This will throw a WebApplicationException, with the correct 
-        // exit code, if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(df, apiToken);
         
         if (gbrecs == null && df.isReleased()){
@@ -193,7 +192,7 @@ public class Access extends AbstractApiBean {
             df = findDataFileOrDie(fileId);
         } catch (WrappedResponse ex) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new NotFoundException();
         }
          return df;
     }
@@ -208,7 +207,7 @@ public class Access extends AbstractApiBean {
         GuestbookResponse gbr = null;
         
         if (df.isHarvested()) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new NotFoundException();
             // (nobody should ever be using this API on a harvested DataFile)!
         }
         
@@ -223,8 +222,7 @@ public class Access extends AbstractApiBean {
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
         }
                
-        // This will throw a WebApplicationException, with the correct 
-        // exit code, if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(df, apiToken);
         
         DownloadInfo dInfo = new DownloadInfo(df);
@@ -425,8 +423,7 @@ public class Access extends AbstractApiBean {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
-        // This will throw a WebApplicationException, with the correct 
-        // exit code, if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(df, apiToken);
         DownloadInfo dInfo = new DownloadInfo(df);
 
@@ -466,7 +463,7 @@ public class Access extends AbstractApiBean {
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
         if (fileIds == null || fileIds.equals("")) {
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+            throw new BadRequestException();
         }
 
         String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
@@ -539,12 +536,12 @@ public class Access extends AbstractApiBean {
 
                             } else {
                                 // Or should we just drop it and make a note in the Manifest?    
-                                throw new WebApplicationException(Response.Status.NOT_FOUND);
+                                throw new NotFoundException();
                             }
                         }
                     }
                 } else {
-                    throw new WebApplicationException(Response.Status.BAD_REQUEST);
+                    throw new BadRequestException();
                 }
 
                 if (zipper == null) {
@@ -553,7 +550,7 @@ public class Access extends AbstractApiBean {
                     // files were accessible for this user. 
                     // In which casew we don't bother generating any output, and 
                     // just give them a 403:
-                    throw new WebApplicationException(Response.Status.FORBIDDEN);
+                    throw new ForbiddenException();
                 }
 
                 // This will add the generated File Manifest to the zipped output, 
@@ -844,7 +841,7 @@ public class Access extends AbstractApiBean {
     private void checkAuthorization(DataFile df, String apiToken) throws WebApplicationException {
 
         if (!isAccessAuthorized(df, apiToken)) {
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
+            throw new ForbiddenException();
         }        
     }
     

@@ -50,6 +50,8 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.inject.Named;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
@@ -67,6 +69,9 @@ public class IndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
 
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    private EntityManager em;
+    
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
@@ -253,9 +258,13 @@ public class IndexServiceBean {
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDatasetInNewTransaction(Dataset dataset) {
+    public Future<String> indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
-        return indexDataset(dataset, doNormalSolrDocCleanUp);
+        Dataset dataset = em.find(Dataset.class, datasetId);
+        //return indexDataset(dataset, doNormalSolrDocCleanUp);
+        Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
+        dataset = null; 
+        return ret;
     }
 
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
@@ -1022,10 +1031,18 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        dvObjectService.updateContentIndexTime(dataset);
+        Long dsId = dataset.getId();
+        ///Dataset updatedDataset = (Dataset)dvObjectService.updateContentIndexTime(dataset);
+        ///updatedDataset = null;
+        // instead of making a call to dvObjectService, let's try and 
+        // modify the index time stamp using the local EntityManager:
+        DvObject dvObjectToModify = em.find(DvObject.class, dsId);
+        dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
+        dvObjectToModify = em.merge(dvObjectToModify);
+        dvObjectToModify = null;
 
 //        return "indexed dataset " + dataset.getId() + " as " + solrDocId + "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
-        return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
+        return "indexed dataset " + dsId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
     }
 
     /**
