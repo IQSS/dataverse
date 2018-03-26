@@ -20,7 +20,7 @@ Supported Operating Systems
 
 Mac OS X or Linux is required because the setup scripts assume the presence of standard Unix utilities.
 
-Windows is not supported, unfortunately. For the current status of Windows support, see https://github.com/IQSS/dataverse/issues/3927 or our community list thread `"Do you want to develop on Windows?" <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_
+Windows is not well supported, unfortunately, but Vagrant and Minishift environments are described in the :doc:`windows` section.
 
 Install Java
 ~~~~~~~~~~~~
