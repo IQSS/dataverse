@@ -205,7 +205,7 @@ For systems running systemd, as root, download :download:`solr.service<../_stati
         systemctl start solr.service
         systemctl enable solr.service
 
-For systems using init.d, :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp/``. Then start Solr and configure it to start at boot with the following commands::
+For systems using init.d, download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
 
         cp /tmp/solr /etc/init.d
         service solr start
