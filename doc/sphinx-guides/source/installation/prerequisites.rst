@@ -181,7 +181,7 @@ Become the ``solr`` user and then download and configure Solr::
         cd solr-7.2.1
         cp -r server/solr/configsets/_default server/solr/collection1
 
-Download "dvinstall.zip" file in each Dataverse release at https://github.com/IQSS/dataverse/releases and unzip it into ``/tmp``. Then copy the files into place::
+You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
         cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.2.1/server/solr/collection1/conf
         cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.2.1/server/solr/collection1/conf
