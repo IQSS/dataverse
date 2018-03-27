@@ -14,7 +14,7 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
     HashMap<String,ProvEntityFileData> provJsonParsedEntities = new HashMap<>();
     JsonParser parser = new JsonParser();
     
-    protected HashMap<String,ProvEntityFileData> startRecurseNames(String jsonString) {
+    public HashMap<String,ProvEntityFileData> startRecurseNames(String jsonString) {
         //TODO: Make this take a string and make the jsonObject ourselves
         com.google.gson.JsonObject jsonObject = parser.parse(jsonString).getAsJsonObject();
         recurseNames(jsonObject, null, false);

@@ -9,6 +9,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -68,11 +69,20 @@ public class ProvIT {
                         .add("rdt:scope", "something"))        
                     )
                     .build();
+        
+        
+        //entity name not found in prov json
+        String entityNameBad = "broken name";
+        Response uploadProvJsonBadEntity = UtilIT.uploadProvJson(dataFileId.toString(), provJsonGood, apiTokenForDepositor, entityNameBad);
+        uploadProvJsonBadEntity.prettyPrint();
+        uploadProvJsonBadEntity.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        
+        //valid entity name
         String entityName = "d1";
         Response uploadProvJson = UtilIT.uploadProvJson(dataFileId.toString(), provJsonGood, apiTokenForDepositor, entityName);
         uploadProvJson.prettyPrint();
         uploadProvJson.then().assertThat()
-//                .body("data.message", equalTo("PROV-JSON provenance data saved: {\"prov\":true,\"foo\":\"bar\"}"))
                 .statusCode(OK.getStatusCode());
         
         Response deleteProvJson = UtilIT.deleteProvJson(dataFileId.toString(), apiTokenForDepositor);

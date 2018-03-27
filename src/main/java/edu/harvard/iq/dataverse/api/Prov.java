@@ -1,12 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.ProvEntityFileData;
+import edu.harvard.iq.dataverse.ProvUtilFragmentBean;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonProvCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonProvCommand;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;
@@ -26,6 +30,9 @@ public class Prov extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Prov.class.getCanonicalName());
 
+    @Inject
+    ProvUtilFragmentBean provUtil;
+    
     /** Provenance JSON methods **/
     @POST
     @Path("{id}/prov-json")
@@ -38,9 +45,12 @@ public class Prov extends AbstractApiBean {
                 return error(BAD_REQUEST, "Invalid DataFile Id, file not fully initialized");
             } else if (dataFile.getFileMetadata().getCplId() != 0) {
                 return error(METHOD_NOT_ALLOWED, "File provenance has already exists in the CPL system and cannot be uploaded.");
+            } 
+            HashMap<String,ProvEntityFileData> provJsonParsedEntities = provUtil.startRecurseNames(body);
+            if(!provJsonParsedEntities.containsKey(entityName)) {
+                //TODO: We should maybe go a step further and provide a way through the api to see the parsed entity names.
+                return error(BAD_REQUEST, "Entity name provided does not match any entities parsed from the uploaded prov json");
             }
-            
-            //TODO: We should confirm here that the entityName provided is actually in the json
             
             execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), dataFile , body, entityName, true));
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
