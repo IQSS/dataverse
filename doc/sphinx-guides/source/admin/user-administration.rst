@@ -26,7 +26,7 @@ List users with the options to search and "page" through results. Only accessibl
 
 ::
 
-    GET http://$SERVER/api/admin/list-users
+    curl -H "X-Dataverse-key: $API_TOKEN" -X GET http://$SERVER/api/admin/list-users
 
 
 Sample output appears below. 
