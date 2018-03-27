@@ -20,7 +20,7 @@ import javax.inject.Inject;
 public class ProvEntityFileDataConverter implements Converter{
 
     @Inject
-    ProvenanceUploadFragmentBean provBean;
+    ProvPopupFragmentBean provBean;
     
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {

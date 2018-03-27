@@ -190,7 +190,7 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     SettingsWrapper settingsWrapper; 
     @Inject 
-    ProvenanceUploadFragmentBean provUploadFragmentBean;
+    ProvPopupFragmentBean provUploadFragmentBean;
 
 
     private Dataset dataset = new Dataset();

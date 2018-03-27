@@ -36,9 +36,9 @@ import javax.json.JsonObject;
 
 @ViewScoped
 @Named
-public class ProvenanceUploadFragmentBean extends AbstractApiBean implements java.io.Serializable{
+public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Serializable{
     
-    private static final Logger logger = Logger.getLogger(ProvenanceUploadFragmentBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(ProvPopupFragmentBean.class.getCanonicalName());
     
     private UploadedFile jsonUploadedTempFile; 
     
@@ -84,7 +84,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
             generateProvJsonParsedEntities();
 
         } catch (Exception e) {
-            Logger.getLogger(ProvenanceUploadFragmentBean.class.getName())
+            Logger.getLogger(ProvPopupFragmentBean.class.getName())
                     .log(Level.SEVERE, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"), e);
             removeJsonAndRelatedData();
             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.uploadError")); 
@@ -182,7 +182,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
                 
             } catch (AbstractApiBean.WrappedResponse ex) {
                 filePage.showProvError();
-                Logger.getLogger(ProvenanceUploadFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ProvPopupFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

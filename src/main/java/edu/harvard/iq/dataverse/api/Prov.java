@@ -39,7 +39,10 @@ public class Prov extends AbstractApiBean {
             } else if (dataFile.getFileMetadata().getCplId() != 0) {
                 return error(METHOD_NOT_ALLOWED, "File provenance has already exists in the CPL system and cannot be uploaded.");
             }
-            execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), dataFile , body, entityName));
+            
+            //TODO: We should confirm here that the entityName provided is actually in the json
+            
+            execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), dataFile , body, entityName, true));
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
             jsonResponse.add("message", "PROV-JSON provenance data saved for Data File: " + dataFile.getDisplayName());
             return ok(jsonResponse);
@@ -50,9 +53,9 @@ public class Prov extends AbstractApiBean {
     
     @DELETE
     @Path("{id}/prov-json")
-    public Response removeProvJson(String body, @PathParam("id") String idSupplied) {
+    public Response deleteProvJson(String body, @PathParam("id") String idSupplied) {
         try {
-            execCommand(new DeleteProvJsonProvCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
+            execCommand(new DeleteProvJsonProvCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied), true));
             return ok("Provenance URL deleted");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -92,7 +95,7 @@ public class Prov extends AbstractApiBean {
     
     @DELETE
     @Path("{id}/prov-freeform")
-    public Response removeProvFreeForm(String body, @PathParam("id") String idSupplied) {
+    public Response deleteProvFreeForm(String body, @PathParam("id") String idSupplied) {
         try {
             return ok(execCommand(new DeleteProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied))));
         } catch (WrappedResponse ex) {

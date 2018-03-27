@@ -110,7 +110,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject PermissionsWrapper permissionsWrapper;
     @Inject FileDownloadHelper fileDownloadHelper;
-    @Inject ProvenanceUploadFragmentBean provUploadFragmentBean;
+    @Inject ProvPopupFragmentBean provUploadFragmentBean;
 
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 

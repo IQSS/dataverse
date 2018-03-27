@@ -19,12 +19,12 @@ import org.junit.Test;
  */
 public class ProvUploadFragmentTest {
     
-    private ProvenanceUploadFragmentBean provBean;
+    private ProvPopupFragmentBean provBean;
     JsonParser jsonParser;
     
     @Before
     public void setUp() {
-        provBean = new ProvenanceUploadFragmentBean();
+        provBean = new ProvPopupFragmentBean();
         jsonParser = new JsonParser();
     }
     

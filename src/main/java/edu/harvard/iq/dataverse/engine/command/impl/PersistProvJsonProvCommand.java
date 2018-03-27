@@ -30,14 +30,6 @@ public class PersistProvJsonProvCommand extends AbstractCommand<DataFile> {
     private final String jsonInput;
     private final String entityName;
     private final boolean saveContext;
-
-    public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName) {
-        super(aRequest, dataFile);
-        this.dataFile = dataFile;
-        this.jsonInput = jsonInput;
-        this.entityName = entityName;
-        this.saveContext = true;
-    }
     
     public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName, boolean saveContext) {
         super(aRequest, dataFile);

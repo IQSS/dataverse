@@ -17,18 +17,12 @@ import java.util.logging.Logger;
 @RequiredPermissions(Permission.EditDataset)
 public class DeleteProvJsonProvCommand extends AbstractCommand<DataFile> {
 
-    private static final Logger logger = Logger.getLogger(PersistProvJsonProvCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DeleteProvJsonProvCommand.class.getCanonicalName());
 
     private DataFile dataFile;
     private final boolean saveContext;
     
-    public DeleteProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile) {
-        super(aRequest, dataFile);
-        this.dataFile = dataFile;
-        this.saveContext = false;
-    }
-    
-        public DeleteProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, boolean saveContext) {
+    public DeleteProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, boolean saveContext) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
         this.saveContext = saveContext;
