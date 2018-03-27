@@ -113,8 +113,10 @@ public class MailServiceBean implements java.io.Serializable {
     public boolean sendSystemEmail(String to, String subject, String messageText) {
 
         boolean sent = false;
-        String rootDataverseName = dataverseService.findRootDataverse().getName();
-        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName)));
+
+        //QDR  - uses the institution name rather than a dataverse/collection name in email subject
+        String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.name");
+        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getInstallationBrandName(institutionName)));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
             MimeMessage msg = new MimeMessage(session);
@@ -211,8 +213,9 @@ public class MailServiceBean implements java.io.Serializable {
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification);
-               String rootDataverseName = dataverseService.findRootDataverse().getName();
-               String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, rootDataverseName, objectOfNotification);
+               //QDR  - uses the institution name rather than a dataverse/collection name in email subject
+               String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.name");;
+               String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, institutionName, objectOfNotification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                     retval = sendSystemEmail(emailAddress, subjectText, messageText); 
                } else {
@@ -461,8 +464,8 @@ public class MailServiceBean implements java.io.Serializable {
                 InternetAddress systemAddress = getSystemAddress();
                 //QDR
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
-                        BundleUtil.getStringFromBundle("institution.name"),
-                		BundleUtil.getStringFromBundle("header.guides.user"),
+                		ResourceBundle.getBundle("Bundle").getString("institution.name"),
+                		ResourceBundle.getBundle("Bundle").getString("header.guides.user"),
                 		settingsService.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL, "") + "/deposit",
                         BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName),
                         BrandingUtil.getSupportTeamEmailAddress(systemAddress)
