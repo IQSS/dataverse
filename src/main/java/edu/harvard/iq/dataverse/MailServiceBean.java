@@ -459,10 +459,10 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEACC:
                 String rootDataverseName = dataverseService.findRootDataverse().getName();
                 InternetAddress systemAddress = getSystemAddress();
+                //QDR
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
-                        BrandingUtil.getInstallationBrandName(rootDataverseName),
-                        systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getGuidesVersion(),
+                		BundleUtil.getStringFromBundle("header.guides.user",
+                		settingsService.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL, "") + "/deposit",
                         BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName),
                         BrandingUtil.getSupportTeamEmailAddress(systemAddress)
                 ));

@@ -85,14 +85,11 @@
                                                 <ui:fragment rendered="#{item.type == 'CREATEACC'}">
                                                     <i class="icon-dataverse text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
-                                                        <o:param>
-                                                            <h:outputText value="#{dataverseServiceBean.findRootDataverse().name}"/>
+                                                        <o:param>/url
+                                                          <a href="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit">#{bundle['header.guides.user']}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>
-                                                        </o:param>
-                                                        <o:param>
-                                                            <a href="https://demo.dataverse.org">#{bundle['notification.demoSite']}</a>
+                                                          <a mailto="{settingsWrapper.get(':SystemEmail')}">contact us</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
