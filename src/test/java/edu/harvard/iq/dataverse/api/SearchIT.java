@@ -576,6 +576,64 @@ public class SearchIT {
          */
     }
 
+    @Test
+    public void testIdentifier() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        System.out.println("id: " + datasetId);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+        System.out.println("datasetPid: " + datasetPid);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        System.out.println("identifier: " + identifier);
+
+        Response searchUnpublished = UtilIT.search(identifier, apiToken);
+        searchUnpublished.prettyPrint();
+        searchUnpublished.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response searchTargeted = UtilIT.search("dsPersistentId:" + identifier, apiToken);
+        searchTargeted.prettyPrint();
+        searchTargeted.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+
+        Response searchUntargeted = UtilIT.search(identifier, apiToken);
+        searchUntargeted.prettyPrint();
+        searchUntargeted.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // FIXME: Why can't we find the dataset based on just its identifier (basic search)?
+                // Oddly, you *can* find from Solr directly: curl 'http://localhost:8983/solr/collection1/select?rows=1000000&wt=json&indent=true&hl=true&hl.fl=*&q=JNIUOA'
+                // Under "highlighting", you see "dsPersistentId":["doi:10.5072/FK2/<em>JNIUOA</em>"]
+                .body("data.total_count", CoreMatchers.equalTo(0));
+
+    }
+
     @After
     public void tearDownDataverse() {
         File treesThumb = new File("scripts/search/data/binary/trees.png.thumb48");
