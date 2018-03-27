@@ -110,7 +110,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject PermissionsWrapper permissionsWrapper;
     @Inject FileDownloadHelper fileDownloadHelper;
-    @Inject ProvPopupFragmentBean provUploadFragmentBean;
+    @Inject ProvPopupFragmentBean provPopupFragmentBean;
 
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -1259,7 +1259,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if(systemConfig.isProvCollectionEnabled()) {        
             try {
-                provUploadFragmentBean.saveStagedProvJson(false);
+                provPopupFragmentBean.saveStagedProvJson(false);
 
             } catch (AbstractApiBean.WrappedResponse ex) {
                 //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.

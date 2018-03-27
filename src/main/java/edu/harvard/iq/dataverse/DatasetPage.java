@@ -190,7 +190,7 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     SettingsWrapper settingsWrapper; 
     @Inject 
-    ProvPopupFragmentBean provUploadFragmentBean;
+    ProvPopupFragmentBean provPopupFragmentBean;
 
 
     private Dataset dataset = new Dataset();
@@ -2551,7 +2551,7 @@ public class DatasetPage implements java.io.Serializable {
 
         if(systemConfig.isProvCollectionEnabled()) {
             try {
-                provUploadFragmentBean.saveStagedProvJson(false);
+                provPopupFragmentBean.saveStagedProvJson(false);
             } catch (AbstractApiBean.WrappedResponse ex) {
                 //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
 

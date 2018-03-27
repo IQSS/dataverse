@@ -9,6 +9,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,14 +18,14 @@ import org.junit.Test;
  *
  * @author madunlap
  */
-public class ProvUploadFragmentTest {
+public class ProvUtilFragmentTest {
     
-    private ProvPopupFragmentBean provBean;
+    private ProvUtilFragmentBean provUtilBean;
     JsonParser jsonParser;
     
     @Before
     public void setUp() {
-        provBean = new ProvPopupFragmentBean();
+        provUtilBean = new ProvUtilFragmentBean();
         jsonParser = new JsonParser();
     }
     
@@ -32,17 +33,14 @@ public class ProvUploadFragmentTest {
     public void testProvNamesNotInsideEntity() throws IOException {
         //name and type on their own
         String jsonString = "{\"name\":\"testzame\",\"type\":\"ohno\"}";
-        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
-        provBean.recurseNames(jsonObject);
-        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
-        assertFalse(theNames.size() > 0); 
+        HashMap<String,ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
+        assertFalse(entities.size() > 0); 
         
         //name and type in an individual entity but not inside the "entity" grouping
         jsonString = "{\"p1\":{\"name\":\"testzame\",\"name2\":\"ohno\"}}";
-        JsonObject jsonObject2 = jsonParser.parse(jsonString).getAsJsonObject();
-        provBean.recurseNames(jsonObject2);
-        theNames = provBean.getProvJsonParsedEntitiesArray();
-        assertFalse(theNames.size() > 0); 
+
+        entities = provUtilBean.startRecurseNames(jsonString);
+        assertFalse(entities.size() > 0); 
     }
     
     //MAD: write a simple entity test as well, also ensure logging works after getting a real tostring together
@@ -80,11 +78,8 @@ public class ProvUploadFragmentTest {
             "}\n" +
             "}";
         
-        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
-        
-        provBean.recurseNames(jsonObject);
-        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
-        assertTrue(theNames.size() == 0);
+        HashMap<String,ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
+        assertTrue(entities.size() == 0);
     }
     
     //Note: this test has entity tags in multiple places, all with unique names
@@ -154,13 +149,11 @@ public class ProvUploadFragmentTest {
 "    }\n" +
 "}";
         
-        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
         
-        provBean.recurseNames(jsonObject);
-        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
-        assertTrue(provBean.provJsonParsedEntities.get("ex:report5").fileType.equals("report"));
-        assertTrue(provBean.provJsonParsedEntities.get("ex:report2").fileName.equals("best"));
-        assertTrue(theNames.size() == 7);
+        HashMap<String,ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
+        assertTrue(entities.get("ex:report5").fileType.equals("report"));
+        assertTrue(entities.get("ex:report2").fileName.equals("best"));
+        assertTrue(entities.size() == 7);
     }
     
     @Test
@@ -196,12 +189,9 @@ public class ProvUploadFragmentTest {
 "    }\n" +
 "}";
         
-        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
-        
-        provBean.recurseNames(jsonObject);
-        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
-        assertTrue(provBean.provJsonParsedEntities.get("ex:report2").fileType.equals("not report"));
-        assertTrue(theNames.size() == 3); //ex:report2 & ex:report1 are repeated
+        HashMap<String,ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);   
+        assertTrue(entities.get("ex:report2").fileType.equals("not report"));
+        assertTrue(entities.size() == 3); //ex:report2 & ex:report1 are repeated
     }
    
     @Test
@@ -479,10 +469,8 @@ public class ProvUploadFragmentTest {
             "   }\n" +
             "}";
         
-        JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
         
-        provBean.recurseNames(jsonObject);
-        ArrayList<ProvEntityFileData> theNames = provBean.getProvJsonParsedEntitiesArray();
-        assertTrue(theNames.size() == 6);
+        HashMap<String,ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
+        assertTrue(entities.size() == 6);
     }
 }
