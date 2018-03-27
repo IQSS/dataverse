@@ -45,15 +45,13 @@ public class BrandingUtilTest {
         System.out.println("testWelcomeInAppNotification");
         String message = BundleUtil.getStringFromBundle("notification.welcome",
                 Arrays.asList(
-                        "LibraScholar",
+                		"LibraScholar",
                         "<a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>",
-                        "<a href=\"https://demo.dataverse.org\">Demo Site</a>"
+                        "<a mailto:\"LibraScholar<support@librascholar.edu>\"">contact us</a>"
                 ));
         System.out.println("message: " + message);
         assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
-                + "Have questions? Check out the <a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>."
-                + " Want to test out Dataverse features? Use our <a href=\"https://demo.dataverse.org\">Demo Site</a>."
-                + " Also, check for your welcome email to verify your address.",
+                + "Have questions? Check out our <a href=\\\"http://guides.dataverse.org/en/4.3/user/index.html\\\">User Guide</a> or <a mailto:\\\"LibraScholar<support@librascholar.edu>\\\"\">contact us</a>.",
                 message);
     }
 
@@ -62,15 +60,15 @@ public class BrandingUtilTest {
         System.out.println("testWelcomeEmail");
         String message = BundleUtil.getStringFromBundle("notification.email.welcome",
                 Arrays.asList(
-                        "LibraScholar",
-                        "http://guides.librascholar.edu/en",
-                        "4.3",
+                		"LibraScholar",
+                		"documentation",
+                        "http://guides.librascholar.edu/en/4.3/user",
                         "LibraScholar Support",
                         "support@librascholar.edu"
                 ));
         System.out.println("message: " + message);
         assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
-                + "Have questions? Check out the User Guide at http://guides.librascholar.edu/en/4.3/user or"
+                + "Have questions? Check out our documentation at http://guides.librascholar.edu/en/4.3/user or"
                 + " contact LibraScholar Support at support@librascholar.edu for assistance.",
                 message);
     }

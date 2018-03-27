@@ -461,7 +461,8 @@ public class MailServiceBean implements java.io.Serializable {
                 InternetAddress systemAddress = getSystemAddress();
                 //QDR
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
-                		BundleUtil.getStringFromBundle("header.guides.user",
+                        BundleUtil.getStringFromBundle("institution.name"),
+                		BundleUtil.getStringFromBundle("header.guides.user"),
                 		settingsService.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL, "") + "/deposit",
                         BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName),
                         BrandingUtil.getSupportTeamEmailAddress(systemAddress)

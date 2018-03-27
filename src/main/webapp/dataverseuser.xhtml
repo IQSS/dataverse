@@ -85,7 +85,10 @@
                                                 <ui:fragment rendered="#{item.type == 'CREATEACC'}">
                                                     <i class="icon-dataverse text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
-                                                        <o:param>/url
+                                                        <o:param>
+                                                          #{bundle['institution.name']}
+                                                        </o:param>
+                                                        <o:param>
                                                           <a href="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit">#{bundle['header.guides.user']}</a>
                                                         </o:param>
                                                         <o:param>
