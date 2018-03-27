@@ -559,7 +559,11 @@ public class JsonPrinter {
             fileName = df.getFileMetadata().getLabel();
         }
         
-        String pidURL = new GlobalId(df).toURL().toString();
+        String pidURL = "";
+        
+        if (new GlobalId(df).toURL() != null){
+            pidURL = new GlobalId(df).toURL().toString();
+        }
         
         return jsonObjectBuilder()
                 .add("id", df.getId())

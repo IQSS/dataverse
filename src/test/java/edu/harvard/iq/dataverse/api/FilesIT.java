@@ -28,6 +28,7 @@ import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
 
 public class FilesIT {
@@ -44,7 +45,7 @@ public class FilesIT {
                 .statusCode(200);
 
     }
-
+    
 
     /**
      * Create user and get apiToken
@@ -342,7 +343,8 @@ public class FilesIT {
         msg("Replace file - BAD/warning b/c different content-type");
 
         String pathToFileWrongCtype = "src/main/webapp/resources/images/ajax-loading.gif";
-        Response replaceRespWrongCtype  = UtilIT.replaceFile(origFilePid, pathToFileWrongCtype, apiToken);
+         msgt("origFilePid: " + origFilePid);
+        Response replaceRespWrongCtype  = UtilIT.replaceFile(origFileId.toString(), pathToFileWrongCtype, apiToken);
         
         msgt(replaceRespWrongCtype.prettyPrint());
         
@@ -864,7 +866,6 @@ public class FilesIT {
 
     @Test
     public void testRestrictFile() {
-        System.out.println("testRestrictFile");
 
         //get publicInstall setting so we can change it back
         Response publicInstallResponse = UtilIT.getSetting(SettingsServiceBean.Key.PublicInstall);
@@ -921,7 +922,7 @@ public class FilesIT {
 
         //unrestrict file
         restrict = false;
-        Response unrestrictResponse = UtilIT.restrictFile(origFilePid, restrict, apiToken);
+        Response unrestrictResponse = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
         unrestrictResponse.prettyPrint();
         unrestrictResponse.then().assertThat()
                 .body("data.message", equalTo("File favicondataverse.png unrestricted."))
@@ -1050,32 +1051,38 @@ public class FilesIT {
 
     @Test
     public void test_AddFileBadUploadFormat() {
-        
+        /*
+        SEK 3/26/2018 removing test for now
+        having the upload method set to rsync was causing failure of create dataset 
+        see CreateDatasetCommand around line 242 - test for rsyncSupportEnabled
+        Per Phil this test should only be run where DCM is present
+        */
+        boolean runTest = false;
+        if (runTest) {
+            Response setUploadMethods = UtilIT.setSetting(SettingsServiceBean.Key.UploadMethods, SystemConfig.FileUploadMethods.RSYNC.toString());
 
-    
-        Response setUploadMethods = UtilIT.setSetting(SettingsServiceBean.Key.UploadMethods, SystemConfig.FileUploadMethods.RSYNC.toString());
+            msgt("test_AddFileBadUploadFormat");
+            // Create user
+            String apiToken = createUserGetToken();
 
-        msgt("test_AddFileBadUploadFormat");
-         // Create user
-        String apiToken = createUserGetToken();
+            // Create Dataverse
+            String dataverseAlias = createDataverseGetAlias(apiToken);
 
-        // Create Dataverse
-        String dataverseAlias = createDataverseGetAlias(apiToken);
+            // Create Dataset
+            Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
 
-        // Create Dataset
-        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+            String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+            Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+            //msgt("Here it is: " + addResponse.prettyPrint());
 
-       
-        
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
-        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
-        //msgt("Here it is: " + addResponse.prettyPrint());
+            //Trying to upload with rsync should fail
+            addResponse.then().assertThat()
+                    .statusCode(METHOD_NOT_ALLOWED.getStatusCode());
 
-        //Trying to upload with rsync should fail
-        addResponse.then().assertThat()
-                .statusCode(METHOD_NOT_ALLOWED.getStatusCode());
-        
-                Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
+            Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
+
+        }
+
     }
     
     

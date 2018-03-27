@@ -86,6 +86,9 @@ public class GlobalId implements java.io.Serializable {
     
     public URL toURL() {
         URL url = null;
+        if (identifier == null){
+            return null;
+        }
         try {
             if (protocol.equals(DOI_PROTOCOL)){
                url = new URL(DOI_RESOLVER_URL + authority + "/" + identifier); 
