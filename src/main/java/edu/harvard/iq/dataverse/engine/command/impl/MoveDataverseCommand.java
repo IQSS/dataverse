@@ -1,10 +1,8 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFeaturedDataverse;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.Guestbook;
 import static edu.harvard.iq.dataverse.IdServiceBean.logger;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -69,17 +67,17 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
 
         // validate the move makes sense
         if (destination.getOwners().contains(moved)) {
-            throw new IllegalCommandException("Can't move a Dataverse to its descendant", this);
+            throw new IllegalCommandException("Can't move a dataverse to its descendant", this);
         }
         if (moved.getOwner().equals(destination)) {
-            throw new IllegalCommandException("Dataverse already in this Dataverse ", this);
+            throw new IllegalCommandException("Dataverse already in this dataverse ", this);
         }
         if (moved.equals(destination)) {
-            throw new IllegalCommandException("Cannot move a Dataverse into itself", this);
+            throw new IllegalCommandException("Cannot move a dataverse into itself", this);
         }
         // if dataverse is published make sure that its destination is published
         if (moved.isReleased() && !destination.isReleased()) {
-            throw new IllegalCommandException("Published Dataverse may not be moved to unpublished Dataverse. You may publish " + destination.getDisplayName() + " and re-try the move.", this);
+            throw new IllegalCommandException("Published dataverse may not be moved to unpublished dataverse. You may publish " + destination.getDisplayName() + " and re-try the move.", this);
         }
 
         List<Dataset> datasetChildren = ctxt.dataverses().findAllDataverseDatasetChildren(moved);

@@ -170,10 +170,6 @@ Updates the current draft version of dataset ``$id``. If the dataset does not ha
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Moves a dataset whose id is passed to a dataverse whose alias is passed. Only accessible to superusers. ::
-
-    POST http://$SERVER/api/datasets/$id/move/$alias?key=$apiKey
-
 Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
@@ -611,114 +607,6 @@ List all global roles in the system. ::
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 
     POST http://$SERVER/api/admin/roles
-
-List users with the options to search and "page" through results. Only accessible to superusers. Optional parameters:
-
-* ``searchTerm`` A string that matches the beginning of a user identifier, first name, last name or email address.
-* ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
-* ``selectedPage`` The page of results to return.  The default is 1.
-
-::
-
-    GET http://$SERVER/api/admin/list-users
-
-
-Sample output appears below. 
-
-* When multiple pages of results exist, the ``selectedPage`` parameters may be specified.
-* Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.
-
-.. code-block:: text
-
-    {
-        "status":"OK",
-        "data":{
-            "userCount":27,
-            "selectedPage":1,
-            "pagination":{
-                "isNecessary":true,
-                "numResults":27,
-                "numResultsString":"27",
-                "docsPerPage":25,
-                "selectedPageNumber":1,
-                "pageCount":2,
-                "hasPreviousPageNumber":false,
-                "previousPageNumber":1,
-                "hasNextPageNumber":true,
-                "nextPageNumber":2,
-                "startResultNumber":1,
-                "endResultNumber":25,
-                "startResultNumberString":"1",
-                "endResultNumberString":"25",
-                "remainingResults":2,
-                "numberNextResults":2,
-                "pageNumberList":[
-                    1,
-                    2
-                ]
-            },
-            "bundleStrings":{
-                "userId":"ID",
-                "userIdentifier":"Username",
-                "lastName":"Last Name ",
-                "firstName":"First Name ",
-                "email":"Email",
-                "affiliation":"Affiliation",
-                "position":"Position",
-                "isSuperuser":"Superuser",
-                "authenticationProvider":"Authentication",
-                "roles":"Roles",
-                "createdTime":"Created Time",
-                "lastLoginTime":"Last Login Time",
-                "lastApiUseTime":"Last API Use Time"
-            },
-            "users":[
-                {
-                    "id":8,
-                    "userIdentifier":"created1",
-                    "lastName":"created1",
-                    "firstName":"created1",
-                    "email":"created1@g.com",
-                    "affiliation":"hello",
-                    "isSuperuser":false,
-                    "authenticationProvider":"BuiltinAuthenticationProvider",
-                    "roles":"Curator",
-                    "createdTime":"2017-06-28 10:36:29.444"
-                },
-                {
-                    "id":9,
-                    "userIdentifier":"created8",
-                    "lastName":"created8",
-                    "firstName":"created8",
-                    "email":"created8@g.com",
-                    "isSuperuser":false,
-                    "authenticationProvider":"BuiltinAuthenticationProvider",
-                    "roles":"Curator",
-                    "createdTime":"2000-01-01 00:00:00.0"
-                },
-                {
-                    "id":1,
-                    "userIdentifier":"dataverseAdmin",
-                    "lastName":"Admin",
-                    "firstName":"Dataverse",
-                    "email":"dataverse@mailinator2.com",
-                    "affiliation":"Dataverse.org",
-                    "position":"Admin",
-                    "isSuperuser":true,
-                    "authenticationProvider":"BuiltinAuthenticationProvider",
-                    "roles":"Admin, Contributor",
-                    "createdTime":"2000-01-01 00:00:00.0",
-                    "lastLoginTime":"2017-07-03 12:22:35.926",
-                    "lastApiUseTime":"2017-07-03 12:55:57.186"
-                }
-                
-                // ... 22 more user documents ...
-            ]
-        }
-    }
-
-.. note:: "List all users" ``GET http://$SERVER/api/admin/authenticatedUsers`` is deprecated, but supported.
-
 
 List user whose ``identifier`` (without the ``@`` sign) is passed::
 
