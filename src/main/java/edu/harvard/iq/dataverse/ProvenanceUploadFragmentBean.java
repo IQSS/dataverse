@@ -101,7 +101,6 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         updatePopupState(file);
     }
     
-    
     //This updates the popup for the selected file each time its open
     public void updatePopupState(DataFile file) throws AbstractApiBean.WrappedResponse, IOException {
         if(null == dataset ) {
@@ -111,12 +110,14 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
         popupDataFile = file;
         deleteStoredJson = false;
         provJsonState = null;
+        provJsonParsedEntities = new HashMap<>();
+        setDropdownSelectedEntity(null);
         freeformTextState = popupDataFile.getFileMetadata().getProvFreeForm();
         storedSelectedEntityName = popupDataFile.getFileMetadata().getProvJsonObjName();
         
         if(jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { //If there is already staged provenance info 
             provJsonState = jsonProvenanceUpdates.get(popupDataFile.getStorageIdentifier()).provenanceJson;
-            generateProvJsonParsedEntities();
+            generateProvJsonParsedEntities(); //calling this each time is somewhat inefficient, but storing the state is a lot of lifting.
             setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             
         } else if(null != popupDataFile.getCreateDate()){ //Is this file fully uploaded and already has prov data saved?     
@@ -249,6 +250,7 @@ public class ProvenanceUploadFragmentBean extends AbstractApiBean implements jav
     }
         
     public void generateProvJsonParsedEntities() throws IOException { 
+        provJsonParsedEntities = new HashMap<>();
         com.google.gson.JsonObject jsonObject = parser.parse(provJsonState).getAsJsonObject();
         recurseNames(jsonObject);
     }
