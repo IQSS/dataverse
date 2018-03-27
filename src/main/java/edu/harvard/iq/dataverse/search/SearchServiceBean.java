@@ -15,7 +15,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -76,7 +76,6 @@ public class SearchServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    public static final JsfHelper JH = new JsfHelper();
     private SolrClient solrServer;
     
     @PostConstruct
@@ -170,6 +169,7 @@ public class SearchServiceBean {
         solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
         solrQuery.setHighlightSimplePost("</span>");
         Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
+        // TODO: Do not hard code "Name" etc as English here.
         solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_FRIENDLY, "File Type");
@@ -178,7 +178,7 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
         solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Date");
-        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, localize("advanced.search.datasets.persistentId"));
+        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, BundleUtil.getStringFromBundle("dataset.metadata.persistentId"));
         /**
          * @todo Dataverse subject and affiliation should be highlighted but
          * this is commented out right now because the "friendly" names are not
@@ -742,16 +742,6 @@ public class SearchServiceBean {
         solrQueryResponse.setPublicationStatusCounts(queryResponse.getFacetField("publicationStatus"));
 
         return solrQueryResponse;
-    }
-
-    private static String localize(String bundleKey) {
-        try {
-            String value = JH.localize(bundleKey);
-            return value;
-        } catch (Exception e) {
-            // can throw MissingResourceException
-            return "Match";
-        }
     }
 
     public String getCapitalizedName(String name) {
