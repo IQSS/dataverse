@@ -627,10 +627,7 @@ public class SearchIT {
         searchUntargeted.prettyPrint();
         searchUntargeted.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // FIXME: Why can't we find the dataset based on just its identifier (basic search)?
-                // Oddly, you *can* find from Solr directly: curl 'http://localhost:8983/solr/collection1/select?rows=1000000&wt=json&indent=true&hl=true&hl.fl=*&q=JNIUOA'
-                // Under "highlighting", you see "dsPersistentId":["doi:10.5072/FK2/<em>JNIUOA</em>"]
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
 
     }
 

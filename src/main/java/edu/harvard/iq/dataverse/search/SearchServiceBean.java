@@ -205,7 +205,7 @@ public class SearchServiceBean {
             solrQuery.addHighlightField(solrField);
         }
         solrQuery.setParam("fl", "*,score");
-        solrQuery.setParam("qt", "/spell");
+        solrQuery.setParam("qt", "/select");
         solrQuery.setParam("facet", "true");
         /**
          * @todo: do we need facet.query?
