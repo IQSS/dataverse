@@ -51,7 +51,7 @@ public class BrandingUtilTest {
                 ));
         System.out.println("message: " + message);
         assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
-                + "Have questions? Check out our <a href=\\\"http://guides.dataverse.org/en/4.3/user/index.html\\\">User Guide</a> or <a mailto:\\\"LibraScholar<support@librascholar.edu>\\\"\">contact us</a>.",
+                + "Have questions? Check out our <a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a> or <a mailto:\"LibraScholar<support@librascholar.edu>\"\">contact us</a>.",
                 message);
     }
 
@@ -62,7 +62,7 @@ public class BrandingUtilTest {
                 Arrays.asList(
                 		"LibraScholar",
                 		"documentation",
-                        "http://guides.librascholar.edu/en/4.3/user",
+                        "http://guides.librascholar.edu/en/4.3",
                         "LibraScholar Support",
                         "support@librascholar.edu"
                 ));
