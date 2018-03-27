@@ -47,7 +47,7 @@ public class BrandingUtilTest {
                 Arrays.asList(
                 		"LibraScholar",
                         "<a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>",
-                        "<a mailto:\"LibraScholar<support@librascholar.edu>\"">contact us</a>"
+                        "<a mailto:\"LibraScholar<support@librascholar.edu>\">contact us</a>"
                 ));
         System.out.println("message: " + message);
         assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
