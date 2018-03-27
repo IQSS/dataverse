@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
-import static edu.harvard.iq.dataverse.IdServiceBean.logger;
+import static edu.harvard.iq.dataverse.PersistentIdentifierServiceBean.logger;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import static edu.harvard.iq.dataverse.IdServiceBean.logger;
+import static edu.harvard.iq.dataverse.PersistentIdentifierServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
@@ -9,9 +9,9 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public interface IdServiceBean {
+public interface PersistentIdentifierServiceBean {
 
-    static final Logger logger = Logger.getLogger(IdServiceBean.class.getCanonicalName());
+    static final Logger logger = Logger.getLogger(PersistentIdentifierServiceBean.class.getCanonicalName());
 
     boolean alreadyExists(Dataset dataset) throws Exception;
 
@@ -47,8 +47,8 @@ public interface IdServiceBean {
 
     boolean publicizeIdentifier(Dataset studyIn);
     
-    static IdServiceBean getBean(String protocol, CommandContext ctxt) {
-        final Function<CommandContext, IdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
+    static PersistentIdentifierServiceBean getBean(String protocol, CommandContext ctxt) {
+        final Function<CommandContext, PersistentIdentifierServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
         if ( protocolHandler != null ) {
             return protocolHandler.apply(ctxt);
         } else {
@@ -57,7 +57,7 @@ public interface IdServiceBean {
         }
     }
 
-    static IdServiceBean getBean(CommandContext ctxt) {
+    static PersistentIdentifierServiceBean getBean(CommandContext ctxt) {
         return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
     }
 
@@ -68,7 +68,7 @@ public interface IdServiceBean {
  * @author michael
  */
 class BeanDispatcher {
-    static final Map<String, Function<CommandContext, IdServiceBean>> DISPATCHER = new HashMap<>();
+    static final Map<String, Function<CommandContext, PersistentIdentifierServiceBean>> DISPATCHER = new HashMap<>();
 
     static {
         DISPATCHER.put("hdl", ctxt->ctxt.handleNet() );

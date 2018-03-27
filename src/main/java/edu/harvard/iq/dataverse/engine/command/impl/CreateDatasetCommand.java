@@ -81,7 +81,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         
         
         
-        IdServiceBean idServiceBean = IdServiceBean.getBean(theDataset.getProtocol(), ctxt);
+        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(theDataset.getProtocol(), ctxt);
         if(theDataset.getIdentifier() == null || theDataset.getIdentifier().isEmpty()){
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
         }
@@ -173,7 +173,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if ( (importType == null || importType.equals(ImportType.NEW))
               && theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = "";
-            idServiceBean = IdServiceBean.getBean(ctxt);
+            idServiceBean = PersistentIdentifierServiceBean.getBean(ctxt);
             try{
                 logger.log(Level.FINE,"creating identifier");
                 doiRetString = idServiceBean.createIdentifier(theDataset);

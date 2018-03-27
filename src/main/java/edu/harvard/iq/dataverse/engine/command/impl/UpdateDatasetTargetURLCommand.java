@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -19,6 +18,7 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
+import edu.harvard.iq.dataverse.PersistentIdentifierServiceBean;
 
 /**
  *
@@ -42,7 +42,7 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
                     this, Collections.singleton(Permission.EditDataset), target);
         }
 
-        IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), ctxt);
+        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(target.getProtocol(), ctxt);
         Map<String, String> metadata = idServiceBean.getMetadataFromDatasetForTargetURL(target);
         try {
             String doiRetString = idServiceBean.modifyIdentifier(target, metadata);

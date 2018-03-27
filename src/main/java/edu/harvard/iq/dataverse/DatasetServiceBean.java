@@ -219,7 +219,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         return foundDataset;
     }
 
-    public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
+    public String generateDatasetIdentifier(Dataset dataset, PersistentIdentifierServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         switch (doiIdentifierType) {
             case "randomString":
@@ -232,7 +232,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
-    private String generateIdentifierAsRandomString(Dataset dataset, IdServiceBean idServiceBean) {
+    private String generateIdentifierAsRandomString(Dataset dataset, PersistentIdentifierServiceBean idServiceBean) {
 
         String identifier = null;
         do {
@@ -242,7 +242,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(Dataset dataset, IdServiceBean idServiceBean) {
+    private String generateIdentifierAsSequentialNumber(Dataset dataset, PersistentIdentifierServiceBean idServiceBean) {
         
         String identifier; 
         do {
@@ -268,7 +268,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @param dataset
      * @param idServiceBean
      * @return   */
-    public boolean isIdentifierUniqueInDatabase(String userIdentifier, Dataset dataset, IdServiceBean idServiceBean) {
+    public boolean isIdentifierUniqueInDatabase(String userIdentifier, Dataset dataset, PersistentIdentifierServiceBean idServiceBean) {
         String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
         query += " and d.protocol ='" + dataset.getProtocol() + "'";
         query += " and d.authority = '" + dataset.getAuthority() + "'";

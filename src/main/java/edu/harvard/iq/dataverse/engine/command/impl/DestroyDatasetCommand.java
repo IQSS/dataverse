@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -23,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.PersistentIdentifierServiceBean;
 
 /**
  * Same as {@link DeleteDatasetCommand}, but does not stop if the dataset is
@@ -88,7 +88,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             ctxt.em().remove(ra);
         }   
         
-        IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
+        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(ctxt);
         try{
             if(idServiceBean.alreadyExists(doomed)){
                 idServiceBean.deleteIdentifier(doomed);

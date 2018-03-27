@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -29,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.PersistentIdentifierServiceBean;
 
 /**
  *
@@ -168,7 +168,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = theDataset.getProtocol();
-        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
+        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(protocol, ctxt);
         if (idServiceBean!= null ){
             try {
                 idServiceBean.publicizeIdentifier(dataset);
@@ -286,7 +286,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      * @throws CommandException 
      */
     private void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
-        IdServiceBean idServiceBean = IdServiceBean.getBean(theDataset.getProtocol(), ctxt);
+        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(theDataset.getProtocol(), ctxt);
         if (theDataset.getGlobalIdCreateTime() == null) {
           if (idServiceBean!=null) {
             try {

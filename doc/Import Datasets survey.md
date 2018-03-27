@@ -48,3 +48,7 @@ This is a list of commands, what they actually do, and some recommendations abou
 ## Done log
 * Removed deprecated `name` field from `DataFile` (including related methods which were not used).
 * `IdServiceBean`: Code cleanup for dispatch and code-to-interface (rather than implementing classes).
+* `IdServiceBean` -> `PersistentIdentifierServiceBean`
+* Code clean-up for the DOI/EZId service beans.
+* Unit tests for DOI service bean dispatching.
+* Added SettingsServiceBean mock for testing.

@@ -13,7 +13,7 @@ import javax.ejb.Stateless;
  * @author skraffmiller
  */
 @Stateless
-public class DOIEZIdServiceBean extends AbstractIdServiceBean {
+public class DOIEZIdServiceBean extends AbstractPersistentIdentifierServiceBean {
 
     EZIDService ezidService;
     EZIDServiceRequest ezidServiceRequest;

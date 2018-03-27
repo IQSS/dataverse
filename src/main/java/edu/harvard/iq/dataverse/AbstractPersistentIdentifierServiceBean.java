@@ -9,9 +9,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public abstract class AbstractIdServiceBean implements IdServiceBean {
+public abstract class AbstractPersistentIdentifierServiceBean implements PersistentIdentifierServiceBean {
 
-    private static final Logger logger = Logger.getLogger(AbstractIdServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(AbstractPersistentIdentifierServiceBean.class.getCanonicalName());
 
     @EJB
     DataverseServiceBean dataverseService;
