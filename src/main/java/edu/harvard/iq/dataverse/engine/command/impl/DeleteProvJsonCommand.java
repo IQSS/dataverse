@@ -15,14 +15,14 @@ import java.nio.file.NoSuchFileException;
 import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.EditDataset)
-public class DeleteProvJsonProvCommand extends AbstractCommand<DataFile> {
+public class DeleteProvJsonCommand extends AbstractCommand<DataFile> {
 
-    private static final Logger logger = Logger.getLogger(DeleteProvJsonProvCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DeleteProvJsonCommand.class.getCanonicalName());
 
     private DataFile dataFile;
     private final boolean saveContext;
     
-    public DeleteProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, boolean saveContext) {
+    public DeleteProvJsonCommand(DataverseRequest aRequest, DataFile dataFile, boolean saveContext) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
         this.saveContext = saveContext;

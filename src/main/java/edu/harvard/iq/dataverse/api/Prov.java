@@ -4,9 +4,11 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.ProvEntityFileData;
 import edu.harvard.iq.dataverse.ProvUtilFragmentBean;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvFreeFormCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonProvCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetProvFreeFormCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonProvCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -17,6 +19,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -52,7 +55,7 @@ public class Prov extends AbstractApiBean {
                 return error(BAD_REQUEST, "Entity name provided does not match any entities parsed from the uploaded prov json");
             }
             
-            execCommand(new PersistProvJsonProvCommand(createDataverseRequest(findUserOrDie()), dataFile , body, entityName, true));
+            execCommand(new PersistProvJsonCommand(createDataverseRequest(findUserOrDie()), dataFile , body, entityName, true));
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
             jsonResponse.add("message", "PROV-JSON provenance data saved for Data File: " + dataFile.getDisplayName());
             return ok(jsonResponse);
@@ -65,7 +68,7 @@ public class Prov extends AbstractApiBean {
     @Path("{id}/prov-json")
     public Response deleteProvJson(String body, @PathParam("id") String idSupplied) {
         try {
-            execCommand(new DeleteProvJsonProvCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied), true));
+            execCommand(new DeleteProvJsonCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied), true));
             return ok("Provenance URL deleted");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -112,7 +115,42 @@ public class Prov extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    //MAD: These getters are broken, look to the old posts to see how to return files
 
+    @GET
+    @Path("{id}/prov-freeform")
+    public Response getProvFreeForm(String body, @PathParam("id") String idSupplied) {
+        try {
+            String freeFormText = execCommand(new GetProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
+            if(null == freeFormText) {
+                return error(BAD_REQUEST, "No provenance free form text available for this file.");
+            }
+            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            jsonResponse.add("text", freeFormText);
+            return ok(jsonResponse);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @GET
+    @Path("{id}/prov-json")
+    public Response getProvJson(String body, @PathParam("id") String idSupplied) {
+        try {
+            JsonObject jsonText = execCommand(new GetProvJsonCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
+            if(null == jsonText) {
+                return error(BAD_REQUEST, "No provenance json available for this file.");
+            }
+            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            jsonResponse.add("json", jsonText.toString());
+            return ok(jsonResponse);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    
     /** Helper Methods */
     // FIXME: Delete this and switch to the version in AbstractApiBean.java once this is merged: https://github.com/IQSS/dataverse/pull/4350
     private DataFile findDataFileOrDie(String idSupplied) throws WrappedResponse {

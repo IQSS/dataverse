@@ -10,7 +10,9 @@ import javax.json.JsonObject;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -37,6 +39,11 @@ public class ProvIT {
                 .statusCode(CREATED.getStatusCode());
 
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+                
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiTokenForDepositor);
+        publishDataverse.prettyPrint();
+        assertEquals(200, publishDataverse.getStatusCode());
 
         Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiTokenForDepositor);
         createDataset.prettyPrint();
@@ -84,14 +91,6 @@ public class ProvIT {
         uploadProvJson.prettyPrint();
         uploadProvJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        Response deleteProvJson = UtilIT.deleteProvJson(dataFileId.toString(), apiTokenForDepositor);
-        deleteProvJson.prettyPrint();
-        deleteProvJson.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        
-        // TODO: Test that if provenance already exists in CPL (e.g. cplId in fileMetadata is not 0) upload returns error.
-        //       There are currently no api endpoints to set up up this test.
 
         //Provenance FreeForm
         JsonObject provFreeFormGood = Json.createObjectBuilder()
@@ -102,11 +101,51 @@ public class ProvIT {
         uploadProvFreeForm.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiTokenForDepositor);
+        publishDataset.prettyPrint();
+        assertEquals(200, publishDataset.getStatusCode());
+        
+        //We want to publish a 2nd version to confirm metadata is being passed over between version
+        String pathToFile2 = "src/main/webapp/resources/images/dataverseproject_logo.png";
+        Response authorAddsFile2 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, apiTokenForDepositor);
+        authorAddsFile2.prettyPrint();
+        authorAddsFile2.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data.files[0].label", equalTo("dataverseproject_logo.png"))
+                .statusCode(OK.getStatusCode());
+        
+        Response publishDataset2 = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiTokenForDepositor);
+        publishDataset2.prettyPrint();
+        assertEquals(200, publishDataset2.getStatusCode());
+        
+        //Confirm prov freeform metadata was passed to 2nd version
+        Response getProvFreeForm = UtilIT.getProvFreeForm(dataFileId.toString(), apiTokenForDepositor);
+        getProvFreeForm.prettyPrint();
+        getProvFreeForm.then().assertThat()
+                .body("data", notNullValue(String.class))
+                .body("data.text", notNullValue(String.class));
+        assertEquals(200, getProvFreeForm.getStatusCode());
+
+        //also confirm json, tho the 2nd publish shouldn't matter        
+        Response getProvJson = UtilIT.getProvJson(dataFileId.toString(), apiTokenForDepositor);
+        getProvJson.prettyPrint();
+        getProvJson.then().assertThat()
+                .body("data", notNullValue(String.class))
+                .body("data.json", notNullValue(String.class));
+        assertEquals(200, getProvJson.getStatusCode());
+        
+        // TODO: Test that if provenance already exists in CPL (e.g. cplId in fileMetadata is not 0) upload returns error.
+        //       There are currently no api endpoints to set up up this test.
+        
+        Response deleteProvJson = UtilIT.deleteProvJson(dataFileId.toString(), apiTokenForDepositor);
+        deleteProvJson.prettyPrint();
+        deleteProvJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
         Response deleteProvFreeForm = UtilIT.deleteProvFreeForm(dataFileId.toString(), apiTokenForDepositor);
         deleteProvFreeForm.prettyPrint();
         deleteProvFreeForm.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
+        
     }
-
 }

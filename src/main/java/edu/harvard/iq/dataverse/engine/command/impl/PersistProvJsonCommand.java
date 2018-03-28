@@ -22,16 +22,16 @@ import javax.json.JsonObject;
 
 
 @RequiredPermissions(Permission.EditDataset)
-public class PersistProvJsonProvCommand extends AbstractCommand<DataFile> {
+public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
 
-    private static final Logger logger = Logger.getLogger(PersistProvJsonProvCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(PersistProvJsonCommand.class.getCanonicalName());
 
     private DataFile dataFile;
     private final String jsonInput;
     private final String entityName;
     private final boolean saveContext;
     
-    public PersistProvJsonProvCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName, boolean saveContext) {
+    public PersistProvJsonCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName, boolean saveContext) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
         this.jsonInput = jsonInput;

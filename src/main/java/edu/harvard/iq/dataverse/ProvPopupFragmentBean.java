@@ -8,10 +8,10 @@ import java.io.IOException;
 import java.util.logging.Logger;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
-import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonProvCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonProvCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonProvCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.HashMap;
@@ -123,7 +123,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             
         } else if(null != popupDataFile.getCreateDate()){ //Is this file fully uploaded and already has prov data saved?     
-            JsonObject provJsonObject = execCommand(new GetProvJsonProvCommand(dvRequestService.getDataverseRequest(), popupDataFile));
+            JsonObject provJsonObject = execCommand(new GetProvJsonCommand(dvRequestService.getDataverseRequest(), popupDataFile));
             if(null != provJsonObject) {
                 provJsonState = provJsonObject.toString();
                 generateProvJsonParsedEntities();
@@ -198,9 +198,9 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             DataverseRequest dvr = dvRequestService.getDataverseRequest();
 
             if(null != provString ) {
-                df = execCommand(new PersistProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName, saveContext));
+                df = execCommand(new PersistProvJsonCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName, saveContext));
             } else {
-                df = execCommand(new DeleteProvJsonProvCommand(dvRequestService.getDataverseRequest(), df, saveContext));
+                df = execCommand(new DeleteProvJsonCommand(dvRequestService.getDataverseRequest(), df, saveContext));
             }
             
         }
