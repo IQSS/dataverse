@@ -45,7 +45,7 @@ public class DeleteProvJsonProvCommand extends AbstractCommand<DataFile> {
         }
         
         FileMetadata fileMetadata = dataFile.getFileMetadata();
-        fileMetadata.setProvJsonObjName("");
+        fileMetadata.setProvEntityName("");
         if(saveContext) {
             dataFile = ctxt.files().save(dataFile);
         }

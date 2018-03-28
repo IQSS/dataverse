@@ -43,7 +43,7 @@ public class Prov extends AbstractApiBean {
             dataFile = findDataFileOrDie(idSupplied);
             if(null == dataFile.getFileMetadata()) { // can happen when a datafile is not fully initialized, though unlikely in our current implementation
                 return error(BAD_REQUEST, "Invalid DataFile Id, file not fully initialized");
-            } else if (dataFile.getFileMetadata().getCplId() != 0) {
+            } else if (dataFile.getFileMetadata().getProvCplId() != 0) {
                 return error(METHOD_NOT_ALLOWED, "File provenance has already exists in the CPL system and cannot be uploaded.");
             } 
             HashMap<String,ProvEntityFileData> provJsonParsedEntities = provUtil.startRecurseNames(body);

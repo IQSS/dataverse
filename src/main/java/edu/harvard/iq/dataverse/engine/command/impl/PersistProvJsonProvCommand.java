@@ -83,7 +83,7 @@ public class PersistProvJsonProvCommand extends AbstractCommand<DataFile> {
         }
         
         FileMetadata fileMetadata = dataFile.getFileMetadata();
-        fileMetadata.setProvJsonObjName(entityName);
+        fileMetadata.setProvEntityName(entityName);
         if(saveContext) {
             dataFile = ctxt.files().save(dataFile);
         }

@@ -87,16 +87,16 @@ public class FileMetadata implements Serializable {
      * represented in the GUI as text box the user can type into. The other type
      * is based on PROV-JSON from the W3C.
      */
-    @Column(columnDefinition = "TEXT", nullable = true)
+    @Column(columnDefinition = "TEXT", nullable = true, name="prov_freeform")
     private String provFreeForm;
     
     //The json name in the uploaded prov json bundle, identified by the user as the final state of their file
-    @Column(columnDefinition = "TEXT", nullable = true)
-    private String provBundleObjName;
+    @Column(columnDefinition = "TEXT", nullable = true, name="prov_entityname")
+    private String provEntityName;
 
     //The id given for the datafile by CPL.
-    @Column //( nullable=false )
-    private int cplId;
+    @Column(name="prov_cplid") //( nullable=false )
+    private int provCplId; //cplid
         
     /**
      * Creates a copy of {@code this}, with identical business logic fields.
@@ -148,13 +148,7 @@ public class FileMetadata implements Serializable {
         this.restricted = restricted;
     }
 
-    public String getProvFreeForm() {
-        return provFreeForm;
-    }
 
-    public void setProvFreeForm(String provFreeForm) {
-        this.provFreeForm = provFreeForm;
-    }
 
     /* 
      * File Categories to which this version of the DataFile belongs: 
@@ -574,20 +568,28 @@ public class FileMetadata implements Serializable {
         return jsonObj.getAsJsonObject();
     }
     
-    public int getCplId() {
-        return cplId;
+    public String getProvFreeForm() {
+        return provFreeForm;
+    }
+
+    public void setProvFreeForm(String provFreeForm) {
+        this.provFreeForm = provFreeForm;
     }
     
-    public void setCplId(int cplId) {
-        this.cplId = cplId;
+    public int getProvCplId() {
+        return provCplId;
     }
     
-    public String getProvJsonObjName() {
-        return provBundleObjName;
+    public void setProvCplId(int cplId) {
+        this.provCplId = cplId;
     }
     
-    public void setProvJsonObjName(String name) {
-        this.provBundleObjName = name;
+    public String getProvEntityName() {
+        return provEntityName;
+    }
+    
+    public void setProvEntityName(String name) {
+        this.provEntityName = name;
     }
     
 }

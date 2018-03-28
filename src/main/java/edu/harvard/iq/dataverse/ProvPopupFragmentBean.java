@@ -115,7 +115,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         provJsonParsedEntities = new HashMap<>();
         setDropdownSelectedEntity(null);
         freeformTextState = popupDataFile.getFileMetadata().getProvFreeForm();
-        storedSelectedEntityName = popupDataFile.getFileMetadata().getProvJsonObjName();
+        storedSelectedEntityName = popupDataFile.getFileMetadata().getProvEntityName();
         
         if(jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { //If there is already staged provenance info 
             provJsonState = jsonProvenanceUpdates.get(popupDataFile.getStorageIdentifier()).provenanceJson;
@@ -143,7 +143,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), new UpdatesEntry(popupDataFile, null));
             
             FileMetadata fileMetadata = popupDataFile.getFileMetadata();
-            fileMetadata.setProvJsonObjName(null);
+            fileMetadata.setProvEntityName(null);
             deleteStoredJson = false;
         }
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) {
@@ -153,7 +153,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             
             //storing the entity name associated with the DataFile. This is required data to get this far.
             FileMetadata fileMetadata = popupDataFile.getFileMetadata();
-            fileMetadata.setProvJsonObjName(dropdownSelectedEntity.getEntityName());
+            fileMetadata.setProvEntityName(dropdownSelectedEntity.getEntityName());
         } 
         
         if(null == freeformTextInput && null != freeformTextState) {
@@ -167,7 +167,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         
         if(null != storedSelectedEntityName && null != dropdownSelectedEntity && !storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName())) {
             FileMetadata fileMetadata = popupDataFile.getFileMetadata();
-            fileMetadata.setProvJsonObjName(dropdownSelectedEntity.getEntityName());
+            fileMetadata.setProvEntityName(dropdownSelectedEntity.getEntityName());
         }
         
         if(saveInPopup) {
@@ -240,7 +240,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     public boolean provExistsInPreviousPublishedVersion() {
         return (null != popupDataFile 
                 && null != popupDataFile.getFileMetadata() 
-                && popupDataFile.getFileMetadata().getCplId() != 0);
+                && popupDataFile.getFileMetadata().getProvCplId() != 0);
     }
 
     public ProvEntityFileData getDropdownSelectedEntity() {
