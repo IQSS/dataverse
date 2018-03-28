@@ -292,19 +292,19 @@ public class BuiltinUsersIT {
                         "ILLEGAL_MATCH",
                         "NO_GOODSTRENGTH"
                 )),
-                new AbstractMap.SimpleEntry<>("Potat$ 1234!", Collections.emptyList()), // 4 digits in a row is ok
-                new AbstractMap.SimpleEntry<>("Potat$ 01!", Collections.emptyList()), // correct length, lowercase, special character and digit. All ok...
-                new AbstractMap.SimpleEntry<>("POTAT$ o1!", Collections.emptyList()), // correct length, uppercase, special character and digit. All ok...
-                new AbstractMap.SimpleEntry<>("Potat$ o1!", Collections.emptyList()), // correct length, uppercase, lowercase and and special character. All ok...
-                new AbstractMap.SimpleEntry<>("Potat  0!", Collections.emptyList()), // correct length, uppercase, lowercase and digit. All ok...
-                new AbstractMap.SimpleEntry<>("twentycharactershere", Collections.emptyList())) // 20 character password length. All ok...
+                new AbstractMap.SimpleEntry<>("Potat$ 1234!", Collections.<String>emptyList()), // 4 digits in a row is ok
+                new AbstractMap.SimpleEntry<>("Potat$ 01!", Collections.<String>emptyList()), // correct length, lowercase, special character and digit. All ok...
+                new AbstractMap.SimpleEntry<>("POTAT$ o1!", Collections.<String>emptyList()), // correct length, uppercase, special character and digit. All ok...
+                new AbstractMap.SimpleEntry<>("Potat$ o1!", Collections.<String>emptyList()), // correct length, uppercase, lowercase and and special character. All ok...
+                new AbstractMap.SimpleEntry<>("Potat  0!", Collections.<String>emptyList()), // correct length, uppercase, lowercase and digit. All ok...
+                new AbstractMap.SimpleEntry<>("twentycharactershere", Collections.<String>emptyList())) // 20 character password length. All ok...
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
                 (password, expectedErrors) -> {
                     final Response response = given().body(password).when().post("/api/admin/validatePassword");
                     response.prettyPrint();
                     final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");
                     assertTrue(actualErrors.containsAll(expectedErrors));
-                    assertTrue(expectedErrors.containsAll(actualErrors)); // Should be fully reflexive.
+                    assertTrue(expectedErrors.containsAll(actualErrors)); 
                 }
         );
     }
@@ -334,16 +334,16 @@ public class BuiltinUsersIT {
                         "INSUFFICIENT_CHARACTERISTICS",
                         "NO_GOODSTRENGTH"
                 )),
-                new AbstractMap.SimpleEntry<>("potat1", Collections.emptyList()), // Strong enough for Dataverse 4.0.
-                new AbstractMap.SimpleEntry<>("Potat  0", Collections.emptyList()), // All ok...
-                new AbstractMap.SimpleEntry<>("                    ", Collections.emptyList())) // 20 character password length. All ok...
+                new AbstractMap.SimpleEntry<>("potat1", Collections.<String>emptyList()), // Strong enough for Dataverse 4.0.
+                new AbstractMap.SimpleEntry<>("Potat  0", Collections.<String>emptyList()), // All ok...
+                new AbstractMap.SimpleEntry<>("                    ", Collections.<String>emptyList())) // 20 character password length. All ok...
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))).forEach(
                 (password, expectedErrors) -> {
                     final Response response = given().body(password).when().post("/api/admin/validatePassword");
                     response.prettyPrint();
                     final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");
                     assertTrue(actualErrors.containsAll(expectedErrors));
-                    assertTrue(expectedErrors.containsAll(actualErrors)); // Should be fully reflexive.
+                    assertTrue(expectedErrors.containsAll(actualErrors)); 
                 }
         );
     }
