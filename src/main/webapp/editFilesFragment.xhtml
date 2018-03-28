@@ -31,11 +31,12 @@
                         }
                         function uploadStarted() {
                             $('button[id$="uploadStarted"]').trigger('click');
+                            alert("upload started");
                         }
                         function uploadFinished(fileupload) {
                             if (fileupload.files.length === 0) {
                                 $('button[id$="AllUploadsFinished"]').trigger('click');
-                                //alert("all uploads finished");
+                                alert("all uploads finished");
                             }
                         }
                         function dropBoxUploadFinished(fileupload) {
@@ -62,6 +63,7 @@
                         </h:outputFormat>                      
                         </ui:fragment> 
                     </p>
+                    <!-- the update= attribute in the fileUpload component below appears to be super important... -->
                     <p:fileUpload id="fileUpload" 
                                   styleClass="margin-bottom"
                                   dragDropSupport="true"
@@ -70,7 +72,7 @@
                                   disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
-                                  update="@this" 
+                                  update="@this"  
                                   label="#{bundle['file.selectToAddBtn']}"
                                   oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));"
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
