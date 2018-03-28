@@ -31,6 +31,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.javaswift.joss.client.factory.AccountFactory;
 import static org.javaswift.joss.client.factory.AuthenticationMethod.BASIC;
+import static org.javaswift.joss.client.factory.AuthenticationMethod.KEYSTONE_V3;
 import org.javaswift.joss.model.Account;
 import org.javaswift.joss.model.Container;
 import org.javaswift.joss.model.StoredObject;
@@ -153,8 +154,6 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         } else {
             throw new IOException("Data Access: Invalid DvObject type");
         }
-        
-        
     }
 
 
@@ -688,7 +687,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         Also, the AuthUrl is now the identity service endpoint of MOC Openstack
         environment instead of the Object store service endpoint.
          */
-        // Keystone vs. Basic
+        // Keystone vs. Basic vs. Keystone V3
         try {
             if (swiftEndPointAuthMethod.equals("keystone")) {
                 account = new AccountFactory()
@@ -697,7 +696,17 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                         .setPassword(swiftEndPointSecretKey)
                         .setAuthUrl(swiftEndPointAuthUrl)
                         .createAccount();
-            } else { // assume BASIC
+            } else if (swiftEndPointAuthMethod.equals("keystone_v3")) {
+                System.out.println("using keystone_v3");
+                account = new AccountFactory()
+                        .setTenantName(swiftEndPointTenantName)
+                        .setUsername(swiftEndPointUsername)
+                        .setAuthenticationMethod(KEYSTONE_V3)
+                        .setPassword(swiftEndPointSecretKey)
+                        .setAuthUrl(swiftEndPointAuthUrl)
+                        .createAccount();
+            }
+            else { // assume BASIC
                 account = new AccountFactory()
                         .setUsername(swiftEndPointUsername)
                         .setPassword(swiftEndPointSecretKey)
