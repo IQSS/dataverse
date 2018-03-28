@@ -1070,7 +1070,7 @@ public class DatasetsIT {
     public void testDcmChecksumValidationMessages() throws IOException, InterruptedException {
         
         /*SEK 3/28/2018 This test needs more work
-            Cuurently it is failing at around line 1114
+            Currently it is failing at around line 1114
             Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
             the CreateDatasetCommand is not getting the rsync script so the dataset is not being created
             so the whole test is failing
