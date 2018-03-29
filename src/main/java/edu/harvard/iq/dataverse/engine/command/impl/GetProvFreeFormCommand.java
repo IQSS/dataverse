@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.logging.Logger;
 
-@RequiredPermissions(Permission.EditDataset)
+@RequiredPermissions(Permission.DownloadFile)
 /**
  * This command gets the freeform provenance input
  */

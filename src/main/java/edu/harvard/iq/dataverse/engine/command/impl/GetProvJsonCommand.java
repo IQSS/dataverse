@@ -16,7 +16,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-@RequiredPermissions(Permission.EditDataset)
+@RequiredPermissions(Permission.DownloadFile)
 public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
 
     private static final Logger logger = Logger.getLogger(GetProvJsonCommand.class.getCanonicalName());

@@ -116,8 +116,6 @@ public class Prov extends AbstractApiBean {
         }
     }
     
-    //MAD: These getters are broken, look to the old posts to see how to return files
-
     @GET
     @Path("{id}/prov-freeform")
     public Response getProvFreeForm(String body, @PathParam("id") String idSupplied) {
