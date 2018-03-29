@@ -690,6 +690,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         // Keystone vs. Basic vs. Keystone V3
         try {
             if (swiftEndPointAuthMethod.equals("keystone")) {
+                logger.fine("Authentication type: keystone v2.0");
                 account = new AccountFactory()
                         .setTenantName(swiftEndPointTenantName)
                         .setUsername(swiftEndPointUsername)
@@ -697,7 +698,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                         .setAuthUrl(swiftEndPointAuthUrl)
                         .createAccount();
             } else if (swiftEndPointAuthMethod.equals("keystone_v3")) {
-                System.out.println("using keystone_v3");
+                logger.fine("Authentication type: keystone_v3");
                 account = new AccountFactory()
                         .setTenantName(swiftEndPointTenantName)
                         .setUsername(swiftEndPointUsername)
@@ -707,6 +708,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                         .createAccount();
             }
             else { // assume BASIC
+                logger.fine("Authentication type: basic");
                 account = new AccountFactory()
                         .setUsername(swiftEndPointUsername)
                         .setPassword(swiftEndPointSecretKey)
