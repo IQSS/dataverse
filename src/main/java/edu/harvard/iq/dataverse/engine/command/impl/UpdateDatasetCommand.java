@@ -108,10 +108,6 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         return save(ctxt);
     }
 
-    public void saveDatasetAPI(CommandContext ctxt) throws CommandException {
-        save(ctxt);
-    }
-
     public Dataset save(CommandContext ctxt)  throws CommandException {
         Iterator<DatasetField> dsfIt = theDataset.getEditVersion().getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
@@ -205,19 +201,19 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 while (!doiRetString.contains(tempDataset.getIdentifier())
                        && doiRetString.contains("identifier already exists")
                        && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-                // if the identifier exists, we'll generate another one
-                // and try to register again... but only up to some
-                // reasonably high number of times - so that we don't 
-                // go into an infinite loop here, if EZID is giving us 
-                // these duplicate messages in error. 
-                // 
-                // (and we do want the limit to be a "reasonably high" number! 
-                // true, if our identifiers are randomly generated strings, 
-                // then it is highly unlikely that we'll ever run into a 
-                // duplicate race condition repeatedly; but if they are sequential
-                // numeric values, than it is entirely possible that a large
-                // enough number of values will be legitimately registered 
-                // by another entity sharing the same authority...)
+                    // if the identifier exists, we'll generate another one
+                    // and try to register again... but only up to some
+                    // reasonably high number of times - so that we don't 
+                    // go into an infinite loop here, if EZID is giving us 
+                    // these duplicate messages in error. 
+                    // 
+                    // (and we do want the limit to be a "reasonably high" number! 
+                    // true, if our identifiers are randomly generated strings, 
+                    // then it is highly unlikely that we'll ever run into a 
+                    // duplicate race condition repeatedly; but if they are sequential
+                    // numeric values, than it is entirely possible that a large
+                    // enough number of values will be legitimately registered 
+                    // by another entity sharing the same authority...)
                 
                     tempDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(tempDataset, idServiceBean));
                     doiRetString = idServiceBean.createIdentifier(tempDataset);
@@ -228,13 +224,14 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 // existing duplicate identifier - for example, EZID down --
                 // we simply give up. 
                 if (doiRetString.contains(tempDataset.getIdentifier())) {
-                tempDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                }
-                else if (doiRetString.contains("identifier already exists")) {
-                logger.warning("EZID refused registration, requested id(s) already in use; gave up after " + attempts + " attempts. Current (last requested) identifier: " + tempDataset.getIdentifier());
-                }
-                else {
-                logger.warning("Failed to create identifier (" + tempDataset.getIdentifier() + ") with EZID: " + doiRetString);
+                    tempDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                    
+                } else if (doiRetString.contains("identifier already exists")) {
+                    logger.log(Level.WARNING, "EZID refused registration, requested id(s) already in use; gave up after {0} attempts. Current (last requested) identifier: {1}", new Object[]{attempts, tempDataset.getIdentifier()});
+                    
+                } else {
+                    logger.log(Level.WARNING, "Failed to create identifier ({0}) with EZID: {1}", new Object[]{tempDataset.getIdentifier(), doiRetString});
+                    
                 }
                    
             } catch (Throwable e) {

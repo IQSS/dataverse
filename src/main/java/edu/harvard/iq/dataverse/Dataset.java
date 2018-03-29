@@ -37,10 +37,13 @@ import org.hibernate.validator.constraints.NotBlank;
  *
  * @author skraffmiller
  */
-@NamedQueries(
-        @NamedQuery(name = "Dataset.findByIdentifier",
-                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier")
-)
+@NamedQueries({
+    @NamedQuery(name = "Dataset.findByIdentifier",
+               query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"),
+    @NamedQuery(name = "Dataset.findByIdentifierAuthorityProtocol",
+               query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier AND d.protocol=:protocol AND d.authority=:authority"),
+            
+})
 
 /*
     Below is the stored procedure for getting a numeric value from a database 

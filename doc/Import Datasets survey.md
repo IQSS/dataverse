@@ -19,6 +19,7 @@ This is a list of commands, what they actually do, and some recommendations abou
 * `CreateDatasetCommand` Creates a dataset and a dataset version. Functionality supports harvest and migration as well as normal creation, so the logic is quite complex and long. Serious code duplication with `CreateDatasetVersionCommand`. Might be able to re-use it altogether here (pending JPA issues with created ids etc. But should be able to work.)
     - Has a more detailed constraint violation report.
     -  TODO: break, consolidate, tidy, remove duplications.
+* `UpdateDatasetCommand` Updates the edit version of a dataset. May delete files as well. Can create a persistent ID. Seems rather outdated, as it mentions only EZID. 
 * `DataFile`, `Dataset`, `DatasetVersion`: Cleanup as we go (some deprecated methods can be removed). 
 
 ## DOI / Persistent Identifier
@@ -45,6 +46,14 @@ This is a list of commands, what they actually do, and some recommendations abou
     - *Decision* Separate commands
 * Do we have a task to clean up deprecated code? Seems like something we need to, and is quite easy.
 
+## Common activities
+* Creating DOIs
+* Validating a dataset
+* Saving a dataset version
+    - compare `UpdateDatasetCommand` to `UpdateDatasetVersionCommand`
+
+**Note: See consolidation TODO at ReturnDatasetToAuthorCommand**
+
 ## Done log
 * Removed deprecated `name` field from `DataFile` (including related methods which were not used).
 * `IdServiceBean`: Code cleanup for dispatch and code-to-interface (rather than implementing classes).
@@ -52,3 +61,4 @@ This is a list of commands, what they actually do, and some recommendations abou
 * Code clean-up for the DOI/EZId service beans.
 * Unit tests for DOI service bean dispatching.
 * Added SettingsServiceBean mock for testing.
+* Fixed integration tests

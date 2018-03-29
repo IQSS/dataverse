@@ -262,28 +262,30 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network) alos check for duplicate
-     * in EZID if needed
+     * for any other study in this Dataverse Network) also check for duplicate
+     * in persistent identifier service if needed
      * @param userIdentifier
      * @param dataset
-     * @param idServiceBean
-     * @return   */
-    public boolean isIdentifierUniqueInDatabase(String userIdentifier, Dataset dataset, PersistentIdentifierServiceBean idServiceBean) {
-        String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
-        query += " and d.protocol ='" + dataset.getProtocol() + "'";
-        query += " and d.authority = '" + dataset.getAuthority() + "'";
-        boolean u = em.createQuery(query).getResultList().isEmpty();
-            
-        try{
-            if (idServiceBean.alreadyExists(dataset)) {
-                u = false;
-            }
+     * @param persistentIdSvc
+     * @return {@code true} if the identifier is unique, {@code false} otherwise.
+     */
+    public boolean isIdentifierUniqueInDatabase(String userIdentifier, Dataset dataset, PersistentIdentifierServiceBean persistentIdSvc) {
+        boolean u = em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
+            .setParameter("identifier", userIdentifier)
+            .setParameter("protocol", dataset.getProtocol())
+            .setParameter("authority", dataset.getAuthority())
+            .getResultList().isEmpty();
+        
+        if ( !u ) return false; // duplication found in local database
+        
+        // not in local DB, look in the persistent identifier service
+        try {
+            return ! persistentIdSvc.alreadyExists(dataset);
         } catch (Exception e){
             //we can live with failure - means identifier not found remotely
         }
 
-       
-        return u;
+        return true;
     }
 
     public DatasetVersion storeVersion( DatasetVersion dsv ) {
