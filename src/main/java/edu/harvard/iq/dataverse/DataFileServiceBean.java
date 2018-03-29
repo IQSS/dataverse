@@ -1617,7 +1617,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                      ")").getSingleResult();
 
 
-            if (result != null) {
+            if (result == null) {
                retVal = new Long(1); 
             } else {
                retVal = (Long) result;
