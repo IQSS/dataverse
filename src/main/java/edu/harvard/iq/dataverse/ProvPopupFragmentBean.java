@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     private String freeformTextState; 
     
     private Dataset dataset;
+    private FileMetadata fileMetadata;
     
     private String freeformTextInput;
     private boolean deleteStoredJson = false;
@@ -98,31 +100,35 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
 
     }
 
-    public void updatePopupState(DataFile file, Dataset dSet) throws AbstractApiBean.WrappedResponse, IOException {
+    public void updatePopupState(FileMetadata fm, Dataset dSet) throws AbstractApiBean.WrappedResponse, IOException {
         dataset = dSet;
-        updatePopupState(file);
+        updatePopupState(fm);
     }
     
     //This updates the popup for the selected file each time its open
-    public void updatePopupState(DataFile file) throws AbstractApiBean.WrappedResponse, IOException {
+    public void updatePopupState(FileMetadata fm) throws AbstractApiBean.WrappedResponse, IOException {
+        fileMetadata = fm;
         if(null == dataset ) {
-            dataset = file.getFileMetadata().getDatasetVersion().getDataset(); //DatasetVersion is null here on file upload page...
+//MAD: This command and all like it are pulling the latest version when we need to specifically pull the version being opened. The latest is always the draft with the change.
+            dataset = fileMetadata.getDatasetVersion().getDataset(); //DatasetVersion is null here on file upload page...
         }
         
-        popupDataFile = file;
+        popupDataFile = fileMetadata.getDataFile();
         deleteStoredJson = false;
         provJsonState = null;
         provJsonParsedEntities = new HashMap<>();
         setDropdownSelectedEntity(null);
-        freeformTextState = popupDataFile.getFileMetadata().getProvFreeForm();
-        storedSelectedEntityName = popupDataFile.getFileMetadata().getProvEntityName();
+        freeformTextState = fileMetadata.getProvFreeForm();
+        storedSelectedEntityName = popupDataFile.getProvEntityName();
         
         if(jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { //If there is already staged provenance info 
             provJsonState = jsonProvenanceUpdates.get(popupDataFile.getStorageIdentifier()).provenanceJson;
             generateProvJsonParsedEntities(); //calling this each time is somewhat inefficient, but storing the state is a lot of lifting.
             setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             
-        } else if(null != popupDataFile.getCreateDate()){ //Is this file fully uploaded and already has prov data saved?     
+        } else if(null != popupDataFile.getCreateDate()){ //Is this file fully uploaded and already has prov data saved?   
+//MAD: Here I need to get the json file... but the getter will always pull the latest which is not what we want
+//... what do we want?
             JsonObject provJsonObject = execCommand(new GetProvJsonCommand(dvRequestService.getDataverseRequest(), popupDataFile));
             if(null != provJsonObject) {
                 provJsonState = provJsonObject.toString();
@@ -142,8 +148,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         if(deleteStoredJson) {
             jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), new UpdatesEntry(popupDataFile, null));
             
-            FileMetadata fileMetadata = popupDataFile.getFileMetadata();
-            fileMetadata.setProvEntityName(null);
+            popupDataFile.setProvEntityName(null); //MAD: This is probably ok but now that things are immutable I should doublecheck
             deleteStoredJson = false;
         }
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) {
@@ -152,8 +157,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             jsonUploadedTempFile = null;
             
             //storing the entity name associated with the DataFile. This is required data to get this far.
-            FileMetadata fileMetadata = popupDataFile.getFileMetadata();
-            fileMetadata.setProvEntityName(dropdownSelectedEntity.getEntityName());
+            popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
         } 
         
         if(null == freeformTextInput && null != freeformTextState) {
@@ -166,8 +170,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         } 
         
         if(null != storedSelectedEntityName && null != dropdownSelectedEntity && !storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName())) {
-            FileMetadata fileMetadata = popupDataFile.getFileMetadata();
-            fileMetadata.setProvEntityName(dropdownSelectedEntity.getEntityName());
+            popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
         }
         
         if(saveInPopup) {
@@ -202,6 +205,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             } else {
                 df = execCommand(new DeleteProvJsonCommand(dvRequestService.getDataverseRequest(), df, saveContext));
             }
+            //execCommand(new UpdateDatasetCommand(df.getOwner(), dvRequestService.getDataverseRequest()));
             
         }
     }
@@ -237,10 +241,12 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         freeformTextState = freeformText;
     }
     
+//MAD: REDO now that cpl isn't in and system is updating
     public boolean provExistsInPreviousPublishedVersion() {
-        return (null != popupDataFile 
-                && null != popupDataFile.getFileMetadata() 
-                && popupDataFile.getFileMetadata().getProvCplId() != 0);
+        return false;
+//return (null != popupDataFile 
+//                && null != popupDataFile.getFileMetadata()); 
+                //&& popupDataFile.getProvCplId() != 0); //add when we integrate with provCPL
     }
 
     public ProvEntityFileData getDropdownSelectedEntity() {

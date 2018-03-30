@@ -380,8 +380,6 @@ public class Dataset extends DvObjectContainer {
                 newFm.setRestricted(fm.isRestricted());
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
-                newFm.setProvCplId(fm.getProvCplId());
-                newFm.setProvEntityName(fm.getProvEntityName());
                 newFm.setProvFreeForm(fm.getProvFreeForm());
                 
                 dsv.getFileMetadatas().add(newFm);

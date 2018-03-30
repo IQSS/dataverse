@@ -89,14 +89,6 @@ public class FileMetadata implements Serializable {
      */
     @Column(columnDefinition = "TEXT", nullable = true, name="prov_freeform")
     private String provFreeForm;
-    
-    //The json name in the uploaded prov json bundle, identified by the user as the final state of their file
-    @Column(columnDefinition = "TEXT", nullable = true, name="prov_entityname")
-    private String provEntityName;
-
-    //The id given for the datafile by CPL.
-    @Column(name="prov_cplid") //( nullable=false )
-    private int provCplId; //cplid
         
     /**
      * Creates a copy of {@code this}, with identical business logic fields.
@@ -546,7 +538,7 @@ public class FileMetadata implements Serializable {
         return jsonObj.toString();
        
     }
-    
+
     
     public JsonObject asGsonObject(boolean prettyPrint){
 
@@ -574,22 +566,6 @@ public class FileMetadata implements Serializable {
 
     public void setProvFreeForm(String provFreeForm) {
         this.provFreeForm = provFreeForm;
-    }
-    
-    public int getProvCplId() {
-        return provCplId;
-    }
-    
-    public void setProvCplId(int cplId) {
-        this.provCplId = cplId;
-    }
-    
-    public String getProvEntityName() {
-        return provEntityName;
-    }
-    
-    public void setProvEntityName(String name) {
-        this.provEntityName = name;
     }
     
 }

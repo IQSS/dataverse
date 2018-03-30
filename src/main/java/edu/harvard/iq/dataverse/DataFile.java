@@ -167,6 +167,15 @@ public class DataFile extends DvObject implements Comparable {
     @Expose
     private boolean restricted;
     
+    @Expose
+    @Column(columnDefinition = "TEXT", nullable = true, name="prov_entityname")
+    private String provEntityName;
+    
+    /*Add when we integrate with provCPL*/
+    //The id given for the datafile by CPL.
+//    @Column(name="prov_cplid") //( nullable=false )
+//    private int provCplId;
+    
     /*
         Tabular (formerly "subsettable") data files have DataTable objects
         associated with them:
@@ -808,8 +817,23 @@ public class DataFile extends DvObject implements Comparable {
     public Long getRootDataFileId(){
         return this.rootDataFileId;
     }
-    
 
+//    public int getProvCplId() {
+//        return provCplId;
+//    }
+//    
+//    public void setProvCplId(int cplId) {
+//        this.provCplId = cplId;
+//    }
+    
+    public String getProvEntityName() {
+        return provEntityName;
+    }
+    
+    public void setProvEntityName(String name) {
+        this.provEntityName = name;
+    }
+    
     /**
      *  Set previousDataFileId
      *  @param previousDataFileId

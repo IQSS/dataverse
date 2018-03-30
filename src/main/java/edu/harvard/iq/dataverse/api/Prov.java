@@ -3,12 +3,14 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.ProvEntityFileData;
 import edu.harvard.iq.dataverse.ProvUtilFragmentBean;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -46,9 +48,11 @@ public class Prov extends AbstractApiBean {
             dataFile = findDataFileOrDie(idSupplied);
             if(null == dataFile.getFileMetadata()) { // can happen when a datafile is not fully initialized, though unlikely in our current implementation
                 return error(BAD_REQUEST, "Invalid DataFile Id, file not fully initialized");
-            } else if (dataFile.getFileMetadata().getProvCplId() != 0) {
-                return error(METHOD_NOT_ALLOWED, "File provenance has already exists in the CPL system and cannot be uploaded.");
             } 
+            /*Add when we actually integrate provCpl*/
+            //else if (dataFile.getProvCplId() != 0) {
+            //    return error(METHOD_NOT_ALLOWED, "File provenance has already exists in the CPL system and cannot be uploaded.");
+            //} 
             HashMap<String,ProvEntityFileData> provJsonParsedEntities = provUtil.startRecurseNames(body);
             if(!provJsonParsedEntities.containsKey(entityName)) {
                 //TODO: We should maybe go a step further and provide a way through the api to see the parsed entity names.
@@ -98,6 +102,8 @@ public class Prov extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(idSupplied);
             execCommand(new PersistProvFreeFormCommand(createDataverseRequest(findUserOrDie()), dataFile, provFreeForm));
+            //MAD: This needs to be contingent on the previous command succeeding, or maybe even triggered by the other command?
+//          execCommand(new UpdateDatasetCommand(dataFile.getOwner(), dataverseRequest)); //make var for datverseRequest for both I think
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
             jsonResponse.add("message", "Free-form provenance data saved for Data File : " + dataFile.getFileMetadata().getProvFreeForm());
             return ok(jsonResponse);

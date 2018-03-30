@@ -82,8 +82,10 @@ public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
             throw new IllegalCommandException(error, this);
         }
         
-        FileMetadata fileMetadata = dataFile.getFileMetadata();
-        fileMetadata.setProvEntityName(entityName);
+        //FileMetadata fileMetadata = dataFile.getFileMetadata();
+        //fileMetadata.setProvEntityName(entityName);
+        
+        dataFile.setProvEntityName(entityName);
         if(saveContext) {
             dataFile = ctxt.files().save(dataFile);
         }
