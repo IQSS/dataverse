@@ -39,8 +39,18 @@ public class GuestbookServiceBean implements java.io.Serializable {
         }
     }
     
+    public Long findCountResponsesForGivenDataset(Long guestbookId, Long datasetId) {
+        String queryString = "";
+        if (guestbookId != null && datasetId != null) {
+            queryString = "select count(*) from guestbookresponse where guestbook_id = " + guestbookId + " and dataset_id = " + datasetId + ";";
+            Query query = em.createNativeQuery(queryString);
+            return (Long) query.getSingleResult();
+        } else {
+            return new Long(0);
+        }
+    }
     
-        
+            
    public Guestbook find(Object pk) {
         return em.find(Guestbook.class, pk);
     }
