@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -11,15 +12,24 @@ import java.util.Date;
 
 /**
  *  
- * Base class for commands that deal with {@code Dataset}s. Mainly here as a code
- * re-use mechanism.
+ * Base class for commands that deal with {@code Dataset}s.Mainly here as a code
+ re-use mechanism.
  * 
  * @author michael
+ * @param <T> The type of the command's result. Normally {@link Dataset}.
  */
-public abstract class AbstractDatasetCommand extends AbstractCommand<Dataset> {
+public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     
     private final Dataset dataset;
     private final Timestamp timestamp = new Timestamp(new Date().getTime());
+    
+    public AbstractDatasetCommand(DataverseRequest aRequest, Dataset aDataset, Dataverse parent) {
+        super( aRequest, parent );
+        if ( aDataset == null ) {
+            throw new IllegalArgumentException("aDataset cannot be null");
+        }
+        dataset = aDataset;
+    }
     
     public AbstractDatasetCommand(DataverseRequest aRequest, Dataset aDataset) {
         super(aRequest, aDataset);
@@ -53,6 +63,10 @@ public abstract class AbstractDatasetCommand extends AbstractCommand<Dataset> {
             datasetDataverseUser.setAuthenticatedUser(au);
             ctxt.em().merge(datasetDataverseUser);
         }
+    }
+    
+    protected void reindexDataset( CommandContext ctxt ) {
+        ctxt.index().indexDataset(getDataset(), true);
     }
     
     protected Dataset getDataset() {

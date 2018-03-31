@@ -20,6 +20,7 @@ This is a list of commands, what they actually do, and some recommendations abou
     - Has a more detailed constraint violation report.
     -  TODO: break, consolidate, tidy, remove duplications.
 * `UpdateDatasetCommand` Updates the edit version of a dataset. May delete files as well. Can create a persistent ID. Seems rather outdated, as it mentions only EZID. 
+* Also related: `SubmitDatasetForReviewCommand`, `ReturnDatasetToAuthorCommand`
 * `DataFile`, `Dataset`, `DatasetVersion`: Cleanup as we go (some deprecated methods can be removed). 
 
 ## DOI / Persistent Identifier
@@ -44,7 +45,7 @@ This is a list of commands, what they actually do, and some recommendations abou
     *  *Decision* YES.
 * Creation of new datasets: We can either have a single command with multiple modes (native new, harvest, import), or three different commands with as much code reuse as possible. Need to decide on this.
     - *Decision* Separate commands
-* Do we have a task to clean up deprecated code? Seems like something we need to, and is quite easy.
+* Difference between `UpdateDatasetCommand` and `UpdateDatasetVersionCommand`? The latter seems to be a subset of the former.
 
 ## Common activities
 * Creating DOIs
@@ -62,3 +63,6 @@ This is a list of commands, what they actually do, and some recommendations abou
 * Unit tests for DOI service bean dispatching.
 * Added SettingsServiceBean mock for testing.
 * Fixed integration tests
+* Created `AbstractDatasaetCommand` and consolidated code to it.
+* (During publication) Moved the update/create of the DatasetVersionUser from the finalize stage to the publication kickoff stage. This reflects better that fact that this class represents the last time a user have touched a dataset (note that workflows can take a long time)
+* 

@@ -1,14 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -21,7 +15,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
@@ -31,29 +24,25 @@ import javax.validation.ConstraintViolation;
  * @author skraffmiller
  */
 @RequiredPermissions(Permission.EditDataset)
-public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
+public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(UpdateDatasetCommand.class.getCanonicalName());
-    private final Dataset theDataset;
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
     private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
-        this.theDataset = theDataset;
         this.filesToDelete = new ArrayList<>();
     }    
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
         super(aRequest, theDataset);
-        this.theDataset = theDataset;
         this.filesToDelete = filesToDelete;
     }
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
         super(aRequest, theDataset);
-        this.theDataset = theDataset;
         
         // get the latest file metadata for the file; ensuring that it is a draft version
         this.filesToDelete = new ArrayList<>();
@@ -72,17 +61,15 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     public void setValidateLenient(boolean validateLenient) {
         this.validateLenient = validateLenient;
     }
-    
-    
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        ctxt.permissions().checkEditDatasetLock(theDataset, getRequest(), this);
+        ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
         // first validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
-        theDataset.getEditVersion().setDatasetFields(theDataset.getEditVersion().initDatasetFields());
-        Set<ConstraintViolation> constraintViolations = theDataset.getEditVersion().validate();        
+        getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
+        Set<ConstraintViolation> constraintViolations = getDataset().getEditVersion().validate();        
         if (!constraintViolations.isEmpty()) {
 
             if (validateLenient) {
@@ -109,27 +96,25 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     }
 
     public Dataset save(CommandContext ctxt)  throws CommandException {
-        Iterator<DatasetField> dsfIt = theDataset.getEditVersion().getDatasetFields().iterator();
+        Iterator<DatasetField> dsfIt = getDataset().getEditVersion().getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
             if (dsfIt.next().removeBlankDatasetFieldValues()) {
                 dsfIt.remove();
             }
         }
-        Iterator<DatasetField> dsfItSort = theDataset.getEditVersion().getDatasetFields().iterator();
+        Iterator<DatasetField> dsfItSort = getDataset().getEditVersion().getDatasetFields().iterator();
         while (dsfItSort.hasNext()) {
             dsfItSort.next().setValueDisplayOrder();
         }
-        Timestamp updateTime = new Timestamp(new Date().getTime());
-        theDataset.getEditVersion().setLastUpdateTime(updateTime);
-        theDataset.setModificationTime(updateTime);
+        getDataset().getEditVersion().setLastUpdateTime(getTimestamp());
+        getDataset().setModificationTime(getTimestamp());
          
-        for (DataFile dataFile : theDataset.getFiles()) {
-            
+        for (DataFile dataFile : getDataset().getFiles()) {
             if (dataFile.getCreateDate() == null) {
-                dataFile.setCreateDate(updateTime);
+                dataFile.setCreateDate(getTimestamp());
                 dataFile.setCreator((AuthenticatedUser) getUser());
             }
-            dataFile.setModificationTime(updateTime);
+            dataFile.setModificationTime(getTimestamp());
         }
                 
         // Remove / delete any files that were removed
@@ -147,9 +132,9 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         */
         for (FileMetadata fmd : filesToDelete){
              //  check if this file is being used as the default thumbnail
-            if (fmd.getDataFile().equals(theDataset.getThumbnailFile())) {
+            if (fmd.getDataFile().equals(getDataset().getThumbnailFile())) {
                 logger.fine("deleting the dataset thumbnail designation");
-                theDataset.setThumbnailFile(null);
+                getDataset().setThumbnailFile(null);
             }
             
             if (fmd.getDataFile().getUnf() != null) {
@@ -158,7 +143,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         }
         //we have to merge to update the database but not flush because 
         //we don't want to create two draft versions!
-        Dataset tempDataset = ctxt.em().merge(theDataset);
+        Dataset tempDataset = ctxt.em().merge(getDataset());
         //ctxt.em().flush();
         
         
@@ -242,29 +227,9 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         Dataset savedDataset = ctxt.em().merge(tempDataset);
         ctxt.em().flush();
 
-        /**
-         * @todo What should we do with the indexing result? Print it to the
-         * log?
-         */
-        boolean doNormalSolrDocCleanUp = true;
-        Future<String> indexingResult = ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
-        //String indexingResult = "(Indexing Skipped)";
-//        logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
-        DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), this.getUser());
+        updateDatasetUser(ctxt);
+        reindexDataset(ctxt);
 
-        if (ddu != null) {
-            ddu.setLastUpdateDate(updateTime);
-            ctxt.em().merge(ddu);
-        } else {
-            DatasetVersionUser datasetDataverseUser = new DatasetVersionUser();
-            datasetDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
-            datasetDataverseUser.setLastUpdateDate((Timestamp) updateTime); 
-            String id = getUser().getIdentifier();
-            id = id.startsWith("@") ? id.substring(1) : id;
-            AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
-            datasetDataverseUser.setAuthenticatedUser(au);
-            ctxt.em().merge(datasetDataverseUser);
-        }
         return savedDataset;
     }
 

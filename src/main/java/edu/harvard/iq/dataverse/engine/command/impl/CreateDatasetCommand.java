@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
-import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -34,43 +33,38 @@ import javax.validation.ConstraintViolation;
  * @author michael
  */
 @RequiredPermissions(Permission.AddDataset)
-public class CreateDatasetCommand extends AbstractCommand<Dataset> {
+public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
     
     private static final Logger logger = Logger.getLogger(CreateDatasetCommand.class.getCanonicalName());
 
-    private final Dataset theDataset;
     private final boolean registrationRequired;
     // TODO: rather than have a boolean, create a sub-command for creating a dataset during import
     private final ImportUtil.ImportType importType;
     private final Template template;
 
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
-        super(aRequest, theDataset.getOwner());
-        this.theDataset = theDataset;
+        super(aRequest, theDataset, theDataset.getOwner());
         this.registrationRequired = false;
         this.importType=null;
         this.template=null;
     }
 
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired) {
-        super(aRequest, theDataset.getOwner());
-        this.theDataset = theDataset;
+        super(aRequest, theDataset, theDataset.getOwner());
         this.registrationRequired = registrationRequired;
         this.importType=null;
         this.template=null;
     }
     
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, ImportUtil.ImportType importType) {
-        super(aRequest, theDataset.getOwner());
-        this.theDataset = theDataset;
+        super(aRequest, theDataset, theDataset.getOwner());
         this.registrationRequired = registrationRequired;
         this.importType=importType;
         this.template=null;
     }
     
     public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, ImportUtil.ImportType importType, Template template) {
-        super(aRequest, theDataset.getOwner());
-        this.theDataset = theDataset;
+        super(aRequest, theDataset, theDataset.getOwner());
         this.registrationRequired = registrationRequired;
         this.importType=importType;
         this.template=template;
@@ -79,8 +73,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
-        
-        
+        Dataset theDataset = getDataset();
         
         PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(theDataset.getProtocol(), ctxt);
         if ( isEmpty(theDataset.getIdentifier()) ) {
@@ -131,10 +124,10 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         String nonNullDefaultIfKeyNotFound = "";
-        String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String    authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        String  protocol     = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        String  authority    = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         String  doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        String  doiProvider  = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         if (theDataset.getProtocol()==null) theDataset.setProtocol(protocol);
         if (theDataset.getAuthority()==null) theDataset.setAuthority(authority);
         if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(doiSeparator);
@@ -250,21 +243,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
         
         // if we are not migrating, assign the user to this version
-        if (importType==null || importType.equals(ImportType.NEW)) {  
-            DatasetVersionUser datasetVersionDataverseUser = new DatasetVersionUser();     
-            String id =  getRequest().getUser().getIdentifier();
-            id = id.startsWith("@") ? id.substring(1) : id;
-            AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
-            datasetVersionDataverseUser.setAuthenticatedUser(au);
-            datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
-            datasetVersionDataverseUser.setLastUpdateDate(createDate); 
-            if (savedDataset.getLatestVersion().getId() == null){
-                logger.warning("CreateDatasetCommand: savedDataset version id is null");
-            } else {
-                datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());  
-            }       
-            ctxt.em().merge(datasetVersionDataverseUser); 
-        }
+        updateDatasetUser(ctxt);
         logger.log(Level.FINE, "after create version user {0}", formatter.format(new Date().getTime()));       
         return savedDataset;
     }
@@ -272,7 +251,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 97 * hash + Objects.hashCode(this.theDataset);
+        hash = 97 * hash + Objects.hashCode(getDataset());
         return hash;
     }
 
@@ -285,11 +264,11 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             return false;
         }
         final CreateDatasetCommand other = (CreateDatasetCommand) obj;
-        return Objects.equals(this.theDataset, other.theDataset);
+        return Objects.equals(getDataset(), other.getDataset());
     }
 
     @Override
     public String toString() {
-        return "[DatasetCreate dataset:" + theDataset.getId() + "]";
+        return "[DatasetCreate dataset:" + getDataset().getId() + "]";
     }
 }

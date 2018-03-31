@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -13,13 +12,10 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Future;
 
 @RequiredPermissions(Permission.PublishDataset)
-public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand {
+public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset> {
 
     private final String comment;
 
@@ -65,15 +61,11 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand {
         */
         List<AuthenticatedUser> reviewers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
         List<AuthenticatedUser> authors = ctxt.permissions().getUsersWithPermissionOn(Permission.EditDataset, savedDataset);
-        for (AuthenticatedUser au : reviewers) {
-            authors.remove(au);
-        }
+        authors.removeAll(reviewers);
         for (AuthenticatedUser au : authors) {
-            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, savedDataset.getLatestVersion().getId(), comment);
+            ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.RETURNEDDS, savedDataset.getLatestVersion().getId(), comment);
         }
-        // TODO: What should we do with the indexing result? Print it to the log?
-        boolean doNormalSolrDocCleanUp = true;
-        Future<String> indexingResult = ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
+        reindexDataset(ctxt);
         return savedDataset;
     }
 

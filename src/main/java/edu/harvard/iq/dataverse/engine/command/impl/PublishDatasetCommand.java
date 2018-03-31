@@ -33,7 +33,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor) {
         super(datasetIn, aRequest);
         minorRelease = minor;
-        theDataset = datasetIn;
     }
 
     @Override
@@ -44,6 +43,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         //            "business logic" point of view.
 
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, "");
+        Dataset theDataset = getDataset();
         
         // Set the version numbers:
 
@@ -63,6 +63,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
 
         theDataset = ctxt.em().merge(theDataset);
+        updateDatasetUser(ctxt);
         
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         if ( prePubWf.isPresent() ) {
@@ -85,27 +86,27 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
      * @throws IllegalCommandException if the publication request is invalid.
      */
     private void verifyCommandArguments() throws IllegalCommandException {
-        if (!theDataset.getOwner().isReleased()) {
-            throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
+        if (!getDataset().getOwner().isReleased()) {
+            throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + getDataset().getOwner().getAlias() + ") has not been published.", this);
         }
         
-        if ( theDataset.isLockedFor(DatasetLock.Reason.Workflow)
-                || theDataset.isLockedFor(DatasetLock.Reason.Ingest) ) {
+        if ( getDataset().isLockedFor(DatasetLock.Reason.Workflow)
+                || getDataset().isLockedFor(DatasetLock.Reason.Ingest) ) {
             throw new IllegalCommandException("This dataset is locked. Reason: " 
-                    + theDataset.getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
+                    + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
                     + ". Please try publishing later.", this);
         }
         
-        if (theDataset.getLatestVersion().isReleased()) {
-            throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is already released. Only draft versions can be released.", this);
+        if (getDataset().getLatestVersion().isReleased()) {
+            throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is already released. Only draft versions can be released.", this);
         }
         
         // prevent publishing of 0.1 version
-        if (minorRelease && theDataset.getVersions().size() == 1 && theDataset.getLatestVersion().isDraft()) {
+        if (minorRelease && getDataset().getVersions().size() == 1 && getDataset().getLatestVersion().isDraft()) {
             throw new IllegalCommandException("Cannot publish as minor version. Re-try as major release.", this);
         }
         
-        if (minorRelease && !theDataset.getLatestVersion().isMinorUpdate()) {
+        if (minorRelease && !getDataset().getLatestVersion().isMinorUpdate()) {
             throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
         }
         

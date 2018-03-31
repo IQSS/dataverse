@@ -143,19 +143,9 @@ public class SubmitDatasetForReviewCommandTest {
     public void tearDown() {
     }
 
-    @Test
+    @Test( expected=IllegalArgumentException.class )
     public void testDatasetNull() {
-        dataset = null;
-        String expected = "Can't submit for review. Dataset is null.";
-        String actual = null;
-        Dataset updatedDataset = null;
-        try {
-            updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
-        } catch (CommandException ex) {
-            actual = ex.getMessage();
-        }
-        assertEquals(expected, actual);
-        assertNull(updatedDataset);
+        new SubmitDatasetForReviewCommand(dataverseRequest, null);
     }
 
     @Test

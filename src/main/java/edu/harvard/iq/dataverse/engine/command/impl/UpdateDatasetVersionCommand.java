@@ -31,8 +31,6 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         newVersion = theNewVersion;
     }
     
-    
-    
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         
