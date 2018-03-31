@@ -476,20 +476,17 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
 
-        DatasetVersionUser ddu = null;
-        Query query = em.createQuery("select object(o) from DatasetVersionUser as o "
-                + "where o.datasetVersion.id =:versionId and o.authenticatedUser.id =:userId");
+        TypedQuery<DatasetVersionUser> query = em.createNamedQuery("DatasetVersionUser.findByVersionIdAndUserId", DatasetVersionUser.class);
         query.setParameter("versionId", version.getId());
         String identifier = user.getIdentifier();
         identifier = identifier.startsWith("@") ? identifier.substring(1) : identifier;
         AuthenticatedUser au = authentication.getAuthenticatedUser(identifier);
         query.setParameter("userId", au.getId());
         try {
-            ddu = (DatasetVersionUser) query.getSingleResult();
+            return query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            // DO nothing, just return null.
+            return null;
         }
-        return ddu;
     }
 
     public boolean checkDatasetLock(Long datasetId) {
