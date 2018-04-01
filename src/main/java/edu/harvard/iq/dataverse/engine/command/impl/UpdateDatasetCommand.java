@@ -12,12 +12,9 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.validation.ConstraintViolation;
 
 /**
  *
@@ -69,24 +66,7 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
         getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
-        Set<ConstraintViolation> constraintViolations = getDataset().getEditVersion().validate();        
-        if (!constraintViolations.isEmpty()) {
-
-            if (validateLenient) {
-                // for some edits, we allow required fields to be blank, so we set them to N/A to pass validation
-                // for example, saving files, shouldn't validate metadata
-                for (ConstraintViolation v : constraintViolations) {
-                    DatasetField f = ((DatasetField) v.getRootBean());
-                     f.setSingleValue(DatasetField.NA_VALUE);
-                }
-            } else {
-                String validationFailedString = "Validation failed:";
-                for (ConstraintViolation constraintViolation : constraintViolations) {
-                    validationFailedString += " " + constraintViolation.getMessage();
-                }
-                throw new IllegalCommandException(validationFailedString, this);
-            }
-        }
+        validateOrDie( getDataset().getEditVersion(), isValidateLenient() );
         
         if ( ! (getUser() instanceof AuthenticatedUser) ) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
@@ -96,16 +76,8 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
     }
 
     public Dataset save(CommandContext ctxt)  throws CommandException {
-        Iterator<DatasetField> dsfIt = getDataset().getEditVersion().getDatasetFields().iterator();
-        while (dsfIt.hasNext()) {
-            if (dsfIt.next().removeBlankDatasetFieldValues()) {
-                dsfIt.remove();
-            }
-        }
-        Iterator<DatasetField> dsfItSort = getDataset().getEditVersion().getDatasetFields().iterator();
-        while (dsfItSort.hasNext()) {
-            dsfItSort.next().setValueDisplayOrder();
-        }
+        tidyUpFields(getDataset().getEditVersion());
+        
         getDataset().getEditVersion().setLastUpdateTime(getTimestamp());
         getDataset().setModificationTime(getTimestamp());
          

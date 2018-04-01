@@ -75,7 +75,6 @@ import org.apache.commons.lang.StringUtils;
 /**
  *
  * @author ellenk
- * TODO: Why does this bean not extend AbstractApiBean?
  */
 @Stateless
 public class ImportServiceBean {

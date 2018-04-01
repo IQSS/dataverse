@@ -45,7 +45,10 @@ This is a list of commands, what they actually do, and some recommendations abou
     *  *Decision* YES.
 * Creation of new datasets: We can either have a single command with multiple modes (native new, harvest, import), or three different commands with as much code reuse as possible. Need to decide on this.
     - *Decision* Separate commands
-* Difference between `UpdateDatasetCommand` and `UpdateDatasetVersionCommand`? The latter seems to be a subset of the former.
+* Difference between `UpdateDatasetCommand` and `UpdateDatasetVersionCommand`?
+    - Seems like the `XXDatasetVersionCommand`s are redundant. They should be removed.
+* What about the package `edu.harvard.iq.dataverse.batch.jobs.importer`? Can this go away now?
+* Same question about `ImportServiceBean` 
 
 ## Common activities
 * Creating DOIs
@@ -65,4 +68,4 @@ This is a list of commands, what they actually do, and some recommendations abou
 * Fixed integration tests
 * Created `AbstractDatasaetCommand` and consolidated code to it.
 * (During publication) Moved the update/create of the DatasetVersionUser from the finalize stage to the publication kickoff stage. This reflects better that fact that this class represents the last time a user have touched a dataset (note that workflows can take a long time)
-* 
+* DatasetVersion validation consolidation

@@ -27,10 +27,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -137,10 +135,6 @@ public class SubmitDatasetForReviewCommandTest {
 
         }
         );
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test( expected=IllegalArgumentException.class )

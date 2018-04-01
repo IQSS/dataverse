@@ -1,14 +1,22 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Set;
+import static java.util.stream.Collectors.joining;
+import javax.validation.ConstraintViolation;
 
 /**
  *  
@@ -62,6 +70,50 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
             datasetDataverseUser.setAuthenticatedUser(au);
             ctxt.em().merge(datasetDataverseUser);
+        }
+    }
+    
+    /**
+     * Validates the fields of the {@link DatasetVersion} passed. Throws an informational
+     * error if validation fails.
+     * @param dsv The dataset version whose fields we validate
+     * @param lenient when {@code true}, invalid fields are populated with N/A value.
+     * @throws CommandException if and only if {@code lenient=false}, and field validation failed.
+     */
+    protected void validateOrDie( DatasetVersion dsv, Boolean lenient )  throws CommandException {
+        Set<ConstraintViolation> constraintViolations = dsv.validate();
+        if (!constraintViolations.isEmpty()) {
+            if ( lenient ) {
+                // populate invalid fields with N/A
+                constraintViolations.stream()
+                    .map( cv -> ((DatasetField)cv.getRootBean()) )
+                    .forEach( f -> f.setSingleValue(DatasetField.NA_VALUE));
+                 
+            } else {
+                // explode with a helpful message
+                String validationMessage = constraintViolations.stream()
+                    .map( cv->cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
+                    .collect( joining(", ", "Validation Failed: ", "."));
+
+                throw new IllegalCommandException(validationMessage, this);
+            }
+        }
+    }
+    
+    /**
+     * Removed empty fields, sets field value display order.
+     * @param dsv the dataset version show fields we want to tidy up.
+     */
+    protected void tidyUpFields( DatasetVersion dsv ) {
+        Iterator<DatasetField> dsfIt = dsv.getDatasetFields().iterator();
+        while (dsfIt.hasNext()) {
+            if (dsfIt.next().removeBlankDatasetFieldValues()) {
+                dsfIt.remove();
+            }
+        }
+        Iterator<DatasetField> dsfItSort = dsv.getDatasetFields().iterator();
+        while (dsfItSort.hasNext()) {
+            dsfItSort.next().setValueDisplayOrder();
         }
     }
     

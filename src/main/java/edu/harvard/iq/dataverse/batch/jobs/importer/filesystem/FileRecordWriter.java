@@ -20,7 +20,6 @@
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -47,21 +46,16 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import org.ocpsoft.common.util.Strings;
 
 @Named
 @Dependent
@@ -102,8 +96,6 @@ public class FileRecordWriter extends AbstractItemWriter {
 
     public static String FILE_MODE_INDIVIDUAL_FILES = "individual_files";
     public static String FILE_MODE_PACKAGE_FILE = "package_file";
-    
-    
     
     @PostConstruct
     public void init() {

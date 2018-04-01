@@ -26,7 +26,7 @@ import javax.validation.ConstraintViolation;
  * @author michael
  */
 @RequiredPermissions( Permission.AddDataset )
-public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
+public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetVersion> {
     
     private static final Logger logger = Logger.getLogger(CreateDatasetVersionCommand.class.getName());
     
@@ -54,14 +54,7 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         newVersion.setDataset(dataset);
         newVersion.setDatasetFields(newVersion.initDatasetFields());
      
-        Set<ConstraintViolation> constraintViolations = newVersion.validate();
-        if (!constraintViolations.isEmpty()) {
-            String validationFailedString = "Validation failed:";
-            for (ConstraintViolation constraintViolation : constraintViolations) {
-                validationFailedString += " " + constraintViolation.getMessage();
-            }
-            throw new IllegalCommandException(validationFailedString, this);
-        }
+        validateOrDie(newVersion, false);
         
         Iterator<DatasetField> dsfIt = newVersion.getDatasetFields().iterator();
         while (dsfIt.hasNext()) {

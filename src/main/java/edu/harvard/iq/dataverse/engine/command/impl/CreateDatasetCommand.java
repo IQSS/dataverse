@@ -20,12 +20,9 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Objects;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.validation.ConstraintViolation;
 
 /**
  * Creates a {@link Dataset} in the passed {@link CommandContext}.
@@ -91,34 +88,16 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
         dsv.setDatasetFields(dsv.initDatasetFields());
-        Set<ConstraintViolation> constraintViolations = dsv.validate();
-        if (!constraintViolations.isEmpty()) {
-            String validationFailedString = "Validation failed:";
-            for (ConstraintViolation constraintViolation : constraintViolations) {
-                validationFailedString += " " + constraintViolation.getMessage();
-                validationFailedString += " Invalid value: '" + constraintViolation.getInvalidValue() + "'.";
-            }
-            throw new IllegalCommandException(validationFailedString, this);
-        }
+        validateOrDie(dsv, false);
                 
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
         theDataset.setCreateDate(new Timestamp(new Date().getTime()));
 
-        Iterator<DatasetField> dsfIt = dsv.getDatasetFields().iterator();
-        while (dsfIt.hasNext()) {
-            if (dsfIt.next().removeBlankDatasetFieldValues()) {
-                dsfIt.remove();
-            }
-        }
-        Iterator<DatasetField> dsfItSort = dsv.getDatasetFields().iterator();
-        while (dsfItSort.hasNext()) {
-            dsfItSort.next().setValueDisplayOrder();
-        }
-        Timestamp createDate = new Timestamp(new Date().getTime());
-        dsv.setCreateTime(createDate);
-        dsv.setLastUpdateTime(createDate);
-        theDataset.setModificationTime(createDate);
+        tidyUpFields(dsv);
+        dsv.setCreateTime(getTimestamp());
+        dsv.setLastUpdateTime(getTimestamp());
+        theDataset.setModificationTime(getTimestamp());
         for (DataFile dataFile: theDataset.getFiles() ){
             dataFile.setCreator((AuthenticatedUser) getRequest().getUser());
             dataFile.setCreateDate(theDataset.getCreateDate());
@@ -177,7 +156,7 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
 
             // Check return value to make sure registration succeeded
             if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataset.getIdentifier())) {
-                theDataset.setGlobalIdCreateTime(createDate);
+                theDataset.setGlobalIdCreateTime(getTimestamp());
             }
         } else {
             // If harvest or migrate, and this is a released dataset, we don't need to register,
