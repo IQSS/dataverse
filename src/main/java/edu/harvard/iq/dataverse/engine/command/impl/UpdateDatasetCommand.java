@@ -61,16 +61,14 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
-        // first validate
-        // @todo for now we run through an initFields method that creates empty fields for anything without a value
-        // that way they can be checked for required
-        getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
-        validateOrDie( getDataset().getEditVersion(), isValidateLenient() );
-        
         if ( ! (getUser() instanceof AuthenticatedUser) ) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }
+        
+        ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
+
+        getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
+        validateOrDie( getDataset().getEditVersion(), isValidateLenient() );
         
         return save(ctxt);
     }
@@ -98,7 +96,7 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         /* The separate loop is just to make sure that the dataset database is 
         updated, specifically when an image datafile is being deleted, which
         is being used as the dataset thumbnail as part of a batch delete. 
-        if we dont remove the thumbnail association with the dataset before the 
+        if we don't remove the thumbnail association with the dataset before the 
         actual deletion of the file, it might throw foreign key integration 
         violation exceptions. 
         */
@@ -113,11 +111,9 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
                 recalculateUNF = true;
             }
         }
-        //we have to merge to update the database but not flush because 
-        //we don't want to create two draft versions!
+        // we have to merge to update the database but not flush because 
+        // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
-        //ctxt.em().flush();
-        
         
         for (FileMetadata fmd : filesToDelete) {
             if (!fmd.getDataFile().isReleased()) {
@@ -161,7 +157,7 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
                     // if the identifier exists, we'll generate another one
                     // and try to register again... but only up to some
                     // reasonably high number of times - so that we don't 
-                    // go into an infinite loop here, if EZID is giving us 
+                    // go into an infinite loop here, if PID service is giving us 
                     // these duplicate messages in error. 
                     // 
                     // (and we do want the limit to be a "reasonably high" number! 
@@ -187,12 +183,16 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
                     logger.log(Level.WARNING, "EZID refused registration, requested id(s) already in use; gave up after {0} attempts. Current (last requested) identifier: {1}", new Object[]{attempts, tempDataset.getIdentifier()});
                     
                 } else {
-                    logger.log(Level.WARNING, "Failed to create identifier ({0}) with EZID: {1}", new Object[]{tempDataset.getIdentifier(), doiRetString});
+                    logger.log(Level.WARNING, "Failed to create identifier ({0}) with {2}: {1}", 
+                        new Object[]{tempDataset.getIdentifier(),
+                            doiRetString, idServiceBean.getProviderInformation().toString()
+                        });
                     
                 }
                    
             } catch (Throwable e) {
-                // EZID probably down
+                logger.log(Level.WARNING, "Failed to create identifier: " + e.getMessage(), e);
+                // Remote PID service probably down
             }
         }
         

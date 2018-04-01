@@ -141,7 +141,7 @@ public class SubmitDatasetForReviewCommandTest {
     public void testDatasetNull() {
         new SubmitDatasetForReviewCommand(dataverseRequest, null);
     }
-
+    
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
