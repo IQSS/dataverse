@@ -300,7 +300,10 @@ public class SettingsServiceBean {
         
         // Option to override multiple guides with a single url
         NavbarGuidesUrl,
-        
+
+        // Option to overide the feedback dialog display with a link to an external page via its url
+        NavbarSupportUrl,
+
         /**
          * The theme for the root dataverse can get in the way when you try make
          * use of HeaderCustomizationFile and LogoCustomizationFile so this is a

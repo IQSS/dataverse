@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ -z "$1" ]; then
+    BRANCH_COMMIT=$(git rev-parse --abbrev-ref HEAD)-$(git log --oneline | head -1 | awk '{print $1}')
+    echo "No custom build number specified. Using $BRANCH_COMMIT"
+    echo "build.number=$BRANCH_COMMIT" > src/main/java/BuildNumber.properties
+else
+    echo "build.number=$@" > src/main/java/BuildNumber.properties
+fi

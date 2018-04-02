@@ -253,20 +253,20 @@ In the Terms tab, which can also be found by clicking on the Edit dropdown butto
 CC0 Waiver + Dataset Terms of Use 
 ---------------------------------
 
-Starting with Dataverse version 4.0, all new datasets will default to a `CC0 public domain dedication 
-<https://creativecommons.org/publicdomain/zero/1.0/>`_ . CC0 facilitates reuse and extensibility of research data. 
-Our `Community Norms <http://best-practices.dataverse.org/harvard-policies/community-norms.html>`_ as well as good scientific
+All new datasets created through the web UI default to a `CC0 public domain dedication 
+<https://creativecommons.org/publicdomain/zero/1.0/>`_ (this default is not applied to datasets created through the native API). CC0 facilitates reuse and extensibility of research data. 
+Our `Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ as well as good scientific
 practices expect that proper credit is given via citation. If you are unable to give your datasets a CC0 waiver you may enter 
 your own custom Terms of Use for your Datasets.
 
-\* **Legal Disclaimer:** these `Community Norms <http://best-practices.dataverse.org/harvard-policies/community-norms.html>`_ are not a substitute for the CC0 waiver or custom terms and licenses applicable to each dataset. Please be advised that the Community Norms are not a binding contractual agreement, and that downloading datasets from Dataverse does not create a legal obligation to follow these policies.  
+\* **Legal Disclaimer:** these `Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ are not a substitute for the CC0 waiver or custom terms and licenses applicable to each dataset. Please be advised that the Community Norms are not a binding contractual agreement, and that downloading datasets from Dataverse does not create a legal obligation to follow these policies.  
 
 Custom Terms of Use for Datasets
 --------------------------------
 
 If you are unable to use a CC0 waiver for your datasets you are able to set your own custom terms of use. To do so, select "No, do not apply CC0 - "Public Domain Dedication" and a Terms of Use textbox will show up allowing you to enter your own custom terms of use for your dataset. To add more information about the Terms of Use, we have provided fields like Special Permissions, Restrictions, Citation Requirements, etc.
 
-Here is an `example of a Data Usage Agreement <http://best-practices.dataverse.org/harvard-policies/sample-dua.html>`_ for datasets that have de-identified human subject data.
+Here is an `example of a Data Usage Agreement <https://dataverse.org/best-practices/sample-dua>`_ for datasets that have de-identified human subject data.
 
 Restricted Files + Terms of Access 
 ----------------------------------
@@ -402,8 +402,6 @@ Versioning is important for long-term research data management where metadata an
 Once you edit your published dataset a new draft version of this dataset will be created. To publish this new version of your dataset, select the "Publish Dataset" button on the top right side of the page. If you were at version 1 of your dataset, depending on the types of changes you had made, you would be asked to publish your draft as either version 1.1 or version 2.0.
 
 **Important Note:** If you add a file, your dataset will automatically be bumped up to a major version (e.g., if you were at 1.0 you will go to 2.0).
-
-.. To get to the already published version 1 of your dataset, click on the "View Dataset Versions" button on the top left section of your dataset. To go back to the unpublished version click on the same button.
 
 On the Versions tab of a dataset page, there is a versions table that displays the version history of the dataset. You can use the version number links in this table to navigate between the different versions of the dataset, including the unpublished draft version, if you have permission to access it.
 

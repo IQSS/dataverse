@@ -153,9 +153,9 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
               } else if (isWriteAccess) {
                 //this checks whether a directory for a dataset exists 
                 if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
-                Files.createDirectories(dataset.getFileSystemDirectory());
-                dataset.setStorageIdentifier("file://"+dataset.getAuthority()+dataset.getDoiSeparator()+dataset.getIdentifier());
+                    Files.createDirectories(dataset.getFileSystemDirectory());
                 }
+                dataset.setStorageIdentifier("file://"+dataset.getAuthority()+dataset.getDoiSeparator()+dataset.getIdentifier());
             }
 
         } else if (dvObject instanceof Dataverse) {
