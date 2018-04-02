@@ -69,7 +69,8 @@
                     <!-- component below. It is triggered whenever an upload is finished; -->
                     <!-- as in, whenever *every* one of potentially many simultaneous -->
                     <!-- uploads finishes. We don't want to re-render the page after -->
-                    <!-- each successful upload. If we do that, we'll end up re-rendering 
+                    <!-- each successful upload. If we do that, and the user is -->
+                    <!-- uploading N files, we'll end up re-rendering -->
                     <!-- the page N times, rendering N^2/2 individual file cells! This makes -->
                     <!-- the page freeze if N > 300 or so. So the "uploadFinished()" javascript -->
                     <!-- method has some logic to determine whether this was the very -->
