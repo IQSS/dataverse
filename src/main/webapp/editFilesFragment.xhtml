@@ -31,12 +31,12 @@
                         }
                         function uploadStarted() {
                             $('button[id$="uploadStarted"]').trigger('click');
-                            alert("upload started");
+                            //alert("upload started");
                         }
                         function uploadFinished(fileupload) {
                             if (fileupload.files.length === 0) {
                                 $('button[id$="AllUploadsFinished"]').trigger('click');
-                                alert("all uploads finished");
+                                //alert("all uploads finished");
                             }
                         }
                         function dropBoxUploadFinished(fileupload) {
@@ -63,7 +63,29 @@
                         </h:outputFormat>                      
                         </ui:fragment> 
                     </p>
-                    <!-- the update= attribute in the fileUpload component below appears to be super important... -->
+                    <!-- ATTENTION: the update= attribute in the fileUpload component --> 
+                    <!-- below appears to be super important -->
+                    <!-- Note the "oncomplete=" attribute in the p:fileUpload --> 
+                    <!-- component below. It is triggered whenever an upload is finished; -->
+                    <!-- as in, whenever *every* one of potentially many simultaneous -->
+                    <!-- uploads finishes. We don't want to re-render the page after -->
+                    <!-- each upload (if a user is drag-and-dropping N files, that would -->
+                    <!-- result in N^2/2 page refreshes!) So the "uploadFinished()" javascript -->
+                    <!-- method has some logic to determine whether this was the very -->
+                    <!-- last upload in the batch (based on "if (fileupload.files.length === 0)" -->
+                    <!-- - where fileupload.files.length is the number of uploads still -->
+                    <!-- in progress)-->
+                    <!-- HOWEVER, setting the update attribute to "@this" breaks -->
+                    <!-- this mechanism, for whatever reason. -->
+                    <!-- So please be extra careful when making any modifications to this -->
+                    <!-- section. Also, keep in mind that this section is also used for -->
+                    <!-- file replace functionality (with the fragment being called from -->
+                    <!-- the file landing page, file.xhtml). In that mode, the upload -->
+                    <!-- component should only allow one file to be uploaded, and it -->
+                    <!-- must be disabled once that one upload is complete. So, again, -->
+                    <!-- please make sure that part is working if you have to make any -->
+                    <!-- changes to this part of the fragment. -->
+
                     <p:fileUpload id="fileUpload" 
                                   styleClass="margin-bottom"
                                   dragDropSupport="true"
@@ -72,7 +94,7 @@
                                   disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
-                                  update="@this"  
+                                  update=""
                                   label="#{bundle['file.selectToAddBtn']}"
                                   oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));"
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
