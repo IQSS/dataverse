@@ -69,12 +69,14 @@
                     <!-- component below. It is triggered whenever an upload is finished; -->
                     <!-- as in, whenever *every* one of potentially many simultaneous -->
                     <!-- uploads finishes. We don't want to re-render the page after -->
-                    <!-- each upload (if a user is drag-and-dropping N files, that would -->
-                    <!-- result in N^2/2 page refreshes!) So the "uploadFinished()" javascript -->
+                    <!-- each successful upload. If we do that, we'll end up re-rendering 
+                    <!-- the page N times, rendering N^2/2 individual file cells! This makes -->
+                    <!-- the page freeze if N > 300 or so. So the "uploadFinished()" javascript -->
                     <!-- method has some logic to determine whether this was the very -->
                     <!-- last upload in the batch (based on "if (fileupload.files.length === 0)" -->
                     <!-- - where fileupload.files.length is the number of uploads still -->
-                    <!-- in progress)-->
+                    <!-- in progress). This way we re-render the page only once, rendering -->
+                    <!-- just the N file cells in one pass. -->
                     <!-- HOWEVER, setting the update attribute to "@this" breaks -->
                     <!-- this mechanism, for whatever reason. -->
                     <!-- So please be extra careful when making any modifications to this -->
