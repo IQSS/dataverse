@@ -138,7 +138,8 @@ public class UtilIT {
         return usernamePrefix + getRandomIdentifier().substring(0, 8);
     }
 
-    public static String getRandomString(int length) {
+    public static String getRandomString(int length) { 
+//is it worth replacing with something that doesn't error out on getRandomString(8)
         if (length < 0) {
             length = 3;
         }
