@@ -113,6 +113,14 @@ public class DataverseServiceBean implements java.io.Serializable {
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
     }
+    
+    public List<Long> findDataverseIdsForIndexing(boolean skipIndexed) {
+        if (skipIndexed) {
+            return em.createQuery("SELECT o.id FROM Dataverse o WHERE o.indexTime IS null ORDER BY o.id", Long.class).getResultList();
+        }
+        return em.createQuery("SELECT o.id FROM Dataverse o ORDER BY o.id", Long.class).getResultList();
+        
+    }
 
     public List<Dataverse> findByOwnerId(Long ownerId) {
         String qr = "select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name";

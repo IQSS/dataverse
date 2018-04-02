@@ -1,7 +1,7 @@
 {
   "id": 11,
   "identifier": "PCA2E3",
-  "persistentUrl": "http://dx.doi.org/10.5072/FK2/PCA2E3",
+  "persistentUrl": "https://doi.org/10.5072/FK2/PCA2E3",
   "protocol": "doi",
   "authority": "10.5072/FK2",
   "datasetVersion": {
@@ -377,6 +377,6 @@
             }
         },
     "files": [],
-    "citation": "Finch, Fiona, 2015, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2/PCA2E3,  Root Dataverse,  V1"
+    "citation": "Finch, Fiona, 2015, \"Darwin's Finches\", https://doi.org/10.5072/FK2/PCA2E3,  Root Dataverse,  V1"
   }
 }

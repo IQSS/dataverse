@@ -58,7 +58,7 @@ Once you are done, open a terminal and change directories to ~/dataverse/doc/sph
 
 - ``make clean``
 
-- ``make html Makefile``
+- ``make html``
 
 After sphinx is done processing the files you should notice that the html folder in ~/dataverse/doc/sphinx-guides/build directory has been updated.
 You can click on the files in the html folder to preview the changes.
