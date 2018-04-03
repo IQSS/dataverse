@@ -198,7 +198,7 @@ Clear Solr
 
 The database is fresh and new but Solr has stale data it in. Clear it out with this command:
 
-``curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
+``curl http://localhost:8983/solr/collection1/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
 
 
 Deleting Uploaded Files

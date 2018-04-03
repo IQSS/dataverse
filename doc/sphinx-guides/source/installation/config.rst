@@ -4,7 +4,7 @@ Configuration
 
 Now that you've successfully logged into Dataverse with a superuser account after going through a basic :doc:`installation-main`, you'll need to secure and configure your installation.
 
-Settings within Dataverse itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls. Configuring Solr requires manipulating XML files.
+Settings within Dataverse itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls.
 
 Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
 
@@ -62,36 +62,6 @@ Password complexity rules for "builtin" accounts can be adjusted with a variety 
 - :ref:`:PVDictionaries`
 - :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
-
-Solr
-----
-
-schema.xml
-++++++++++
-
-The :doc:`prerequisites` section explained that Dataverse requires a specific Solr schema file called ``schema.xml`` that can be found in the Dataverse distribution. You should have already replaced the default ``example/solr/collection1/conf/schema.xml`` file that ships with Solr.
-
-jetty.xml
-+++++++++
-
-Stop Solr and edit ``solr-4.6.0/example/etc/jetty.xml`` to add a line having to do with ``requestHeaderSize`` as follows:
-
-.. code-block:: xml
-
-    <Call name="addConnector">
-      <Arg>
-          <New class="org.eclipse.jetty.server.bio.SocketConnector">
-            <Set name="host"><SystemProperty name="jetty.host" /></Set>
-            <Set name="port"><SystemProperty name="jetty.port" default="8983"/></Set>
-            <Set name="maxIdleTime">50000</Set>
-            <Set name="lowResourceMaxIdleTime">1500</Set>
-            <Set name="statsOn">false</Set>
-            <Set name="requestHeaderSize">102400</Set>
-          </New>
-      </Arg>
-    </Call>
-
-Without this ``requestHeaderSize`` line in place, which increases the default size, it will appear that no data has been added to your Dataverse installation and ``WARN  org.eclipse.jetty.http.HttpParser  – HttpParser Full for /127.0.0.1:8983`` will appear in the Solr log. See also https://support.lucidworks.com/hc/en-us/articles/201424796-Error-when-submitting-large-query-strings-
 
 Network Ports
 -------------

@@ -166,39 +166,55 @@ The Dataverse search index is powered by Solr.
 Installing Solr
 ===============
 
-Download and install Solr with these commands::
+You should not run Solr as root. Create a user called ``solr`` and a directory to install Solr into::
 
-	# wget https://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz
-	# tar xvzf solr-4.6.0.tgz 
-	# rsync -auv solr-4.6.0 /usr/local/
-	# cd /usr/local/solr-4.6.0/example/solr/collection1/conf/
-	# cp -a schema.xml schema.xml.orig
+        useradd solr
+        mkdir /usr/local/solr
+        chown solr:solr /usr/local/solr
 
-The reason for backing up the ``schema.xml`` file is that Dataverse requires a custom Solr schema to operate. This ``schema.xml`` file is contained in the "dvinstall" zip supplied in each Dataverse release at https://github.com/IQSS/dataverse/releases . Download this zip file, extract ``schema.xml`` from it, and put it into place (in the same directory as above)::
+Become the ``solr`` user and then download and configure Solr::
 
-	# cp /tmp/schema.xml schema.xml
+        su - solr
+        cd /usr/local/solr
+        wget https://archive.apache.org/dist/lucene/solr/7.2.1/solr-7.2.1.tgz
+        tar xvzf solr-7.2.1.tgz
+        cd solr-7.2.1
+        cp -r server/solr/configsets/_default server/solr/collection1
 
-With the Dataverse-specific schema in place, you can now start Solr::
+You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-	# cd /usr/local/solr-4.6.0/example
-	# java -jar start.jar
+        cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.2.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.2.1/server/solr/collection1/conf
+
+Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example results matching on the name of a dataset. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents.
+
+Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.2.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+
+With the Dataverse-specific config in place, you can now start Solr and create the core that will be used to manage search information::
+
+        cd /usr/local/solr/solr-7.2.1
+        bin/solr start
+        bin/solr create_core -c collection1 -d server/solr/collection1/conf/
 
 Solr Init Script
 ================
 
-The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but letting the system start Solr automatically is recommended.
- 
-- This :download:`Solr Systemd file<../_static/installation/files/etc/systemd/solr.service>` will launch Solr on boot as the solr user for RHEL/CentOS 7 or Ubuntu 16+ systems, or
-- For systems using init.d, you may attempt to adjust this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.
+For systems running systemd, as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
 
-Solr should be running before the Dataverse installation script is executed.
+        cp /tmp/solr.service /usr/lib/systemd/system
+        systemctl start solr.service
+        systemctl enable solr.service
+
+For systems using init.d, download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+
+        cp /tmp/solr /etc/init.d
+        service solr start
+        chkconfig solr on
 
 Securing Solr
 =============
 
-Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host  that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://wiki.apache.org/solr/SolrSecurity
-
-You may want to poke a temporary hole in your firewall to play with the Solr GUI. More information on this can be found in the :doc:`/developers/dev-environment` section of the Developer Guide.
+Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host  that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_2/securing-solr.html
 
 jq
 --
