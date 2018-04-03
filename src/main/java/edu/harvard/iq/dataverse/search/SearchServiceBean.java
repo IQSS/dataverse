@@ -1,25 +1,23 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +25,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -42,12 +39,12 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionRolledbackLocalException;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.RangeFacet;
@@ -79,18 +76,22 @@ public class SearchServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    public static final JsfHelper JH = new JsfHelper();
-    private SolrServer solrServer;
+    private SolrClient solrServer;
     
     @PostConstruct
-    public void init(){
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+    public void init() {
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        solrServer = new HttpSolrClient.Builder(urlString).build();
     }
     
     @PreDestroy
-    public void close(){
-        if(solrServer != null){
-            solrServer.shutdown();
+    public void close() {
+        if (solrServer != null) {
+            try {
+                solrServer.close();
+            } catch (IOException e) {
+                logger.warning("Solr closing error: " + e);
+            }
             solrServer = null;
         }
     }
@@ -168,6 +169,7 @@ public class SearchServiceBean {
         solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
         solrQuery.setHighlightSimplePost("</span>");
         Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
+        // TODO: Do not hard code "Name" etc as English here.
         solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_FRIENDLY, "File Type");
@@ -176,7 +178,7 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
         solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Date");
-        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, localize("advanced.search.datasets.persistentId"));
+        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, BundleUtil.getStringFromBundle("dataset.metadata.persistentId"));
         /**
          * @todo Dataverse subject and affiliation should be highlighted but
          * this is commented out right now because the "friendly" names are not
@@ -203,7 +205,7 @@ public class SearchServiceBean {
             solrQuery.addHighlightField(solrField);
         }
         solrQuery.setParam("fl", "*,score");
-        solrQuery.setParam("qt", "/spell");
+        solrQuery.setParam("qt", "/select");
         solrQuery.setParam("facet", "true");
         /**
          * @todo: do we need facet.query?
@@ -301,7 +303,7 @@ public class SearchServiceBean {
         // -----------------------------------  
         // Make the solr query
         // -----------------------------------
-        QueryResponse queryResponse;
+        QueryResponse queryResponse = null;
         try {
             queryResponse = solrServer.query(solrQuery);
         } catch (RemoteSolrException ex) {
@@ -331,7 +333,7 @@ public class SearchServiceBean {
             exceptionSolrQueryResponse.setTypeFacetCategories(exceptionFacetCategoryList);
             exceptionSolrQueryResponse.setSpellingSuggestionsByToken(emptySpellingSuggestion);
             return exceptionSolrQueryResponse;
-        } catch (SolrServerException ex) {
+        } catch (SolrServerException | IOException ex) {
             throw new SearchException("Internal Dataverse Search Engine Error", ex);
         }
 
@@ -740,16 +742,6 @@ public class SearchServiceBean {
         solrQueryResponse.setPublicationStatusCounts(queryResponse.getFacetField("publicationStatus"));
 
         return solrQueryResponse;
-    }
-
-    private static String localize(String bundleKey) {
-        try {
-            String value = JH.localize(bundleKey);
-            return value;
-        } catch (Exception e) {
-            // can throw MissingResourceException
-            return "Match";
-        }
     }
 
     public String getCapitalizedName(String name) {

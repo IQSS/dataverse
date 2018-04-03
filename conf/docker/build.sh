@@ -1,6 +1,7 @@
 #!/bin/sh
 # Creates images and pushes them to Docker Hub.
-# The "kick-the-tires" tag should be relatively stable. No breaking changes.
+# The "latest" tag should be relatively stable. Don't push breaking changes there.
+# None of the tags are suitable for production use. See https://github.com/IQSS/dataverse/issues/4040
 # Push to custom tags or tags based on branch names to iterate on the images.
 if [ -z "$1" ]; then
   echo "No argument supplied. Please specify \"branch\" or \"custom my-custom-tag\" for experiments or \"stable\" if your change won't break anything."
@@ -31,11 +32,31 @@ echo Images will be pushed to Docker Hub with the tag \"$TAG\".
 docker build -t iqss/dataverse-solr:$TAG -f solr/Dockerfile ../../conf
 docker push iqss/dataverse-solr:$TAG
 # TODO: Think about if we really need dataverse.war because it's in dvinstall.zip.
-# FIXME: Automate the building of dataverse.war and dvinstall.zip. Think about https://github.com/IQSS/dataverse/issues/3974 and https://github.com/IQSS/dataverse/pull/3975
+cd ../..
+mvn clean
+scripts/installer/custom-build-number
+mvn package
+cd conf/docker
 cp ../../target/dataverse*.war dataverse-glassfish/dataverse.war
+if [[ "$?" -ne 0 ]]; then
+  echo "Unable to copy war file into place. Did 'mvn package' work?"
+  exit 1
+fi
+cd ../../scripts/installer
+make clean
+make
+cd ../../conf/docker
 cp ../../scripts/installer/dvinstall.zip dataverse-glassfish
-cp ../../doc/sphinx-guides/source/_static/util/default.config dataverse-glassfish
+if [[ "$?" -ne 0 ]]; then
+  echo "Unable to copy dvinstall.zip file into place. Did 'make' work?"
+  exit 1
+fi
 cp ../../downloads/glassfish-4.1.zip dataverse-glassfish
+if [[ "$?" -ne 0 ]]; then
+  echo "Unable to copy Glassfish zip file into place. You must run the download script in that directory once. "
+  exit 1
+fi
+# We'll assume at this point that the download script has been run.
 cp ../../downloads/weld-osgi-bundle-2.2.10.Final-glassfish4.jar dataverse-glassfish
 docker build -t iqss/dataverse-glassfish:$TAG dataverse-glassfish
 # FIXME: Check the output of `docker build` and only push on success.
