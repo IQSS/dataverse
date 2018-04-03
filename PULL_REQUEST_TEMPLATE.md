@@ -16,6 +16,6 @@ Welcome! New contributors should at least glance at [CONTRIBUTING.md](/CONTRIBUT
 
 [tests]: http://guides.dataverse.org/en/latest/developers/testing.html
 [SQL updates]: https://github.com/IQSS/dataverse/tree/develop/scripts/database/upgrades
-[Solr updates]: https://github.com/IQSS/dataverse/blob/develop/conf/solr/4.6.0/schema.xml
+[Solr updates]: https://github.com/IQSS/dataverse/blob/develop/conf/solr/7.2.1/schema.xml
 [docs]: http://guides.dataverse.org/en/latest/developers/documentation.html
 [branch]: http://guides.dataverse.org/en/latest/developers/branching-strategy.html
