@@ -233,9 +233,11 @@ List Single Metadata Block for a Dataset
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Updates the current draft version of dataset ``$id``. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data. The request body is a dataset version, in json format. ::
+Updating the metadata for a dataset involves overwriting the existing metadata. You cannot target a specific field such as the title of a dataset and only update it. Instead, you must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
 
-    PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
+For example, after making your edits, your JSON file might look like :download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>` which you would send to Dataverse like this::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/versions/:draft?persistentId=$PID --upload-file dataset-update-metadata.json
 
 Move Dataset to Another Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
