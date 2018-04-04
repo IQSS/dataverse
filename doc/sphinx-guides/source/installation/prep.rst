@@ -49,7 +49,7 @@ Dataverse permits a fair amount of flexibility in where you choose to install th
 
 |3webservers|
 
-A setup such as this is advanced enough to be considered out of scope for this guide but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
+A setup such as this is advanced enough to be considered out of scope for this guide (apart from a stub in the :doc:`advanced` section) but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
 
 .. _architecture:
 
