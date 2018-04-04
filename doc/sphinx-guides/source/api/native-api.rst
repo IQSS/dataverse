@@ -145,6 +145,9 @@ To create a dataset, you must create a JSON file containing all the metadata you
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets --upload-file dataset-finch1.json
 
+Publish a Dataverse
+~~~~~~~~~~~~~~~~~~~
+
 Publish the Dataverse pointed by ``identifier``, which can either by the dataverse alias or its numerical id. ::
 
   POST http://$SERVER/api/dataverses/$identifier/actions/:publish?key=$apiKey
