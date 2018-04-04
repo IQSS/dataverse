@@ -115,8 +115,7 @@ public class MailServiceBean implements java.io.Serializable {
         boolean sent = false;
         String rootDataverseName = dataverseService.findRootDataverse().getName();
         InternetAddress systemAddress = getSystemAddress();
-        // We sign these emails as "LibraScholar" (BrandingUtil.getInstallationBrandName) but it might be friendlier to change this to "LibraScholar Support Team" (BrandingUtil.getSupportTeamName).
-        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getInstallationBrandName(rootDataverseName)));
+        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
             MimeMessage msg = new MimeMessage(session);
