@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
@@ -15,6 +17,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -26,6 +30,8 @@ import org.apache.commons.io.IOUtils;
 import java.util.ArrayList;
 import java.util.Set;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.json.JsonObject;
 
 /**
@@ -127,11 +133,10 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             
         } else if(null != popupDataFile.getCreateDate()){ //Is this file fully uploaded and already has prov data saved?   
-//MAD: Here I need to get the json file... but the getter will always pull the latest which is not what we want
-//... what do we want?
             JsonObject provJsonObject = execCommand(new GetProvJsonCommand(dvRequestService.getDataverseRequest(), popupDataFile));
             if(null != provJsonObject) {
-                provJsonState = provJsonObject.toString();
+                provJsonState = provUtil.getPrettyJsonString(provJsonObject);
+                
                 generateProvJsonParsedEntities();
                 setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             }
@@ -294,5 +299,24 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             this.provenanceJson = provenanceJson;
             this.dataFile = dataFile;
         }
+    }
+    
+    public void showJsonPreviewNewWindow() throws IOException, WrappedResponse {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        ExternalContext ec = fc.getExternalContext();
+        
+        ec.responseReset(); 
+        ec.setResponseContentType("application/json;charset=UTF-8"); 
+        //ec.setResponseContentLength(contentLength);
+        String fileName = "prov-json.json";
+        ec.setResponseHeader("Content-Disposition", "inline; filename=\"" + fileName + "\""); 
+
+        OutputStream output = ec.getResponseOutputStream();
+        
+        OutputStreamWriter osw = new OutputStreamWriter(output, "UTF-8");
+        osw.write(provJsonState); //the button calling this will only be rendered if provJsonState exists (e.g. a file is uploaded)
+        osw.close();
+        fc.responseComplete();
+
     }
 }

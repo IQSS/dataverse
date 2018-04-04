@@ -1,12 +1,15 @@
 package edu.harvard.iq.dataverse;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.json.JsonObject;
 
 
 public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Serializable{
@@ -79,6 +82,13 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
 //        }
         
         return null;
+    }
+    
+    public String getPrettyJsonString(JsonObject jsonObject) {
+        JsonParser jp = new JsonParser();
+        JsonElement je = jp.parse(jsonObject.toString());
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(je);
     }
     
    

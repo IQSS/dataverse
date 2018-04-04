@@ -65,7 +65,7 @@
                             </div>
                             <div class="col-sm-7 inline-buttons">
                                 <div class="button-block">
-                                    <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.preview}"/>
+                                    <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.preview}" actionListener="#{provPopupFragmentBean.showJsonPreviewNewWindow()}" onclick="this.form.target='_blank'" ajax="false" immediate="true"/>
                                     <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput,assignMessages" immediate="true" actionListener="#{provPopupFragmentBean.removeJsonAndRelatedData()}"/>
                                 </div>
                             </div>
