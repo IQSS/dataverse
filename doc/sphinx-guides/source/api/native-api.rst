@@ -141,9 +141,9 @@ values are ``true`` and ``false`` (both are valid JSON expressions). ::
 Create a Dataset in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Create a new dataset in dataverse ``id``. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of ``"datasetVersion"``. The initial versions version number will be set to ``1.0``, and its state will be set to ``DRAFT`` regardless of the content of the json object. Example json can be found at ``data/dataset-create-new.json``. ::
+To create a dataset, you must create a JSON file containing all the metadata you want such as in this example file: :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>`. Then, you must decide which dataverse to create the dataset in and target that datavese with either the "alias" of the dataverse (e.g. "root" or the database id of the dataverse (e.g. "1"). The initial versions version number will be set to ``1.0``, and its state will be set to ``DRAFT``::
 
-  POST http://$SERVER/api/dataverses/$id/datasets/?key=$apiKey
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets --upload-file dataset-finch1.json
 
 Publish the Dataverse pointed by ``identifier``, which can either by the dataverse alias or its numerical id. ::
 
