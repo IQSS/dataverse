@@ -98,10 +98,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      */
     private Timestamp indexTime;
 
-    /**
-     * @todo Make this nullable=true. Currently we can't because the
-     * CreateDataverseCommand saves the dataverse before it assigns a role.
-     */
     @Column(nullable = true)
     private Timestamp permissionModificationTime;
 

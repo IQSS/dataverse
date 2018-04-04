@@ -48,15 +48,21 @@ This is a list of commands, what they actually do, and some recommendations abou
 * Difference between `UpdateDatasetCommand` and `UpdateDatasetVersionCommand`?
     - Seems like the `XXDatasetVersionCommand`s are redundant. They should be removed.
 * What about the package `edu.harvard.iq.dataverse.batch.jobs.importer`? Can this go away now?
+    - no, used by rsync
 * Same question about `ImportServiceBean` 
+    - no, used by batch that's used by rsync
 
 ## Common activities
 * Creating DOIs
 * Validating a dataset
 * Saving a dataset version
     - compare `UpdateDatasetCommand` to `UpdateDatasetVersionCommand`
+    - 
 
-**Note: See consolidation TODO at ReturnDatasetToAuthorCommand**
+## Open issues for
+* PID bean API should be improved (based on literal strings, returns `Throwable`s, etc.)
+    - is this overridden by DataverseEU PID Plug-in?
+* `SettingsServiceBean.Key.DoiProvider` should be renamed `PIDProvider`, or even `PersistentIdentifierProvider`. That would entail changes in the database, unless we allow the settings sub-system to have deprecated keys.
 
 ## Done log
 * Removed deprecated `name` field from `DataFile` (including related methods which were not used).
@@ -69,3 +75,7 @@ This is a list of commands, what they actually do, and some recommendations abou
 * Created `AbstractDatasaetCommand` and consolidated code to it.
 * (During publication) Moved the update/create of the DatasetVersionUser from the finalize stage to the publication kickoff stage. This reflects better that fact that this class represents the last time a user have touched a dataset (note that workflows can take a long time)
 * DatasetVersion validation consolidation
+* Dataset: Remove unused methods.
+* Created an async method to index datasets.
+* CreateDatasetCommand calls the async indexation method.
+    - Also, not failing when indexation fails

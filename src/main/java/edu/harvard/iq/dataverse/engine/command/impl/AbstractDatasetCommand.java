@@ -28,7 +28,7 @@ import javax.validation.ConstraintViolation;
  */
 public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     
-    private final Dataset dataset;
+    private Dataset dataset;
     private final Timestamp timestamp = new Timestamp(new Date().getTime());
     
     public AbstractDatasetCommand(DataverseRequest aRequest, Dataset aDataset, Dataverse parent) {
@@ -57,10 +57,10 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected void updateDatasetUser( CommandContext ctxt ) {
         DatasetVersionUser datasetDataverseUser = ctxt.datasets().getDatasetVersionUser(dataset.getLatestVersion(), getUser());
+    
         if (datasetDataverseUser != null) {
             datasetDataverseUser.setLastUpdateDate(getTimestamp());
-            ctxt.em().merge(datasetDataverseUser);
-        
+
         } else {
             datasetDataverseUser = new DatasetVersionUser();
             datasetDataverseUser.setDatasetVersion(getDataset().getLatestVersion());
@@ -69,8 +69,8 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             id = id.startsWith("@") ? id.substring(1) : id;
             AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
             datasetDataverseUser.setAuthenticatedUser(au);
-            ctxt.em().merge(datasetDataverseUser);
         }
+        ctxt.em().merge(datasetDataverseUser);
     }
     
     /**
@@ -123,6 +123,10 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     
     protected Dataset getDataset() {
         return dataset;
+    }
+
+    public void setDataset(Dataset dataset) {
+        this.dataset = dataset;
     }
     
     /**

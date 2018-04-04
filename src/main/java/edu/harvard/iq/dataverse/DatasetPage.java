@@ -1868,16 +1868,12 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String releaseDataset(boolean minor) {
-        Command<PublishDatasetResult> cmd;
 
         if (session.getUser() instanceof AuthenticatedUser) {
             try {
-                if (editMode == EditMode.CREATE) { //FIXME: Why are we using the same commands?
-                    cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor); 
-                } else {
-                    cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor); 
-                }
-                final PublishDatasetResult result = commandEngine.submit(cmd);
+                final PublishDatasetResult result = commandEngine.submit(
+                    new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor)
+                );
                 dataset = result.getDataset();
                 // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset 
                 // has been published. If a publishing workflow is configured, this may have sent the 
@@ -1889,22 +1885,21 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
                 }
-            } catch (CommandException ex) {
                 
+            } catch (CommandException ex) {
                 JsfHelper.addErrorMessage(ex.getLocalizedMessage());
                 logger.severe(ex.getMessage());
             }
-        } else {
             
+        } else {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
         return returnToDatasetOnly();
     }
 
     public String registerDataset() {
-        UpdateDatasetCommand cmd;
         try {
-            cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
+            UpdateDatasetCommand cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
             cmd.setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {

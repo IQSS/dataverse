@@ -66,6 +66,9 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         }
         
         ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
+        // Dataset has no locks prventing the update
+        
+        // FIXME: MBS: Dataset has to have a draft version IN THE DATABASE
 
         getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
         validateOrDie( getDataset().getEditVersion(), isValidateLenient() );
@@ -74,11 +77,15 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
     }
 
     public Dataset save(CommandContext ctxt)  throws CommandException {
-        tidyUpFields(getDataset().getEditVersion());
+        final DatasetVersion editVersion = getDataset().getEditVersion();
+        tidyUpFields(editVersion);
         
-        getDataset().getEditVersion().setLastUpdateTime(getTimestamp());
-        getDataset().setModificationTime(getTimestamp());
-         
+        // FIXME: MBS: This should never happen, as the create date should have been set
+        //               in the create dataset version command.
+        if ( editVersion.getCreateTime() == null ) {
+            editVersion.setCreateTime(getTimestamp());
+        }
+        
         for (DataFile dataFile : getDataset().getFiles()) {
             if (dataFile.getCreateDate() == null) {
                 dataFile.setCreateDate(getTimestamp());
@@ -140,11 +147,11 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         }
         
         String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        String pidProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         
         PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(ctxt);
         boolean registerWhenPublished = idServiceBean.registerWhenPublished();
-        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, tempDataset.getProtocol(), tempDataset.getGlobalIdCreateTime()});
+        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{pidProvider, tempDataset.getProtocol(), tempDataset.getGlobalIdCreateTime()});
         if ( !registerWhenPublished && tempDataset.getGlobalIdCreateTime() == null) {
             try {
                 logger.fine("creating identifier");
@@ -196,6 +203,10 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
             }
         }
         
+        
+        tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
+        tempDataset.setModificationTime(getTimestamp());
+         
         Dataset savedDataset = ctxt.em().merge(tempDataset);
         ctxt.em().flush();
 

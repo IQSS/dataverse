@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -257,7 +258,12 @@ public class IndexServiceBean {
         boolean doNormalSolrDocCleanUp = false;
         return indexDataset(dataset, doNormalSolrDocCleanUp);
     }
-
+    
+    @Asynchronous
+    public Future<String> asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+        return indexDataset(dataset, doNormalSolrDocCleanUp);
+    }
+    
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         logger.fine("indexing dataset " + dataset.getId());
         /**

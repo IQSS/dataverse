@@ -92,7 +92,7 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
                 
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
-        theDataset.setCreateDate(new Timestamp(new Date().getTime()));
+        theDataset.setCreateDate(getTimestamp());
 
         tidyUpFields(dsv);
         dsv.setCreateTime(getTimestamp());
@@ -139,6 +139,12 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
             
         }
+//        logger.log(Level.INFO, "after doi {0}", formatter.format(new Date().getTime()));
+//        ctxt.em().persist(theDataset);
+//        logger.log(Level.INFO, "after db persist. Our id is: {0}", theDataset.getId());
+//        ctxt.em().flush();
+//        logger.log(Level.INFO, "after db update. Our id is: {0}", theDataset.getId());
+        
         logger.fine("Saving the files permanently.");
         ctxt.ingest().addFiles(dsv, theDataset.getFiles());
         logger.log(Level.FINE,"doiProvider={0} protocol={1}  importType={2}  GlobalIdCreateTime=={3}", new Object[]{doiProvider, protocol,  importType, theDataset.getGlobalIdCreateTime()});
@@ -169,17 +175,19 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         if (registrationRequired && (theDataset.getGlobalIdCreateTime() == null)) {
             throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
         }
-        logger.log(Level.FINE, "after doi {0}", formatter.format(new Date().getTime()));
-        Dataset savedDataset = ctxt.em().merge(theDataset);
-        logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));
+        
+        
+        ctxt.em().persist(theDataset);
+        
         // set the role to be default contributor role for its dataverse
         if (importType==null || importType.equals(ImportType.NEW)) {
             String privateUrlToken = null;
-            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getRequest().getUser(), savedDataset, privateUrlToken));
+            ctxt.roles().save(new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
+                                                   getRequest().getUser(), theDataset, privateUrlToken));
         }
+        theDataset.setPermissionModificationTime(getTimestamp());
         
-        savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
-        savedDataset = ctxt.em().merge(savedDataset);
+//        theDataset = ctxt.em().merge(theDataset);
         
         if ( template != null ) {
             ctxt.templates().incrementUsageCount(template.getId());
@@ -188,7 +196,7 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         logger.fine("Checking if rsync support is enabled.");
         if (DataCaptureModuleUtil.rsyncSupportEnabled(ctxt.settings().getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             try {
-                ScriptRequestResponse scriptRequestResponse = ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), savedDataset));
+                ScriptRequestResponse scriptRequestResponse = ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), theDataset));
                 logger.log(Level.FINE, "script: {0}", scriptRequestResponse.getScript());
             } catch (RuntimeException ex) {
                 logger.log(Level.WARNING, "Problem getting rsync script: {0}", ex.getLocalizedMessage());
@@ -196,35 +204,19 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         }
         logger.fine("Done with rsync request, if any.");
 
-        try {
-            boolean doNormalSolrDocCleanUp = true;
-            ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
-        
-        } catch ( Exception e ) { // RuntimeException e ) {
-            logger.log(Level.WARNING, "Exception while indexing:{0}", e.getMessage()); 
-            /**
-             * Even though the original intention appears to have been to allow the 
-             * dataset to be successfully created, even if an exception is thrown during 
-             * the indexing - in reality, a runtime exception there, even caught, 
-             * still forces the EJB transaction to be rolled back; hence the 
-             * dataset is NOT created... but the command completes and exits as if
-             * it has been successful. 
-             * So I am going to throw a Command Exception here, to avoid this. 
-             * If we DO want to be able to create datasets even if they cannot 
-             * be immediately indexed, we'll have to figure out how to do that. 
-             * (Note that import is still possible when Solr is down - because indexDataset() 
-             * does NOT throw an exception if it is.
-             * -- L.A. 4.5
-             */
-            throw new CommandException("Dataset could not be created. Indexing failed", this);
-            
-        }
-        logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
-        
         // if we are not migrating, assign the user to this version
         updateDatasetUser(ctxt);
-        logger.log(Level.FINE, "after create version user {0}", formatter.format(new Date().getTime()));       
-        return savedDataset;
+        
+        ctxt.em().merge(theDataset); // store last updates
+        logger.log(Level.INFO , "DB updates - done."); // FIXME: MBS: Remove.
+        // DB updates - done.
+        
+        boolean doNormalSolrDocCleanUp = true;
+        ctxt.index().asyncIndexDataset(theDataset, doNormalSolrDocCleanUp);
+        
+        logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
+        
+        return theDataset;
     }
 
     @Override

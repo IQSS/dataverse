@@ -600,7 +600,7 @@ public class DatasetVersion implements Serializable {
                         }
                     }
                 }
-                logger.fine("pristine description: " + descriptionString);
+                logger.log(Level.FINE, "pristine description: {0}", descriptionString);
                 return descriptionString;
             }
         }
@@ -844,10 +844,6 @@ public class DatasetVersion implements Serializable {
             }
         }
         return retVal;
-    }
-
-    public void setDatasetAuthors(List<DatasetAuthor> authors) {
-        // FIXME add the authors to the relevant fields
     }
 
     public String getCitation() {
