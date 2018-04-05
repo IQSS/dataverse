@@ -1,9 +1,12 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.feedback.Feedback;
+import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Random;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -47,6 +50,8 @@ public class SendFeedbackDialog implements java.io.Serializable {
     
     @EJB
     DataverseServiceBean dataverseService; 
+    @EJB
+    SystemConfig systemConfig;
     @Inject DataverseSession dataverseSession;
     
     public void setUserEmail (String uEmail) {
@@ -184,6 +189,8 @@ public class SendFeedbackDialog implements java.io.Serializable {
         }
 
     }     
+
+    // FIXME: Delete all the logic that is now in FeedbackUtil (with tests!)
     public String sendMessage() {
         String email = "";
         if (recipient!=null) {
@@ -214,13 +221,20 @@ public class SendFeedbackDialog implements java.io.Serializable {
                     email = defaultRecipientEmail;
                 }
         }
+        String dataverseSiteUrl = systemConfig.getDataverseSiteUrl();
         if (isLoggedIn() && userMessage!=null) {
-            mailService.sendMail(loggedInUserEmail(), email, getMessageSubject(), userMessage);
+            Feedback feedback = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, userEmail, userEmail, dataverseSiteUrl);
+            logger.info("body (logged in): " + feedback.getBody());
+//            mailService.sendMail(loggedInUserEmail(), email, getMessageSubject(), userMessage);
+            mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getSubject(), feedback.getBody());
             userMessage = "";
             return null;
         } else {
             if (userEmail != null && userMessage != null) {
-                mailService.sendMail(userEmail, email, getMessageSubject(), userMessage);
+                Feedback feedback = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, userEmail, userEmail, dataverseSiteUrl);
+                logger.info("body (not logged in): " + feedback.getBody());
+//                mailService.sendMail(userEmail, email, getMessageSubject(), userMessage);
+                mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getSubject(), feedback.getBody());
                 userMessage = "";
                 return null;
             } else {
