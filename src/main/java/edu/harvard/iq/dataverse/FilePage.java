@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -61,8 +62,8 @@ public class FilePage implements java.io.Serializable {
     private DataFile file;   
     private GuestbookResponse guestbookResponse;
     private int selectedTabIndex;
-    private Dataset editDataset;
-    private Dataset dataset;
+    protected Dataset editDataset;
+    protected Dataset dataset;
     private List<DatasetVersion> datasetVersionsForTab;
     private List<FileMetadata> fileMetadatasForTab;
     private List<ExternalTool> configureTools;
@@ -251,6 +252,27 @@ public class FilePage implements java.io.Serializable {
             }
         }
         return retList;  
+    }
+    
+//MAD: Trying to understand what is actually creating and attaching this draft
+    public String saveProvFreeform(String freeformTextInput) throws CommandException {
+        editDataset = this.file.getOwner();
+        
+        Command cmd;
+        
+        //MAD: I don't really understand why restrict does this but I'm copying it because it doesn't seem to hurt
+        // maybe something to do with the getEditVersion maybe creating a new version and then things get out of sync?
+        for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
+            if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
+                fmw.setProvFreeForm(freeformTextInput);
+                //cmd = new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), file, freeformTextInput);
+                //commandEngine.submit(cmd);
+            }
+        }
+        
+        save();
+        init();
+        return returnToDraftVersion();
     }
     
     public String restrictFile(boolean restricted) throws CommandException{

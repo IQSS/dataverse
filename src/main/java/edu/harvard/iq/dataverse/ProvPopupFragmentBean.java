@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import org.primefaces.event.FileUploadEvent;
@@ -156,7 +157,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
     
     //Stores the provenance changes decided upon in the popup to be saved when all edits across files are done.
-    public void stagePopupChanges(boolean saveInPopup) throws IOException{
+    public String stagePopupChanges(boolean saveInPopup) throws IOException{
         String freeformToSave = null; //different variable to ensure we only update freeform when needed
         if(null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) {
             freeformToSave = freeformTextInput;
@@ -202,29 +203,19 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         }
         
         if(saveInPopup) {
+            
             try {
                 saveStagedProvJson(true);
-
-//                //This block is for when an update was only made to the freeform provenance, as we are saving in the popup itself on the file page, not as part of another flow.
                 if(null != stagingEntry && null != stagingEntry.provFreeform) {
-//MAD: EVEN IF THIS WORKS WE STILL NEED TO UPDATE THE VERSION
-                    popupDataFile = execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
-//MAD: We could also try this call instead: saveStageProvFreeformToLatestVersion()
-                    //Below lines ensure if the user saves the popup on file page and then opens it again and saves the datafile is up to date.
-                    
-                    //MAD: Maybe I should be actually altering the file in editDataset on the file page. Lets see if this works anyways
-                    filePage.setFile(popupDataFile); 
-                    //filePage.save(); //MAD: NEW
-
-                    filePage.init();
-                }
-
-            } catch (AbstractApiBean.WrappedResponse ex) {
+                    return filePage.saveProvFreeform(freeformTextInput);
+                }  
+            } catch (AbstractApiBean.WrappedResponse|CommandException ex) {
                 filePage.showProvError();
                 Logger.getLogger(ProvPopupFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
+        return null;
 
     }
     
