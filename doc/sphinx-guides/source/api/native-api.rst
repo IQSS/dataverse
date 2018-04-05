@@ -643,10 +643,10 @@ Add a single role assignee to a group. Request body is ignored::
 
   PUT http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
 
-Remove a single role assignee from an explicit group::
-
 Remove a Role Assignee from an Explicit Group
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Remove a single role assignee from an explicit group::
 
   DELETE http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
 
