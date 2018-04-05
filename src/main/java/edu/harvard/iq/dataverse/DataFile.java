@@ -472,6 +472,7 @@ public class DataFile extends DvObject implements Comparable {
         }
     }
     
+//MAD: Refactor this call out, but not in the prov story
     public FileMetadata getFileMetadata() {
         return getLatestFileMetadata();
     }

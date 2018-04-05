@@ -62,7 +62,9 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
                     }
                 } 
                 if(null != outerKey && (outerKey.equals("entity") || outerKey.endsWith(":entity"))) {
-                    provJsonParsedEntities.put(s.getKey(), new ProvEntityFileData(s.getKey(), null, null)); //we are storing the entity name both as the key and in the object, the former for access and the later for ease of use when converted to a list
+                    //we are storing the entity name both as the key and in the object, the former for access and the later for ease of use when converted to a list
+                    //Also, when we initialize the entity the freeform is set to null, after this recursion
+                    provJsonParsedEntities.put(s.getKey(), new ProvEntityFileData(s.getKey(), null, null));
                     recurseNames(s.getValue(),s.getKey(),true);
                 } else {
                     recurseNames(s.getValue(),s.getKey(),false);

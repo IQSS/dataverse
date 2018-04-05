@@ -28,6 +28,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
@@ -68,10 +69,10 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     //JsonParser parser = new JsonParser();
    
     //This map uses storageIdentifier as the key.
-    //UpdatesEntry is an object containing the DataFile and the provJson string.
+    //UpdatesEntry contains the prov json, prov freeform and whether we will delete json
     //Originally there was a Hashmap<DataFile,String> to store this data 
-    //but equality is "broken" for entities like DataFile --mad 4.8.5
-    HashMap<String,UpdatesEntry> jsonProvenanceUpdates = new HashMap<>();
+    //but equality is "broken" for entities like DataFile --mad 4.8.5    
+    HashMap<String,UpdatesEntry> provenanceUpdates = new HashMap<>();
     
     @EJB
     DataFileServiceBean dataFileService;
@@ -113,9 +114,13 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     
     //This updates the popup for the selected file each time its open
     public void updatePopupState(FileMetadata fm) throws AbstractApiBean.WrappedResponse, IOException {
+//MAD: This should exception better
+        if(null == fm) {
+            throw new NullPointerException("FileMetadata cannot be null");
+        }
         fileMetadata = fm;
+
         if(null == dataset ) {
-//MAD: This command and all like it are pulling the latest version when we need to specifically pull the version being opened. The latest is always the draft with the change.
             dataset = fileMetadata.getDatasetVersion().getDataset(); //DatasetVersion is null here on file upload page...
         }
         
@@ -127,8 +132,11 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         freeformTextState = fileMetadata.getProvFreeForm();
         storedSelectedEntityName = popupDataFile.getProvEntityName();
         
-        if(jsonProvenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { //If there is already staged provenance info 
-            provJsonState = jsonProvenanceUpdates.get(popupDataFile.getStorageIdentifier()).provenanceJson;
+        if(provenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { //If there is already staged provenance info 
+            provJsonState = provenanceUpdates.get(popupDataFile.getStorageIdentifier()).provJson;
+            if(null != provenanceUpdates.get(popupDataFile.getStorageIdentifier()).provFreeform) {
+                freeformTextState = provenanceUpdates.get(popupDataFile.getStorageIdentifier()).provFreeform;
+            }
             generateProvJsonParsedEntities(); //calling this each time is somewhat inefficient, but storing the state is a lot of lifting.
             setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
             
@@ -149,70 +157,111 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     
     //Stores the provenance changes decided upon in the popup to be saved when all edits across files are done.
     public void stagePopupChanges(boolean saveInPopup) throws IOException{
+        String freeformToSave = null; //different variable to ensure we only update freeform when needed
+        if(null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) {
+            freeformToSave = freeformTextInput;
+        } 
+        
+        UpdatesEntry stagingEntry = null;// = new UpdatesEntry(popupDataFile, null, null);
         
         if(deleteStoredJson) {
-            jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), new UpdatesEntry(popupDataFile, null));
+            stagingEntry = new UpdatesEntry(popupDataFile, null, true ,null);
+//            jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), new UpdatesEntry(popupDataFile, null, null));
             
             popupDataFile.setProvEntityName(null); //MAD: This is probably ok but now that things are immutable I should doublecheck
             deleteStoredJson = false;
         }
-        if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) {
+        if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) { //delete and create again can both happen at once
             String jsonString = IOUtils.toString(jsonUploadedTempFile.getInputstream());
-            jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), new UpdatesEntry(popupDataFile, jsonString));
+            stagingEntry = new UpdatesEntry(popupDataFile, jsonString, false, null);
+//            jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), new UpdatesEntry(popupDataFile, jsonString, null));
             jsonUploadedTempFile = null;
             
             //storing the entity name associated with the DataFile. This is required data to get this far.
             popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
         } 
         
-        if(null == freeformTextInput && null != freeformTextState) {
-            freeformTextInput = "";
-        }
-            
-        if(null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) {
-            FileMetadata fileMetadata = popupDataFile.getFileMetadata();
-            fileMetadata.setProvFreeForm(freeformTextInput);
-        } 
-        
         if(null != storedSelectedEntityName && null != dropdownSelectedEntity && !storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName())) {
             popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
+        }
+        
+        if(null == freeformTextInput && null != freeformTextState) {
+            freeformTextInput = "";
+        }            
+
+        if(null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) {
+            if(null == stagingEntry) { //if file creation or deletion did not trigger creation
+                stagingEntry = new UpdatesEntry(popupDataFile, null, false, null);
+            }
+            stagingEntry.provFreeform = freeformToSave;
+            //FileMetadata fileMetadata = popupDataFile.getFileMetadata();
+            //fileMetadata.setProvFreeForm(freeformTextInput);
+        } 
+        if(null != stagingEntry) {
+            provenanceUpdates.put(popupDataFile.getStorageIdentifier(), stagingEntry);
         }
         
         if(saveInPopup) {
             try {
                 saveStagedProvJson(true);
-                
-                //This block is for when an update was only made to the freeform provenance, as we are saving in the popup itself on the file page, not as part of another flow.
-                if(jsonProvenanceUpdates.entrySet().isEmpty()) {
+
+//                //This block is for when an update was only made to the freeform provenance, as we are saving in the popup itself on the file page, not as part of another flow.
+                if(null != stagingEntry && null != stagingEntry.provFreeform) {
+//MAD: EVEN IF THIS WORKS WE STILL NEED TO UPDATE THE VERSION
                     popupDataFile = execCommand(new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), popupDataFile, freeformTextInput));
+//MAD: We could also try this call instead: saveStageProvFreeformToLatestVersion()
                     //Below lines ensure if the user saves the popup on file page and then opens it again and saves the datafile is up to date.
+                    
+                    //MAD: Maybe I should be actually altering the file in editDataset on the file page. Lets see if this works anyways
                     filePage.setFile(popupDataFile); 
+                    //filePage.save(); //MAD: NEW
+
                     filePage.init();
                 }
-                
+
             } catch (AbstractApiBean.WrappedResponse ex) {
                 filePage.showProvError();
                 Logger.getLogger(ProvPopupFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        
+
     }
     
     public void saveStagedProvJson(boolean saveContext) throws AbstractApiBean.WrappedResponse {
-        for (Map.Entry<String, UpdatesEntry> mapEntry : jsonProvenanceUpdates.entrySet()) {
+        for (Map.Entry<String, UpdatesEntry> mapEntry : provenanceUpdates.entrySet()) {
             DataFile df = mapEntry.getValue().dataFile;
-            
-            String provString = mapEntry.getValue().provenanceJson;
+            String provString = mapEntry.getValue().provJson;
 
-            DataverseRequest dvr = dvRequestService.getDataverseRequest();
-
-            if(null != provString ) {
-                df = execCommand(new PersistProvJsonCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName, saveContext));
-            } else {
+            if(mapEntry.getValue().deleteJson) {
                 df = execCommand(new DeleteProvJsonCommand(dvRequestService.getDataverseRequest(), df, saveContext));
-            }
-            //execCommand(new UpdateDatasetCommand(df.getOwner(), dvRequestService.getDataverseRequest()));
-            
+            } else if(null != provString) {
+                df = execCommand(new PersistProvJsonCommand(dvRequestService.getDataverseRequest(), df, provString, dropdownSelectedEntity.entityName, saveContext));
+            } 
         }
+    }
+    
+    public void saveStageProvFreeformToLatestVersion() {
+        for (Map.Entry<String, UpdatesEntry> mapEntry : provenanceUpdates.entrySet()) {
+            String freeformText = mapEntry.getValue().provFreeform;
+            FileMetadata fm = mapEntry.getValue().dataFile.getFileMetadata();
+            fm.setProvFreeForm(freeformText);
+
+        }
+    }
+    
+//MAD: I'm unsure if a new file will match correctly...
+    //Called by editFilesPage to update its metadata with stored prov freeform values for multiple DataFiles
+    Boolean updatePageMetadatasWithProvFreeform(List<FileMetadata> fileMetadatas) {
+        Boolean changes = false;
+        for(FileMetadata fm : fileMetadatas) {
+            UpdatesEntry ue = provenanceUpdates.get(fm.getDataFile().getStorageIdentifier());
+            if(null != ue) {
+                fm.setProvFreeForm(ue.provFreeform);
+                changes = true;
+            }
+        }
+        return changes;
     }
 
     public void removeJsonAndRelatedData() {
@@ -292,12 +341,16 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     
      //for storing datafile and provjson in a map value
     class UpdatesEntry {
-        String provenanceJson;
+        String provJson;
         DataFile dataFile;
+        String provFreeform;
+        Boolean deleteJson;
         
-        UpdatesEntry(DataFile dataFile, String provenanceJson) {
-            this.provenanceJson = provenanceJson;
+        UpdatesEntry(DataFile dataFile, String provJson, Boolean deleteJson, String provFreeform) {
+            this.provJson = provJson;
             this.dataFile = dataFile;
+            this.provFreeform = provFreeform;
+            this.deleteJson = deleteJson;
         }
     }
     

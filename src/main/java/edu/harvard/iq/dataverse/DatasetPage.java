@@ -2461,6 +2461,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String save() {
+         //Before dataset saved, write cached prov freeform to version
+        if(systemConfig.isProvCollectionEnabled()) {
+            provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
+        }
+        
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
@@ -2549,6 +2554,7 @@ public class DatasetPage implements java.io.Serializable {
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
+        //After dataset saved, then persist prov json data
         if(systemConfig.isProvCollectionEnabled()) {
             try {
                 provPopupFragmentBean.saveStagedProvJson(false);

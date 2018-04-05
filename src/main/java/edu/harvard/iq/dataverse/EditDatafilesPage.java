@@ -1094,6 +1094,18 @@ public class EditDatafilesPage implements java.io.Serializable {
         ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false;    
         
+//MAD: I need to check on prov here to see if there is any freeform that needs to be added to the working version
+//      if so I'll need to set datasetUpdateRequired
+
+//MAD: My goal is to update the filemetadatas with prov freeform and set datasetUpdateRequired = true so they get added to the working version
+//right now I'm hardcoding it but I gotta only do it if there are changes
+
+
+        Boolean provChanges = provPopupFragmentBean.updatePageMetadatasWithProvFreeform(fileMetadatas);
+        if(datasetUpdateRequired == false) {
+            datasetUpdateRequired = provChanges;
+        }
+        
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.fine("issuing the dataset update command");
             // We are creating a new draft version; 
