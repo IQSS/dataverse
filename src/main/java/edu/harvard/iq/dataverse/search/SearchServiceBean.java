@@ -191,7 +191,7 @@ public class SearchServiceBean {
         /**
          * @todo: show highlight on file card?
          * https://redmine.hmdc.harvard.edu/issues/3848
-         */
+         */      
         solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, "Filename Without Extension");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TAG_SEARCHABLE, "File Tag");
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
