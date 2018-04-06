@@ -86,7 +86,6 @@ public class Prov extends AbstractApiBean {
     public Response addProvFreeForm(String body, @PathParam("id") String idSupplied) {
         StringReader rdr = new StringReader(body);
         JsonObject jsonObj = null;
-        DataFile dataFile;
         
         try {
             jsonObj = Json.createReader(rdr).readObject();
@@ -100,23 +99,37 @@ public class Prov extends AbstractApiBean {
             return error(BAD_REQUEST, "The JSON object you send must have a key called 'text'.");
         }
         try {
+            DataverseRequest dr= createDataverseRequest(findUserOrDie());
+            DataFile dataFile = findDataFileOrDie(idSupplied);
+            if (dataFile == null) {
+                return error(BAD_REQUEST, "Could not find datafile with id " + idSupplied);
+            }
+            execCommand(new PersistProvFreeFormCommand(dr, dataFile, provFreeForm));
+            execCommand(new UpdateDatasetCommand(dataFile.getOwner(), dr));
             dataFile = findDataFileOrDie(idSupplied);
-            execCommand(new PersistProvFreeFormCommand(createDataverseRequest(findUserOrDie()), dataFile, provFreeForm));
-            //MAD: This needs to be contingent on the previous command succeeding, or maybe even triggered by the other command?
-//          execCommand(new UpdateDatasetCommand(dataFile.getOwner(), dataverseRequest)); //make var for datverseRequest for both I think
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
             jsonResponse.add("message", "Free-form provenance data saved for Data File : " + dataFile.getFileMetadata().getProvFreeForm());
             return ok(jsonResponse);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+        
     }
     
     @DELETE
     @Path("{id}/prov-freeform")
     public Response deleteProvFreeForm(String body, @PathParam("id") String idSupplied) {
         try {
-            return ok(execCommand(new DeleteProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied))));
+            DataverseRequest dr= createDataverseRequest(findUserOrDie());
+            DataFile dataFile = findDataFileOrDie(idSupplied);
+            if (dataFile == null) {
+                return error(BAD_REQUEST, "Could not find datafile with id " + idSupplied);
+            }
+            Boolean result = execCommand(new DeleteProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
+            if(result) {
+                execCommand(new UpdateDatasetCommand(dataFile.getOwner(), dr));
+            }
+            return ok(result);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }

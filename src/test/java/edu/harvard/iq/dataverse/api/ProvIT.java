@@ -13,6 +13,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,6 +24,66 @@ public class ProvIT {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
+    
+    @Test 
+    public void testFreeformDraftActions() {
+        Response createDepositor = UtilIT.createRandomUser();
+        createDepositor.prettyPrint();
+        createDepositor.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String usernameForDepositor = UtilIT.getUsernameFromResponse(createDepositor);
+        String apiTokenForDepositor = UtilIT.getApiTokenFromResponse(createDepositor);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiTokenForDepositor);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+                
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiTokenForDepositor);
+        publishDataverse.prettyPrint();
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiTokenForDepositor);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response authorAddsFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiTokenForDepositor);
+        authorAddsFile.prettyPrint();
+        authorAddsFile.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
+                .statusCode(OK.getStatusCode());
+        
+        Long dataFileId = JsonPath.from(authorAddsFile.getBody().asString()).getLong("data.files[0].dataFile.id");
+        
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiTokenForDepositor);
+        publishDataset.prettyPrint();
+        assertEquals(200, publishDataset.getStatusCode());
+        
+        //Provenance FreeForm
+        JsonObject provFreeFormGood = Json.createObjectBuilder()
+                .add("text", "I inherited this file from my grandfather.")
+                .build();
+        Response uploadProvFreeForm = UtilIT.uploadProvFreeForm(dataFileId.toString(), provFreeFormGood, apiTokenForDepositor);
+        uploadProvFreeForm.prettyPrint();
+        uploadProvFreeForm.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response datasetVersions = UtilIT.getDatasetVersions(datasetId.toString(), apiTokenForDepositor);
+        datasetVersions.prettyPrint();
+        datasetVersions.then().assertThat()
+                .body("data[0].versionState", equalTo("DRAFT"));
+        
+        
+    }
+    
     @Test
     public void testAddProvFile() {
 

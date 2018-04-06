@@ -264,9 +264,9 @@ public class FilePage implements java.io.Serializable {
         // maybe something to do with the getEditVersion maybe creating a new version and then things get out of sync?
         for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
             if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
-                fmw.setProvFreeForm(freeformTextInput);
-                //cmd = new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), file, freeformTextInput);
-                //commandEngine.submit(cmd);
+                //fmw.setProvFreeForm(freeformTextInput);
+                cmd = new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), file, freeformTextInput);
+                commandEngine.submit(cmd);
             }
         }
         
