@@ -157,6 +157,12 @@ public class FeedbackUtilTest {
         assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n" + userMessage, feedback.getBody());
         assertEquals("dvContact1@librascholar.edu,dvContact2@librascholar.edu", feedback.getToEmail());
         assertEquals("personClickingContactOrSupportButton@example.com", feedback.getFromEmail());
+        JsonObject jsonObject = feedback.toJsonObjectBuilder().build();
+        System.out.println("json: " + jsonObject);
+        assertEquals("personClickingContactOrSupportButton@example.com", jsonObject.getString("fromEmail"));
+        assertEquals("dvContact1@librascholar.edu,dvContact2@librascholar.edu", jsonObject.getString("toEmail"));
+        assertEquals("nice dataverse", jsonObject.getString("subject"));
+        assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n" + userMessage, jsonObject.getString("body"));
         dataverse.setDataverseContacts(new ArrayList<>());
         feedback = FeedbackUtil.gatherFeedback(dataverse, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl);
         assertEquals("support@librascholar.edu", feedback.getToEmail());
