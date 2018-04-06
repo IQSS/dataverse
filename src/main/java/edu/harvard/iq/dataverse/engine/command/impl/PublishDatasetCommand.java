@@ -84,7 +84,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setInfo(info);
                 lock.setStartTime(new Date());
                 theDataset.getLocks().add(lock);
-                callFinalizeAsync(ctxt);
+                 callFinalizeAsync(ctxt);
                 return new PublishDatasetResult(theDataset, false);
             }
             // Synchronous publishing (no workflow involved)
@@ -101,7 +101,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         } catch (CommandException ce){
             throw new CommandException("Publish Dataset failed", this);
         }
-    }    
+    }  
     
     /**
      * See that publishing the dataset in the requested manner makes sense, at

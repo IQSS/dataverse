@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.Query;
 
 /**
  *
@@ -89,7 +90,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.em().merge(ddu);
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
-        publicizeExternalIdentifier(ctxt);
+             publicizeExternalIdentifier(ctxt);             
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
@@ -104,6 +105,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // Remove locks
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.pidRegister));
+        ctxt.datasets().removeDatasetLocks(theDataset.getId(), DatasetLock.Reason.pidRegister);
         if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
             ctxt.engine().submit( 
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
@@ -180,6 +182,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 merged = null;
             }
         } catch (Throwable e) {
+            //if publicize fails remove the lock for registration
+            ctxt.datasets().removeDatasetLocks(theDataset.getId(), DatasetLock.Reason.pidRegister);
+            //This exception winds up nowhere that the end user can see
+            //maybe add notification?
             throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
         }
     }
