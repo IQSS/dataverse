@@ -167,6 +167,10 @@ public class SendFeedbackDialog implements java.io.Serializable {
         return dataverseSession.getUser().isAuthenticated();
     }
 
+    public String loggedInUserEmail() {
+        return dataverseSession.getUser().getDisplayInfo().getEmailAddress();
+    }
+
     public DvObject getRecipient() {
         return recipient;
     }
