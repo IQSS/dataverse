@@ -76,7 +76,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             
         } else {
             //if there are more than required size files  then call Finalize asychronously (default is 10)
-            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) {                
+            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) {     
                 String info = "Adding File PIDs asynchronously";
                 AuthenticatedUser user = request.getAuthenticatedUser() ;
                 DatasetLock lock = new DatasetLock(DatasetLock.Reason.pidRegister, user);
@@ -84,8 +84,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setInfo(info);
                 lock.setStartTime(new Date());
                 theDataset.getLocks().add(lock);
-                 callFinalizeAsync(ctxt);
-                return new PublishDatasetResult(theDataset, false);
+                return callFinalizeAsync(ctxt);
             }
             // Synchronous publishing (no workflow involved)
             theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()));
@@ -95,9 +94,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     
     
     @Asynchronous
-    private void callFinalizeAsync(CommandContext ctxt) throws CommandException {
+    private PublishDatasetResult callFinalizeAsync(CommandContext ctxt) throws CommandException {
         try {
             ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset, ctxt, request);
+            return new PublishDatasetResult(theDataset, false);
         } catch (CommandException ce){
             throw new CommandException("Publish Dataset failed", this);
         }

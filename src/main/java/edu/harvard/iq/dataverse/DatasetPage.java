@@ -1964,7 +1964,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
                 }                
-                else if (dataset.isLockedFor(DatasetLock.Reason.pidRegister) || dataset.getFiles().size() > systemConfig.getPIDAsynchRegFileCount()){                    
+                else if (dataset.isLockedFor(DatasetLock.Reason.pidRegister) || dataset.getFiles().size() > systemConfig.getPIDAsynchRegFileCount()){   
                     JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
                 } 
@@ -2798,12 +2798,29 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
+    public boolean isStillLockedForPidRegister() {
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (testDataset != null && testDataset.getId() != null) {
+                logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
+                if(testDataset.getLatestVersion().isReleased()){
+                    datasetService.removeDatasetLocks(testDataset.getId(), DatasetLock.Reason.pidRegister);
+                }
+                
+                if (testDataset.getLockFor(DatasetLock.Reason.pidRegister) != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public boolean isStillLockedForAnyReason() {
         if (dataset.getId() != null) {
             Dataset testDataset = datasetService.find(dataset.getId());
             if (testDataset != null && testDataset.getId() != null) {
                 logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
-
+                 isStillLockedForPidRegister();
                 if (testDataset.getLocks().size() > 0) {
                     return true;
                 }
