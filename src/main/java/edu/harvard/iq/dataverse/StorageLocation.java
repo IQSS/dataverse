@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
@@ -10,34 +9,28 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
-/**
- *
- * @author skraffmi
- */
 @Entity
-public class StorageLocation  implements Serializable {
-    
+public class StorageLocation implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(name = "name", columnDefinition = "TEXT", nullable = false)
     private String name;
-    
-    @Column(name = "URL", columnDefinition = "TEXT", nullable = false)
-    private String URL;
-    
+
+    @Column(name = "hostname", columnDefinition = "TEXT", nullable = false)
+    private String hostname;
+
     @Column(name = "type", columnDefinition = "TEXT", nullable = false)
     private String type;
-       
+
     @Column(name = "transferProtocols", columnDefinition = "TEXT", nullable = false)
     private String transferProtocols;
-    
-    @OneToMany(mappedBy="storageLocation", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+
+    @OneToMany(mappedBy = "storageLocation", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DvObjectStorageLocation> dvObjectStorageLocations;
 
     public List<DvObjectStorageLocation> getDvObjectStorageLocations() {
@@ -47,8 +40,7 @@ public class StorageLocation  implements Serializable {
     public void setDvObjectStorageLocations(List<DvObjectStorageLocation> dvObjectStorageLocations) {
         this.dvObjectStorageLocations = dvObjectStorageLocations;
     }
-    
-    
+
     public Long getId() {
         return id;
     }
@@ -65,12 +57,12 @@ public class StorageLocation  implements Serializable {
         this.name = name;
     }
 
-    public String getURL() {
-        return URL;
+    public String getHostname() {
+        return hostname;
     }
 
-    public void setURL(String URL) {
-        this.URL = URL;
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
     }
 
     public String getType() {
@@ -88,7 +80,7 @@ public class StorageLocation  implements Serializable {
     public void setTransferProtocols(String transferProtocols) {
         this.transferProtocols = transferProtocols;
     }
-    
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof StorageLocation)) {
@@ -97,5 +89,5 @@ public class StorageLocation  implements Serializable {
         StorageLocation other = (StorageLocation) object;
         return Objects.equals(getId(), other.getId());
     }
-    
+
 }
