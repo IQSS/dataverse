@@ -25,9 +25,9 @@ import org.apache.solr.client.solrj.SolrServerException;
 
 @Named
 @Stateless
-public class IndexAllServiceBean {
+public class IndexBatchServiceBean {
 
-    private static final Logger logger = Logger.getLogger(IndexAllServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(IndexBatchServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -163,6 +163,30 @@ public class IndexAllServiceBean {
         status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. " + timeElapsed + ". " + resultOfClearingIndexTimes + "\n";
         logger.info(status);
         return new AsyncResult<>(status);
+    }
+    
+    @Asynchronous
+    public void indexDataverseRecursively(Dataverse dataverse) {
+        long start = System.currentTimeMillis();
+        // index the Dataverse of current recursion
+        indexService.indexDataverseInNewTransaction(dataverse);
+        // get list of Dataverse children
+        List<Dataverse> dataverseChildren = dataverseService.findByOwnerId(dataverse.getId());
+
+        // get list of Dataset children
+        List<Dataset> datasetChildren = datasetService.findByOwnerId(dataverse.getId());
+
+        // index the Dataset children
+        for (Dataset child : datasetChildren) {
+            indexService.indexDatasetInNewTransaction(child.getId());
+        }
+        // recursively index the Dataverse children
+        for (Dataverse child : dataverseChildren) {
+            indexDataverseRecursively(child);
+        }
+        long end = System.currentTimeMillis();
+        logger.info("Total time to index: " + (end - start));
+
     }
 
 }

@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
+import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -210,9 +211,25 @@ public class MoveDataverseCommandTest {
                     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
                         return null;
                     }
+                    @Override
+                    public Future<String> indexDataverseInNewTransaction(Dataverse dataverse){
+                        return null;
+                    }
 
                     @Override
-                    public void indexDataverseRecursively(Dataverse datverse, boolean doNormalSolrDocCleanUp) {
+                    public Future<String> indexDatasetInNewTransaction(Long id){
+                        return null;
+                    }
+                    
+                    
+                };
+
+            }
+            @Override
+            public IndexBatchServiceBean indexBatch(){
+                return new IndexBatchServiceBean(){
+                    @Override
+                    public void indexDataverseRecursively(Dataverse dataverse) {
 
                     }
                 };

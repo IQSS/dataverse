@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -67,6 +68,8 @@ public interface CommandContext {
     public BuiltinUserServiceBean builtinUsers();
 
     public IndexServiceBean index();
+    
+    public IndexBatchServiceBean indexBatch();
 
     public SolrIndexServiceBean solrIndex();
 

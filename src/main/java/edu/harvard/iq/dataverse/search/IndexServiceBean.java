@@ -139,27 +139,6 @@ public class IndexServiceBean {
         return indexDataverse(dataverse);
     }
     
-    public void indexDataverseRecursively(Dataverse dataverse, boolean doNormalSolrDocCleanUp) {
-        // index the Dataverse of current recursion
-        indexDataverse(dataverse);
-
-        // get list of Dataverse children
-        List<Dataverse> dataverseChildren = dataverseService.findByOwnerId(dataverse.getId());
-
-        // get list of Dataset children
-        List<Dataset> datasetChildren = datasetService.findByOwnerId(dataverse.getId());
-
-        // index the Dataset children
-        for (Dataset child : datasetChildren) {
-            indexDataset(child, doNormalSolrDocCleanUp);
-        }
-
-        // recursively index the Dataverse children
-        for (Dataverse child : dataverseChildren) {
-            indexDataverseRecursively(child, doNormalSolrDocCleanUp);
-        }
-    }
-
     public Future<String> indexDataverse(Dataverse dataverse) {
         logger.fine("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
