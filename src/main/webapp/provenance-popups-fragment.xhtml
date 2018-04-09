@@ -136,21 +136,66 @@
                 </div>
             </div>
             <div class="button-block">
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" update="provPopupOutput,assignMessages" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" update="provPopupOutput,assignMessages,confirmProvenancePopup" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();"  />
             </div>
         </div>
     </p:dialog>
+
     <p:dialog id="confirmProvenancePopup" header="#{bundle['file.confirmProvenanceDialog']}" modal="true" visible="false" styleClass="smallPopUp" widgetVar="confirmProvenancePopup">
         <div class="form-group text-left text-warning">
+            <!-- the sections below have a few extra divs to communicate the logic around forming this message - MAD 4.8.6 -->
+            <span class="glyphicon glyphicon-warning-sign"></span> 
+            <div id="ifJsonUp" jsf:rendered="#{provPopupFragmentBean.jsonUpdated}">
+<!--                <h:outputText value=" [File Uploaded]"/>-->
+                <h:outputText rendered="#{!provPopupFragmentBean.isDatasetPublishedRendering()}" value="#{bundle['file.provConfirm.unpublished.json']}"/>
+                <h:outputText rendered="#{provPopupFragmentBean.isDatasetPublishedRendering()}" value="#{bundle['file.provConfirm.published.json']}"/>
+            </div>
+            <div id="ifFreeformUp" jsf:rendered="#{provPopupFragmentBean.freeformUpdated}">
+<!--                <h:outputText value=" [Freeform Edited]"/>-->
+                <h:outputText rendered="#{!provPopupFragmentBean.isDatasetPublishedRendering()}" value="#{bundle['file.provConfirm.unpublished.freefree']}"/>
+                <h:outputText rendered="#{provPopupFragmentBean.isDatasetPublishedRendering()}" value="#{bundle['file.provConfirm.published.freeform']}"/>
+            </div>
+            <div id="savingResult">
+<!--                <h:outputText value=" [savingResult]"/>-->
+                <div id="savingResultPublished" jsf:rendered="#{provPopupFragmentBean.datasetPublishedRendering}">
+<!--                    <h:outputText value=" [Dataset has published verison]"/>-->
+                    <div id="savingResultPublishedFreeform" jsf:rendered="#{provPopupFragmentBean.freeformUpdated}">
+<!--                        <h:outputText value=" [And freeform]"/>-->
+                        <h:outputText value="#{bundle['file.provConfirm.published.submit.freeformIntro']}" />
+                        <h:outputText rendered="#{provPopupFragmentBean.isDatasetInDraftRendering()}" value="#{bundle['file.provConfirm.submit.inDraft']}"/>
+                        <h:outputText rendered="#{!provPopupFragmentBean.isDatasetInDraftRendering()}" value="#{bundle['file.provConfirm.submit.noDraft']}"/>
+                    </div>
+                    <h:outputText rendered="#{provPopupFragmentBean.isJsonUpdated()}" value="#{bundle['file.provConfirm.published.submit.json']}"/>
+                </div>
+                <div id="savingResultUnpublished" jsf:rendered="#{!provPopupFragmentBean.datasetPublishedRendering}">
+<!--                    <h:outputText value=" [No Unpublished]"/>-->
+                    <h:outputText value="#{bundle['file.provConfirm.unpublished.submit']}"/>
+                    <h:outputText value="#{bundle['file.provConfirm.submit.inDraft']}"/>
+                </div>
+            </div>
+            <div id="confirmationSteps">
+<!--                <h:outputText value=" [How to continue(?)]"/>-->
+                <h:outputText rendered="#{!provPopupFragmentBean.isDatasetPublishedRendering()}" value="#{bundle['file.provConfirm.unpublished.confirm']}"/>
+                <h:outputText rendered="#{provPopupFragmentBean.isDatasetPublishedRendering() and provPopupFragmentBean.isJsonUpdated()}" value="#{bundle['file.provConfirm.published.json.confirm']}"/>
+                <h:outputText rendered="#{provPopupFragmentBean.isDatasetPublishedRendering() and provPopupFragmentBean.isFreeformUpdated()}" value="#{bundle['file.provConfirm.published.freeform.confirm']}"/>
+            </div>
+        </div>
+        
+        
+        
+        <!--MAD: OLD -->
+<!--        <div class="form-group text-left text-warning">
             <span class="glyphicon glyphicon-warning-sign"></span> <h:outputText value=" #{bundle['file.confirmProvenanceDialog.tip1']}"/>
         </div>
         <div class="form-group text-left text-warning">
             <h:outputText value=" #{bundle['file.confirmProvenanceDialog.tip2']}"/>
-        </div>
+        </div>-->
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.continue}" oncomplete="PF('confirmProvenancePopup').hide();" action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
-            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();"/>
+            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();">
+                <f:actionListener binding="#{provPopupFragmentBean.updatePopupState()}" />
+            </p:commandButton>
         </div>
     </p:dialog>
 </ui:composition>

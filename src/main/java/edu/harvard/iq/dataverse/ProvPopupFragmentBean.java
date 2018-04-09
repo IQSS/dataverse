@@ -107,20 +107,26 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         }
 
     }
-
+    
     public void updatePopupState(FileMetadata fm, Dataset dSet) throws AbstractApiBean.WrappedResponse, IOException {
         dataset = dSet;
         updatePopupState(fm);
     }
-    
-    //This updates the popup for the selected file each time its open
-    public void updatePopupState(FileMetadata fm) throws AbstractApiBean.WrappedResponse, IOException {
+     
+    public void updatePopupState(FileMetadata fm) {       
 //MAD: This should exception better
         if(null == fm) {
-            throw new NullPointerException("FileMetadata cannot be null");
+            throw new NullPointerException("FileMetadata initialized to null");
         }
         fileMetadata = fm;
-
+    }
+    
+    //This updates the popup for the selected file each time its open
+    //You should call the one that takes fileMetadata if you are calling this fragment from another page.
+    public void updatePopupState() throws AbstractApiBean.WrappedResponse, IOException {
+        if(null == fileMetadata) {
+            throw new NullPointerException("FileMetadata cannot be null when calling updatePopupState");
+        }
         if(null == dataset ) {
             dataset = fileMetadata.getDatasetVersion().getDataset(); //DatasetVersion is null here on file upload page...
         }
@@ -269,6 +275,17 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     public boolean getJsonUploadedState() {
         return null != jsonUploadedTempFile || null != provJsonState;   
     }
+    
+//MAD: This doesn't catch a case where the json was created and then deleted before publish.
+    // The deleted time wouldn't show the correct block, but in that case we are reverting to our original state
+    public boolean isJsonUpdated() {
+        return (null != jsonUploadedTempFile);
+    }
+    
+    public boolean isFreeformUpdated() {
+       return (null != freeformTextInput && !(freeformTextInput.equals(freeformTextState)))
+                || (null == freeformTextInput && null != freeformTextState) ;
+    }
         
     public String getFreeformTextInput() {
         return freeformTextInput;
@@ -284,6 +301,14 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     
     public void setFreeformTextStored(String freeformText) {
         freeformTextState = freeformText;
+    }
+    
+    //These two checks are for the render logic so don't strictly just check published state
+    public boolean isDatasetPublishedRendering() {
+        return null != fileMetadata && fileMetadata.getDatasetVersion().isPublished();
+    }
+    public boolean isDatasetInDraftRendering() {
+        return null != fileMetadata && fileMetadata.getDatasetVersion().isDraft();
     }
     
 //MAD: REDO now that cpl isn't in and system is updating
@@ -306,8 +331,6 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         //
         provJsonParsedEntities = provUtil.startRecurseNames(provJsonState);
     }
-        
-
         
     public ArrayList<ProvEntityFileData> getProvJsonParsedEntitiesArray() throws IOException {
         return new ArrayList<>(provJsonParsedEntities.values());
