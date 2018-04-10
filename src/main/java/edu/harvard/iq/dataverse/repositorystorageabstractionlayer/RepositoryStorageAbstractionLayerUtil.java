@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.StorageLocation;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.File;
 import java.util.ArrayList;
@@ -22,8 +23,7 @@ public class RepositoryStorageAbstractionLayerUtil {
         for (JsonObject site : rsalSitesAsJson.getValuesAs(JsonObject.class)) {
             String name = site.getString("name");
             String fqdn = site.getString("fqdn");
-            String country = site.getString("country");
-            RsyncSite rsyncSite = new RsyncSite(name, fqdn, country, fullRemotePathToDirectory);
+            RsyncSite rsyncSite = new RsyncSite(name, fqdn, fullRemotePathToDirectory);
             rsalSites.add(rsyncSite);
         }
         return rsalSites;
@@ -79,20 +79,16 @@ public class RepositoryStorageAbstractionLayerUtil {
      * RSAL or some other "big data" component live for a list of remotes sites
      * to which a particular dataset is replicated to.
      */
-    public static JsonArray getSitesFromDb(String replicationSitesInDB) {
+    static JsonArray getSitesFromDb(List<StorageLocation> storageLocations) {
         JsonArrayBuilder arraybuilder = Json.createArrayBuilder();
-        if (replicationSitesInDB == null || replicationSitesInDB.isEmpty()) {
+        if (storageLocations == null || storageLocations.isEmpty()) {
             return arraybuilder.build();
         }
         // Right now we have all the data right in the database setting but we should probably query RSAL to get the list.
-        String[] sites = replicationSitesInDB.split(",");
-        for (String site : sites) {
-            String[] parts = site.split(":");
+        for (StorageLocation storageLocation : storageLocations) {
             arraybuilder.add(Json.createObjectBuilder()
-                    .add("fqdn", parts[0])
-                    .add("name", parts[1])
-                    .add("country", parts[2])
-            );
+                    .add("fqdn", storageLocation.getHostname())
+                    .add("name", storageLocation.getName()));
         }
         return arraybuilder.build();
     }

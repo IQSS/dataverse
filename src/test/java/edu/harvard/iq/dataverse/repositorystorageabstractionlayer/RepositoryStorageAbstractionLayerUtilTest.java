@@ -1,7 +1,8 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.StorageLocation;
+import java.util.ArrayList;
 import java.util.List;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -16,12 +17,15 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         Dataset dataset = new Dataset();
         dataset.setIdentifier("identifierPartOfPersistentID");
         dataset.setAuthority("10.5072/FK2");
-        String replicationSitesInDB = "dv.sbgrid.org:Harvard Medical School:USA,sbgrid.icm.uu.se:Uppsala University:Sweden,sbgrid.ncpss.org:Institut Pasteur de Montevideo:Uruguay,sbgrid.ncpss.org:Shanghai Institutes for Biological Sciences:China";
-        JsonArray myList = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(replicationSitesInDB);
+        List<StorageLocation> storageLocations = new ArrayList<>();
+        StorageLocation sbgrid = new StorageLocation();
+        sbgrid.setHostname("dv.sbgrid.org");
+        sbgrid.setName("Harvard Medical School, USA");
+        storageLocations.add(sbgrid);
+        JsonArray myList = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(storageLocations);
         List<RsyncSite> result = RepositoryStorageAbstractionLayerUtil.getRsyncSites(dataset, myList);
         System.out.println(result.get(0).getName());
-        assertEquals("Harvard Medical School", result.get(0).getName());
-        assertEquals("USA", result.get(0).getCountry());
+        assertEquals("Harvard Medical School, USA", result.get(0).getName());
         assertEquals("dv.sbgrid.org", result.get(0).getFqdn());
         assertEquals("10.5072/FK2/identifierPartOfPersistentID", result.get(0).getFullRemotePathToDirectory());
         assertEquals("rsync -av rsync://dv.sbgrid.org/10.5072/FK2/identifierPartOfPersistentID", result.get(0).getRsyncDownloadcommand());
@@ -30,11 +34,15 @@ public class RepositoryStorageAbstractionLayerUtilTest {
     @Test
     public void testGetRsalSites_String() {
         System.out.println("getRsalSites");
-        String replicationSitesInDB = "dv.sbgrid.org:Harvard Medical School:USA,sbgrid.icm.uu.se:Uppsala University:Sweden,sbgrid.ncpss.org:Institut Pasteur de Montevideo:Uruguay,sbgrid.ncpss.org:Shanghai Institutes for Biological Sciences:China";
-        JsonArray result = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(replicationSitesInDB);
+        List<StorageLocation> storageLocations = new ArrayList<>();
+        StorageLocation sbgrid = new StorageLocation();
+        sbgrid.setHostname("dv.sbgrid.org");
+        sbgrid.setName("Harvard Medical School, USA");
+        storageLocations.add(sbgrid);
+        JsonArray result = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(storageLocations);
         JsonObject first = (JsonObject) result.get(0);
         System.out.println(result);
-        assertEquals("Harvard Medical School", first.getString("name"));
+        assertEquals("Harvard Medical School, USA", first.getString("name"));
     }
 
     @Test

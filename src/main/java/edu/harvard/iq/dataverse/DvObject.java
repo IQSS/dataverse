@@ -110,16 +110,16 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     @Column
     private String storageIdentifier;
     
-    @OneToMany(mappedBy="dvObject", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DvObjectStorageLocation> dvObjectStorageLocations;
-
-    public List<DvObjectStorageLocation> getDvObjectStorageLocations() {
-        return dvObjectStorageLocations;
-    }
-
-    public void setDvObjectStorageLocations(List<DvObjectStorageLocation> dvObjectStorageLocations) {
-        this.dvObjectStorageLocations = dvObjectStorageLocations;
-    }
+//    @OneToMany(mappedBy="dvObject", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+//    private List<DvObjectStorageLocation> dvObjectStorageLocations;
+//
+//    public List<DvObjectStorageLocation> getDvObjectStorageLocations() {
+//        return dvObjectStorageLocations;
+//    }
+//
+//    public void setDvObjectStorageLocations(List<DvObjectStorageLocation> dvObjectStorageLocations) {
+//        this.dvObjectStorageLocations = dvObjectStorageLocations;
+//    }
     
     /**
      * previewImageAvailable could also be thought of as "thumbnail has been

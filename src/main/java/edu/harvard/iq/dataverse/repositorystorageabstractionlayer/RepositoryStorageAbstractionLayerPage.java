@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.StorageLocation;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.List;
 import java.util.logging.Logger;
@@ -17,6 +18,8 @@ public class RepositoryStorageAbstractionLayerPage {
 
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    RepositoryStorageAbstractionLayerServiceBean repositoryStorageAbstractionLayerServiceBean;
 
     public String getLocalDataAccessDirectory(DatasetVersion datasetVersion) {
         String localDataAccessParentDir = settingsService.getValueForKey(SettingsServiceBean.Key.LocalDataAccessPath);
@@ -24,8 +27,8 @@ public class RepositoryStorageAbstractionLayerPage {
     }
 
     public List<RsyncSite> getRsyncSites(DatasetVersion datasetVersion) {
-        String replicatationSitesSetting = settingsService.getValueForKey(SettingsServiceBean.Key.ReplicationSites);
-        JsonArray replicationSites = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(replicatationSitesSetting);
+        List<StorageLocation> storageLocations = repositoryStorageAbstractionLayerServiceBean.findAll();
+        JsonArray replicationSites = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(storageLocations);
         return RepositoryStorageAbstractionLayerUtil.getRsyncSites(datasetVersion.getDataset(), replicationSites);
     }
 
