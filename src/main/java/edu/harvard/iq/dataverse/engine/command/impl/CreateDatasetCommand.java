@@ -73,7 +73,8 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         if ( isEmpty(theDataset.getIdentifier()) ) {
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
         }
-        if ( (importType != ImportType.MIGRATION && importType != ImportType.HARVEST) && !ctxt.datasets().isIdentifierUniqueInDatabase(theDataset.getIdentifier(), theDataset, idServiceBean)) {
+        if ( (importType != ImportType.MIGRATION && importType != ImportType.HARVEST) 
+              && !ctxt.datasets().isIdentifierUniqueInDatabase(theDataset.getIdentifier(), theDataset, idServiceBean) ) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);
@@ -166,7 +167,7 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         ctxt.em().persist(theDataset);
         
         // set the role to be default contributor role for its dataverse
-        if (importType==null || importType.equals(ImportType.NEW)) {
+        if ( importType==null || importType.equals(ImportType.NEW) ) {
             String privateUrlToken = null;
             RoleAssignment roleAssignment = new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
                 getRequest().getUser(), theDataset, privateUrlToken);

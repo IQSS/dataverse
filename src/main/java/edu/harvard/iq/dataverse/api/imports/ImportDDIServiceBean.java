@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
-import javax.persistence.NoResultException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -100,8 +99,8 @@ public class ImportDDIServiceBean {
     @EJB DatasetFieldServiceBean datasetFieldService;
     
     
-    // TODO: 
-    // stop passing the xml source as a string; (it could be huge!) -- L.A. 4.5
+    // TODO: stop passing the xml source as a string; (it could be huge!) -- L.A. 4.5
+    // TODO: what L.A. Said.
     public DatasetDTO doImport(ImportType importType, String xmlToParse) throws XMLStreamException, ImportException {
         xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
         xmlInputFactory.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE); DatasetDTO datasetDTO = this.initializeDataset();

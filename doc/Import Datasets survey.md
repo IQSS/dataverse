@@ -7,7 +7,7 @@ This is a list of commands, what they actually do, and some recommendations abou
 * `FinalizeDatasetPublicationCommand` Does most of the heavy lifting: Permissions, notifications, file permissions, etc. **Handles DOI creation**. Kicks off the post-publish workflow, if any.
 * `UpdateDatasetVersionCommand` updates a dataset version, if it is the edit version (otherwise throws `IllegalCommandException`). Validates and updates related fields, but generally takes the updated Java Dataset object and puts it into the DB.
 * `UpdateDatasetThumbnailCommand` Creates/return thumbnails for Dataset. Not relevant to this effort.
-* `UpdateDatasetTargetURLCommand` **Super-user only** Sets the persistent identifier of a dataset using its metadata. This action affects both internal database and the external ID provider. 
+* `UpdateDatasetTargetURLCommand` **Super-user only** Sets the persistent identifier of a dataset using its metadata. This action affects both internal database and the external ID provider.
 * `DestroyDatasetCommand` **Super-user only**. Deletes datasets, even if they are published.
 * `DeleteDatasetVersionCommand` Deletes the *draft* version of a dataset. May destroy the dataset, if all it has is a draft (so, not published and no more versions left after the draft is deleted).
     - TODO: Rename command to `DeleteDatasetDraftVersionCommand`.
@@ -19,9 +19,9 @@ This is a list of commands, what they actually do, and some recommendations abou
 * `CreateDatasetCommand` Creates a dataset and a dataset version. Functionality supports harvest and migration as well as normal creation, so the logic is quite complex and long. Serious code duplication with `CreateDatasetVersionCommand`. Might be able to re-use it altogether here (pending JPA issues with created ids etc. But should be able to work.)
     - Has a more detailed constraint violation report.
     -  TODO: break, consolidate, tidy, remove duplications.
-* `UpdateDatasetCommand` Updates the edit version of a dataset. May delete files as well. Can create a persistent ID. Seems rather outdated, as it mentions only EZID. 
+* `UpdateDatasetCommand` Updates the edit version of a dataset. May delete files as well. Can create a persistent ID. Seems rather outdated, as it mentions only EZID.
 * Also related: `SubmitDatasetForReviewCommand`, `ReturnDatasetToAuthorCommand`
-* `DataFile`, `Dataset`, `DatasetVersion`: Cleanup as we go (some deprecated methods can be removed). 
+* `DataFile`, `Dataset`, `DatasetVersion`: Cleanup as we go (some deprecated methods can be removed).
 
 ## DOI / Persistent Identifier
 
@@ -49,7 +49,7 @@ This is a list of commands, what they actually do, and some recommendations abou
     - Seems like the `XXDatasetVersionCommand`s are redundant. They should be removed.
 * What about the package `edu.harvard.iq.dataverse.batch.jobs.importer`? Can this go away now?
     - no, used by rsync
-* Same question about `ImportServiceBean` 
+* Same question about `ImportServiceBean`
     - no, used by batch that's used by rsync
 
 ## Common activities
@@ -57,16 +57,43 @@ This is a list of commands, what they actually do, and some recommendations abou
 * Validating a dataset
 * Saving a dataset version
     - compare `UpdateDatasetCommand` to `UpdateDatasetVersionCommand`
-    - 
+    -
+
+## Import Behavior
+### CreateDatasetCommand
+<pre>
+Item         | null | NEW    | MIGRATION | HARVEST | HARVEST_WITH_FILES
+-------------+------+--------+-----------+---------+--------------------
+validate     |  +   |   +    |    x      |     x   |  + (bug?)
+Unique PID   |      |        |           |         |
+-------------+------+--------+-----------+---------+--------------------
+persisted    | edit | latest |             latest   
+version      |      | (bug?) |                       
+-------------+------+--------+-----------+---------+--------------------
+PID          |create| create |  use existing if latest is released
+             |      | (bug?) |                       
+-------------+------+--------+-----------+---------+--------------------
+Set default  |  +   |   +    |    x      |    x    |  x
+contributor  |      |        |           |         |   
+role         |      |        |           |         |   
+</pre>
+
+### Other places
+
+* BatchImport Service bean (`MIGRATE`, `HARVEST`)
+* ImportDDIServiceBean (all types, including `MIGRATE`)
+* ImportServiceBean (all types, including `MIGRATE`)
+* BatchServiceBean (passthrough to ImportServiceBean)
+
+_Note: no other commands use it_
 
 ## Open issues for
-* PID bean API should be improved (based on literal strings, returns `Throwable`s, etc.)
-    - is this overridden by DataverseEU PID Plug-in?
-* `SettingsServiceBean.Key.DoiProvider` should be renamed `PIDProvider`, or even `PersistentIdentifierProvider`. That would entail changes in the database, unless we allow the settings sub-system to have deprecated keys.
+
+
 
 ## Added to scope (if possible)
 * https://github.com/IQSS/dataverse/issues/4561
-* 
+
 
 ## Done log
 * Removed deprecated `name` field from `DataFile` (including related methods which were not used).
