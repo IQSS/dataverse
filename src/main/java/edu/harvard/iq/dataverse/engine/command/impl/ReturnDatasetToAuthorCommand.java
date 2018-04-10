@@ -65,7 +65,8 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
         for (AuthenticatedUser au : authors) {
             ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.RETURNEDDS, savedDataset.getLatestVersion().getId(), comment);
         }
-        reindexDataset(ctxt);
+        
+        ctxt.index().indexDataset(savedDataset, true);
         return savedDataset;
     }
 

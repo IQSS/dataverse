@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -86,12 +87,12 @@ public class DvObjectServiceBean implements java.io.Serializable {
         Long dvObjectId = dvObject.getId();
         DvObject dvObjectToModify = findDvObject(dvObjectId);
         if (dvObjectToModify == null) {
-            logger.fine("Unable to update permission index time on DvObject with id of " + dvObjectId);
+            logger.log(Level.FINE, "Unable to update permission index time on DvObject with id of {0}", dvObjectId);
             return dvObject;
         }
         dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
-        logger.fine("Updated permission index time for DvObject id " + dvObjectId);
+        logger.log(Level.FINE, "Updated permission index time for DvObject id {0}", dvObjectId);
         return savedDvObject;
     }
 

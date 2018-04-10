@@ -64,6 +64,10 @@ This is a list of commands, what they actually do, and some recommendations abou
     - is this overridden by DataverseEU PID Plug-in?
 * `SettingsServiceBean.Key.DoiProvider` should be renamed `PIDProvider`, or even `PersistentIdentifierProvider`. That would entail changes in the database, unless we allow the settings sub-system to have deprecated keys.
 
+## Added to scope (if possible)
+* https://github.com/IQSS/dataverse/issues/4561
+* 
+
 ## Done log
 * Removed deprecated `name` field from `DataFile` (including related methods which were not used).
 * `IdServiceBean`: Code cleanup for dispatch and code-to-interface (rather than implementing classes).

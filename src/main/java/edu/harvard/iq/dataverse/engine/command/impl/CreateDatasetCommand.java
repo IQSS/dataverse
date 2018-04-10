@@ -17,8 +17,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -69,7 +67,6 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
     
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
         Dataset theDataset = getDataset();
         
         PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(theDataset.getProtocol(), ctxt);
@@ -88,13 +85,13 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
         dsv.setDatasetFields(dsv.initDatasetFields());
+        tidyUpFields(dsv);
         validateOrDie(dsv, false);
                 
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
         theDataset.setCreateDate(getTimestamp());
 
-        tidyUpFields(dsv);
         dsv.setCreateTime(getTimestamp());
         dsv.setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
@@ -103,13 +100,9 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         String nonNullDefaultIfKeyNotFound = "";
-        String  protocol     = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String  authority    = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String  doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        String  doiProvider  = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        if (theDataset.getProtocol()==null) theDataset.setProtocol(protocol);
-        if (theDataset.getAuthority()==null) theDataset.setAuthority(authority);
-        if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(doiSeparator);
+        if (theDataset.getProtocol()==null) theDataset.setProtocol(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound));
+        if (theDataset.getAuthority()==null) theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
+        if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound));
         if (theDataset.getStorageIdentifier() == null) {
             try {
                 DataAccess.createNewStorageIO(theDataset, "placeholder");
@@ -139,15 +132,9 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
             
         }
-//        logger.log(Level.INFO, "after doi {0}", formatter.format(new Date().getTime()));
-//        ctxt.em().persist(theDataset);
-//        logger.log(Level.INFO, "after db persist. Our id is: {0}", theDataset.getId());
-//        ctxt.em().flush();
-//        logger.log(Level.INFO, "after db update. Our id is: {0}", theDataset.getId());
         
         logger.fine("Saving the files permanently.");
         ctxt.ingest().addFiles(dsv, theDataset.getFiles());
-        logger.log(Level.FINE,"doiProvider={0} protocol={1}  importType={2}  GlobalIdCreateTime=={3}", new Object[]{doiProvider, protocol,  importType, theDataset.getGlobalIdCreateTime()});
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
         if ( (importType == null || importType.equals(ImportType.NEW))
               && theDataset.getGlobalIdCreateTime() == null) {
@@ -176,45 +163,46 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
             throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
         }
         
-        
         ctxt.em().persist(theDataset);
         
         // set the role to be default contributor role for its dataverse
         if (importType==null || importType.equals(ImportType.NEW)) {
             String privateUrlToken = null;
-            ctxt.roles().save(new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
-                                                   getRequest().getUser(), theDataset, privateUrlToken));
+            RoleAssignment roleAssignment = new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
+                getRequest().getUser(), theDataset, privateUrlToken);
+            ctxt.roles().save(roleAssignment, false);
         }
         theDataset.setPermissionModificationTime(getTimestamp());
-        
-//        theDataset = ctxt.em().merge(theDataset);
         
         if ( template != null ) {
             ctxt.templates().incrementUsageCount(template.getId());
         }
 
-        logger.fine("Checking if rsync support is enabled.");
+        // if we are not migrating, assign the user to this version
+        createDatasetUser(ctxt);
+        
+        theDataset = ctxt.em().merge(theDataset); // store last updates
+        
+        // DB updates - done.
+        
+        // Now we need the acutal dataset id, so we can start indexing.
+        ctxt.em().flush();
+        
+        // TODO: switch to asynchronous version when JPA sync works
+        // ctxt.index().asyncIndexDataset(theDataset.getId(), true); 
+        ctxt.index().indexDataset(theDataset, true);
+        ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset.getId());
+        
         if (DataCaptureModuleUtil.rsyncSupportEnabled(ctxt.settings().getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+            logger.fine("Requesting rsync support.");
             try {
                 ScriptRequestResponse scriptRequestResponse = ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), theDataset));
                 logger.log(Level.FINE, "script: {0}", scriptRequestResponse.getScript());
             } catch (RuntimeException ex) {
                 logger.log(Level.WARNING, "Problem getting rsync script: {0}", ex.getLocalizedMessage());
             }
+            logger.fine("Done with rsync request.");
         }
-        logger.fine("Done with rsync request, if any.");
-
-        // if we are not migrating, assign the user to this version
-        updateDatasetUser(ctxt);
-        
-        ctxt.em().merge(theDataset); // store last updates
-        logger.log(Level.INFO , "DB updates - done."); // FIXME: MBS: Remove.
-        // DB updates - done.
-        
-        boolean doNormalSolrDocCleanUp = true;
-        ctxt.index().asyncIndexDataset(theDataset, doNormalSolrDocCleanUp);
-        
-        logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
         
         return theDataset;
     }

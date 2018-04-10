@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -40,6 +39,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -260,12 +260,23 @@ public class IndexServiceBean {
     }
     
     @Asynchronous
+    public Future<String> asyncIndexDataset(long datasetId, boolean doNormalSolrDocCleanUp) {
+        Dataset toIndex = datasetService.find(datasetId);
+        if ( toIndex == null ) {
+            logger.log(Level.WARNING, "Cannot find dataset with id {0}", datasetId);
+            return new AsyncResult<>(null);
+        } else {
+            return indexDataset(toIndex, doNormalSolrDocCleanUp);
+        }
+    }
+    
+    @Asynchronous
     public Future<String> asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         return indexDataset(dataset, doNormalSolrDocCleanUp);
     }
     
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-        logger.fine("indexing dataset " + dataset.getId());
+        logger.info("indexing dataset " + dataset.getId()); // FIXME: MBS: return to fine
         /**
          * @todo should we use solrDocIdentifierDataset or
          * IndexableObject.IndexableTypes.DATASET.getName() + "_" ?

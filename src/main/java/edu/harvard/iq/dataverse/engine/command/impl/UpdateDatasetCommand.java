@@ -211,7 +211,7 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         ctxt.em().flush();
 
         updateDatasetUser(ctxt);
-        reindexDataset(ctxt);
+        ctxt.index().indexDataset(savedDataset, true);
 
         return savedDataset;
     }

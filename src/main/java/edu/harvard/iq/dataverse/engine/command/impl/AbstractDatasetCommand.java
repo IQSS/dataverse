@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 import javax.validation.ConstraintViolation;
 
@@ -27,7 +28,7 @@ import javax.validation.ConstraintViolation;
  * @param <T> The type of the command's result. Normally {@link Dataset}.
  */
 public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
-    
+    private static final Logger logger = Logger.getLogger(AbstractDatasetCommand.class.getName());
     private Dataset dataset;
     private final Timestamp timestamp = new Timestamp(new Date().getTime());
     
@@ -60,17 +61,19 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     
         if (datasetDataverseUser != null) {
             datasetDataverseUser.setLastUpdateDate(getTimestamp());
+            ctxt.em().merge(datasetDataverseUser);
 
         } else {
-            datasetDataverseUser = new DatasetVersionUser();
-            datasetDataverseUser.setDatasetVersion(getDataset().getLatestVersion());
-            datasetDataverseUser.setLastUpdateDate(new Timestamp(new Date().getTime()));
-            String id = getUser().getIdentifier();
-            id = id.startsWith("@") ? id.substring(1) : id;
-            AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
-            datasetDataverseUser.setAuthenticatedUser(au);
+            createDatasetUser(ctxt);
         }
-        ctxt.em().merge(datasetDataverseUser);
+    }
+    
+    protected void createDatasetUser( CommandContext ctxt ) {
+        DatasetVersionUser datasetDataverseUser = new DatasetVersionUser();
+        datasetDataverseUser.setDatasetVersion(getDataset().getLatestVersion());
+        datasetDataverseUser.setLastUpdateDate(getTimestamp());
+        datasetDataverseUser.setAuthenticatedUser((AuthenticatedUser) getUser());
+        ctxt.em().persist(datasetDataverseUser);
     }
     
     /**
@@ -115,10 +118,6 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         while (dsfItSort.hasNext()) {
             dsfItSort.next().setValueDisplayOrder();
         }
-    }
-    
-    protected void reindexDataset( CommandContext ctxt ) {
-        ctxt.index().indexDataset(getDataset(), true);
     }
     
     protected Dataset getDataset() {
