@@ -4,7 +4,7 @@ Configuration
 
 Now that you've successfully logged into Dataverse with a superuser account after going through a basic :doc:`installation-main`, you'll need to secure and configure your installation.
 
-Settings within Dataverse itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls. Configuring Solr requires manipulating XML files.
+Settings within Dataverse itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls.
 
 Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
 
@@ -62,36 +62,6 @@ Password complexity rules for "builtin" accounts can be adjusted with a variety 
 - :ref:`:PVDictionaries`
 - :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
-
-Solr
-----
-
-schema.xml
-++++++++++
-
-The :doc:`prerequisites` section explained that Dataverse requires a specific Solr schema file called ``schema.xml`` that can be found in the Dataverse distribution. You should have already replaced the default ``example/solr/collection1/conf/schema.xml`` file that ships with Solr.
-
-jetty.xml
-+++++++++
-
-Stop Solr and edit ``solr-4.6.0/example/etc/jetty.xml`` to add a line having to do with ``requestHeaderSize`` as follows:
-
-.. code-block:: xml
-
-    <Call name="addConnector">
-      <Arg>
-          <New class="org.eclipse.jetty.server.bio.SocketConnector">
-            <Set name="host"><SystemProperty name="jetty.host" /></Set>
-            <Set name="port"><SystemProperty name="jetty.port" default="8983"/></Set>
-            <Set name="maxIdleTime">50000</Set>
-            <Set name="lowResourceMaxIdleTime">1500</Set>
-            <Set name="statsOn">false</Set>
-            <Set name="requestHeaderSize">102400</Set>
-          </New>
-      </Arg>
-    </Call>
-
-Without this ``requestHeaderSize`` line in place, which increases the default size, it will appear that no data has been added to your Dataverse installation and ``WARN  org.eclipse.jetty.http.HttpParser  – HttpParser Full for /127.0.0.1:8983`` will appear in the Solr log. See also https://support.lucidworks.com/hc/en-us/articles/201424796-Error-when-submitting-large-query-strings-
 
 Network Ports
 -------------
@@ -220,7 +190,7 @@ First, create a file named ``swift.properties`` as follows in the ``config`` dir
     swift.password.endpoint1=your-password
     swift.swift_endpoint.endpoint1=your-swift-endpoint
 
-``auth_type`` can either be ``keystone`` or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. ``https://openstack.example.edu:35357/v2.0/tokens``). ``swift_endpoint`` is a URL that look something like ``http://rdgw.swift.example.org/swift/v1``.
+``auth_type`` can either be ``keystone``, ``keystone_v3``, or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. for keystone, ``https://openstack.example.edu:35357/v2.0/tokens`` and for keystone_v3, ``https://openstack.example.edu:35357/v3/auth/tokens``). ``swift_endpoint`` is a URL that look something like ``http://rdgw.swift.example.org/swift/v1``.
 
 Second, update the JVM option ``dataverse.files.storage-driver-id`` by running the delete command:
 
@@ -256,13 +226,27 @@ Setting up Compute
 
 Once you have configured a Swift Object Storage backend, you also have the option of enabling a connection to a computing environment. To do so, you need to configure the database settings for :ref:`:ComputeBaseUrl` and  :ref:`:CloudEnvironmentName`.
 
-Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your cloud environment, the compute button on dataset and file pages will link validated users to your computing environment. Depending on the configuration of your installation, the compute button will either redirect to: 
+Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your cloud environment, validated users will have three options for accessing the computing environment:
 
-``:ComputeBaseUrl?containerName=yourContainer&objectName=yourObject``
+- Compute on a single dataset
+- Compute on multiple datasets
+- Compute on a single datafile
+
+The compute buttons on dataset and file pages will link validated users to your computing environment. If a user is computing on one dataset, the compute button will redirect to:
+
+``:ComputeBaseUrl?datasetPersistentId``
+
+If a user is computing on multiple datasets, the compute button will redirect to:
+
+``:ComputeBaseUrl/multiparty?datasetPersistentId&anotherDatasetPersistentId&anotherDatasetPersistentId&...``
+
+If a user is computing on a single file, depending on the configuration of your installation, the compute button will either redirect to: 
+
+``:ComputeBaseUrl?datasetPersistentId=yourObject``
 
 if your installation's :ref:`:PublicInstall` setting is true, or:
 
-``:ComputeBaseUrl?containerName=yourContainer&objectName=yourObject&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
+``:ComputeBaseUrl?datasetPersistentId=yourObject&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
 
 You can configure this redirect properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
 

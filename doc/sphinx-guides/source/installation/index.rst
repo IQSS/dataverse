@@ -21,3 +21,4 @@ Installation Guide
    shibboleth
    oauth2
    external-tools
+   advanced

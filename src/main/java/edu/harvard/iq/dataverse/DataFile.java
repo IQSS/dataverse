@@ -658,7 +658,7 @@ public class DataFile extends DvObject implements Comparable {
     public String getMapItFileDownloadURL(String serverName){
         if ((this.getId() == null)||(serverName == null)){
             return null;
-        }        
+        }
         return serverName + "/api/access/datafile/" + this.getId();
     }
     

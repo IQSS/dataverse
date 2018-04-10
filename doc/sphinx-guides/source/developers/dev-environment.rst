@@ -20,7 +20,7 @@ Supported Operating Systems
 
 Mac OS X or Linux is required because the setup scripts assume the presence of standard Unix utilities.
 
-Windows is not supported, unfortunately. For the current status of Windows support, see https://github.com/IQSS/dataverse/issues/3927 or our community list thread `"Do you want to develop on Windows?" <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_
+Windows is not well supported, unfortunately, but Vagrant and Minishift environments are described in the :doc:`windows` section.
 
 Install Java
 ~~~~~~~~~~~~
@@ -107,7 +107,7 @@ On Linux, you should just install PostgreSQL from your package manager without w
 Install Solr
 ~~~~~~~~~~~~
 
-`Solr <http://lucene.apache.org/solr/>`_ Solr 4.6.0 is required.
+`Solr <http://lucene.apache.org/solr/>`_ 7.2.1 is required.
 
 To install Solr, execute the following commands:
 
@@ -117,21 +117,27 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz``
+``curl -O http://archive.apache.org/dist/lucene/solr/7.2.1/solr-7.2.1.tgz``
 
-``tar xvfz solr-4.6.0.tgz``
+``tar xvfz solr-7.2.1.tgz``
 
-A Dataverse-specific ``schema.xml`` configuration file is required, which we download from the "develop" branch on GitHub and use to overwrite the default ``schema.xml`` file:
+``cd solr-7.2.1/server/solr``
 
-``cd solr-4.6.0/example``
+``cp -r configsets/_default collection1``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/4.6.0/schema.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.2.1/schema.xml``
 
-``mv schema.xml solr/collection1/conf/schema.xml``
+``mv schema.xml collection1/conf``
 
-Assuming you are still in the ``solr-4.6.0/example`` directory, you can start Solr like this:
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.2.1/solrconfig.xml``
 
-``java -jar start.jar``
+``mv solrconfig.xml collection1/conf/solrconfig.xml``
+
+``cd /usr/local/solr/solr-7.2.1``
+
+``bin/solr start``
+
+``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
 
 Run the Dataverse Installer Script
 ----------------------------------
