@@ -14,10 +14,11 @@ import javax.json.JsonObject;
 
 public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Serializable{
    
-    HashMap<String,ProvEntityFileData> provJsonParsedEntities = new HashMap<>();
+    HashMap<String,ProvEntityFileData> provJsonParsedEntities;
     JsonParser parser = new JsonParser();
     
     public HashMap<String,ProvEntityFileData> startRecurseNames(String jsonString) {
+        provJsonParsedEntities = new HashMap<>();
         //TODO: Make this take a string and make the jsonObject ourselves
         com.google.gson.JsonObject jsonObject = parser.parse(jsonString).getAsJsonObject();
         recurseNames(jsonObject, null, false);
