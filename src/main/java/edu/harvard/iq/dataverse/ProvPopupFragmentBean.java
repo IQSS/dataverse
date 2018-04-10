@@ -113,12 +113,13 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         updatePopupState(fm);
     }
      
-    public void updatePopupState(FileMetadata fm) {       
+    public void updatePopupState(FileMetadata fm) throws WrappedResponse, IOException {       
 //MAD: This should exception better
         if(null == fm) {
             throw new NullPointerException("FileMetadata initialized to null");
         }
         fileMetadata = fm;
+        updatePopupState();
     }
     
     //This updates the popup for the selected file each time its open
@@ -137,7 +138,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         provJsonParsedEntities = new HashMap<>();
         setDropdownSelectedEntity(null);
         freeformTextState = fileMetadata.getProvFreeForm();
-        storedSelectedEntityName = popupDataFile.getProvEntityName();
+        storedSelectedEntityName = popupDataFile.getProvEntityName(); //MAD: Should I be doing this? we don't allow prov editing once published. YES, the file may not be saved
         
         if(provenanceUpdates.containsKey(popupDataFile.getStorageIdentifier())) { //If there is already staged provenance info 
             provJsonState = provenanceUpdates.get(popupDataFile.getStorageIdentifier()).provJson;
@@ -303,20 +304,45 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         freeformTextState = freeformText;
     }
     
-    //These two checks are for the render logic so don't strictly just check published state
-    public boolean isDatasetPublishedRendering() {
-        return null != fileMetadata && fileMetadata.getDatasetVersion().isPublished();
+
+    //These checks are for the render logic so don't strictly just check published state
+    //Tweak these carefully
+    public boolean isDataFilePublishedRendering() {
+        return null != popupDataFile && popupDataFile.isReleased();
+        //return null != fileMetadata && fileMetadata.getDatasetVersion().isPublished();
     }
-    public boolean isDatasetInDraftRendering() {
+//MAD: RENAME: techincally this only checks if the current files metadata is a draft, but is only used rendering confirmation popup
+    public boolean isDatasetInDraftRendering() {        
         return null != fileMetadata && fileMetadata.getDatasetVersion().isDraft();
     }
-    
-//MAD: REDO now that cpl isn't in and system is updating
-    public boolean provExistsInPreviousPublishedVersion() {
+    public boolean provJsonAlreadyPublishedRendering() {
+        if(null == popupDataFile) { //is hit on loading, returns true to prevent loading of upload elements
+            return true;
+        }
+        for(DataFile df : dataset.getFiles()) {
+            if(df.getChecksumType().equals(popupDataFile.getChecksumType())
+               && df.getChecksumValue().equals(popupDataFile.getChecksumValue())) { //our popup file exists in the dataset
+                //MAD: Unsure if I should be checking empty as well
+                
+                if(df.getFileMetadatas().size() == 1 && df.getFileMetadata().getDatasetVersion().isDraft()) { 
+                    //On file upload, the dataset has the file in the draft so we need a different check
+                    return false;
+                }
+                
+                if(null != df.getProvEntityName() && !df.getProvEntityName().isEmpty()) { //we use entity name to see that the prov json was added before
+                    return true;
+                }
+            }
+        }
+
         return false;
 //return (null != popupDataFile 
 //                && null != popupDataFile.getFileMetadata()); 
                 //&& popupDataFile.getProvCplId() != 0); //add when we integrate with provCPL
+    }
+    public boolean isDataFilePublishedWithDraftRendering() {
+        //checks popupDataFile is null in first call
+        return isDataFilePublishedRendering() && popupDataFile.getFileMetadata().getDatasetVersion().isDraft();
     }
 
     public ProvEntityFileData getDropdownSelectedEntity() {

@@ -27,12 +27,13 @@
                     #{bundle['file.editProvenanceDialog.bundleFile']}
                 </label>
                 <div class="col-sm-9">
-                    <ui:fragment rendered="#{provPopupFragmentBean.provExistsInPreviousPublishedVersion() == true}">
+                    <ui:fragment rendered="#{provPopupFragmentBean.provJsonAlreadyPublishedRendering()}">
+<!-- MAD: Instead of just this error message, we should still allow preview -->
                         <p class="help-block"><span class="text-danger">#{bundle['file.editProvenanceDialog.bundleFile.alreadyPublished']}</span></p>
                     </ui:fragment>
 
-                    <ui:fragment id="provUploadFragment" rendered="#{provPopupFragmentBean.provExistsInPreviousPublishedVersion() == false}">
-                        <ui:fragment rendered="#{provPopupFragmentBean.jsonUploadedState == false}">
+                    <ui:fragment id="provUploadFragment" >
+                        <ui:fragment rendered="#{!provPopupFragmentBean.jsonUploadedState and !provPopupFragmentBean.provJsonAlreadyPublishedRendering()}">
                             <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
                             <p:fileUpload id="provUpload" 
                                           styleClass="margin-bottom"
@@ -57,7 +58,7 @@
                                 }
                             </script>
                         </ui:fragment>
-                        <ui:fragment rendered="#{provPopupFragmentBean.jsonUploadedState}">
+                        <ui:fragment rendered="#{provPopupFragmentBean.jsonUploadedState or provPopupFragmentBean.provJsonAlreadyPublishedRendering()}">
                             <div id="provFileText" class="col-sm-5 text-success">
                                 <div class="margin-top-half">
                                     <span class="glyphicon glyphicon-ok"></span> #{bundle['file.editProvenanceDialog.uploadSuccess']}
@@ -66,7 +67,7 @@
                             <div class="col-sm-7 inline-buttons">
                                 <div class="button-block">
                                     <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview" value="#{bundle.preview}" actionListener="#{provPopupFragmentBean.showJsonPreviewNewWindow()}" onclick="this.form.target='_blank'" ajax="false" immediate="true"/>
-                                    <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" update="provPopupOutput,assignMessages" immediate="true" actionListener="#{provPopupFragmentBean.removeJsonAndRelatedData()}"/>
+                                    <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonRemove" value="#{bundle.remove}" rendered="#{!provPopupFragmentBean.provJsonAlreadyPublishedRendering()}" update="provPopupOutput,assignMessages" immediate="true" actionListener="#{provPopupFragmentBean.removeJsonAndRelatedData()}"/>
                                 </div>
                             </div>
                         </ui:fragment>
@@ -74,11 +75,11 @@
                     </ui:fragment>
                     
                     <!-- dropdown for selecting the provenance entity connected to the DataFile. -->
-                    <div class="col-sm-12" jsf:rendered="#{provPopupFragmentBean.jsonUploadedState}">
+                    <div class="col-sm-12" jsf:rendered="#{provPopupFragmentBean.jsonUploadedState or provPopupFragmentBean.provJsonAlreadyPublishedRendering()}">
                         <label for="provenanceBundle" class="control-label">
                             #{bundle['file.editProvenanceDialog.bundleEntity']}
                         </label>
-                        <p class="help-block">
+                        <p class="help-block" jsf:rendered="#{!provPopupFragmentBean.provJsonAlreadyPublishedRendering()}" >
                             #{bundle['file.editProvenanceDialog.bundleEntity.tip']}
                         </p>
                         <!-- groupBy="# {roleAssignee.identifier.startsWith('@')?'Users':'Groups'}"  -->
@@ -88,6 +89,7 @@
                             dropdown="true" scrollHeight="180" style="width:100%;"
                             minQueryLength="0" queryDelay="1000"
                             placeholder="#{bundle['file.editProvenanceDialog.bundleEntity.placeholder']}"
+                            disabled="#{provPopupFragmentBean.provJsonAlreadyPublishedRendering()}"
                             value="#{provPopupFragmentBean.dropdownSelectedEntity}"
                             completeMethod="#{provPopupFragmentBean.searchParsedEntities}" 
                             onclick="PF('provJsonNameDropdown').search(PF('provJsonNameDropdown').input.val())"
@@ -127,7 +129,7 @@
                 </label>
                 <div class="col-sm-9">
                     <p:inputTextarea id="provenanceFreeform" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{provPopupFragmentBean.freeformTextInput}" 
-                                    placeholder="#{bundle['file.editProvenanceDialog.description.placeholder']}"
+                                    placeholder="#{bundle['file.editProvenanceDialog.description.placeholder']}" disabled="#{provPopupFragmentBean.isDataFilePublishedWithDraftRendering() and !provPopupFragmentBean.isDatasetInDraftRendering()}"
                                     onkeypress="if (event.keyCode == 13) {
                                             return false;
                                         }"
@@ -135,8 +137,8 @@
                     <p:message for="provenanceFreeform" display="text" />
                 </div>
             </div>
-            <div class="button-block">
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" update="provPopupOutput,assignMessages,confirmProvenancePopup" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
+            <div class="button-block">              
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" disabled="false" update="provPopupOutput,assignMessages,confirmProvenancePopup" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();"  />
             </div>
         </div>
@@ -148,17 +150,17 @@
             <span class="glyphicon glyphicon-warning-sign"></span> 
             <div id="ifJsonUp" jsf:rendered="#{provPopupFragmentBean.jsonUpdated}">
 <!--                <h:outputText value=" [File Uploaded]"/>-->
-                <h:outputText rendered="#{!provPopupFragmentBean.isDatasetPublishedRendering()}" value="#{bundle['file.provConfirm.unpublished.json']}"/>
-                <h:outputText rendered="#{provPopupFragmentBean.isDatasetPublishedRendering()}" value="#{bundle['file.provConfirm.published.json']}"/>
+                <h:outputText rendered="#{!provPopupFragmentBean.isDataFilePublishedRendering()}" value="#{bundle['file.provConfirm.unpublished.json']}"/>
+                <h:outputText rendered="#{provPopupFragmentBean.isDataFilePublishedRendering()}" value="#{bundle['file.provConfirm.published.json']}"/>
             </div>
             <div id="ifFreeformUp" jsf:rendered="#{provPopupFragmentBean.freeformUpdated}">
 <!--                <h:outputText value=" [Freeform Edited]"/>-->
-                <h:outputText rendered="#{!provPopupFragmentBean.isDatasetPublishedRendering()}" value="#{bundle['file.provConfirm.unpublished.freefree']}"/>
-                <h:outputText rendered="#{provPopupFragmentBean.isDatasetPublishedRendering()}" value="#{bundle['file.provConfirm.published.freeform']}"/>
+                <h:outputText rendered="#{!provPopupFragmentBean.isDataFilePublishedRendering()}" value="#{bundle['file.provConfirm.unpublished.freefree']}"/>
+                <h:outputText rendered="#{provPopupFragmentBean.isDataFilePublishedRendering()}" value="#{bundle['file.provConfirm.published.freeform']}"/>
             </div>
             <div id="savingResult">
 <!--                <h:outputText value=" [savingResult]"/>-->
-                <div id="savingResultPublished" jsf:rendered="#{provPopupFragmentBean.datasetPublishedRendering}">
+                <div id="savingResultPublished" jsf:rendered="#{provPopupFragmentBean.dataFilePublishedRendering}">
 <!--                    <h:outputText value=" [Dataset has published verison]"/>-->
                     <div id="savingResultPublishedFreeform" jsf:rendered="#{provPopupFragmentBean.freeformUpdated}">
 <!--                        <h:outputText value=" [And freeform]"/>-->
@@ -168,7 +170,7 @@
                     </div>
                     <h:outputText rendered="#{provPopupFragmentBean.isJsonUpdated()}" value="#{bundle['file.provConfirm.published.submit.json']}"/>
                 </div>
-                <div id="savingResultUnpublished" jsf:rendered="#{!provPopupFragmentBean.datasetPublishedRendering}">
+                <div id="savingResultUnpublished" jsf:rendered="#{!provPopupFragmentBean.dataFilePublishedRendering}">
 <!--                    <h:outputText value=" [No Unpublished]"/>-->
                     <h:outputText value="#{bundle['file.provConfirm.unpublished.submit']}"/>
                     <h:outputText value="#{bundle['file.provConfirm.submit.inDraft']}"/>
@@ -176,9 +178,9 @@
             </div>
             <div id="confirmationSteps">
 <!--                <h:outputText value=" [How to continue(?)]"/>-->
-                <h:outputText rendered="#{!provPopupFragmentBean.isDatasetPublishedRendering()}" value="#{bundle['file.provConfirm.unpublished.confirm']}"/>
-                <h:outputText rendered="#{provPopupFragmentBean.isDatasetPublishedRendering() and provPopupFragmentBean.isJsonUpdated()}" value="#{bundle['file.provConfirm.published.json.confirm']}"/>
-                <h:outputText rendered="#{provPopupFragmentBean.isDatasetPublishedRendering() and provPopupFragmentBean.isFreeformUpdated()}" value="#{bundle['file.provConfirm.published.freeform.confirm']}"/>
+                <h:outputText rendered="#{!provPopupFragmentBean.isDataFilePublishedRendering()}" value="#{bundle['file.provConfirm.unpublished.confirm']}"/>
+                <h:outputText rendered="#{provPopupFragmentBean.isDataFilePublishedRendering() and provPopupFragmentBean.isJsonUpdated()}" value="#{bundle['file.provConfirm.published.json.confirm']}"/>
+                <h:outputText rendered="#{provPopupFragmentBean.isDataFilePublishedRendering() and provPopupFragmentBean.isFreeformUpdated()}" value="#{bundle['file.provConfirm.published.freeform.confirm']}"/>
             </div>
         </div>
         

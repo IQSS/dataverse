@@ -16,7 +16,9 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-@RequiredPermissions(Permission.DownloadFile)
+//MAD: This command should only be accessible dataset editors
+
+@RequiredPermissions(Permission.EditDataset)
 public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
 
     private static final Logger logger = Logger.getLogger(GetProvJsonCommand.class.getCanonicalName());

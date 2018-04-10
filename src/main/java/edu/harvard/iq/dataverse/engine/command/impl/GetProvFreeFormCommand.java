@@ -10,7 +10,10 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.logging.Logger;
 
-@RequiredPermissions(Permission.DownloadFile)
+//MAD: This command should only be accessible dataset editors
+//MAD: Should this commmand be returning the latest draft or the latest published?
+//MAD: We never calls this in code
+@RequiredPermissions(Permission.EditDataset)
 /**
  * This command gets the freeform provenance input
  */
