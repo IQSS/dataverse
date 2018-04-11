@@ -141,6 +141,12 @@ You can download a :download:`sample ssl.conf file <../_static/installation/file
 
 Note that ``/etc/httpd/conf.d/shib.conf`` and ``/etc/httpd/conf.d/shibboleth-ds.conf`` are expected to be present from installing Shibboleth via yum.
 
+You may wish to also add a timeout directive to the ProxyPass line within ssl.conf. This is especially useful for larger file uploads as apache may prematurely kill the connection before the upload is processed. 
+
+e.g. ``ProxyPass / ajp://localhost:8009/ timeout=600`` defines a timeout of 600 seconds. 
+
+Try to strike a balance with the timeout setting. Again a timeout too low will impact file uploads. A timeout too high may cause additional stress on the server as it will have to service idle clients for a longer period of time.
+
 Configure Shibboleth
 --------------------
 

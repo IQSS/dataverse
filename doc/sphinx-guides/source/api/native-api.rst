@@ -170,6 +170,10 @@ Updates the current draft version of dataset ``$id``. If the dataset does not ha
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
+Moves a dataset whose id is passed to a dataverse whose alias is passed. Only accessible to superusers. ::
+
+    POST http://$SERVER/api/datasets/$id/move/$alias?key=$apiKey
+
 Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
@@ -518,7 +522,10 @@ For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from 
 
   GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
 
+Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
 
+  GET http://$SERVER/api/info/apiTermsOfUse
+  
 Metadata Blocks
 ~~~~~~~~~~~~~~~
 

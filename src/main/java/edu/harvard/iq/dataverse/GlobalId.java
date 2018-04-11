@@ -22,7 +22,7 @@ public class GlobalId implements java.io.Serializable {
     
     public static final String DOI_PROTOCOL = "doi";
     public static final String HDL_PROTOCOL = "hdl";
-    public static final String HDL_RESOLVER_URL = "http://hdl.handle.net/";
+    public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
     
     @EJB

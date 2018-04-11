@@ -309,7 +309,7 @@ You must also specify the AWS region, in the ``config`` file, for example:
 Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish instance. (From the `AWS Command Line Interface Documentation <http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_: "In order to separate credentials from less sensitive options, region and output format are stored in a separate file named config in the same folder")
 
 Set Up Access Configuration Via Command Line Tools
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
@@ -338,6 +338,14 @@ With your access to your bucket in place, we'll want to navigate to ``/usr/local
 Then, we'll need to identify which S3 bucket we're using. Replace ``your_bucket_name`` with, of course, your bucket:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=your_bucket_name"``
+
+Optionally, you can have users download files from S3 directly rather than having files pass from S3 through Glassfish to your users. To accomplish this, set ``dataverse.files.s3-download-redirect`` to ``true`` like this:
+
+``./asadmin create-jvm-options "-Ddataverse.files.s3-download-redirect=true"``
+
+If you enable ``dataverse.files.s3-download-redirect`` as described above, note that the S3 URLs expire after an hour by default but you can configure the expiration time using the ``dataverse.files.s3-url-expiration-minutes`` JVM option. Here's an example of setting the expiration time to 120 minutes:
+
+``./asadmin create-jvm-options "-D dataverse.files.s3-url-expiration-minutes=120"``
 
 Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
@@ -806,6 +814,7 @@ Specify a URL where users can read your Privacy Policy, linked from the bottom o
 ++++++++++++++
 
 Specify a URL where users can read your API Terms of Use.
+API users can retrieve this URL from the SWORD Service Document or the "info" section of our :doc:`/api/native-api` documentation.
 
 ``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
@@ -843,6 +852,14 @@ Set ``:GuidesVersion`` to override the version number in the URL of guides. For 
 
 ``curl -X PUT -d 1234-new-feature http://localhost:8080/api/admin/settings/:GuidesVersion``
 
+:NavbarSupportUrl
++++++++++++++++++
+Set ``:NavbarSupportUrl`` to a fully-qualified url which will be used for the "Support" link in the navbar.
+
+Note that this will override the default behaviour for the "Support" menu option, which is to display the dataverse 'feedback' dialog.
+
+``curl -X PUT -d http://dataverse.example.edu/supportpage.html http://localhost:8080/api/admin/settings/:NavbarSupportUrl``
+
 :MetricsUrl
 +++++++++++
 
@@ -870,9 +887,14 @@ After you've set ``:StatusMessageHeader`` you can also make it clickable to have
 +++++++++++++++++++++++++
 
 Set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB.
+
 Notes:
+
 - For SWORD, this size is limited by the Java Integer.MAX_VALUE of 2,147,483,647. (see: https://github.com/IQSS/dataverse/issues/2169)
+
 - If the MaxFileUploadSizeInBytes is NOT set, uploads, including SWORD may be of unlimited size.
+
+- For larger file upload sizes, you may need to configure your reverse proxy timeout. If using apache2 (httpd) with Shibboleth, add a timeout to the ProxyPass defined in etc/httpd/conf.d/ssl.conf (which is described in the :doc:`/installation/shibboleth` setup).
 
 ``curl -X PUT -d 2147483648 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
 
@@ -934,14 +956,12 @@ The relative path URL to which users will be sent after signup. The default sett
 :TwoRavensUrl
 +++++++++++++
 
-The location of your TwoRavens installation.  Activation of TwoRavens also requires the setting below, ``TwoRavensTabularView``
+The ``:TwoRavensUrl`` option is no longer valid. See :doc:`r-rapache-tworavens` and :doc:`external-tools`.
 
 :TwoRavensTabularView
 +++++++++++++++++++++
 
-Set ``TwoRavensTabularView`` to true to allow a user to view tabular files via the TwoRavens application. This boolean affects whether a user will see the "Explore" button.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:TwoRavensTabularView``
+The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-tworavens` and :doc:`external-tools`.
 
 :GeoconnectCreateEditMaps
 +++++++++++++++++++++++++
@@ -1032,6 +1052,16 @@ Host FQDN or URL of your Piwik instance before the ``/piwik.php``. Examples:
 or
 
 ``curl -X PUT -d hostname.domain.tld/stats http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
+
+:PiwikAnalyticsTrackerFileName
+++++++++++++++++++++++++++++++
+
+Filename for the 'php' and 'js' tracker files used in the piwik code (piwik.php and piwik.js).
+Sometimes these files are renamed in order to prevent ad-blockers (in the browser) to block the piwik tracking code.
+This sets the base name (without dot and extension), if not set it defaults to 'piwik'.
+
+``curl -X PUT -d domainstats http://localhost:8080/api/admin/settings/:PiwikAnalyticsTrackerFileName``
+
 
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++

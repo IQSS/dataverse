@@ -1,13 +1,14 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
-import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.DESCRIPTION;
-import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.DISPLAY_NAME;
-import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.TOOL_PARAMETERS;
-import static edu.harvard.iq.dataverse.externaltools.ExternalToolHandler.TOOL_URL;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -37,6 +38,21 @@ public class ExternalToolServiceBean {
         return typedQuery.getResultList();
     }
 
+
+    /**
+     * @return A list of tools or an empty list.
+     */
+    public List<ExternalTool> findByType(ExternalTool.Type type) {
+        List<ExternalTool> externalTools = new ArrayList<>();
+        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
+        typedQuery.setParameter("type", type);
+        List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
+        if (toolsFromQuery != null) {
+            externalTools = toolsFromQuery;
+        }
+        return externalTools;
+    }
+
     public ExternalTool findById(long id) {
         TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.id = :id", ExternalTool.class);
         typedQuery.setParameter("id", id);
@@ -64,54 +80,6 @@ public class ExternalToolServiceBean {
         return em.merge(externalTool);
     }
 
-    public enum ReservedWord {
-
-        // TODO: Research if a format like "{reservedWord}" is easily parse-able or if another format would be
-        // better. The choice of curly braces is somewhat arbitrary, but has been observed in documenation for
-        // various REST APIs. For example, "Variable substitutions will be made when a variable is named in {brackets}."
-        // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
-        FILE_ID("fileId"),
-        API_TOKEN("apiToken");
-
-        private final String text;
-        private final String START = "{";
-        private final String END = "}";
-
-        private ReservedWord(final String text) {
-            this.text = START + text + END;
-        }
-
-        /**
-         * This is a centralized method that enforces that only reserved words
-         * are allowed to be used by external tools. External tool authors
-         * cannot pass their own query parameters through Dataverse such as
-         * "mode=mode1".
-         *
-         * @throws IllegalArgumentException
-         */
-        public static ReservedWord fromString(String text) throws IllegalArgumentException {
-            if (text != null) {
-                for (ReservedWord reservedWord : ReservedWord.values()) {
-                    if (text.equals(reservedWord.text)) {
-                        return reservedWord;
-                    }
-                }
-            }
-            // TODO: Consider switching to a more informative message that enumerates the valid reserved words.
-            boolean moreInformativeMessage = false;
-            if (moreInformativeMessage) {
-                throw new IllegalArgumentException("Unknown reserved word: " + text + ". A reserved word must be one of these values: " + Arrays.asList(ReservedWord.values()) + ".");
-            } else {
-                throw new IllegalArgumentException("Unknown reserved word: " + text);
-            }
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
-    }
-    
     /**
      * This method takes a list of tools and a file and returns which tools that file supports
      * The list of tools is passed in so it doesn't hit the database each time
@@ -135,6 +103,9 @@ public class ExternalToolServiceBean {
         JsonObject jsonObject = jsonReader.readObject();
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
         String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
+        String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
+        // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
+        ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
         String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
         JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
         JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
@@ -151,10 +122,10 @@ public class ExternalToolServiceBean {
         }
         if (!allRequiredReservedWordsFound) {
             // Some day there might be more reserved words than just {fileId}.
-            throw new IllegalArgumentException("Required reserved word not found: " + ReservedWord.FILE_ID.text);
+            throw new IllegalArgumentException("Required reserved word not found: " + ReservedWord.FILE_ID.toString());
         }
         String toolParameters = toolParametersObj.toString();
-        return new ExternalTool(displayName, description, toolUrl, toolParameters);
+        return new ExternalTool(displayName, description, type, toolUrl, toolParameters);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {

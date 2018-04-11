@@ -7,8 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -24,8 +24,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.faces.application.FacesMessage;
-import javax.faces.component.EditableValueHolder;
-import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
@@ -689,6 +687,19 @@ public class GuestbookResponseServiceBean {
             guestbookResponse.setDownloadtype("Subset");
         }
         if(downloadFormat.toLowerCase().equals("explore")){
+            /**
+             * TODO: Investigate this "if downloadFormat=explore" and think
+             * about deleting it. When is downloadFormat "explore"? When is this
+             * method called? Previously we were passing "explore" to
+             * modifyDatafileAndFormat for TwoRavens but now we pass
+             * "externalTool" for all external tools, including TwoRavens. When
+             * clicking "Explore" and then the name of the tool, we want the
+             * name of the exploration tool (i.e. "TwoRavens", "Data Explorer",
+             * etc.) to be persisted as the downloadType. We execute
+             * guestbookResponse.setDownloadtype(externalTool.getDisplayName())
+             * over in the "explore" method of FileDownloadServiceBean just
+             * before the guestbookResponse is written.
+             */
             guestbookResponse.setDownloadtype("Explore");
         }
         guestbookResponse.setDataset(dataset);
@@ -709,6 +720,32 @@ public class GuestbookResponseServiceBean {
             }
             guestbookResponse.getCustomQuestionResponses().add(cqr);
         }
+    }
+    
+    private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session, User userIn) {
+        User user;
+        User sessionUser = session.getUser();
+        
+        if (userIn != null){
+            user = userIn;
+        } else{
+            user = sessionUser;
+        }
+        
+        if (user != null) {
+            guestbookResponse.setEmail(getUserEMail(user));
+            guestbookResponse.setName(getUserName(user));
+            guestbookResponse.setInstitution(getUserInstitution(user));
+            guestbookResponse.setPosition(getUserPosition(user));
+            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
+        } else {
+            guestbookResponse.setEmail("");
+            guestbookResponse.setName("");
+            guestbookResponse.setInstitution("");
+            guestbookResponse.setPosition("");
+            guestbookResponse.setAuthenticatedUser(null);
+        }
+        guestbookResponse.setSessionId(session.toString());
     }
     
     private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session) {
@@ -743,6 +780,30 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setSessionId(session.toString());
         guestbookResponse.setDownloadtype("Download");
         setUserDefaultResponses(guestbookResponse, session);
+        return guestbookResponse;
+    }
+    
+    public GuestbookResponse initAPIGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session, User user) {
+        GuestbookResponse guestbookResponse = new GuestbookResponse();
+        Guestbook datasetGuestbook = dataset.getGuestbook();
+        
+        if(datasetGuestbook == null){
+            guestbookResponse.setGuestbook(findDefaultGuestbook());
+        } else { 
+            guestbookResponse.setGuestbook(datasetGuestbook);            
+        }
+
+       if(dataset.getLatestVersion() != null && dataset.getLatestVersion().isDraft()){
+            guestbookResponse.setWriteResponse(false);
+        }
+        if (dataFile != null){
+            guestbookResponse.setDataFile(dataFile);
+        }        
+        guestbookResponse.setDataset(dataset);
+        guestbookResponse.setResponseTime(new Date());
+        guestbookResponse.setSessionId(session.toString());
+        guestbookResponse.setDownloadtype("Download");
+        setUserDefaultResponses(guestbookResponse, session, user);
         return guestbookResponse;
     }
     
@@ -783,6 +844,19 @@ public class GuestbookResponseServiceBean {
         }
         
         return in;
+    }
+
+    /**
+     * This method was added because on the dataset page when a popup is
+     * required, ExternalTool is null in the poup itself. We store ExternalTool
+     * in the GuestbookResponse as a transient variable so we have access to it
+     * later in the popup.
+     */
+    public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format, ExternalTool externalTool) {
+        if (in != null && externalTool != null) {
+            in.setExternalTool(externalTool);
+        }
+        return modifyDatafileAndFormat(in, fm, format);
     }
 
     public Boolean validateGuestbookResponse(GuestbookResponse guestbookResponse, String type) {

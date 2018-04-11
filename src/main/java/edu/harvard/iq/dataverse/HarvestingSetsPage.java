@@ -490,6 +490,13 @@ public class HarvestingSetsPage implements java.io.Serializable {
         if (context.getExternalContext().getRequestParameterMap().get("DO_VALIDATION") != null) {
             
             if (!StringUtils.isEmpty(value)) {
+                if (value.length() > 30){
+                    input.setValid(false);
+                    context.addMessage(toValidate.getClientId(),
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.sizelimit")));
+                    return;
+                    
+                }
                 if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value)) {
                     input.setValid(false);
                     context.addMessage(toValidate.getClientId(),

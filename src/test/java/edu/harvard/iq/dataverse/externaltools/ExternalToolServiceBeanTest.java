@@ -25,7 +25,8 @@ public class ExternalToolServiceBeanTest {
         dataFile.setDataTables(dataTables);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        ExternalTool externalTool = new ExternalTool("displayName", "description", "http://foo.com", "{}");
+        ExternalTool.Type type = ExternalTool.Type.EXPLORE;
+        ExternalTool externalTool = new ExternalTool("displayName", "description", type, "http://foo.com", "{}");
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
@@ -38,6 +39,7 @@ public class ExternalToolServiceBeanTest {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
+        job.add("type", "explore");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -68,6 +70,7 @@ public class ExternalToolServiceBeanTest {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
+        job.add("type", "explore");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -117,6 +120,7 @@ public class ExternalToolServiceBeanTest {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
+        job.add("type", "explore");
         job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -184,6 +188,7 @@ public class ExternalToolServiceBeanTest {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
+        job.add("type", "explore");
         job.add("toolParameters", Json.createObjectBuilder().build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
@@ -195,6 +200,27 @@ public class ExternalToolServiceBeanTest {
         }
         assertNotNull(expectedException);
         assertEquals("toolUrl is required.", expectedException.getMessage());
+    }
+
+    @Test
+    public void testParseAddExternalToolInputWrongType() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("description", "This tool is awesome.");
+        job.add("type", "noSuchType");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("toolParameters", Json.createObjectBuilder().build());
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+        Exception expectedException = null;
+        try {
+            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        } catch (Exception ex) {
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+        System.out.println("exception: " + expectedException);
+        assertEquals("Type must be one of these values: [explore, configure].", expectedException.getMessage());
     }
 
 }

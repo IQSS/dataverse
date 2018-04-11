@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.8.5-qdr</version>
+    <version>4.8.6-qdr</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -125,7 +125,7 @@
             <!-- required by org.swordapp.server.sword2-server -->
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
-            <version>1.3.1</version>
+            <version>1.3.3</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -304,12 +304,12 @@
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
-            <version>2.0.12.Final</version>
+            <version>3.4.2.Final</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
-            <version>2.0.12.Final</version>
+            <version>3.4.2.Final</version>
         </dependency>
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
@@ -320,7 +320,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.8.1</version>
+            <version>1.8.3</version>
         </dependency>
         <dependency>
             <groupId>com.jayway.restassured</groupId>

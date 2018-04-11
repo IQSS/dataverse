@@ -129,7 +129,6 @@ public class MailServiceBean implements java.io.Serializable {
                 for (int i = 0; i < recipients.length; i++) {
                     try {
                         recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
-                        logger.fine("Address is " + recipients[i].getAddress());
                     } catch (UnsupportedEncodingException ex) {
                         logger.severe(ex.getMessage());
                     }
@@ -141,7 +140,8 @@ public class MailServiceBean implements java.io.Serializable {
                     Transport.send(msg, recipients);
                     sent = true;
                 } catch (SMTPSendFailedException ssfe) {
-                    logger.warning("Failed to send mail to " + to + " (SMTPSendFailedException)");
+                    logger.warning("Failed to send mail to: " + to);
+                    logger.warning("SMTPSendFailedException Message: " + ssfe);
                 }
             } else {
                 logger.fine("Skipping sending mail to " + to + ", because the \"no-reply\" address not set (" + Key.SystemEmail + " setting).");

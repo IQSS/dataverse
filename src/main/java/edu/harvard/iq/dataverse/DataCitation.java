@@ -163,8 +163,9 @@ public class DataCitation {
         citationList.add(formatString("Qualitative Data Repository", html));
         // QDRCustom: Show persistentID after distributor name
         if (persistentId != null) {
-            citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html));
+          citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); //always show url format
         }
+        citationList.add(formatString(distributors, html));
         citationList.add(version);       
 
         StringBuilder citation = new StringBuilder(

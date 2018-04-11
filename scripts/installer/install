@@ -61,8 +61,6 @@ else
 
 	'SOLR_LOCATION', 
 	
-	'TWORAVENS_LOCATION',
-
 	'RSERVE_HOST',
 	'RSERVE_PORT',
 	'RSERVE_USER',
@@ -88,8 +86,6 @@ my %CONFIG_DEFAULTS = (
 
     'SOLR_LOCATION',     'LOCAL',
 
-    'TWORAVENS_LOCATION', 'NOT INSTALLED',
-
     'RSERVE_HOST',     'localhost',
     'RSERVE_PORT',     6311,
     'RSERVE_USER',     'rserve',
@@ -111,8 +107,6 @@ my %CONFIG_PROMPTS = (
     'POSTGRES_PASSWORD', 'Postgres user password',
 
     'SOLR_LOCATION',     'Remote SOLR indexing service',
-
-    'TWORAVENS_LOCATION', 'Will this Dataverse be using TwoRavens application',
 
     'RSERVE_HOST',     'Rserve Server',
     'RSERVE_PORT',     'Rserve Server Port',
@@ -137,8 +131,6 @@ my %CONFIG_COMMENTS = (
     'POSTGRES_PASSWORD', '',
 
     'SOLR_LOCATION',     "? \n - Leave this set to \"LOCAL\" if the SOLR will be running on the same (this) server.\n Otherwise, please enter the host AND THE PORT NUMBER of the remote SOLR service, colon-separated\n (for example: foo.edu:8983)\n: ",
-
-    'TWORAVENS_LOCATION', "? \n - If so, please provide the complete URL of the TwoRavens GUI under rApache,\n for example, \"https://foo.edu/dataexplore/gui.html\".\n (PLEASE NOTE, TwoRavens will need to be installed separately! - see the installation docs for more info)\n: ",
 
     'RSERVE_HOST',     '',
     'RSERVE_PORT',     '',
@@ -1315,40 +1307,7 @@ else
     print "OK.\n\n";
 }
     
-# b. If this installation is going to be using TwoRavens, configure its location in the Dataverse settings;
-# Otherwise, set the "NO TwoRavens FOR YOU!" option in the settings:
-
-
-if ($CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} ne 'NOT INSTALLED')
-{
-    print "Executing " . "curl -X PUT -d " . $CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} . " " . $API_URL . "/admin/settings/:TwoRavensUrl" . "\n";
-    my $exit_code = system("curl -X PUT -d " . $CONFIG_DEFAULTS{'TWORAVENS_LOCATION'} . " " . $API_URL . "/admin/settings/:TwoRavensUrl"); 
-    if ( $exit_code )       
-    {
-	print "WARNING: failed to configure the location of the TwoRavens app in the Dataverse settings!\n\n";
-    }
-    else 
-    {
-	print "OK.\n\n";
-    }
-
-    # (and, we also need to explicitly set the tworavens option to "true":
-    $exit_code = system("curl -X PUT -d true " . $API_URL . "/admin/settings/:TwoRavensTabularView"); 
-
-} else {
-    print "Executing " . "curl -X PUT -d false " . $API_URL . "/admin/settings/:TwoRavensTabularView" . "\n";
-    my $exit_code = system("curl -X PUT -d false " . $API_URL . "/admin/settings/:TwoRavensTabularView"); 
-    if ( $exit_code )       
-    {
-	print "WARNING: failed to disable the TwoRavens app in the Dataverse settings!\n\n";
-    }
-    else 
-    {
-	print "OK.\n\n";
-    }
-}
-
-# c. If this installation is going to be using a remote SOLR search engine service, configure its location in the settings:
+# b. If this installation is going to be using a remote SOLR search engine service, configure its location in the settings:
 
 if ($CONFIG_DEFAULTS{'SOLR_LOCATION'} ne 'LOCAL')
 {

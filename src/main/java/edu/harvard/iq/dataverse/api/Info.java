@@ -46,4 +46,10 @@ public class Info extends AbstractApiBean {
     public Response getServer() {
         return response( req -> ok(systemConfig.getDataverseServer()));
     }
+    
+    @GET
+    @Path("apiTermsOfUse")
+    public Response getTermsOfUse() {
+        return allowCors(response( req -> ok(systemConfig.getApiTermsOfUse())));
+    }
 }
