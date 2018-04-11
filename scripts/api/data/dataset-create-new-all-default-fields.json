@@ -1,21 +1,5 @@
 {
-  "id": 18577,
-  "identifier": "QF0D5S",
-  "persistentUrl": "http://dx.doi.org/10.5072/FK2/QF0D5S",
-  "protocol": "doi",
-  "authority": "10.5072/FK2",
-  "publisher": "Root Dataverse",
-  "publicationDate": "2016-08-02",
   "datasetVersion": {
-    "id": 4031,
-    "versionNumber": 1,
-    "versionMinorNumber": 0,
-    "versionState": "RELEASED",
-    "distributionDate": "1004-01-01",
-    "productionDate": "Production Date",
-    "lastUpdateTime": "2016-08-02T13:41:48Z",
-    "releaseTime": "2016-08-02T13:41:48Z",
-    "createTime": "2016-08-02T12:52:09Z",
     "license": "CC0",
     "termsOfUse": "CC0 Waiver",
     "metadataBlocks": {
