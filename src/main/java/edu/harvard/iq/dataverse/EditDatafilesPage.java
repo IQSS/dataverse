@@ -1098,7 +1098,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 //      if so I'll need to set datasetUpdateRequired
 
 //MAD: My goal is to update the filemetadatas with prov freeform and set datasetUpdateRequired = true so they get added to the working version
-//right now I'm hardcoding it but I gotta only do it if there are changes
+
 
 
         Boolean provChanges = provPopupFragmentBean.updatePageMetadatasWithProvFreeform(fileMetadatas);

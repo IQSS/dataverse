@@ -31,6 +31,7 @@ public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
     private final String entityName;
     private final boolean saveContext;
     
+//MAD: Maybe this shouldn't take entityName at all, as that can be stored in the dataFile. But we can also just pass it in separately if that's needed for the api
     public PersistProvJsonCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName, boolean saveContext) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
