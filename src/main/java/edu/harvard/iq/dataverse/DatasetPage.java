@@ -1606,6 +1606,10 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
             }
+            if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"),
+                        BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
+            }
         }
 
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
@@ -1948,14 +1952,9 @@ public class DatasetPage implements java.io.Serializable {
 
     private String releaseDataset(boolean minor) {
         Command<PublishDatasetResult> cmd;
-
         if (session.getUser() instanceof AuthenticatedUser) {
             try {
-                if (editMode == EditMode.CREATE) { //FIXME: Why are we using the same commands?
-                    cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor); 
-                } else {
-                    cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor); 
-                }
+                cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor); 
                 dataset = commandEngine.submit(cmd).getDataset();
                 // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset 
                 // has been published. If a publishing workflow is configured, this may have sent the 
@@ -1965,7 +1964,7 @@ public class DatasetPage implements java.io.Serializable {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
                 }                
                 else if (dataset.isLockedFor(DatasetLock.Reason.pidRegister) || dataset.getFiles().size() > systemConfig.getPIDAsynchRegFileCount()){   
-                    JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
+                    //JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
                 } 
                 else {
@@ -2576,7 +2575,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } else {
-                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, newFiles);
                 ((UpdateDatasetCommand) cmd).setValidateLenient(true);  
             }
             dataset = commandEngine.submit(cmd);

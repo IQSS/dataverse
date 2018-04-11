@@ -53,7 +53,7 @@ public class CreateDataFileCommand extends AbstractCommand<DataFile>{
         this.theDataFile = theDataFile;
         this.version=version; 
         this.identifier = identifier;
-        this.skipAssigningIdentifier = false;
+        this.skipAssigningIdentifier = true; //default is now true - see Leonid's comment below in the body of the execute.
     }
     
     public CreateDataFileCommand(DataFile theDataFile,DatasetVersion version, DataverseRequest aRequest, String identifier, boolean skipAssigningIdentifier) {

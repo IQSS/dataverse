@@ -1373,8 +1373,8 @@
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.submit}" onclick="PF('inreview').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button" />
+                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" immediate="true"  />
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button" immediate="true"  />
                         </div>
                     </p:dialog>
 
@@ -1388,7 +1388,7 @@
                         </div>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('publishConfirm').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" />
+                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" immediate="true"  />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
@@ -1412,8 +1412,8 @@
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="PF('publishParent').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseParentDVAndDataset}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('publishParent').hide();PF('blockDatasetForm').hide();" type="button" />
+                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseParentDVAndDataset}" immediate="true"  />
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('publishParent').hide();PF('blockDatasetForm').hide();" type="button" immediate="true"  />
                         </div>
                     </p:dialog>
 
@@ -1439,9 +1439,9 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseDraft}" />
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseDraft}"  immediate="true"/>
                             <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();
-                                    PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}" />
+                                    PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}" immediate="true" />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>

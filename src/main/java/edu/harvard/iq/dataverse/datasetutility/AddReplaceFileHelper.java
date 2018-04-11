@@ -1412,28 +1412,17 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
-        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
-        String datasetIdentifier = workingVersion.getDataset().getIdentifier();
-        Long maxIdentifier = null;
-
-        if (systemConfig.isDataFilePIDSequentialDependent()) {
-            maxIdentifier = datasetService.getMaximumExistingDatafileIdentifier(workingVersion.getDataset());
-        }
-        String dataFileIdentifier = null;
-
+        /*
         try {
             for (DataFile dataFile : finalFileList) {
-                if (maxIdentifier != null) {
-                    maxIdentifier++;
-                    dataFileIdentifier = datasetIdentifier + "/" + maxIdentifier.toString();
-                }
-                //commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequest, dataFileIdentifier));
-                commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequest, dataFileIdentifier, true));
+                commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequest, null));
             }
         } catch (CommandException cmdex) {
             logger.info("error in saving files:" + cmdex.getMessage());
+        }*/
+        for (DataFile dataFile : finalFileList) {
+            fileService.processFile(dataFile, workingVersion);
         }
-//        ingestService.addFiles(workingVersion, finalFileList);
 
         return true;
     }

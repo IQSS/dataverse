@@ -7,13 +7,24 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +70,9 @@ public class DataFileServiceBean implements java.io.Serializable {
     UserServiceBean userService; 
     @EJB
     SettingsServiceBean settingsService;
+    
+    @EJB 
+    IngestServiceBean ingestService;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -1673,6 +1687,174 @@ public class DataFileServiceBean implements java.io.Serializable {
 
        
         return u;
+    }
+    
+    public DataFile processFile(DataFile theDataFile, DatasetVersion version) {    
+        /*
+         Processing new files on create moved into createDatasetCommand
+         to prevent nesting of createDataFileCommand which causes huge issues for
+         very large numbers of files added on DS create        
+        */
+        
+        IngestUtil.checkForDuplicateFileNamesFinal(version, edu.emory.mathcs.backport.java.util.Collections.singletonList(theDataFile));
+        Dataset dataset = version.getDataset();
+
+        String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + theDataFile.getStorageIdentifier();
+
+        // This is a brand new file, so it should only have 
+        // one FileMetadata attached. -- L.A. 
+        FileMetadata fileMetadata = theDataFile.getFileMetadatas().get(0);
+        String fileName = fileMetadata.getLabel();
+
+        // Make sure the file is attached to the dataset and to the version, if this 
+        // hasn't been done yet:
+        if (theDataFile.getOwner() == null) {
+            theDataFile.setOwner(dataset);
+            version.getFileMetadatas().add(theDataFile.getFileMetadata());
+            theDataFile.getFileMetadata().setDatasetVersion(version);
+            dataset.getFiles().add(theDataFile);
+        }
+   
+        boolean metadataExtracted = false;
+
+        if (FileUtil.ingestableAsTabular(theDataFile)) {
+            theDataFile.SetIngestScheduled();
+        } else if (ingestService.fileMetadataExtractable(theDataFile)) {
+
+            try {
+                // FITS is the only type supported for metadata 
+                // extraction, as of now. -- L.A. 4.0 
+                theDataFile.setContentType("application/fits");
+                metadataExtracted = ingestService.extractMetadata(tempFileLocation, theDataFile, version);
+            } catch (IOException mex) {
+                logger.severe("Caught exception trying to extract indexable metadata from file " + fileName + ",  " + mex.getMessage());
+            }
+            if (metadataExtracted) {
+                logger.fine("Successfully extracted indexable metadata from file " + fileName);
+            } else {
+                logger.fine("Failed to extract indexable metadata from file " + fileName);
+            }
+        }
+
+        // Try to save the file in its permanent location: 
+        String storageId = theDataFile.getStorageIdentifier().replaceFirst("^tmp://", "");
+
+        Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageId);
+        WritableByteChannel writeChannel = null;
+        FileChannel readChannel = null;
+
+        boolean localFile = false;
+        boolean savedSuccess = false;
+        StorageIO<DataFile> dataAccess = null;
+
+        try {
+
+            logger.fine("Attempting to create a new storageIO object for " + storageId);
+            dataAccess = DataAccess.createNewStorageIO(theDataFile, storageId);
+
+            if (dataAccess.isLocalFile()) {
+                localFile = true;
+            }
+
+            logger.fine("Successfully created a new storageIO object.");
+
+            dataAccess.savePath(tempLocationPath);
+
+            // Set filesize in bytes 
+            theDataFile.setFilesize(dataAccess.getSize());
+            savedSuccess = true;
+            logger.fine("Success: permanently saved file " + theDataFile.getFileMetadata().getLabel());
+
+        } catch (IOException ioex) {
+            logger.warning("Failed to save the file, storage id " + theDataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+        } finally {
+            if (readChannel != null) {
+                try {
+                    readChannel.close();
+                } catch (IOException e) {
+                }
+            }
+            if (writeChannel != null) {
+                try {
+                    writeChannel.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
+        // Since we may have already spent some CPU cycles scaling down image thumbnails, 
+        // we may as well save them, by moving these generated images to the permanent 
+        // dataset directory. We should also remember to delete any such files in the
+        // temp directory:
+        List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()), storageId);
+        if (generatedTempFiles != null) {
+            for (Path generated : generatedTempFiles) {
+                if (savedSuccess) { // && localFile) {
+                    logger.fine("(Will also try to permanently save generated thumbnail file " + generated.toString() + ")");
+                    try {
+                        //Files.copy(generated, Paths.get(dataset.getFileSystemDirectory().toString(), generated.getFileName().toString()));
+                        int i = generated.toString().lastIndexOf("thumb");
+                        if (i > 1) {
+                            String extensionTag = generated.toString().substring(i);
+                            dataAccess.savePathAsAux(generated, extensionTag);
+                            logger.fine("Saved generated thumbnail as aux object. \"preview available\" status: " + theDataFile.isPreviewImageAvailable());
+                        } else {
+                            logger.warning("Generated thumbnail file name does not match the expected pattern: " + generated.toString());
+                        }
+
+                    } catch (IOException ioex) {
+                        logger.warning("Failed to save generated file " + generated.toString());
+                    }
+
+                    try {
+                        Files.delete(generated);
+                    } catch (IOException ioex) {
+                        logger.warning("Failed to delete generated file " + generated.toString());
+                    }
+                }
+            }
+        }
+
+        try {
+            logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
+            Files.delete(tempLocationPath);
+        } catch (IOException ex) {
+            // (non-fatal - it's just a temp file.)
+            logger.warning("Failed to delete temp file " + tempLocationPath.toString());
+        }
+
+        // Any necessary post-processing: 
+        //performPostProcessingTasks(dataFile);
+        logger.fine("Done! Finished saving new files in permanent storage.");
+
+        return theDataFile;
+        
+    }
+    
+    private List<Path> listGeneratedTempFiles(Path tempDirectory, String baseName) {
+        List<Path> generatedFiles = new ArrayList<>();
+
+        // for example, <filename>.thumb64 or <filename>.thumb400.
+        if (baseName == null || baseName.equals("")) {
+            return null;
+        }
+
+        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path file) throws IOException {
+                return (file.getFileName() != null
+                        && file.getFileName().toString().startsWith(baseName + ".thumb"));
+            }
+        };
+
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(tempDirectory, filter)) {
+            for (Path filePath : dirStream) {
+                generatedFiles.add(filePath);
+            }
+        } catch (IOException ex) {
+        }
+
+        return generatedFiles;
     }
     
 }

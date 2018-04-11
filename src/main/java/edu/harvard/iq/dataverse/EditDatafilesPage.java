@@ -1086,31 +1086,21 @@ public class EditDatafilesPage implements java.io.Serializable {
                 logger.log(Level.SEVERE, "Dataset save failed for replace operation: {0}", errMsg);
                 return null;
             }            
-        }
-         
-        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
-        String datasetIdentifier = dataset.getIdentifier();
-        Long maxIdentifier = null;
-
-        if (systemConfig.isDataFilePIDSequentialDependent()){
-            maxIdentifier = datasetService.getMaximumExistingDatafileIdentifier(dataset);
-        }
-        String dataFileIdentifier = null;
-        
+        }               
         // Save the NEW files permanently: 
+        /*
         try {
             for (DataFile dataFile : newFiles) {
-                if (maxIdentifier != null){
-                    maxIdentifier++;
-                    dataFileIdentifier = datasetIdentifier + "/" + maxIdentifier.toString();
-                }
-                //commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest(), dataFileIdentifier));
-                commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest(), dataFileIdentifier, true));
+                commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest(), null));
             }
         } catch (CommandException cmdex) {
             logger.info("Command exception:" + cmdex.getMessage());
-        }        
-        //ingestService.addFiles(workingVersion, newFiles);
+        }  */      
+        //ingestService.addFilesToDataset(workingVersion, newFiles);
+            for (DataFile dataFile : newFiles) {
+                datafileService.processFile(dataFile, workingVersion);
+            }
+        
         //boolean newDraftVersion = false; 
         
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
@@ -1158,7 +1148,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             
             Command<Dataset> cmd;
             try {
-                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, newFiles);
                 ((UpdateDatasetCommand) cmd).setValidateLenient(true);
                 dataset = commandEngine.submit(cmd);
             
