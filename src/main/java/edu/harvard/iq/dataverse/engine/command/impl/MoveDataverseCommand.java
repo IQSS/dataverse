@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFeaturedDataverse;
+import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.Guestbook;
 import static edu.harvard.iq.dataverse.IdServiceBean.logger;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -59,7 +61,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
     public void executeImpl(CommandContext ctxt) throws CommandException {
         long moveDvStart = System.currentTimeMillis();
         logger.info("Starting dataverse move...");
-        boolean removeGuestbook = false, removeTemplate = false, removeFeatDv = false, removeMetadataBlock = false;
+        boolean removeGuestbook = false, removeTemplate = false, removeFeatDv = false, removeMetadataBlock = false, removeLinkDv = false, removeLinkDs = false;
         
         // first check if user is a superuser
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
@@ -89,12 +91,21 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         List<Dataverse> dataverseChildren = ctxt.dataverses().findAllDataverseDataverseChildren(moved);
         dataverseChildren.add(moved); // include the root of the children
 
+        
+        // generate list of all possible parent dataverses to check against
+        List<Dataverse> ownersToCheck = new ArrayList<>();
+        ownersToCheck.add(destination);
+        ownersToCheck.add(moved);
+        if (destination.getOwners() != null) {
+            ownersToCheck.addAll(destination.getOwners());
+        }
+        
         // if all the dataverse's datasets GUESTBOOKS are not contained in the new dataverse then remove the
         // ones that aren't
+        List<Guestbook> destinationGbs = null;
         if (moved.getGuestbooks() != null) {
-            logger.info("Checking guestbooks...");
             List<Guestbook> movedGbs = moved.getGuestbooks();
-            List<Guestbook> destinationGbs = destination.getGuestbooks();
+            destinationGbs = destination.getGuestbooks();
             boolean inheritGuestbooksValue = !destination.isGuestbookRoot();
             if (inheritGuestbooksValue && destination.getOwner() != null) {
                 destinationGbs.addAll(destination.getParentGuestbooks());
@@ -102,18 +113,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             // include guestbooks in moved dataverse since they will also be there
             // in the destination
             destinationGbs.addAll(movedGbs);
-            for (Dataset ds : datasetChildren) {
-                Guestbook dsgb = ds.getGuestbook();
-                if (dsgb != null && (destinationGbs == null || !destinationGbs.contains(dsgb))) {
-                    if (force == null || !force) {
-                        removeGuestbook = true;
-                        break;
-                    }
-                    ds.setGuestbook(null);
-                }
-            }
         }
-
 
         // if the dataverse is FEATURED by its parent, remove it
         List<DataverseFeaturedDataverse> ownerFeaturedDv = moved.getOwner().getDataverseFeaturedDataverses();
@@ -144,26 +144,21 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             destinationTemplates.addAll(movedTemplates);
         }
 
-
         // if all the dataverses METADATA BLOCKS are not contained in the new dataverse then remove the
         // ones that aren't available in the destination
         // i.e. the case where a custom metadata block is available through a parent 
         // but then the dataverse is moved outside of that parent-child structure
-        List<Dataverse> ownersToCheck = null;
         Boolean inheritMbValue = null;
+        List<Dataverse> mbParentsToCheck = new ArrayList<>();
+        mbParentsToCheck.addAll(ownersToCheck);
+        mbParentsToCheck.addAll(dataverseChildren);
         if (moved.getMetadataBlocks() != null) {
             inheritMbValue = !destination.isMetadataBlockRoot();
-            // generate list of all possible metadata block owner dataverses to check against
-            ownersToCheck = new ArrayList<>();
-            ownersToCheck.add(destination);
-            ownersToCheck.add(moved);
-            ownersToCheck.addAll(dataverseChildren);
-            if (destination.getOwners() != null) {
-                ownersToCheck.addAll(destination.getOwners());
-            }
         }
-        
-        logger.info("Checking templates and metadata blocks...");
+                
+        List<DataverseLinkingDataverse> linkingDataverses = new ArrayList();
+    
+        logger.info("Checking templates and metadata blocks");
         for (Dataverse dv : dataverseChildren) {
             if (destinationTemplates != null) {
                 Template dvt = dv.getDefaultTemplate();
@@ -175,10 +170,10 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                     dv.setDefaultTemplate(null);
                 }
             }
-            
+
             // determine which metadata blocks to keep selected 
             // on the moved dataverse and its children
-            if (ownersToCheck != null && inheritMbValue != null) {
+            if (inheritMbValue != null) {
                 List<MetadataBlock> metadataBlocksToKeep = new ArrayList<>();
                 List<MetadataBlock> movedMbs = dv.getMetadataBlocks(true);
                 Iterator<MetadataBlock> iter = movedMbs.iterator();
@@ -187,12 +182,12 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                     // if the owner is null, it means that the owner is the root dataverse
                     // because technically only custom metadata blocks have owners
                     Dataverse mbOwner = (mb.getOwner() != null) ? mb.getOwner() : ctxt.dataverses().findByAlias(":root");
-                    if (!ownersToCheck.contains(mbOwner)) {
+                    if (!mbParentsToCheck.contains(mbOwner)) {
                         if (force == null || !force) {
                             removeMetadataBlock = true;
                             break;
                         }
-                    } else if (ownersToCheck.contains(mbOwner) || inheritMbValue) {
+                    } else if (mbParentsToCheck.contains(mbOwner) || inheritMbValue) {
                         // only keep metadata block if
                         // it is being inherited from its parent
                         metadataBlocksToKeep.add(mb);
@@ -202,9 +197,58 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                     dv.setMetadataBlocks(metadataBlocksToKeep);
                 }
             }
+            
+            if (dv.getDataverseLinkingDataverses() != null) {
+                linkingDataverses.addAll(dv.getDataverseLinkingDataverses());
+            }
         }
         
-        if (removeGuestbook || removeTemplate || removeFeatDv || removeMetadataBlock) {
+        List<DatasetLinkingDataverse> linkingDatasets = new ArrayList();
+        logger.info("Checking guestbooks...");
+        for (Dataset ds : datasetChildren) {
+            Guestbook dsgb = ds.getGuestbook();
+            if (dsgb != null && (destinationGbs == null || !destinationGbs.contains(dsgb))) {
+                if (force == null || !force) {
+                    removeGuestbook = true;
+                    break;
+                }
+                ds.setGuestbook(null);
+            }
+            if (ds.getDatasetLinkingDataverses() != null) {
+                linkingDatasets.addAll(ds.getDatasetLinkingDataverses());
+            }
+        }
+        
+        for (DataverseLinkingDataverse dvld : linkingDataverses) {
+            logger.info("Checking linked dataverses....");
+            for (Dataverse owner : ownersToCheck){
+                if ((dvld.getLinkingDataverse()).equals(owner)){
+                    if (force == null || !force) {
+                        removeLinkDv = true;
+                        break;
+                    }
+                    ctxt.engine().submit(new DeleteLinkedDataverseCommand(getRequest(), dvld.getDataverse(), dvld));
+                    (dvld.getDataverse()).getDataverseLinkingDataverses().remove(dvld);
+                }
+            }
+        }
+        
+        for (DatasetLinkingDataverse dsld : linkingDatasets) {
+            logger.info("Checking linked datasets...");
+            for (Dataverse owner : ownersToCheck){
+                if ((dsld.getLinkingDataverse()).equals(owner)){
+                    if (force == null || !force) {
+                        removeLinkDs = true;
+                        break;
+                    }
+                    ctxt.engine().submit(new DeleteLinkedDatasetCommand(getRequest(), dsld.getDataset(), dsld));
+                    (dsld.getDataset()).getDatasetLinkingDataverses().remove(dsld);
+                }
+            }
+        }
+        
+        
+        if (removeGuestbook || removeTemplate || removeFeatDv || removeMetadataBlock || removeLinkDv || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {
                 errorString.append("Dataset guestbook is not in target dataverse. ");
@@ -217,6 +261,12 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             }
             if (removeMetadataBlock) {
                errorString.append("Dataverse metadata block is not in target dataverse. ");
+            }
+            if (removeLinkDv) {
+                errorString.append("Dataverse is linked to target dataverse or one of its parents.");
+            }
+            if (removeLinkDs) {
+                errorString.append("Dataset is linked to target dataverse or one of its parents.");
             }
             errorString.append("Please use the parameter ?forceMove=true to complete the move. This will remove anything from the dataverse that is not compatible with the target dataverse.");
             throw new IllegalCommandException(errorString.toString(), this);

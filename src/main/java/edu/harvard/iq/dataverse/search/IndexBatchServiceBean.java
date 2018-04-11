@@ -185,8 +185,7 @@ public class IndexBatchServiceBean {
             indexDataverseRecursively(child);
         }
         long end = System.currentTimeMillis();
-        logger.info("Total time to index: " + (end - start));
-
+        logger.info("Time to index so far: " + (end - start));
     }
 
 }

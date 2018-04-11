@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -219,9 +220,7 @@ public class MoveDataverseCommandTest {
                     @Override
                     public Future<String> indexDatasetInNewTransaction(Long id){
                         return null;
-                    }
-                    
-                    
+                    }                    
                 };
 
             }
@@ -247,6 +246,12 @@ public class MoveDataverseCommandTest {
             @Override
             public EntityManager em() {
                 return new NoOpTestEntityManager();
+            }
+            @Override
+            public DataverseLinkingServiceBean dvLinking() {
+                return new DataverseLinkingServiceBean() {
+                    
+                };
             }
         });
     }
