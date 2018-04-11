@@ -190,7 +190,7 @@ On Linux, you can probably get Docker from your package manager.
 
 On Mac, download the ``.dmg`` from https://www.docker.com and install it. As of this writing is it known as Docker Community Edition for Mac.
 
-On Windows, FIXME ("Docker Community Edition for Windows" maybe???).
+On Windows, we have heard reports of success using Docker on a Linux VM running in VirtualBox or similar. There's something called "Docker Community Edition for Windows" but we haven't tried it. See also the :doc:`windows` section.
 
 As explained above, we use Docker images in two different contexts:
 
