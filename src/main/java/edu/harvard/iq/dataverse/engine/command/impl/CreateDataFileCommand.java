@@ -39,6 +39,13 @@ import java.util.logging.Logger;
  *
  * @author rohit
  */
+/*
+This command was added in the FILE DOI Branch
+It was not used in that release because of performance issues with datasets with large numbers of files 250+
+It performs all of the actions currently done in the finalizeFiles in the IngestServiceBean
+
+*/
+
 @RequiredPermissions(Permission.EditDataset)
 public class CreateDataFileCommand extends AbstractCommand<DataFile>{
 

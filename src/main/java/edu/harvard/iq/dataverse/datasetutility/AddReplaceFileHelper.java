@@ -1412,18 +1412,7 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
-        /*
-        try {
-            for (DataFile dataFile : finalFileList) {
-                commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequest, null));
-            }
-        } catch (CommandException cmdex) {
-            logger.info("error in saving files:" + cmdex.getMessage());
-        }*/
-        for (DataFile dataFile : finalFileList) {
-            fileService.processFile(dataFile, workingVersion);
-        }
-
+        ingestService.finalizeFiles(workingVersion, finalFileList);
         return true;
     }
     

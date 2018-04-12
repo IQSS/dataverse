@@ -36,7 +36,6 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     private static final Logger logger = Logger.getLogger(UpdateDatasetCommand.class.getCanonicalName());
     private final Dataset theDataset;
     private final List<FileMetadata> filesToDelete;
-    private final List<DataFile> filesToAdd;
     private boolean validateLenient = false;
     private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
     
@@ -44,24 +43,17 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         super(aRequest, theDataset);
         this.theDataset = theDataset;
         this.filesToDelete = new ArrayList<>();
-        this.filesToAdd = new ArrayList<>();
     }    
     
-    public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete,  List<DataFile> filesToAdd) {
+    public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
         super(aRequest, theDataset);
         this.theDataset = theDataset;
         this.filesToDelete = filesToDelete;
-        if (filesToAdd != null){
-           this.filesToAdd = filesToAdd;
-        } else {
-           this.filesToAdd = new ArrayList<>(); 
-        }
     }
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
         super(aRequest, theDataset);
         this.theDataset = theDataset;
-        this.filesToAdd = new ArrayList<>();
         // get the latest file metadata for the file; ensuring that it is a draft version
         this.filesToDelete = new ArrayList<>();
         for (FileMetadata fmd : theDataset.getEditVersion().getFileMetadatas()) {
@@ -166,10 +158,6 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             if (fmd.getDataFile().getUnf() != null) {
                 recalculateUNF = true;
             }
-        }
-        
-        for (DataFile df : filesToAdd){
-            ctxt.files().processFile(df, theDataset.getEditVersion());
         }
 
         //we have to merge to update the database but not flush because 

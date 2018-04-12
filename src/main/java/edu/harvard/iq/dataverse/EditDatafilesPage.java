@@ -1088,20 +1088,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }            
         }               
         // Save the NEW files permanently: 
-        /*
-        try {
-            for (DataFile dataFile : newFiles) {
-                commandEngine.submit(new CreateDataFileCommand(dataFile, workingVersion, dvRequestService.getDataverseRequest(), null));
-            }
-        } catch (CommandException cmdex) {
-            logger.info("Command exception:" + cmdex.getMessage());
-        }  */      
-        //ingestService.addFilesToDataset(workingVersion, newFiles);
-            for (DataFile dataFile : newFiles) {
-                datafileService.processFile(dataFile, workingVersion);
-            }
-        
-        //boolean newDraftVersion = false; 
+        ingestService.finalizeFiles(workingVersion, newFiles);
         
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.fine("issuing the dataset update command");
@@ -1148,7 +1135,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             
             Command<Dataset> cmd;
             try {
-                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, newFiles);
+                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
                 ((UpdateDatasetCommand) cmd).setValidateLenient(true);
                 dataset = commandEngine.submit(cmd);
             

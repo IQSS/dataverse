@@ -2575,7 +2575,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } else {
-                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, newFiles);
+                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
                 ((UpdateDatasetCommand) cmd).setValidateLenient(true);  
             }
             dataset = commandEngine.submit(cmd);

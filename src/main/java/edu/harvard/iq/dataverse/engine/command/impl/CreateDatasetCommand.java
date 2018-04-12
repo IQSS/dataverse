@@ -187,7 +187,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
         }
         logger.fine("Saving the files permanently.");
-        //ctxt.ingest().addFiles(dsv, theDataset.getFiles());
+        ctxt.ingest().finalizeFiles(dsv, theDataset.getFiles());
 
         logger.log(Level.FINE, "doiProvider={0} protocol={1}  importType={2}  IdentifierRegistered=={3}", new Object[]{doiProvider, protocol, importType, theDataset.isIdentifierRegistered()});
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
@@ -230,10 +230,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         savedDataset = ctxt.em().merge(savedDataset);
 
-        //This is taking the place of the createDataFileCommand
-        for (DataFile dataFile : savedDataset.getFiles()) {
-            ctxt.files().processFile(dataFile, dsv);
-        }
 
         if (template != null) {
             ctxt.templates().incrementUsageCount(template.getId());

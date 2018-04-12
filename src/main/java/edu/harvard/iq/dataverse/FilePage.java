@@ -509,7 +509,7 @@ public class FilePage implements java.io.Serializable {
 
         Command<Dataset> cmd;
         try {
-            cmd = new UpdateDatasetCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, null);
+            cmd = new UpdateDatasetCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
             commandEngine.submit(cmd);
 
         } catch (EJBException ex) {
