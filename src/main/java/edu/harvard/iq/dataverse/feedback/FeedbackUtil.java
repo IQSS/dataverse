@@ -21,72 +21,78 @@ public class FeedbackUtil {
 
     private static final Logger logger = Logger.getLogger(FeedbackUtil.class.getCanonicalName());
 
+    // TODO: consider changing "recipient" into an object called something like FeedbackTarget
     public static List<Feedback> gatherFeedback(DvObject recipient, DataverseSession dataverseSession, String messageSubject, String userMessage, InternetAddress systemAddress, String userEmail, String dataverseSiteUrl, String installationBrandName, String supportTeamName) {
         List<Feedback> feedbacks = new ArrayList<>();
-        String contextIntro = "";
-        String contextEnding = "";
-        String contactFullName = "";
-        String toEmail = "";
+        if (isLoggedIn(dataverseSession)) {
+            userEmail = loggedInUserEmail(dataverseSession);
+        }
         if (recipient != null) {
             if (recipient.isInstanceofDataverse()) {
                 Dataverse dataverse = (Dataverse) recipient;
-                contextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", Arrays.asList(dataverseSiteUrl, dataverse.getAlias()));
-                toEmail = getDataverseEmail(dataverse);
+                String dataverseContextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", Arrays.asList(dataverseSiteUrl, dataverse.getAlias()));
+                String dataverseContextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", Arrays.asList(""));
+                List<DvObjectContact> dataverseContacts = getDataverseContacts(dataverse);
+                for (DvObjectContact dataverseContact : dataverseContacts) {
+                    Feedback feedback = new Feedback(userEmail, dataverseContact.getEmail(), messageSubject, dataverseContextIntro + userMessage + dataverseContextEnding);
+                    feedbacks.add(feedback);
+                }
+                if (!feedbacks.isEmpty()) {
+                    return feedbacks;
+                } else {
+                    // FIXME: Put this English in the bundle.
+                    String dataverseContextIntroError = "There is no contact address on file for this dataverse so this message is being sent to the system address.\n\n" + dataverseContextIntro;
+                    Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, dataverseContextIntroError + userMessage + dataverseContextEnding);
+                    feedbacks.add(feedback);
+                    return feedbacks;
+                }
             } else if (recipient.isInstanceofDataset()) {
                 Dataset dataset = (Dataset) recipient;
-                List<DvObjectContact> datasetContacts = getDatasetContacts(dataset);
-                for (DvObjectContact datasetContact : datasetContacts) {
-                    logger.fine(datasetContact.getName() + ": " + datasetContact.getEmail());
-                }
-                // FIXME: support more than one dataset contact!
-                DvObjectContact firstDatasetContact = datasetContacts.get(0);
-                // TODO: Test this greeting a lot.
-                contactFullName = getGreeting(firstDatasetContact);
                 String datasetTitle = dataset.getLatestVersion().getTitle();
                 String datasetPid = dataset.getGlobalId();
-                contextIntro = BundleUtil.getStringFromBundle("contact.context.dataset.intro", Arrays.asList(contactFullName, userEmail, installationBrandName, datasetTitle, datasetPid));
-                contextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", Arrays.asList(supportTeamName, systemAddress.toString(), dataverseSiteUrl, dataset.getGlobalId(), supportTeamName, systemAddress.toString()));
-                toEmail = getDatasetEmail(dataset);
+                String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", Arrays.asList(supportTeamName, systemAddress.getAddress(), dataverseSiteUrl, dataset.getGlobalId(), supportTeamName, systemAddress.getAddress()));
+                List<DvObjectContact> datasetContacts = getDatasetContacts(dataset);
+                for (DvObjectContact datasetContact : datasetContacts) {
+                    String contactFullName = getGreeting(datasetContact);
+                    String datasetContextIntro = BundleUtil.getStringFromBundle("contact.context.dataset.intro", Arrays.asList(contactFullName, userEmail, installationBrandName, datasetTitle, datasetPid));
+                    Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, datasetContextIntro + userMessage + datasetContextEnding);
+                    feedbacks.add(feedback);
+                }
+                if (!feedbacks.isEmpty()) {
+                    return feedbacks;
+                } else {
+                    // FIXME: Put this English in the bundle.
+                    String datasetContextIntroError = "There is no contact address on file for this dataset so this message is being sent to the system address.\n\n";
+                    Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, datasetContextIntroError + userMessage + datasetContextEnding);
+                    feedbacks.add(feedback);
+                    return feedbacks;
+                }
             } else if (recipient.isInstanceofDataFile()) {
                 DataFile datafile = (DataFile) recipient;
-                contextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", Arrays.asList(dataverseSiteUrl, datafile.getId().toString()));
-                toEmail = getDatasetEmail(datafile.getOwner());
-            }
-        }
-        if (toEmail.isEmpty()) {
-            if (systemAddress != null) {
-                toEmail = systemAddress.toString();
+                List<DvObjectContact> datasetContacts = getDatasetContacts(datafile.getOwner());
+                String fileContextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", Arrays.asList(dataverseSiteUrl, datafile.getId().toString()));
+                String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", Arrays.asList(""));
+                for (DvObjectContact datasetContact : datasetContacts) {
+                    Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, fileContextIntro + userMessage + fileContextEnding);
+                    feedbacks.add(feedback);
+                }
+                // TODO: what if feedbacks is empty?
+                return feedbacks;
             } else {
-                String defaultRecipientEmail = null;
-                toEmail = defaultRecipientEmail;
+                logger.warning("The only DvObjects supported are Dataverse, Dataset, and DataFile. No feedback sent.");
+                return Collections.EMPTY_LIST;
             }
-        }
-        if (isLoggedIn(dataverseSession) && userMessage != null) {
-            // TODO: Get the test in FeedbackUtilTest working.
-            Feedback feedback = new Feedback(loggedInUserEmail(dataverseSession), toEmail, messageSubject, contextIntro + userMessage + contextEnding);
-            feedbacks.add(feedback);
         } else {
-            if (userEmail != null && userMessage != null) {
-                Feedback feedback = new Feedback(userEmail, toEmail, messageSubject, contextIntro + userMessage + contextEnding);
+            if (systemAddress != null) {
+                String noDvObjectContextIntro = "";
+                String noDvObjectContextEnding = "";
+                Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, noDvObjectContextEnding + userMessage + noDvObjectContextIntro);
                 feedbacks.add(feedback);
                 return feedbacks;
             } else {
-                logger.warning("No feedback gathered because userEmail or userMessage was null! userEmail: " + userEmail + ". userMessage: " + userMessage);
                 return Collections.EMPTY_LIST;
             }
         }
-        return feedbacks;
-    }
-
-    private static String getDataverseEmail(Dataverse dataverse) {
-        String email = "";
-        for (DataverseContact dc : dataverse.getDataverseContacts()) {
-            if (!email.isEmpty()) {
-                email += ",";
-            }
-            email += dc.getContactEmail();
-        }
-        return email;
     }
 
     private static boolean isLoggedIn(DataverseSession dataverseSession) {
@@ -100,22 +106,13 @@ public class FeedbackUtil {
         return dataverseSession.getUser().getDisplayInfo().getEmailAddress();
     }
 
-    // Testing multiple dataset contacts is done in FeedbackApiIT.java
-    private static String getDatasetEmail(Dataset dataset) {
-        String toEmail = "";
-        for (DatasetField df : dataset.getLatestVersion().getFlatDatasetFields()) {
-            if (df.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
-                if (!toEmail.isEmpty()) {
-                    toEmail += ",";
-                }
-                toEmail += df.getValue();
-            }
+    private static List<DvObjectContact> getDataverseContacts(Dataverse dataverse) {
+        List<DvObjectContact> dataverseContacts = new ArrayList<>();
+        for (DataverseContact dc : dataverse.getDataverseContacts()) {
+            DvObjectContact dataverseContact = new DvObjectContact("", dc.getContactEmail());
+            dataverseContacts.add(dataverseContact);
         }
-        if (toEmail.isEmpty()) {
-            logger.warning("Dataset has no contact! This is a required field. Looking for a contact one level up at its parent dataverse.");
-            toEmail = getDataverseEmail(dataset.getOwner());
-        }
-        return toEmail;
+        return dataverseContacts;
     }
 
     private static List<DvObjectContact> getDatasetContacts(Dataset dataset) {
