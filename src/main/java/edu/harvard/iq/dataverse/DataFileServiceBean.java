@@ -1607,37 +1607,31 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean) {
+        //Get the maximum file identifier for a given dataset
+        //increment it
+        //make sure it's unique
+        //return the identifier
         
-        String identifier; 
-        Boolean queryDone = false;
-            Long retVal = new Long(0);
+        String identifier;
+        Long retVal;
+        Long dsId = datafile.getOwner().getId();
+        
+        Object result = em.createNativeQuery("select o.identifier  from dvobject o "
+                + "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId
+                + ")").getSingleResult();
+        
+        if (result == null) {
+            retVal = new Long(0);
+        } else {
+            retVal = (Long) result;
+        }
+
         do {
-
-            Long dsId = datafile.getOwner().getId();
-            if(!queryDone && dsId != null){
-
-                     Object result = em.createNativeQuery("select o.identifier  from dvobject o " +
-                    "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId +
-                     ")").getSingleResult();
-
-
-            if (result == null) {
-               retVal = new Long(1); 
-            } else {
-               retVal = (Long) result;
-            }
-                
-            } else {
-                retVal++;
-            }
-            queryDone = true;
-            // some diagnostics here maybe - is it possible to determine that it's failing 
-            // because the stored procedure hasn't been created in the database?
-            
-            identifier = datafile.getOwner().getIdentifier() + "/"+  retVal.toString();
+            retVal++;
+            identifier = datafile.getOwner().getIdentifier() + "/" + retVal.toString();
 
         } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
-        
+
         return identifier;
     }
 

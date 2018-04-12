@@ -271,7 +271,6 @@ public class DatasetUtil {
         }
         catch(IOException ioex){
             //TODO: Add a suitable waing message
-            System.out.print("Dataset util...");
             logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
         

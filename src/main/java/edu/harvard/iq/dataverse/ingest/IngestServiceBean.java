@@ -177,9 +177,10 @@ public class IngestServiceBean {
         }
     }
     
-    //method that does all that was done by CreateDataFileCommand
-    //Formerly called addFiles - Leonid suggested a new name to better reflect waht it does 
-    //That is finalize files that are added to a dataset.
+
+    //Method to finalize files that are added to a dataset.
+    //Sets Ingest flag
+    //saves to file system
     
     public void finalizeFiles (DatasetVersion version, List<DataFile> newFiles) {
         if (newFiles != null && newFiles.size() > 0) {
