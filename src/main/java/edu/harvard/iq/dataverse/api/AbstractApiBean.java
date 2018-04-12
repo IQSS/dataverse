@@ -4,9 +4,13 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
+import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
+import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
@@ -45,6 +49,7 @@ import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -209,6 +214,12 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DataCaptureModuleServiceBean dataCaptureModuleSvc;
+    
+    @EJB
+    protected DatasetLinkingServiceBean dsLinkingService;
+    
+    @EJB
+    protected DataverseLinkingServiceBean dvLinkingService;
 
     @EJB
     protected PasswordValidatorServiceBean passwordValidatorService;
@@ -364,7 +375,21 @@ public abstract class AbstractApiBean {
         return dv;
     }
     
-    
+    protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, Long linkedDataverseId) throws WrappedResponse {
+        DataverseLinkingDataverse dvld;
+        Dataverse dataverse = findDataverseOrDie(dataverseId);
+        try {
+            dvld = dvLinkingService.findDataverseLinkingDataverse(dataverse.getId(), linkedDataverseId);
+            if (dvld == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(dataverseId, linkedDataverseId.toString()))));
+            }
+            return dvld;
+        } catch (NumberFormatException nfe) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(dataverseId, linkedDataverseId.toString()))));
+        }
+    }
+
     protected Dataset findDatasetOrDie(String id) throws WrappedResponse {
         Dataset dataset;
         if (id.equals(PERSISTENT_ID_KEY)) {
@@ -390,6 +415,33 @@ public abstract class AbstractApiBean {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
             }
+        }
+    }
+    
+    protected DatasetLinkingDataverse findDatasetLinkingDataverseOrDie(String datasetId, String linkedDataverseId) throws WrappedResponse {
+        DatasetLinkingDataverse dsld;
+        if (datasetId.equals(PERSISTENT_ID_KEY)) {
+            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+            if (persistentId == null) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+            }
+            
+            Dataset dataset = datasetSvc.findByGlobalId(persistentId);
+            if (dataset == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+            }
+            datasetId = dataset.getId().toString();
+        } 
+        try {
+            dsld = dsLinkingService.findDatasetLinkingDataverse(Long.parseLong(datasetId), Long.parseLong(linkedDataverseId));
+            if (dsld == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.ids", Arrays.asList(datasetId, linkedDataverseId))));
+            }
+            return dsld;
+        } catch (NumberFormatException nfe) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.bad.ids", Arrays.asList(datasetId, linkedDataverseId))));
         }
     }
 

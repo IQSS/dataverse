@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
@@ -266,6 +267,15 @@ public class Dataverses extends AbstractApiBean {
         return response( req -> {
 			execCommand( new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
 			return ok( "Dataverse " + idtf  +" deleted");
+        });
+	}
+        
+        @DELETE
+	@Path("{dataverseId}/deleteLink/{linkedDataverseId}")
+	public Response deleteDataverseLinkingDataverse( @PathParam("dataverseId") String dataverseId, @PathParam("linkedDataverseId") Long linkedDataverseId) {
+		return response(req -> {
+			execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(dataverseId), findDataverseLinkingDataverseOrDie(dataverseId, linkedDataverseId)));
+			return ok("Link from Dataverse " + dataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
         });
 	}
 	

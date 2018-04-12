@@ -5,8 +5,8 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -23,25 +23,24 @@ import java.util.Collections;
  */
 
 @RequiredPermissions( Permission.EditDataverse )
-public class DeleteLinkedDataverseCommand extends AbstractCommand<Dataverse> {
-
-    private final DataverseLinkingDataverse doomed;
-    private final Dataverse editedDv;
+public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Dataset>{
+    private final DatasetLinkingDataverse doomed;
+    private final Dataset editedDs;
     
-    public DeleteLinkedDataverseCommand(DataverseRequest aRequest, Dataverse editedDv , DataverseLinkingDataverse doomed) {
-        super(aRequest, editedDv);
-        this.editedDv = editedDv;
+    public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs , DatasetLinkingDataverse doomed) {
+        super(aRequest, editedDs);
+        this.editedDs = editedDs;
         this.doomed = doomed;
     }
-
+    
     @Override
-    public Dataverse execute(CommandContext ctxt) throws CommandException {
+    public Dataset execute(CommandContext ctxt) throws CommandException {
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Move Dataset can only be called by superusers.",
-                    this, Collections.singleton(Permission.DeleteDataverse), editedDv);
+                    this, Collections.singleton(Permission.DeleteDataverse), editedDs);
         }
-        Dataverse merged = ctxt.em().merge(editedDv);
-        DataverseLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
+        Dataset merged = ctxt.em().merge(editedDs);
+        DatasetLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
         return merged;
     } 
