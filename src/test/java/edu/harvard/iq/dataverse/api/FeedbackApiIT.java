@@ -74,6 +74,7 @@ public class FeedbackApiIT {
         response.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.toEmail", CoreMatchers.equalTo("ContactEmail1@mailinator.com,ContactEmail2@mailinator.com"))
+                // TODO: Update this assertion.
                 .body("data.body", CoreMatchers.equalTo("The message below was sent from the Contact button at " + RestAssured.baseURI + "/dataset.xhtml?persistentId=" + pid + "\n\nAre you interested writing a grant based on this research?"));
     }
 

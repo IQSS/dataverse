@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -197,13 +198,19 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
 
     public String sendMessage() {
-        Feedback feedback = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl());
-        if (feedback == null) {
-            logger.warning("Feedback could not be gathered! Nothing sent.");
+        // FIXME: move dataverseService.findRootDataverse() to init
+        String rootDataverseName = dataverseService.findRootDataverse().getName();
+        String installationBrandName = BrandingUtil.getInstallationBrandName(rootDataverseName);
+        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName);
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName);
+        if (feedbacks.isEmpty()) {
+            logger.warning("No feedback has been sent!");
             return null;
         }
-        logger.fine("feedback: " + feedback);
-        mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getSubject(), feedback.getBody());
+        for (Feedback feedback : feedbacks) {
+            logger.fine("sending feedback: " + feedback);
+            mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getSubject(), feedback.getBody());
+        }
         return null;
     }
 

@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,14 +41,17 @@ import org.junit.BeforeClass;
 
 public class FeedbackUtilTest {
 
-    private static String baseUrl = "https://dataverse.librascholar.edu";
-    private static String userEmail = "personClickingContactOrSupportButton@example.com";
-    private static DataverseSession dataverseSessionNull = null;
+    private static final String installationBrandName = "LibraScholar";
+    private static final String supportTeamName = "LibraScholar SWAT Team";
+    private static final String baseUrl = "https://dataverse.librascholar.edu";
+    private static final String userEmail = "personClickingContactOrSupportButton@example.com";
+    private static final DataverseSession dataverseSessionNull = null;
     private static DataverseSession dataverseSessionAuthenticated;
     private static DatasetVersion dsVersion;
+    private static DatasetVersion dsVersion2;
     private static MockDatasetFieldSvc datasetFieldTypeSvc;
     private static InternetAddress systemAddress;
-    private static boolean weKnowHowToCreateMockAuthenticatedUsers = false;
+    private static final boolean weKnowHowToCreateMockAuthenticatedUsers = false;
 
     @BeforeClass
     public static void setUpClass() throws IOException, JsonParseException, AddressException {
@@ -138,6 +142,15 @@ public class FeedbackUtilTest {
         JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
         dsVersion = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
 
+        File datasetVersionJson2 = new File("tests/data/datasetContacts1.json");
+        String datasetVersionAsJson2 = new String(Files.readAllBytes(Paths.get(datasetVersionJson2.getAbsolutePath())));
+
+        JsonReader jsonReader12 = Json.createReader(new StringReader(datasetVersionAsJson2));
+        JsonObject json12 = jsonReader12.readObject();
+
+        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, null);
+        dsVersion2 = jsonParser2.parseDatasetVersion(json12.getJsonObject("datasetVersion"));
+
         FeedbackUtil justForCodeCoverage = new FeedbackUtil();
     }
 
@@ -152,7 +165,8 @@ public class FeedbackUtilTest {
         String messageSubject = "nice dataverse";
         String userMessage = "Let's talk!";
 //        String userEmail = "hasQuestion@example.com";
-        Feedback feedback = FeedbackUtil.gatherFeedback(dataverse, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl);
+        List<Feedback> feedbacks1 = FeedbackUtil.gatherFeedback(dataverse, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        Feedback feedback = feedbacks1.get(0);
         assertEquals(messageSubject, feedback.getSubject());
         assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n" + userMessage, feedback.getBody());
         assertEquals("dvContact1@librascholar.edu,dvContact2@librascholar.edu", feedback.getToEmail());
@@ -164,7 +178,8 @@ public class FeedbackUtilTest {
         assertEquals("nice dataverse", jsonObject.getString("subject"));
         assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n" + userMessage, jsonObject.getString("body"));
         dataverse.setDataverseContacts(new ArrayList<>());
-        feedback = FeedbackUtil.gatherFeedback(dataverse, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl);
+        List<Feedback> feedbacks2 = FeedbackUtil.gatherFeedback(dataverse, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        feedback = feedbacks2.get(0);
         assertEquals("support@librascholar.edu", feedback.getToEmail());
     }
 
@@ -173,8 +188,8 @@ public class FeedbackUtilTest {
         Dataset dataset = new Dataset();
 
         List<DatasetVersion> versions = new ArrayList<>();
-        System.out.println("dsversion: " + dsVersion);
-        DatasetVersion datasetVersionIn = dsVersion;
+        System.out.println("dsversion: " + dsVersion2);
+        DatasetVersion datasetVersionIn = dsVersion2;
         datasetVersionIn.setVersionState(DatasetVersion.VersionState.RELEASED);
         versions.add(datasetVersionIn);
         dataset.setVersions(versions);
@@ -188,16 +203,33 @@ public class FeedbackUtilTest {
         DataverseSession dataverseSession = null;
         String messageSubject = "nice file";
         String userMessage = "Let's talk!";
-//        String userEmail = "hsimpson@mailinator.com";
-        Feedback feedback = FeedbackUtil.gatherFeedback(dataset, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl);
-        System.out.println("feedback: " + feedback);
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dataset, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        System.out.println("feedbacks: " + feedbacks);
+        assertEquals(1, feedbacks.size());
+        Feedback feedback = feedbacks.get(0);
         System.out.println("Subject: " + feedback.getSubject());
         System.out.println("Body: " + feedback.getBody());
         System.out.println("From: " + feedback.getFromEmail());
         System.out.println("To: " + feedback.getToEmail());
-        assertEquals("finch@mailinator.com", feedback.getToEmail());
+        assertEquals("ContactEmail1@mailinator.com,ContactEmail2@mailinator.com", feedback.getToEmail());
         assertEquals(messageSubject, feedback.getSubject());
-        assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n" + userMessage, feedback.getBody());
+        String expected = "Hello Tom Brady,\n\n"
+                // FIXME: change from "personClickingContactOrSupportButton@example.com" to "Homer Simpson" or whatever (add to contact form).
+                + "You have just been sent the following message from " + feedback.getFromEmail() + " "
+                + "via the " + installationBrandName + " hosted dataset "
+                + "titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
+                + "---\n\n"
+                + userMessage + "\n\n"
+                + "---\n\n"
+                + supportTeamName + "\n"
+                + systemAddress + "\n\n"
+                + "Go to dataset https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n"
+                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemAddress + ". To respond directly to the individual who sent the message, simply reply to this email.";
+        System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+        System.out.println("EXPECTED:\n\n" + expected);
+        System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+        System.out.println("ACTUAL:\n\n" + feedback.getBody());
+        assertEquals(expected, feedback.getBody());
     }
 
     @Test
@@ -238,7 +270,8 @@ public class FeedbackUtilTest {
 
         String messageSubject = "nice file";
         String userMessage = "Let's talk!";
-        Feedback feedback = FeedbackUtil.gatherFeedback(dataFile, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl);
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dataFile, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        Feedback feedback = feedbacks.get(0);
         System.out.println("feedback: " + feedback);
         System.out.println("Subject: " + feedback.getSubject());
         System.out.println("Body: " + feedback.getBody());
@@ -254,17 +287,19 @@ public class FeedbackUtilTest {
         String messageSubject = "I'm clicking the support button.";
         String userMessage = "Help!";
         DvObject dvObject = null;
-        Feedback feedback = FeedbackUtil.gatherFeedback(dvObject, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl);
+        List<Feedback> feedbacks1 = FeedbackUtil.gatherFeedback(dvObject, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        Feedback feedback = feedbacks1.get(0);
         assertEquals(messageSubject, feedback.getSubject());
         assertEquals("Help!", feedback.getBody());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         assertEquals("personClickingContactOrSupportButton@example.com", feedback.getFromEmail());
         InternetAddress nullSystemAddress = null;
-        feedback = FeedbackUtil.gatherFeedback(dvObject, dataverseSessionNull, messageSubject, userMessage, nullSystemAddress, userEmail, baseUrl);
+        List<Feedback> feedbacks2 = FeedbackUtil.gatherFeedback(dvObject, dataverseSessionNull, messageSubject, userMessage, nullSystemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        feedback = feedbacks2.get(0);
         assertEquals(null, feedback.getToEmail());
         String nullUserMessage = null;
-        feedback = FeedbackUtil.gatherFeedback(dvObject, dataverseSessionNull, messageSubject, nullUserMessage, nullSystemAddress, userEmail, baseUrl);
-        assertEquals(null, feedback);
+        List<Feedback> feedbacks3 = FeedbackUtil.gatherFeedback(dvObject, dataverseSessionNull, messageSubject, nullUserMessage, nullSystemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        assertEquals(Collections.EMPTY_LIST, feedbacks3);
     }
 
     @Test
@@ -275,7 +310,8 @@ public class FeedbackUtilTest {
         String messageSubject = "I'm clicking the support button.";
         String userMessage = "Help!";
         DvObject dvObject = null;
-        Feedback feedback = FeedbackUtil.gatherFeedback(dvObject, dataverseSessionAuthenticated, messageSubject, userMessage, systemAddress, userEmail, baseUrl);
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dvObject, dataverseSessionAuthenticated, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        Feedback feedback = feedbacks.get(0);
         assertEquals(messageSubject, feedback.getSubject());
         assertEquals("Help!", feedback.getBody());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
