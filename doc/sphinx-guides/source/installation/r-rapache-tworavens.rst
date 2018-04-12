@@ -236,7 +236,7 @@ a. download and unzip the application
 (though you may have already done so, in step ``2.`` above - see the instructions there). 
 
 
-b. Rename the resulting directory ``dataexplore``...
+b. Rename the resulting directory "dataexplore" ...
 --------------------------------------------------------
 
 ...and place it in the web root directory of your apache server. We'll assume ``/var/www/html/dataexplore`` in the examples below::
