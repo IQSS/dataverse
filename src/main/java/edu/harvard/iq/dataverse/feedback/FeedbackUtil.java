@@ -33,17 +33,18 @@ public class FeedbackUtil {
             messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.dvobject", Arrays.asList(installationBrandName, messageSubject));
             if (recipient.isInstanceofDataverse()) {
                 Dataverse dataverse = (Dataverse) recipient;
-                String dataverseContextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", Arrays.asList(dataverseSiteUrl, dataverse.getAlias()));
-                String dataverseContextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", Arrays.asList(""));
+                String dataverseContextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", Arrays.asList(supportTeamName, systemAddress.getAddress(), dataverseSiteUrl, dataverse.getAlias(), supportTeamName, systemAddress.getAddress()));
                 List<DvObjectContact> dataverseContacts = getDataverseContacts(dataverse);
                 for (DvObjectContact dataverseContact : dataverseContacts) {
+                    String placeHolderIfDataverseContactsGetNames = "";
+                    String dataverseContextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", Arrays.asList(placeHolderIfDataverseContactsGetNames, userEmail, installationBrandName, dataverse.getAlias()));
                     Feedback feedback = new Feedback(userEmail, dataverseContact.getEmail(), messageSubject, dataverseContextIntro + userMessage + dataverseContextEnding);
                     feedbacks.add(feedback);
                 }
                 if (!feedbacks.isEmpty()) {
                     return feedbacks;
                 } else {
-                    String dataverseContextIntroError = BundleUtil.getStringFromBundle("contact.context.dataverse.noContact") + dataverseContextIntro;
+                    String dataverseContextIntroError = BundleUtil.getStringFromBundle("contact.context.dataverse.noContact");
                     Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, dataverseContextIntroError + userMessage + dataverseContextEnding);
                     feedbacks.add(feedback);
                     return feedbacks;

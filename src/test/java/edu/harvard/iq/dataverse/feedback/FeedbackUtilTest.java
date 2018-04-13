@@ -173,12 +173,25 @@ public class FeedbackUtilTest {
         dataverse.setDataverseContacts(dataverseContacts);
         String messageSubject = "nice dataverse";
         String userMessage = "Let's talk!";
-//        String userEmail = "hasQuestion@example.com";
         System.out.println("first gather feedback");
         List<Feedback> feedbacks1 = FeedbackUtil.gatherFeedback(dataverse, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
         Feedback feedback = feedbacks1.get(0);
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
-        assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n" + userMessage, feedback.getBody());
+        String expectedBody
+                = "You have just been sent the following message from " + userEmail + " "
+                + "via the " + installationBrandName + " hosted dataverse named \"dvAlias1\":\n\n"
+                + "---\n\n"
+                + userMessage + "\n\n"
+                + "---\n\n"
+                + supportTeamName + "\n"
+                + systemEmail + "\n\n"
+                + "Go to dataverse https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n"
+                + "You received this email because you have been listed as a contact for the dataverse. "
+                + "If you believe this was an error, please contact "
+                + supportTeamName + " at " + systemEmail + ". "
+                + "To respond directly to the individual who sent the message, simply reply to this email.";
+        System.out.println("body:\n\n" + feedback.getBody());
+        assertEquals(expectedBody, feedback.getBody());
         assertEquals("dvContact1@librascholar.edu", feedback.getToEmail());
         assertEquals("personClickingContactOrSupportButton@example.com", feedback.getFromEmail());
         JsonObject jsonObject = feedback.toJsonObjectBuilder().build();
@@ -186,16 +199,14 @@ public class FeedbackUtilTest {
         assertEquals("personClickingContactOrSupportButton@example.com", jsonObject.getString("fromEmail"));
         assertEquals("dvContact1@librascholar.edu", jsonObject.getString("toEmail"));
         assertEquals(installationBrandName + " contact: " + "nice dataverse", jsonObject.getString("subject"));
-        assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n" + userMessage, jsonObject.getString("body"));
         dataverse.setDataverseContacts(new ArrayList<>());
         System.out.println("second gather feedback");
         List<Feedback> feedbacks2 = FeedbackUtil.gatherFeedback(dataverse, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
         System.out.println("feedbacks2: " + feedbacks2);
         feedback = feedbacks2.get(0);
         assertEquals("support@librascholar.edu", feedback.getToEmail());
-        String expectedBodyNoDataverseContacts = "There is no contact address on file for this dataverse so this message is being sent to the system address.\n\n"
-                + "The message below was sent from the Contact button at https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n";
-        assertEquals(expectedBodyNoDataverseContacts + userMessage, feedback.getBody());
+        System.out.println("body:\n\n" + feedback.getBody());
+        assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataverse so this message is being sent to the system address."));
     }
 
     @Test
