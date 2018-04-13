@@ -35,8 +35,6 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.validation.constraints.AssertTrue;
-import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -218,7 +216,7 @@ public class FeedbackUtilTest {
         dataset.setOwner(dataverse);
 
         DataverseSession dataverseSession = null;
-        String messageSubject = "nice file";
+        String messageSubject = "nice dataset";
         String userMessage = "Let's talk!";
         List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dataset, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
         System.out.println("feedbacks: " + feedbacks);
@@ -232,7 +230,7 @@ public class FeedbackUtilTest {
         assertEquals(messageSubject, feedback.getSubject());
         String expected = "Hello Tom Brady,\n\n"
                 // FIXME: change from "personClickingContactOrSupportButton@example.com" to "Homer Simpson" or whatever (add to contact form).
-                + "You have just been sent the following message from " + feedback.getFromEmail() + " "
+                + "You have just been sent the following message from " + userEmail + " "
                 + "via the " + installationBrandName + " hosted dataset "
                 + "titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
                 + "---\n\n"
@@ -266,7 +264,7 @@ public class FeedbackUtilTest {
         dataset.setOwner(dataverse);
 
         DataverseSession dataverseSession = null;
-        String messageSubject = "nice file";
+        String messageSubject = "nice dataset";
         String userMessage = "Let's talk!";
         List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dataset, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
         System.out.println("feedbacks: " + feedbacks);
@@ -301,6 +299,7 @@ public class FeedbackUtilTest {
     @Test
     public void testGatherFeedbackOnFile() {
 
+        // TODO: Consider switching to MocksFactory.makeDataFile()
         FileMetadata fmd = new FileMetadata();
 //        DatasetVersion dsVersion = new DatasetVersion();
         DataFile dataFile = new DataFile();
@@ -313,11 +312,15 @@ public class FeedbackUtilTest {
         dataFile.setTags(dataFileTags);
         fmd.setDatasetVersion(dsVersion);
         fmd.setDataFile(dataFile);
+        fmd.setLabel("file.txt");
         List<DataFileCategory> fileCategories = new ArrayList<>();
         DataFileCategory dataFileCategory = new DataFileCategory();
         dataFileCategory.setName("Data");
         fileCategories.add(dataFileCategory);
         fmd.setCategories(fileCategories);
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        fileMetadatas.add(fmd);
+        dataFile.setFileMetadatas(fileMetadatas);;
         Dataset dataset = new Dataset();
         dataFile.setOwner(dataset);
 
@@ -345,13 +348,27 @@ public class FeedbackUtilTest {
         System.out.println("To: " + feedback.getToEmail());
         assertEquals(messageSubject, feedback.getSubject());
         assertEquals("finch@mailinator.com", feedback.getToEmail());
-        assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/file.xhtml?fileId=42\n\n" + userMessage, feedback.getBody());
+        String expectedBody
+                = "Attention Dataset Contact:\n\n"
+                + "You have just been sent the following message from " + userEmail + " "
+                + "via the LibraScholar hosted file named \"file.txt\" "
+                + "from the dataset titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
+                + "---\n\n"
+                + userMessage + "\n\n"
+                + "---\n\n"
+                + supportTeamName + "\n"
+                + systemEmail + "\n\n"
+                + "Go to file https://dataverse.librascholar.edu/file.xhtml?fileId=42\n\n"
+                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";;
+        System.out.println("body:\n\n" + feedback.getBody());
+        assertEquals(expectedBody, feedback.getBody());
 
     }
 
     @Test
     public void testGatherFeedbackOnFileNoContacts() {
 
+        // TODO: Consider switching to MocksFactory.makeDataFile()
         FileMetadata fmd = new FileMetadata();
 //        DatasetVersion dsVersion = new DatasetVersion();
         DataFile dataFile = new DataFile();
@@ -364,11 +381,15 @@ public class FeedbackUtilTest {
         dataFile.setTags(dataFileTags);
         fmd.setDatasetVersion(dsVersionNoContacts);
         fmd.setDataFile(dataFile);
+        fmd.setLabel("file.txt");
         List<DataFileCategory> fileCategories = new ArrayList<>();
         DataFileCategory dataFileCategory = new DataFileCategory();
         dataFileCategory.setName("Data");
         fileCategories.add(dataFileCategory);
         fmd.setCategories(fileCategories);
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        fileMetadatas.add(fmd);
+        dataFile.setFileMetadatas(fileMetadatas);;
         Dataset dataset = new Dataset();
         dataFile.setOwner(dataset);
 
@@ -395,6 +416,7 @@ public class FeedbackUtilTest {
         System.out.println("To: " + feedback.getToEmail());
         assertEquals(messageSubject, feedback.getSubject());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
+        // TODO: Consider doing a more thorough test that just "starts with".
         assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataset so this message is being sent to the system address."));
     }
 

@@ -62,24 +62,29 @@ public class FeedbackUtil {
                 if (!feedbacks.isEmpty()) {
                     return feedbacks;
                 } else {
+                    // TODO: Add more of an intro for the person receiving the system email in this "no dataset contact" scenario?
                     Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + datasetContextEnding);
                     feedbacks.add(feedback);
                     return feedbacks;
                 }
             } else {
                 DataFile datafile = (DataFile) recipient;
+                String datasetTitle = datafile.getOwner().getLatestVersion().getTitle();
+                String datasetPid = datafile.getOwner().getGlobalId();
+                String filename = datafile.getFileMetadatas().get(0).getLabel();
                 List<DvObjectContact> datasetContacts = getDatasetContacts(datafile.getOwner());
-                String fileContextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", Arrays.asList(dataverseSiteUrl, datafile.getId().toString()));
-                String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", Arrays.asList(""));
+                String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", Arrays.asList(supportTeamName, systemAddress.getAddress(), dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemAddress.getAddress()));
                 for (DvObjectContact datasetContact : datasetContacts) {
+                    String contactFullName = getGreeting(datasetContact);
+                    String fileContextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", Arrays.asList(contactFullName, userEmail, installationBrandName, filename, datasetTitle, datasetPid));
                     Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, fileContextIntro + userMessage + fileContextEnding);
                     feedbacks.add(feedback);
                 }
                 if (!feedbacks.isEmpty()) {
                     return feedbacks;
                 } else {
-                    String datasetContextEnding = "";
-                    Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + datasetContextEnding);
+                    // TODO: Add more of an intro for the person receiving the system email in this "no dataset contact" scenario?
+                    Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + fileContextEnding);
                     feedbacks.add(feedback);
                     return feedbacks;
                 }
@@ -127,9 +132,11 @@ public class FeedbackUtil {
                     for (DatasetField subField : authorValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
                             contactName = subField.getDisplayValue();
+                            logger.fine("contactName: " + contactName);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
                             contactEmail = subField.getDisplayValue();
+                            logger.fine("contactEmail: " + contactEmail);
                         }
                     }
                     if (contactEmail != null) {
@@ -156,9 +163,12 @@ public class FeedbackUtil {
      * Some day it might be nice to store whether an author or a contact is a
      * person or an organization.
      */
-    private static String getGreeting(DvObjectContact firstDatasetContact) {
+    private static String getGreeting(DvObjectContact dvObjectContact) {
+        logger.fine("dvObjectContact: " + dvObjectContact);
         try {
-            String lastFirstString = firstDatasetContact.getName();
+            String name = dvObjectContact.getName();
+            logger.fine("dvObjectContact name: " + name);
+            String lastFirstString = dvObjectContact.getName();
             String[] lastFirstParts = lastFirstString.split(",");
             String last = lastFirstParts[0];
             String first = lastFirstParts[1];
