@@ -30,6 +30,7 @@ public class FeedbackUtil {
             userEmail = loggedInUserEmail(dataverseSession);
         }
         if (recipient != null) {
+            messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.dvobject", Arrays.asList(installationBrandName, messageSubject));
             if (recipient.isInstanceofDataverse()) {
                 Dataverse dataverse = (Dataverse) recipient;
                 String dataverseContextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", Arrays.asList(dataverseSiteUrl, dataverse.getAlias()));
@@ -90,6 +91,7 @@ public class FeedbackUtil {
                 }
             }
         } else {
+            messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.support", Arrays.asList(installationBrandName, messageSubject));
             if (systemAddress != null) {
                 String noDvObjectContextIntro = "";
                 String noDvObjectContextEnding = "";

@@ -177,7 +177,7 @@ public class FeedbackUtilTest {
         System.out.println("first gather feedback");
         List<Feedback> feedbacks1 = FeedbackUtil.gatherFeedback(dataverse, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
         Feedback feedback = feedbacks1.get(0);
-        assertEquals(messageSubject, feedback.getSubject());
+        assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n" + userMessage, feedback.getBody());
         assertEquals("dvContact1@librascholar.edu", feedback.getToEmail());
         assertEquals("personClickingContactOrSupportButton@example.com", feedback.getFromEmail());
@@ -185,7 +185,7 @@ public class FeedbackUtilTest {
         System.out.println("json: " + jsonObject);
         assertEquals("personClickingContactOrSupportButton@example.com", jsonObject.getString("fromEmail"));
         assertEquals("dvContact1@librascholar.edu", jsonObject.getString("toEmail"));
-        assertEquals("nice dataverse", jsonObject.getString("subject"));
+        assertEquals(installationBrandName + " contact: " + "nice dataverse", jsonObject.getString("subject"));
         assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n" + userMessage, jsonObject.getString("body"));
         dataverse.setDataverseContacts(new ArrayList<>());
         System.out.println("second gather feedback");
@@ -227,7 +227,7 @@ public class FeedbackUtilTest {
         System.out.println("From: " + feedback.getFromEmail());
         System.out.println("To: " + feedback.getToEmail());
         assertEquals("ContactEmail1@mailinator.com", feedback.getToEmail());
-        assertEquals(messageSubject, feedback.getSubject());
+        assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         String expected = "Hello Tom Brady,\n\n"
                 // FIXME: change from "personClickingContactOrSupportButton@example.com" to "Homer Simpson" or whatever (add to contact form).
                 + "You have just been sent the following message from " + userEmail + " "
@@ -275,7 +275,7 @@ public class FeedbackUtilTest {
         System.out.println("From: " + feedback.getFromEmail());
         System.out.println("To: " + feedback.getToEmail());
         assertEquals(systemEmail, feedback.getToEmail());
-        assertEquals(messageSubject, feedback.getSubject());
+        assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         String expected = "There is no contact address on file for this dataset so this message is being sent to the system address.\n\n"
                 // FIXME: Add more context for person who receives systemEmail messages.
                 // FIXME: change from "personClickingContactOrSupportButton@example.com" to "Homer Simpson" or whatever (add to contact form).
@@ -346,7 +346,7 @@ public class FeedbackUtilTest {
         System.out.println("Body: " + feedback.getBody());
         System.out.println("From: " + feedback.getFromEmail());
         System.out.println("To: " + feedback.getToEmail());
-        assertEquals(messageSubject, feedback.getSubject());
+        assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         assertEquals("finch@mailinator.com", feedback.getToEmail());
         String expectedBody
                 = "Attention Dataset Contact:\n\n"
@@ -414,7 +414,7 @@ public class FeedbackUtilTest {
         System.out.println("Body: " + feedback.getBody());
         System.out.println("From: " + feedback.getFromEmail());
         System.out.println("To: " + feedback.getToEmail());
-        assertEquals(messageSubject, feedback.getSubject());
+        assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         // TODO: Consider doing a more thorough test that just "starts with".
         assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataset so this message is being sent to the system address."));
@@ -428,7 +428,7 @@ public class FeedbackUtilTest {
         List<Feedback> feedbacks1 = FeedbackUtil.gatherFeedback(nullDvObject, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
         System.out.println("feedbacks1: " + feedbacks1);
         Feedback feedback = feedbacks1.get(0);
-        assertEquals(messageSubject, feedback.getSubject());
+        assertEquals(installationBrandName + " support request: " + messageSubject, feedback.getSubject());
         assertEquals("Help!", feedback.getBody());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         assertEquals("personClickingContactOrSupportButton@example.com", feedback.getFromEmail());
