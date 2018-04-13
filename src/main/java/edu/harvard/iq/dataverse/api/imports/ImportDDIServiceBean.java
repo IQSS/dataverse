@@ -119,11 +119,11 @@ public class ImportDDIServiceBean {
     } 
     
     private boolean isHarvestImport(ImportType importType) {
-        return importType.equals(ImportType.HARVEST) || importType.equals(ImportType.HARVEST_WITH_FILES);
+        return importType.equals(ImportType.HARVEST);
     }
     
     private boolean isHarvestWithFilesImport(ImportType importType) {
-        return importType.equals(ImportType.HARVEST_WITH_FILES);
+        return importType.equals(ImportType.HARVEST);
     }
     
     private boolean isNewImport(ImportType importType) {

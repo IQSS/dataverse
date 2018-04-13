@@ -225,7 +225,7 @@ public class ImportServiceBean {
                 // select whether you want to harvest with or without files, 
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
                 logger.fine("importing DDI "+metadataFile.getAbsolutePath());
-                dsDTO = importDDIService.doImport(ImportType.HARVEST_WITH_FILES, xmlToParse);
+                dsDTO = importDDIService.doImport(ImportType.HARVEST, xmlToParse);
             } catch (IOException | XMLStreamException | ImportException e) {
                 throw new ImportException("Failed to process DDI XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
@@ -449,7 +449,8 @@ public class ImportServiceBean {
                     DatasetFieldValue f = v.getRootBean();
                     boolean fixed = false;
                     boolean converted = false;
-                    if ((importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) && settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                    if ( (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) && 
+                         settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
                         fixed = processMigrationValidationError(f, cleanupLog, fileName);
                         converted = true;
                         if (fixed) {
