@@ -126,25 +126,25 @@ public class FeedbackUtil {
     }
 
     private static List<DvObjectContact> getDatasetContacts(Dataset dataset) {
-        List<DvObjectContact> retList = new ArrayList<>();
+        List<DvObjectContact> datasetContacts = new ArrayList<>();
         for (DatasetField dsf : dataset.getLatestVersion().getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
                 String contactName = null;
                 String contactEmail = null;
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                for (DatasetFieldCompoundValue datasetContactValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : datasetContactValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
-                            contactName = subField.getDisplayValue();
+                            contactName = subField.getValue();
                             logger.fine("contactName: " + contactName);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
-                            contactEmail = subField.getDisplayValue();
+                            contactEmail = subField.getValue();
                             logger.fine("contactEmail: " + contactEmail);
                         }
                     }
                     if (contactEmail != null) {
                         DvObjectContact datasetContact = new DvObjectContact(contactName, contactEmail);
-                        retList.add(datasetContact);
+                        datasetContacts.add(datasetContact);
                     } else {
                         logger.warning("email missing for contact in dataset " + dataset.getIdentifier());
                     }
@@ -152,7 +152,7 @@ public class FeedbackUtil {
 
             }
         }
-        return retList;
+        return datasetContacts;
     }
 
     /**
