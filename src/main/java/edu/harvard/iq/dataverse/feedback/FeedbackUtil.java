@@ -21,6 +21,8 @@ public class FeedbackUtil {
 
     private static final Logger logger = Logger.getLogger(FeedbackUtil.class.getCanonicalName());
 
+    private static final String NO_DATASET_CONTACT_INTRO = BundleUtil.getStringFromBundle("contact.context.dataset.noContact");
+
     // TODO: consider changing "recipient" into an object called something like FeedbackTarget
     public static List<Feedback> gatherFeedback(DvObject recipient, DataverseSession dataverseSession, String messageSubject, String userMessage, InternetAddress systemAddress, String userEmail, String dataverseSiteUrl, String installationBrandName, String supportTeamName) {
         List<Feedback> feedbacks = new ArrayList<>();
@@ -40,8 +42,7 @@ public class FeedbackUtil {
                 if (!feedbacks.isEmpty()) {
                     return feedbacks;
                 } else {
-                    // FIXME: Put this English in the bundle.
-                    String dataverseContextIntroError = "There is no contact address on file for this dataverse so this message is being sent to the system address.\n\n" + dataverseContextIntro;
+                    String dataverseContextIntroError = BundleUtil.getStringFromBundle("contact.context.dataverse.noContact") + dataverseContextIntro;
                     Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, dataverseContextIntroError + userMessage + dataverseContextEnding);
                     feedbacks.add(feedback);
                     return feedbacks;
@@ -61,13 +62,11 @@ public class FeedbackUtil {
                 if (!feedbacks.isEmpty()) {
                     return feedbacks;
                 } else {
-                    // FIXME: Put this English in the bundle.
-                    String datasetContextIntroError = "There is no contact address on file for this dataset so this message is being sent to the system address.\n\n";
-                    Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, datasetContextIntroError + userMessage + datasetContextEnding);
+                    Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + datasetContextEnding);
                     feedbacks.add(feedback);
                     return feedbacks;
                 }
-            } else if (recipient.isInstanceofDataFile()) {
+            } else {
                 DataFile datafile = (DataFile) recipient;
                 List<DvObjectContact> datasetContacts = getDatasetContacts(datafile.getOwner());
                 String fileContextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", Arrays.asList(dataverseSiteUrl, datafile.getId().toString()));
@@ -76,11 +75,14 @@ public class FeedbackUtil {
                     Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, fileContextIntro + userMessage + fileContextEnding);
                     feedbacks.add(feedback);
                 }
-                // TODO: what if feedbacks is empty?
-                return feedbacks;
-            } else {
-                logger.warning("The only DvObjects supported are Dataverse, Dataset, and DataFile. No feedback sent.");
-                return Collections.EMPTY_LIST;
+                if (!feedbacks.isEmpty()) {
+                    return feedbacks;
+                } else {
+                    String datasetContextEnding = "";
+                    Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + datasetContextEnding);
+                    feedbacks.add(feedback);
+                    return feedbacks;
+                }
             }
         } else {
             if (systemAddress != null) {
@@ -119,9 +121,7 @@ public class FeedbackUtil {
         List<DvObjectContact> retList = new ArrayList<>();
         for (DatasetField dsf : dataset.getLatestVersion().getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
-                // FIXME: Put English in bundle
-                String saneDefaultForName = "dataset contact";
-                String contactName = saneDefaultForName;
+                String contactName = null;
                 String contactEmail = null;
                 for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                     for (DatasetField subField : authorValue.getChildDatasetFields()) {
@@ -162,12 +162,10 @@ public class FeedbackUtil {
             String[] lastFirstParts = lastFirstString.split(",");
             String last = lastFirstParts[0];
             String first = lastFirstParts[1];
-            // TODO: Move this English to the bundle.
-            return "Hello " + first.trim() + " " + last.trim() + ",";
+            return BundleUtil.getStringFromBundle("contact.context.dataset.greeting.helloFirstLast", Arrays.asList(first.trim(), last.trim()));
         } catch (Exception ex) {
             logger.warning("problem in getGreeting: " + ex);
-            // TODO: Move this English to the bundle.
-            return "Attention Dataset Contact";
+            return BundleUtil.getStringFromBundle("contact.context.dataset.greeting.organization");
         }
     }
 

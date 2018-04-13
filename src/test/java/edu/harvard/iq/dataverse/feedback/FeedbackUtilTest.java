@@ -35,8 +35,11 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.validation.constraints.AssertTrue;
+import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 
 public class FeedbackUtilTest {
@@ -49,6 +52,7 @@ public class FeedbackUtilTest {
     private static DataverseSession dataverseSessionAuthenticated;
     private static DatasetVersion dsVersion;
     private static DatasetVersion dsVersion2;
+    private static DatasetVersion dsVersionNoContacts;
     private static MockDatasetFieldSvc datasetFieldTypeSvc;
     private static InternetAddress systemAddress;
     private static final String systemEmail = "support@librascholar.edu";
@@ -151,6 +155,13 @@ public class FeedbackUtilTest {
         JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, null);
         dsVersion2 = jsonParser2.parseDatasetVersion(json12.getJsonObject("datasetVersion"));
 
+        File datasetVersionJsonNoContacts = new File("tests/data/datasetNoContacts.json");
+        String datasetVersionAsJsonNoContacts = new String(Files.readAllBytes(Paths.get(datasetVersionJsonNoContacts.getAbsolutePath())));
+        JsonReader jsonReaderNoContacts = Json.createReader(new StringReader(datasetVersionAsJsonNoContacts));
+        JsonObject jsonNoContacts = jsonReaderNoContacts.readObject();
+        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, null);
+        dsVersionNoContacts = jsonParserNoContacts.parseDatasetVersion(jsonNoContacts.getJsonObject("datasetVersion"));
+
         FeedbackUtil justForCodeCoverage = new FeedbackUtil();
     }
 
@@ -239,6 +250,55 @@ public class FeedbackUtilTest {
     }
 
     @Test
+    public void testGatherFeedbackOnDatasetNoContacts() {
+        Dataset dataset = new Dataset();
+
+        List<DatasetVersion> versions = new ArrayList<>();
+        DatasetVersion datasetVersionIn = dsVersionNoContacts;
+        datasetVersionIn.setVersionState(DatasetVersion.VersionState.RELEASED);
+        versions.add(datasetVersionIn);
+        dataset.setVersions(versions);
+
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.7910/DVN");
+        dataset.setIdentifier("TJCLKP");
+        Dataverse dataverse = new Dataverse();
+        dataset.setOwner(dataverse);
+
+        DataverseSession dataverseSession = null;
+        String messageSubject = "nice file";
+        String userMessage = "Let's talk!";
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dataset, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        System.out.println("feedbacks: " + feedbacks);
+        assertEquals(1, feedbacks.size());
+        Feedback feedback = feedbacks.get(0);
+        System.out.println("Subject: " + feedback.getSubject());
+        System.out.println("Body: " + feedback.getBody());
+        System.out.println("From: " + feedback.getFromEmail());
+        System.out.println("To: " + feedback.getToEmail());
+        assertEquals(systemEmail, feedback.getToEmail());
+        assertEquals(messageSubject, feedback.getSubject());
+        String expected = "There is no contact address on file for this dataset so this message is being sent to the system address.\n\n"
+                // FIXME: Add more context for person who receives systemEmail messages.
+                // FIXME: change from "personClickingContactOrSupportButton@example.com" to "Homer Simpson" or whatever (add to contact form).
+                //                + "You have just been sent the following message from " + feedback.getFromEmail() + " "
+                //                + "via the " + installationBrandName + " hosted dataset "
+                //                + "titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
+                + "---\n\n"
+                + userMessage + "\n\n"
+                + "---\n\n"
+                + supportTeamName + "\n"
+                + systemEmail + "\n\n"
+                + "Go to dataset https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n"
+                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
+        System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+        System.out.println("EXPECTED:\n\n" + expected);
+        System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+        System.out.println("ACTUAL:\n\n" + feedback.getBody());
+        assertEquals(expected, feedback.getBody());
+    }
+
+    @Test
     public void testGatherFeedbackOnFile() {
 
         FileMetadata fmd = new FileMetadata();
@@ -286,6 +346,56 @@ public class FeedbackUtilTest {
         assertEquals(messageSubject, feedback.getSubject());
         assertEquals("finch@mailinator.com", feedback.getToEmail());
         assertEquals("The message below was sent from the Contact button at https://dataverse.librascholar.edu/file.xhtml?fileId=42\n\n" + userMessage, feedback.getBody());
+
+    }
+
+    @Test
+    public void testGatherFeedbackOnFileNoContacts() {
+
+        FileMetadata fmd = new FileMetadata();
+//        DatasetVersion dsVersion = new DatasetVersion();
+        DataFile dataFile = new DataFile();
+
+        dataFile.setId(42l);
+        List<DataFileTag> dataFileTags = new ArrayList<>();
+        DataFileTag tag = new DataFileTag();
+        tag.setTypeByLabel("Survey");
+        dataFileTags.add(tag);
+        dataFile.setTags(dataFileTags);
+        fmd.setDatasetVersion(dsVersionNoContacts);
+        fmd.setDataFile(dataFile);
+        List<DataFileCategory> fileCategories = new ArrayList<>();
+        DataFileCategory dataFileCategory = new DataFileCategory();
+        dataFileCategory.setName("Data");
+        fileCategories.add(dataFileCategory);
+        fmd.setCategories(fileCategories);
+        Dataset dataset = new Dataset();
+        dataFile.setOwner(dataset);
+
+        List<DatasetVersion> versions = new ArrayList<>();
+        DatasetVersion datasetVersionIn = dsVersionNoContacts;
+        datasetVersionIn.setVersionState(DatasetVersion.VersionState.RELEASED);
+        versions.add(datasetVersionIn);
+        dataset.setVersions(versions);
+
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.7910/DVN");
+        dataset.setIdentifier("TJCLKP");
+        Dataverse dataverse = new Dataverse();
+        dataset.setOwner(dataverse);
+
+        String messageSubject = "nice file";
+        String userMessage = "Let's talk!";
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dataFile, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        Feedback feedback = feedbacks.get(0);
+        System.out.println("feedback: " + feedback);
+        System.out.println("Subject: " + feedback.getSubject());
+        System.out.println("Body: " + feedback.getBody());
+        System.out.println("From: " + feedback.getFromEmail());
+        System.out.println("To: " + feedback.getToEmail());
+        assertEquals(messageSubject, feedback.getSubject());
+        assertEquals("support@librascholar.edu", feedback.getToEmail());
+        assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataset so this message is being sent to the system address."));
     }
 
     @Test
