@@ -1610,17 +1610,9 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         String identifier;
         Long retVal;
-        Long dsId = datafile.getOwner().getId();
-        
-        Object result = em.createQuery("select o.identifier  from dvobject o "
-                + "where o.id = (Select Max(id) from dvobject f where f.owner_Id = " + dsId
-                + ")").getSingleResult();       
-        
-        if (result == null) {
-            retVal = new Long(0);
-        } else {
-            retVal = (Long) result;
-        }
+
+        retVal = new Long(0);
+
 
         do {
             retVal++;
