@@ -137,11 +137,11 @@ public class CreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         logger.fine("Saving the files permanently.");
         ctxt.ingest().addFiles(dsv, theDataset.getFiles());
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
-        if ( (importType == null || importType.equals(ImportType.NEW))
-              && theDataset.getGlobalIdCreateTime() == null) {
+        if ( (importType==null || importType.equals(ImportType.NEW)) && 
+             theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = "";
             idServiceBean = PersistentIdentifierServiceBean.getBean(ctxt);
-            try{
+            try {
                 logger.log(Level.FINE,"creating identifier");
                 doiRetString = idServiceBean.createIdentifier(theDataset);
             } catch (Throwable e){

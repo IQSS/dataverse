@@ -5,13 +5,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -21,9 +19,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -288,29 +283,6 @@ public class DataFile extends DvObject implements Comparable {
         return builder;
     }
 
-    /**
-     * Return a list of Tag labels
-     * 
-     * If there are none, return an empty list
-     * 
-     * @return 
-     */
-    /*
-    public List<String> getTagsLabelsOnly() {
-        
-        List<DataFileTag> tags = this.getTags();
-        
-        if (tags == null){
-            return new ArrayList<String>();
-        }
-        
-        return tags.stream()
-                        .map(x -> x.getTypeLabel())
-                        .collect(Collectors.toList())
-                    ;
-    }
-    */
-    
     public void setTags(List<DataFileTag> dataFileTags) {
         this.dataFileTags = dataFileTags;
     }

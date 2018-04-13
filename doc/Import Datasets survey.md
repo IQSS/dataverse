@@ -62,20 +62,21 @@ This is a list of commands, what they actually do, and some recommendations abou
 ## Import Behavior
 ### CreateDatasetCommand
 <pre>
-Item         | null | NEW    | MIGRATION | HARVEST | HARVEST_WITH_FILES
--------------+------+--------+-----------+---------+--------------------
-validate     |  +   |   +    |    x      |     x   |  + (bug?)
-Unique PID   |      |        |           |         |
--------------+------+--------+-----------+---------+--------------------
-persisted    | edit | latest |             latest   
-version      |      | (bug?) |                       
--------------+------+--------+-----------+---------+--------------------
-PID          |create| create |  use existing if latest is released
-             |      | (bug?) |                       
--------------+------+--------+-----------+---------+--------------------
-Set default  |  +   |   +    |    x      |    x    |  x
-contributor  |      |        |           |         |   
-role         |      |        |           |         |   
+Item         | null | NEW         | MIGRATION | HARVEST | HARVEST_WITH_FILES
+-------------+------+-------------+-----------+---------+--------------------
+validate     |  +   |   +         |    x      |     x   |  + (bug?)
+Unique PID   |      |             |           |         |
+-------------+------+-------------+-----------+---------+--------------------
+persisted    | edit | latest      |             latest   
+version      |      | (bug?)      |                       
+-------------+------+-------------+-----------+---------+--------------------
+PID          | create if          |  use existing if latest is released
+             | globalIdCreateTime |
+             | is null            |    
+-------------+------+-------------+-----------+---------+--------------------
+Set default  |  +   |   +         |    x      |    x    |  x
+contributor  |      |             |           |         |   
+role         |      |             |           |         |   
 </pre>
 
 ### Other places
