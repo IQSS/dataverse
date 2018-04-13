@@ -92,6 +92,7 @@
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                     </h:outputFormat>
                 </div>
+
                 <div id="filesButtons" class="col-xs-10">
                     <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
                     <div jsf:id="uploadComputeBlock" class="button-block tab-header pull-right text-right"
@@ -113,18 +114,8 @@
                             <!-- UPLOAD FILES BUTTON -->
                             <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
-<!--                        <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.showComputeButton()}">
-                             COMPUTE BUTTON 
-                            <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
-                        </h:outputLink>-->
-                        
-                            <!-- Compute Button *Dataset pg only*: -->
-                            <!--***When it is possible to compute on an entire dataset, comment this in-->
-<!--                    <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.showComputeButton() and DatasetPage.canDownloadAllFiles()}"> 
-                            <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
-                        </h:outputLink>-->
-
                     </div>
+
                     <div jsf:id="restrictDeleteBlock" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
                         <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">

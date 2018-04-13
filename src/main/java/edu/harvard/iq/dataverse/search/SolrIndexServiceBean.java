@@ -29,9 +29,9 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -58,17 +58,24 @@ public class SolrIndexServiceBean {
 
     public static String numRowsClearedByClearAllIndexTimes = "numRowsClearedByClearAllIndexTimes";
     public static String messageString = "message";
-    private SolrServer solrServer;
+    private SolrClient solrServer;
     
     @PostConstruct
-    public void init(){
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+    public void init() {
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        solrServer = new HttpSolrClient.Builder(urlString).build();
+        
     }
     
     @PreDestroy
-    public void close(){
-        if(solrServer != null){
-            solrServer.shutdown();
+    public void close() {
+        if (solrServer != null) {
+            try {
+                solrServer.close();
+            } catch (IOException e) {
+                logger.warning("Solr closing error: " + e);
+            }
+
             solrServer = null;
         }
     }

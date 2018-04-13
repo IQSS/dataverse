@@ -6,14 +6,18 @@ RUN yum install -y jq
 # copy and unpack dependencies (solr, glassfish)
 COPY dv /tmp/dv
 COPY testdata/schema.xml /tmp/dv
-RUN cd /opt ; tar zxf /tmp/dv/deps/solr-4.6.0dv.tgz 
+COPY testdata/solrconfig.xml /tmp/dv
+RUN cd /opt ; tar zxf /tmp/dv/deps/solr-7.2.1dv.tgz 
 RUN cd /opt ; tar zxf /tmp/dv/deps/glassfish4dv.tgz
 
 RUN sudo -u postgres /usr/bin/initdb -D /var/lib/pgsql/data
 #RUN sudo -u postgres createuser dvnapp
 
 # copy configuration related files
-RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/data/ ; cp /tmp/dv/schema.xml /opt/solr-4.6.0/example/solr/collection1/conf/schema.xml
+RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/data/
+RUN cp -r /opt/solr-7.2.1/server/solr/configsets/_default /opt/solr-7.2.1/server/solr/collection1
+RUN cp /tmp/dv/schema.xml /opt/solr-7.2.1/server/solr/collection1/conf/schema.xml
+RUN cp /tmp/dv/solrconfig.xml /opt/solr-7.2.1/server/solr/collection1/conf/solrconfig.xml
 
 # skipping glassfish user and solr user (run both as root)
 
