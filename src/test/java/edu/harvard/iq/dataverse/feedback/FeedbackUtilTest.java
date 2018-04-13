@@ -445,10 +445,14 @@ public class FeedbackUtilTest {
         assertEquals("personClickingContactOrSupportButton@example.com", feedback.getFromEmail());
         InternetAddress nullSystemAddress = null;
         List<Feedback> feedbacks2 = FeedbackUtil.gatherFeedback(nullDvObject, dataverseSessionNull, messageSubject, userMessage, nullSystemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
-        assertEquals(Collections.EMPTY_LIST, feedbacks2);
+        assertEquals(1, feedbacks2.size());
+        feedback = feedbacks2.get(0);
+        assertEquals(null, feedback.getToEmail());
         String nullUserMessage = null;
         List<Feedback> feedbacks3 = FeedbackUtil.gatherFeedback(nullDvObject, dataverseSessionNull, messageSubject, nullUserMessage, nullSystemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
-        assertEquals(Collections.EMPTY_LIST, feedbacks3);
+        assertEquals(1, feedbacks3.size());
+        feedback = feedbacks3.get(0);
+        assertEquals(null, feedback.getToEmail());
     }
 
     @Test

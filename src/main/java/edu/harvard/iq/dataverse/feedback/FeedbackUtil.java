@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.mail.internet.InternetAddress;
@@ -25,6 +24,11 @@ public class FeedbackUtil {
 
     // TODO: consider changing "recipient" into an object called something like FeedbackTarget
     public static List<Feedback> gatherFeedback(DvObject recipient, DataverseSession dataverseSession, String messageSubject, String userMessage, InternetAddress systemAddress, String userEmail, String dataverseSiteUrl, String installationBrandName, String supportTeamName) {
+        String systemEmail = null;
+        if (systemAddress != null) {
+            systemEmail = systemAddress.getAddress();
+        }
+        logger.info("systemAddress: " + systemAddress);
         List<Feedback> feedbacks = new ArrayList<>();
         if (isLoggedIn(dataverseSession)) {
             userEmail = loggedInUserEmail(dataverseSession);
@@ -33,7 +37,7 @@ public class FeedbackUtil {
             messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.dvobject", Arrays.asList(installationBrandName, messageSubject));
             if (recipient.isInstanceofDataverse()) {
                 Dataverse dataverse = (Dataverse) recipient;
-                String dataverseContextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", Arrays.asList(supportTeamName, systemAddress.getAddress(), dataverseSiteUrl, dataverse.getAlias(), supportTeamName, systemAddress.getAddress()));
+                String dataverseContextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, dataverse.getAlias(), supportTeamName, systemEmail));
                 List<DvObjectContact> dataverseContacts = getDataverseContacts(dataverse);
                 for (DvObjectContact dataverseContact : dataverseContacts) {
                     String placeHolderIfDataverseContactsGetNames = "";
@@ -45,7 +49,7 @@ public class FeedbackUtil {
                     return feedbacks;
                 } else {
                     String dataverseContextIntroError = BundleUtil.getStringFromBundle("contact.context.dataverse.noContact");
-                    Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, dataverseContextIntroError + userMessage + dataverseContextEnding);
+                    Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, dataverseContextIntroError + userMessage + dataverseContextEnding);
                     feedbacks.add(feedback);
                     return feedbacks;
                 }
@@ -53,7 +57,7 @@ public class FeedbackUtil {
                 Dataset dataset = (Dataset) recipient;
                 String datasetTitle = dataset.getLatestVersion().getTitle();
                 String datasetPid = dataset.getGlobalId();
-                String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", Arrays.asList(supportTeamName, systemAddress.getAddress(), dataverseSiteUrl, dataset.getGlobalId(), supportTeamName, systemAddress.getAddress()));
+                String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, dataset.getGlobalId(), supportTeamName, systemEmail));
                 List<DvObjectContact> datasetContacts = getDatasetContacts(dataset);
                 for (DvObjectContact datasetContact : datasetContacts) {
                     String contactFullName = getGreeting(datasetContact);
@@ -65,7 +69,7 @@ public class FeedbackUtil {
                     return feedbacks;
                 } else {
                     // TODO: Add more of an intro for the person receiving the system email in this "no dataset contact" scenario?
-                    Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + datasetContextEnding);
+                    Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + datasetContextEnding);
                     feedbacks.add(feedback);
                     return feedbacks;
                 }
@@ -75,7 +79,7 @@ public class FeedbackUtil {
                 String datasetPid = datafile.getOwner().getGlobalId();
                 String filename = datafile.getFileMetadatas().get(0).getLabel();
                 List<DvObjectContact> datasetContacts = getDatasetContacts(datafile.getOwner());
-                String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", Arrays.asList(supportTeamName, systemAddress.getAddress(), dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemAddress.getAddress()));
+                String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemEmail));
                 for (DvObjectContact datasetContact : datasetContacts) {
                     String contactFullName = getGreeting(datasetContact);
                     String fileContextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", Arrays.asList(contactFullName, userEmail, installationBrandName, filename, datasetTitle, datasetPid));
@@ -86,22 +90,18 @@ public class FeedbackUtil {
                     return feedbacks;
                 } else {
                     // TODO: Add more of an intro for the person receiving the system email in this "no dataset contact" scenario?
-                    Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + fileContextEnding);
+                    Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + fileContextEnding);
                     feedbacks.add(feedback);
                     return feedbacks;
                 }
             }
         } else {
             messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.support", Arrays.asList(installationBrandName, messageSubject));
-            if (systemAddress != null) {
-                String noDvObjectContextIntro = "";
-                String noDvObjectContextEnding = "";
-                Feedback feedback = new Feedback(userEmail, systemAddress.getAddress(), messageSubject, noDvObjectContextEnding + userMessage + noDvObjectContextIntro);
-                feedbacks.add(feedback);
-                return feedbacks;
-            } else {
-                return Collections.EMPTY_LIST;
-            }
+            String noDvObjectContextIntro = "";
+            String noDvObjectContextEnding = "";
+            Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, noDvObjectContextEnding + userMessage + noDvObjectContextIntro);
+            feedbacks.add(feedback);
+            return feedbacks;
         }
     }
 
