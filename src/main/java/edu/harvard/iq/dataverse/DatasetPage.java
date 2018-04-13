@@ -1609,7 +1609,7 @@ public class DatasetPage implements java.io.Serializable {
             //This is a hack to remove dataset locks for File PID registration if 
                 //the dataset is released
                 //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
-                if(dataset.getLatestVersion().isReleased()){
+                if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.pidRegister)){
                     datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
                 }
             if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
