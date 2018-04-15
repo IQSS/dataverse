@@ -1,12 +1,16 @@
 FROM centos:7
 # OS dependencies
-RUN yum install -y java-1.8.0-openjdk-headless postgresql-server sudo epel-release unzip perl curl
+RUN yum install -y java-1.8.0-openjdk-headless postgresql-server sudo epel-release unzip perl curl httpd
 RUN yum install -y jq
 
 # copy and unpack dependencies (solr, glassfish)
 COPY dv /tmp/dv
 COPY testdata/schema.xml /tmp/dv
 COPY testdata/solrconfig.xml /tmp/dv
+# IPv6 and localhost appears to be related to some of the intermittant connection issues
+COPY disableipv6.conf /etc/sysctl.d/
+RUN rm /etc/httpd/conf/*
+COPY testdata/httpd.conf /etc/httpd/conf 
 RUN cd /opt ; tar zxf /tmp/dv/deps/solr-7.2.1dv.tgz 
 RUN cd /opt ; tar zxf /tmp/dv/deps/glassfish4dv.tgz
 
@@ -29,6 +33,9 @@ EXPOSE 5432
 
 # glassfish port
 EXPOSE 8080
+
+# apache port, https
+EXPOSE 80
 
 RUN mkdir /opt/dv
 
