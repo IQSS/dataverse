@@ -34,7 +34,7 @@ EXPOSE 5432
 # glassfish port
 EXPOSE 8080
 
-# apache port, https
+# apache port, http
 EXPOSE 80
 
 RUN mkdir /opt/dv
