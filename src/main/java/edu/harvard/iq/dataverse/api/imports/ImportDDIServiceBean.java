@@ -108,9 +108,6 @@ public class ImportDDIServiceBean {
         // Read docDescr and studyDesc into DTO objects.
         // TODO: the fileMap is likely not needed. 
         Map<String, String> fileMap = mapDDI(importType, xmlToParse, datasetDTO);
-        if (!isMigrationImport(importType)) {
-            // For migration, this filemetadata is copied in a separate SQL step
-        }
         return datasetDTO;
     }
     
@@ -130,10 +127,6 @@ public class ImportDDIServiceBean {
         return importType.equals(ImportType.NEW);
     }
     
-    private boolean isMigrationImport(ImportType importType) {
-        return importType.equals(ImportType.MIGRATION);
-    }
-
     public Map<String, String> mapDDI(ImportType importType, String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
 
         Map<String, String> filesMap = new HashMap<>();
@@ -1020,7 +1013,7 @@ public class ImportDDIServiceBean {
     DDI's that we are migrating should have one and only one DVN version statement
     */
     private void processVerStmt(ImportType importType, XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
-        if (isMigrationImport(importType) || isHarvestImport(importType)) {        
+        if ( isHarvestImport(importType) ) {        
              if (!"DVN".equals(xmlr.getAttributeValue(null, "source"))) {
             for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
                 if (event == XMLStreamConstants.START_ELEMENT) {

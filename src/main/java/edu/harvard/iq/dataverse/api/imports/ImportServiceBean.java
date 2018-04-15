@@ -421,7 +421,7 @@ public class ImportServiceBean {
             // Check data against required contraints
             List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
             if (!violations.isEmpty()) {
-                if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {
+                if ( importType.equals(ImportType.HARVEST) ) {
                     // For migration and harvest, add NA for missing required values
                     for (ConstraintViolation<DatasetField> v : violations) {
                         DatasetField f = v.getRootBean();
@@ -449,7 +449,7 @@ public class ImportServiceBean {
                     DatasetFieldValue f = v.getRootBean();
                     boolean fixed = false;
                     boolean converted = false;
-                    if ( (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) && 
+                    if ( importType.equals(ImportType.HARVEST) && 
                          settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
                         fixed = processMigrationValidationError(f, cleanupLog, fileName);
                         converted = true;

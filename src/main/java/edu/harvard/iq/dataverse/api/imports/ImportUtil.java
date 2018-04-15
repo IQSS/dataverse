@@ -13,10 +13,7 @@ public interface ImportUtil {
    public enum ImportType{ 
        /** ? */
        NEW, 
-       
-       /** Data is being migrated from a 3.x Dataverse instance */
-       MIGRATION, 
-       
+
        /** Data is harvested from another Dataverse instance */
        HARVEST
    };

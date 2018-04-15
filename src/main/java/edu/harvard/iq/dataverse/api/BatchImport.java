@@ -41,25 +41,6 @@ public class BatchImport extends AbstractApiBean {
     @EJB
     BatchServiceBean batchService;
 
-    /**
-     * migrate - only needed for importing studies from old DVN installations
-     * into Dataverse 4.0 read ddi files from the filesystem, and import them in
-     * "migrate" mode
-     *
-     * @param fileDir - the full path of the parent directory where the files
-     * are located. If there are subdirectories, then ddi's will be imported
-     * into the dataverse matching the subdirectory name (alias)
-     * @param parentIdtf - the dataverse that the top-level files should be
-     * imported to - if null, then use root dataverse.
-     * @param apiKey - users's apiKey
-     * @return
-     */
-    @GET
-    @Path("migrate")
-    public Response migrate(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("createDV") Boolean createDV, @QueryParam("key") String apiKey) throws IOException {
-        return startBatchJob(fileDir, parentIdtf, apiKey, ImportType.MIGRATION, createDV);
-    }
-
     @GET
     @Path("harvest")
     public Response harvest(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("createDV") Boolean createDV, @QueryParam("key") String apiKey) throws IOException {
