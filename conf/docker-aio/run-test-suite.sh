@@ -3,7 +3,7 @@
 
 dvurl=$1
 if [ -z "$dvurl" ]; then
-	dvurl="http://localhost:8083"
+	dvurl="http://localhost:8084"
 fi
 
 # Please note the "dataverse.test.baseurl" is set to run for "all-in-one" Docker environment.
