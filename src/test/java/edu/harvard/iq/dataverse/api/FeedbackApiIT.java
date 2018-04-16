@@ -19,6 +19,20 @@ public class FeedbackApiIT {
     }
 
     @Test
+    public void testSupportRequest() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("fromEmail", "from@mailinator.com");
+        job.add("subject", "Help!");
+        job.add("body", "I need help.");
+
+        Response response = UtilIT.submitFeedback(job);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fromEmail", CoreMatchers.equalTo("from@mailinator.com"));
+    }
+
+    @Test
     public void testSubmitFeedbackOnRootDataverse() {
         JsonObjectBuilder job = Json.createObjectBuilder();
         long rootDataverseId = 1;

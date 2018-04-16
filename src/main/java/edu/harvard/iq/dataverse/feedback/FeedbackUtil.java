@@ -97,9 +97,9 @@ public class FeedbackUtil {
             }
         } else {
             messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.support", Arrays.asList(installationBrandName, messageSubject));
-            String noDvObjectContextIntro = "";
-            String noDvObjectContextEnding = "";
-            Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, noDvObjectContextEnding + userMessage + noDvObjectContextIntro);
+            String noDvObjectContextIntro = BundleUtil.getStringFromBundle("contact.context.support.intro", Arrays.asList(supportTeamName, userEmail));
+            String noDvObjectContextEnding = BundleUtil.getStringFromBundle("contact.context.support.ending", Arrays.asList(""));
+            Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, noDvObjectContextIntro + userMessage + noDvObjectContextEnding);
             feedbacks.add(feedback);
             return feedbacks;
         }

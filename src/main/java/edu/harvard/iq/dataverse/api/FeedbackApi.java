@@ -10,6 +10,7 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -25,7 +26,11 @@ public class FeedbackApi extends AbstractApiBean {
 
     @POST
     public Response submitFeedback(JsonObject jsonObject) throws AddressException {
-        DvObject recipient = dvObjectSvc.findDvObject(jsonObject.getJsonNumber("id").longValue());
+        JsonNumber jsonNumber = jsonObject.getJsonNumber("id");
+        DvObject recipient = null;
+        if (jsonNumber != null) {
+            recipient = dvObjectSvc.findDvObject(jsonNumber.longValue());
+        }
         DataverseSession dataverseSession = null;
         String userMessage = jsonObject.getString("body");
         String systemEmail = "support@librascholar.edu";

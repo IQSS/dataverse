@@ -440,7 +440,16 @@ public class FeedbackUtilTest {
         System.out.println("feedbacks1: " + feedbacks1);
         Feedback feedback = feedbacks1.get(0);
         assertEquals(installationBrandName + " support request: " + messageSubject, feedback.getSubject());
-        assertEquals("Help!", feedback.getBody());
+        String expectedBody
+                = "LibraScholar SWAT Team,\n\n"
+                + "The following message was sent from " + userEmail + ".\n\n"
+                + "---\n\n"
+                + "Help!\n\n"
+                + "---\n\n"
+                + "To respond directly to the individual who sent the message, simply reply to this email."
+                + "";
+        System.out.println("body:\n\n" + feedback.getBody());
+        assertEquals(expectedBody, feedback.getBody());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         assertEquals("personClickingContactOrSupportButton@example.com", feedback.getFromEmail());
         InternetAddress nullSystemAddress = null;
