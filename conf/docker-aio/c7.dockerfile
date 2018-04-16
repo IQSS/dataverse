@@ -16,7 +16,6 @@ RUN cd /opt ; tar zxf /tmp/dv/deps/glassfish4dv.tgz
 COPY domain-restmonitor.xml /opt/glassfish4/glassfish/domains/domain1/config/domain.xml
 
 RUN sudo -u postgres /usr/bin/initdb -D /var/lib/pgsql/data
-#RUN sudo -u postgres createuser dvnapp
 
 # copy configuration related files
 RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/data/
