@@ -138,7 +138,7 @@ public class UtilIT {
         return usernamePrefix + getRandomIdentifier().substring(0, 8);
     }
 
-    public static String getRandomString(int length) { 
+    public static String getRandomString(int length) {
 //is it worth replacing with something that doesn't error out on getRandomString(8)
         if (length < 0) {
             length = 3;
@@ -333,7 +333,7 @@ public class UtilIT {
 
     // https://github.com/IQSS/dataverse/issues/3777
     static Response updateDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
-       String jsonIn = getDatasetJson(pathToJsonFile);
+        String jsonIn = getDatasetJson(pathToJsonFile);
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
@@ -1178,15 +1178,21 @@ public class UtilIT {
 
     static Response addExternalTool(JsonObject jsonObject) {
         RequestSpecification requestSpecification = given();
-            requestSpecification = given()
-                    .body(jsonObject.toString())
-                    .contentType(ContentType.JSON);
+        requestSpecification = given()
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON);
         return requestSpecification.post("/api/admin/externalTools");
     }
 
     static Response deleteExternalTool(long externalToolid) {
         return given()
                 .delete("/api/admin/externalTools/" + externalToolid);
+    }
+
+    static Response metricsDataverseByCategory() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
     }
 
     @Test
