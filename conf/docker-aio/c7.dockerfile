@@ -13,6 +13,7 @@ RUN rm /etc/httpd/conf/*
 COPY testdata/httpd.conf /etc/httpd/conf 
 RUN cd /opt ; tar zxf /tmp/dv/deps/solr-7.2.1dv.tgz 
 RUN cd /opt ; tar zxf /tmp/dv/deps/glassfish4dv.tgz
+COPY domain-restmonitor.xml /opt/glassfish4/glassfish/domains/domain1/config/domain.xml
 
 RUN sudo -u postgres /usr/bin/initdb -D /var/lib/pgsql/data
 #RUN sudo -u postgres createuser dvnapp
@@ -48,4 +49,8 @@ COPY testdata /opt/dv/testdata
 COPY testscripts/* /opt/dv/testdata/
 COPY setupIT.bash /opt/dv
 WORKDIR /opt/dv
+
+# healthcheck for glassfish only (assumes modified domain.xml); 
+#  does not check dataverse application status.
+HEALTHCHECK CMD curl --fail http://localhost:4848/monitoring/domain/server.json || exit 1
 CMD ["/opt/dv/entrypoint.bash"]
