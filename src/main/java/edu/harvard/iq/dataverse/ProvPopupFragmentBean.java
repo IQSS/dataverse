@@ -180,7 +180,6 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             stagingEntry.deleteJson = true;
             
             popupDataFile.setProvEntityName(null); //we need to make sure dataFile attribute is in the correct state
-            deleteStoredJson = false;
         }        
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) { //delete and create again can both happen at once
             stagingEntry.provJson = IOUtils.toString(jsonUploadedTempFile.getInputstream());
@@ -193,7 +192,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             //popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
         } 
 //MAD: The logic on when to save the entity name was and may be still broken, tho less so //null != storedSelectedEntityName && !storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName())
-        if(null != dropdownSelectedEntity) {
+        if(null != dropdownSelectedEntity && !(null != storedSelectedEntityName && storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName()))) {
             popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
         }
         
@@ -256,7 +255,10 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         return changes;
     }
 
+    //This is used both to trigger delete of json and to clear the popup before closing it.
+    //setting delete to true for the popup closing is ok because we re-set it to false on open every time.
     public void removeJsonAndRelatedData() {
+        deleteStoredJson = false;
         if (provJsonState != null) {
             deleteStoredJson = true;
         }
@@ -274,7 +276,8 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
 //MAD: This doesn't catch a case where the json was created and then deleted before publish.
     // The deleted time wouldn't show the correct block, but in that case we are reverting to our original state
     public boolean isJsonUpdated() {
-        return (null != jsonUploadedTempFile);
+        return (null != jsonUploadedTempFile || deleteStoredJson) 
+            || (null != dropdownSelectedEntity && !(null != storedSelectedEntityName && storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName())));
     }
     
     public boolean isFreeformUpdated() {
