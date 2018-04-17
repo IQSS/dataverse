@@ -22,7 +22,7 @@ import java.util.Collections;
  * @author sarahferry
  */
 
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions( Permission.EditDataset )
 public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Dataset>{
     private final DatasetLinkingDataverse doomed;
     private final Dataset editedDs;
@@ -36,8 +36,8 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
-            throw new PermissionException("Move Dataset can only be called by superusers.",
-                    this, Collections.singleton(Permission.DeleteDataverse), editedDs);
+            throw new PermissionException("Delete dataset linking dataverse can only be called by superusers.",
+                    this, Collections.singleton(Permission.EditDataset), editedDs);
         }
         Dataset merged = ctxt.em().merge(editedDs);
         DatasetLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
