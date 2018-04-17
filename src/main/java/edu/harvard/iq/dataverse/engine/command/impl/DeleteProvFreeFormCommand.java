@@ -53,22 +53,5 @@ public class DeleteProvFreeFormCommand extends AbstractCommand<Boolean> {
             }
         
         }
-    }
-    
-//    @Override
-//    public Boolean execute(CommandContext ctxt) throws CommandException {
-//        Dataset dataset = dataFile.getOwner();
-//        DatasetVersion workingVersion = dataset.getEditVersion();
-//        
-//        if (workingVersion.isDraft()) {
-//            FileMetadata fileMetadata = dataFile.getFileMetadata();
-//            fileMetadata.setProvFreeForm(null);
-//            DataFile savedDataFile = ctxt.files().save(dataFile);
-//            logger.info("prov free-form: " + savedDataFile.getFileMetadata().getProvFreeForm());
-//            return savedDataFile.getFileMetadata().getProvFreeForm() == null;
-//        } else {
-//            throw new CommandExecutionException("Exception occurred creating draft dataset", this);
-//        }
-//    }
-
+    }    
 }

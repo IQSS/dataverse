@@ -54,7 +54,7 @@ public class SettingsServiceBean {
         ComputeBaseUrl,
         /**
          * Enables the provenance collection popup.
-         * Allows users to 
+         * Allows users to store their provenance json and description
          */
         ProvCollectionEnabled,
         /**

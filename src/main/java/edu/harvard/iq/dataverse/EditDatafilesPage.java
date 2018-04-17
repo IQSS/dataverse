@@ -1093,13 +1093,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Save the NEW files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false;    
-        
-//MAD: I need to check on prov here to see if there is any freeform that needs to be added to the working version
-//      if so I'll need to set datasetUpdateRequired
-
-//MAD: My goal is to update the filemetadatas with prov freeform and set datasetUpdateRequired = true so they get added to the working version
-
-
 
         Boolean provChanges = provPopupFragmentBean.updatePageMetadatasWithProvFreeform(fileMetadatas);
         if(datasetUpdateRequired == false) {

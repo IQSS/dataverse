@@ -1,21 +1,14 @@
 package edu.harvard.iq.dataverse;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.OutputStream;
@@ -30,7 +23,6 @@ import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -112,9 +104,8 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
      
     public void updatePopupState(FileMetadata fm) throws WrappedResponse, IOException {       
-//MAD: This should exception better
         if(null == fm) {
-            throw new NullPointerException("FileMetadata initialized to null");
+            throw new NullPointerException("FileMetadata initialized to null in provenance popup");
         }
         fileMetadata = fm;
         updatePopupState();
@@ -170,7 +161,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         if(stagingEntry == null) {
             stagingEntry = new UpdatesEntry(popupDataFile, null, false, null);// = new UpdatesEntry(popupDataFile, null, null);  
         }
-        if(null == freeformTextInput && null != freeformTextState) { //MAD: Still unsure if we need this
+        if(null == freeformTextInput && null != freeformTextState) {
             freeformTextInput = "";
         }
         if(null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) {
@@ -179,19 +170,15 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         if(deleteStoredJson) {
             stagingEntry.deleteJson = true;
             
-            popupDataFile.setProvEntityName(null); //we need to make sure dataFile attribute is in the correct state
+            popupDataFile.setProvEntityName(null); 
         }        
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) { //delete and create again can both happen at once
             stagingEntry.provJson = IOUtils.toString(jsonUploadedTempFile.getInputstream());
             stagingEntry.deleteJson = false;
-            //stagingEntry = new UpdatesEntry(popupDataFile, jsonString, false, null);
-//            jsonProvenanceUpdates.put(popupDataFile.getStorageIdentifier(), new UpdatesEntry(popupDataFile, jsonString, null));
+
             jsonUploadedTempFile = null;
-            
-            //storing the entity name associated with the DataFile. This is required data to get this far.
-            //popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
         } 
-//MAD: The logic on when to save the entity name was and may be still broken, tho less so //null != storedSelectedEntityName && !storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName())
+
         if(null != dropdownSelectedEntity && !(null != storedSelectedEntityName && storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName()))) {
             popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
         }
@@ -238,7 +225,6 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             String freeformText = mapEntry.getValue().provFreeform;
             FileMetadata fm = mapEntry.getValue().dataFile.getFileMetadata();
             fm.setProvFreeForm(freeformText);
-
         }
     }
     
@@ -273,7 +259,6 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         return null != jsonUploadedTempFile || null != provJsonState;   
     }
     
-//MAD: This doesn't catch a case where the json was created and then deleted before publish.
     // The deleted time wouldn't show the correct block, but in that case we are reverting to our original state
     public boolean isJsonUpdated() {
         return (null != jsonUploadedTempFile || deleteStoredJson) 
@@ -300,15 +285,11 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     public void setFreeformTextStored(String freeformText) {
         freeformTextState = freeformText;
     }
-    
 
-    //These checks are for the render logic so don't strictly just check published state
-    //Tweak these carefully
+    //These checks are for the render logic so don't strictly just check published state. Tweak these carefully
     public boolean isDataFilePublishedRendering() {
         return null != popupDataFile && popupDataFile.isReleased();
-        //return null != fileMetadata && fileMetadata.getDatasetVersion().isPublished();
     }
-//MAD: RENAME: techincally this only checks if the current files metadata is a draft, but is only used rendering confirmation popup
     public boolean isDatasetInDraftRendering() {        
         return null != fileMetadata && fileMetadata.getDatasetVersion().isDraft();
     }
@@ -319,7 +300,6 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         for(DataFile df : dataset.getFiles()) {
             if(df.getChecksumType().equals(popupDataFile.getChecksumType())
                && df.getChecksumValue().equals(popupDataFile.getChecksumValue())) { //our popup file exists in the dataset
-                //MAD: Unsure if I should be checking empty as well
                 
                 if(df.getFileMetadatas().size() == 1 && df.getFileMetadata().getDatasetVersion().isDraft()) { 
                     //On file upload, the dataset has the file in the draft so we need a different check
@@ -333,12 +313,8 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         }
 
         return false;
-//return (null != popupDataFile 
-//                && null != popupDataFile.getFileMetadata()); 
-                //&& popupDataFile.getProvCplId() != 0); //add when we integrate with provCPL
     }
     public boolean isDataFilePublishedWithDraftRendering() {
-        //checks popupDataFile is null in first call
         return isDataFilePublishedRendering() && popupDataFile.getFileMetadata().getDatasetVersion().isDraft();
     }
 
@@ -407,6 +383,5 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         osw.write(provJsonState); //the button calling this will only be rendered if provJsonState exists (e.g. a file is uploaded)
         osw.close();
         fc.responseComplete();
-
     }
 }

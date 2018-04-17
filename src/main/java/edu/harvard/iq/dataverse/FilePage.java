@@ -254,16 +254,13 @@ public class FilePage implements java.io.Serializable {
         return retList;  
     }
     
-//MAD: Trying to understand what is actually creating and attaching this draft
     public String saveProvFreeform(String freeformTextInput, DataFile dataFileFromPopup) throws CommandException {
         editDataset = this.file.getOwner();
         file.setProvEntityName(dataFileFromPopup.getProvEntityName()); //passing this value into the file being saved here is pretty hacky.
         Command cmd;
         
-        //MAD: I don't really understand why restrict does this but I'm copying it because it doesn't seem to hurt
-        // maybe something to do with the getEditVersion maybe creating a new version and then things get out of sync?
         for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
-            if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) { //MAD: Should this equality check something else? checksum
+            if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
                 cmd = new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), file, freeformTextInput);
                 commandEngine.submit(cmd);
             }
