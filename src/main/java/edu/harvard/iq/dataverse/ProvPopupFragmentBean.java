@@ -204,8 +204,9 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         if(saveInPopup) { //file page needs to save here
             try {
                 saveStagedProvJson(true);
+                stagingEntry = provenanceUpdates.get(popupDataFile.getChecksumValue()); //reloading as it can be set in saveStagedProvJson
                 if(null != stagingEntry && null != stagingEntry.provFreeform) {
-                    return filePage.saveProvFreeform(freeformTextInput);
+                    return filePage.saveProvFreeform(stagingEntry.provFreeform, stagingEntry.dataFile);
                 }  
             } catch (AbstractApiBean.WrappedResponse|CommandException ex) {
                 filePage.showProvError();
@@ -218,15 +219,18 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
     
     public void saveStagedProvJson(boolean saveContext) throws AbstractApiBean.WrappedResponse {
-        for (Map.Entry<String, UpdatesEntry> mapEntry : provenanceUpdates.entrySet()) {
-            DataFile df = mapEntry.getValue().dataFile;
-            String provString = mapEntry.getValue().provJson;
+        for (Map.Entry<String, UpdatesEntry> m : provenanceUpdates.entrySet()) {
+            UpdatesEntry mapEntry = m.getValue();
+            DataFile df = mapEntry.dataFile;
+            String provString = mapEntry.provJson;
 
-            if(mapEntry.getValue().deleteJson) {
+            if(mapEntry.deleteJson) {
                 df = execCommand(new DeleteProvJsonCommand(dvRequestService.getDataverseRequest(), df, saveContext));
             } else if(null != provString) {
                 df = execCommand(new PersistProvJsonCommand(dvRequestService.getDataverseRequest(), df, provString, df.getProvEntityName(), saveContext));
             } 
+            mapEntry.dataFile = df;
+            provenanceUpdates.put(mapEntry.dataFile.getChecksumValue(), mapEntry); //MAD: Modifying the set as we go through it is probably causing errors
         }
     }
     
