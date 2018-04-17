@@ -1094,9 +1094,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false;    
 
-        Boolean provChanges = provPopupFragmentBean.updatePageMetadatasWithProvFreeform(fileMetadatas);
-        if(datasetUpdateRequired == false) {
-            datasetUpdateRequired = provChanges;
+        if(systemConfig.isProvCollectionEnabled()) {
+            Boolean provChanges = provPopupFragmentBean.updatePageMetadatasWithProvFreeform(fileMetadatas);
+            if(datasetUpdateRequired == false) {
+                datasetUpdateRequired = provChanges;
+            }
         }
         
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
