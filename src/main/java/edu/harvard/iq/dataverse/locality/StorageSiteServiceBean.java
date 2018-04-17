@@ -1,6 +1,5 @@
-package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
+package edu.harvard.iq.dataverse.locality;
 
-import edu.harvard.iq.dataverse.StorageLocation;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
@@ -11,15 +10,15 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 @Stateless
-public class RepositoryStorageAbstractionLayerServiceBean {
+public class StorageSiteServiceBean {
 
-    private static final Logger logger = Logger.getLogger(RepositoryStorageAbstractionLayerServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(StorageSiteServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    public StorageLocation find(long id) {
-        TypedQuery<StorageLocation> typedQuery = em.createQuery("SELECT OBJECT(o) FROM StorageLocation AS o WHERE o.id = :id", StorageLocation.class);
+    public StorageSite find(long id) {
+        TypedQuery<StorageSite> typedQuery = em.createQuery("SELECT OBJECT(o) FROM StorageSite AS o WHERE o.id = :id", StorageSite.class);
         typedQuery.setParameter("id", id);
         try {
             return typedQuery.getSingleResult();
@@ -28,14 +27,14 @@ public class RepositoryStorageAbstractionLayerServiceBean {
         }
     }
 
-    public List<StorageLocation> findAll() {
+    public List<StorageSite> findAll() {
         // TODO: order by primary first, then whatever
-        TypedQuery<StorageLocation> typedQuery = em.createQuery("SELECT OBJECT(o) FROM StorageLocation AS o ORDER BY o.id", StorageLocation.class);
+        TypedQuery<StorageSite> typedQuery = em.createQuery("SELECT OBJECT(o) FROM StorageSite AS o ORDER BY o.id", StorageSite.class);
         return typedQuery.getResultList();
     }
 
-    public StorageLocation add(StorageLocation toPersist) {
-        StorageLocation persisted = null;
+    public StorageSite add(StorageSite toPersist) {
+        StorageSite persisted = null;
         try {
             persisted = em.merge(toPersist);
         } catch (Exception ex) {
@@ -45,7 +44,7 @@ public class RepositoryStorageAbstractionLayerServiceBean {
     }
 
     public boolean delete(long id) {
-        StorageLocation doomed = find(id);
+        StorageSite doomed = find(id);
         boolean wasDeleted = false;
         if (doomed != null) {
             logger.fine("deleting id " + doomed.getId());
@@ -56,6 +55,10 @@ public class RepositoryStorageAbstractionLayerServiceBean {
             logger.warning("problem deleting id " + id);
         }
         return wasDeleted;
+    }
+
+    public StorageSite save(StorageSite storageSite) {
+        return em.merge(storageSite);
     }
 
 }

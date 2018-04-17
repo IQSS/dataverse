@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.StorageLocation;
+import edu.harvard.iq.dataverse.locality.StorageSite;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,16 +80,24 @@ public class RepositoryStorageAbstractionLayerUtil {
      * RSAL or some other "big data" component live for a list of remotes sites
      * to which a particular dataset is replicated to.
      */
-    static JsonArray getSitesFromDb(List<StorageLocation> storageLocations) {
+    static JsonArray getStorageSitesAsJson(List<StorageSite> storageSites) {
         JsonArrayBuilder arraybuilder = Json.createArrayBuilder();
-        if (storageLocations == null || storageLocations.isEmpty()) {
+        if (storageSites == null || storageSites.isEmpty()) {
             return arraybuilder.build();
         }
         // Right now we have all the data right in the database setting but we should probably query RSAL to get the list.
-        for (StorageLocation storageLocation : storageLocations) {
+        int countOfPrimarySites = 0;
+        for (StorageSite storageSite : storageSites) {
+            if (storageSite.isPrimaryStorage()) {
+                countOfPrimarySites++;
+            }
             arraybuilder.add(Json.createObjectBuilder()
-                    .add("fqdn", storageLocation.getHostname())
-                    .add("name", storageLocation.getName()));
+                    .add("fqdn", storageSite.getHostname())
+                    .add("name", storageSite.getName()));
+        }
+        int numExpectedPrimarySites = 1;
+        if (countOfPrimarySites != numExpectedPrimarySites) {
+            logger.warning("The number of expected primary sites is " + numExpectedPrimarySites + " but " + countOfPrimarySites + " were found.");
         }
         return arraybuilder.build();
     }

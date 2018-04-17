@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.StorageLocation;
+import edu.harvard.iq.dataverse.locality.StorageSite;
+import edu.harvard.iq.dataverse.locality.StorageSiteUtil;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -8,6 +9,7 @@ import javax.json.JsonObject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
@@ -17,7 +19,7 @@ public class StorageSites extends AbstractApiBean {
 
     @GET
     public Response listAll() {
-        List<StorageLocation> storageSites = repositoryStorageAbstractionLayerSvc.findAll();
+        List<StorageSite> storageSites = storageSiteSvc.findAll();
         if (storageSites != null && !storageSites.isEmpty()) {
             JsonArrayBuilder sites = Json.createArrayBuilder();
             storageSites.forEach((storageSite) -> {
@@ -32,20 +34,25 @@ public class StorageSites extends AbstractApiBean {
     @GET
     @Path("{id}")
     public Response get(@PathParam("id") long id) {
-        StorageLocation storageSite = repositoryStorageAbstractionLayerSvc.find(id);
-        if (storageSite != null) {
-            return ok(storageSite.toJsonObjectBuilder());
-        } else {
+        StorageSite storageSite = storageSiteSvc.find(id);
+        if (storageSite == null) {
             return error(Response.Status.NOT_FOUND, "Could not find a storage site based on id " + id + ".");
         }
+        return ok(storageSite.toJsonObjectBuilder());
     }
 
     @POST
     public Response addSite(JsonObject jsonObject) {
-        StorageLocation toPersist = new StorageLocation();
-        toPersist.setHostname(jsonObject.getString("hostname"));
-        toPersist.setName(jsonObject.getString("name"));
-        StorageLocation saved = repositoryStorageAbstractionLayerSvc.add(toPersist);
+        StorageSite toPersist = StorageSiteUtil.parse(jsonObject);
+        List<StorageSite> exitingSites = storageSiteSvc.findAll();
+        if (toPersist.isPrimaryStorage()) {
+            for (StorageSite exitingSite : exitingSites) {
+                if (exitingSite.isPrimaryStorage()) {
+                    return error(Response.Status.BAD_REQUEST, "Storage site " + exitingSite.getId() + " already has " + StorageSite.PRIMARY_STORAGE + " set to true. There can be only one.");
+                }
+            }
+        }
+        StorageSite saved = storageSiteSvc.add(toPersist);
         if (saved != null) {
             return ok(saved.toJsonObjectBuilder());
         } else {
@@ -53,10 +60,23 @@ public class StorageSites extends AbstractApiBean {
         }
     }
 
+    @PUT
+    @Path("{id}/primaryStorage")
+    public Response setPrimary(@PathParam("id") long id, String input) {
+        StorageSite storageSite = storageSiteSvc.find(id);
+        if (storageSite == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find a storage site based on id " + id + ".");
+        }
+        // "junk" gets parsed into "false".
+        storageSite.setPrimaryStorage(Boolean.valueOf(input));
+        StorageSite updated = storageSiteSvc.save(storageSite);
+        return ok(updated.toJsonObjectBuilder());
+    }
+
     @DELETE
     @Path("{id}")
     public Response delete(@PathParam("id") long id) {
-        boolean deleted = repositoryStorageAbstractionLayerSvc.delete(id);
+        boolean deleted = storageSiteSvc.delete(id);
         if (deleted) {
             return ok("Storage site id  " + id + " has been deleted.");
         } else {

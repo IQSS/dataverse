@@ -35,7 +35,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
-import edu.harvard.iq.dataverse.repositorystorageabstractionlayer.RepositoryStorageAbstractionLayerServiceBean;
+import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -221,7 +221,7 @@ public abstract class AbstractApiBean {
     DataFileServiceBean fileSvc;
 
     @EJB
-    RepositoryStorageAbstractionLayerServiceBean repositoryStorageAbstractionLayerSvc;
+    StorageSiteServiceBean storageSiteSvc;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;

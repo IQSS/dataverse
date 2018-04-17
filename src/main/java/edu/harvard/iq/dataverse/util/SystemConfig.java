@@ -843,6 +843,36 @@ public class SystemConfig {
         
     }
 
+    public enum TransferProtocols {
+
+        RSYNC("rsync"),
+        POSIX("posix"),
+        GLOBUS("globus");
+
+        private final String text;
+
+        private TransferProtocols(final String text) {
+            this.text = text;
+        }
+
+        public static TransferProtocols fromString(String text) {
+            if (text != null) {
+                for (TransferProtocols transferProtocols : TransferProtocols.values()) {
+                    if (text.equals(transferProtocols.text)) {
+                        return transferProtocols;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("TransferProtocols must be one of these values: " + Arrays.asList(TransferProtocols.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+
+    }
+
     public boolean isPublicInstall(){
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);

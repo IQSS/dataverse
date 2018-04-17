@@ -13,6 +13,7 @@ public class RsyncSite {
         this.name = name;
         this.fqdn = fqdn;
         this.fullRemotePathToDirectory = fullRemotePathToDirectory;
+        // TODO: Stop hard-coding "rsync" here one a field has been added to the StorageSite object (or related object).
         this.rsyncDownloadcommand = "rsync -av rsync://" + this.fqdn + "" + File.separator + this.fullRemotePathToDirectory;
     }
 

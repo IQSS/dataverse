@@ -63,6 +63,9 @@ public class SettingsServiceBean {
          * If the data replicated around the world using RSAL (Repository
          * Storage Abstraction Layer) is locally available, this is its file
          * path, such as "/programs/datagrid".
+         *
+         * TODO: Think about if it makes sense to make this a column in the
+         * StorageSite database table.
          */
         LocalDataAccessPath,
         IdentifierGenerationStyle,

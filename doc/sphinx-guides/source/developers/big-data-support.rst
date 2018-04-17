@@ -163,6 +163,10 @@ Then add the storage site using curl:
 
 ``curl -H "Content-type:application/json" -X POST http://localhost:8080/api/admin/storageSites --upload-file add-storage-site.json``
 
+You make a storage site the primary site by passing "true". Pass "false" to make it not the primary site. (id "1" in the example):
+
+``curl -X PUT -d true http://localhost:8080/api/admin/storageSites/1/primaryStorage``
+
 You can delete a storage site like this (id "1" in the example):
 
 ``curl -X DELETE http://localhost:8080/api/admin/storageSites/1``

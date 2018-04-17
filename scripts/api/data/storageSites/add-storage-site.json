@@ -1,6 +1,6 @@
 {
   "hostname": "data.sbgrid.org",
   "name": "Harvard Medical School, USA",
-  "primaryWriteLocation": "TRUE",
+  "primary": true,
   "transferProtocols": "rsync,posix,globus"
 }

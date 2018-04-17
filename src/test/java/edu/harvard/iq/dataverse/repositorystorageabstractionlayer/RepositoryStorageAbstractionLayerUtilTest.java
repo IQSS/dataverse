@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.StorageLocation;
+import edu.harvard.iq.dataverse.locality.StorageSite;
 import java.util.ArrayList;
 import java.util.List;
 import javax.json.JsonArray;
@@ -17,12 +17,12 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         Dataset dataset = new Dataset();
         dataset.setIdentifier("identifierPartOfPersistentID");
         dataset.setAuthority("10.5072/FK2");
-        List<StorageLocation> storageLocations = new ArrayList<>();
-        StorageLocation sbgrid = new StorageLocation();
+        List<StorageSite> storageLocations = new ArrayList<>();
+        StorageSite sbgrid = new StorageSite();
         sbgrid.setHostname("dv.sbgrid.org");
         sbgrid.setName("Harvard Medical School, USA");
         storageLocations.add(sbgrid);
-        JsonArray myList = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(storageLocations);
+        JsonArray myList = RepositoryStorageAbstractionLayerUtil.getStorageSitesAsJson(storageLocations);
         List<RsyncSite> result = RepositoryStorageAbstractionLayerUtil.getRsyncSites(dataset, myList);
         System.out.println(result.get(0).getName());
         assertEquals("Harvard Medical School, USA", result.get(0).getName());
@@ -34,12 +34,13 @@ public class RepositoryStorageAbstractionLayerUtilTest {
     @Test
     public void testGetRsalSites_String() {
         System.out.println("getRsalSites");
-        List<StorageLocation> storageLocations = new ArrayList<>();
-        StorageLocation sbgrid = new StorageLocation();
+        List<StorageSite> storageLocations = new ArrayList<>();
+        StorageSite sbgrid = new StorageSite();
         sbgrid.setHostname("dv.sbgrid.org");
         sbgrid.setName("Harvard Medical School, USA");
         storageLocations.add(sbgrid);
-        JsonArray result = RepositoryStorageAbstractionLayerUtil.getSitesFromDb(storageLocations);
+        // Expect a warning here because there are no primary sites.
+        JsonArray result = RepositoryStorageAbstractionLayerUtil.getStorageSitesAsJson(storageLocations);
         JsonObject first = (JsonObject) result.get(0);
         System.out.println(result);
         assertEquals("Harvard Medical School, USA", first.getString("name"));
@@ -64,5 +65,6 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         String result = RepositoryStorageAbstractionLayerUtil.getVerifyDataCommand(dataset);
         assertEquals("cd identifierPartOfPersistentID ; shasum -c files.sha", result);
     }
+
 
 }

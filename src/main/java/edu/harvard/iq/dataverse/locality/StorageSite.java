@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.locality;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -11,7 +11,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class StorageLocation implements Serializable {
+public class StorageSite implements Serializable {
+
+    public static final String ID = "id";
+    public static final String NAME = "name";
+    public static final String HOSTNAME = "hostname";
+    public static final String PRIMARY_STORAGE = "primaryStorage";
+    public static final String TRANSFER_PROTOCOLS = "transferProtocols";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,13 +34,29 @@ public class StorageLocation implements Serializable {
     @Column(name = "hostname", columnDefinition = "TEXT", nullable = false)
     private String hostname;
 
-//    @Column(name = "type", columnDefinition = "TEXT", nullable = false)
-//    private String type;
-//    
+    /**
+     * TODO: Consider adding a constraint to only allow one row to be true. The
+     * following was suggested...
+     *
+     * create unique index on my_table (actual)
+     *
+     * where actual = true;
+     *
+     * ... at
+     * https://stackoverflow.com/questions/28166915/postgresql-constraint-only-one-row-can-have-flag-set/28167225#28167225
+     */
+    @Column(nullable = false)
+    private boolean primaryStorage;
+
+    /**
+     * For example, "rsync,posix,globus". A comma-separated list. These
+     * protocols are what we might advertise to end users who want to download
+     * the data from us. In the future, we can imagine adding S3.
+     */
     @Column(name = "transferProtocols", columnDefinition = "TEXT", nullable = false)
     private String transferProtocols;
 
-//    @OneToMany(mappedBy = "storageLocation", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+//    @OneToMany(mappedBy = "storageSite", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
 //    private List<DvObjectStorageLocation> dvObjectStorageLocations;
 //    public List<DvObjectStorageLocation> getDvObjectStorageLocations() {
 //        return dvObjectStorageLocations;
@@ -68,13 +90,14 @@ public class StorageLocation implements Serializable {
         this.hostname = hostname;
     }
 
-//    public String getType() {
-//        return type;
-//    }
-//
-//    public void setType(String type) {
-//        this.type = type;
-//    }
+    public boolean isPrimaryStorage() {
+        return primaryStorage;
+    }
+
+    public void setPrimaryStorage(boolean primaryStorage) {
+        this.primaryStorage = primaryStorage;
+    }
+
     public String getTransferProtocols() {
         return transferProtocols;
     }
@@ -85,19 +108,19 @@ public class StorageLocation implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof StorageLocation)) {
+        if (!(object instanceof StorageSite)) {
             return false;
         }
-        StorageLocation other = (StorageLocation) object;
+        StorageSite other = (StorageSite) object;
         return Objects.equals(getId(), other.getId());
     }
 
     public JsonObjectBuilder toJsonObjectBuilder() {
         return Json.createObjectBuilder()
-                // TODO: add primaryWriteLocation
-                // TODO: add transferProtocols
-                .add("id", id)
-                .add("hostname", hostname)
-                .add("name", name);
+                .add(ID, id)
+                .add(HOSTNAME, hostname)
+                .add(NAME, name)
+                .add(PRIMARY_STORAGE, primaryStorage)
+                .add(TRANSFER_PROTOCOLS, transferProtocols);
     }
 }
