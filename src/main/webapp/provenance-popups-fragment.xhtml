@@ -140,7 +140,9 @@
             </div>
             <div class="button-block">              
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.saveChanges}" disabled="false" update="provPopupOutput,assignMessages,confirmProvenancePopup" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').hide();"  />
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" update="provPopupOutput,assignMessages,confirmProvenancePopup" onclick="PF('editProvenancePopup').hide();" immediate="true" actionListener="#{provPopupFragmentBean.removeJsonAndRelatedData()}">
+                    <!--<p:resetInput target="provPopupOutput" />-->
+                </p:commandButton>
             </div>
         </div>
     </p:dialog>
@@ -197,7 +199,6 @@
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.continue}" oncomplete="PF('confirmProvenancePopup').hide();" action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
             <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();">
-                <f:actionListener binding="#{provPopupFragmentBean.updatePopupState()}" />
             </p:commandButton>
         </div>
     </p:dialog>
