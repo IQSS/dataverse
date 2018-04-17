@@ -13,6 +13,8 @@ RUN rm /etc/httpd/conf/*
 COPY testdata/httpd.conf /etc/httpd/conf 
 RUN cd /opt ; tar zxf /tmp/dv/deps/solr-7.2.1dv.tgz 
 RUN cd /opt ; tar zxf /tmp/dv/deps/glassfish4dv.tgz
+
+# this copy of domain.xml is the result of running `asadmin set server.monitoring-service.module-monitoring-levels.jvm=LOW` on a default glassfish installation (aka - enable the glassfish REST monitir endpoint for the jvm`
 COPY domain-restmonitor.xml /opt/glassfish4/glassfish/domains/domain1/config/domain.xml
 
 RUN sudo -u postgres /usr/bin/initdb -D /var/lib/pgsql/data
