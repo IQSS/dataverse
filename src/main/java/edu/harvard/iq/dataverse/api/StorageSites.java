@@ -50,12 +50,10 @@ public class StorageSites extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "JSON could not be parsed: " + ex.getLocalizedMessage());
         }
         List<StorageSite> exitingSites = storageSiteSvc.findAll();
-        if (toPersist.isPrimaryStorage()) {
-            for (StorageSite exitingSite : exitingSites) {
-                if (exitingSite.isPrimaryStorage()) {
-                    return error(Response.Status.BAD_REQUEST, "Storage site " + exitingSite.getId() + " already has " + StorageSite.PRIMARY_STORAGE + " set to true. There can be only one.");
-                }
-            }
+        try {
+            StorageSiteUtil.ensureOnlyOnePrimary(toPersist, exitingSites);
+        } catch (Exception ex) {
+            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
         }
         StorageSite saved = storageSiteSvc.add(toPersist);
         if (saved != null) {
@@ -68,14 +66,19 @@ public class StorageSites extends AbstractApiBean {
     @PUT
     @Path("{id}/primaryStorage")
     public Response setPrimary(@PathParam("id") long id, String input) {
-        StorageSite storageSite = storageSiteSvc.find(id);
-        if (storageSite == null) {
+        StorageSite toModify = storageSiteSvc.find(id);
+        if (toModify == null) {
             return error(Response.Status.NOT_FOUND, "Could not find a storage site based on id " + id + ".");
         }
-        // TODO: Disallow more than one primary.
         // "junk" gets parsed into "false".
-        storageSite.setPrimaryStorage(Boolean.valueOf(input));
-        StorageSite updated = storageSiteSvc.save(storageSite);
+        toModify.setPrimaryStorage(Boolean.valueOf(input));
+        List<StorageSite> exitingSites = storageSiteSvc.findAll();
+        try {
+            StorageSiteUtil.ensureOnlyOnePrimary(toModify, exitingSites);
+        } catch (Exception ex) {
+            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+        }
+        StorageSite updated = storageSiteSvc.save(toModify);
         return ok(updated.toJsonObjectBuilder());
     }
 

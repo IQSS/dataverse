@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.locality;
 
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.util.List;
 import javax.json.JsonObject;
 
 public class StorageSiteUtil {
@@ -37,6 +38,17 @@ public class StorageSiteUtil {
             return value;
         } catch (NullPointerException ex) {
             throw new IllegalArgumentException("String " + key + " is required!");
+        }
+    }
+
+    public static void ensureOnlyOnePrimary(StorageSite storageSite, List<StorageSite> exitingSites) throws Exception {
+        if (storageSite.isPrimaryStorage()) {
+            for (StorageSite exitingSite : exitingSites) {
+                if (exitingSite.isPrimaryStorage()) {
+                    // obligatory Highlander reference
+                    throw new Exception("Storage site " + exitingSite.getId() + " already has " + StorageSite.PRIMARY_STORAGE + " set to true. There can be only one.");
+                }
+            }
         }
     }
 
