@@ -316,8 +316,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.persist(dsv);
         return dsv;
     }
-    
-    
+      
     public String createCitationRIS(DatasetVersion version) {
         return createCitationRIS(version, null);
     } 
