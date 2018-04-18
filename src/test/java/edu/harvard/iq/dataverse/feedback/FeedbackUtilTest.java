@@ -446,7 +446,7 @@ public class FeedbackUtilTest {
                 + "---\n\n"
                 + "Help!\n\n"
                 + "---\n\n"
-                + "To respond directly to the individual who sent the message, simply reply to this email."
+                + "Message sent from Support contact form."
                 + "";
         System.out.println("body:\n\n" + feedback.getBody());
         assertEquals(expectedBody, feedback.getBody());
