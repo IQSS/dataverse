@@ -786,6 +786,20 @@ public class SystemConfig {
         return numConsecutiveDigitsAllowed;
     }
 
+    /**
+     * Below are three related enums having to do with big data support:
+     *
+     * - FileUploadMethods
+     *
+     * - FileDownloadMethods
+     *
+     * - TransferProtocols
+     *
+     * There is a good chance these will be consolidated in the future. The word
+     * "NATIVE" is a bit of placeholder term to mean how Dataverse has
+     * traditionally handled files, which tends to involve users uploading and
+     * downloading files using a browser or APIs.
+     */
     public enum FileUploadMethods {
 
         RSYNC("dcm/rsync+ssh"),
@@ -815,8 +829,18 @@ public class SystemConfig {
         
         
     }
-    
+
+    /**
+     * See FileUploadMethods.
+     *
+     * TODO: Consider if dataverse.files.s3-download-redirect belongs here since
+     * it's a way to bypass Glassfish when downloading.
+     */
     public enum FileDownloadMethods {
+        /**
+         * RSAL stands for Repository Storage Abstraction Layer. Downloads don't
+         * go through Glassfish.
+         */
         RSYNC("rsal/rsync"),
         NATIVE("NATIVE");
         private final String text;
@@ -843,9 +867,16 @@ public class SystemConfig {
         
     }
 
+    /**
+     * See FileUploadMethods.
+     */
     public enum TransferProtocols {
 
         RSYNC("rsync"),
+        /**
+         * POSIX includes NFS. This is related to Key.LocalDataAccessPath in
+         * SettingsServiceBean.
+         */
         POSIX("posix"),
         GLOBUS("globus");
 

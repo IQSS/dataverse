@@ -23,6 +23,7 @@ public class StorageSite implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // FIXME: Why is nullable=false having no effect?
     @Column(name = "name", columnDefinition = "TEXT", nullable = false)
     private String name;
 
@@ -30,7 +31,14 @@ public class StorageSite implements Serializable {
      * Sites around the world to which data has been replicated using RSAL
      * (Repository Storage Abstraction Layer). Formerly, the :ReplicationSites
      * database setting.
+     *
+     * TODO: Think about how this is a duplication of the following JVM options:
+     *
+     * - dataverse.fqdn
+     *
+     * - dataverse.siteUrl
      */
+    // FIXME: Why is nullable=false having no effect?
     @Column(name = "hostname", columnDefinition = "TEXT", nullable = false)
     private String hostname;
 
@@ -53,6 +61,7 @@ public class StorageSite implements Serializable {
      * protocols are what we might advertise to end users who want to download
      * the data from us. In the future, we can imagine adding S3.
      */
+    // FIXME: Why is nullable=false having no effect?
     @Column(name = "transferProtocols", columnDefinition = "TEXT", nullable = false)
     private String transferProtocols;
 
