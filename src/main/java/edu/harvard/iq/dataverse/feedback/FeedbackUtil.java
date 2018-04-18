@@ -28,7 +28,7 @@ public class FeedbackUtil {
         if (systemAddress != null) {
             systemEmail = systemAddress.getAddress();
         }
-        logger.info("systemAddress: " + systemAddress);
+        logger.fine("systemAddress: " + systemAddress);
         List<Feedback> feedbacks = new ArrayList<>();
         if (isLoggedIn(dataverseSession)) {
             userEmail = loggedInUserEmail(dataverseSession);
