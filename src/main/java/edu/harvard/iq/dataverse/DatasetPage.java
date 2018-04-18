@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -100,6 +101,9 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
+
+import java.net.URLEncoder;
+
 
 /**
  *
@@ -174,7 +178,6 @@ public class DatasetPage implements java.io.Serializable {
     PrivateUrlServiceBean privateUrlService;
     @EJB
     ExternalToolServiceBean externalToolService;
-
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -355,6 +358,86 @@ public class DatasetPage implements java.io.Serializable {
         this.lazyModel = lazyModel;
     }
     
+    public List<Entry<String,String>> getCartList() {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            return ((AuthenticatedUser) session.getUser()).getCart().getContents();
+        }
+        return null;
+    }
+    
+    public boolean checkCartForItem(String title, String persistentId) {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            return ((AuthenticatedUser) session.getUser()).getCart().checkCartForItem(title, persistentId);
+        }
+        return false;
+    }
+
+    public void addItemtoCart(String title, String persistentId) throws Exception{
+        if (canComputeAllFiles(true)) {
+            if (session.getUser() instanceof AuthenticatedUser) {
+                AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+                try {
+                    authUser.getCart().addItem(title, persistentId);
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+                } catch (Exception ex){
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+                }
+            }
+        }
+    }
+    
+    public void removeCartItem(String title, String persistentId) throws Exception {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            try {
+                authUser.getCart().removeItem(title, persistentId);
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+            } catch (Exception ex){
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+            }
+        }
+    }
+    
+    public void clearCart() throws Exception {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            try {
+                authUser.getCart().clear();
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+            } catch (Exception ex){
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+            }
+        }
+    }
+    
+    public boolean isCartEmpty() {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            return authUser.getCart().getContents().isEmpty();
+        }
+        return true;
+    }
+    
+        
+    public String getCartComputeUrl() {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
+            if (url == null) {
+                return "";
+            }
+            // url indicates that you are computing with multiple datasets
+            url += "/multiparty?";
+            List<Entry<String,String>> contents = authUser.getCart().getContents();
+            for (Entry<String,String> entry : contents) {
+                String persistentIdUrl = entry.getValue();
+                url +=  persistentIdUrl + "&";
+            }
+            return url.substring(0, url.length() - 1);
+        }
+        return "";
+    }
+
     private String fileLabelSearchTerm;
 
     public String getFileLabelSearchTerm() {
@@ -372,7 +455,7 @@ public class DatasetPage implements java.io.Serializable {
     public List<FileMetadata> getFileMetadatasSearch() {
         return fileMetadatasSearch;
     }
-
+    
     public void setFileMetadatasSearch(List<FileMetadata> fileMetadatasSearch) {
         this.fileMetadatasSearch = fileMetadatasSearch;
     }
@@ -543,13 +626,22 @@ public class DatasetPage implements java.io.Serializable {
         return result;
     }
 
-    public boolean canDownloadAllFiles(){
-       for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (!fileDownloadHelper.canDownloadFile(fmd)) {
-                return false;
-            }
+    public boolean canComputeAllFiles(boolean isCartCompute){
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+             if (!fileDownloadHelper.canDownloadFile(fmd)) {
+                 RequestContext requestContext = RequestContext.getCurrentInstance();
+                 requestContext.execute("PF('computeInvalid').show()");
+                 return false;
+             }
         }
-       return true;
+        if (!isCartCompute) {
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(getComputeUrl());
+             } catch (IOException ioex) {
+                 logger.warning("Failed to issue a redirect.");
+             }
+        }
+        return true;
     }
     /*
     in getComputeUrl(), we are sending the container/dataset name and the exipiry and signature 
@@ -563,16 +655,11 @@ public class DatasetPage implements java.io.Serializable {
     --SF
     */
     public String getComputeUrl() throws IOException {
-        SwiftAccessIO swiftObject = getSwiftObject();
-        if (swiftObject != null) {
-            swiftObject.open();
-            if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-                return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName();
-            }
-            //assuming we are able to get a temp url for a dataset
-            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
-        }
-        return "";
+
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId();
+            //WHEN we are able to get a temp url for a dataset
+            //return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+
         
     }
     
@@ -590,10 +677,10 @@ public class DatasetPage implements java.io.Serializable {
             logger.info("DatasetPage: Failed to get storageIO");
         }
         if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName();
+            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName();
         }
         
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
 
     }
     
@@ -654,7 +741,7 @@ public class DatasetPage implements java.io.Serializable {
         setReleasedVersionTabList(resetReleasedVersionTabList());
         
     }
-    
+
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList<>();
         linkingDVSelectItems = new ArrayList<>();
@@ -1284,15 +1371,6 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private boolean readOnly = true; 
-    private String originalSourceUrl = null;
-
-    public String getOriginalSourceUrl() {
-        return originalSourceUrl; 
-    }
-    
-    public void setOriginalSourceUrl(String originalSourceUrl) {
-        this.originalSourceUrl = originalSourceUrl;
-    }
     
     public String init() {
         return init(true);
@@ -1304,7 +1382,6 @@ public class DatasetPage implements java.io.Serializable {
     
     private String init(boolean initFull) {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-               
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
@@ -1372,6 +1449,7 @@ public class DatasetPage implements java.io.Serializable {
             }
 
             // Is the Dataset harvested?
+            
             if (dataset.isHarvested()) {
                 // if so, we'll simply forward to the remote URL for the original
                 // source of this harvested dataset:
@@ -1391,7 +1469,7 @@ public class DatasetPage implements java.io.Serializable {
 
                 return permissionsWrapper.notFound();
             }
-
+              
             // Check permisisons           
             if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
                 return permissionsWrapper.notAuthorized();

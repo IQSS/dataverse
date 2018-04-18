@@ -12,11 +12,12 @@ Dataverse 4 exposes most of its GUI functionality via a REST-based API. This sec
 .. contents:: |toctitle|
     :local:
 
-Endpoints
----------
-
 Dataverses
-~~~~~~~~~~~
+----------
+
+Create a Dataverse
+~~~~~~~~~~~~~~~~~~
+
 Generates a new dataverse under ``$id``. Expects a JSON content describing the dataverse, as in the example below.
 If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). ::
 
@@ -36,33 +37,57 @@ Download the :download:`JSON example <../_static/api/dataverse-complete.json>` f
 
 .. literalinclude:: ../_static/api/dataverse-complete.json
 
+View a Dataverse
+~~~~~~~~~~~~~~~~
+
 |CORS| View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
 
     GET http://$SERVER/api/dataverses/$id
+
+Delete a Dataverse
+~~~~~~~~~~~~~~~~~~
 
 Deletes the dataverse whose ID is given::
 
     DELETE http://$SERVER/api/dataverses/$id?key=$apiKey
 
+Show Contents of a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 |CORS| Lists all the DvObjects under dataverse ``id``. ::
 
     GET http://$SERVER/api/dataverses/$id/contents
+
+List Roles Defined in a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 All the roles defined directly in the dataverse identified by ``id``::
 
   GET http://$SERVER/api/dataverses/$id/roles?key=$apiKey
 
+List Facets Configured for a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 |CORS| List all the facets for a given dataverse ``id``. ::
 
   GET http://$SERVER/api/dataverses/$id/facets?key=$apiKey
+
+Create a New Role in a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Creates a new role under dataverse ``id``. Needs a json file with the role description::
 
   POST http://$SERVER/api/dataverses/$id/roles?key=$apiKey
 
+List Role Assignments in a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 List all the role assignments at the given dataverse::
 
   GET http://$SERVER/api/dataverses/$id/assignments?key=$apiKey
+
+Assign a New Role on a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assigns a new role, based on the POSTed JSON. ::
 
@@ -75,21 +100,36 @@ POSTed JSON example::
     "role": "curator"
   }
 
+Delete Role Assignment from a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Delete the assignment whose id is ``$id``::
 
   DELETE http://$SERVER/api/dataverses/$id/assignments/$id?key=$apiKey
+
+List Metadata Blocks Defined on a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |CORS| Get the metadata blocks defined on the passed dataverse::
 
   GET http://$SERVER/api/dataverses/$id/metadatablocks?key=$apiKey
 
+Define Metadata Blocks for a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name). ::
 
   POST http://$SERVER/api/dataverses/$id/metadatablocks?key=$apiKey
 
+Determine if a Dataverse Inherits Its Metadata Blocks from Its Parent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Get whether the dataverse is a metadata block root, or does it uses its parent blocks::
 
   GET http://$SERVER/api/dataverses/$id/metadatablocks/isRoot?key=$apiKey
+
+Configure a Dataverse to Inherit Its Metadata Blocks from Its Parent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
 values are ``true`` and ``false`` (both are valid JSON expressions). ::
@@ -98,18 +138,22 @@ values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
 .. note:: Previous endpoints ``GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
 
+Create a Dataset in a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Create a new dataset in dataverse ``id``. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of ``"datasetVersion"``. The initial versions version number will be set to ``1.0``, and its state will be set to ``DRAFT`` regardless of the content of the json object. Example json can be found at ``data/dataset-create-new.json``. ::
+To create a dataset, you must create a JSON file containing all the metadata you want such as in this example file: :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>`. Then, you must decide which dataverse to create the dataset in and target that datavese with either the "alias" of the dataverse (e.g. "root" or the database id of the dataverse (e.g. "1"). The initial version state will be set to ``DRAFT``::
 
-  POST http://$SERVER/api/dataverses/$id/datasets/?key=$apiKey
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets --upload-file dataset-finch1.json
+
+Publish a Dataverse
+~~~~~~~~~~~~~~~~~~~
 
 Publish the Dataverse pointed by ``identifier``, which can either by the dataverse alias or its numerical id. ::
 
   POST http://$SERVER/api/dataverses/$identifier/actions/:publish?key=$apiKey
 
-
 Datasets
-~~~~~~~~
+--------
 
 **Note** Creation of new datasets is done with a ``POST`` onto dataverses. See Dataverses_ section.
 
@@ -121,6 +165,8 @@ Datasets
 * ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
 * ``x`` same as ``x.0``
 
+Get JSON Representation of a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note:: Datasets can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
@@ -136,17 +182,29 @@ Datasets
 
   GET http://$SERVER/api/datasets/$id?key=$apiKey
 
+Delete Dataset
+~~~~~~~~~~~~~~
+
 Delete the dataset whose id is passed::
 
   DELETE http://$SERVER/api/datasets/$id?key=$apiKey
+
+List Versions of a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |CORS| List versions of the dataset::
 
   GET http://$SERVER/api/datasets/$id/versions?key=$apiKey
 
+Get Version of a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 |CORS| Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
+
+Export Metadata of a Dataset in Various Formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |CORS| Export the metadata of the current published version of a dataset in various formats see Note below::
 
@@ -154,27 +212,59 @@ Delete the dataset whose id is passed::
 
 .. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , and ``dataverse_json``.
 
+List Files in a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~
+
 |CORS| Lists all the file metadata, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/files?key=$apiKey
+
+List All Metadata Blocks for a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |CORS| Lists all the metadata blocks and their content, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata?key=$apiKey
 
+List Single Metadata Block for a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 |CORS| Lists the metadata block block named `blockname`, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata/$blockname?key=$apiKey
 
-Updates the current draft version of dataset ``$id``. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data. The request body is a dataset version, in json format. ::
+Update Metadata For a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
+Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata. 
+
+You cannot currently target a specific field such as the title of a dataset and only update that one field. Instead, you must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
+
+For example, after making your edits, your JSON file might look like :download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>` which you would send to Dataverse like this::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/versions/:draft?persistentId=$PID --upload-file dataset-update-metadata.json
+
+Note that in example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``json``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PID | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
+
+Now that the resulting JSON file only contains the ``metadataBlocks`` key, you can edit the JSON such as with ``vi`` in the example below::
+
+    vi dataset-update-metadata.json
+
+Now that you've made edits to the metadata in your JSON file, you can send it to Dataverse as described above.
+
+Move Dataset to Another Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Moves a dataset whose id is passed to a dataverse whose alias is passed. Only accessible to superusers. ::
 
     POST http://$SERVER/api/datasets/$id/move/$alias?key=$apiKey
 
-Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
+Publish a Dataset
+~~~~~~~~~~~~~~~~~
+
+Publishes the dataset whose id is passed. If this is the first version of the dataset, its version number will be set to ``1.0``. Otherwise, the new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
 
@@ -185,9 +275,15 @@ Publishes the dataset whose id is passed. The new dataset version number is dete
           a ``202 ACCEPTED`` is returned immediately. To know whether the publication process succeeded or not, the client code has to check the status of the dataset periodically,
           or perform some push request in the post-publish workflow.
 
+Delete Dataset Draft
+~~~~~~~~~~~~~~~~~~~~
+
 Deletes the draft version of dataset ``$id``. Only the draft version can be deleted::
 
     DELETE http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
+
+Set Citation Date Field for a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the reqeust.
 To revert to the default logic, use ``:publicationDate`` as the ``$datasetFieldTypeName``.
@@ -195,25 +291,43 @@ Note that the dataset field used has to be a date field::
 
     PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
 
+Revert Citation Date Field to Default for Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Restores the default logic of the field type to be used as the citation date. Same as ``PUT`` with ``:publicationDate`` body::
 
     DELETE http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
+
+List Role Assignments for a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 List all the role assignments at the given dataset::
 
     GET http://$SERVER/api/datasets/$id/assignments?key=$apiKey
 
+Create a Private URL for a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Create a Private URL (must be able to manage dataset permissions)::
 
     POST http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+
+Get the Private URL for a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Get a Private URL from a dataset (if available)::
 
     GET http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
+Delete the Private URL from a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Delete a Private URL from a dataset (if it exists)::
 
     DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+
+Add a File to a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Add a file to an existing Dataset. Description and tags are optional::
 
@@ -307,8 +421,8 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     print r.json()
     print r.status_code
 
-Submit for Review
-^^^^^^^^^^^^^^^^^
+Submit a Dataset for Review
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When dataset authors do not have permission to publish directly, they can click the "Submit for Review" button in the web interface (see :doc:`/user/dataset-management`), or perform the equivalent operation via API::
 
@@ -316,8 +430,8 @@ When dataset authors do not have permission to publish directly, they can click 
 
 The people who need to review the dataset (often curators or journal editors) can check their notifications periodically via API to see if any new datasets have been submitted for review and need their attention. See the :ref:`Notifications` section for details. Alternatively, these curators can simply check their email or notifications to know when datasets have been submitted (or resubmitted) for review.
 
-Return to Author
-^^^^^^^^^^^^^^^^
+Return a Dataset to Author
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After the curators or journal editors have reviewed a dataset that has been submitted for review (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to its authors. In the web interface there is a "Return to Author" button (see :doc:`/user/dataset-management`), but the interface does not provide a way to explain **why** the dataset is being returned. There is a way to do this outside of this interface, however. Instead of clicking the "Return to Author" button in the UI, a curator can write a "reason for return" into the database via API.
 
@@ -333,9 +447,12 @@ The review process can sometimes resemble a tennis match, with the authors submi
 
 
 Files
-~~~~~~~~~~~
+-----
 
 .. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
+
+Restrict a File
+~~~~~~~~~~~~~~~
 
 Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
     
@@ -346,6 +463,9 @@ Note that some Dataverse installations do not allow the ability to restrict file
 A more detailed "restrict" example using curl::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/{id}/restrict
+
+Replace a File
+~~~~~~~~~~~~~~
 
 Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
 
@@ -421,15 +541,13 @@ Example python code to replace a file.  This may be run by changing these parame
     print r.json()
     print r.status_code
 
-
-
 Builtin Users
-~~~~~~~~~~~~~
+-------------
 
 Builtin users are known as "Username/Email and Password" users in the :doc:`/user/account` of the User Guide. Dataverse stores a password (encrypted, of course) for these users, which differs from "remote" users such as Shibboleth or OAuth users where the password is stored elsewhere. See also "Auth Modes: Local vs. Remote vs. Both" in the :doc:`/installation/config` section of the Installation Guide. It's a valid configuration of Dataverse to not use builtin users at all.
 
-Creating a Builtin User
-^^^^^^^^^^^^^^^^^^^^^^^
+Create a Builtin User
+~~~~~~~~~~~~~~~~~~~~~
 
 For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``BuiltinUsers.KEY``, which is described under "Securing Your Installation" and "Database Settings" in the :doc:`/installation/config` section of the Installation Guide. You will need to know the value of ``BuiltinUsers.KEY`` before you can proceed.
 
@@ -442,25 +560,36 @@ Place this ``user-add.json`` file in your current directory and run the followin
   curl -d @user-add.json -H "Content-type:application/json" "$SERVER_URL/api/builtin-users?password=$NEWUSER_PASSWORD&key=$BUILTIN_USERS_KEY"
 
 Roles
-~~~~~
+-----
+
+Create a New Role in a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Creates a new role in dataverse object whose Id is ``dataverseIdtf`` (that's an id/alias)::
 
   POST http://$SERVER/api/roles?dvo=$dataverseIdtf&key=$apiKey
 
+Show Role
+~~~~~~~~~
+
 Shows the role with ``id``::
 
   GET http://$SERVER/api/roles/$id
+
+Delete Role
+~~~~~~~~~~~
 
 Deletes the role with ``id``::
 
   DELETE http://$SERVER/api/roles/$id
 
-
 Explicit Groups
-~~~~~~~~~~~~~~~
-Explicit groups list their members explicitly. These groups are defined in dataverses, which is why their API endpoint is under ``api/dataverses/$id/``, where ``$id`` is the id of the dataverse.
+---------------
 
+Create New Explicit Group
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Explicit groups list their members explicitly. These groups are defined in dataverses, which is why their API endpoint is under ``api/dataverses/$id/``, where ``$id`` is the id of the dataverse.
 
 Create a new explicit group under dataverse ``$id``::
 
@@ -474,64 +603,103 @@ Data being POSTed is json-formatted description of the group::
    "aliasInOwner":"ccs"
   }
 
+List Explicit Groups in a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 List explicit groups under dataverse ``$id``::
 
   GET http://$server/api/dataverses/$id/groups
+
+Show Single Group in a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Show group ``$groupAlias`` under dataverse ``$dv``::
 
   GET http://$server/api/dataverses/$dv/groups/$groupAlias
 
+Update Group in a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Update group ``$groupAlias`` under dataverse ``$dv``. The request body is the same as the create group one, except that the group alias cannot be changed. Thus, the field ``aliasInOwner`` is ignored. ::
 
   PUT http://$server/api/dataverses/$dv/groups/$groupAlias
+
+Delete Group from a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Delete group ``$groupAlias`` under dataverse ``$dv``::
 
   DELETE http://$server/api/dataverses/$dv/groups/$groupAlias
 
+Add Multiple Role Assignees to an Explicit Group
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Bulk add role assignees to an explicit group. The request body is a JSON array of role assignee identifiers, such as ``@admin``, ``&ip/localhosts`` or ``:authenticated-users``::
 
   POST http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees
 
+Add a Role Assignee to an Explicit Group
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Add a single role assignee to a group. Request body is ignored::
 
   PUT http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
+
+Remove a Role Assignee from an Explicit Group
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Remove a single role assignee from an explicit group::
 
   DELETE http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
 
 Shibboleth Groups
-~~~~~~~~~~~~~~~~~
+-----------------
 
 Management of Shibboleth groups via API is documented in the :doc:`/installation/shibboleth` section of the Installation Guide.
 
 Info
-~~~~
+----
+
+Show Dataverse Version and Build Number
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |CORS| Get the Dataverse version. The response contains the version and build numbers::
 
   GET http://$SERVER/api/info/version
 
+Show Dataverse Server Name
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer::
 
   GET http://$SERVER/api/info/server
 
+Show Custom Popup Text for Publishing Datasets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from the :doc:`/installation/config` section of the Installation Guide is exposed::
 
   GET http://$SERVER/api/info/settings/:DatasetPublishPopupCustomText
+
+Get API Terms of Use URL
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
 
   GET http://$SERVER/api/info/apiTermsOfUse
   
 Metadata Blocks
-~~~~~~~~~~~~~~~
+---------------
+
+Show Info About All Metadata Blocks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |CORS| Lists brief info about all metadata blocks registered in the system::
 
   GET http://$SERVER/api/metadatablocks
+
+Show Info About Single Metadata Block
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |CORS| Return data about the block whose ``identifier`` is passed. ``identifier`` can either be the block's id, or its name::
 
@@ -540,57 +708,87 @@ Metadata Blocks
 .. _Notifications:
 
 Notifications
-~~~~~~~~~~~~~
+-------------
 
 Get All Notifications by User
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each user can get a dump of their notifications by passing in their API token::
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
 
-
 Admin
-~~~~~~~~~~~~~~~~
+-----
+
 This is the administrative part of the API. For security reasons, it is absolutely essential that you block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details. See also "Blocking API Endpoints" under "Securing Your Installation" in the :doc:`/installation/config` section of the Installation Guide.
+
+List All Database Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 List all settings::
 
   GET http://$SERVER/api/admin/settings
 
+Configure Database Setting
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Sets setting ``name`` to the body of the request::
 
   PUT http://$SERVER/api/admin/settings/$name
+
+Get Single Database Setting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Get the setting under ``name``::
 
   GET http://$SERVER/api/admin/settings/$name
 
+Delete Database Setting
+~~~~~~~~~~~~~~~~~~~~~~~
+
 Delete the setting under ``name``::
 
   DELETE http://$SERVER/api/admin/settings/$name
+
+List Authentication Provider Factories
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 List the authentication provider factories. The alias field of these is used while configuring the providers themselves. ::
 
   GET http://$SERVER/api/admin/authenticationProviderFactories
 
+List Authentication Providers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 List all the authentication providers in the system (both enabled and disabled)::
 
   GET http://$SERVER/api/admin/authenticationProviders
+
+Add Authentication Provider
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Add new authentication provider. The POST data is in JSON format, similar to the JSON retrieved from this command's ``GET`` counterpart. ::
 
   POST http://$SERVER/api/admin/authenticationProviders
 
+Show Authentication Provider
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Show data about an authentication provider::
 
   GET http://$SERVER/api/admin/authenticationProviders/$id
+
+Enable or Disable an Authentication Provider
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Enable or disable an authentication provider (denoted by ``id``)::
 
   PUT http://$SERVER/api/admin/authenticationProviders/$id/enabled
 
 .. note:: The former endpoint, ending with ``:enabled`` (that is, with a colon), is still supported, but deprecated.
+
+Check If an Authentication Provider is Enabled
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Check whether an authentication proider is enabled::
 
@@ -600,17 +798,29 @@ The body of the request should be either ``true`` or ``false``. Content type has
 
   curl -H "Content-type: application/json"  -X POST -d"false" http://localhost:8080/api/admin/authenticationProviders/echo-dignified/:enabled
 
+Delete an Authentication Provider
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Deletes an authentication provider from the system. The command succeeds even if there is no such provider, as the postcondition holds: there is no provider by that id after the command returns. ::
 
   DELETE http://$SERVER/api/admin/authenticationProviders/$id/
+
+List Global Roles
+~~~~~~~~~~~~~~~~~~
 
 List all global roles in the system. ::
 
     GET http://$SERVER/api/admin/roles
 
+Create Global Role
+~~~~~~~~~~~~~~~~~~
+
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 
     POST http://$SERVER/api/admin/roles
+
+List Users
+~~~~~~~~~~
 
 List users with the options to search and "page" through results. Only accessible to superusers. Optional parameters:
 
@@ -719,6 +929,8 @@ Sample output appears below.
 
 .. note:: "List all users" ``GET http://$SERVER/api/admin/authenticatedUsers`` is deprecated, but supported.
 
+List Single User
+~~~~~~~~~~~~~~~~
 
 List user whose ``identifier`` (without the ``@`` sign) is passed::
 
@@ -755,9 +967,15 @@ POSTed JSON example::
       "email": "pete@mailinator.com"
     }
 
+Make User a SuperUser
+~~~~~~~~~~~~~~~~~~~~~
+
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
+
+List Role Assignments of a Role Assignee
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 List all role assignments of a role assignee (i.e. a user or a group)::
 
@@ -765,11 +983,17 @@ List all role assignments of a role assignee (i.e. a user or a group)::
 
 Note that ``identifier`` can contain slashes (e.g. ``&ip/localhost-users``).
 
+List Permissions a User Has on a Dataverse or Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 List permissions a user (based on API Token used) has on a dataverse or dataset::
 
     GET http://$SERVER/api/admin/permissions/$identifier
 
 The ``$identifier`` can be a dataverse alias or database id or a dataset persistent ID or database id.
+
+Show Role Assignee
+~~~~~~~~~~~~~~~~~~
 
 List a role assignee (i.e. a user or a group)::
 
@@ -778,7 +1002,7 @@ List a role assignee (i.e. a user or a group)::
 The ``$identifier`` should start with an ``@`` if it's a user. Groups start with ``&``. "Built in" users and groups start with ``:``. Private URL users start with ``#``.
 
 Saved Search
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 The Saved Search, Linked Dataverses, and Linked Datasets features shipped with Dataverse 4.0, but as a "`superuser-only <https://github.com/IQSS/dataverse/issues/90#issuecomment-86094663>`_" because they are **experimental** (see `#1364 <https://github.com/IQSS/dataverse/issues/1364>`_, `#1813 <https://github.com/IQSS/dataverse/issues/1813>`_, `#1840 <https://github.com/IQSS/dataverse/issues/1840>`_, `#1890 <https://github.com/IQSS/dataverse/issues/1890>`_, `#1939 <https://github.com/IQSS/dataverse/issues/1939>`_, `#2167 <https://github.com/IQSS/dataverse/issues/2167>`_, `#2186 <https://github.com/IQSS/dataverse/issues/2186>`_, `#2053 <https://github.com/IQSS/dataverse/issues/2053>`_, and `#2543 <https://github.com/IQSS/dataverse/issues/2543>`_). The following API endpoints were added to help people with access to the "admin" API make use of these features in their current form. Of particular interest should be the "makelinks" endpoint because it needs to be called periodically (via cron or similar) to find new dataverses and datasets that match the saved search and then link the search results to the dataverse in which the saved search is defined (`#2531 <https://github.com/IQSS/dataverse/issues/2531>`_ shows an example). There is a known issue (`#1364 <https://github.com/IQSS/dataverse/issues/1364>`_) that once a link to a dataverse or dataset is created, it cannot be removed (apart from database manipulation and reindexing) which is why a ``DELETE`` endpoint for saved searches is neither documented nor functional. The Linked Dataverses feature is `powered by Saved Search <https://github.com/IQSS/dataverse/issues/1852>`_ and therefore requires that the "makelinks" endpoint be executed on a periodic basis as well.
 
@@ -799,14 +1023,14 @@ Execute all saved searches and make links to dataverses and datasets that are fo
   PUT http://$SERVER/api/admin/savedsearches/makelinks/all?debug=true
 
 Dataset Integrity
-^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~
 
 Recalculate the UNF value of a dataset version, if it's missing, by supplying the dataset version database id::
 
   POST http://$SERVER/api/admin/datasets/integrity/{datasetVersionId}/fixmissingunf
 
 Workflows
-^^^^^^^^^
+~~~~~~~~~
 
 List all available workflows in the system::
 
