@@ -541,6 +541,33 @@ Example python code to replace a file.  This may be run by changing these parame
     print r.json()
     print r.status_code
 
+
+Provenance
+~~~~~~~~~~
+Get Provenance JSON for an uploaded file::
+
+    GET http://$SERVER/api/files/{id}/prov-json?key=$apiKey
+
+Get Provenance Description for an uploaded file::
+
+    GET http://$SERVER/api/files/{id}/prov-freeform?key=$apiKey
+
+Create Provenance JSON for an uploaded file::
+
+    POST http://$SERVER/api/files/{id}/prov-json?key=$apiKey -H "Content-type:application/json"
+
+Create Provenance Description for an uploaded file::
+
+    POST http://$SERVER/api/files/{id}/prov-freeform?key=$apiKey -H "Content-type:application/json"
+
+Delete Provenance JSON for an uploaded file::
+
+    DELETE http://$SERVER/api/files/{id}/prov-json?key=$apiKey
+
+Delete Provenance Description for an uploaded file::
+
+    DELETE http://$SERVER/api/files/{id}/prov-freeform?key=$apiKey
+
 Builtin Users
 -------------
 
