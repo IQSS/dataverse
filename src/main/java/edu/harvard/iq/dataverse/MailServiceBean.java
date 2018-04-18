@@ -91,7 +91,7 @@ public class MailServiceBean implements java.io.Serializable {
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
             	InternetAddress fromAddress=getSystemAddress();
-            	fromAddress.setPersonal(fromAddress.getPersonal() + "on behalf of " + reply);
+            	fromAddress.setPersonal(fromAddress.getPersonal() + "on behalf of " + reply, charset);
             	msg.setFrom(fromAddress);
                 msg.setReplyTo(new Address[] {new InternetAddress(reply, charset)});
                 for (int i = 0; i < recipients.length; i++) {
@@ -175,7 +175,11 @@ public class MailServiceBean implements java.io.Serializable {
             MimeMessage msg = new MimeMessage(session);
             //Always send from system address to avoid email being blocked
             InternetAddress fromAddress=getSystemAddress();
-            fromAddress.setPersonal(fromAddress.getPersonal() + "on behalf of " + reply);
+            try {
+              fromAddress.setPersonal(fromAddress.getPersonal() + "on behalf of " + reply, charset);
+            } catch (UnsupportedEncodingException ex) {
+                logger.severe(ex.getMessage());
+            }
             msg.setFrom(fromAddress);
              
             if (reply.matches(EMAIL_PATTERN)) {
