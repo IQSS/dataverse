@@ -1,6 +1,6 @@
 {
-  "hostname": "data.sbgrid.org",
-  "name": "Harvard Medical School, USA",
-  "primary": true,
+  "hostname": "dataverse.librascholar.edu",
+  "name": "LibraScholar, USA",
+  "primaryStorage": true,
   "transferProtocols": "rsync,posix,globus"
 }
