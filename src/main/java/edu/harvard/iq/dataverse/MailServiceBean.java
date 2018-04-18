@@ -90,7 +90,8 @@ public class MailServiceBean implements java.io.Serializable {
             String[] recipientStrings = to.split(",");
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
-            	InternetAddress fromAddress=getSystemAddress().setPersonal(getSystemAddress().getPersonal() + "on behalf of " + reply); 
+            	InternetAddress fromAddress=getSystemAddress();
+            	fromAddress.setPersonal(fromAddress.getPersonal() + "on behalf of " + reply);
             	msg.setFrom(fromAddress);
                 msg.setReplyTo(new Address[] {new InternetAddress(reply, charset)});
                 for (int i = 0; i < recipients.length; i++) {
@@ -173,10 +174,11 @@ public class MailServiceBean implements java.io.Serializable {
         try {
             MimeMessage msg = new MimeMessage(session);
             //Always send from system address to avoid email being blocked
-            InternetAddress fromAddress=getSystemAddress().setPersonal(getSystemAddress().getPersonal() + "on behalf of " + reply);
+            InternetAddress fromAddress=getSystemAddress();
+            fromAddress.setPersonal(fromAddress.getPersonal() + "on behalf of " + reply);
             msg.setFrom(fromAddress);
              
-            if (from.matches(EMAIL_PATTERN)) {
+            if (reply.matches(EMAIL_PATTERN)) {
             	//But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address	
                 msg.setReplyTo(new Address[] {new InternetAddress(reply)});
             } else {
