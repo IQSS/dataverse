@@ -176,25 +176,35 @@ public class MoveDataverseCommandTest {
                             // no-op. The superclass accesses databases which we don't have.
                             return dataverse;
                     }
+                    @Override 
+                    public Dataverse find(Object pk) {
+                    // fake this for what we need
+                        if (pk instanceof Long) {
+                            if ((Long)pk == 10) {
+                                return grandchildEE;
+                            }
+                        }
+                        return new Dataverse();
+                    }
                     @Override
                     public List<Dataverse> findByOwnerId(Long ownerId) {
                         return new ArrayList<>();
                     }
                     @Override
-                    public List<Dataverse> findAllDataverseDataverseChildren(Dataverse dv) {
+                    public List<Long> findAllDataverseDataverseChildren(Long dvId) {
                         // fake this for what we need 
-                        List<Dataverse> fakeChildren = new ArrayList<>();
-                        if (dv.getId() == 9){ 
-                            fakeChildren.add(grandchildEE);
+                        List<Long> fakeChildren = new ArrayList<>();
+                        if (dvId == 9){ 
+                            fakeChildren.add(grandchildEE.getId());
                         }
                         return fakeChildren;
                     }
                     @Override
-                    public List<Dataset> findAllDataverseDatasetChildren(Dataverse dv) {
+                    public List<Long> findAllDataverseDatasetChildren(Long dvId) {
                         // fake this for what we need
-                        List<Dataset> fakeChildren = new ArrayList<>();
-                        if (dv.getId() == 6) {
-                            fakeChildren.add(datasetCC);
+                        List<Long> fakeChildren = new ArrayList<>();
+                        if (dvId == 6) {
+                            fakeChildren.add(datasetCC.getId());
                         }
                         return fakeChildren;
                     }
@@ -240,6 +250,16 @@ public class MoveDataverseCommandTest {
                     @Override
                     public List<Dataset> findByOwnerId(Long ownerId) {
                         return new ArrayList<>();
+                    }
+                    @Override
+                    public Dataset find(Object pk) {
+                        // fake this for what we need
+                        if (pk instanceof Long) {
+                            if ((Long)pk == 2) {
+                                return datasetCC;
+                            }
+                        }
+                        return new Dataset();
                     }
                 };
             }

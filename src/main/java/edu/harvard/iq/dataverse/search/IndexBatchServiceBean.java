@@ -164,28 +164,52 @@ public class IndexBatchServiceBean {
         logger.info(status);
         return new AsyncResult<>(status);
     }
-    
+        
     @Asynchronous
     public void indexDataverseRecursively(Dataverse dataverse) {
         long start = System.currentTimeMillis();
-        // index the Dataverse of current recursion
-        indexService.indexDataverseInNewTransaction(dataverse);
+        int datasetIndexCount = 0, datasetFailureCount = 0, dataverseIndexCount = 0, dataverseFailureCount = 0;
         // get list of Dataverse children
-        List<Dataverse> dataverseChildren = dataverseService.findByOwnerId(dataverse.getId());
-
+        List<Long> dataverseChildren = dataverseService.findAllDataverseDataverseChildren(dataverse.getId());
+        dataverseChildren.add(dataverse.getId());
+        
         // get list of Dataset children
-        List<Dataset> datasetChildren = datasetService.findByOwnerId(dataverse.getId());
+        List<Long> datasetChildren = dataverseService.findAllDataverseDatasetChildren(dataverse.getId());
 
-        // index the Dataset children
-        for (Dataset child : datasetChildren) {
-            indexService.indexDatasetInNewTransaction(child.getId());
+        logger.info("Starting index on " + dataverseChildren.size() + " dataverses and " + datasetChildren.size() + " datasets.");
+
+        // index the Dataverse children
+        for (Long childId : dataverseChildren) {
+            try {
+                dataverseIndexCount++;
+                Dataverse dv = dataverseService.find(childId);
+                logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverseChildren.size() + " (id=" + childId + ", persistentId=" + dv.getAlias() + ")");
+                Future<String> result = indexService.indexDataverseInNewTransaction(dv);
+                dv = null;
+            } catch (Exception e) {
+                //We want to keep running even after an exception so throw some more info into the log
+                dataverseFailureCount++;
+                logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + dataverseChildren.size() + " (id=" + childId + ") Exception info: " + e.getMessage());
+            }
         }
-        // recursively index the Dataverse children
-        for (Dataverse child : dataverseChildren) {
-            indexDataverseRecursively(child);
+        
+        // index the Dataset children
+        for (Long childId : datasetChildren) {
+            try {
+                datasetIndexCount++;
+                logger.info("indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ")");
+                indexService.indexDatasetInNewTransaction(childId);
+            } catch (Exception e) {
+                //We want to keep running even after an exception so throw some more info into the log
+                datasetFailureCount++;
+                logger.info("FAILURE indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ") Exception info: " + e.getMessage());
+            }
         }
         long end = System.currentTimeMillis();
-        logger.info("Time to index so far: " + (end - start));
+        if (datasetFailureCount + dataverseFailureCount > 0){
+            logger.info("There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.");            
+        }
+        logger.info(dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. Total time to index " + (end - start) + ".");
     }
 
 }

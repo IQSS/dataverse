@@ -127,6 +127,11 @@ public class DataverseServiceBean implements java.io.Serializable {
         return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
     }
     
+    public List<Long> findIdsByOwnerId(Long ownerId) {
+        String qr = "select o.id from Dataverse as o where o.owner.id =:ownerId order by o.id";
+        return em.createQuery(qr, Long.class).setParameter("ownerId", ownerId).getResultList();
+    }
+    
     public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
         String qr ="select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name";
         return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
@@ -559,37 +564,37 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
     }
     
-    // function to recursively find all children of a dataverse that 
+    // function to recursively find ids of all children of a dataverse that 
     // are also of type dataverse
-    public List<Dataverse> findAllDataverseDataverseChildren(Dataverse dv) {
+    public List<Long> findAllDataverseDataverseChildren(Long dvId) {
         // get list of Dataverse children
-        List<Dataverse> dataverseChildren = findByOwnerId(dv.getId());
+        List<Long> dataverseChildren = findIdsByOwnerId(dvId);
         
         if (dataverseChildren == null) {
             return dataverseChildren;
         } else {
-            List<Dataverse> newChildren = new ArrayList<>();
-            for (Dataverse childDv : dataverseChildren) {
-                newChildren.addAll(findAllDataverseDataverseChildren(childDv));
+            List<Long> newChildren = new ArrayList<>();
+            for (Long childDvId : dataverseChildren) {
+                newChildren.addAll(findAllDataverseDataverseChildren(childDvId));
             }
             dataverseChildren.addAll(newChildren);
             return dataverseChildren;
         }
     }
     
-    // function to recursively find all children of a dataverse that are 
+    // function to recursively find ids of all children of a dataverse that are 
     // of type dataset
-    public List<Dataset> findAllDataverseDatasetChildren(Dataverse dv) {
+    public List<Long> findAllDataverseDatasetChildren(Long dvId) {
         // get list of Dataverse children
-        List<Dataverse> dataverseChildren = findByOwnerId(dv.getId());
+        List<Long> dataverseChildren = findIdsByOwnerId(dvId);
         // get list of Dataset children
-        List<Dataset> datasetChildren = datasetService.findByOwnerId(dv.getId());
+        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId);
         
         if (dataverseChildren == null) {
             return datasetChildren;
         } else {
-            for (Dataverse childDv : dataverseChildren) {
-                datasetChildren.addAll(findAllDataverseDatasetChildren(childDv));
+            for (Long childDvId : dataverseChildren) {
+                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId));
             }
             return datasetChildren;
         }

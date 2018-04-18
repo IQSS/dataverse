@@ -85,10 +85,15 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         }
         
         logger.info("Getting dataset children of dataverse...");
-        List<Dataset> datasetChildren = ctxt.dataverses().findAllDataverseDatasetChildren(moved);
+        List<Dataset> datasetChildren = new ArrayList<>();
+        List<Long> datasetChildrenIds = ctxt.dataverses().findAllDataverseDatasetChildren(moved.getId());
+        datasetChildrenIds.forEach( (dsId) -> datasetChildren.add(ctxt.datasets().find(dsId)) );
 
         logger.info("Getting dataverse children of dataverse...");
-        List<Dataverse> dataverseChildren = ctxt.dataverses().findAllDataverseDataverseChildren(moved);
+        List<Dataverse> dataverseChildren = new ArrayList<>();
+        List<Long> dataverseChildrenIds = ctxt.dataverses().findAllDataverseDataverseChildren(moved.getId());
+        dataverseChildrenIds.forEach( (dvId) -> dataverseChildren.add(ctxt.dataverses().find(dvId)) );
+
         dataverseChildren.add(moved); // include the root of the children
 
         
@@ -100,8 +105,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             ownersToCheck.addAll(destination.getOwners());
         }
         
-        // if all the dataverse's datasets GUESTBOOKS are not contained in the new dataverse then remove the
-        // ones that aren't
+        // generate list of destination guestbooks to check against
         List<Guestbook> destinationGbs = null;
         if (moved.getGuestbooks() != null) {
             List<Guestbook> movedGbs = moved.getGuestbooks();
@@ -130,7 +134,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             }
         }
         
-        // if the dataverses default TEMPLATE is not contained in the new dataverse then remove it
+        // generate a list of templates in destination to check against
         List<Template> destinationTemplates = null;
         if (moved.getTemplates() != null) {
             List<Template> movedTemplates = moved.getTemplates();
@@ -144,10 +148,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             destinationTemplates.addAll(movedTemplates);
         }
 
-        // if all the dataverses METADATA BLOCKS are not contained in the new dataverse then remove the
-        // ones that aren't available in the destination
-        // i.e. the case where a custom metadata block is available through a parent 
-        // but then the dataverse is moved outside of that parent-child structure
+        // generate a list of metadatablocks in destination to check against
         Boolean inheritMbValue = null;
         List<Dataverse> mbParentsToCheck = new ArrayList<>();
         mbParentsToCheck.addAll(ownersToCheck);
@@ -160,6 +161,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
     
         logger.info("Checking templates and metadata blocks");
         for (Dataverse dv : dataverseChildren) {
+            // if the dataverses default TEMPLATE is not contained in the 
+            // destination dataverse, remove it
             if (destinationTemplates != null) {
                 Template dvt = dv.getDefaultTemplate();
                 if (dvt != null && !destinationTemplates.contains(dvt)) {
@@ -171,8 +174,10 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
             }
 
-            // determine which metadata blocks to keep selected 
-            // on the moved dataverse and its children
+            // if all the dataverses METADATA BLOCKS are not contained in the new dataverse then remove the
+            // ones that aren't available in the destination
+            // i.e. the case where a custom metadata block is available through a parent 
+            // but then the dataverse is moved outside of that parent-child structure
             if (inheritMbValue != null) {
                 List<MetadataBlock> metadataBlocksToKeep = new ArrayList<>();
                 List<MetadataBlock> movedMbs = dv.getMetadataBlocks(true);
@@ -198,6 +203,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
             }
             
+            // get list of dataverses each child links to
             if (dv.getDataverseLinkingDataverses() != null) {
                 linkingDataverses.addAll(dv.getDataverseLinkingDataverses());
             }
@@ -206,6 +212,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         List<DatasetLinkingDataverse> linkingDatasets = new ArrayList();
         logger.info("Checking guestbooks...");
         for (Dataset ds : datasetChildren) {
+            // if all the dataverse's datasets GUESTBOOKS are not 
+            //contained in the new dataverse, then remove them
             Guestbook dsgb = ds.getGuestbook();
             if (dsgb != null && (destinationGbs == null || !destinationGbs.contains(dsgb))) {
                 if (force == null || !force) {
@@ -214,11 +222,15 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
                 ds.setGuestbook(null);
             }
+            
+            // get list of dataverses each child dataset links to
             if (ds.getDatasetLinkingDataverses() != null) {
                 linkingDatasets.addAll(ds.getDatasetLinkingDataverses());
             }
         }
         
+        // if a dataverse links to its destination dataverse or any of 
+        // its destinations owners, remove the link
         for (DataverseLinkingDataverse dvld : linkingDataverses) {
             logger.info("Checking linked dataverses....");
             for (Dataverse owner : ownersToCheck){
@@ -233,6 +245,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             }
         }
         
+        // if a dataset links to its destination dataverse or any of 
+        // its destinations owners, remove the link
         for (DatasetLinkingDataverse dsld : linkingDatasets) {
             logger.info("Checking linked datasets...");
             for (Dataverse owner : ownersToCheck){
