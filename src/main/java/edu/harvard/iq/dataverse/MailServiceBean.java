@@ -89,7 +89,8 @@ public class MailServiceBean implements java.io.Serializable {
             String[] recipientStrings = to.split(",");
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
-                msg.setFrom(new InternetAddress(from, charset));
+            	msg.setFrom(getSystemAddress());
+                msg.setReplyTo(new InternetAddress(from, charset));
                 for (int i = 0; i < recipients.length; i++) {
                     recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
                 }
@@ -169,12 +170,14 @@ public class MailServiceBean implements java.io.Serializable {
     public void sendMail(String from, String to, String subject, String messageText, Map<Object, Object> extraHeaders) {
         try {
             MimeMessage msg = new MimeMessage(session);
+            //Always send from system address to avoid email being blocked
+            msg.setFrom(getSystemAddress());
+             
             if (from.matches(EMAIL_PATTERN)) {
-                msg.setFrom(new InternetAddress(from));
+            	//But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address	
+                msg.setReplyTo(new InternetAddress(from));
             } else {
-                // set fake from address; instead, add it as part of the message
-                //msg.setFrom(new InternetAddress("invalid.email.address@mailinator.com"));
-                msg.setFrom(getSystemAddress());
+                //Otherwise include the invalid 'from' address in the message
                 messageText = "From: " + from + "\n\n" + messageText;
             }
             msg.setSentDate(new Date());
