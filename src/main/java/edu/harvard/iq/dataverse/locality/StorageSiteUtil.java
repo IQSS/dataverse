@@ -5,7 +5,7 @@ import javax.json.JsonObject;
 
 public class StorageSiteUtil {
 
-    public static StorageSite parse(JsonObject jsonObject) {
+    public static StorageSite parse(JsonObject jsonObject) throws Exception {
         StorageSite storageSite = new StorageSite();
         storageSite.setHostname(getRequiredString(jsonObject, StorageSite.HOSTNAME));
         storageSite.setName(getRequiredString(jsonObject, StorageSite.NAME));
@@ -22,7 +22,11 @@ public class StorageSiteUtil {
         String commaSeparatedInput = getRequiredString(jsonObject, StorageSite.TRANSFER_PROTOCOLS);
         String[] strings = commaSeparatedInput.split(",");
         for (String string : strings) {
-            SystemConfig.TransferProtocols.fromString(string);
+            try {
+                SystemConfig.TransferProtocols.fromString(string);
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Exception processing the string '" + string + "' in comma-separated '" + StorageSite.TRANSFER_PROTOCOLS + "' list: " + ex.getLocalizedMessage());
+            }
         }
         return commaSeparatedInput;
     }

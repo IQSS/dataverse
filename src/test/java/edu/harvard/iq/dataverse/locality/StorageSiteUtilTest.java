@@ -8,7 +8,7 @@ import org.junit.Test;
 public class StorageSiteUtilTest {
 
     @Test
-    public void testParse() {
+    public void testParse() throws Exception {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(StorageSite.HOSTNAME, "myHostname");
         job.add(StorageSite.NAME, "myName");
@@ -21,7 +21,7 @@ public class StorageSiteUtilTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testMissingHostname() {
+    public void testMissingHostname() throws Exception {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(StorageSite.NAME, "myName");
         job.add(StorageSite.PRIMARY_STORAGE, true);
@@ -30,7 +30,7 @@ public class StorageSiteUtilTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testBadProtocol() {
+    public void testBadProtocol() throws Exception {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(StorageSite.HOSTNAME, "myHostname");
         job.add(StorageSite.NAME, "myName");

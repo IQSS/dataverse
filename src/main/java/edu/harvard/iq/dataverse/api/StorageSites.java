@@ -43,7 +43,12 @@ public class StorageSites extends AbstractApiBean {
 
     @POST
     public Response addSite(JsonObject jsonObject) {
-        StorageSite toPersist = StorageSiteUtil.parse(jsonObject);
+        StorageSite toPersist = null;
+        try {
+            toPersist = StorageSiteUtil.parse(jsonObject);
+        } catch (Exception ex) {
+            return error(Response.Status.BAD_REQUEST, "JSON could not be parsed: " + ex.getLocalizedMessage());
+        }
         List<StorageSite> exitingSites = storageSiteSvc.findAll();
         if (toPersist.isPrimaryStorage()) {
             for (StorageSite exitingSite : exitingSites) {
@@ -67,6 +72,7 @@ public class StorageSites extends AbstractApiBean {
         if (storageSite == null) {
             return error(Response.Status.NOT_FOUND, "Could not find a storage site based on id " + id + ".");
         }
+        // TODO: Disallow more than one primary.
         // "junk" gets parsed into "false".
         storageSite.setPrimaryStorage(Boolean.valueOf(input));
         StorageSite updated = storageSiteSvc.save(storageSite);
