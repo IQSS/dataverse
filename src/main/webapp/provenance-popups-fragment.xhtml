@@ -136,7 +136,7 @@
                 </div>
             </div>
             <div class="button-block">              
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.continue}" disabled="false" update="provPopupOutput,assignMessages,confirmProvenancePopup" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.continue}" disabled="#{provPopupFragmentBean.isDataFilePublishedWithDraftRendering() and !provPopupFragmentBean.isDatasetInDraftRendering()}" update="provPopupOutput,assignMessages,confirmProvenancePopup" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
                 <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" update="provPopupOutput,assignMessages,confirmProvenancePopup" onclick="PF('editProvenancePopup').hide();" immediate="true" actionListener="#{provPopupFragmentBean.removeJsonAndRelatedData()}">
                 </p:commandButton>
             </div>
@@ -159,7 +159,7 @@
         </div>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();" action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
-            <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview2" value="#{bundle.preview}" rendered="#{provPopupFragmentBean.freeformUpdated or provPopupFragmentBean.jsonUpdated}" actionListener="#{provPopupFragmentBean.showJsonPreviewNewWindow()}" onclick="this.form.target='_blank'" ajax="false" immediate="true"/>
+            <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview2" value="#{bundle.preview}" rendered="#{provPopupFragmentBean.jsonUpdated}" actionListener="#{provPopupFragmentBean.showJsonPreviewNewWindow()}" onclick="this.form.target='_blank'" ajax="false" immediate="true"/>
             <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();">
             </p:commandButton>
         </div>
