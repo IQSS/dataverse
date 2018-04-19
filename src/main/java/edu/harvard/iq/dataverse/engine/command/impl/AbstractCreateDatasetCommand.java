@@ -70,15 +70,11 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
         }
         
-        // MBS: FIXME: Try to reuse CreateDatasetVersionCommand here (maybe just the .execute)
         DatasetVersion dsv = getVersionToPersist(theDataset);
-        dsv.setDatasetFields(dsv.initDatasetFields());
-        tidyUpFields(dsv);
-        validateOrDie(dsv, false);
-        dsv.setCreateTime(getTimestamp());
-        dsv.setLastUpdateTime(getTimestamp());
-        // /DSV
-                
+        // This re-uses the state setup logic of CreateDatasetVersionCommand, but
+        // without persisting the new version, or altering its files. 
+        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv).prepareDatasetAndVersion();
+        
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
         theDataset.setCreateDate(getTimestamp());
@@ -109,7 +105,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         }
         
         logger.fine("Saving the files permanently.");
-        ctxt.ingest().addFiles(dsv, theDataset.getFiles());
+        ctxt.ingest().addFiles(dsv, theDataset.getFiles());        
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
         handlePid(theDataset, ctxt);
@@ -121,7 +117,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         ctxt.em().persist(theDataset);
         
         postPersist(theDataset, ctxt);
-
+        
         // if we are not migrating, assign the user to this version
         createDatasetUser(ctxt);
         
