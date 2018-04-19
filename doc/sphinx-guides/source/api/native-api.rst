@@ -778,7 +778,7 @@ Show data about an authentication provider::
 
   GET http://$SERVER/api/admin/authenticationProviders/$id
 
-Enable or Disable an Uuthentication Provider
+Enable or Disable an Authentication Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Enable or disable an authentication provider (denoted by ``id``)::
