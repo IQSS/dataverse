@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -17,9 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
-import javax.validation.ConstraintViolation;
 
 /**
  *
@@ -43,16 +40,17 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         DatasetVersion latest = dataset.getLatestVersion();
         if ( latest.isWorkingCopy() ) {
-            // In the case of ImportType.MIGRATION, it's possible that 
-            // the newVersion will be released (ie versions are not migrated in the order that 
-            // they were created in the old system), so check the newVersion state 
-            // before throwing an Exception
+            // A dataset can only have a single draft, which has to be the latest.
+            // This is imposed here.
             if (newVersion.getVersionState().equals(VersionState.DRAFT)){
                 throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
             }
         }
         newVersion.setDataset(dataset);
         newVersion.setDatasetFields(newVersion.initDatasetFields());
+        Timestamp now = new Timestamp(new Date().getTime());
+        newVersion.setCreateTime(now);
+        newVersion.setLastUpdateTime(now);
      
         validateOrDie(newVersion, false);
         
@@ -75,17 +73,12 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         }
         newVersion.setFileMetadatas(newVersionMetadatum);
         
-        
-        Timestamp now = new Timestamp(new Date().getTime());
-        newVersion.setCreateTime(now);
-        newVersion.setLastUpdateTime(now);
-        dataset.setModificationTime(now);
-        newVersion.setDataset(dataset);
         final List<DatasetVersion> currentVersions = dataset.getVersions();
         ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());
         dsvs.addAll(currentVersions);
         dsvs.add(0, newVersion);
         dataset.setVersions( dsvs );
+        dataset.setModificationTime(now);
         
         // TODO make async
         // ctxt.index().indexDataset(dataset);

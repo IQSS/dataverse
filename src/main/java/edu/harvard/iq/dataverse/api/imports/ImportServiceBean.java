@@ -25,9 +25,10 @@ import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestedDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -361,11 +362,9 @@ public class ImportServiceBean {
                 existingDs.setFiles(null);
                 Dataset merged = em.merge(existingDs);
                 engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
-                importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, ImportType.HARVEST));
-
-            } else {
-                importedDataset = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, ImportType.HARVEST));
             }
+            
+            importedDataset = engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
 
         } catch (JsonParseException | ImportException | CommandException ex) {
             logger.fine("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());
@@ -490,8 +489,9 @@ public class ImportServiceBean {
                         throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
                     }
                     engineSvc.submit(new DestroyDatasetCommand(existingDs, dataverseRequest));
-                    Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, importType));
+                    Dataset managedDs = engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
                     status = " updated dataset, id=" + managedDs.getId() + ".";
+                    
                 } else {
                     // If we are adding a new version to an existing dataset,
                     // check that the version number isn't already in the dataset
@@ -506,7 +506,7 @@ public class ImportServiceBean {
                 }
 
             } else {
-                Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, importType));
+                Dataset managedDs = engineSvc.submit(new CreateNewDatasetCommand(ds, dataverseRequest));
                 status = " created dataset, id=" + managedDs.getId() + ".";
                 createdId = managedDs.getId();
             }

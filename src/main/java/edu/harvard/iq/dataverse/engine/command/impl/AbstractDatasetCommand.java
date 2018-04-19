@@ -32,6 +32,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     private Dataset dataset;
     private final Timestamp timestamp = new Timestamp(new Date().getTime());
     
+    
     public AbstractDatasetCommand(DataverseRequest aRequest, Dataset aDataset, Dataverse parent) {
         super( aRequest, parent );
         if ( aDataset == null ) {

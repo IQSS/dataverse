@@ -18,7 +18,8 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -897,7 +898,7 @@ public class AddReplaceFileHelper{
         
         // Make a temp. command
         //
-        CreateDatasetCommand createDatasetCommand = new CreateDatasetCommand(datasetToCheck, dvRequest, false);
+        Command createDatasetCommand = new CreateNewDatasetCommand(datasetToCheck, dvRequest);
         
         // Can this user run the command?
         //

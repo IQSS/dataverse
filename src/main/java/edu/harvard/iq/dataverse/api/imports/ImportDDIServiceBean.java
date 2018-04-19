@@ -119,10 +119,6 @@ public class ImportDDIServiceBean {
         return importType.equals(ImportType.HARVEST);
     }
     
-    private boolean isHarvestWithFilesImport(ImportType importType) {
-        return importType.equals(ImportType.HARVEST);
-    }
-    
     private boolean isNewImport(ImportType importType) {
         return importType.equals(ImportType.NEW);
     }
@@ -237,9 +233,9 @@ public class ImportDDIServiceBean {
                     processDocDscr(xmlr, datasetDTO);
                 } else if (xmlr.getLocalName().equals("stdyDscr")) {
                     processStdyDscr(importType, xmlr, datasetDTO);
-                } else if (xmlr.getLocalName().equals("otherMat") && (isNewImport(importType) || isHarvestWithFilesImport(importType)) ) {
+                } else if (xmlr.getLocalName().equals("otherMat") && (isNewImport(importType) || isHarvestImport(importType)) ) {
                     processOtherMat(xmlr, datasetDTO);
-                } else if (xmlr.getLocalName().equals("fileDscr") && isHarvestWithFilesImport(importType)) { 
+                } else if (xmlr.getLocalName().equals("fileDscr") && isHarvestImport(importType)) { 
                     // If this is a harvesting import, we'll attempt to extract some minimal 
                     // file-level metadata information from the fileDscr sections as well. 
                     // TODO: add more info here... -- 4.6
