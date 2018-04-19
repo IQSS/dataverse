@@ -176,7 +176,8 @@ public class MailServiceBean implements java.io.Serializable {
             //Always send from system address to avoid email being blocked
             InternetAddress fromAddress=getSystemAddress();
             try {
-              fromAddress.setPersonal(fromAddress.getPersonal() + " on behalf of " + reply, charset);
+              fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
+                      fromAddress.getPersonal(), reply)), charset);
             } catch (UnsupportedEncodingException ex) {
                 logger.severe(ex.getMessage());
             }
