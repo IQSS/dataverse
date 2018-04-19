@@ -245,15 +245,26 @@ public class DataversesIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
         
         Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
-        Response moveResponse = UtilIT.moveDataverse(dataverseAlias, dataverseAlias2, true, apiToken);
+        Response publishDataverse2 = UtilIT.publishDataverseViaSword(dataverseAlias2, apiToken);
+        assertEquals(200, publishDataverse2.getStatusCode());
         
+        Response moveResponse = UtilIT.moveDataverse(dataverseAlias, dataverseAlias2, true, apiToken);
+
         moveResponse.prettyPrint();
         moveResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
+        search.prettyPrint();
+        search.then().assertThat()
+                .body("data.total_count", equalTo(1))
+                .statusCode(200);
     }
     
     
