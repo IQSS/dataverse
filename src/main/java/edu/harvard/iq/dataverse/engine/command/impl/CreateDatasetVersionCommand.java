@@ -37,7 +37,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         DatasetVersion latest = dataset.getLatestVersion();
-        if ( latest.isWorkingCopy() && !latest.equals(newVersion)) {
+        if ( latest.isWorkingCopy() ) {
             // A dataset can only have a single draft, which has to be the latest.
             // This is imposed here.
             if (newVersion.getVersionState().equals(VersionState.DRAFT)){

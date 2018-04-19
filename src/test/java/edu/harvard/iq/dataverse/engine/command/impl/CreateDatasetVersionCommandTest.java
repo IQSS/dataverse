@@ -72,11 +72,20 @@ public class CreateDatasetVersionCommandTest {
     public void testCantCreateTwoDraftVersions() throws Exception {
         DatasetVersion dsvNew = new DatasetVersion();
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
+        Dataset sampleDataset = makeDataset();
+        sampleDataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
         
         // Execute
-        CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeRequest(), makeDataset(), dsvNew );
+        CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeRequest(), sampleDataset, dsvNew );
         
-        TestDataverseEngine testEngine = new TestDataverseEngine( new TestCommandContext() );
+        TestDataverseEngine testEngine = new TestDataverseEngine( new TestCommandContext() {
+            DatasetServiceBean dsb = new MockDatasetServiceBean();
+            @Override
+            public DatasetServiceBean datasets() {
+                return dsb;
+            }
+            
+        });
         
         testEngine.submit(sut);
     }
