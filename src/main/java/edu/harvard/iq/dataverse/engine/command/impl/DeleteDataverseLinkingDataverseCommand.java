@@ -43,6 +43,9 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
         Dataverse merged = ctxt.em().merge(editedDv);
         DataverseLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
+        
+        ctxt.index().indexDataverse(editedDv);
+        ctxt.index().indexDataverse(doomed.getLinkingDataverse());
         return merged;
     } 
 }
