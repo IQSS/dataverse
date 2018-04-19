@@ -171,13 +171,23 @@ public class IndexBatchServiceBean {
         int datasetIndexCount = 0, datasetFailureCount = 0, dataverseIndexCount = 0, dataverseFailureCount = 0;
         // get list of Dataverse children
         List<Long> dataverseChildren = dataverseService.findAllDataverseDataverseChildren(dataverse.getId());
-        dataverseChildren.add(dataverse.getId());
         
         // get list of Dataset children
         List<Long> datasetChildren = dataverseService.findAllDataverseDatasetChildren(dataverse.getId());
 
-        logger.info("Starting index on " + dataverseChildren.size() + " dataverses and " + datasetChildren.size() + " datasets.");
+        logger.info("Starting index on " + (dataverseChildren.size() + 1) + " dataverses and " + datasetChildren.size() + " datasets.");
 
+        // first we have to index the root dataverse or it will not index properly
+        try {
+            dataverseIndexCount++;
+            logger.info("indexing dataverse " + dataverseIndexCount + " of " + (dataverseChildren.size() + 1) + " (id=" + dataverse.getId() + ", persistentId=" + dataverse.getAlias() + ")");
+            indexService.indexDataverseInNewTransaction(dataverse);
+        } catch (Exception e) {
+            //We want to keep running even after an exception so throw some more info into the log
+            dataverseFailureCount++;
+            logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + (dataverseChildren.size() + 1) + " (id=" + dataverse.getId() + ") Exception info: " + e.getMessage());
+        }
+        
         // index the Dataverse children
         for (Long childId : dataverseChildren) {
             try {
