@@ -1189,6 +1189,13 @@ public class UtilIT {
                 .delete("/api/admin/externalTools/" + externalToolid);
     }
 
+    static Response submitFeedback(JsonObjectBuilder job) {
+        return given()
+                .body(job.build().toString())
+                .contentType("application/json")
+                .post("/api/admin/feedback");
+    }
+
     static Response listStorageSites() {
         return given()
                 .get("/api/admin/storageSites");
