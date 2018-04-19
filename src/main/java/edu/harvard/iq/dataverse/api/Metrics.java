@@ -10,7 +10,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("dataverses/byCategory")
     public Response getDataversesByCategory() {
-        return ok(metricsSvc.dataversesByCategory());
+        return allowCors(ok(metricsSvc.dataversesByCategory()));
     }
 
 }
