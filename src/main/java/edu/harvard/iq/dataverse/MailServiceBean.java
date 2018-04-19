@@ -91,7 +91,8 @@ public class MailServiceBean implements java.io.Serializable {
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
             	InternetAddress fromAddress=getSystemAddress();
-            	fromAddress.setPersonal(fromAddress.getPersonal() + " on behalf of " + reply, charset);
+            	fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
+                        fromAddress.getPersonal(), reply)), charset);
             	msg.setFrom(fromAddress);
                 msg.setReplyTo(new Address[] {new InternetAddress(reply, charset)});
                 for (int i = 0; i < recipients.length; i++) {
