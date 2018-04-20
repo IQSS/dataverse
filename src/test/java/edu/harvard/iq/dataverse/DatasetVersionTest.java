@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -133,7 +134,8 @@ public class DatasetVersionTest {
         assertEquals(emptyArray, obj.getJsonArray("author"));
         // TODO: If it ever becomes easier to mock subjects, test them.
         assertEquals(emptyArray, obj.getJsonArray("keywords"));
-        assertEquals("Dataverse", obj.getJsonObject("provider").getString("name"));
+        String orgName = ResourceBundle.getBundle("Bundle").getString("institution.name"); 
+        assertEquals(orgName, obj.getJsonObject("provider").getString("name"));
         assertEquals("LibraScholar", obj.getJsonObject("includedInDataCatalog").getString("name"));
     }
 
