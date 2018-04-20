@@ -120,7 +120,7 @@ public class MailServiceBean implements java.io.Serializable {
         boolean sent = false;
 
         //QDR  - uses the institution name rather than a dataverse/collection name in email subject
-        String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.name");
+        String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.acronym");
         String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getInstallationBrandName(institutionName)));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
@@ -228,7 +228,7 @@ public class MailServiceBean implements java.io.Serializable {
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification);
                //QDR  - uses the institution name rather than a dataverse/collection name in email subject
-               String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.name");;
+               String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.acronym");;
                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, institutionName, objectOfNotification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                     retval = sendSystemEmail(emailAddress, subjectText, messageText); 
@@ -478,7 +478,7 @@ public class MailServiceBean implements java.io.Serializable {
                 InternetAddress systemAddress = getSystemAddress();
                 //QDR
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
-                		ResourceBundle.getBundle("Bundle").getString("institution.name"),
+                		ResourceBundle.getBundle("Bundle").getString("institution.acronym"),
                 		ResourceBundle.getBundle("Bundle").getString("header.guides.user"),
                 		settingsService.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL, "") + "/deposit",
                         BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName),

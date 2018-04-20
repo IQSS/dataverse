@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1363,7 +1364,7 @@ public class DatasetVersion implements Serializable {
 
         job.add("provider", Json.createObjectBuilder()
                 .add("@type", "Organization")
-                .add("name", "Dataverse")
+                .add("name", ResourceBundle.getBundle("Bundle").getString("institution.name"))
         );
         jsonLd = job.build().toString();
         return jsonLd;
