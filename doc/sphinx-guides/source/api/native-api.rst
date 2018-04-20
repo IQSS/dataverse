@@ -244,7 +244,7 @@ For example, after making your edits, your JSON file might look like :download:`
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/versions/:draft?persistentId=$PID --upload-file dataset-update-metadata.json
 
-Note that in example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``json``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this::
+Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``json``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this::
 
     curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PID | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
 
@@ -339,7 +339,7 @@ A more detailed "add" example using curl::
 
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
-* ``dataverse_server`` - e.g. https://dataverse.harvard.edu
+* ``dataverse_server`` - e.g. https://dataverse.example.edu
 * ``api_key`` - See the top of this document for a description
 * ``persistentId`` - Example: ``doi:10.5072/FK2/6XACVA``
 * ``dataset_id`` - Database id of the dataset
