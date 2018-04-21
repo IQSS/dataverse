@@ -7,8 +7,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -29,6 +32,7 @@ public class StringUtil {
        
     private static final Logger logger = Logger.getLogger(StringUtil.class.getCanonicalName());
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
     
     public static final boolean nonEmpty( String str ) {
         return ! isEmpty(str);
@@ -72,6 +76,16 @@ public class StringUtil {
             return false;
         }
         return EMAIL_PATTERN.matcher(s).matches();
+    }
+    
+    /**
+     * Checks if {@code s} contains a "truthy" value.
+     * @param s
+     * @return {@code true} iff {@code s} is not {@code null} and is "truthy" word.
+     * @see #TRUE_VALUES
+     */
+    public static boolean isTrue( String s ) {
+        return (s != null ) && TRUE_VALUES.contains(s.trim().toLowerCase());
     }
     
     public static final boolean isAlphaNumericChar(char c) {

@@ -261,7 +261,7 @@ public class JsonParser {
         DatasetVersion dsv = new DatasetVersion(); 
         dsv.setDataset(dataset);
         dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);
-        LinkedList<DatasetVersion> versions = new LinkedList<>();
+        List<DatasetVersion> versions = new ArrayList<>(1);
         versions.add(dsv);
 
         dataset.setVersions(versions);

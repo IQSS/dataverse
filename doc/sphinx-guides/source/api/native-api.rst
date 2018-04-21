@@ -145,6 +145,26 @@ To create a dataset, you must create a JSON file containing all the metadata you
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets --upload-file dataset-finch1.json
 
+Import a Dataset to a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note:: Importing a dataset can only be done be a super-user.
+
+To import a dataset with an existing persistent identifier (pid), the dataset's metadata should be prepared in the native JSON format of Dataverse. The pid can be provided in the JSON, or as a parameter at the URL. The following line imports a dataset whose pid is ``prt:auth:id`` to Dataverse, and then releases it::
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:import?pid=prt:auth:id&release=yes --upload-file dataset.json
+
+The pid is composed of three parts:
+
+* *prt* The protocol part of the pid. Currently ``doi`` or ``hdl``.
+* *auth* The authority part of the pid. E.g. ``10.7910/DVN``.
+* *id* The identifier part of the pid.
+
+If the ``pid`` parameter is not present, Dataverse will try to get the pid from the JSON. If there are no pid data in the JSON, the command will fail.
+
+The optional ``release`` parameter tells Dataverse to immediatly publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
+
+
 Publish a Dataverse
 ~~~~~~~~~~~~~~~~~~~
 
@@ -236,7 +256,7 @@ List Single Metadata Block for a Dataset
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata. 
+Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata.
 
 You cannot currently target a specific field such as the title of a dataset and only update that one field. Instead, you must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
 
@@ -455,7 +475,7 @@ Restrict a File
 ~~~~~~~~~~~~~~~
 
 Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
-    
+
     PUT http://$SERVER/api/files/{id}/restrict
 
 Note that some Dataverse installations do not allow the ability to restrict files.
@@ -687,7 +707,7 @@ Get API Terms of Use URL
 Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
 
   GET http://$SERVER/api/info/apiTermsOfUse
-  
+
 Metadata Blocks
 ---------------
 
@@ -833,7 +853,7 @@ List users with the options to search and "page" through results. Only accessibl
     GET http://$SERVER/api/admin/list-users
 
 
-Sample output appears below. 
+Sample output appears below.
 
 * When multiple pages of results exist, the ``selectedPage`` parameters may be specified.
 * Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.
@@ -921,7 +941,7 @@ Sample output appears below.
                     "lastLoginTime":"2017-07-03 12:22:35.926",
                     "lastApiUseTime":"2017-07-03 12:55:57.186"
                 }
-                
+
                 // ... 22 more user documents ...
             ]
         }
@@ -1081,7 +1101,7 @@ Restore the whitelist of IP addresses allowed to resume workflows to default (lo
 
 
 .. |CORS| raw:: html
-      
+
       <span class="label label-success pull-right">
         CORS
       </span>

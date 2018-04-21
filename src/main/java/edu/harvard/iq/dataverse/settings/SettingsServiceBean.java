@@ -2,11 +2,10 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import java.util.Arrays;
-import java.util.Collections;
+import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -363,13 +362,6 @@ public class SettingsServiceBean {
     ActionLogServiceBean actionLogSvc;
     
     /**
-     * Values that are considered as "true".
-     * @see #isTrue(java.lang.String, boolean) 
-     */
-    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
-            new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
-    
-    /**
      * Basic functionality - get the name, return the setting, or {@code null}.
      * @param name of the setting
      * @return the actual setting, or {@code null}.
@@ -455,7 +447,7 @@ public class SettingsServiceBean {
      */
     public boolean isTrue( String name, boolean defaultValue ) {
         String val = get(name);
-        return ( val==null ) ? defaultValue : TRUE_VALUES.contains(val.trim().toLowerCase() );
+        return ( val==null ) ? defaultValue : StringUtil.isTrue(val);
     }
     
     public boolean isTrueForKey( Key key, boolean defaultValue ) {

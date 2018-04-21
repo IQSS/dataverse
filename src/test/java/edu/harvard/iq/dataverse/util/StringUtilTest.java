@@ -5,6 +5,7 @@ package edu.harvard.iq.dataverse.util;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -128,6 +129,17 @@ public class StringUtilTest {
         final String decrypted = StringUtil.decrypt(encrypted, password);
         
         assertEquals(source, decrypted);
+    }
+    
+    @Test
+    public void testIsTrue() {
+        Stream.of("yes", "Yes", "  yes  ", "1", "allow", "tRuE")
+            .forEach( v -> assertTrue(StringUtil.isTrue(v)) );
+        
+        Stream.of("es", "no", " 0 s  ", "0", "x", "false")
+            .forEach( v -> assertFalse(StringUtil.isTrue(v)) );
+        
+        assertFalse( StringUtil.isTrue(null) );
     }
     
     @Test
