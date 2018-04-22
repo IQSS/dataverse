@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -79,7 +80,7 @@ public class MailServiceBean implements java.io.Serializable {
     public MailServiceBean() {
     }
 
-    public void sendMail(String host, String from, String to, String subject, String messageText) {
+    public void sendMail(String host, String reply, String to, String subject, String messageText) {
         Properties props = System.getProperties();
         props.put("mail.smtp.host", host);
         Session session = Session.getDefaultInstance(props, null);
@@ -89,7 +90,11 @@ public class MailServiceBean implements java.io.Serializable {
             String[] recipientStrings = to.split(",");
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
-                msg.setFrom(new InternetAddress(from, charset));
+            	InternetAddress fromAddress=getSystemAddress();
+            	fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
+                        fromAddress.getPersonal(), reply)), charset);
+            	msg.setFrom(fromAddress);
+                msg.setReplyTo(new Address[] {new InternetAddress(reply, charset)});
                 for (int i = 0; i < recipients.length; i++) {
                     recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
                 }
@@ -164,16 +169,25 @@ public class MailServiceBean implements java.io.Serializable {
         sendMail(from, to, subject, messageText, new HashMap<>());
     }
 
-    public void sendMail(String from, String to, String subject, String messageText, Map<Object, Object> extraHeaders) {
+    public void sendMail(String reply, String to, String subject, String messageText, Map<Object, Object> extraHeaders) {
         try {
             MimeMessage msg = new MimeMessage(session);
-            if (from.matches(EMAIL_PATTERN)) {
-                msg.setFrom(new InternetAddress(from));
+            //Always send from system address to avoid email being blocked
+            InternetAddress fromAddress=getSystemAddress();
+            try {
+              fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
+                      fromAddress.getPersonal(), reply)), charset);
+            } catch (UnsupportedEncodingException ex) {
+                logger.severe(ex.getMessage());
+            }
+            msg.setFrom(fromAddress);
+             
+            if (reply.matches(EMAIL_PATTERN)) {
+            	//But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address	
+                msg.setReplyTo(new Address[] {new InternetAddress(reply)});
             } else {
-                // set fake from address; instead, add it as part of the message
-                //msg.setFrom(new InternetAddress("invalid.email.address@mailinator.com"));
-                msg.setFrom(getSystemAddress());
-                messageText = "From: " + from + "\n\n" + messageText;
+                //Otherwise include the invalid 'from' address in the message
+                messageText = "From: " + reply + "\n\n" + messageText;
             }
             msg.setSentDate(new Date());
             msg.setRecipients(Message.RecipientType.TO,
