@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.io.IOException;
@@ -52,8 +53,9 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
      * has been flushed. 
      * @param theDataset The em-managed dataset.
      * @param ctxt 
+     * @throws edu.harvard.iq.dataverse.engine.command.exception.CommandException 
      */
-    protected void postPersist( Dataset theDataset, CommandContext ctxt ){
+    protected void postPersist( Dataset theDataset, CommandContext ctxt ) throws CommandException {
         // base class - default to nothing.
     }
     
@@ -168,4 +170,5 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     public String toString() {
         return "[DatasetCreate dataset:" + getDataset().getId() + "]";
     }
+
 }

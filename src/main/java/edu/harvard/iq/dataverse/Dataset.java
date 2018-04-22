@@ -189,7 +189,7 @@ public class Dataset extends DvObjectContainer {
     public Set<DatasetLock> getLocks() {
         // lazy set creation
         if ( datasetLocks == null ) {
-            setLocks( new HashSet<>() );
+            datasetLocks = new HashSet<>();
         }
         return datasetLocks;
     }

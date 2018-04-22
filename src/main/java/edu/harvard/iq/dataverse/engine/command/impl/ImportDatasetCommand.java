@@ -30,17 +30,13 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
     
     private static final Logger logger = Logger.getLogger(ImportDatasetCommand.class.getName());
     
-    private final boolean releaseDataset;
-    
     /**
      * Creates a new instance of the command.
      * @param theDataset The dataset we want to import.
-     * @param isRelease When {@code true}, the dataset will be released after the import completes.
      * @param aRequest Request context for the command.
      */
-    public ImportDatasetCommand(Dataset theDataset, boolean isRelease, DataverseRequest aRequest) {
+    public ImportDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(theDataset, aRequest);
-        releaseDataset = isRelease;
     }
 
     /**
@@ -56,12 +52,16 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
         }
         
         Dataset ds = getDataset();
-        String pid = ds.getPersistentURL();
         
-        if ( isEmpty(pid) ) {
+        if ( isEmpty(ds.getIdentifier()) ) {
             throw new IllegalCommandException("Imported datasets must have a persistent global identifier.", this);
         }
         
+        if ( ! ctxt.datasets().isIdentifierLocallyUnique(ds) ) {
+            throw new IllegalCommandException("Persistent identifier " + ds.getGlobalId() + " already exists in this Dataverse installation.", this);
+        }
+        
+        String pid = ds.getPersistentURL();
         GetMethod httpGet = new GetMethod(pid); 
         httpGet.setFollowRedirects(false);
 
@@ -78,17 +78,16 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
             logger.log(Level.WARNING, "Error while validating PID at '"+pid+"' for an imported dataset: "+ ex.getMessage(), ex);
             throw new CommandExecutionException("Cannot validate PID due to a connection error: " + ex.getMessage() , this);
         }
-           
+                
     }
     
     @Override
-    protected void handlePid(Dataset theDataset, CommandContext ctxt) {}
+    protected void handlePid(Dataset theDataset, CommandContext ctxt) {
+        theDataset.setGlobalIdCreateTime( getTimestamp() );
+    }
 
     @Override
-    protected void postPersist(Dataset theDataset, CommandContext ctxt) {
-        if ( releaseDataset ) {
-            // TODO release the dataset using a PublishDatasetCommand.
-        }
+    protected void postPersist(Dataset theDataset, CommandContext ctxt) throws CommandException {
     }
     
     

@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
+import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.*;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.UserNotification;
@@ -53,51 +53,66 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public Dataset execute(CommandContext ctxt) throws CommandException {
         Dataset theDataset = getDataset();
         
-        registerExternalIdentifier(theDataset, ctxt);        
+        logger.info("pre pid registrations"); // FIXME: MBS: delete
+        registerExternalIdentifier(theDataset, ctxt);
         
-        if (theDataset.getPublicationDate() == null) {
+            logger.info("first publication"); // FIXME: MBS: delete
             // first publication
+        if (theDataset.getPublicationDate() == null || theDataset.getLatestVersion().getVersionState() == RELEASED) {
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
+        }
+        if (theDataset.getPublicationDate() == null) {
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
         } 
 
+        logger.info("update times"); // FIXME: MBS: delete
         // update metadata
-        Timestamp updateTime = new Timestamp(new Date().getTime());
-        theDataset.getEditVersion().setReleaseTime(updateTime);
-        theDataset.getEditVersion().setLastUpdateTime(updateTime);
-        theDataset.setModificationTime(updateTime);
+        theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+        theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
+        theDataset.setModificationTime(getTimestamp());
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         
-        updateFiles(updateTime, ctxt);
+        logger.info("pre update files"); // FIXME: MBS: delete
+        updateFiles(getTimestamp(), ctxt);
         
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
         // I'm moving a bunch of code from PublishDatasetCommand here; and this .merge()
         // comes from there. There's a chance that the final merge, at the end of this
         // command, would be sufficient. -- L.A. Sep. 6 2017
+        logger.info("pre merge"); // FIXME: MBS: delete
         theDataset = ctxt.em().merge(theDataset);
         
+        logger.info("pre merge"); // FIXME: MBS: delete
         updateParentDataversesSubjectsField(theDataset, ctxt);
-        publicizeExternalIdentifier(theDataset, ctxt);
+        logger.info("pre publicize"); // FIXME: MBS: delete
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
-        theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         
+        if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
+            // some imported datasets may already be released.
+            publicizeExternalIdentifier(theDataset, ctxt);
+            theDataset.getLatestVersion().setVersionState(RELEASED);
+        }
+        
+        logger.info("pre metadata export"); // FIXME: MBS: delete
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
         ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
 
         // Remove locks
+        logger.info("pre lock removal"); // FIXME: MBS: delete
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
         if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
             ctxt.engine().submit( 
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
         }
         
+        logger.info("pre post-pub wf"); // FIXME: MBS: delete
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
                 ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset));
@@ -108,10 +123,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         Dataset readyDataset = ctxt.em().merge(theDataset);
         
-        if(readyDataset != null) {
+        if ( readyDataset != null ) {
+            logger.info("pre notify"); // FIXME: MBS: delete
             notifyUsersDatasetPublish(ctxt, theDataset);
         }
         
+        logger.info("done"); // FIXME: MBS: delete
         return readyDataset;
     }
 
@@ -157,7 +174,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
         PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(protocol, ctxt);
-        if (idServiceBean!= null ){
+        if ( idServiceBean != null ){
             try {
                 idServiceBean.publicizeIdentifier(dataset);
             } catch (Throwable e) {
@@ -276,24 +293,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         if (theDataset.getGlobalIdCreateTime() == null) {
           if (idServiceBean!=null) {
             try {
-              if (!idServiceBean.alreadyExists(theDataset)) {
-                idServiceBean.createIdentifier(theDataset);
-                theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-              } else {
+              if (idServiceBean.alreadyExists(theDataset)) {
                 int attempts = 0;
 
                 while (idServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                   theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+                  logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).", 
+                             new Object[]{theDataset.getId(), theDataset.getIdentifier()});
                   attempts++;
                 }
 
                 if (idServiceBean.alreadyExists(theDataset)) {
-                  throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset;gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
+                  throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset; " + 
+                                                     "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
                 }
-                idServiceBean.createIdentifier(theDataset);
-                theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-
               }
+              idServiceBean.createIdentifier(theDataset);
+              theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
 
             } catch (Throwable e) {
               throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 

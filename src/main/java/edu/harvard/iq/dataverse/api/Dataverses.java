@@ -40,6 +40,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
@@ -85,6 +87,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.util.Date;
 
 /**
  * A REST API for dataverses.
@@ -239,6 +242,7 @@ public class Dataverses extends AbstractApiBean {
             if ( ds.getVersions().isEmpty() ) {
                 return badRequest("Supplied json must contain a single dataset version.");
             }
+            
             DatasetVersion version = ds.getVersions().get(0);
             if ( version.getVersionState() == null ) {
                 version.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -257,13 +261,33 @@ public class Dataverses extends AbstractApiBean {
             if ( ds.getIdentifier() == null ) {
                 return badRequest("Please provide a persistent identifier, either by including it in the JSON, or by using the pid query parameter.");
             }
+            boolean shouldRelease = StringUtil.isTrue(releaseParam);
+            DataverseRequest request = createDataverseRequest(u);
             
-            Dataset managedDs = execCommand(new ImportDatasetCommand(ds, StringUtil.isTrue(releaseParam), createDataverseRequest(u)));
-            return created("/datasets/" + managedDs.getId(),
-                    Json.createObjectBuilder()
-                            .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalId())
-            );
+            if ( shouldRelease ) {
+                DatasetVersion latestVersion = ds.getLatestVersion();
+                latestVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+                latestVersion.setVersionNumber(1l);
+                latestVersion.setMinorVersionNumber(0l);
+                if ( latestVersion.getCreateTime() != null ) {
+                    latestVersion.setCreateTime(new Date());
+                }
+                if ( latestVersion.getLastUpdateTime() != null ) {
+                    latestVersion.setLastUpdateTime(new Date() );
+                }
+            }
+            
+            Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
+            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+                    .add("id", managedDs.getId())
+                    .add("persistentId", managedDs.getGlobalId());
+            
+            if ( shouldRelease ) {
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
+                responseBld.add("releaseCompleted", res.isCompleted());
+            }
+            
+            return created("/datasets/" + managedDs.getId(), responseBld);
                 
         } catch ( WrappedResponse ex ) {
             return ex.getResponse();

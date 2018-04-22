@@ -291,7 +291,17 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         return true;
     }
-
+    
+    public boolean isIdentifierLocallyUnique(Dataset dataset) {
+        boolean u = em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
+            .setParameter("identifier", dataset.getIdentifier())
+            .setParameter("protocol", dataset.getProtocol())
+            .setParameter("authority", dataset.getAuthority())
+            .getResultList().isEmpty();
+        
+        return u; 
+    }
+    
     public DatasetVersion storeVersion( DatasetVersion dsv ) {
         em.persist(dsv);
         return dsv;
@@ -544,16 +554,18 @@ public class DatasetServiceBean implements java.io.Serializable {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLocks(Long datasetId, DatasetLock.Reason aReason) {
         Dataset dataset = em.find(Dataset.class, datasetId);
-        new HashSet<>(dataset.getLocks()).stream()
-                .filter( l -> l.getReason() == aReason )
-                .forEach( lock -> {
-                    dataset.removeLock(lock);
-                    
-                    AuthenticatedUser user = lock.getUser();
-                    user.getDatasetLocks().remove(lock);
-                    
-                    em.remove(lock);
-                });
+        if ( dataset != null ) {
+            new HashSet<>(dataset.getLocks()).stream()
+                    .filter( l -> l.getReason() == aReason )
+                    .forEach( lock -> {
+                        dataset.removeLock(lock);
+
+                        AuthenticatedUser user = lock.getUser();
+                        user.getDatasetLocks().remove(lock);
+
+                        em.remove(lock);
+                    });
+        }
     }
     
     /*

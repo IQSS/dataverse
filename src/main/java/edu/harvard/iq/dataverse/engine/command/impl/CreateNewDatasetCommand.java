@@ -54,7 +54,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
                 throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                                  getDataset().getIdentifier(), getDataset().getProtocol(), getDataset().getAuthority()), 
                     this);
-            }
+           }
         }
     }
     
