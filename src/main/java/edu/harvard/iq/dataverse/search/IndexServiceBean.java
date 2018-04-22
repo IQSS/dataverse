@@ -291,7 +291,7 @@ public class IndexServiceBean {
     }
     
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-        logger.info("indexing dataset " + dataset.getId()); // FIXME: MBS: return to fine
+        logger.fine("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
          * IndexableObject.IndexableTypes.DATASET.getName() + "_" ?

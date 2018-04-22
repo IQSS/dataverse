@@ -91,9 +91,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             
         } else {
             // Synchronous publishing (no workflow involved)
-            logger.info("Starting finalization"); // FIXME: MBS: Delete
             theDataset = ctxt.engine().submit( new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()) );
-            logger.info("finalization - done"); // FIXME: MBS: Delete
             return new PublishDatasetResult(ctxt.em().merge(theDataset), true);
         }
     }

@@ -68,8 +68,6 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
         // Dataset has no locks prventing the update
         
-        // FIXME: MBS: Dataset has to have a draft version IN THE DATABASE
-
         getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
         validateOrDie( getDataset().getEditVersion(), isValidateLenient() );
         
@@ -80,8 +78,6 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         final DatasetVersion editVersion = getDataset().getEditVersion();
         tidyUpFields(editVersion);
         
-        // FIXME: MBS: This should never happen, as the create date should have been set
-        //               in the create dataset version command.
         if ( editVersion.getCreateTime() == null ) {
             editVersion.setCreateTime(getTimestamp());
         }

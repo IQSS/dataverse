@@ -53,11 +53,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public Dataset execute(CommandContext ctxt) throws CommandException {
         Dataset theDataset = getDataset();
         
-        logger.info("pre pid registrations"); // FIXME: MBS: delete
         registerExternalIdentifier(theDataset, ctxt);
         
-            logger.info("first publication"); // FIXME: MBS: delete
-            // first publication
+        // is this the first publication of the dataset?
         if (theDataset.getPublicationDate() == null || theDataset.getLatestVersion().getVersionState() == RELEASED) {
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
         }
@@ -65,14 +63,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
         } 
 
-        logger.info("update times"); // FIXME: MBS: delete
         // update metadata
         theDataset.getLatestVersion().setReleaseTime(getTimestamp());
         theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         
-        logger.info("pre update files"); // FIXME: MBS: delete
         updateFiles(getTimestamp(), ctxt);
         
         // 
@@ -80,12 +76,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // I'm moving a bunch of code from PublishDatasetCommand here; and this .merge()
         // comes from there. There's a chance that the final merge, at the end of this
         // command, would be sufficient. -- L.A. Sep. 6 2017
-        logger.info("pre merge"); // FIXME: MBS: delete
         theDataset = ctxt.em().merge(theDataset);
         
-        logger.info("pre merge"); // FIXME: MBS: delete
         updateParentDataversesSubjectsField(theDataset, ctxt);
-        logger.info("pre publicize"); // FIXME: MBS: delete
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
@@ -98,21 +91,18 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.getLatestVersion().setVersionState(RELEASED);
         }
         
-        logger.info("pre metadata export"); // FIXME: MBS: delete
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(theDataset, doNormalSolrDocCleanUp);
         ctxt.solrIndex().indexPermissionsForOneDvObject(theDataset);
 
         // Remove locks
-        logger.info("pre lock removal"); // FIXME: MBS: delete
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
         if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
             ctxt.engine().submit( 
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
         }
         
-        logger.info("pre post-pub wf"); // FIXME: MBS: delete
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
                 ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset));
@@ -124,11 +114,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         Dataset readyDataset = ctxt.em().merge(theDataset);
         
         if ( readyDataset != null ) {
-            logger.info("pre notify"); // FIXME: MBS: delete
             notifyUsersDatasetPublish(ctxt, theDataset);
         }
         
-        logger.info("done"); // FIXME: MBS: delete
         return readyDataset;
     }
 
