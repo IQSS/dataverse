@@ -270,7 +270,7 @@ Once you have acquired the keys, they need to be added to the ``credentials`` fi
 | ``aws_access_key_id = <insert key, no brackets>``
 | ``aws_secret_access_key = <insert secret key, no brackets>``
 
-You must also specify the AWS region, in the ``config`` file, for example:
+You must also specify the AWS region in the ``config`` file, for example:
 
 | ``[default]``
 | ``region = us-east-1``
@@ -414,7 +414,7 @@ Letting Search Engines Crawl Your Installation
 For a public production Dataverse installation, it is probably desired that search agents be able to index published pages (aka - pages that are visible to an unauthenticated user).
 Polite crawlers usually respect the `Robots Exclusion Standard <https://en.wikipedia.org/wiki/Robots_exclusion_standard>`_; we have provided an example of a production robots.txt :download:`here </_static/util/robots.txt>`).
 
-You have a couple of options for putting an updated robots.txt file into production. If you are fronting Glassfish with Apache as recommended above, you can place robots.txt in the root of the directory specified in your ``VirtualHost`` and to your Apache config a ``ProxyPassMatch`` line like the one below to prevent Glassfish from serving the version of robots.txt that embedded in the Dataverse war file:
+You have a couple of options for putting an updated robots.txt file into production. If you are fronting Glassfish with Apache as recommended above, you can place robots.txt in the root of the directory specified in your ``VirtualHost`` and to your Apache config a ``ProxyPassMatch`` line like the one below to prevent Glassfish from serving the version of robots.txt that is embedded in the Dataverse war file:
 
 .. code-block:: text
 
@@ -695,7 +695,7 @@ See :ref:`Branding Your Installation` above.
 
 By default the footer says "Copyright © [YYYY]" but you can add text after the year, as in the example below.
 
-``curl -X PUT -d ", The President &#38; Fellows of Harvard College" http://localhost:8080/api/admin/settings/:FooterCopyright``
+``curl -X PUT -d ", Foobar College" http://localhost:8080/api/admin/settings/:FooterCopyright``
 
 .. _:DoiProvider:
 
