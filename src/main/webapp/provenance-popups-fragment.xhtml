@@ -21,12 +21,17 @@
                             <f:param value="#{systemConfig.guidesBaseUrl}"/>
                             <f:param value="#{systemConfig.guidesVersion}"/>
                         </h:outputFormat>
+                        
                     </p>
                 </div>
                 <label for="provenanceBundle" class="col-sm-3 control-label">
                     #{bundle['file.editProvenanceDialog.bundleFile']}
                 </label>
                 <div class="col-sm-9">
+                    <div jsf:rendered="#{provPopupFragmentBean.isDataFilePublishedRendering() and provPopupFragmentBean.jsonUploadedState and !provPopupFragmentBean.provJsonAlreadyPublishedRendering()}" class="text-warning">
+                        <span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.provConfirm.published.json']}
+                    </div>
+                    
                     <ui:fragment rendered="#{provPopupFragmentBean.provJsonAlreadyPublishedRendering()}">
                         <p class="help-block"><span class="text-danger">#{bundle['file.editProvenanceDialog.bundleFile.alreadyPublished']}</span></p>
                     </ui:fragment>
