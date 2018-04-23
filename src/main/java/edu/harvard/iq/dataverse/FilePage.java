@@ -813,6 +813,7 @@ public class FilePage implements java.io.Serializable {
     }
     
     //Provenance fragment bean calls this to show error dialogs after popup failure
+    //This can probably be replaced by calling JsfHelper from the provpopup bean
     public void showProvError() {
         JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.metadataTab.provenance.error"));
     }

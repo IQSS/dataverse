@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -186,22 +187,57 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         if(stagingEntry.provJson != null || stagingEntry.deleteJson != false || stagingEntry.provFreeform != null) { //if the entry isn't empty by our standards
             provenanceUpdates.put(popupDataFile.getChecksumValue(), stagingEntry);
         }
-        
+
+        addSuccessMessageToPage(saveInPopup);
         if(saveInPopup) { //file page needs to save here
             try {
                 saveStagedProvJson(true);
                 stagingEntry = provenanceUpdates.get(popupDataFile.getChecksumValue()); //reloading as it can be set in saveStagedProvJson
                 if(null != stagingEntry && null != stagingEntry.provFreeform) {
-                    return filePage.saveProvFreeform(stagingEntry.provFreeform, stagingEntry.dataFile);
-                }  
+                    String theReturn = filePage.saveProvFreeform(stagingEntry.provFreeform, stagingEntry.dataFile);
+                    addSuccessMessageToPage(saveInPopup); //we have to call this again here otherwise the file page overrides it
+                    return theReturn;
+                } 
             } catch (AbstractApiBean.WrappedResponse|CommandException ex) {
                 filePage.showProvError();
                 Logger.getLogger(ProvPopupFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-        
+        } 
         return null;
 
+    }
+    
+//    file.provConfirm.unpublished.json=Your Provenance File will become permanent upon publishing your dataset. Please preview to confirm before publishing. 
+//    file.provConfirm.published.json=Your Provenance File will become permanent once you click Save Changes. Please preview to confirm before you Save Changes.
+//    file.provConfirm.freeform=Your Provenance Description is not permanent; it can be updated at any time.
+    
+    public void addSuccessMessageToPage(boolean saveInPopup) {
+        String message = "";
+        if(saveInPopup) {
+            if(isJsonUpdated()) {
+                if(isDataFilePublishedRendering()) {
+                   message += JH.localize("file.provAlert.filePage.published.json");
+                } else {
+                   message += JH.localize("file.provAlert.filePage.unpublished.json");
+                }
+            }
+            if (isFreeformUpdated()) {
+                message += JH.localize("file.provAlert.filePage.freeform");
+            }
+        } else {
+            if(isJsonUpdated()) {
+                if(isDataFilePublishedRendering()) {
+                   message += JH.localize("file.provAlert.published.json");
+                } else {
+                   message += JH.localize("file.provAlert.unpublished.json");
+                }
+            }
+            if (isFreeformUpdated()) {
+                message += JH.localize("file.provAlert.freeform");
+            }
+        } 
+
+        JsfHelper.addSuccessMessage(message); //We have to call this after to ensure it is the success message shown
     }
     
     public void saveStagedProvJson(boolean saveContext) throws AbstractApiBean.WrappedResponse {
