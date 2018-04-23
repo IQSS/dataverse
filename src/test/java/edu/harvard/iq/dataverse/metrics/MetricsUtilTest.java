@@ -52,12 +52,52 @@ public class MetricsUtilTest {
         System.out.println(JsonUtil.prettyPrint(jsonArray));
         JsonObject jsonObject = jsonArray.getJsonObject(11);
         assertEquals(5, jsonObject.getInt("monthNum"));
-        assertEquals(633607, jsonObject.getInt("running_total"));
+        assertEquals(9223372036854775807l, jsonObject.getJsonNumber("running_total").longValue());
         assertEquals(114233, jsonObject.getInt("Number of File Downloads"));
         assertEquals("May 2017", jsonObject.getString("Month"));
         assertEquals("Total File Downloads", jsonObject.getString("name"));
         assertEquals("2017-05", jsonObject.getString("month_sort"));
-        assertEquals("May 2017: 114,233 downloads / total: 633,607", jsonObject.getString("display_name"));
+        assertEquals("May 2017: 114,233 downloads / total: 9,223,372,036,854,775,807", jsonObject.getString("display_name"));
+    }
+
+    @Test
+    public void testDatasetsByMonthToJson() {
+        Object[] obj01 = {new Timestamp(118, 3, 1, 0, 0, 0, 0), 10l};
+        Object[] obj02 = {new Timestamp(118, 2, 1, 0, 0, 0, 0), 240l};
+        Object[] obj03 = {new Timestamp(118, 1, 1, 0, 0, 0, 0), 302l};
+        Object[] obj04 = {new Timestamp(118, 0, 1, 0, 0, 0, 0), 311l};
+        Object[] obj05 = {new Timestamp(117, 11, 1, 0, 0, 0, 0), 188l};
+        Object[] obj06 = {new Timestamp(117, 10, 1, 0, 0, 0, 0), 157l};
+        Object[] obj07 = {new Timestamp(117, 9, 1, 0, 0, 0, 0), 219l};
+        Object[] obj08 = {new Timestamp(117, 8, 1, 0, 0, 0, 0), 160l};
+        Object[] obj09 = {new Timestamp(117, 7, 1, 0, 0, 0, 0), 318l};
+        Object[] obj10 = {new Timestamp(117, 6, 1, 0, 0, 0, 0), 269l};
+        Object[] obj11 = {new Timestamp(117, 5, 1, 0, 0, 0, 0), 268l};
+        Object[] obj12 = {new Timestamp(117, 4, 1, 0, 0, 0, 0), 215l};
+        List<Object[]> list = new ArrayList<>();
+        list.add(obj01);
+        list.add(obj02);
+        list.add(obj03);
+        list.add(obj04);
+        list.add(obj05);
+        list.add(obj06);
+        list.add(obj07);
+        list.add(obj08);
+        list.add(obj09);
+        list.add(obj10);
+        list.add(obj11);
+        list.add(obj12);
+        JsonArrayBuilder result = MetricsUtil.datasetsByMonthToJson(list);
+        JsonArray jsonArray = result.build();
+        System.out.println(JsonUtil.prettyPrint(jsonArray));
+        JsonObject jsonObject = jsonArray.getJsonObject(11);
+        assertEquals(5, jsonObject.getInt("monthNum"));
+        assertEquals(9223372036854775807l, jsonObject.getJsonNumber("running_total").longValue());
+        assertEquals(215, jsonObject.getInt("Number of Datasets"));
+        assertEquals("May 2017", jsonObject.getString("Month"));
+        assertEquals("Total Datasets", jsonObject.getString("name"));
+        assertEquals("2017-05", jsonObject.getString("month_sort"));
+        assertEquals("May 2017: 215 new Datasets; Total of 9,223,372,036,854,775,807", jsonObject.getString("display_name"));
     }
 
 }

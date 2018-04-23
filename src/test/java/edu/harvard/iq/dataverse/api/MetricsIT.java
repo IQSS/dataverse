@@ -24,4 +24,10 @@ public class MetricsIT {
         response.prettyPrint();
     }
 
+    @Test
+    public void testGetDatasetsByMonth() {
+        Response response = UtilIT.metricsDatasetsByMonth();
+        response.prettyPrint();
+    }
+
 }

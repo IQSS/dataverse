@@ -39,6 +39,7 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public JsonArrayBuilder downloadsByMonth() {
+        // FIXME: We limit to 13 because the first row is a total but not the running total we need. Get the real running total.
         Query query = em.createNativeQuery(""
                 + "SELECT date_trunc('month', responsetime), count(id)\n"
                 + "FROM guestbookresponse\n"
@@ -50,4 +51,21 @@ public class MetricsServiceBean implements Serializable {
         List<Object[]> listOfObjectArrays = query.getResultList();
         return MetricsUtil.downloadsToJson(listOfObjectArrays);
     }
+
+    public JsonArrayBuilder datasetsByMonth() {
+        // Note that "dvobject.publicationdate IS NOT NULL" isn't having any effect.
+        Query query = em.createNativeQuery(""
+                + "SELECT date_trunc('month', dvobject.createdate), count(dvobject.id)\n"
+                + "FROM dataset\n"
+                + "JOIN dvobject ON dvobject.id = dataset.id\n"
+                + "WHERE dvobject.publicationdate IS NOT NULL\n"
+                + "AND dataset.harvestingclient_id IS NULL\n"
+                + "GROUP BY date_trunc('month', dvobject.createdate)\n"
+                + "ORDER BY date_trunc('month', dvobject.createdate) DESC\n"
+                + "LIMIT 12;");
+        logger.fine("query: " + query);
+        List<Object[]> listOfObjectArrays = query.getResultList();
+        return MetricsUtil.datasetsByMonthToJson(listOfObjectArrays);
+    }
+
 }
