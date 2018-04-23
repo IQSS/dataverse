@@ -77,6 +77,7 @@
                     <div class="col-sm-12" jsf:rendered="#{provPopupFragmentBean.jsonUploadedState or provPopupFragmentBean.provJsonAlreadyPublishedRendering()}">
                         <label for="provenanceBundle" class="control-label">
                             #{bundle['file.editProvenanceDialog.bundleEntity']}
+                            <span class="glyphicon glyphicon-asterisk text-danger" />
                         </label>
                         <p class="help-block" jsf:rendered="#{!provPopupFragmentBean.provJsonAlreadyPublishedRendering()}" >
                             #{bundle['file.editProvenanceDialog.bundleEntity.tip']}
@@ -144,24 +145,38 @@
     </p:dialog>
 
     <p:dialog id="confirmProvenancePopup" header="#{bundle['file.confirmProvenanceDialog']}" modal="true" visible="false" styleClass="smallPopUp" widgetVar="confirmProvenancePopup">
-        <div class="form-group text-left text-warning">
-            <span class="glyphicon glyphicon-warning-sign"></span> 
-            <div id="ifJsonUp" jsf:rendered="#{provPopupFragmentBean.jsonUpdated}">
-                <h:outputText rendered="#{!provPopupFragmentBean.isDataFilePublishedRendering()}" value="#{bundle['file.provConfirm.unpublished.json']}"/>
-                <h:outputText rendered="#{provPopupFragmentBean.isDataFilePublishedRendering()}" value="#{bundle['file.provConfirm.published.json']}"/>
+        <div class="form-horizontal">
+            <div class="form-group text-left">
+                <div id="ifJsonUp" jsf:rendered="#{provPopupFragmentBean.jsonUpdated}" class="col-sm-12 text-warning">
+                    <span class="glyphicon glyphicon-warning-sign"></span> 
+                    <h:outputText rendered="#{!provPopupFragmentBean.isDataFilePublishedRendering()}" value=" #{bundle['file.provConfirm.unpublished.json']}"/>
+                    <h:outputText rendered="#{provPopupFragmentBean.isDataFilePublishedRendering()}" value=" #{bundle['file.provConfirm.published.json']}"/>
+                </div>
+                <div id="ifFreeformUp" jsf:rendered="#{provPopupFragmentBean.freeformUpdated}" class="col-sm-12 text-warning">
+                    <span class="glyphicon glyphicon-warning-sign"></span> 
+                    <h:outputText value=" #{bundle['file.provConfirm.freeform']}"/>
+                </div>
+                <div id="noChanges" jsf:rendered="#{!provPopupFragmentBean.freeformUpdated and !provPopupFragmentBean.jsonUpdated}" class="col-sm-12 text-warning">
+                    <span class="glyphicon glyphicon-warning-sign"></span> 
+                    <h:outputText value=" #{bundle['file.provConfirm.empty']}" />
+                </div>
             </div>
-            <div id="ifFreeformUp" jsf:rendered="#{provPopupFragmentBean.freeformUpdated}">
-                <h:outputText value="#{bundle['file.provConfirm.freeform']}"/>
-            </div>
-            <div id="noChanges" jsf:rendered="#{!provPopupFragmentBean.freeformUpdated and !provPopupFragmentBean.jsonUpdated}">
-                <h:outputText value="#{bundle['file.provConfirm.empty']}" />
+            <div jsf:rendered="#{provPopupFragmentBean.jsonUpdated}" class="form-group text-left">
+                <label class="col-sm-3 control-label">
+                    #{bundle['file.editProvenanceDialog.bundleFile']}
+                </label>
+                <div class="col-sm-9">
+                    <div class="col-sm-7 inline-buttons">
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview2" value="#{bundle.preview}" actionListener="#{provPopupFragmentBean.showJsonPreviewNewWindow()}" onclick="this.form.target='_blank'" ajax="false" immediate="true"/>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();" action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
-            <p:commandButton styleClass="btn btn-default" id="editProvenanceJsonPreview2" value="#{bundle.preview}" rendered="#{provPopupFragmentBean.jsonUpdated}" actionListener="#{provPopupFragmentBean.showJsonPreviewNewWindow()}" onclick="this.form.target='_blank'" ajax="false" immediate="true"/>
-            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();">
-            </p:commandButton>
+            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();"/>
         </div>
     </p:dialog>
 </ui:composition>
