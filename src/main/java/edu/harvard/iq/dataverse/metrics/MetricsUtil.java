@@ -24,6 +24,10 @@ public class MetricsUtil {
     private final static String RUNNING_TOTAL = "running_total";
     private final static String MONTH_SORT = "month_sort";
     private final static String DISPLAY_NAME = "display_name";
+    private final static String VALUE = "value";
+    private final static String WEIGHT = "weight";
+    private final static String TYPE = "type";
+    private final static String LABEL = "label";
 
     public static JsonArrayBuilder downloadsToJson(List<Object[]> listOfObjectArrays) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
@@ -85,6 +89,30 @@ public class MetricsUtil {
             String runningTotalFriendly = NumberFormat.getNumberInstance(LOCALE).format(runningTotal);
             String displayName = monthYear + ": " + numDatasetsCreatedFriendly + " new Datasets; Total of " + runningTotalFriendly;
             job.add(DISPLAY_NAME, displayName);
+            jab.add(job);
+        }
+        return jab;
+    }
+
+    static JsonArrayBuilder datasetsBySubjectToJson(List<Object[]> listOfObjectArrays) {
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        float totalDatasets = 0;
+        for (Object[] objectArray : listOfObjectArrays) {
+            long value = (long) objectArray[1];
+            totalDatasets = totalDatasets + value;
+        }
+        for (Object[] objectArray : listOfObjectArrays) {
+            String type = (String) objectArray[0];
+            long value = (long) objectArray[1];
+            // FIXME: Too much precision. Should be "0.006", for example.
+            double weight = value / totalDatasets;
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            job.add(VALUE, value);
+            job.add(WEIGHT, weight);
+            job.add("totalDatasets", totalDatasets);
+            job.add(TYPE, type);
+            String percentage = String.format("%.1f", value * 100f / totalDatasets) + "%";
+            job.add(LABEL, type + " (" + percentage + ")");
             jab.add(job);
         }
         return jab;

@@ -30,4 +30,10 @@ public class MetricsIT {
         response.prettyPrint();
     }
 
+    @Test
+    public void testGetDatasetsBySubject() {
+        Response response = UtilIT.metricsDatasetsBySubject();
+        response.prettyPrint();
+    }
+
 }

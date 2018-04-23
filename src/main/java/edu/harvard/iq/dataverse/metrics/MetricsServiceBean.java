@@ -68,4 +68,25 @@ public class MetricsServiceBean implements Serializable {
         return MetricsUtil.datasetsByMonthToJson(listOfObjectArrays);
     }
 
+    public JsonArrayBuilder datasetsBySubject() {
+        Query query = em.createNativeQuery(""
+                + "SELECT strvalue, count(dataset.id)\n"
+                + "FROM datasetfield_controlledvocabularyvalue \n"
+                + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
+                + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
+                + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
+                + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
+                + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
+                + "WHERE\n"
+                + "controlledvocabularyvalue.datasetfieldtype_id = 19 \n"
+                + "AND dvobject.publicationdate is NOT NULL\n"
+                + "AND dataset.harvestingclient_id IS NULL\n"
+                + "GROUP BY strvalue\n"
+                + "ORDER BY count(dataset.id) desc;"
+        );
+        logger.fine("query: " + query);
+        List<Object[]> listOfObjectArrays = query.getResultList();
+        return MetricsUtil.datasetsBySubjectToJson(listOfObjectArrays);
+    }
+
 }

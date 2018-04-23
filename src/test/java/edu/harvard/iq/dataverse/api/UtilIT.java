@@ -1207,6 +1207,12 @@ public class UtilIT {
         return requestSpecification.get("/api/info/metrics/datasets/byMonth");
     }
 
+    static Response metricsDatasetsBySubject() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/datasets/bySubject");
+    }
+
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"
