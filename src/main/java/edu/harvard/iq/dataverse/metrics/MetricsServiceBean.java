@@ -69,6 +69,8 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public JsonArrayBuilder datasetsBySubject() {
+        // TODO: Investigate why this is 19 rather than 20 in production. Lookup the id, I guess.
+        long subjectDatasetFieldTypeId = 20l;
         Query query = em.createNativeQuery(""
                 + "SELECT strvalue, count(dataset.id)\n"
                 + "FROM datasetfield_controlledvocabularyvalue \n"
@@ -78,13 +80,13 @@ public class MetricsServiceBean implements Serializable {
                 + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
                 + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
                 + "WHERE\n"
-                + "controlledvocabularyvalue.datasetfieldtype_id = 19 \n"
+                + "controlledvocabularyvalue.datasetfieldtype_id = " + subjectDatasetFieldTypeId + "\n"
                 + "AND dvobject.publicationdate is NOT NULL\n"
                 + "AND dataset.harvestingclient_id IS NULL\n"
                 + "GROUP BY strvalue\n"
                 + "ORDER BY count(dataset.id) desc;"
         );
-        logger.fine("query: " + query);
+        logger.info("query: " + query);
         List<Object[]> listOfObjectArrays = query.getResultList();
         return MetricsUtil.datasetsBySubjectToJson(listOfObjectArrays);
     }
