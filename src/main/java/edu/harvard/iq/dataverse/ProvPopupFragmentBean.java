@@ -137,8 +137,24 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             }
 
             if(null != provenanceUpdates.get(popupDataFile.getChecksumValue()).provJson) {
+                provJsonState = provenanceUpdates.get(popupDataFile.getChecksumValue()).provJson;
                 generateProvJsonParsedEntities(); //calling this each time is somewhat inefficient, but storing the state is a lot of lifting.
+            }
+
+            if(null != provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile
+                    && !provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile.getProvEntityName().isEmpty()) { 
+                if(null == provJsonState) { //If the prov json hasn't been updated but other values for the datafile have
+                    
+                    //MAD: I think this is right, it should be "permanent" if its not in the temp stored updates.
+                    JsonObject provJsonObject = execCommand(new GetProvJsonCommand(dvRequestService.getDataverseRequest(), popupDataFile)); 
+                    if(null != provJsonObject) {
+                        provJsonState = provUtil.getPrettyJsonString(provJsonObject);
+                    }
+                }
+                generateProvJsonParsedEntities();
+                storedSelectedEntityName = provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile.getProvEntityName();
                 setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName)); 
+                
             }
             
         } else if(null != popupDataFile.getCreateDate()){ //Is this file fully uploaded and already has prov data saved?   
@@ -206,10 +222,6 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         return null;
 
     }
-    
-//    file.provConfirm.unpublished.json=Your Provenance File will become permanent upon publishing your dataset. Please preview to confirm before publishing. 
-//    file.provConfirm.published.json=Your Provenance File will become permanent once you click Save Changes. Please preview to confirm before you Save Changes.
-//    file.provConfirm.freeform=Your Provenance Description is not permanent; it can be updated at any time.
     
     public void addSuccessMessageToPage(boolean saveInPopup) {
         String message = "";
