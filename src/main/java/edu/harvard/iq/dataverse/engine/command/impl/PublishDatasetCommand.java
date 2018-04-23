@@ -93,7 +93,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     }
     
     
-    @Asynchronous
     private PublishDatasetResult callFinalizeAsync(CommandContext ctxt) throws CommandException {
         try {
             ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset, ctxt, request);
