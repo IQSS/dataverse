@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.metrics;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -12,6 +13,8 @@ import javax.persistence.Query;
 
 @Stateless
 public class MetricsServiceBean implements Serializable {
+
+    private static final Logger logger = Logger.getLogger(MetricsServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -35,4 +38,16 @@ public class MetricsServiceBean implements Serializable {
         return jab;
     }
 
+    public JsonArrayBuilder downloadsByMonth() {
+        Query query = em.createNativeQuery(""
+                + "SELECT date_trunc('month', responsetime), count(id)\n"
+                + "FROM guestbookresponse\n"
+                + "GROUP BY date_trunc('month', responsetime)\n"
+                + "ORDER BY date_trunc('month', responsetime) DESC\n"
+                + "LIMIT 13;"
+        );
+        logger.fine("query: " + query);
+        List<Object[]> listOfObjectArrays = query.getResultList();
+        return MetricsUtil.downloadsToJson(listOfObjectArrays);
+    }
 }

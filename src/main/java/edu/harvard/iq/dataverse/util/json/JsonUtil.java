@@ -3,7 +3,15 @@ package edu.harvard.iq.dataverse.util.json;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 public class JsonUtil {
 
@@ -24,6 +32,17 @@ public class JsonUtil {
             logger.info("Returning original string due to exception: " + ex);
             return jsonString;
         }
+    }
+
+    public static String prettyPrint(JsonArray jsonArray) {
+        Map<String, Boolean> config = new HashMap<>();
+        config.put(JsonGenerator.PRETTY_PRINTING, true);
+        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
+        StringWriter stringWriter = new StringWriter();
+        try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
+            jsonWriter.writeArray(jsonArray);
+        }
+        return stringWriter.toString();
     }
 
 }

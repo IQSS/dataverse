@@ -13,8 +13,14 @@ public class MetricsIT {
     }
 
     @Test
-    public void testGetMetrics() {
+    public void testGetDataverseByCategory() {
         Response response = UtilIT.metricsDataverseByCategory();
+        response.prettyPrint();
+    }
+
+    @Test
+    public void testGetDownloadsByMonth() {
+        Response response = UtilIT.metricsDownloadsByMonth();
         response.prettyPrint();
     }
 

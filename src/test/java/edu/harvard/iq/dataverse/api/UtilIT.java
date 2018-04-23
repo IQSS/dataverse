@@ -1195,6 +1195,12 @@ public class UtilIT {
         return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
     }
 
+    static Response metricsDownloadsByMonth() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/downloads/byMonth");
+    }
+
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"
