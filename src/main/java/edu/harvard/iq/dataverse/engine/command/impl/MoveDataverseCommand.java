@@ -36,10 +36,8 @@ import java.util.logging.Level;
 // since the current implementation is superuser only, we can ignore these permission
 // checks that would need to be revisited if regular users were able to use this
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "moved", value = {Permission.ManageDataversePermissions, Permission.EditDataverse})
-    ,
-	@RequiredPermissions(dataverseName = "source", value = Permission.DeleteDataverse)
-    ,
+    @RequiredPermissions(dataverseName = "moved", value = {Permission.ManageDataversePermissions, Permission.EditDataverse}),
+	@RequiredPermissions(dataverseName = "source", value = Permission.DeleteDataverse),
 	@RequiredPermissions(dataverseName = "destination", value = Permission.AddDataverse)
 })
 public class MoveDataverseCommand extends AbstractVoidCommand {
@@ -231,15 +229,16 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         
         // if a dataverse links to its destination dataverse or any of 
         // its destinations owners, remove the link
+        logger.info("Checking linked dataverses....");
         for (DataverseLinkingDataverse dvld : linkingDataverses) {
-            logger.info("Checking linked dataverses....");
             for (Dataverse owner : ownersToCheck){
                 if ((dvld.getLinkingDataverse()).equals(owner)){
                     if (force == null || !force) {
                         removeLinkDv = true;
                         break;
                     }
-                    ctxt.engine().submit(new DeleteDataverseLinkingDataverseCommand(getRequest(), dvld.getDataverse(), dvld));
+                    boolean index = false;
+                    ctxt.engine().submit(new DeleteDataverseLinkingDataverseCommand(getRequest(), dvld.getDataverse(), dvld, index));
                     (dvld.getDataverse()).getDataverseLinkingDataverses().remove(dvld);
                 }
             }
@@ -247,15 +246,16 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         
         // if a dataset links to its destination dataverse or any of 
         // its destinations owners, remove the link
+        logger.info("Checking linked datasets...");
         for (DatasetLinkingDataverse dsld : linkingDatasets) {
-            logger.info("Checking linked datasets...");
             for (Dataverse owner : ownersToCheck){
                 if ((dsld.getLinkingDataverse()).equals(owner)){
                     if (force == null || !force) {
                         removeLinkDs = true;
                         break;
                     }
-                    ctxt.engine().submit(new DeleteDatasetLinkingDataverseCommand(getRequest(), dsld.getDataset(), dsld));
+                    boolean index = false;
+                    ctxt.engine().submit(new DeleteDatasetLinkingDataverseCommand(getRequest(), dsld.getDataset(), dsld, index));
                     (dsld.getDataset()).getDatasetLinkingDataverses().remove(dsld);
                 }
             }

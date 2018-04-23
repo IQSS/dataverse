@@ -273,8 +273,9 @@ public class Dataverses extends AbstractApiBean {
         @DELETE
 	@Path("{dataverseId}/deleteLink/{linkedDataverseId}")
 	public Response deleteDataverseLinkingDataverse( @PathParam("dataverseId") String dataverseId, @PathParam("linkedDataverseId") Long linkedDataverseId) {
+                boolean index = true;
 		return response(req -> {
-			execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(dataverseId), findDataverseLinkingDataverseOrDie(dataverseId, linkedDataverseId)));
+			execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(dataverseId), findDataverseLinkingDataverseOrDie(dataverseId, linkedDataverseId), index));
 			return ok("Link from Dataverse " + dataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
         });
 	}

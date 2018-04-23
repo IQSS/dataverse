@@ -27,11 +27,13 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
 
     private final DataverseLinkingDataverse doomed;
     private final Dataverse editedDv;
+    private final boolean index;
     
-    public DeleteDataverseLinkingDataverseCommand(DataverseRequest aRequest, Dataverse editedDv , DataverseLinkingDataverse doomed) {
+    public DeleteDataverseLinkingDataverseCommand(DataverseRequest aRequest, Dataverse editedDv , DataverseLinkingDataverse doomed, boolean index) {
         super(aRequest, editedDv);
         this.editedDv = editedDv;
         this.doomed = doomed;
+        this.index = index;
     }
 
     @Override
@@ -44,8 +46,10 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
         DataverseLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
         
-        ctxt.index().indexDataverse(editedDv);
-        ctxt.index().indexDataverse(doomed.getLinkingDataverse());
+        if (index) {
+            ctxt.index().indexDataverse(editedDv);
+            ctxt.index().indexDataverse(doomed.getLinkingDataverse());
+        }
         return merged;
     } 
 }

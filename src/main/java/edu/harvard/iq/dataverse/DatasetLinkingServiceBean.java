@@ -22,7 +22,7 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class DatasetLinkingServiceBean implements java.io.Serializable {
-    private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DatasetLinkingServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;

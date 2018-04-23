@@ -26,11 +26,13 @@ import java.util.Collections;
 public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Dataset>{
     private final DatasetLinkingDataverse doomed;
     private final Dataset editedDs;
+    private final boolean index;
     
-    public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs , DatasetLinkingDataverse doomed) {
+    public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs , DatasetLinkingDataverse doomed, boolean index) {
         super(aRequest, editedDs);
         this.editedDs = editedDs;
         this.doomed = doomed;
+        this.index = index;
     }
     
     @Override
@@ -43,8 +45,10 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
         DatasetLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
 
-        ctxt.index().indexDataset(editedDs, true);
-        ctxt.index().indexDataverse(doomed.getLinkingDataverse());
+        if (index) {
+            ctxt.index().indexDataset(editedDs, true);
+            ctxt.index().indexDataverse(doomed.getLinkingDataverse());
+        }
         return merged;
     } 
 }
