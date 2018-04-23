@@ -5,6 +5,13 @@ Geospatial Data
 .. contents:: |toctitle|
 	:local:
 
+Geoconnect
+----------
+
+Geoconnect works as a middle layer, allowing geospatial data files in Dataverse to be visualized with Harvard WorldMap. To set up a Geoconnect development environment, you can follow the steps outlined in the `local_setup.md <https://github.com/IQSS/geoconnect/blob/master/local_setup.md>`_ guide. You will need Python and a few other prerequisites.
+
+As mentioned under "Architecture and Components" in the :doc:`/installation/prep` section of the Installation Guide, Geoconnect is an optional component of Dataverse, so this section is only necessary to follow it you are working on an issue related to this feature.
+
 How Dataverse Ingests Shapefiles
 --------------------------------
 
@@ -178,4 +185,4 @@ The ``get_latest_jointarget_information()`` in ``utils.py`` retrieves recent Joi
 
 ----
 
-Previous: :doc:`unf/index` | Next: :doc:`selinux`
+Previous: :doc:`unf/index` | Next: :doc:`remote-users`

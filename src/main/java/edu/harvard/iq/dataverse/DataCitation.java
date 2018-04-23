@@ -160,7 +160,7 @@ public class DataCitation {
         citationList.add(year);
         citationList.add(formatString(title, html, "\""));
         if (persistentId != null) {
-            citationList.add(formatURL(persistentId.toString(), persistentId.toURL().toString(), html));
+            citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); //always show url format
         }
         citationList.add(formatString(distributors, html));
         citationList.add(version);

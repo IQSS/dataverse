@@ -120,6 +120,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     public List<Long> findAllLocalDatasetIds() {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.harvestedFrom IS null ORDER BY o.id", Long.class).getResultList();
     }
+    
+    public List<Long> findAllUnindexed() {
+        return em.createQuery("SELECT o.id FROM Dataset o WHERE o.indexTime IS null ORDER BY o.id DESC", Long.class).getResultList();
+    }
 
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
@@ -129,15 +133,15 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @return a list of datasets
      * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
      */     
-    public List<Dataset> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
+    public List<Long> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         if (numPartitions < 1) {
             long saneNumPartitions = 1;
             numPartitions = saneNumPartitions;
         }
         String skipClause = skipIndexed ? "AND o.indexTime is null " : "";
-        TypedQuery<Dataset> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Dataset AS o WHERE MOD( o.id, :numPartitions) = :partitionId " +
+        TypedQuery<Long> typedQuery = em.createQuery("SELECT o.id FROM Dataset o WHERE MOD( o.id, :numPartitions) = :partitionId " +
                 skipClause +
-                "ORDER BY o.id", Dataset.class);
+                "ORDER BY o.id", Long.class);
         typedQuery.setParameter("numPartitions", numPartitions);
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
@@ -290,8 +294,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.persist(dsv);
         return dsv;
     }
-    
-    
+      
     public String createCitationRIS(DatasetVersion version) {
         return createCitationRIS(version, null);
     } 

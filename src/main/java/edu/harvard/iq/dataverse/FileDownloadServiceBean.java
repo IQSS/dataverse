@@ -107,11 +107,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             //if an error occurs here then download won't happen no need for response recs...
 
         }
-
     }
-
     public void callDownloadServlet(String multiFileString, Boolean gbRecordsWritten){
-
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
         if (gbRecordsWritten){
             fileDownloadUrl += "?gbrecs=true";
@@ -134,8 +131,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
         }
     }
-    
 
+    
     //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;

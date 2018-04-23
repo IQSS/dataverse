@@ -17,13 +17,12 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -50,11 +49,13 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.inject.Named;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -67,6 +68,9 @@ public class IndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
 
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    private EntityManager em;
+    
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
@@ -108,18 +112,24 @@ public class IndexServiceBean {
     public static final String HARVESTED = "Harvested";
     private String rootDataverseName;
     private Dataverse rootDataverseCached; 
-    private SolrServer solrServer;
+    private SolrClient solrServer;
     
     @PostConstruct
     public void init(){
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        solrServer = new HttpSolrClient.Builder(urlString).build();
+
         rootDataverseName = findRootDataverseCached().getName();
     }
     
     @PreDestroy
     public void close(){
-        if(solrServer != null){
-            solrServer.shutdown();
+        if (solrServer != null) {
+            try {
+                solrServer.close();
+            } catch (IOException e) {
+                logger.warning("Solr closing error: " + e);
+            }
             solrServer = null;
         }
     }
@@ -253,9 +263,13 @@ public class IndexServiceBean {
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDatasetInNewTransaction(Dataset dataset) {
+    public Future<String> indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
-        return indexDataset(dataset, doNormalSolrDocCleanUp);
+        Dataset dataset = em.find(Dataset.class, datasetId);
+        //return indexDataset(dataset, doNormalSolrDocCleanUp);
+        Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
+        dataset = null; 
+        return ret;
     }
 
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
@@ -1021,10 +1035,18 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        dvObjectService.updateContentIndexTime(dataset);
+        Long dsId = dataset.getId();
+        ///Dataset updatedDataset = (Dataset)dvObjectService.updateContentIndexTime(dataset);
+        ///updatedDataset = null;
+        // instead of making a call to dvObjectService, let's try and 
+        // modify the index time stamp using the local EntityManager:
+        DvObject dvObjectToModify = em.find(DvObject.class, dsId);
+        dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
+        dvObjectToModify = em.merge(dvObjectToModify);
+        dvObjectToModify = null;
 
 //        return "indexed dataset " + dataset.getId() + " as " + solrDocId + "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
-        return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
+        return "indexed dataset " + dsId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
     }
 
     /**
@@ -1385,7 +1407,7 @@ public class IndexServiceBean {
         QueryResponse queryResponse = null;
         try {
             queryResponse = solrServer.query(solrQuery);
-        } catch (SolrServerException ex) {
+        } catch (SolrServerException | IOException ex) {
             throw new SearchException("Error searching Solr for " + type, ex);
         }
         SolrDocumentList results = queryResponse.getResults();
@@ -1419,7 +1441,7 @@ public class IndexServiceBean {
         QueryResponse queryResponse = null;
         try {
             queryResponse = solrServer.query(solrQuery);
-        } catch (SolrServerException ex) {
+        } catch (SolrServerException | IOException ex) {
             throw new SearchException("Error searching Solr for dataset parent id " + parentDatasetId, ex);
         }
         SolrDocumentList results = queryResponse.getResults();

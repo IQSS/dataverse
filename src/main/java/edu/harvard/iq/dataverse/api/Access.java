@@ -63,6 +63,8 @@ import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServiceUnavailableException;
@@ -129,22 +131,29 @@ public class Access extends AbstractApiBean {
     @Path("datafile/bundle/{fileId}")
     @GET
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public BundleDownloadInstance datafileBundle(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
  
         DataFile df = dataFileService.find(fileId);
+        GuestbookResponse gbr = null;
         
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new NotFoundException();
         }
         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
-        // This will throw a WebApplicationException, with the correct 
-        // exit code, if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(df, apiToken);
+        
+        if (gbrecs == null && df.isReleased()){
+            // Write Guestbook record if not done previously and file is released
+            User apiTokenUser = findAPITokenUser(apiToken);
+            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
+            guestbookResponseService.save(gbr);
+        }
         
         DownloadInfo dInfo = new DownloadInfo(df);
         BundleDownloadInstance downloadInstance = new BundleDownloadInstance(dInfo);
@@ -178,28 +187,34 @@ public class Access extends AbstractApiBean {
     
     @Path("datafile/{fileId}")
     @GET
-    @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
+    //@Produces({ "application/xml" })
+    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {                
         DataFile df = dataFileService.find(fileId);
         GuestbookResponse gbr = null;    
         
-        /*
-        if (gbrecs == null && df.isReleased()){
-            //commenting out for 4.6 SEK
-           // gbr = guestbookResponseService.initDefaultGuestbookResponse(df.getOwner(), df, session);
-        }
-        */
+        
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new NotFoundException();
+        }
+        
+        if (df.isHarvested()) {
+            throw new NotFoundException();
+            // (nobody should ever be using this API on a harvested DataFile)!
         }
         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
-        // This will throw a WebApplicationException, with the correct 
-        // exit code, if access isn't authorized: 
+        
+        if (gbrecs == null && df.isReleased()){
+            // Write Guestbook record if not done previously and file is released
+            User apiTokenUser = findAPITokenUser(apiToken);
+            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
+        }
+               
+        // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(df, apiToken);
         
         DownloadInfo dInfo = new DownloadInfo(df);
@@ -400,15 +415,14 @@ public class Access extends AbstractApiBean {
         
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new NotFoundException();
         }
         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
-        // This will throw a WebApplicationException, with the correct 
-        // exit code, if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(df, apiToken);
         DownloadInfo dInfo = new DownloadInfo(df);
 
@@ -435,13 +449,8 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public /*ZippedDownloadInstance*/ Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        // create a Download Instance without, without a primary Download Info object:
-        //ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
+    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
-        
-        
-        
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
@@ -452,13 +461,15 @@ public class Access extends AbstractApiBean {
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
         if (fileIds == null || fileIds.equals("")) {
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+            throw new BadRequestException();
         }
 
         String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
                 ? headers.getHeaderString(API_KEY_HEADER) 
                 : apiTokenParam;
         
+        User apiTokenUser = findAPITokenUser(apiToken); //for use in adding gb records if necessary
+               
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
@@ -493,7 +504,10 @@ public class Access extends AbstractApiBean {
                                     }
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                    
+                                            if (gbrecs == null && file.isReleased()){
+                                                GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                                                guestbookResponseService.save(gbr);
+                                            }
                                     if (zipper == null) {
                                         // This is the first file we can serve - so we now know that we are going to be able 
                                         // to produce some output.
@@ -520,12 +534,12 @@ public class Access extends AbstractApiBean {
 
                             } else {
                                 // Or should we just drop it and make a note in the Manifest?    
-                                throw new WebApplicationException(Response.Status.NOT_FOUND);
+                                throw new NotFoundException();
                             }
                         }
                     }
                 } else {
-                    throw new WebApplicationException(Response.Status.BAD_REQUEST);
+                    throw new BadRequestException();
                 }
 
                 if (zipper == null) {
@@ -534,7 +548,7 @@ public class Access extends AbstractApiBean {
                     // files were accessible for this user. 
                     // In which casew we don't bother generating any output, and 
                     // just give them a 403:
-                    throw new WebApplicationException(Response.Status.FORBIDDEN);
+                    throw new ForbiddenException();
                 }
 
                 // This will add the generated File Manifest to the zipped output, 
@@ -547,20 +561,6 @@ public class Access extends AbstractApiBean {
         };
         return Response.ok(stream).build();
     }
-    
-    
-    /* 
-     * Geting rid of the tempPreview API - it's always been a big, fat hack. 
-     * the edit files page is now using the Base64 image strings in the preview 
-     * URLs, just like the search and dataset pages.
-    @Path("tempPreview/{fileSystemId}")
-    @GET
-    @Produces({"image/png"})
-    public InputStream tempPreview(@PathParam("fileSystemId") String fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
-
-    }*/
-    
-    
     
     @Path("fileCardImage/{fileId}")
     @GET
@@ -824,7 +824,7 @@ public class Access extends AbstractApiBean {
     private void checkAuthorization(DataFile df, String apiToken) throws WebApplicationException {
 
         if (!isAccessAuthorized(df, apiToken)) {
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
+            throw new ForbiddenException();
         }        
     }
     
@@ -1135,5 +1135,32 @@ public class Access extends AbstractApiBean {
         
         return false; 
     }   
+    
+
+        
+    private User findAPITokenUser(String apiToken) {
+        User apiTokenUser = null;
+
+        if ((apiToken != null) && (apiToken.length() != 64)) {
+            // We'll also try to obtain the user information from the API token, 
+            // if supplied: 
+
+            try {
+                logger.fine("calling apiTokenUser = findUserOrDie()...");
+                apiTokenUser = findUserOrDie();
+                return apiTokenUser;
+            } catch (WrappedResponse wr) {
+                logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
+                return null;
+            }
+
+        }
+        return apiTokenUser;
+    }
+
+
+
+            
+            
             
 }
