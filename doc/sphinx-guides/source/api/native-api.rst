@@ -145,12 +145,12 @@ To create a dataset, you must create a JSON file containing all the metadata you
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets --upload-file dataset-finch1.json
 
-Import a Dataset to a Dataverse
+Import a Dataset into a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note:: Importing a dataset can only be done be a super-user.
+.. note:: This action requires a Dataverse account with super-user permissions.
 
-To import a dataset with an existing persistent identifier (pid), the dataset's metadata should be prepared in the native JSON format of Dataverse. The pid can be provided in the JSON, or as a parameter at the URL. The following line imports a dataset whose pid is ``prt:auth:id`` to Dataverse, and then releases it::
+To import a dataset with an existing persistent identifier (pid), the dataset's metadata should be prepared in Dataverse's native JSON format. The pid can be provided in the JSON, or as a parameter at the URL. The following line imports a dataset with the pid ``prt:auth:id`` to Dataverse, and then releases it::
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:import?pid=prt:auth:id&release=yes --upload-file dataset.json
 
