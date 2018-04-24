@@ -10,7 +10,9 @@ RUN /root/test_install.sh
 COPY rq-init-d /etc/init.d/rq
 RUN useradd glassfish
 COPY entrypoint-dcm.sh /
+COPY healthcheck-dcm.sh /
 EXPOSE 80
 EXPOSE 22
 VOLUME /hold
+HEALTHCHECK CMD /healthcheck-dcm.sh
 CMD ["/entrypoint-dcm.sh"]
