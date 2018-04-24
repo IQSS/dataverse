@@ -14,5 +14,6 @@ curl -X PUT "http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl" -d 
 curl -X PUT "http://localhost:8080/api/admin/settings/:DownloadMethods" -d "rsal/rsync"
 
 # symlink `hold` volume 
-ln -s /hold /usr/local/glassfish4/glassfish/domains/domain1/files
+mkdir -p /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/
+ln -s /hold /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2
 
