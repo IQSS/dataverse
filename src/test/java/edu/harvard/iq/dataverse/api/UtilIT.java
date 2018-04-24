@@ -1207,6 +1207,12 @@ public class UtilIT {
         return requestSpecification.get("/api/info/metrics/downloads/byMonth");
     }
 
+    static Response metricsFilesByMonth() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/files/byMonth");
+    }
+
     static Response metricsDatasetsByMonth() {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();

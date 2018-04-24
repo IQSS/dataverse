@@ -52,6 +52,26 @@ public class MetricsServiceBean implements Serializable {
         return MetricsUtil.downloadsToJson(listOfObjectArrays);
     }
 
+    public JsonArrayBuilder filesByMonth() {
+        // TODO: Consider switching to a "to_char" version, a String instead of a Timestamp. See datasetsByMonth.
+        Query query = em.createNativeQuery(""
+                + "select date_trunc('month', dvobject.publicationdate) as months, count(dvobject.id) as new_files,\n"
+                + "sum(count(dvobject.id)) over (order by date_trunc('month', dvobject.publicationdate)) as cumulative\n"
+                + "from dvobject\n"
+                + "join datafile on datafile.id = dvobject.id\n"
+                + "join dataset on dataset.id = dvobject.owner_id\n"
+                + "where dtype = 'DataFile'\n"
+                + "and publicationdate is not null\n"
+                + "and dataset.harvestingclient_id is null\n"
+                + "group by date_trunc('month', dvobject.publicationdate)\n"
+                + "order by date_trunc('month', dvobject.publicationdate) desc\n"
+                + "limit 12;"
+        );
+        logger.fine("query: " + query);
+        List<Object[]> listOfObjectArrays = query.getResultList();
+        return MetricsUtil.filesByMonthToJson(listOfObjectArrays);
+    }
+
     public JsonArrayBuilder dataversesByMonth() {
         // TODO: Consider switching to a "to_char" version, a String instead of a Timestamp. See datasetsByMonth.
         Query query = em.createNativeQuery(""

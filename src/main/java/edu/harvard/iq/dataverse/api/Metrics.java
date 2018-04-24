@@ -26,6 +26,12 @@ public class Metrics extends AbstractApiBean {
     }
 
     @GET
+    @Path("files/byMonth")
+    public Response getFilesByMonth() {
+        return allowCors(ok(metricsSvc.filesByMonth()));
+    }
+
+    @GET
     @Path("datasets/byMonth")
     public Response getDatasetsByMonth() {
         return allowCors(ok(metricsSvc.datasetsByMonth()));

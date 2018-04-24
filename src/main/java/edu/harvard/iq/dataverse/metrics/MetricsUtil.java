@@ -65,6 +65,36 @@ public class MetricsUtil {
         return jab;
     }
 
+    static JsonArrayBuilder filesByMonthToJson(List<Object[]> listOfObjectArrays) {
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        for (Object[] objectArray : listOfObjectArrays) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            Timestamp dateString = (Timestamp) objectArray[0];
+            logger.fine("dateString: " + dateString);
+            LocalDate localDate = LocalDate.parse(dateString.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"));
+            long numNewFiles = (long) objectArray[1];
+            logger.fine("numNewFiles: " + numNewFiles);
+            BigDecimal runningTotal = (BigDecimal) objectArray[2];
+            logger.fine("runningTotal: " + runningTotal);
+            String numNewFilesFriendly = NumberFormat.getNumberInstance(LOCALE).format(numNewFiles);
+            String monthYear = localDate.getMonth().getDisplayName(TextStyle.FULL, LOCALE) + " " + localDate.getYear();
+            job.add(MONTH, monthYear);
+            int monthNum = localDate.getMonthValue();
+            job.add(MONTH_NUM, monthNum);
+            String name = "Total Files Added";
+            job.add(NAME, name);
+            job.add("Number of Files", numNewFiles);
+            job.add("running_total", runningTotal);
+            String monthSort = localDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            job.add(MONTH_SORT, monthSort);
+            String runningTotalFriendly = NumberFormat.getNumberInstance(LOCALE).format(runningTotal);
+            String displayName = monthYear + ": " + numNewFilesFriendly + " added / total: " + runningTotalFriendly;
+            job.add(DISPLAY_NAME, displayName);
+            jab.add(job);
+        }
+        return jab;
+    }
+
     static JsonArrayBuilder dataversesByMonthToJson(List<Object[]> listOfObjectArrays) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (Object[] objectArray : listOfObjectArrays) {
@@ -77,7 +107,7 @@ public class MetricsUtil {
             BigDecimal runningTotal = (BigDecimal) objectArray[2];
             logger.fine("runningTotal: " + runningTotal);
             String numNewDataversesFriendly = NumberFormat.getNumberInstance(LOCALE).format(numNewDataverses);
-            String monthYear = localDate.getMonth().getDisplayName(TextStyle.FULL, LOCALE) + " 2017";
+            String monthYear = localDate.getMonth().getDisplayName(TextStyle.FULL, LOCALE) + " " + localDate.getYear();
             job.add(MONTH, monthYear);
             int monthNum = localDate.getMonthValue();
             job.add(MONTH_NUM, monthNum);
@@ -109,7 +139,7 @@ public class MetricsUtil {
             BigDecimal runningTotal = (BigDecimal) objectArray[2];
             logger.fine("runningTotal: " + runningTotal);
             String numNewDatasetsFriendly = NumberFormat.getNumberInstance(LOCALE).format(numNewDatasets);
-            String monthYear = localDate.getMonth().getDisplayName(TextStyle.FULL, LOCALE) + " 2017";
+            String monthYear = localDate.getMonth().getDisplayName(TextStyle.FULL, LOCALE) + " " + localDate.getYear();
             job.add(MONTH, monthYear);
             int monthNum = localDate.getMonthValue();
             job.add(MONTH_NUM, monthNum);

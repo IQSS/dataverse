@@ -181,4 +181,45 @@ public class MetricsUtilTest {
         assertEquals(98, jsonObject.getInt("value"));
         assertEquals(0.00286599993705749, jsonObject.getJsonNumber("weight").doubleValue(), 1000);
     }
+
+    @Test
+    public void testFilesByMonthToJson() {
+        Object[] obj01 = {new Timestamp(118, 3, 1, 0, 0, 0, 0), 10l, new BigDecimal("25219")};
+        Object[] obj02 = {new Timestamp(118, 2, 1, 0, 0, 0, 0), 240l, new BigDecimal("25209")};
+        Object[] obj03 = {new Timestamp(118, 1, 1, 0, 0, 0, 0), 302l, new BigDecimal("24969")};
+        Object[] obj04 = {new Timestamp(118, 0, 1, 0, 0, 0, 0), 311l, new BigDecimal("24667")};
+        Object[] obj05 = {new Timestamp(117, 11, 1, 0, 0, 0, 0), 188l, new BigDecimal("24356")};
+        Object[] obj06 = {new Timestamp(117, 10, 1, 0, 0, 0, 0), 157l, new BigDecimal("24168")};
+        Object[] obj07 = {new Timestamp(117, 9, 1, 0, 0, 0, 0), 219l, new BigDecimal("24011")};
+        Object[] obj08 = {new Timestamp(117, 8, 1, 0, 0, 0, 0), 160l, new BigDecimal("23792")};
+        Object[] obj09 = {new Timestamp(117, 7, 1, 0, 0, 0, 0), 318l, new BigDecimal("23632")};
+        Object[] obj10 = {new Timestamp(117, 6, 1, 0, 0, 0, 0), 269l, new BigDecimal("23314")};
+        Object[] obj11 = {new Timestamp(117, 5, 1, 0, 0, 0, 0), 268l, new BigDecimal("23045")};
+        Object[] obj12 = {new Timestamp(117, 4, 1, 0, 0, 0, 0), 215l, new BigDecimal("22777")};
+        List<Object[]> list = new ArrayList<>();
+        list.add(obj01);
+        list.add(obj02);
+        list.add(obj03);
+        list.add(obj04);
+        list.add(obj05);
+        list.add(obj06);
+        list.add(obj07);
+        list.add(obj08);
+        list.add(obj09);
+        list.add(obj10);
+        list.add(obj11);
+        list.add(obj12);
+        JsonArrayBuilder result = MetricsUtil.filesByMonthToJson(list);
+        JsonArray jsonArray = result.build();
+        System.out.println(JsonUtil.prettyPrint(jsonArray));
+        JsonObject jsonObject = jsonArray.getJsonObject(11);
+        assertEquals(5, jsonObject.getInt("monthNum"));
+        assertEquals(22777l, jsonObject.getJsonNumber("running_total").longValue());
+        assertEquals(215, jsonObject.getInt("Number of Files"));
+        assertEquals("May 2017", jsonObject.getString("Month"));
+        assertEquals("Total Files Added", jsonObject.getString("name"));
+        assertEquals("2017-05", jsonObject.getString("month_sort"));
+        assertEquals("May 2017: 215 added / total: 22,777", jsonObject.getString("display_name"));
+    }
+
 }
