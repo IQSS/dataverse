@@ -12,7 +12,7 @@ if [ -f /etc/bashrc ]; then
 fi
 
 # these are dummy values, obviously
-export UPLOADHOST=dcm
+export UPLOADHOST=dcmsrv
 export DVAPIKEY=burrito
-export DVHOSTINT=dv
-export DVHOST=dv
+export DVHOSTINT=dvsrv
+export DVHOST=dvsrv
