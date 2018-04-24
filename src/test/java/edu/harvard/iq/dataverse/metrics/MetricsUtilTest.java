@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,18 +63,18 @@ public class MetricsUtilTest {
 
     @Test
     public void testDatasetsByMonthToJson() {
-        Object[] obj01 = {new Timestamp(118, 3, 1, 0, 0, 0, 0), 10l, 25219l};
-        Object[] obj02 = {new Timestamp(118, 2, 1, 0, 0, 0, 0), 240l, 25209l};
-        Object[] obj03 = {new Timestamp(118, 1, 1, 0, 0, 0, 0), 302l, 24969l};
-        Object[] obj04 = {new Timestamp(118, 0, 1, 0, 0, 0, 0), 311l, 24667l};
-        Object[] obj05 = {new Timestamp(117, 11, 1, 0, 0, 0, 0), 188l, 24356l};
-        Object[] obj06 = {new Timestamp(117, 10, 1, 0, 0, 0, 0), 157l, 24168l};
-        Object[] obj07 = {new Timestamp(117, 9, 1, 0, 0, 0, 0), 219l, 24011l};
-        Object[] obj08 = {new Timestamp(117, 8, 1, 0, 0, 0, 0), 160l, 23792l};
-        Object[] obj09 = {new Timestamp(117, 7, 1, 0, 0, 0, 0), 318l, 23632l};
-        Object[] obj10 = {new Timestamp(117, 6, 1, 0, 0, 0, 0), 269l, 23314l};
-        Object[] obj11 = {new Timestamp(117, 5, 1, 0, 0, 0, 0), 268l, 23045l};
-        Object[] obj12 = {new Timestamp(117, 4, 1, 0, 0, 0, 0), 215l, 22777l};
+        Object[] obj01 = {new Timestamp(118, 3, 1, 0, 0, 0, 0), 10l, new BigDecimal("25219")};
+        Object[] obj02 = {new Timestamp(118, 2, 1, 0, 0, 0, 0), 240l, new BigDecimal("25209")};
+        Object[] obj03 = {new Timestamp(118, 1, 1, 0, 0, 0, 0), 302l, new BigDecimal("24969")};
+        Object[] obj04 = {new Timestamp(118, 0, 1, 0, 0, 0, 0), 311l, new BigDecimal("24667")};
+        Object[] obj05 = {new Timestamp(117, 11, 1, 0, 0, 0, 0), 188l, new BigDecimal("24356")};
+        Object[] obj06 = {new Timestamp(117, 10, 1, 0, 0, 0, 0), 157l, new BigDecimal("24168")};
+        Object[] obj07 = {new Timestamp(117, 9, 1, 0, 0, 0, 0), 219l, new BigDecimal("24011")};
+        Object[] obj08 = {new Timestamp(117, 8, 1, 0, 0, 0, 0), 160l, new BigDecimal("23792")};
+        Object[] obj09 = {new Timestamp(117, 7, 1, 0, 0, 0, 0), 318l, new BigDecimal("23632")};
+        Object[] obj10 = {new Timestamp(117, 6, 1, 0, 0, 0, 0), 269l, new BigDecimal("23314")};
+        Object[] obj11 = {new Timestamp(117, 5, 1, 0, 0, 0, 0), 268l, new BigDecimal("23045")};
+        Object[] obj12 = {new Timestamp(117, 4, 1, 0, 0, 0, 0), 215l, new BigDecimal("22777")};
         List<Object[]> list = new ArrayList<>();
         list.add(obj01);
         list.add(obj02);

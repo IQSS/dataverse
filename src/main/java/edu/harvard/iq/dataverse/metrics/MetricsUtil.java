@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.metrics;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -73,7 +74,7 @@ public class MetricsUtil {
             LocalDate localDate = LocalDate.parse(dateString.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"));
             long numDatasetsCreated = (long) objectArray[1];
             logger.fine("numDatasetsCreated: " + numDatasetsCreated);
-            long runningTotal = (long) objectArray[2];
+            BigDecimal runningTotal = (BigDecimal) objectArray[2];
             logger.fine("runningTotal: " + runningTotal);
             String numDatasetsCreatedFriendly = NumberFormat.getNumberInstance(LOCALE).format(numDatasetsCreated);
             String monthYear = localDate.getMonth().getDisplayName(TextStyle.FULL, LOCALE) + " 2017";
