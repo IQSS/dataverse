@@ -851,6 +851,13 @@ public class UtilIT {
                 .put("/api/files/" + datafileId + "/restrict");
         return response;
     }
+    
+    static Response moveDataverse(String movedDataverseAlias, String targetDataverseAlias, Boolean force, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("api/dataverses/" + movedDataverseAlias + "/move/" + targetDataverseAlias + "?forceMove=" + force + "&key=" + apiToken);
+        return response;
+    }
 
     static Response nativeGet(Integer datasetId, String apiToken) {
         Response response = given()

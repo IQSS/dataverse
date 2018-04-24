@@ -15,6 +15,22 @@ Users are listed alphabetically by username. The search bar above the table allo
 
 If you would like to remove all roles/permissions from a user's account (in the event of their leaving your organization, for example) then you can do so by clicking the "Remove All" button under the Roles column. This will keep the user's account active, but will revert it to put the account on the level of a default user with default permissions.
 
+List Users via API
+~~~~~~~~~~~~~~~~~~
+
+There are two ways to list users via API. If you have relatively few users, you can get them all as a dump with this command with a superuser API token::
+
+        curl -H "X-Dataverse-key: $API_TOKEN" http://localhost:8080/api/admin/authenticatedUsers
+
+If you have many users and want to be able to search and paginate through the results, use the command below with a superuser API token::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://localhost:8080/api/admin/list-users
+
+With the ``list-users`` form you can include the following optional query parameters:
+
+* ``searchTerm`` A string that matches the beginning of a user identifier, first name, last name or email address.
+* ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
+* ``selectedPage`` The page of results to return.  The default is 1.
 
 Confirm Email
 -------------
