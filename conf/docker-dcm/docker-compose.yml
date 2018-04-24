@@ -20,6 +20,12 @@ services:
     ports:
       - "8083:8080"
       - "8084:80"
+  client:
+    build:
+      context: .
+      dockerfile: c6client.dockerfile
+    command: sleep infinity
+    container_name: dcm_client
 
 volumes:
   hold:
