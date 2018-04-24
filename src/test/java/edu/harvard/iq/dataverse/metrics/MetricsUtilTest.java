@@ -14,6 +14,36 @@ import org.junit.Test;
 public class MetricsUtilTest {
 
     @Test
+    public void testDataversesByCategoryToJson() {
+        List<Object[]> list = new ArrayList<>();
+        Object[] obj00 = {"RESEARCH_PROJECTS", 791l};
+        Object[] obj01 = {"RESEARCHERS", 745l};
+        Object[] obj02 = {"UNCATEGORIZED", 565l};
+        Object[] obj03 = {"ORGANIZATIONS_INSTITUTIONS", 250l};
+        Object[] obj04 = {"JOURNALS", 106l};
+        Object[] obj05 = {"RESEARCH_GROUP", 106l};
+        Object[] obj06 = {"TEACHING_COURSES", 20l};
+        Object[] obj07 = {"LABORATORY", 17l};
+        Object[] obj08 = {"DEPARTMENT", 7l};
+        list.add(obj00);
+        list.add(obj01);
+        list.add(obj02);
+        list.add(obj03);
+        list.add(obj04);
+        list.add(obj05);
+        list.add(obj06);
+        list.add(obj07);
+        list.add(obj08);
+        JsonArrayBuilder jab = MetricsUtil.dataversesByCategoryToJson(list);
+        JsonArray jsonArray = jab.build();
+        System.out.println(JsonUtil.prettyPrint(jsonArray));
+        JsonObject jsonObject = jsonArray.getJsonObject(8);
+        assertEquals("DEPARTMENT (0.3%)", jsonObject.getString("name"));
+        assertEquals("0.3%", jsonObject.getString("percent_label"));
+        assertEquals(7, jsonObject.getInt("dataverse count"));
+    }
+
+    @Test
     public void testDownloadsToJson() {
         MetricsUtil metricsUtil = new MetricsUtil();
         Object[] obj01 = {new Timestamp(118, 3, 1, 0, 0, 0, 0), 1l, new BigDecimal("2607")};

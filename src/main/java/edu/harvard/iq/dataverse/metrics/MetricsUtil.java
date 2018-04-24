@@ -30,6 +30,27 @@ public class MetricsUtil {
     private final static String TYPE = "type";
     private final static String LABEL = "label";
 
+    static JsonArrayBuilder dataversesByCategoryToJson(List<Object[]> listOfObjectArrays) {
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        float totalDataversesLong = 0;
+        for (Object[] objectArray : listOfObjectArrays) {
+            long value = (long) objectArray[1];
+            totalDataversesLong = totalDataversesLong + value;
+        }
+        for (Object[] arrayOfObjects : listOfObjectArrays) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            String categoryName = (String) arrayOfObjects[0];
+            long categoryCount = (long) arrayOfObjects[1];
+            String percentage = String.format("%.1f", categoryCount * 100f / totalDataversesLong) + "%";
+            // TODO: Spaces in JSON keys is weird but it's what miniverse does.
+            job.add("dataverse count", categoryCount);
+            job.add(NAME, categoryName + " (" + percentage + ")");
+            job.add("percent_label", percentage);
+            jab.add(job);
+        }
+        return jab;
+    }
+
     public static JsonArrayBuilder downloadsToJson(List<Object[]> listOfObjectArrays) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         if (listOfObjectArrays.size() < 1) {
