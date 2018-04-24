@@ -26,6 +26,8 @@ services:
       dockerfile: c6client.dockerfile
     command: sleep infinity
     container_name: dcm_client
+    volumes:
+      - ./:/mnt
 
 volumes:
   hold:
