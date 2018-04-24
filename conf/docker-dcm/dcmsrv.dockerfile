@@ -7,6 +7,7 @@ COPY test_install.sh /root/
 RUN yum localinstall -y /tmp/dcm-0.1-0.noarch.rpm
 RUN pip install -r /opt/dcm/requirements.txt
 RUN /root/test_install.sh
+COPY rq-init-d /etc/init.d/rq
 RUN useradd glassfish
 COPY entrypoint-dcm.sh /
 EXPOSE 80
