@@ -51,8 +51,7 @@ public class MetricsUtil {
             String name = "Total File Downloads";
             job.add(NAME, name);
             job.add("Number of File Downloads", numDownloadsPerMonth);
-            // FIXME: This running total is a place holder. It should be increasing over time.
-            long runningTotal = Long.MAX_VALUE;
+            BigDecimal runningTotal = (BigDecimal) objectArray[2];
             logger.fine("runningTotal: " + runningTotal);
             String runningTotalFriendly = NumberFormat.getNumberInstance(LOCALE).format(runningTotal);
             job.add(RUNNING_TOTAL, runningTotal);

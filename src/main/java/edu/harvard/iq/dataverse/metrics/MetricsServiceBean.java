@@ -39,13 +39,16 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public JsonArrayBuilder downloadsByMonth() {
-        // FIXME: We limit to 13 because the first row is a total but not the running total we need. Get the real running total.
         Query query = em.createNativeQuery(""
-                + "SELECT date_trunc('month', responsetime), count(id)\n"
-                + "FROM guestbookresponse\n"
-                + "GROUP BY date_trunc('month', responsetime)\n"
-                + "ORDER BY date_trunc('month', responsetime) DESC\n"
-                + "LIMIT 13;"
+                + "select date_trunc('month', guestbookresponse.responsetime) as months, count(guestbookresponse.id) AS downloads,\n"
+                + "sum(count(guestbookresponse.id)) over (order by date_trunc('month', guestbookresponse.responsetime)) as cumulative\n"
+                + "from guestbookresponse\n"
+                + "join dvobject on dvobject.id = guestbookresponse.datafile_id\n"
+                + "where dvobject.publicationdate is not null\n"
+                + "and guestbookresponse.responsetime is not null\n"
+                + "group by date_trunc('month', responsetime)\n"
+                + "order by date_trunc('month', responsetime) desc\n"
+                + "limit 12;"
         );
         logger.fine("query: " + query);
         List<Object[]> listOfObjectArrays = query.getResultList();

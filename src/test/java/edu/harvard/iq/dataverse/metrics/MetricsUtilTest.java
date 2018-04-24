@@ -16,26 +16,19 @@ public class MetricsUtilTest {
     @Test
     public void testDownloadsToJson() {
         MetricsUtil metricsUtil = new MetricsUtil();
-        Object[] obj00 = {null, 633607l};
-        Object[] obj01 = {new Timestamp(118, 3, 1, 0, 0, 0, 0), 2864l};
-        Object[] obj02 = {new Timestamp(118, 2, 1, 0, 0, 0, 0), 60244l};
-        Object[] obj03 = {new Timestamp(118, 1, 1, 0, 0, 0, 0), 84614l};
-        Object[] obj04 = {new Timestamp(118, 0, 1, 0, 0, 0, 0), 70225l};
-        Object[] obj05 = {new Timestamp(117, 11, 1, 0, 0, 0, 0), 50316l};
-        Object[] obj06 = {new Timestamp(117, 10, 1, 0, 0, 0, 0), 87894l};
-        Object[] obj07 = {new Timestamp(117, 9, 1, 0, 0, 0, 0), 71341l};
-        Object[] obj08 = {new Timestamp(117, 8, 1, 0, 0, 0, 0), 62020l};
-        Object[] obj09 = {new Timestamp(117, 7, 1, 0, 0, 0, 0), 48036l};
-        Object[] obj10 = {new Timestamp(117, 6, 1, 0, 0, 0, 0), 51425l};
-        Object[] obj11 = {new Timestamp(117, 5, 1, 0, 0, 0, 0), 50886l};
-        Object[] obj12 = {new Timestamp(117, 4, 1, 0, 0, 0, 0), 114233l};
-        List<Object[]> onlyTotalInList = new ArrayList<>();
-        JsonArrayBuilder onlyTotalResult = MetricsUtil.downloadsToJson(onlyTotalInList);
-        JsonArray onlyTotal = onlyTotalResult.build();
-        System.out.println(JsonUtil.prettyPrint(onlyTotal));
-        assertEquals(true, onlyTotal.isEmpty());
+        Object[] obj01 = {new Timestamp(118, 3, 1, 0, 0, 0, 0), 1l, new BigDecimal("2607")};
+        Object[] obj02 = {new Timestamp(118, 2, 1, 0, 0, 0, 0), 56l, new BigDecimal("2606")};
+        Object[] obj03 = {new Timestamp(118, 1, 1, 0, 0, 0, 0), 34l, new BigDecimal("2550")};
+        Object[] obj04 = {new Timestamp(118, 0, 1, 0, 0, 0, 0), 35l, new BigDecimal("2516")};
+        Object[] obj05 = {new Timestamp(117, 11, 1, 0, 0, 0, 0), 32l, new BigDecimal("2481")};
+        Object[] obj06 = {new Timestamp(117, 10, 1, 0, 0, 0, 0), 43l, new BigDecimal("2449")};
+        Object[] obj07 = {new Timestamp(117, 9, 1, 0, 0, 0, 0), 37l, new BigDecimal("2406")};
+        Object[] obj08 = {new Timestamp(117, 8, 1, 0, 0, 0, 0), 13l, new BigDecimal("2369")};
+        Object[] obj09 = {new Timestamp(117, 7, 1, 0, 0, 0, 0), 58l, new BigDecimal("2356")};
+        Object[] obj10 = {new Timestamp(117, 6, 1, 0, 0, 0, 0), 54l, new BigDecimal("2298")};
+        Object[] obj11 = {new Timestamp(117, 5, 1, 0, 0, 0, 0), 42l, new BigDecimal("2244")};
+        Object[] obj12 = {new Timestamp(117, 4, 1, 0, 0, 0, 0), 58l, new BigDecimal("2202")};
         List<Object[]> list = new ArrayList<>();
-        list.add(obj00);
         list.add(obj01);
         list.add(obj02);
         list.add(obj03);
@@ -51,14 +44,14 @@ public class MetricsUtilTest {
         JsonArrayBuilder result = MetricsUtil.downloadsToJson(list);
         JsonArray jsonArray = result.build();
         System.out.println(JsonUtil.prettyPrint(jsonArray));
-        JsonObject jsonObject = jsonArray.getJsonObject(11);
+        JsonObject jsonObject = jsonArray.getJsonObject(10);
         assertEquals(5, jsonObject.getInt("monthNum"));
-        assertEquals(9223372036854775807l, jsonObject.getJsonNumber("running_total").longValue());
-        assertEquals(114233, jsonObject.getInt("Number of File Downloads"));
+        assertEquals(2202l, jsonObject.getJsonNumber("running_total").longValue());
+        assertEquals(58, jsonObject.getInt("Number of File Downloads"));
         assertEquals("May 2017", jsonObject.getString("Month"));
         assertEquals("Total File Downloads", jsonObject.getString("name"));
         assertEquals("2017-05", jsonObject.getString("month_sort"));
-        assertEquals("May 2017: 114,233 downloads / total: 9,223,372,036,854,775,807", jsonObject.getString("display_name"));
+        assertEquals("May 2017: 58 downloads / total: 2,202", jsonObject.getString("display_name"));
     }
 
     @Test
