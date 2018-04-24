@@ -14,6 +14,6 @@ dv_d=root
 h=http://dvsrv
 
 #get upload script from DCM
-wget --header "X-Dataverse-key: ${key_bdoc}" ${h}/api/datasets/${dset_id}/dataCaptureModule/rsync -O upload-${dset_id}.bash
+wget --header "X-Dataverse-key: ${k_d}" ${h}/api/datasets/${dset_id}/dataCaptureModule/rsync -O upload-${dset_id}.bash
 
 
