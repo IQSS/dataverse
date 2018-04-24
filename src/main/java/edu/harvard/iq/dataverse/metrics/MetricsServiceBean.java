@@ -55,14 +55,14 @@ public class MetricsServiceBean implements Serializable {
     public JsonArrayBuilder dataversesByMonth() {
         // TODO: Consider switching to a "to_char" version, a String instead of a Timestamp. See datasetsByMonth.
         Query query = em.createNativeQuery(""
-                + "select date_trunc('month', dvobject.createdate) as months, count(dvobject.id) AS new_dataverses,\n"
-                + "sum(count(dvobject.id)) over (order by date_trunc('month', dvobject.createdate)) as cumulative\n"
+                + "select date_trunc('month', dvobject.publicationdate) as months, count(dvobject.id) AS new_dataverses,\n"
+                + "sum(count(dvobject.id)) over (order by date_trunc('month', dvobject.publicationdate)) as cumulative\n"
                 + "from dvobject\n"
                 + "join dataverse on dataverse.id = dvobject.id\n"
                 + "where dtype = 'Dataverse'\n"
                 + "and publicationdate is not null\n"
-                + "group by date_trunc('month', dvobject.createdate)\n"
-                + "order by date_trunc('month', dvobject.createdate) desc\n"
+                + "group by date_trunc('month', dvobject.publicationdate)\n"
+                + "order by date_trunc('month', dvobject.publicationdate) desc\n"
                 + "limit 12;"
         );
         logger.fine("query: " + query);
@@ -74,15 +74,15 @@ public class MetricsServiceBean implements Serializable {
         // TODO: Consider switching to the "to_char" version, a String instead of a Timestamp.
         Query query = em.createNativeQuery(""
                 //                + "select to_char(date_trunc('month', dvobject.createdate), 'Mon YYYY') as months, count(dvobject.id) AS new_datasets,\n"
-                + "select date_trunc('month', dvobject.createdate) as months, count(dvobject.id) AS new_datasets,\n"
-                + "sum(count(dvobject.id)) over (order by date_trunc('month', dvobject.createdate)) as cumulative\n"
+                + "select date_trunc('month', dvobject.publicationdate) as months, count(dvobject.id) AS new_datasets,\n"
+                + "sum(count(dvobject.id)) over (order by date_trunc('month', dvobject.publicationdate)) as cumulative\n"
                 + "from dvobject\n"
                 + "join dataset on dataset.id = dvobject.id\n"
                 + "where dtype = 'Dataset'\n"
                 + "and publicationdate is not null\n"
                 + "and dataset.harvestingclient_id is null\n"
-                + "group by date_trunc('month', dvobject.createdate)\n"
-                + "order by date_trunc('month', dvobject.createdate) desc\n"
+                + "group by date_trunc('month', dvobject.publicationdate)\n"
+                + "order by date_trunc('month', dvobject.publicationdate) desc\n"
                 + "limit 12;"
         );
         logger.fine("query: " + query);

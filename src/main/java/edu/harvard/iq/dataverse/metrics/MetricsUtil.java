@@ -72,25 +72,25 @@ public class MetricsUtil {
             Timestamp dateString = (Timestamp) objectArray[0];
             logger.fine("dateString: " + dateString);
             LocalDate localDate = LocalDate.parse(dateString.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"));
-            long numDataversesCreated = (long) objectArray[1];
-            logger.fine("numDataversesCreated: " + numDataversesCreated);
+            long numNewDataverses = (long) objectArray[1];
+            logger.fine("numNewDataverses: " + numNewDataverses);
             BigDecimal runningTotal = (BigDecimal) objectArray[2];
             logger.fine("runningTotal: " + runningTotal);
-            String numDataversesCreatedFriendly = NumberFormat.getNumberInstance(LOCALE).format(numDataversesCreated);
+            String numNewDataversesFriendly = NumberFormat.getNumberInstance(LOCALE).format(numNewDataverses);
             String monthYear = localDate.getMonth().getDisplayName(TextStyle.FULL, LOCALE) + " 2017";
             job.add(MONTH, monthYear);
             int monthNum = localDate.getMonthValue();
             job.add(MONTH_NUM, monthNum);
             String name = "Total Dataverses";
             job.add(NAME, name);
-            job.add("Number of Dataverses", numDataversesCreated);
+            job.add("Number of Dataverses", numNewDataverses);
             job.add("running_total", runningTotal);
             String monthSort = localDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
             job.add(MONTH_SORT, monthSort);
             String runningTotalFriendly = NumberFormat.getNumberInstance(LOCALE).format(runningTotal);
             // TODO: For consistency shouldn't runningTotalFriendly be included in display_name?
             // TODO: For consistency shouldn't it be "new" instead of "New" in display_name?
-            String displayName = monthYear + ": " + numDataversesCreatedFriendly + " New Dataverses";
+            String displayName = monthYear + ": " + numNewDataversesFriendly + " New Dataverses";
             job.add(DISPLAY_NAME, displayName);
             jab.add(job);
         }
@@ -104,23 +104,23 @@ public class MetricsUtil {
             Timestamp dateString = (Timestamp) objectArray[0];
             logger.fine("dateString: " + dateString);
             LocalDate localDate = LocalDate.parse(dateString.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"));
-            long numDatasetsCreated = (long) objectArray[1];
-            logger.fine("numDatasetsCreated: " + numDatasetsCreated);
+            long numNewDatasets = (long) objectArray[1];
+            logger.fine("numNewDatasets: " + numNewDatasets);
             BigDecimal runningTotal = (BigDecimal) objectArray[2];
             logger.fine("runningTotal: " + runningTotal);
-            String numDatasetsCreatedFriendly = NumberFormat.getNumberInstance(LOCALE).format(numDatasetsCreated);
+            String numNewDatasetsFriendly = NumberFormat.getNumberInstance(LOCALE).format(numNewDatasets);
             String monthYear = localDate.getMonth().getDisplayName(TextStyle.FULL, LOCALE) + " 2017";
             job.add(MONTH, monthYear);
             int monthNum = localDate.getMonthValue();
             job.add(MONTH_NUM, monthNum);
             String name = "Total Datasets";
             job.add(NAME, name);
-            job.add("Number of Datasets", numDatasetsCreated);
+            job.add("Number of Datasets", numNewDatasets);
             job.add("running_total", runningTotal);
             String monthSort = localDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
             job.add(MONTH_SORT, monthSort);
             String runningTotalFriendly = NumberFormat.getNumberInstance(LOCALE).format(runningTotal);
-            String displayName = monthYear + ": " + numDatasetsCreatedFriendly + " new Datasets; Total of " + runningTotalFriendly;
+            String displayName = monthYear + ": " + numNewDatasetsFriendly + " new Datasets; Total of " + runningTotalFriendly;
             job.add(DISPLAY_NAME, displayName);
             jab.add(job);
         }
