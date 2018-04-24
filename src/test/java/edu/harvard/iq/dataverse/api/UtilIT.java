@@ -138,7 +138,8 @@ public class UtilIT {
         return usernamePrefix + getRandomIdentifier().substring(0, 8);
     }
 
-    public static String getRandomString(int length) {
+    public static String getRandomString(int length) { 
+//is it worth replacing with something that doesn't error out on getRandomString(8)
         if (length < 0) {
             length = 3;
         }
@@ -1186,6 +1187,13 @@ public class UtilIT {
     static Response deleteExternalTool(long externalToolid) {
         return given()
                 .delete("/api/admin/externalTools/" + externalToolid);
+    }
+
+    static Response submitFeedback(JsonObjectBuilder job) {
+        return given()
+                .body(job.build().toString())
+                .contentType("application/json")
+                .post("/api/admin/feedback");
     }
 
     @Test

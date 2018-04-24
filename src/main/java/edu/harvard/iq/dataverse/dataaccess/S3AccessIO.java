@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -15,10 +16,12 @@ import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.MultiObjectDeleteException;
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.DataFile;
@@ -35,6 +38,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -596,6 +601,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (dvObject instanceof DataFile) {
             return getMainFileKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
+            if (key == null) {
+                open();
+            }
             return key + "/" + auxItemTag;
         } else {
             throw new IOException("S3AccessIO: This operation is only supported for Datasets and DataFiles.");
@@ -620,5 +628,70 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         
         return key;
+    }
+    
+    public String generateTemporaryS3Url() throws IOException {
+        //Questions:
+        // Q. Should this work for private and public?
+        // A. Yes! Since the URL has a limited, short life span. -- L.A. 
+        // Q. how long should the download url work?
+        // A. 1 hour by default seems like an OK number. Making it configurable seems like a good idea too. -- L.A.
+        if (s3 == null) {
+            throw new IOException("ERROR: s3 not initialised. ");
+        }
+        if (dvObject instanceof DataFile) {
+            key = getMainFileKey();
+            java.util.Date expiration = new java.util.Date();
+            long msec = expiration.getTime();
+            msec += 1000 * getUrlExpirationMinutes();
+            expiration.setTime(msec);
+
+            GeneratePresignedUrlRequest generatePresignedUrlRequest = 
+                          new GeneratePresignedUrlRequest(bucketName, key);
+            generatePresignedUrlRequest.setMethod(HttpMethod.GET); // Default.
+            generatePresignedUrlRequest.setExpiration(expiration);
+            ResponseHeaderOverrides responseHeaders = new ResponseHeaderOverrides();
+            //responseHeaders.setContentDisposition("attachment; filename="+this.getDataFile().getDisplayName());
+            // Encode the file name explicitly specifying the encoding as UTF-8:
+            // (otherwise S3 may not like non-ASCII characters!)
+            // Most browsers are happy with just "filename="+URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8") 
+            // in the header. But Firefox appears to require that "UTF8" is 
+            // specified explicitly, as below:
+            responseHeaders.setContentDisposition("attachment; filename*=UTF-8''"+URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8"));
+            // - without it, download will work, but Firefox will leave the special
+            // characters in the file name encoded. For example, the file name 
+            // will look like "1976%E2%80%932016.txt" instead of "1976–2016.txt", 
+            // where the dash is the "long dash", represented by a 3-byte UTF8 
+            // character "\xE2\x80\x93"
+            
+            responseHeaders.setContentType(this.getDataFile().getContentType());
+            generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
+
+            URL s = s3.generatePresignedUrl(generatePresignedUrlRequest); 
+
+            return s.toString();
+        } else if (dvObject instanceof Dataset) {
+            throw new IOException("Data Access: GenerateTemporaryS3Url: Invalid DvObject type : Dataset");
+        } else if (dvObject instanceof Dataverse) {
+            throw new IOException("Data Access: Invalid DvObject type : Dataverse");
+        } else {
+            throw new IOException("Data Access: Invalid DvObject type");
+        }
+    }
+    
+    private int getUrlExpirationMinutes() {
+        String optionValue = System.getProperty("dataverse.files.s3-url-expiration-minutes"); 
+        if (optionValue != null) {
+            Integer num; 
+            try {
+                num = new Integer(optionValue);
+            } catch (NumberFormatException ex) {
+                num = null; 
+            }
+            if (num != null) {
+                return num;
+            }
+        }
+        return 60; 
     }
 }

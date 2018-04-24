@@ -21,20 +21,21 @@ Please note that in Dataverse 4.3 and older the "citation" field wrapped the per
 Parameters
 ----------
 
-==============  =======  ===========
-Name            Type     Description
-==============  =======  ===========
-q               string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*"). For example, https://demo.dataverse.org/api/search?q=title:data
-type            string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.  For example, https://demo.dataverse.org/api/search?q=*&type=dataset
-subtree         string   The identifier of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.  For example, https://demo.dataverse.org/api/search?q=data&subtree=birds
-sort            string   The sort field. Supported values include "name" and "date". See example under "order".
-order           string   The order in which to sort. Can either be "asc" or "desc".  For example, https://demo.dataverse.org/api/search?q=data&sort=name&order=asc
-per_page        int      The number of results to return per request. The default is 10. The max is 1000. See :ref:`iteration example <iteration-example>`.
-start           int      A cursor for paging through search results. See :ref:`iteration example <iteration-example>`.
-show_relevance  boolean  Whether or not to show details of which fields were matched by the query. False by default. See :ref:`advanced search example <advancedsearch-example>`.
-show_facets     boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
-fq              string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
-==============  =======  ===========
+===============  =======  ===========
+Name             Type     Description
+===============  =======  ===========
+q                string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*"). For example, https://demo.dataverse.org/api/search?q=title:data
+type             string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.  For example, https://demo.dataverse.org/api/search?q=*&type=dataset
+subtree          string   The identifier of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.  For example, https://demo.dataverse.org/api/search?q=data&subtree=birds
+sort             string   The sort field. Supported values include "name" and "date". See example under "order".
+order            string   The order in which to sort. Can either be "asc" or "desc".  For example, https://demo.dataverse.org/api/search?q=data&sort=name&order=asc
+per_page         int      The number of results to return per request. The default is 10. The max is 1000. See :ref:`iteration example <iteration-example>`.
+start            int      A cursor for paging through search results. See :ref:`iteration example <iteration-example>`.
+show_relevance   boolean  Whether or not to show details of which fields were matched by the query. False by default. See :ref:`advanced search example <advancedsearch-example>`.
+show_facets      boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
+fq               string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
+show_entity_ids  boolean  Whether or not to show the database IDs of the search results (for developer use).
+===============  =======  ===========
 
 Basic Search Example
 --------------------

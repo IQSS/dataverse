@@ -49,7 +49,7 @@ Dataverse permits a fair amount of flexibility in where you choose to install th
 
 |3webservers|
 
-A setup such as this is advanced enough to be considered out of scope for this guide but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
+A setup such as this is advanced enough to be considered out of scope for this guide (apart from a stub in the :doc:`advanced` section) but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
 
 .. _architecture:
 
@@ -57,6 +57,9 @@ Architecture and Components
 ---------------------------
 
 Dataverse is a Java Enterprise Edition (EE) web application that is shipped as a war (web archive) file.
+
+Required Components
++++++++++++++++++++
 
 When planning your installation you should be aware of the following components of the Dataverse architecture:
 
@@ -67,9 +70,12 @@ When planning your installation you should be aware of the following components 
 - SMTP server: for sending mail for password resets and other notifications.
 - Persistent identifier service: DOI and Handle support are provided. Production use requires a registered DOI or Handle.net authority.
 
+Optional Components
++++++++++++++++++++
+
 There are a number of optional components you may choose to install or configure, including:
 
-- R, rApache, Zelig, and TwoRavens: :doc:`/user/data-exploration/tworavens` describes the feature and :doc:`r-rapache-tworavens` describes how to install these components.
+- R, rApache, Zelig, and TwoRavens: :doc:`/user/data-exploration/tworavens` describes the feature and :doc:`r-rapache-tworavens` describes how to install these components. :doc:`external-tools` explains how third-party tools like TwoRavens can be added to Dataverse.
 - Dropbox integration: for uploading files from the Dropbox API.
 - Apache: a web server that can "reverse proxy" Glassfish applications and rewrite HTTP traffic.
 - Shibboleth: an authentication system described in :doc:`shibboleth`. Its use with Dataverse requires Apache.

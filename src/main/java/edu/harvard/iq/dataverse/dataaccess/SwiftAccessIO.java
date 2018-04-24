@@ -1,5 +1,4 @@
 package edu.harvard.iq.dataverse.dataaccess;
-
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -31,6 +30,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.javaswift.joss.client.factory.AccountFactory;
 import static org.javaswift.joss.client.factory.AuthenticationMethod.BASIC;
+import static org.javaswift.joss.client.factory.AuthenticationMethod.KEYSTONE_V3;
 import org.javaswift.joss.model.Account;
 import org.javaswift.joss.model.Container;
 import org.javaswift.joss.model.StoredObject;
@@ -41,7 +41,7 @@ import org.javaswift.joss.model.StoredObject;
  * @param <T> what it stores
  */
 /* 
-    Experimental Swift driver, implemented as part of the Dataverse - Mass Open Cloud
+    Swift driver, implemented as part of the Dataverse - Mass Open Cloud
     collaboration. 
  */
 public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
@@ -68,6 +68,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     private Account account = null;
     private StoredObject swiftFileObject = null;
     private Container swiftContainer = null;
+    //TODO: when swift containers can be private, change this -SF
+    boolean publicSwiftContainer = true;
+
         
     //for hash
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
@@ -153,8 +156,6 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         } else {
             throw new IOException("Data Access: Invalid DvObject type");
         }
-        
-        
     }
 
 
@@ -411,7 +412,6 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         // What should this be, for a Swift file? 
         // A Swift URL? 
         // Or a Swift URL with an authenticated Auth token? 
-
         return null;
     }
 
@@ -582,19 +582,20 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             // This is a new object being created.
             this.swiftContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
         }
-
         if (!this.swiftContainer.exists()) {
             if (writeAccess) {
                 //creates a private data container
                 swiftContainer.create();
-//                 try {
-//                     //creates a public data container
-//                     this.swiftContainer.makePublic();
-//                 }
-//                 catch (Exception e){
-//                     //e.printStackTrace();
-//                     logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
-//                 }
+                if (publicSwiftContainer) {
+                    try {
+                        //creates a public data container
+                        this.swiftContainer.makePublic();
+                    }
+                    catch (Exception e){
+                        //e.printStackTrace();
+                        logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
+                    }
+                }
             } else {
                 // This is a fatal condition - it has to exist, if we were to 
                 // read an existing object!
@@ -688,16 +689,28 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         Also, the AuthUrl is now the identity service endpoint of MOC Openstack
         environment instead of the Object store service endpoint.
          */
-        // Keystone vs. Basic
+        // Keystone vs. Basic vs. Keystone V3
         try {
             if (swiftEndPointAuthMethod.equals("keystone")) {
+                logger.fine("Authentication type: keystone v2.0");
                 account = new AccountFactory()
                         .setTenantName(swiftEndPointTenantName)
                         .setUsername(swiftEndPointUsername)
                         .setPassword(swiftEndPointSecretKey)
                         .setAuthUrl(swiftEndPointAuthUrl)
                         .createAccount();
-            } else { // assume BASIC
+            } else if (swiftEndPointAuthMethod.equals("keystone_v3")) {
+                logger.fine("Authentication type: keystone_v3");
+                account = new AccountFactory()
+                        .setTenantName(swiftEndPointTenantName)
+                        .setUsername(swiftEndPointUsername)
+                        .setAuthenticationMethod(KEYSTONE_V3)
+                        .setPassword(swiftEndPointSecretKey)
+                        .setAuthUrl(swiftEndPointAuthUrl)
+                        .createAccount();
+            }
+            else { // assume BASIC
+                logger.fine("Authentication type: basic");
                 account = new AccountFactory()
                         .setUsername(swiftEndPointUsername)
                         .setPassword(swiftEndPointSecretKey)

@@ -1,14 +1,16 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
-import edu.harvard.iq.dataverse.datasetutility.TwoRavensHelper;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -19,16 +21,13 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -57,6 +56,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     DataverseServiceBean dataverseService;
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    AuthenticationServiceBean authService;
     
     @Inject
     DataverseSession session;
@@ -67,7 +68,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
     
-    @Inject TwoRavensHelper twoRavensHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject FileDownloadHelper fileDownloadHelper;
 
@@ -107,11 +107,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             //if an error occurs here then download won't happen no need for response recs...
 
         }
-
     }
-
     public void callDownloadServlet(String multiFileString, Boolean gbRecordsWritten){
-
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
         if (gbRecordsWritten){
             fileDownloadUrl += "?gbrecs=true";
@@ -134,8 +131,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
         }
     }
-    
 
+    
     //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;
@@ -147,38 +144,49 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
-    
-    
-    public String startExploreDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
 
-        if (guestbookResponse != null && guestbookResponse.isWriteResponse() 
-                && (( fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
-            if(guestbookResponse.getDataFile() == null  && fmd != null){                
+    /**
+     * Launch an "explore" tool which is a type of ExternalTool such as
+     * TwoRavens or Data Explorer. This method may be invoked directly from the
+     * xhtml if no popup is required (no terms of use, no guestbook, etc.).
+     */
+    public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+            apiToken = authService.findApiTokenByUser(authenticatedUser);
+        }
+        DataFile dataFile = null;
+        if (fmd != null) {
+            dataFile = fmd.getDataFile();
+        } else {
+            if (guestbookResponse != null) {
+                dataFile = guestbookResponse.getDataFile();
+            }
+        }
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
+        guestbookResponse.setDownloadtype(externalTool.getDisplayName());
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        logger.fine("Exploring with " + toolUrl);
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(toolUrl);
+        } catch (IOException ex) {
+            logger.info("Problem exploring with " + toolUrl + " - " + ex);
+        }
+        // This is the old logic from TwoRavens, null checks and all.
+        if (guestbookResponse != null && guestbookResponse.isWriteResponse()
+                && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
+            if (guestbookResponse.getDataFile() == null && fmd != null) {
                 guestbookResponse.setDataFile(fmd.getDataFile());
             }
-            if (fmd == null || !fmd.getDatasetVersion().isDraft()){
+            if (fmd == null || !fmd.getDatasetVersion().isDraft()) {
                 writeGuestbookResponseRecord(guestbookResponse);
             }
         }
-    
-        Long datafileId;
-
-        if (fmd == null && guestbookResponse != null && guestbookResponse.getDataFile() != null){
-            datafileId = guestbookResponse.getDataFile().getId();
-        } else {
-            datafileId = fmd.getDataFile().getId();
-        }
-        String retVal = twoRavensHelper.getDataExploreURLComplete(datafileId);
-
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
-            return retVal;
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
-        return retVal;
     }
-    
+
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
                 
         if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){

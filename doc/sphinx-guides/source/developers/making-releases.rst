@@ -34,8 +34,8 @@ Make Artifacts Available for Download
 
 Upload the following artifacts to the draft release you created:
 
-- installer
-- war file
+- war file (``mvn package`` from Jenkins)
+- installer (``cd scripts/installer && make``)
 - database migration script
 - other files as needed, such as an updated Solr schema
 
@@ -46,4 +46,4 @@ Click the "Publish release" button.
 
 ----
 
-Previous: :doc:`coding-style` | Next: :doc:`tools`
+Previous: :doc:`containers` | Next: :doc:`tools`

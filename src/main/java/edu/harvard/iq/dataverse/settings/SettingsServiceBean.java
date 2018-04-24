@@ -188,8 +188,6 @@ public class SettingsServiceBean {
         DoiPassword,
         DoiBaseurlstring,
         */
-        /* TwoRavens location */
-        TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
@@ -249,17 +247,6 @@ public class SettingsServiceBean {
         will be available to users.
         */
         GeoconnectDebug,
-
-        /**
-        Whether to allow a user to view tabular files
-        using the TwoRavens application
-        This boolean effects whether a user may see the 
-        Explore Button that links to TwoRavens
-        Default is false;
-        */
-        TwoRavensTabularView,
-                
-
         /**
          The message added to a popup upon dataset publish
          * 
@@ -308,7 +295,10 @@ public class SettingsServiceBean {
         
         // Option to override multiple guides with a single url
         NavbarGuidesUrl,
-        
+
+        // Option to overide the feedback dialog display with a link to an external page via its url
+        NavbarSupportUrl,
+
         /**
          * The theme for the root dataverse can get in the way when you try make
          * use of HeaderCustomizationFile and LogoCustomizationFile so this is a

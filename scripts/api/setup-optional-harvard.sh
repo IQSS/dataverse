@@ -7,8 +7,8 @@ curl -s -X PUT -d 'Upgrade in progress...' $SERVER/admin/settings/:StatusMessage
 echo "- Application Status message"
 curl -s -X PUT -d 'Dataverse is currently being upgraded. You can see the features, bug fixes, and other upgrades for this release in the <a href="http://roadmap.datascience.iq.harvard.edu/milestones/milestone-roadmap/dataverse/" title="Dataverse Roadmap" target="_blank">Dataverse Roadmap</a>.' $SERVER/admin/settings/:StatusMessageText 
 echo  "- Harvard Privacy Policy"
-curl -s -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html $SERVER/admin/settings/:ApplicationPrivacyPolicyUrl
-curl -s -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html $SERVER/admin/settings/:ApiTermsOfUse
+curl -s -X PUT -d https://dataverse.org/best-practices/harvard-dataverse-privacy-policy $SERVER/admin/settings/:ApplicationPrivacyPolicyUrl
+curl -s -X PUT -d https://dataverse.org/best-practices/harvard-api-tou $SERVER/admin/settings/:ApiTermsOfUse
 echo "- Configuring Harvard's password policy in Dataverse"
 # Min length is 10 because that is the minimum Harvard requires without periodic expiration
 curl -s -X PUT -d 10 $SERVER/admin/settings/:PVMinLength
@@ -31,7 +31,7 @@ curl -X PUT -d true "$SERVER/admin/settings/:ScrubMigrationData"
 echo  "- Enabling Shibboleth"
 curl -X POST -H "Content-type: application/json" http://localhost:8080/api/admin/authenticationProviders --upload-file ../../doc/sphinx-guides/source/_static/installation/files/etc/shibboleth/shibAuthProvider.json
 echo  "- Enabling TwoRavens"
-curl -s -X PUT -d true "$SERVER/admin/settings/:TwoRavensTabularView"
+curl -X POST -H 'Content-type: application/json' --upload-file ../../doc/sphinx-guides/source/_static/installation/files/root/external-tools/twoRavens.json http://localhost:8080/api/admin/externalTools
 echo  "- Enabling Geoconnect"
 curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectCreateEditMaps"
 curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectViewMaps"

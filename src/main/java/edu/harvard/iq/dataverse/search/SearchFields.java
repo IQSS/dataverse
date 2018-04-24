@@ -83,7 +83,7 @@ public class SearchFields {
      */
     public static final String IS_HARVESTED = "isHarvested";
     /**
-     * Such as http://dx.doi.org/10.5072/FK2/HXI35W
+     * Such as https://doi.org/10.5072/FK2/HXI35W
      *
      * For files, the URL will be the parent dataset.
      */
@@ -183,7 +183,7 @@ public class SearchFields {
     public static final String TYPE = "dvObjectType";
     public static final String NAME_SORT = "nameSort";
     public static final String PUBLICATION_DATE = "publicationDate";
-    public static final String RELEASE_OR_CREATE_DATE = "dateSort";
+    public static final String RELEASE_OR_CREATE_DATE = "dateSort"; 
     /**
      * i.e. "Mar 17, 2015"
      */

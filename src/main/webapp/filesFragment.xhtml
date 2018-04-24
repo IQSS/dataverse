@@ -92,6 +92,7 @@
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                     </h:outputFormat>
                 </div>
+
                 <div id="filesButtons" class="col-xs-10">
                     <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
                     <div jsf:id="uploadComputeBlock" class="button-block tab-header pull-right text-right"
@@ -113,18 +114,8 @@
                             <!-- UPLOAD FILES BUTTON -->
                             <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
-<!--                        <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.showComputeButton()}">
-                             COMPUTE BUTTON 
-                            <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
-                        </h:outputLink>-->
-                        
-                            <!-- Compute Button *Dataset pg only*: -->
-                            <!--***When it is possible to compute on an entire dataset, comment this in-->
-<!--                    <h:outputLink value="#{DatasetPage.computeUrl}" type="button" class="btn btn-default" target="_blank" rendered="#{DatasetPage.showComputeButton() and DatasetPage.canDownloadAllFiles()}"> 
-                            <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
-                        </h:outputLink>-->
-
                     </div>
+
                     <div jsf:id="restrictDeleteBlock" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
                         <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
@@ -221,8 +212,7 @@
         </p:column>
         <p:column class="col-file-metadata">
             
-            <ui:fragment rendered="#{fileMetadata.datasetVersion.released or ((fileMetadata.datasetVersion.deaccessioned or fileMetadata.datasetVersion.draft) 
-                                     and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
+            <ui:fragment>
                 <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
                 <h:outputLink id="fileNameLink" value="#{widgetWrapper.wrapURL('/file.xhtml')}">
                     <f:param name="fileId" value="#{fileMetadata.dataFile.id}" />
@@ -288,37 +278,36 @@
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                        <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
-                            <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
-                                <h:outputText value="#{bundle['file.delete']}"/> 
-                            </p:commandLink>
-                        </li>
-                        <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
-                            <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile" action="#{DatasetPage.editFileMetadata()}">                                         
-                                <h:outputText value="#{bundle['file.metadata']}"/>
-                            </p:commandLink>
-                        </li>
-                        <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
-                            <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
-                                <p:commandLink oncomplete="toggle_dropdown();" 
-                                               onclick="testFilesSelectedForRestriction()">
-                                    <h:outputText value="#{bundle['file.restrict']}"/>
+                            <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
+                                    <h:outputText value="#{bundle['file.delete']}"/> 
                                 </p:commandLink>
                             </li>
-                            <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
-                                <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
-                                               action="#{DatasetPage.restrictSelectedFiles(false)}">
-                                    <h:outputText value="#{bundle['file.unrestrict']}"/>
+                            <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile" action="#{DatasetPage.editFileMetadata()}">                                         
+                                    <h:outputText value="#{bundle['file.metadata']}"/>
                                 </p:commandLink>
                             </li>
-                        </ui:fragment>
-                        <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
-                            <p:commandLink id="fileCategoriesLinkTwo"    
-                                           onclick="testFilesSelectedForTags()">
-                                        #{bundle['file.tags']} 
-                            </p:commandLink>    
-                        </li>                                                               
-
+                            <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                    <p:commandLink oncomplete="toggle_dropdown();" 
+                                                   onclick="testFilesSelectedForRestriction()">
+                                        <h:outputText value="#{bundle['file.restrict']}"/>
+                                    </p:commandLink>
+                                </li>
+                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                    <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
+                                                   action="#{DatasetPage.restrictSelectedFiles(false)}">
+                                        <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                    </p:commandLink>
+                                </li>
+                            </ui:fragment>
+                            <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                <p:commandLink id="fileCategoriesLinkTwo"    
+                                               onclick="testFilesSelectedForTags()">
+                                            #{bundle['file.tags']} 
+                                </p:commandLink>    
+                            </li>   
                     </ul>
                     <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                 </div>
@@ -365,9 +354,9 @@
             
             <!---Modular configure-->
             
-                <ui:fragment rendered="#{!widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id).size() > 0 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                <ui:fragment rendered="#{!widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id).size() > 0 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
                     <ui:include src="file-configure-dropdown-fragment.xhtml">
-                        <ui:param name="externalTools" value="#{DatasetPage.getExternalToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                        <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
                         <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
                         <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                     </ui:include>
@@ -383,6 +372,7 @@
                     <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                     <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
+                    <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
                 </ui:include>
             </div>
             
