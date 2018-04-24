@@ -76,7 +76,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
     @Override
     public boolean registerWhenPublished() {
-        return true; // TODO current value plays safe, can we loosen up?
+        return false; // TODO current value plays safe, can we loosen up?
     }
 
     public void reRegisterHandle(Dataset dataset) {
@@ -102,7 +102,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
             
             logger.info("New registration URL: "+datasetUrl);
            
-           int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
+            int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
 
             PublicKeyAuthenticationInfo auth = getAuthInfo(dataset.getAuthority());
             
@@ -147,7 +147,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         String handle = getDatasetHandle(dataset);
         String datasetUrl = getRegistrationUrl(dataset);
         int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
-
+       
         logger.info("Creating NEW handle " + handle);
 
         String authHandle = getHandleAuthority(dataset);
@@ -237,7 +237,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         byte[] key = null;
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
         int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
-
+       
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
@@ -248,8 +248,8 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     }
     private String getRegistrationUrl(Dataset dataset) {
         logger.log(Level.FINE,"getRegistrationUrl");
-        String siteUrl = getSiteUrl();
-        
+        String siteUrl = systemConfig.getDataverseSiteUrl();
+                
         //String targetUrl = siteUrl + "/dataset.xhtml?persistentId=hdl:" + dataset.getAuthority() 
         String targetUrl = siteUrl + Dataset.TARGET_URL + "hdl:" + dataset.getAuthority()         
                 + "/" + dataset.getIdentifier();  
@@ -399,12 +399,8 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
     private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
         logger.log(Level.FINE,"updateIdentifierStatus");
-        String identifier = getIdentifierFromDataset(dataset);
-        HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
-        metadata.put("_status", statusIn);
-        metadata.put("_target", getTargetUrl(dataset));
-        // TODO drop getting identifier and meatdata if indeed not required
-        return null == registerNewHandle(dataset); // Exception have been logged
+        reRegisterHandle(dataset); // No Need to register new - this is only called when a handle exists
+        return true;
     }
 
     private String getAuthHandle(Dataset datasetIn) {
