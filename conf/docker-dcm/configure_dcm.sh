@@ -13,6 +13,9 @@ curl -X PUT "http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl" -d 
 # configure for RSAL downloads; but no workflows or RSAL yet
 curl -X PUT "http://localhost:8080/api/admin/settings/:DownloadMethods" -d "rsal/rsync"
 
+# publish root dataverse
+curl -X POST -H "X-Dataverse-key: burrito" "http://localhost:8080/api/dataverses/root/actions/:publish"
+
 # symlink `hold` volume 
 mkdir -p /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/
 ln -s /hold /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2
