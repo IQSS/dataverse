@@ -852,6 +852,13 @@ public class UtilIT {
         return response;
     }
 
+    static Response moveDataverse(String movedDataverseAlias, String targetDataverseAlias, Boolean force, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("api/dataverses/" + movedDataverseAlias + "/move/" + targetDataverseAlias + "?forceMove=" + force + "&key=" + apiToken);
+        return response;
+    }
+
     static Response nativeGet(Integer datasetId, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -1187,6 +1194,13 @@ public class UtilIT {
     static Response deleteExternalTool(long externalToolid) {
         return given()
                 .delete("/api/admin/externalTools/" + externalToolid);
+    }
+
+    static Response submitFeedback(JsonObjectBuilder job) {
+        return given()
+                .body(job.build().toString())
+                .contentType("application/json")
+                .post("/api/admin/feedback");
     }
 
     static Response metricsDataverseByCategory() {
