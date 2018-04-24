@@ -102,7 +102,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
             
             logger.info("New registration URL: "+datasetUrl);
            
-            int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
+            int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
 
             PublicKeyAuthenticationInfo auth = getAuthInfo(dataset.getAuthority());
             
@@ -146,7 +146,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         String handlePrefix = dataset.getAuthority();
         String handle = getDatasetHandle(dataset);
         String datasetUrl = getRegistrationUrl(dataset);
-        int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
+        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
        
         logger.info("Creating NEW handle " + handle);
 
@@ -236,7 +236,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-        int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
+        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
        
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
@@ -365,7 +365,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         String authHandle = getAuthHandle(datasetIn);
 
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-        int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
+        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
        
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);
