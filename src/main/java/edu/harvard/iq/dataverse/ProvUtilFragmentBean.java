@@ -19,7 +19,6 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
     
     public HashMap<String,ProvEntityFileData> startRecurseNames(String jsonString) {
         provJsonParsedEntities = new HashMap<>();
-        //TODO: Make this take a string and make the jsonObject ourselves
         com.google.gson.JsonObject jsonObject = parser.parse(jsonString).getAsJsonObject();
         recurseNames(jsonObject, null, false);
         return provJsonParsedEntities;
@@ -74,6 +73,8 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
             });
           
         } 
+//// My understanding of the prov standard is there should be no entities in arrays
+//// But if that changes the below code should be flushed out --MAD 4.8.6
 //        else if(element.isJsonArray()) {
 //            JsonArray jsonArray = element.getAsJsonArray();
 //            for (JsonElement childElement : jsonArray) {

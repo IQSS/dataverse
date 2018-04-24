@@ -102,8 +102,6 @@ import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
 
-import java.net.URLEncoder;
-
 
 /**
  *
@@ -2637,10 +2635,7 @@ public class DatasetPage implements java.io.Serializable {
             try {
                 provPopupFragmentBean.saveStagedProvJson(false);
             } catch (AbstractApiBean.WrappedResponse ex) {
-                //The JH error messages do not seem to show from this part of the code. They do from other parts. JsfHelper used instead.
-
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
-                //JH.addMessage(FacesMessage.SEVERITY_ERROR, getBundleString("file.metadataTab.provenance.error"));
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
