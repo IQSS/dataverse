@@ -91,18 +91,17 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public JsonArrayBuilder datasetsBySubject() {
-        // TODO: Investigate why this is 19 rather than 20 in production. Lookup the id, I guess.
-        long subjectDatasetFieldTypeId = 20l;
         Query query = em.createNativeQuery(""
                 + "SELECT strvalue, count(dataset.id)\n"
                 + "FROM datasetfield_controlledvocabularyvalue \n"
                 + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
                 + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
+                + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
                 + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
                 + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
                 + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
                 + "WHERE\n"
-                + "controlledvocabularyvalue.datasetfieldtype_id = " + subjectDatasetFieldTypeId + "\n"
+                + "datasetfieldtype.name = 'subject'\n"
                 + "AND dvobject.publicationdate is NOT NULL\n"
                 + "AND dataset.harvestingclient_id IS NULL\n"
                 + "GROUP BY strvalue\n"
