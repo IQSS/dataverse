@@ -62,6 +62,46 @@ public class MetricsUtilTest {
     }
 
     @Test
+    public void testDataversesByMonthToJson() {
+        Object[] obj01 = {new Timestamp(118, 3, 1, 0, 0, 0, 0), 1l, new BigDecimal("2607")};
+        Object[] obj02 = {new Timestamp(118, 2, 1, 0, 0, 0, 0), 56l, new BigDecimal("2606")};
+        Object[] obj03 = {new Timestamp(118, 1, 1, 0, 0, 0, 0), 34l, new BigDecimal("2550")};
+        Object[] obj04 = {new Timestamp(118, 0, 1, 0, 0, 0, 0), 35l, new BigDecimal("2516")};
+        Object[] obj05 = {new Timestamp(117, 11, 1, 0, 0, 0, 0), 32l, new BigDecimal("2481")};
+        Object[] obj06 = {new Timestamp(117, 10, 1, 0, 0, 0, 0), 43l, new BigDecimal("2449")};
+        Object[] obj07 = {new Timestamp(117, 9, 1, 0, 0, 0, 0), 37l, new BigDecimal("2406")};
+        Object[] obj08 = {new Timestamp(117, 8, 1, 0, 0, 0, 0), 13l, new BigDecimal("2369")};
+        Object[] obj09 = {new Timestamp(117, 7, 1, 0, 0, 0, 0), 58l, new BigDecimal("2356")};
+        Object[] obj10 = {new Timestamp(117, 6, 1, 0, 0, 0, 0), 54l, new BigDecimal("2298")};
+        Object[] obj11 = {new Timestamp(117, 5, 1, 0, 0, 0, 0), 42l, new BigDecimal("2244")};
+        Object[] obj12 = {new Timestamp(117, 4, 1, 0, 0, 0, 0), 58l, new BigDecimal("2202")};
+        List<Object[]> list = new ArrayList<>();
+        list.add(obj01);
+        list.add(obj02);
+        list.add(obj03);
+        list.add(obj04);
+        list.add(obj05);
+        list.add(obj06);
+        list.add(obj07);
+        list.add(obj08);
+        list.add(obj09);
+        list.add(obj10);
+        list.add(obj11);
+        list.add(obj12);
+        JsonArrayBuilder result = MetricsUtil.dataversesByMonthToJson(list);
+        JsonArray jsonArray = result.build();
+        System.out.println(JsonUtil.prettyPrint(jsonArray));
+        JsonObject jsonObject = jsonArray.getJsonObject(11);
+        assertEquals(5, jsonObject.getInt("monthNum"));
+        assertEquals(2202l, jsonObject.getJsonNumber("running_total").longValue());
+        assertEquals(58, jsonObject.getInt("Number of Dataverses"));
+        assertEquals("May 2017", jsonObject.getString("Month"));
+        assertEquals("Total Dataverses", jsonObject.getString("name"));
+        assertEquals("2017-05", jsonObject.getString("month_sort"));
+        assertEquals("May 2017: 58 New Dataverses", jsonObject.getString("display_name"));
+    }
+
+    @Test
     public void testDatasetsByMonthToJson() {
         Object[] obj01 = {new Timestamp(118, 3, 1, 0, 0, 0, 0), 10l, new BigDecimal("25219")};
         Object[] obj02 = {new Timestamp(118, 2, 1, 0, 0, 0, 0), 240l, new BigDecimal("25209")};

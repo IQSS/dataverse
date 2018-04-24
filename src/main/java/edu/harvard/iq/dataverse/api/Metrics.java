@@ -14,6 +14,12 @@ public class Metrics extends AbstractApiBean {
     }
 
     @GET
+    @Path("dataverses/byMonth")
+    public Response getDataversesByMonth() {
+        return allowCors(ok(metricsSvc.dataversesByMonth()));
+    }
+
+    @GET
     @Path("downloads/byMonth")
     public Response getDownloadsByMonth() {
         return allowCors(ok(metricsSvc.downloadsByMonth()));

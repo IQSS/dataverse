@@ -65,6 +65,38 @@ public class MetricsUtil {
         return jab;
     }
 
+    static JsonArrayBuilder dataversesByMonthToJson(List<Object[]> listOfObjectArrays) {
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        for (Object[] objectArray : listOfObjectArrays) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            Timestamp dateString = (Timestamp) objectArray[0];
+            logger.fine("dateString: " + dateString);
+            LocalDate localDate = LocalDate.parse(dateString.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"));
+            long numDataversesCreated = (long) objectArray[1];
+            logger.fine("numDataversesCreated: " + numDataversesCreated);
+            BigDecimal runningTotal = (BigDecimal) objectArray[2];
+            logger.fine("runningTotal: " + runningTotal);
+            String numDataversesCreatedFriendly = NumberFormat.getNumberInstance(LOCALE).format(numDataversesCreated);
+            String monthYear = localDate.getMonth().getDisplayName(TextStyle.FULL, LOCALE) + " 2017";
+            job.add(MONTH, monthYear);
+            int monthNum = localDate.getMonthValue();
+            job.add(MONTH_NUM, monthNum);
+            String name = "Total Dataverses";
+            job.add(NAME, name);
+            job.add("Number of Dataverses", numDataversesCreated);
+            job.add("running_total", runningTotal);
+            String monthSort = localDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            job.add(MONTH_SORT, monthSort);
+            String runningTotalFriendly = NumberFormat.getNumberInstance(LOCALE).format(runningTotal);
+            // TODO: For consistency shouldn't runningTotalFriendly be included in display_name?
+            // TODO: For consistency shouldn't it be "new" instead of "New" in display_name?
+            String displayName = monthYear + ": " + numDataversesCreatedFriendly + " New Dataverses";
+            job.add(DISPLAY_NAME, displayName);
+            jab.add(job);
+        }
+        return jab;
+    }
+
     static JsonArrayBuilder datasetsByMonthToJson(List<Object[]> listOfObjectArrays) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (Object[] objectArray : listOfObjectArrays) {
@@ -118,4 +150,5 @@ public class MetricsUtil {
         }
         return jab;
     }
+
 }

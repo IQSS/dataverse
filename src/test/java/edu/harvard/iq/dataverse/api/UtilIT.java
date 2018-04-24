@@ -1195,6 +1195,12 @@ public class UtilIT {
         return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
     }
 
+    static Response metricsDataversesByMonth() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/dataverses/byMonth");
+    }
+
     static Response metricsDownloadsByMonth() {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();

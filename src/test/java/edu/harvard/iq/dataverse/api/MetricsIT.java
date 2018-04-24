@@ -19,6 +19,12 @@ public class MetricsIT {
     }
 
     @Test
+    public void testGetDataversesByMonth() {
+        Response response = UtilIT.metricsDataversesByMonth();
+        response.prettyPrint();
+    }
+
+    @Test
     public void testGetDownloadsByMonth() {
         Response response = UtilIT.metricsDownloadsByMonth();
         response.prettyPrint();
