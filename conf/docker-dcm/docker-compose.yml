@@ -10,9 +10,6 @@ services:
     container_name: dcmsrv
     volumes:
       - hold:/hold
-    ports:
-      - "8080:8083"
-      - "80:8084"
   dvsrv:
     build:
       context: .
@@ -20,6 +17,9 @@ services:
     container_name: dvsrv
     volumes:
       - hold:/hold
+    ports:
+      - "8083:8080"
+      - "8084:80"
 
 volumes:
   hold:
