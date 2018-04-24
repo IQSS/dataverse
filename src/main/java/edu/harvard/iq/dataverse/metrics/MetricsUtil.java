@@ -73,6 +73,8 @@ public class MetricsUtil {
             LocalDate localDate = LocalDate.parse(dateString.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"));
             long numDatasetsCreated = (long) objectArray[1];
             logger.fine("numDatasetsCreated: " + numDatasetsCreated);
+            long runningTotal = (long) objectArray[2];
+            logger.fine("runningTotal: " + runningTotal);
             String numDatasetsCreatedFriendly = NumberFormat.getNumberInstance(LOCALE).format(numDatasetsCreated);
             String monthYear = localDate.getMonth().getDisplayName(TextStyle.FULL, LOCALE) + " 2017";
             job.add(MONTH, monthYear);
@@ -81,8 +83,6 @@ public class MetricsUtil {
             String name = "Total Datasets";
             job.add(NAME, name);
             job.add("Number of Datasets", numDatasetsCreated);
-            // FIXME: How do we calculate the running total?
-            long runningTotal = Long.MAX_VALUE;
             job.add("running_total", runningTotal);
             String monthSort = localDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
             job.add(MONTH_SORT, monthSort);

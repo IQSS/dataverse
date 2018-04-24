@@ -53,16 +53,20 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public JsonArrayBuilder datasetsByMonth() {
-        // Note that "dvobject.publicationdate IS NOT NULL" isn't having any effect.
+        // TODO: Consider switching to the "to_char" version, a String instead of a Timestamp.
         Query query = em.createNativeQuery(""
-                + "SELECT date_trunc('month', dvobject.createdate), count(dvobject.id)\n"
-                + "FROM dataset\n"
-                + "JOIN dvobject ON dvobject.id = dataset.id\n"
-                + "WHERE dvobject.publicationdate IS NOT NULL\n"
-                + "AND dataset.harvestingclient_id IS NULL\n"
-                + "GROUP BY date_trunc('month', dvobject.createdate)\n"
-                + "ORDER BY date_trunc('month', dvobject.createdate) DESC\n"
-                + "LIMIT 12;");
+                //                + "select to_char(date_trunc('month', dvobject.createdate), 'Mon YYYY') as months, count(dvobject.id) AS new_datasets,\n"
+                + "select date_trunc('month', dvobject.createdate) as months, count(dvobject.id) AS new_datasets,\n"
+                + "sum(count(dvobject.id)) over (order by date_trunc('month', dvobject.createdate)) as cumulative\n"
+                + "from dvobject\n"
+                + "join dataset on dataset.id = dvobject.id\n"
+                + "where dtype = 'Dataset'\n"
+                + "and publicationdate is not null\n"
+                + "and dataset.harvestingclient_id is null\n"
+                + "group by date_trunc('month', dvobject.createdate)\n"
+                + "order by date_trunc('month', dvobject.createdate) desc\n"
+                + "limit 12;"
+        );
         logger.fine("query: " + query);
         List<Object[]> listOfObjectArrays = query.getResultList();
         return MetricsUtil.datasetsByMonthToJson(listOfObjectArrays);
