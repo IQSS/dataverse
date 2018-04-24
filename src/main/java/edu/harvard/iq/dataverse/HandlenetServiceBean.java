@@ -76,7 +76,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
     @Override
     public boolean registerWhenPublished() {
-        return false; // TODO current value plays safe, can we loosen up?
+        return true; // TODO current value plays safe, can we loosen up?
     }
 
     public void reRegisterHandle(Dataset dataset) {
@@ -101,12 +101,14 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
             String datasetUrl = getRegistrationUrl(dataset);
             
             logger.info("New registration URL: "+datasetUrl);
+           
+           int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
 
             PublicKeyAuthenticationInfo auth = getAuthInfo(dataset.getAuthority());
             
             try {
 
-                AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), 300,
+                AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), handlenetIndex,
                         true, true, true, true, true, true,
                         true, true, true, true, true, true);
 
@@ -144,6 +146,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         String handlePrefix = dataset.getAuthority();
         String handle = getDatasetHandle(dataset);
         String datasetUrl = getRegistrationUrl(dataset);
+        int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
 
         logger.info("Creating NEW handle " + handle);
 
@@ -154,7 +157,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
         try {
 
-            AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), 300,
+            AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), handlenetIndex,
                     true, true, true, true, true, true,
                     true, true, true, true, true, true);
 
@@ -233,19 +236,20 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
+        int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
 
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
         String authHandle =  getHandleAuthority(handlePrefix);
         PublicKeyAuthenticationInfo auth =
-                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), 300, privkey);
+                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
         return auth;
     }
     private String getRegistrationUrl(Dataset dataset) {
         logger.log(Level.FINE,"getRegistrationUrl");
-        String siteUrl = systemConfig.getDataverseSiteUrl();
-                
+        String siteUrl = getSiteUrl();
+        
         //String targetUrl = siteUrl + "/dataset.xhtml?persistentId=hdl:" + dataset.getAuthority() 
         String targetUrl = siteUrl + Dataset.TARGET_URL + "hdl:" + dataset.getAuthority()         
                 + "/" + dataset.getIdentifier();  
@@ -361,7 +365,8 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         String authHandle = getAuthHandle(datasetIn);
 
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-
+        int handlenetIndex = Integer.parseInt(System.getProperty("dataverse.handlenet.index"));
+       
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);
 
@@ -369,7 +374,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         resolver.setSessionTracker(new ClientSessionTracker());
 
         PublicKeyAuthenticationInfo auth =
-                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), 300, privkey);
+                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
 
         DeleteHandleRequest req =
                 new DeleteHandleRequest(Util.encodeString(handle), auth);
@@ -394,8 +399,12 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
     private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
         logger.log(Level.FINE,"updateIdentifierStatus");
-        reRegisterHandle(dataset); // No Need to register new - this is only called when a handle exists
-        return true;
+        String identifier = getIdentifierFromDataset(dataset);
+        HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
+        metadata.put("_status", statusIn);
+        metadata.put("_target", getTargetUrl(dataset));
+        // TODO drop getting identifier and meatdata if indeed not required
+        return null == registerNewHandle(dataset); // Exception have been logged
     }
 
     private String getAuthHandle(Dataset datasetIn) {
