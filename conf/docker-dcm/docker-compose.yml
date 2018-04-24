@@ -1,0 +1,26 @@
+# initial docker-compose file for combined Dataverse and DCM with shared filesystem
+
+version: '3'
+
+services:
+  dcmsrv:
+    build:
+      context: .
+      dockerfile: dcmsrv.dockerfile
+    container_name: dcmsrv
+    volumes:
+      - hold:/hold
+    ports:
+      - "8080:8083"
+      - "80:8084"
+  dvsrv:
+    build:
+      context: .
+      dockerfile: dv0dcm.dockerfile
+    container_name: dvsrv
+    volumes:
+      - hold:/hold
+
+volumes:
+  hold:
+
