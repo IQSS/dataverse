@@ -73,8 +73,9 @@ public class MetricsUtilTest {
         list.add(obj12);
         JsonArrayBuilder result = MetricsUtil.downloadsToJson(list);
         JsonArray jsonArray = result.build();
+        assertEquals(12, jsonArray.size());
         System.out.println(JsonUtil.prettyPrint(jsonArray));
-        JsonObject jsonObject = jsonArray.getJsonObject(10);
+        JsonObject jsonObject = jsonArray.getJsonObject(11);
         assertEquals(5, jsonObject.getInt("monthNum"));
         assertEquals(2202l, jsonObject.getJsonNumber("running_total").longValue());
         assertEquals(58, jsonObject.getInt("Number of File Downloads"));

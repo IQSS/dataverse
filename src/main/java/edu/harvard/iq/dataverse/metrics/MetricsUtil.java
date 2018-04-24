@@ -56,8 +56,7 @@ public class MetricsUtil {
         if (listOfObjectArrays.size() < 1) {
             return jab;
         }
-        // Skip first item in list, which contains a total;
-        for (Object[] objectArray : listOfObjectArrays.subList(1, listOfObjectArrays.size())) {
+        for (Object[] objectArray : listOfObjectArrays) {
             JsonObjectBuilder job = Json.createObjectBuilder();
             Timestamp dateString = (Timestamp) objectArray[0];
             logger.fine("dateString: " + dateString);
