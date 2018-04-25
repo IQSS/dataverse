@@ -38,9 +38,8 @@ public class MetricsUtilTest {
         JsonArray jsonArray = jab.build();
         System.out.println(JsonUtil.prettyPrint(jsonArray));
         JsonObject jsonObject = jsonArray.getJsonObject(8);
-        assertEquals("Department (0.3%)", jsonObject.getString("name"));
-        assertEquals("0.3%", jsonObject.getString("percent_label"));
-        assertEquals(7, jsonObject.getInt("dataverse count"));
+        assertEquals("Department", jsonObject.getString("category"));
+        assertEquals(7, jsonObject.getInt("count"));
     }
 
     @Test
@@ -76,13 +75,8 @@ public class MetricsUtilTest {
         assertEquals(12, jsonArray.size());
         System.out.println(JsonUtil.prettyPrint(jsonArray));
         JsonObject jsonObject = jsonArray.getJsonObject(11);
-        assertEquals(5, jsonObject.getInt("monthNum"));
-        assertEquals(2202l, jsonObject.getJsonNumber("running_total").longValue());
-        assertEquals(58, jsonObject.getInt("Number of File Downloads"));
-        assertEquals("May 2017", jsonObject.getString("Month"));
-        assertEquals("Total File Downloads", jsonObject.getString("name"));
-        assertEquals("2017-05", jsonObject.getString("month_sort"));
-        assertEquals("May 2017: 58 downloads / total: 2,202", jsonObject.getString("display_name"));
+        assertEquals(2202l, jsonObject.getJsonNumber("runningTotal").longValue());
+        assertEquals(58, jsonObject.getInt("downloads"));
     }
 
     @Test
@@ -116,13 +110,9 @@ public class MetricsUtilTest {
         JsonArray jsonArray = result.build();
         System.out.println(JsonUtil.prettyPrint(jsonArray));
         JsonObject jsonObject = jsonArray.getJsonObject(11);
-        assertEquals(5, jsonObject.getInt("monthNum"));
-        assertEquals(2202l, jsonObject.getJsonNumber("running_total").longValue());
-        assertEquals(58, jsonObject.getInt("Number of Dataverses"));
-        assertEquals("May 2017", jsonObject.getString("Month"));
-        assertEquals("Total Dataverses", jsonObject.getString("name"));
-        assertEquals("2017-05", jsonObject.getString("month_sort"));
-        assertEquals("May 2017: 58 New Dataverses", jsonObject.getString("display_name"));
+        assertEquals("2017-05", jsonObject.getString("yearMonth"));
+        assertEquals(2202l, jsonObject.getJsonNumber("runningTotal").longValue());
+        assertEquals(58, jsonObject.getInt("newDataverses"));
     }
 
     @Test
@@ -156,13 +146,9 @@ public class MetricsUtilTest {
         JsonArray jsonArray = result.build();
         System.out.println(JsonUtil.prettyPrint(jsonArray));
         JsonObject jsonObject = jsonArray.getJsonObject(11);
-        assertEquals(5, jsonObject.getInt("monthNum"));
-        assertEquals(22777l, jsonObject.getJsonNumber("running_total").longValue());
-        assertEquals(215, jsonObject.getInt("Number of Datasets"));
-        assertEquals("May 2017", jsonObject.getString("Month"));
-        assertEquals("Total Datasets", jsonObject.getString("name"));
-        assertEquals("2017-05", jsonObject.getString("month_sort"));
-        assertEquals("May 2017: 215 new Datasets; Total of 22,777", jsonObject.getString("display_name"));
+        assertEquals(22777l, jsonObject.getJsonNumber("runningTotal").longValue());
+        assertEquals(215, jsonObject.getInt("newDatasets"));
+        assertEquals("2017-05", jsonObject.getString("yearMonth"));
     }
 
     @Test
@@ -200,10 +186,8 @@ public class MetricsUtilTest {
         JsonArray jsonArray = jab.build();
         System.out.println(JsonUtil.prettyPrint(jsonArray));
         JsonObject jsonObject = jsonArray.getJsonObject(13);
-        assertEquals("Physics", jsonObject.getString("type"));
-        assertEquals("Physics (0.3%)", jsonObject.getString("label"));
-        assertEquals(98, jsonObject.getInt("value"));
-        assertEquals(0.00286599993705749, jsonObject.getJsonNumber("weight").doubleValue(), 1000);
+        assertEquals("Physics", jsonObject.getString("subject"));
+        assertEquals(98, jsonObject.getInt("count"));
     }
 
     @Test
@@ -237,13 +221,9 @@ public class MetricsUtilTest {
         JsonArray jsonArray = result.build();
         System.out.println(JsonUtil.prettyPrint(jsonArray));
         JsonObject jsonObject = jsonArray.getJsonObject(11);
-        assertEquals(5, jsonObject.getInt("monthNum"));
-        assertEquals(22777l, jsonObject.getJsonNumber("running_total").longValue());
-        assertEquals(215, jsonObject.getInt("Number of Files"));
-        assertEquals("May 2017", jsonObject.getString("Month"));
-        assertEquals("Total Files Added", jsonObject.getString("name"));
-        assertEquals("2017-05", jsonObject.getString("month_sort"));
-        assertEquals("May 2017: 215 added / total: 22,777", jsonObject.getString("display_name"));
+        assertEquals(22777l, jsonObject.getJsonNumber("runningTotal").longValue());
+        assertEquals(215, jsonObject.getInt("newFiles"));
+        assertEquals("2017-05", jsonObject.getString("yearMonth"));
     }
 
 }
