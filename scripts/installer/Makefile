@@ -71,12 +71,12 @@ ${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 
-${SOLR_SCHEMA}:		../../conf/solr/7.2.1/schema.xml
+${SOLR_SCHEMA}:		../../conf/solr/7.3.0/schema.xml
 	@echo copying Solr schema file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/solr/7.2.1/schema.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.3.0/schema.xml ${INSTALLER_ZIP_DIR}
 
-${SOLR_CONFIG}:		../../conf/solr/7.2.1/solrconfig.xml
+${SOLR_CONFIG}:		../../conf/solr/7.3.0/solrconfig.xml
 	@echo copying Solr config file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/solr/7.2.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.3.0/solrconfig.xml ${INSTALLER_ZIP_DIR}
