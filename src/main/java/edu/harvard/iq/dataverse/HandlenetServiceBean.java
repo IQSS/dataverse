@@ -101,12 +101,14 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
             String datasetUrl = getRegistrationUrl(dataset);
             
             logger.info("New registration URL: "+datasetUrl);
+           
+            int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
 
             PublicKeyAuthenticationInfo auth = getAuthInfo(dataset.getAuthority());
             
             try {
 
-                AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), 300,
+                AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), handlenetIndex,
                         true, true, true, true, true, true,
                         true, true, true, true, true, true);
 
@@ -144,7 +146,8 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         String handlePrefix = dataset.getAuthority();
         String handle = getDatasetHandle(dataset);
         String datasetUrl = getRegistrationUrl(dataset);
-
+        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+       
         logger.info("Creating NEW handle " + handle);
 
         String authHandle = getHandleAuthority(dataset);
@@ -154,7 +157,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
         try {
 
-            AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), 300,
+            AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), handlenetIndex,
                     true, true, true, true, true, true,
                     true, true, true, true, true, true);
 
@@ -233,13 +236,14 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-
+        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+       
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
         String authHandle =  getHandleAuthority(handlePrefix);
         PublicKeyAuthenticationInfo auth =
-                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), 300, privkey);
+                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
         return auth;
     }
     private String getRegistrationUrl(Dataset dataset) {
@@ -361,7 +365,8 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         String authHandle = getAuthHandle(datasetIn);
 
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-
+        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+       
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);
 
@@ -369,7 +374,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         resolver.setSessionTracker(new ClientSessionTracker());
 
         PublicKeyAuthenticationInfo auth =
-                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), 300, privkey);
+                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
 
         DeleteHandleRequest req =
                 new DeleteHandleRequest(Util.encodeString(handle), auth);
