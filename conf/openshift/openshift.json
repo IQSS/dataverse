@@ -42,6 +42,7 @@
         "selector": {
           "name": "iqss-dataverse-postgresql"
         },
+        "clusterIP": "None",
         "ports": [
           {
             "name": "database",
@@ -151,6 +152,10 @@
                 ],
                 "env": [
                   {
+                    "name": "POSTGRES_SERVER",
+                    "value": "dataverse-postgresql-0"
+                  },
+                  {
                     "name": "POSTGRES_SERVICE_HOST",
                     "value": "dataverse-postgresql-service"
                   },
@@ -222,8 +227,8 @@
       }
     },
     {
-      "kind": "DeploymentConfig",
-      "apiVersion": "v1",
+      "kind": "StatefulSet",
+      "apiVersion": "apps/v1beta1",
       "metadata": {
         "name": "dataverse-postgresql",
         "annotations": {
@@ -231,6 +236,8 @@
         }
       },
       "spec": {
+        "serviceName" : "dataverse-postgresql-service",
+        "replicas" : 1,
         "template": {
           "metadata": {
             "labels": {
@@ -241,7 +248,10 @@
             "containers": [
               {
                 "name": "centos-postgresql-94-centos7",
-                "image": "centos-postgresql-94-centos7",
+                "image": "centos/postgresql-94-centos7",
+                "command": [
+                "sh", "-c", "echo 'Setting up Postgres Master/Slave replication...'; [[ `hostname` =~ -([0-9]+)$ ]] || exit 1; ordinal=${BASH_REMATCH[1]}; if [[ $ordinal -eq 0 ]]; then run-postgresql-master; else run-postgresql-slave; fi;"
+                ],
                 "ports": [
                   {
                     "containerPort": 5432,
@@ -254,8 +264,32 @@
                     "value": "dvnapp"
                   },
                   {
+                    "name": "POSTGRESQL_MASTER_USER",
+                    "value": "master"
+                  },
+                  {
                     "name": "POSTGRESQL_PASSWORD",
                     "value": "secret"
+                  },
+                  {
+                    "name": "POSTGRESQL_MASTER_PASSWORD",
+                    "value": "master"
+                  },
+                  {
+                    "name": "POSTGRESQL_MASTER_SERVICE_NAME",
+                    "value": "dataverse-postgresql-service"
+                  },
+                  {
+                    "name": "POSTGRESQL_MASTER_IP",
+                    "value": "dataverse-postgresql-0.dataverse-postgresql-service"
+                  },
+                  {
+                    "name": "postgresql_master_addr",
+                    "value": "dataverse-postgresql-0.dataverse-postgresql-service"
+                  },
+                  {
+                    "name": "master_fqdn",
+                    "value": "dataverse-postgresql-0.dataverse-postgresql-service"
                   },
                   {
                     "name": "POSTGRESQL_DATABASE",
@@ -281,6 +315,7 @@
             ]
           }
         },
+
         "strategy": {
           "type": "Rolling",
           "rollingParams": {
@@ -300,7 +335,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "centos-postgresql-94-centos7:latest"
+                "name": "centos/postgresql-94-centos7:latest"
               }
             }
           },
@@ -308,9 +343,11 @@
             "type": "ConfigChange"
           }
         ],
-        "replicas": 1,
         "selector": {
-          "name": "iqss-dataverse-postgresql"
+          "name": "iqss-dataverse-postgresql",
+          "matchLabels" : {
+            "name" : "iqss-dataverse-postgresql"
+          }
         }
       }
     },
