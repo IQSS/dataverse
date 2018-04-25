@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.metrics;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
@@ -39,12 +40,15 @@ public class MetricsUtil {
         }
         for (Object[] arrayOfObjects : listOfObjectArrays) {
             JsonObjectBuilder job = Json.createObjectBuilder();
-            String categoryName = (String) arrayOfObjects[0];
+            String categoryNameUppercase = (String) arrayOfObjects[0];
+            Dataverse dataverse = new Dataverse();
+            dataverse.setDataverseType(Dataverse.DataverseType.valueOf(categoryNameUppercase));
+            String categoryNameFriendly = dataverse.getFriendlyCategoryName();
             long categoryCount = (long) arrayOfObjects[1];
             String percentage = String.format("%.1f", categoryCount * 100f / totalDataversesLong) + "%";
             // TODO: Spaces in JSON keys is weird but it's what miniverse does.
             job.add("dataverse count", categoryCount);
-            job.add(NAME, categoryName + " (" + percentage + ")");
+            job.add(NAME, categoryNameFriendly + " (" + percentage + ")");
             job.add("percent_label", percentage);
             jab.add(job);
         }

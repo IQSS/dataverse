@@ -38,7 +38,7 @@ public class MetricsUtilTest {
         JsonArray jsonArray = jab.build();
         System.out.println(JsonUtil.prettyPrint(jsonArray));
         JsonObject jsonObject = jsonArray.getJsonObject(8);
-        assertEquals("DEPARTMENT (0.3%)", jsonObject.getString("name"));
+        assertEquals("Department (0.3%)", jsonObject.getString("name"));
         assertEquals("0.3%", jsonObject.getString("percent_label"));
         assertEquals(7, jsonObject.getInt("dataverse count"));
     }
