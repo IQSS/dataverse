@@ -67,9 +67,8 @@ public class BrandingUtilTest {
                         "support@librascholar.edu"
                 ));
         System.out.println("message: " + message);
-        assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
-                + "Have questions? Check out our documentation at http://guides.librascholar.edu/en/4.3/user or"
-                + " contact LibraScholar Support at support@librascholar.edu for assistance.",
+        //QDR - suppress Welcome Email
+        assertEquals("",
                 message);
     }
 
