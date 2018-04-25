@@ -29,6 +29,7 @@ original        "Saved Original", the proprietary (SPSS, Stata, R, etc.) file fr
 RData           Tabular data as an R Data frame (generated; unless the "original" file was in R);
 prep		"Pre-processed data", in JSON.
 ==============  ===========
+
 ---------------------------
 
 ``imageThumb``
@@ -41,6 +42,7 @@ Value           Description
 true            Generates a thumbnail image, by rescaling to the default thumbnail size (64 pixels)
 ``N``           Rescales the image to ``N`` pixels.
 ==============  ===========
+
 ---------------------------
 
 ``vars``
