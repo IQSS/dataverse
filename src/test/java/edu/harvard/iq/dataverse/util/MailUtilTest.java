@@ -33,7 +33,7 @@ public class MailUtilTest {
     @Test
     public void testSubjectCreateAccount() {
         userNotification.setType(UserNotification.Type.CREATEACC);
-        assertEquals("LibraScholar: Your account has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
+        assertEquals("", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
 
     @Test

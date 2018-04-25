@@ -92,7 +92,7 @@ public class BrandingUtilTest {
                         "LibraScholar"
                 ));
         System.out.println("message: " + message);
-        assertEquals("LibraScholar: Your account has been created",
+        assertEquals("",
                 message);
     }
 
