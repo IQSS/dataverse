@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -22,6 +23,7 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class DataverseLinkingServiceBean implements java.io.Serializable {
+    private static final Logger logger = Logger.getLogger(DataverseLinkingServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -58,6 +60,19 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
         } else {
             em.merge(dataverseLinkingDataverse);
         }
+    }
+    
+    public DataverseLinkingDataverse findDataverseLinkingDataverse(Long dataverseId, Long linkedDataverseId) {
+        DataverseLinkingDataverse foundDataverseLinkingDataverse = null;
+        try {
+            foundDataverseLinkingDataverse = em.createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkedDataverseId AND o.dataverse.id = :dataverseId", DataverseLinkingDataverse.class)
+                    .setParameter("dataverseId", dataverseId)
+                    .setParameter("linkedDataverseId", linkedDataverseId)
+                    .getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkedDataverseId);        
+        }
+        return foundDataverseLinkingDataverse;
     }
 
     public boolean alreadyLinked(Dataverse definitionPoint, Dataverse dataverseToLinkTo) {
