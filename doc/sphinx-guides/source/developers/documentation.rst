@@ -76,12 +76,13 @@ This code should be placed below any introductory text/images and directly above
 Versions
 --------
 
-As each version of Dataverse is released, there is a version of the guides associated with it. Google has been indexing all versions, which can lead to confusion as to which version they should be looking at. If you are finding this information in search results, then we want you to always be viewing the *latest* version. In order to make sure it is clear to the crawlers which version of our guides we want discoverable in their search results, we suggest adding this to your ``robots.txt`` file::
+For installations hosting their own copies of the guides, note that as each version of Dataverse is released, there is an updated version of the guides released with it. Google and other search engines index all versions, which may confuse users who discover your guides in the search results as to which version they should be looking at. When learning about your installation from the search results, it is best to be viewing the *latest* version.
+
+In order to make it clear to the crawlers that we only want the latest version discoverable in their search results, we suggest adding this to your ``robots.txt`` file::
 
         User-agent: *
         Allow: /en/latest/
         Disallow: /en/
-
 
 ----
 
