@@ -339,7 +339,7 @@ A more detailed "add" example using curl::
 
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
-* ``dataverse_server`` - e.g. https://dataverse.example.edu
+* ``dataverse_server`` - e.g. https://demo.dataverse.org
 * ``api_key`` - See the top of this document for a description
 * ``persistentId`` - Example: ``doi:10.5072/FK2/6XACVA``
 * ``dataset_id`` - Database id of the dataset
