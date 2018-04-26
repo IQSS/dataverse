@@ -10,7 +10,7 @@ Finding Data
 Without logging in to Dataverse, users can browse Dataverse, search for dataverses, datasets, and files, view dataset descriptions and files for
 published datasets, and subset, analyze, and visualize data for published (restricted & not restricted) data files. To view an unpublished dataverse, dataset, or file, a user will need to be given permission from that dataverse's administrator to access it.
 
-A user can search within a specific dataverse for the dataverses, datasets, and files it contains by using the search bar and facets found on that dataverse's page.
+A user can search within a specific dataverse for the dataverses, datasets, and files it contains by using the search bar and facets displayed on that dataverse's page.
 
 Basic Search
 ------------
