@@ -84,6 +84,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setInfo(info);
                 lock.setStartTime(new Date());
                 theDataset.getLocks().add(lock);
+                theDataset = ctxt.em().merge(theDataset);
                 return callFinalizeAsync(ctxt);
             }
             // Synchronous publishing (no workflow involved)
