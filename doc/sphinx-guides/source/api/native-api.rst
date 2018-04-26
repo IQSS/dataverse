@@ -473,11 +473,11 @@ Replace an existing file where ``id`` is the database id of the file to replace.
 
 A more detailed "replace" example using curl (note that ``forceReplace`` is for replacing one file type with another)::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://example.dataverse.edu/api/files/$FILE_ID/replace"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://demo.dataverse.org/api/files/$FILE_ID/replace"
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
 
-* ``dataverse_server`` - e.g. https://dataverse.harvard.edu
+* ``dataverse_server`` - e.g. https://demo.dataverse.org
 * ``api_key`` - See the top of this document for a description
 * ``file_id`` - Database id of the file to replace (returned in the GET API for a Dataset)
 
