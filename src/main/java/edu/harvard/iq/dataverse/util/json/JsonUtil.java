@@ -45,4 +45,15 @@ public class JsonUtil {
         return stringWriter.toString();
     }
 
+    public static String prettyPrint(javax.json.JsonObject jsonObject) {
+        Map<String, Boolean> config = new HashMap<>();
+        config.put(JsonGenerator.PRETTY_PRINTING, true);
+        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
+        StringWriter stringWriter = new StringWriter();
+        try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
+            jsonWriter.writeObject(jsonObject);
+        }
+        return stringWriter.toString();
+    }
+
 }

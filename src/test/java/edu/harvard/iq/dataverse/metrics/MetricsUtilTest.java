@@ -8,6 +8,7 @@ import java.util.List;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -224,6 +225,15 @@ public class MetricsUtilTest {
         assertEquals(22777l, jsonObject.getJsonNumber("runningTotal").longValue());
         assertEquals(215, jsonObject.getInt("newFiles"));
         assertEquals("2017-05", jsonObject.getString("yearMonth"));
+    }
+
+    @Test
+    public void testFilesNowToJson() {
+        long count = 42l;
+        JsonObjectBuilder result = MetricsUtil.filesNowToJson(count);
+        JsonObject jsonObject = result.build();
+        System.out.println(JsonUtil.prettyPrint(jsonObject));
+        assertEquals(42l, jsonObject.getInt("count"));
     }
 
 }

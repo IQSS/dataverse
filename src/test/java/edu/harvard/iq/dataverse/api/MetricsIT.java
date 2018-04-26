@@ -46,6 +46,14 @@ public class MetricsIT {
     }
 
     @Test
+    public void testGetFilesNow() {
+        Response response = UtilIT.metricsFilesNow();
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
+    @Test
     public void testGetDatasetsByMonth() {
         Response response = UtilIT.metricsDatasetsByMonth();
         response.prettyPrint();

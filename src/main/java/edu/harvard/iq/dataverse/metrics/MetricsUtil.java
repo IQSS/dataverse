@@ -89,6 +89,12 @@ public class MetricsUtil {
         return jab;
     }
 
+    static JsonObjectBuilder filesNowToJson(long count) {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add(COUNT, count);
+        return job;
+    }
+
     static JsonArrayBuilder dataversesByMonthToJson(List<Object[]> listOfObjectArrays) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (Object[] objectArray : listOfObjectArrays) {

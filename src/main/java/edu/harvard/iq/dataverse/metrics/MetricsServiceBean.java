@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -64,6 +65,30 @@ public class MetricsServiceBean implements Serializable {
         logger.fine("query: " + query);
         List<Object[]> listOfObjectArrays = query.getResultList();
         return MetricsUtil.filesByMonthToJson(listOfObjectArrays);
+    }
+
+    /**
+     * A count of published files in the system now intended to match the file
+     * count reported by Solr on the homepage.
+     */
+    public JsonObjectBuilder filesNow() {
+        Query query = em.createNativeQuery(""
+                + "select count(filemetadata.datafile_id)\n"
+                + "from filemetadata\n"
+                + "join datasetversion on datasetversion.id = filemetadata.datasetversion_id\n"
+                + "where concat(datasetversion.dataset_id,':', datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) in\n"
+                + "(\n"
+                + "select concat(datasetversion.dataset_id,':', max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))) as max\n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED'\n"
+                + "and dataset.harvestingclient_id is null\n"
+                + "group by dataset_id\n"
+                + ");"
+        );
+        logger.fine("query: " + query);
+        long count = (long) query.getSingleResult();
+        return MetricsUtil.filesNowToJson(count);
     }
 
     public JsonArrayBuilder dataversesByMonth() {
