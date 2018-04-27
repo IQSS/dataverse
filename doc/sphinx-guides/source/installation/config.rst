@@ -925,7 +925,7 @@ By default Dataverse will attempt to connect to Solr on port 8983 on localhost. 
 :SignUpUrl
 ++++++++++
 
-The relative path URL to which users will be sent after signup. The default setting is below.
+The relative path URL to which users will be sent for signup. The default setting is below.
 
 ``curl -X PUT -d '/dataverseuser.xhtml?editMode=CREATE' http://localhost:8080/api/admin/settings/:SignUpUrl``
 
