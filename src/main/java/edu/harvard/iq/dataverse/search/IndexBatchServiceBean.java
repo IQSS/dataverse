@@ -25,9 +25,9 @@ import org.apache.solr.client.solrj.SolrServerException;
 
 @Named
 @Stateless
-public class IndexAllServiceBean {
+public class IndexBatchServiceBean {
 
-    private static final Logger logger = Logger.getLogger(IndexAllServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(IndexBatchServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -163,6 +163,63 @@ public class IndexAllServiceBean {
         status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. " + timeElapsed + ". " + resultOfClearingIndexTimes + "\n";
         logger.info(status);
         return new AsyncResult<>(status);
+    }
+        
+    @Asynchronous
+    public void indexDataverseRecursively(Dataverse dataverse) {
+        long start = System.currentTimeMillis();
+        int datasetIndexCount = 0, datasetFailureCount = 0, dataverseIndexCount = 0, dataverseFailureCount = 0;
+        // get list of Dataverse children
+        List<Long> dataverseChildren = dataverseService.findAllDataverseDataverseChildren(dataverse.getId());
+        
+        // get list of Dataset children
+        List<Long> datasetChildren = dataverseService.findAllDataverseDatasetChildren(dataverse.getId());
+
+        logger.info("Starting index on " + (dataverseChildren.size() + 1) + " dataverses and " + datasetChildren.size() + " datasets.");
+
+        // first we have to index the root dataverse or it will not index properly
+        try {
+            dataverseIndexCount++;
+            logger.info("indexing dataverse " + dataverseIndexCount + " of " + (dataverseChildren.size() + 1) + " (id=" + dataverse.getId() + ", persistentId=" + dataverse.getAlias() + ")");
+            indexService.indexDataverseInNewTransaction(dataverse);
+        } catch (Exception e) {
+            //We want to keep running even after an exception so throw some more info into the log
+            dataverseFailureCount++;
+            logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + (dataverseChildren.size() + 1) + " (id=" + dataverse.getId() + ") Exception info: " + e.getMessage());
+        }
+        
+        // index the Dataverse children
+        for (Long childId : dataverseChildren) {
+            try {
+                dataverseIndexCount++;
+                Dataverse dv = dataverseService.find(childId);
+                logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverseChildren.size() + " (id=" + childId + ", persistentId=" + dv.getAlias() + ")");
+                Future<String> result = indexService.indexDataverseInNewTransaction(dv);
+                dv = null;
+            } catch (Exception e) {
+                //We want to keep running even after an exception so throw some more info into the log
+                dataverseFailureCount++;
+                logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + dataverseChildren.size() + " (id=" + childId + ") Exception info: " + e.getMessage());
+            }
+        }
+        
+        // index the Dataset children
+        for (Long childId : datasetChildren) {
+            try {
+                datasetIndexCount++;
+                logger.info("indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ")");
+                indexService.indexDatasetInNewTransaction(childId);
+            } catch (Exception e) {
+                //We want to keep running even after an exception so throw some more info into the log
+                datasetFailureCount++;
+                logger.info("FAILURE indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ") Exception info: " + e.getMessage());
+            }
+        }
+        long end = System.currentTimeMillis();
+        if (datasetFailureCount + dataverseFailureCount > 0){
+            logger.info("There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.");            
+        }
+        logger.info(dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. Total time to index " + (end - start) + ".");
     }
 
 }

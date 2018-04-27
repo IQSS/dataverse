@@ -135,6 +135,7 @@ Here are the configuration options for handles:
 
 - :ref:`dataverse.handlenet.admcredfile`
 - :ref:`dataverse.handlenet.admprivphrase`
+- :ref:`dataverse.handlenet.index`
 
 **Database Settings:**
 
@@ -591,6 +592,10 @@ If you're using **handles**, this JVM setting configures access credentials so y
 dataverse.handlenet.admprivphrase
 +++++++++++++++++++++++++++++++++
 This JVM setting is also part of **handles** configuration. The Handle.Net installer lets you choose whether to encrypt the admcredfile private key or not. If you do encrypt it, this is the pass phrase that it's encrypted with. 
+
+dataverse.handlenet.index
++++++++++++++++++++++++++++++++++
+If you want to use different index than the default 300
 
 dataverse.timerServer
 +++++++++++++++++++++
