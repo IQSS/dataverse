@@ -60,6 +60,8 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
@@ -951,6 +953,31 @@ public class Admin extends AbstractApiBean {
         ingestService.fixMissingOriginalTypes(affectedFileIds);
         
         return ok(info);
+    }
+    
+    @Path("datafile/uningest/{id}")
+    @POST
+    public Response uningestDatafile(@PathParam("id") Long idSupplied) {
+
+        DataFile dataFile = fileService.find(idSupplied);
+
+        if (dataFile == null) {
+            return error(Response.Status.NOT_FOUND, "File not found for given id.");
+        }
+
+        if (!dataFile.isTabularData()) {
+            return error(Response.Status.BAD_REQUEST, "Cannot uningest non-tabular file.");
+        }
+
+        try {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            execCommand(new UningestFileCommand(req, dataFile));
+            return ok("Datafile " + idSupplied + " uningested.");
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
     }
 
     /**
