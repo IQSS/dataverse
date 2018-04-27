@@ -23,7 +23,8 @@ public class MetricsIT {
 
     @Test
     public void testGetDataversesByMonth() {
-        Response response = UtilIT.metricsDataversesByMonth();
+        String yyyymm = "2018-04";
+        Response response = UtilIT.metricsDataversesByMonth(yyyymm);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -31,7 +32,8 @@ public class MetricsIT {
 
     @Test
     public void testGetDownloadsByMonth() {
-        Response response = UtilIT.metricsDownloadsByMonth();
+        String yyyymm = "2018-04";
+        Response response = UtilIT.metricsDownloadsByMonth(yyyymm);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -39,15 +41,8 @@ public class MetricsIT {
 
     @Test
     public void testGetFilesByMonth() {
-        Response response = UtilIT.metricsFilesByMonth();
-        response.prettyPrint();
-        response.then().assertThat()
-                .statusCode(OK.getStatusCode());
-    }
-
-    @Test
-    public void testGetFilesNow() {
-        Response response = UtilIT.metricsFilesNow();
+        String yyyymm = "2018-04";
+        Response response = UtilIT.metricsFilesByMonth(yyyymm);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -55,7 +50,8 @@ public class MetricsIT {
 
     @Test
     public void testGetDatasetsByMonth() {
-        Response response = UtilIT.metricsDatasetsByMonth();
+        String yyyymm = "2018-04";
+        Response response = UtilIT.metricsDatasetsByMonth(yyyymm);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());

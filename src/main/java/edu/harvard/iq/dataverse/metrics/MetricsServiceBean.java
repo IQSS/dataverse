@@ -30,103 +30,94 @@ public class MetricsServiceBean implements Serializable {
         return MetricsUtil.dataversesByCategoryToJson(listOfObjectArrays);
     }
 
-    public JsonArrayBuilder downloadsByMonth() {
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public JsonObjectBuilder downloadsByMonth(String yyyymm) {
         Query query = em.createNativeQuery(""
-                + "select date_trunc('month', guestbookresponse.responsetime) as months, count(guestbookresponse.id) AS downloads,\n"
-                + "sum(count(guestbookresponse.id)) over (order by date_trunc('month', guestbookresponse.responsetime)) as cumulative\n"
+                + "select count(id)\n"
                 + "from guestbookresponse\n"
-                + "join dvobject on dvobject.id = guestbookresponse.datafile_id\n"
-                + "where dvobject.publicationdate is not null\n"
-                + "and guestbookresponse.responsetime is not null\n"
-                + "group by date_trunc('month', responsetime)\n"
-                + "order by date_trunc('month', responsetime) desc\n"
-                + "limit 12;"
+                //                + "where date_trunc('month', responsetime) <=  to_date('2018-05','YYYY-MM');"
+                // FIXME: Remove SQL injection vector: https://software-security.sans.org/developer-how-to/fix-sql-injection-in-java-persistence-api-jpa
+                + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM');"
         );
         logger.fine("query: " + query);
-        List<Object[]> listOfObjectArrays = query.getResultList();
-        return MetricsUtil.downloadsToJson(listOfObjectArrays);
-    }
-
-    public JsonArrayBuilder filesByMonth() {
-        // TODO: Consider switching to a "to_char" version, a String instead of a Timestamp. See datasetsByMonth.
-        Query query = em.createNativeQuery(""
-                + "select date_trunc('month', dvobject.publicationdate) as months, count(dvobject.id) as new_files,\n"
-                + "sum(count(dvobject.id)) over (order by date_trunc('month', dvobject.publicationdate)) as cumulative\n"
-                + "from dvobject\n"
-                + "join datafile on datafile.id = dvobject.id\n"
-                + "join dataset on dataset.id = dvobject.owner_id\n"
-                + "where dtype = 'DataFile'\n"
-                + "and publicationdate is not null\n"
-                + "and dataset.harvestingclient_id is null\n"
-                + "group by date_trunc('month', dvobject.publicationdate)\n"
-                + "order by date_trunc('month', dvobject.publicationdate) desc\n"
-                + "limit 12;"
-        );
-        logger.fine("query: " + query);
-        List<Object[]> listOfObjectArrays = query.getResultList();
-        return MetricsUtil.filesByMonthToJson(listOfObjectArrays);
+        long count = (long) query.getSingleResult();
+        return MetricsUtil.countToJson(count);
     }
 
     /**
      * A count of published files in the system now intended to match the file
-     * count reported by Solr on the homepage.
+     * count reported by Solr on the homepage. TODO: Switch to a dynamic query
+     * that can operate on a month, like the other time-based queries.
+     *
+     * @param yyyymm Month in YYYY-MM format.
      */
-    public JsonObjectBuilder filesNow() {
+    public JsonObjectBuilder filesByMonth(String yyyymm) {
         Query query = em.createNativeQuery(""
-                + "select count(filemetadata.datafile_id)\n"
+                + "select count(*)\n"
                 + "from filemetadata\n"
                 + "join datasetversion on datasetversion.id = filemetadata.datasetversion_id\n"
-                + "where concat(datasetversion.dataset_id,':', datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) in\n"
+                + "where concat(datasetversion.dataset_id,':', datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) in \n"
                 + "(\n"
-                + "select concat(datasetversion.dataset_id,':', max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))) as max\n"
+                + "select concat(datasetversion.dataset_id,':', max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))) as max \n"
                 + "from datasetversion\n"
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
+                //                + "and date_trunc('month', releasetime) <=  to_date('2018-03','YYYY-MM')\n"
+                // FIXME: Remove SQL injection vector: https://software-security.sans.org/developer-how-to/fix-sql-injection-in-java-persistence-api-jpa
+                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "and dataset.harvestingclient_id is null\n"
-                + "group by dataset_id\n"
+                + "group by dataset_id \n"
                 + ");"
         );
         logger.fine("query: " + query);
         long count = (long) query.getSingleResult();
-        return MetricsUtil.filesNowToJson(count);
+        return MetricsUtil.countToJson(count);
     }
 
-    public JsonArrayBuilder dataversesByMonth() {
-        // TODO: Consider switching to a "to_char" version, a String instead of a Timestamp. See datasetsByMonth.
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public JsonObjectBuilder dataversesByMonth(String yyyymm) {
         Query query = em.createNativeQuery(""
-                + "select date_trunc('month', dvobject.publicationdate) as months, count(dvobject.id) AS new_dataverses,\n"
-                + "sum(count(dvobject.id)) over (order by date_trunc('month', dvobject.publicationdate)) as cumulative\n"
-                + "from dvobject\n"
-                + "join dataverse on dataverse.id = dvobject.id\n"
-                + "where dtype = 'Dataverse'\n"
-                + "and publicationdate is not null\n"
-                + "group by date_trunc('month', dvobject.publicationdate)\n"
-                + "order by date_trunc('month', dvobject.publicationdate) desc\n"
-                + "limit 12;"
+                + "select count(dvobject.id)\n"
+                + "from dataverse\n"
+                + "join dvobject on dvobject.id = dataverse.id\n"
+                + "where dvobject.publicationdate is not null\n"
+                //                + "and date_trunc('month', publicationdate) <=  to_date('2018-01','YYYY-MM');"
+                // FIXME: Remove SQL injection vector: https://software-security.sans.org/developer-how-to/fix-sql-injection-in-java-persistence-api-jpa
+                + "and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM');"
         );
         logger.fine("query: " + query);
         List<Object[]> listOfObjectArrays = query.getResultList();
-        return MetricsUtil.dataversesByMonthToJson(listOfObjectArrays);
+        long count = (long) query.getSingleResult();
+        return MetricsUtil.countToJson(count);
     }
 
-    public JsonArrayBuilder datasetsByMonth() {
-        // TODO: Consider switching to the "to_char" version, a String instead of a Timestamp.
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public JsonObjectBuilder datasetsByMonth(String yyyymm) {
         Query query = em.createNativeQuery(""
-                //                + "select to_char(date_trunc('month', dvobject.createdate), 'Mon YYYY') as months, count(dvobject.id) AS new_datasets,\n"
-                + "select date_trunc('month', dvobject.publicationdate) as months, count(dvobject.id) AS new_datasets,\n"
-                + "sum(count(dvobject.id)) over (order by date_trunc('month', dvobject.publicationdate)) as cumulative\n"
-                + "from dvobject\n"
-                + "join dataset on dataset.id = dvobject.id\n"
-                + "where dtype = 'Dataset'\n"
-                + "and publicationdate is not null\n"
+                + "select count(*)\n"
+                + "from datasetversion\n"
+                + "where concat(datasetversion.dataset_id,':', datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) in \n"
+                + "(\n"
+                + "select concat(datasetversion.dataset_id,':', max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))) as max \n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED' \n"
+                //                + "and date_trunc('month', releasetime) <=  to_date('2018-04','YYYY-MM')\n"
+                // FIXME: Remove SQL injection vector: https://software-security.sans.org/developer-how-to/fix-sql-injection-in-java-persistence-api-jpa
+                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "and dataset.harvestingclient_id is null\n"
-                + "group by date_trunc('month', dvobject.publicationdate)\n"
-                + "order by date_trunc('month', dvobject.publicationdate) desc\n"
-                + "limit 12;"
+                + "group by dataset_id \n"
+                + ");"
         );
         logger.fine("query: " + query);
-        List<Object[]> listOfObjectArrays = query.getResultList();
-        return MetricsUtil.datasetsByMonthToJson(listOfObjectArrays);
+        long count = (long) query.getSingleResult();
+        return MetricsUtil.countToJson(count);
     }
 
     public JsonArrayBuilder datasetsBySubject() {

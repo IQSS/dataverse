@@ -1209,34 +1209,28 @@ public class UtilIT {
         return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
     }
 
-    static Response metricsDataversesByMonth() {
+    static Response metricsDataversesByMonth(String yyyymm) {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/byMonth");
+        return requestSpecification.get("/api/info/metrics/dataverses/byMonth/" + yyyymm);
     }
 
-    static Response metricsDownloadsByMonth() {
+    static Response metricsDownloadsByMonth(String yyyymm) {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/downloads/byMonth");
+        return requestSpecification.get("/api/info/metrics/downloads/byMonth/" + yyyymm);
     }
 
-    static Response metricsFilesByMonth() {
+    static Response metricsFilesByMonth(String yyyymm) {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/files/byMonth");
+        return requestSpecification.get("/api/info/metrics/files/byMonth/" + yyyymm);
     }
 
-    static Response metricsFilesNow() {
+    static Response metricsDatasetsByMonth(String yyyymm) {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/files/now");
-    }
-
-    static Response metricsDatasetsByMonth() {
-        RequestSpecification requestSpecification = given();
-        requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/byMonth");
+        return requestSpecification.get("/api/info/metrics/datasets/byMonth/" + yyyymm);
     }
 
     static Response metricsDatasetsBySubject() {
