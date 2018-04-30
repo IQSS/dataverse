@@ -19,6 +19,7 @@ public class MetricsUtil {
     private final static String COUNT = "count";
     private final static String CATEGORY = "category";
     private final static String SUBJECT = "subject";
+    public static String YEAR_AND_MONTH_PATTERN = "yyyy-MM";
 
     public static JsonObjectBuilder countToJson(long count) {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -73,7 +74,7 @@ public class MetricsUtil {
         } catch (DateTimeParseException ex) {
             throw new Exception("The expected format is YYYY-MM but an exception was thrown: " + ex.getLocalizedMessage());
         }
-        String sanitized = localDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        String sanitized = localDate.format(DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN));
         return sanitized;
     }
 

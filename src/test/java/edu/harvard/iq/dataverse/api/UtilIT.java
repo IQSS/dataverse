@@ -1204,27 +1204,43 @@ public class UtilIT {
     }
 
     static Response metricsDataversesByMonth(String yyyymm) {
+        String optionalYyyyMm = "";
+        if (yyyymm != null) {
+            optionalYyyyMm = "/" + yyyymm;
+        }
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/byMonth/" + yyyymm);
+        return requestSpecification.get("/api/info/metrics/dataverses/byMonth" + optionalYyyyMm);
     }
 
     static Response metricsDatasetsByMonth(String yyyymm) {
+        String optionalYyyyMm = "";
+        if (yyyymm != null) {
+            optionalYyyyMm = "/" + yyyymm;
+        }
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/byMonth/" + yyyymm);
+        return requestSpecification.get("/api/info/metrics/datasets/byMonth" + optionalYyyyMm);
     }
 
     static Response metricsFilesByMonth(String yyyymm) {
+        String optionalYyyyMm = "";
+        if (yyyymm != null) {
+            optionalYyyyMm = "/" + yyyymm;
+        }
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/files/byMonth/" + yyyymm);
+        return requestSpecification.get("/api/info/metrics/files/byMonth" + optionalYyyyMm);
     }
 
     static Response metricsDownloadsByMonth(String yyyymm) {
+        String optionalYyyyMm = "";
+        if (yyyymm != null) {
+            optionalYyyyMm = "/" + yyyymm;
+        }
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/downloads/byMonth/" + yyyymm);
+        return requestSpecification.get("/api/info/metrics/downloads/byMonth" + optionalYyyyMm);
     }
 
     static Response metricsDataverseByCategory() {

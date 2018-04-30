@@ -16,6 +16,7 @@ public class MetricsIT {
     @Test
     public void testGetDataversesByMonth() {
         String yyyymm = "2018-04";
+//        yyyymm = null;
         Response response = UtilIT.metricsDataversesByMonth(yyyymm);
         response.prettyPrint();
         response.then().assertThat()
@@ -25,6 +26,7 @@ public class MetricsIT {
     @Test
     public void testGetDatasetsByMonth() {
         String yyyymm = "2018-04";
+//        yyyymm = null;
         Response response = UtilIT.metricsDatasetsByMonth(yyyymm);
         response.prettyPrint();
         response.then().assertThat()
@@ -34,6 +36,7 @@ public class MetricsIT {
     @Test
     public void testGetFilesByMonth() {
         String yyyymm = "2018-04";
+//        yyyymm = null;
         Response response = UtilIT.metricsFilesByMonth(yyyymm);
         response.prettyPrint();
         response.then().assertThat()
@@ -43,6 +46,7 @@ public class MetricsIT {
     @Test
     public void testGetDownloadsByMonth() {
         String yyyymm = "2018-04";
+//        yyyymm = null;
         Response response = UtilIT.metricsDownloadsByMonth(yyyymm);
         response.prettyPrint();
         response.then().assertThat()
