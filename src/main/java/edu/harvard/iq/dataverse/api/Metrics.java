@@ -79,13 +79,21 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("dataverses/byCategory")
     public Response getDataversesByCategory() {
-        return allowCors(ok(metricsSvc.dataversesByCategory()));
+        try {
+            return allowCors(ok(metricsSvc.dataversesByCategory()));
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
     }
 
     @GET
     @Path("datasets/bySubject")
     public Response getDatasetsBySubject() {
-        return allowCors(ok(metricsSvc.datasetsBySubject()));
+        try {
+            return allowCors(ok(metricsSvc.datasetsBySubject()));
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
     }
 
     private String getCurrentMonth() {
