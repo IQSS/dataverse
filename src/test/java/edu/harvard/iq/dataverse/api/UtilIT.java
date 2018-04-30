@@ -1203,22 +1203,16 @@ public class UtilIT {
                 .post("/api/admin/feedback");
     }
 
-    static Response metricsDataverseByCategory() {
-        RequestSpecification requestSpecification = given();
-        requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
-    }
-
     static Response metricsDataversesByMonth(String yyyymm) {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/dataverses/byMonth/" + yyyymm);
     }
 
-    static Response metricsDownloadsByMonth(String yyyymm) {
+    static Response metricsDatasetsByMonth(String yyyymm) {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/downloads/byMonth/" + yyyymm);
+        return requestSpecification.get("/api/info/metrics/datasets/byMonth/" + yyyymm);
     }
 
     static Response metricsFilesByMonth(String yyyymm) {
@@ -1227,10 +1221,16 @@ public class UtilIT {
         return requestSpecification.get("/api/info/metrics/files/byMonth/" + yyyymm);
     }
 
-    static Response metricsDatasetsByMonth(String yyyymm) {
+    static Response metricsDownloadsByMonth(String yyyymm) {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/byMonth/" + yyyymm);
+        return requestSpecification.get("/api/info/metrics/downloads/byMonth/" + yyyymm);
+    }
+
+    static Response metricsDataverseByCategory() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
     }
 
     static Response metricsDatasetsBySubject() {
