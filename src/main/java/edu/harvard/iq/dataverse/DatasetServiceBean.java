@@ -912,8 +912,19 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     @Asynchronous
-    public void callFinalizePublishCommandAsynchronously(Dataset theDataset, CommandContext ctxt, DataverseRequest request) throws CommandException {
+    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request) throws CommandException {
 
+        // Since we are calling the next command asynchronously anyway - sleep here 
+        // for a few seconds, just in case, to make sure the database update of 
+        // the dataset initiated by the PublishDatasetCommand has finished, 
+        // to avoid any concurrency/optimistic lock issues. 
+        try {
+            Thread.sleep(15000);
+        } catch (Exception ex) {
+            logger.warning("Failed to sleep for 15 seconds.");
+        }
+        logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
+        Dataset theDataset = find(datasetId);
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, doiProvider, request));

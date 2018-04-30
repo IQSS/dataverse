@@ -174,11 +174,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.setGlobalIdCreateTime(new Date());
             theDataset.setIdentifierRegistered(true);
             for (DataFile df : theDataset.getFiles()) {
+                logger.fine("registering global id for file "+df.getId());
                 idServiceBean.publicizeIdentifier(df);
                 df.setGlobalIdCreateTime(new Date());
                 df.setIdentifierRegistered(true);
-                DataFile merged = ctxt.em().merge(df);
-                merged = null;
+                // this merge() on an individual file below is unnecessary:
+                //DataFile merged = ctxt.em().merge(df);
             }
         } catch (Throwable e) {
             //if publicize fails remove the lock for registration

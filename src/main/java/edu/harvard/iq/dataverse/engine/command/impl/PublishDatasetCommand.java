@@ -14,8 +14,8 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.util.Date;
 import java.util.Optional;
+import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
-import javax.ejb.Asynchronous;
 
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
@@ -30,6 +30,7 @@ import javax.ejb.Asynchronous;
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractPublishDatasetCommand<PublishDatasetResult> {
+    private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getName());
 
     boolean minorRelease;
     DataverseRequest request;
@@ -65,12 +66,11 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
             theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
         }
-
-        theDataset = ctxt.em().merge(theDataset);
         
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         if ( prePubWf.isPresent() ) {
             // We start a workflow
+            theDataset = ctxt.em().merge(theDataset);
             ctxt.workflows().start(prePubWf.get(), buildContext(doiProvider, TriggerType.PrePublishDataset) );
             return new PublishDatasetResult(theDataset, false);
             
@@ -85,23 +85,14 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setStartTime(new Date());
                 theDataset.getLocks().add(lock);
                 theDataset = ctxt.em().merge(theDataset);
-                return callFinalizeAsync(ctxt);
+                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request);
+                return new PublishDatasetResult(theDataset, false);
             }
             // Synchronous publishing (no workflow involved)
-            theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()));
-            return new PublishDatasetResult(ctxt.em().merge(theDataset), true);
+            theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), doiProvider, getRequest()));
+            return new PublishDatasetResult(theDataset, true);
         }
     }
-    
-    
-    private PublishDatasetResult callFinalizeAsync(CommandContext ctxt) throws CommandException {
-        try {
-            ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset, ctxt, request);
-            return new PublishDatasetResult(theDataset, false);
-        } catch (CommandException ce){
-            throw new CommandException("Publish Dataset failed", this);
-        }
-    }  
     
     /**
      * See that publishing the dataset in the requested manner makes sense, at
