@@ -72,6 +72,15 @@ List Facets Configured for a Dataverse
 
   GET http://$SERVER/api/dataverses/$id/facets?key=$apiKey
 
+Set Facets for a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Assign search facets for a given dataverse with alias ``$alias``
+
+``curl -H "X-Dataverse-key: $apiKey" -X POST http://$server/api/dataverses/$alias/facets --upload-file facets.json``
+
+Where ``facets.json`` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
+
 Create a New Role in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
