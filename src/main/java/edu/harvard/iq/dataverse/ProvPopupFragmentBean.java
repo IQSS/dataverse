@@ -142,6 +142,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             }
 
             if(null != provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile
+                    && provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile.getProvEntityName() != null
                     && !provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile.getProvEntityName().isEmpty()) { 
                 if(null == provJsonState) { //If the prov json hasn't been updated but other values for the datafile have
                     
