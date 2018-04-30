@@ -105,6 +105,36 @@ public class FileVersionDifference {
                         ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.descriptionDetailTitle"), 0, 0, 1, 0);
             }
         }  
+        //Provenance Description differences
+        if ( originalFileMetadata != null) {
+            if ((newFileMetadata.getProvFreeForm() != null && !newFileMetadata.getProvFreeForm().isEmpty())
+                    && (originalFileMetadata.getProvFreeForm() != null && !originalFileMetadata.getProvFreeForm().isEmpty())
+                    && !newFileMetadata.getProvFreeForm().equals(originalFileMetadata.getProvFreeForm())) {
+                if (details) {
+                    differenceDetailItems.add(new FileDifferenceDetailItem(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), originalFileMetadata.getProvFreeForm(), newFileMetadata.getProvFreeForm()));
+                }
+                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileMetadataGroupTitle"), 
+                        ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), 0, 1, 0, 0);
+            }
+            if ((newFileMetadata.getProvFreeForm() != null && !newFileMetadata.getProvFreeForm().isEmpty())
+                    && (originalFileMetadata.getProvFreeForm() == null || originalFileMetadata.getProvFreeForm().isEmpty())
+                    ) {
+                if (details) {
+                    differenceDetailItems.add(new FileDifferenceDetailItem(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), "", newFileMetadata.getProvFreeForm()));
+                }
+                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileMetadataGroupTitle"), 
+                        ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), 1, 0, 0, 0);
+            }
+            if ((newFileMetadata.getProvFreeForm() == null || newFileMetadata.getProvFreeForm().isEmpty())
+                    && (originalFileMetadata.getProvFreeForm() != null && !originalFileMetadata.getProvFreeForm().isEmpty())
+                    ) {
+                if (details) {
+                    differenceDetailItems.add(new FileDifferenceDetailItem(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), originalFileMetadata.getProvFreeForm(), "" ));
+                }
+                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileMetadataGroupTitle"), 
+                        ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), 0, 0, 1, 0);
+            }
+        }
         if (originalFileMetadata != null) {
             /*
             get Tags differences
