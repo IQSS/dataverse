@@ -90,4 +90,19 @@ public class MetricsUtilTest {
         assertEquals(98, jsonObject.getInt("count"));
     }
 
+    @Test
+    public void testSanitizeHappyPath() throws Exception {
+        assertEquals("2018-04", MetricsUtil.sanitizeYearMonthUserInput("2018-04"));
+    }
+
+    @Test(expected = Exception.class)
+    public void testSanitizeJunk() throws Exception {
+        MetricsUtil.sanitizeYearMonthUserInput("junk");
+    }
+
+    @Test(expected = Exception.class)
+    public void testSanitizeFullIso() throws Exception {
+        MetricsUtil.sanitizeYearMonthUserInput("2018-01-01");
+    }
+
 }
