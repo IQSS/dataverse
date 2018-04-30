@@ -113,7 +113,7 @@ From Git Bash, run the following commands:
 Start Minishift VM and Run Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``minishift start --vm-driver=virtualbox --memory=4GB``
+``minishift start --vm-driver=virtualbox --memory=8GB``
 
 ``eval $(minishift oc-env)``
 
