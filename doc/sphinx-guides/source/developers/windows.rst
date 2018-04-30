@@ -1,6 +1,6 @@
-=======
-Windows
-=======
+===================
+Windows Development
+===================
 
 Development on Windows is not well supported, unfortunately. You will have a much easier time if you develop on Mac or Linux as described under :doc:`dev-environment` section.
 

@@ -69,7 +69,7 @@ Too many passwords? You can set up your Dataverse account to use log in credenti
 Institutional Log In
 ~~~~~~~~~~~~~~~~~~~~
 
-Institutional log in allows you to use your log in information for your university (e.g. HarvardKey at Harvard) to log into your Dataverse account.
+Institutional log in allows you to use your log in information for your university (e.g. HarvardKey at Harvard) to log in to your Dataverse account.
 
 Create a Dataverse account using Institutional Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
