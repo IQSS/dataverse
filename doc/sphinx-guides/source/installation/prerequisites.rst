@@ -176,23 +176,23 @@ Become the ``solr`` user and then download and configure Solr::
 
         su - solr
         cd /usr/local/solr
-        wget https://archive.apache.org/dist/lucene/solr/7.2.1/solr-7.2.1.tgz
-        tar xvzf solr-7.2.1.tgz
-        cd solr-7.2.1
+        wget https://archive.apache.org/dist/lucene/solr/7.3.0/solr-7.3.0.tgz
+        tar xvzf solr-7.3.0.tgz
+        cd solr-7.3.0
         cp -r server/solr/configsets/_default server/solr/collection1
 
 You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-        cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.2.1/server/solr/collection1/conf
-        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.2.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.3.0/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.3.0/server/solr/collection1/conf
 
 Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example results matching on the name of a dataset. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents.
 
-Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.2.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.0/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
 With the Dataverse-specific config in place, you can now start Solr and create the core that will be used to manage search information::
 
-        cd /usr/local/solr/solr-7.2.1
+        cd /usr/local/solr/solr-7.3.0
         bin/solr start
         bin/solr create_core -c collection1 -d server/solr/collection1/conf/
 
