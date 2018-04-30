@@ -303,6 +303,32 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException(failureMsg);
         }
     }
+    
+    @Override
+    public void revertBackupAsAux(String auxItemTag) throws IOException {
+        if (swiftFileObject == null || swiftContainer == null) {
+            open();
+        }
+
+        try {
+            String targetName = dvObject.getStorageIdentifier();
+            String sourceName = targetName + "." + auxItemTag;
+            StoredObject swiftAuxObject = openSwiftAuxFile(true, auxItemTag);
+            StoredObject soS = swiftContainer.getObject(sourceName);
+            StoredObject soT = swiftContainer.getObject(targetName);
+            soS.copyObject(swiftContainer, soT);
+            swiftFileObject.copyObject(swiftContainer, swiftAuxObject);
+
+        } catch (IOException ioex) {
+            String failureMsg = ioex.getMessage();
+            if (failureMsg == null) {
+                failureMsg = "Swift AccessIO: Unknown exception occured while renamimng orig file";
+            }
+
+            throw new IOException(failureMsg);
+        }
+
+    }
 
     @Override
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
