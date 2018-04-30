@@ -23,10 +23,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Logger;
-import javax.faces.context.FacesContext;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 
 /**
  *
