@@ -352,6 +352,20 @@ public class UtilIT {
                 + "";
         return xmlIn;
     }
+    
+    static Response createDatasetLink(Long linkedDatasetId, String linkingDataverseAlias, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .put("api/datasets/" + linkedDatasetId + "/link/" + linkingDataverseAlias);
+        return response;
+    }   
+    
+    static Response deleteDatasetLink(Long linkedDatasetId, String linkingDataverseAlias, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("api/datasets/" + linkedDatasetId + "/deleteLink/" + linkingDataverseAlias);
+        return response;
+    } 
 
     public static Response uploadRandomFile(String persistentId, String apiToken) {
         String zipfilename = "trees.zip";
@@ -856,6 +870,20 @@ public class UtilIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .post("api/dataverses/" + movedDataverseAlias + "/move/" + targetDataverseAlias + "?forceMove=" + force + "&key=" + apiToken);
+        return response;
+    }
+    
+    static Response createDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .put("api/dataverses/" + linkedDataverseAlias + "/link/" + linkingDataverseAlias);
+        return response;
+    }
+    
+    static Response deleteDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("api/dataverses/" + linkedDataverseAlias + "/deleteLink/" + linkingDataverseAlias);
         return response;
     }
 

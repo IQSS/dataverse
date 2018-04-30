@@ -1269,5 +1269,36 @@ public class DatasetsIT {
         }
         logger.info("username/password: " + username);
     }
+    
+    @Test
+    public void testCreateDeleteDatasetLink() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response superuserResponse = UtilIT.makeSuperUser(username);
 
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        
+        Response createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
+        createLinkingDatasetResponse.prettyPrint();
+        
+        createLinkingDatasetResponse.then().assertThat()
+                .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
+                .statusCode(200);
+        
+        Response deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
+        deleteLinkingDatasetResponse.prettyPrint();
+        
+        deleteLinkingDatasetResponse.then().assertThat()
+                .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
+                .statusCode(200);
+    }
 }

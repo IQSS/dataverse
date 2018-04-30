@@ -53,6 +53,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVe
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
@@ -469,6 +470,29 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    @PUT
+    @Path("{linkedDatasetId}/link/{linkingDataverseAlias}") 
+    public Response linkDataset(@PathParam("linkedDatasetId") String linkedDatasetId, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {        
+        try{
+            User u = findUserOrDie();            
+            Dataset linked = findDatasetOrDie(linkedDatasetId);
+            Dataverse linking = findDataverseOrDie(linkingDataverseAlias);
+            if (linked == null){
+                return error(Response.Status.BAD_REQUEST, "Linked Dataset not found.");
+            } 
+            if (linking == null){
+                return error(Response.Status.BAD_REQUEST, "Linking Dataverse not found.");
+            }   
+            execCommand(new LinkDatasetCommand(
+                    createDataverseRequest(u), linking, linked
+                    ));
+            return ok("Dataset " + linked.getId() + " linked successfully to " + linking.getAlias());
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
     @GET
     @Path("{id}/links")
     public Response getLinks(@PathParam("id") String idSupplied ) {
