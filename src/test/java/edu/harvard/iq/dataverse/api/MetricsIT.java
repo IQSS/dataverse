@@ -14,14 +14,6 @@ public class MetricsIT {
     }
 
     @Test
-    public void testGetDataverseByCategory() {
-        Response response = UtilIT.metricsDataverseByCategory();
-        response.prettyPrint();
-        response.then().assertThat()
-                .statusCode(OK.getStatusCode());
-    }
-
-    @Test
     public void testGetDataversesByMonth() {
         String yyyymm = "2018-04";
         Response response = UtilIT.metricsDataversesByMonth(yyyymm);
@@ -31,9 +23,9 @@ public class MetricsIT {
     }
 
     @Test
-    public void testGetDownloadsByMonth() {
+    public void testGetDatasetsByMonth() {
         String yyyymm = "2018-04";
-        Response response = UtilIT.metricsDownloadsByMonth(yyyymm);
+        Response response = UtilIT.metricsDatasetsByMonth(yyyymm);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -49,9 +41,17 @@ public class MetricsIT {
     }
 
     @Test
-    public void testGetDatasetsByMonth() {
+    public void testGetDownloadsByMonth() {
         String yyyymm = "2018-04";
-        Response response = UtilIT.metricsDatasetsByMonth(yyyymm);
+        Response response = UtilIT.metricsDownloadsByMonth(yyyymm);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testGetDataverseByCategory() {
+        Response response = UtilIT.metricsDataverseByCategory();
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());

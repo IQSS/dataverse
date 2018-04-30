@@ -18,60 +18,6 @@ public class MetricsServiceBean implements Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    public JsonArrayBuilder dataversesByCategory() {
-        Query query = em.createNativeQuery(""
-                + "select dataversetype, count(dataversetype) from dataverse\n"
-                + "join dvobject on dvobject.id = dataverse.id\n"
-                + "where dvobject.publicationdate is not null\n"
-                + "group by dataversetype\n"
-                + "order by count desc;"
-        );
-        List<Object[]> listOfObjectArrays = query.getResultList();
-        return MetricsUtil.dataversesByCategoryToJson(listOfObjectArrays);
-    }
-
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */
-    public JsonObjectBuilder downloadsByMonth(String yyyymm) throws Exception {
-        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-        Query query = em.createNativeQuery(""
-                + "select count(id)\n"
-                + "from guestbookresponse\n"
-                + "where date_trunc('month', responsetime) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM');"
-        );
-        logger.fine("query: " + query);
-        long count = (long) query.getSingleResult();
-        return MetricsUtil.countToJson(count);
-    }
-
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */
-    public JsonObjectBuilder filesByMonth(String yyyymm) throws Exception {
-        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-        Query query = em.createNativeQuery(""
-                + "select count(*)\n"
-                + "from filemetadata\n"
-                + "join datasetversion on datasetversion.id = filemetadata.datasetversion_id\n"
-                + "where concat(datasetversion.dataset_id,':', datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) in \n"
-                + "(\n"
-                + "select concat(datasetversion.dataset_id,':', max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))) as max \n"
-                + "from datasetversion\n"
-                + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "where versionstate='RELEASED'\n"
-                //                + "and date_trunc('month', releasetime) <=  to_date('2018-03','YYYY-MM')\n"
-                // FIXME: Remove SQL injection vector: https://software-security.sans.org/developer-how-to/fix-sql-injection-in-java-persistence-api-jpa
-                + "and date_trunc('month', releasetime) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM')\n"
-                + "and dataset.harvestingclient_id is null\n"
-                + "group by dataset_id \n"
-                + ");"
-        );
-        logger.fine("query: " + query);
-        long count = (long) query.getSingleResult();
-        return MetricsUtil.countToJson(count);
-    }
-
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
@@ -111,6 +57,60 @@ public class MetricsServiceBean implements Serializable {
         logger.fine("query: " + query);
         long count = (long) query.getSingleResult();
         return MetricsUtil.countToJson(count);
+    }
+
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public JsonObjectBuilder filesByMonth(String yyyymm) throws Exception {
+        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+        Query query = em.createNativeQuery(""
+                + "select count(*)\n"
+                + "from filemetadata\n"
+                + "join datasetversion on datasetversion.id = filemetadata.datasetversion_id\n"
+                + "where concat(datasetversion.dataset_id,':', datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) in \n"
+                + "(\n"
+                + "select concat(datasetversion.dataset_id,':', max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))) as max \n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED'\n"
+                //                + "and date_trunc('month', releasetime) <=  to_date('2018-03','YYYY-MM')\n"
+                // FIXME: Remove SQL injection vector: https://software-security.sans.org/developer-how-to/fix-sql-injection-in-java-persistence-api-jpa
+                + "and date_trunc('month', releasetime) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM')\n"
+                + "and dataset.harvestingclient_id is null\n"
+                + "group by dataset_id \n"
+                + ");"
+        );
+        logger.fine("query: " + query);
+        long count = (long) query.getSingleResult();
+        return MetricsUtil.countToJson(count);
+    }
+
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public JsonObjectBuilder downloadsByMonth(String yyyymm) throws Exception {
+        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+        Query query = em.createNativeQuery(""
+                + "select count(id)\n"
+                + "from guestbookresponse\n"
+                + "where date_trunc('month', responsetime) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM');"
+        );
+        logger.fine("query: " + query);
+        long count = (long) query.getSingleResult();
+        return MetricsUtil.countToJson(count);
+    }
+
+    public JsonArrayBuilder dataversesByCategory() {
+        Query query = em.createNativeQuery(""
+                + "select dataversetype, count(dataversetype) from dataverse\n"
+                + "join dvobject on dvobject.id = dataverse.id\n"
+                + "where dvobject.publicationdate is not null\n"
+                + "group by dataversetype\n"
+                + "order by count desc;"
+        );
+        List<Object[]> listOfObjectArrays = query.getResultList();
+        return MetricsUtil.dataversesByCategoryToJson(listOfObjectArrays);
     }
 
     public JsonArrayBuilder datasetsBySubject() {

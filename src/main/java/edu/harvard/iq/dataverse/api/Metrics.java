@@ -9,12 +9,6 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 @Path("info/metrics")
 public class Metrics extends AbstractApiBean {
 
-    @GET
-    @Path("dataverses/byCategory")
-    public Response getDataversesByCategory() {
-        return allowCors(ok(metricsSvc.dataversesByCategory()));
-    }
-
     // FIXME: return current month by default
     @GET
     @Path("dataverses/byMonth/{yyyymm}")
@@ -28,10 +22,10 @@ public class Metrics extends AbstractApiBean {
 
     // FIXME: return current month by default
     @GET
-    @Path("downloads/byMonth/{yyyymm}")
-    public Response getDownloadsByMonth(@PathParam("yyyymm") String yyyymm) {
+    @Path("datasets/byMonth/{yyyymm}")
+    public Response getDatasetsByMonth(@PathParam("yyyymm") String yyyymm) {
         try {
-            return allowCors(ok(metricsSvc.downloadsByMonth(yyyymm)));
+            return allowCors(ok(metricsSvc.datasetsByMonth(yyyymm)));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
@@ -50,13 +44,19 @@ public class Metrics extends AbstractApiBean {
 
     // FIXME: return current month by default
     @GET
-    @Path("datasets/byMonth/{yyyymm}")
-    public Response getDatasetsByMonth(@PathParam("yyyymm") String yyyymm) {
+    @Path("downloads/byMonth/{yyyymm}")
+    public Response getDownloadsByMonth(@PathParam("yyyymm") String yyyymm) {
         try {
-            return allowCors(ok(metricsSvc.datasetsByMonth(yyyymm)));
+            return allowCors(ok(metricsSvc.downloadsByMonth(yyyymm)));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
+    }
+
+    @GET
+    @Path("dataverses/byCategory")
+    public Response getDataversesByCategory() {
+        return allowCors(ok(metricsSvc.dataversesByCategory()));
     }
 
     @GET
