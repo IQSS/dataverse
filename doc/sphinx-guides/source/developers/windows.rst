@@ -1,6 +1,6 @@
-=======
-Windows
-=======
+===================
+Windows Development
+===================
 
 Development on Windows is not well supported, unfortunately. You will have a much easier time if you develop on Mac or Linux as described under :doc:`dev-environment` section.
 
@@ -113,7 +113,7 @@ From Git Bash, run the following commands:
 Start Minishift VM and Run Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``minishift start --vm-driver=virtualbox --memory=4GB``
+``minishift start --vm-driver=virtualbox --memory=8GB``
 
 ``eval $(minishift oc-env)``
 
