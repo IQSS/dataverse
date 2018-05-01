@@ -78,7 +78,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
             writeGuestbookResponseRecord(guestbookResponse);
-            callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), guestbookResponse.isWriteResponse());
+            callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
         }
         
         if (guestbookResponse != null && guestbookResponse.getSelectedFileIds() != null     ){
