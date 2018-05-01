@@ -100,7 +100,7 @@ It is not necessary for Glassfish to be running before you execute the Dataverse
 
 Please note that you must run Glassfish in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
-Also note that Glassfish may utilize more than the default amount of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. If there is a better way to do this for CentOS 7 boxes, please let us know. 
+Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. If there is a better way to do this for CentOS 7 boxes, please let us know. 
 
 PostgreSQL
 ----------
