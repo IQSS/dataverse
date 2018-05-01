@@ -40,8 +40,9 @@ public class EMailValidatorTest {
         /*
         Add tests for 4601
         */
-        assertEquals(true, EMailValidator.isEmailValid("ziller@wiso.uni-koeln.de", null));
-        assertEquals(true, EMailValidator.isEmailValid("jayned@essex.ac.uk", null));
+        assertEquals(true, EMailValidator.isEmailValid("blah@wiso.uni-unc.de", null));
+        assertEquals(true, EMailValidator.isEmailValid("foo@essex.co.uk", null));
+        assertEquals(true, EMailValidator.isEmailValid("jack@bu.cloud", null));
     }
 
 }
