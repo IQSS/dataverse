@@ -1094,12 +1094,15 @@ public class EditDatafilesPage implements java.io.Serializable {
         ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false;    
 
+
+        
         if(systemConfig.isProvCollectionEnabled()) {
             Boolean provChanges = provPopupFragmentBean.updatePageMetadatasWithProvFreeform(fileMetadatas);
             if(datasetUpdateRequired == false) {
                 datasetUpdateRequired = provChanges;
             }
         }
+        Boolean provSaveContext = !datasetUpdateRequired; //need to track whether save happened here for later prov saving
         
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.fine("issuing the dataset update command");
@@ -1267,7 +1270,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if(systemConfig.isProvCollectionEnabled()) {        
             try {
                 //If datasetUpdateRequired did not trigger save the prov code will need to save its staged changes.
-                provPopupFragmentBean.saveStagedProvJson(!datasetUpdateRequired); 
+                provPopupFragmentBean.saveStagedProvJson(mode != FileEditMode.UPLOAD); //If not uploading prov needs to save context to save entityId which is a dataFile attribute
             } catch (AbstractApiBean.WrappedResponse ex) {
                 JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
                 Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);

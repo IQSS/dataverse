@@ -282,7 +282,8 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         Boolean changes = false;
         for(FileMetadata fm : fileMetadatas) {
             UpdatesEntry ue = provenanceUpdates.get(fm.getDataFile().getChecksumValue());
-            if(null != ue) {
+//MAD: Does this null check for provFreeform stop provFreeform from being cleared?
+            if(null != ue && null != ue.provFreeform) {
                 fm.setProvFreeForm(ue.provFreeform);
                 changes = true;
             }
