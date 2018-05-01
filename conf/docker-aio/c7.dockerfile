@@ -11,7 +11,7 @@ COPY testdata/solrconfig.xml /tmp/dv
 COPY disableipv6.conf /etc/sysctl.d/
 RUN rm /etc/httpd/conf/*
 COPY testdata/httpd.conf /etc/httpd/conf 
-RUN cd /opt ; tar zxf /tmp/dv/deps/solr-7.2.1dv.tgz 
+RUN cd /opt ; tar zxf /tmp/dv/deps/solr-7.3.0dv.tgz 
 RUN cd /opt ; tar zxf /tmp/dv/deps/glassfish4dv.tgz
 
 # this copy of domain.xml is the result of running `asadmin set server.monitoring-service.module-monitoring-levels.jvm=LOW` on a default glassfish installation (aka - enable the glassfish REST monitir endpoint for the jvm`
@@ -21,9 +21,9 @@ RUN sudo -u postgres /usr/bin/initdb -D /var/lib/pgsql/data
 
 # copy configuration related files
 RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/data/
-RUN cp -r /opt/solr-7.2.1/server/solr/configsets/_default /opt/solr-7.2.1/server/solr/collection1
-RUN cp /tmp/dv/schema.xml /opt/solr-7.2.1/server/solr/collection1/conf/schema.xml
-RUN cp /tmp/dv/solrconfig.xml /opt/solr-7.2.1/server/solr/collection1/conf/solrconfig.xml
+RUN cp -r /opt/solr-7.3.0/server/solr/configsets/_default /opt/solr-7.3.0/server/solr/collection1
+RUN cp /tmp/dv/schema.xml /opt/solr-7.3.0/server/solr/collection1/conf/schema.xml
+RUN cp /tmp/dv/solrconfig.xml /opt/solr-7.3.0/server/solr/collection1/conf/solrconfig.xml
 
 # skipping glassfish user and solr user (run both as root)
 

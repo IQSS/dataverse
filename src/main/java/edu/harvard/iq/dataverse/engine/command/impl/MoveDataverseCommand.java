@@ -277,10 +277,10 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                errorString.append("Dataverse metadata block is not in target dataverse. ");
             }
             if (removeLinkDv) {
-                errorString.append("Dataverse is linked to target dataverse or one of its parents.");
+                errorString.append("Dataverse is linked to target dataverse or one of its parents. ");
             }
             if (removeLinkDs) {
-                errorString.append("Dataset is linked to target dataverse or one of its parents.");
+                errorString.append("Dataset is linked to target dataverse or one of its parents. ");
             }
             errorString.append("Please use the parameter ?forceMove=true to complete the move. This will remove anything from the dataverse that is not compatible with the target dataverse.");
             throw new IllegalCommandException(errorString.toString(), this);
