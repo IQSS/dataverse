@@ -879,6 +879,151 @@ public class Datasets extends AbstractApiBean {
 
 
     
+    /*
+     * The following API is based on the above addFileToDataset
+     * 
+     * 
+     */
+    /**
+     * Add DataFile-related Metadata to an existing Dataset without invoking 
+     * an ingest request
+     * 
+     * @param idSupplied
+//     * @param jsonData
+     * @param fileInputStream
+     * @param contentDispositionHeader
+     * @param formDataBodyPart
+     * @return 
+     */
+    @POST
+    @Path("{id}/addFileMetadata")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response addFileMetadataToDataset(@PathParam("id") String idSupplied,
+                    //@FormDataParam("jsonData") String jsonData,
+                    @FormDataParam("file") InputStream fileInputStream,
+                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+                    ){
+
+          
+        // -------------------------------------
+        // (1) Get the user from the API key
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN,
+                    ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
+                    );
+        }
+        //---------------------------------------
+        // (1A) Make sure that the upload type is not rsync
+        // ------------------------------------- 
+        
+        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+            return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " contains " + SystemConfig.FileUploadMethods.RSYNC + ". Please use rsync file upload.");
+        }
+        
+        
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        //  
+        // -------------------------------------
+        Dataset dataset;
+        
+        Long datasetId;
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();           
+        }
+        
+               
+        // -------------------------------------
+        // (3) Get the file name and content type
+        // -------------------------------------
+        String newFilename = contentDispositionHeader.getFileName();
+        String newFileContentType = formDataBodyPart.getMediaType().toString();
+      
+        
+        // (2a) Load up optional params via JSON
+        // this block is not used because no jsonData
+        //---------------------------------------
+
+        OptionalFileParams optionalFileParams = null;
+/*        
+        msgt("(api) jsonData: " +  jsonData);
+
+        try {
+            optionalFileParams = new OptionalFileParams(jsonData);
+        } catch (DataFileTagException ex) {
+            return error( Response.Status.BAD_REQUEST, ex.getMessage());            
+        }
+*/
+        
+        //-------------------
+        // (3) Create the AddReplaceFileHelper object
+        //-------------------
+        msg("ADD!");
+
+        DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
+                                                ingestService,
+                                                datasetService,
+                                                fileService,
+                                                permissionSvc,
+                                                commandEngine,
+                                                systemConfig);
+
+
+        //-------------------
+        // (4) Run "runAddFileByDatasetId"
+        //-------------------
+        addFileHelper.runAddFileWIByDataset(dataset,
+                                newFilename,
+                                newFileContentType,
+                                fileInputStream,
+                                optionalFileParams);
+
+
+        if (addFileHelper.hasError()){
+            return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
+        }else{
+            String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+            try {
+                //msgt("as String: " + addFileHelper.getSuccessResult());
+                /**
+                 * @todo We need a consistent, sane way to communicate a human
+                 * readable message to an API client suitable for human
+                 * consumption. Imagine if the UI were built in Angular or React
+                 * and we want to return a message from the API as-is to the
+                 * user. Human readable.
+                 */
+                logger.log(Level.FINE, "successMsg:{0} ", successMsg);
+                return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                //"Look at that!  You added a file! (hey hey, it may have worked)");
+            } catch (NoFilesException ex) {
+                logger.log(Level.SEVERE, "NoFilesException during addFileMetadata:{0}", ex);
+                return error(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
+
+            }
+        }
+            
+    } // end: addFileMetadataToDataset
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     private void msg(String m){
         //System.out.println(m);
         logger.fine(m);

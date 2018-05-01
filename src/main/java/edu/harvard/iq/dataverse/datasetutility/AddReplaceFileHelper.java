@@ -95,6 +95,7 @@ public class AddReplaceFileHelper{
 
     
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
+    public static String FILE_ADD_WI_OPERATION = "FILE_ADD_WI_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
     public static String FILE_REPLACE_FORCE_OPERATION = "FILE_REPLACE_FORCE_OPERATION";
     
@@ -274,6 +275,56 @@ public class AddReplaceFileHelper{
 
     }
     
+    // optionalFileParams is always null, not used
+    /**
+     * 
+     * @param chosenDataset
+     * @param newFileName
+     * @param newFileContentType
+     * @param newFileInputStream
+     * @param optionalFileParams  
+     * @return 
+     */
+    public boolean runAddFileWIByDataset(Dataset chosenDataset, 
+            String newFileName, 
+            String newFileContentType, 
+            InputStream newFileInputStream,
+            OptionalFileParams optionalFileParams){
+        
+        msgt(">> runAddFileWithoutIngestByDataset");
+
+        initErrorHandling();
+        
+        this.currentOperation = FILE_ADD_WI_OPERATION;
+        
+        if (!this.step_001_loadDataset(chosenDataset)){
+            return false;
+        }
+        
+        //return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFileWI(dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     /**
      * After the constructor, this method is called to add a file
@@ -411,6 +462,61 @@ public class AddReplaceFileHelper{
         return runAddReplacePhase2();
         
     }
+    
+    
+    
+    
+    
+    /**
+     * Here we're going to run through the steps to ADD or REPLACE a file
+     * 
+     * The difference between ADD and REPLACE (add/delete) is:
+     * 
+     *  oldFileId - For ADD, set to null
+     *  oldFileId - For REPLACE, set to id of file to replace 
+     * 
+     * This has now been broken into Phase 1 and Phase 2
+     * 
+     * The APIs will use this method and call Phase 1 & Phase 2 consecutively
+     * 
+     * The UI will call Phase 1 on initial upload and 
+     *   then run Phase 2 if the user chooses to save the changes.
+     * 
+     * 
+     * @return 
+     */
+    private boolean runAddReplaceFileWI(Dataset dataset,  
+            String newFileName, String newFileContentType, 
+            InputStream newFileInputStream,
+            OptionalFileParams optionalFileParams){
+        
+        // Run "Phase 1" - Initial ingest of file + error check
+        // But don't save the dataset version yet
+        //
+        boolean phase1Success = runAddReplacePhase1WI(dataset,  
+                                        newFileName,  
+                                        newFileContentType,  
+                                        newFileInputStream,
+                                        optionalFileParams
+                                        );
+        
+        if (!phase1Success){
+            return false;
+        }
+        
+       
+        return runAddReplacePhase2WI();
+        
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     /**
      * Note: UI replace is always a "force replace" which means
@@ -508,6 +614,67 @@ public class AddReplaceFileHelper{
         
         return true;
     }
+    
+    
+    /**
+     * For the UI: File add/replace has been broken into 2 steps
+     * 
+     * Phase 1 (here): Add/replace the file and make sure there are no errors
+     *          But don't update the Dataset (yet)
+     * 
+     * @return 
+     */
+    private boolean runAddReplacePhase1WI(Dataset dataset,  
+            String newFileName, 
+            String newFileContentType,
+            InputStream newFileInputStream,
+            OptionalFileParams optionalFileParams){
+        
+        if (this.hasError()){
+            return false;   // possible to have errors already...
+        }
+
+        msgt("step_001_loadDataset");
+        if (!this.step_001_loadDataset(dataset)){
+            return false;
+        }
+        
+        msgt("step_010_VerifyUserAndPermissions");
+        if (!this.step_010_VerifyUserAndPermissions()){
+            return false;
+            
+        }
+
+        msgt("step_020_loadNewFile");
+        if (!this.step_020_loadNewFile(newFileName, newFileContentType, newFileInputStream)){
+            return false;
+            
+        }
+        
+        msgt("step_030_createNewFilesViaIngest");
+        if (!this.step_030_createNewFilesViaIngest()){
+            return false;
+            
+        }
+
+        msgt("step_050_checkForConstraintViolations");
+        if (!this.step_050_checkForConstraintViolations()){
+            return false;            
+        }
+        
+        msgt("step_055_loadOptionalFileParams");
+        if (!this.step_055_loadOptionalFileParams(optionalFileParams)){
+            return false;            
+        }
+        
+        return true;
+    }
+    
+    
+    
+    
+    
+    
     
     
     public boolean runReplaceFromUI_Phase2(){
@@ -644,6 +811,61 @@ public class AddReplaceFileHelper{
 
         return true;
     }
+    
+    
+    /**
+     * For the UI: File add/replace has been broken into 2 steps
+     * 
+     * Phase 2 (here): Phase 1 has run ok, Update the Dataset -- issue the commands!
+     * 
+     * @return 
+     */
+    private boolean runAddReplacePhase2WI(){
+        
+        if (this.hasError()){
+            return false;   // possible to have errors already...
+        }
+
+        if ((finalFileList ==  null)||(finalFileList.isEmpty())){
+            addError(getBundleErr("phase2_called_early_no_new_files"));
+            return false;
+        }
+        
+         msgt("step_060_addFilesViaIngestService");
+        if (!this.step_060_addFilesViaIngestService()){
+            return false;
+            
+        }
+        
+        if (this.isFileReplaceOperation()){
+            msgt("step_080_run_update_dataset_command_for_replace");
+            if (!this.step_080_run_update_dataset_command_for_replace()){
+                return false;            
+            }
+            
+        }else{
+            msgt("step_070_run_update_dataset_command");
+            if (!this.step_070_run_update_dataset_command()){
+                return false;            
+            }
+        }
+        
+        msgt("step_090_notifyUser");
+        if (!this.step_090_notifyUser()){
+            return false;            
+        }
+
+        msgt("step_100_startIngestJobs");
+        if (!this.step_100_startIngestJobs()){
+            return false;            
+        }
+
+        return true;
+    }
+    
+    
+    
+    
     
     
     /**
