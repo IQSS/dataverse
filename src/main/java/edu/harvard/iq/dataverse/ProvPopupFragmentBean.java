@@ -265,7 +265,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
                 df = execCommand(new PersistProvJsonCommand(dvRequestService.getDataverseRequest(), df, provString, df.getProvEntityName(), saveContext));
             } 
             mapEntry.dataFile = df;
-            provenanceUpdates.put(mapEntry.dataFile.getChecksumValue(), mapEntry); //MAD: Modifying the set as we go through it is probably causing errors
+            provenanceUpdates.put(mapEntry.dataFile.getChecksumValue(), mapEntry); //Updates the datafile to the latest.
         }
     }
     

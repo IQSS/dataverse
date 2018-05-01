@@ -1263,11 +1263,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                 
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
-        
+
         if(systemConfig.isProvCollectionEnabled()) {        
             try {
-                provPopupFragmentBean.saveStagedProvJson(false);
-
+                //If datasetUpdateRequired did not trigger save the prov code will need to save its staged changes.
+                provPopupFragmentBean.saveStagedProvJson(!datasetUpdateRequired); 
             } catch (AbstractApiBean.WrappedResponse ex) {
                 JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
                 Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
