@@ -32,7 +32,7 @@ echo "Ensuring Unix user '$SOLR_USER' exists"
 useradd $SOLR_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
 GLASSFISH_ZIP="$DOWNLOAD_DIR/glassfish-4.1.zip"
-SOLR_TGZ="$DOWNLOAD_DIR/solr-7.2.1.tgz"
+SOLR_TGZ="$DOWNLOAD_DIR/solr-7.3.0.tgz"
 WELD_PATCH="$DOWNLOAD_DIR/weld-osgi-bundle-2.2.10.Final-glassfish4.jar"
 if [ ! -f $GLASSFISH_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Couldn't find $GLASSFISH_ZIP or $SOLR_TGZ! Running download script...."

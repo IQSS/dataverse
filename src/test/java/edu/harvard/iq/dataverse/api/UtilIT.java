@@ -1203,6 +1203,35 @@ public class UtilIT {
                 .post("/api/admin/feedback");
     }
 
+    static Response listStorageSites() {
+        return given()
+                .get("/api/admin/storageSites");
+    }
+
+    static Response getStorageSitesById(long id) {
+        return given()
+                .get("/api/admin/storageSites/" + id);
+    }
+
+    static Response setPrimaryLocationBoolean(long id, String input) {
+        return given()
+                .body(input)
+                .put("/api/admin/storageSites/" + id + "/primaryStorage");
+    }
+
+    static Response addStorageSite(JsonObject jsonObject) {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given()
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON);
+        return requestSpecification.post("/api/admin/storageSites");
+    }
+
+    static Response deleteStorageSite(long storageSiteId) {
+        return given()
+                .delete("/api/admin/storageSites/" + storageSiteId);
+    }
+
     static Response metricsDataversesByMonth(String yyyymm) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
