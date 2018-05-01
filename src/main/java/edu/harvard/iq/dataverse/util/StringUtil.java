@@ -61,18 +61,6 @@ public class StringUtil {
         return s.isEmpty() ? Optional.empty() : Optional.of(s);
     }
     
-    /**
-     * @todo Unless there is a compelling reason not to, we should switch to the
-     * validation routines in EMailValidator.
-     */
-    @Deprecated
-    public static boolean isValidEmail( String s ) {
-        logger.fine("Validating <<<" + s + ">>>.");
-        if (s == null) {
-            return false;
-        }
-        return EMAIL_PATTERN.matcher(s).matches();
-    }
     
     public static final boolean isAlphaNumericChar(char c) {
         // TODO: consider using Character.isLetterOrDigit(c)
