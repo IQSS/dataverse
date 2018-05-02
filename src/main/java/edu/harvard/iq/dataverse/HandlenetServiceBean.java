@@ -69,6 +69,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
     private static final String HANDLE_PROTOCOL_TAG = "hdl";
+    int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
     
     public HandlenetServiceBean() {
         logger.log(Level.FINE,"Constructor");
@@ -106,7 +107,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
             
             try {
 
-                AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), 300,
+                AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), handlenetIndex,
                         true, true, true, true, true, true,
                         true, true, true, true, true, true);
 
@@ -154,7 +155,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
         try {
 
-            AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), 300,
+            AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), handlenetIndex,
                     true, true, true, true, true, true,
                     true, true, true, true, true, true);
 
@@ -233,13 +234,14 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-
+        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+       
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
         String authHandle =  getHandleAuthority(handlePrefix);
         PublicKeyAuthenticationInfo auth =
-                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), 300, privkey);
+                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
         return auth;
     }
     private String getRegistrationUrl(DvObject dvObject) {
@@ -356,7 +358,8 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         String authHandle = getAuthHandle(dvObject);
 
         String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-
+        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+       
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);
 
@@ -364,7 +367,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
         resolver.setSessionTracker(new ClientSessionTracker());
 
         PublicKeyAuthenticationInfo auth =
-                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), 300, privkey);
+                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
 
         DeleteHandleRequest req =
                 new DeleteHandleRequest(Util.encodeString(handle), auth);

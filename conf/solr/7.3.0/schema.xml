@@ -123,7 +123,7 @@
     
     <!-- catchall field, containing all other searchable text fields (implemented
         via copyField further on in this schema  -->
-    <!-- Dataverse solr 7.2.1: for some reason the old text wasn't working so switched to _text_ for copyfields -->
+    <!-- Dataverse solr 7.3.0: for some reason the old text wasn't working so switched to _text_ for copyfields -->
         <!--<field name="text" type="text_general" indexed="true" stored="false" multiValued="true"/>-->
         <field name="_text_" type="text_general" indexed="true" stored="false" multiValued="true"/>
     <!-- catchall text field that indexes tokens both normally and in reverse for efficient

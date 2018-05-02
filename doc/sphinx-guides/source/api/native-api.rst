@@ -72,6 +72,15 @@ List Facets Configured for a Dataverse
 
   GET http://$SERVER/api/dataverses/$id/facets?key=$apiKey
 
+Set Facets for a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Assign search facets for a given dataverse with alias ``$alias``
+
+``curl -H "X-Dataverse-key: $apiKey" -X POST http://$server/api/dataverses/$alias/facets --upload-file facets.json``
+
+Where ``facets.json`` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
+
 Create a New Role in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -244,7 +253,7 @@ For example, after making your edits, your JSON file might look like :download:`
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/versions/:draft?persistentId=$PID --upload-file dataset-update-metadata.json
 
-Note that in example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``json``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this::
+Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``json``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this::
 
     curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PID | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
 
@@ -253,13 +262,6 @@ Now that the resulting JSON file only contains the ``metadataBlocks`` key, you c
     vi dataset-update-metadata.json
 
 Now that you've made edits to the metadata in your JSON file, you can send it to Dataverse as described above.
-
-Move Dataset to Another Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Moves a dataset whose id is passed to a dataverse whose alias is passed. Only accessible to superusers. ::
-
-    POST http://$SERVER/api/datasets/$id/move/$alias?key=$apiKey
 
 Publish a Dataset
 ~~~~~~~~~~~~~~~~~
@@ -339,7 +341,7 @@ A more detailed "add" example using curl::
 
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
-* ``dataverse_server`` - e.g. https://dataverse.harvard.edu
+* ``dataverse_server`` - e.g. https://demo.dataverse.org
 * ``api_key`` - See the top of this document for a description
 * ``persistentId`` - Example: ``doi:10.5072/FK2/6XACVA``
 * ``dataset_id`` - Database id of the dataset
@@ -478,17 +480,11 @@ Replacing Files
 
 Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced.
 
-A curl example using an ``id`` (note that ``forceReplace`` is for replacing one file type with another)::
-
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://example.dataverse.edu/api/files/{id}/replace"
-
-A curl example using a ``pid``::
-
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://example.dataverse.edu/api/files/:persistentId/replace?persistentId={pid}"
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://demo.dataverse.org/api/files/$FILE_ID/replace"
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
 
-* ``dataverse_server`` - e.g. https://dataverse.harvard.edu
+* ``dataverse_server`` - e.g. https://demo.dataverse.org
 * ``api_key`` - See the top of this document for a description
 * ``file_id`` - Database id of the file to replace (returned in the GET API for a Dataset)
 

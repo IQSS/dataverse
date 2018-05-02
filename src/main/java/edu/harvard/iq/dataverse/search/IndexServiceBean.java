@@ -138,7 +138,7 @@ public class IndexServiceBean {
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) {
         return indexDataverse(dataverse);
     }
-
+    
     public Future<String> indexDataverse(Dataverse dataverse) {
         logger.fine("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {

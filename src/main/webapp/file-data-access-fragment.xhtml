@@ -50,7 +50,7 @@
                 <ui:repeat value="#{repositoryStorageAbstractionLayerPage.getRsyncSites(datasetVersion)}" var="site">
                     <div class="col-sm-12">
                         <code><h:outputText value="#{site.rsyncDownloadcommand}"/></code>
-                        <h:outputText class="text-muted" value=" (#{site.name}, #{site.country})"/>
+                        <h:outputText class="text-muted" value=" (#{site.name})"/>
                     </div>
                 </ui:repeat>
             </div>

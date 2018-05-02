@@ -155,7 +155,29 @@ TODO: Document these in the Installation Guide once they're final.
 
 To specify replication sites that appear in rsync URLs:
 
-``curl http://localhost:8080/api/admin/settings/:ReplicationSites -X PUT -d "dv.sbgrid.org:Harvard Medical School:USA,sbgrid.icm.uu.se:Uppsala University:Sweden,sbgrid.ncpss.org:Institut Pasteur de Montevideo:Uruguay,sbgrid.ncpss.org:Shanghai Institutes for Biological Sciences:China"``
+Download :download:`add-storage-site.json <../../../../scripts/api/data/storageSites/add-storage-site.json>` and adjust it to meet your needs. The file should look something like this:
+
+.. literalinclude:: ../../../../scripts/api/data/storageSites/add-storage-site.json
+
+Then add the storage site using curl:
+
+``curl -H "Content-type:application/json" -X POST http://localhost:8080/api/admin/storageSites --upload-file add-storage-site.json``
+
+You make a storage site the primary site by passing "true". Pass "false" to make it not the primary site. (id "1" in the example):
+
+``curl -X PUT -d true http://localhost:8080/api/admin/storageSites/1/primaryStorage``
+
+You can delete a storage site like this (id "1" in the example):
+
+``curl -X DELETE http://localhost:8080/api/admin/storageSites/1``
+
+You can view a single storage site like this: (id "1" in the example):
+
+``curl http://localhost:8080/api/admin/storageSites/1``
+
+You can view all storage site like this:
+
+``curl http://localhost:8080/api/admin/storageSites``
 
 In the GUI, this is called "Local Access". It's where you can compute on files on your cluster.
 

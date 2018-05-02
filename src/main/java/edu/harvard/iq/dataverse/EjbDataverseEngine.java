@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import java.util.Map;
@@ -67,6 +68,9 @@ public class EjbDataverseEngine {
 
     @EJB
     IndexServiceBean indexService;
+    
+    @EJB
+    IndexBatchServiceBean indexBatchService;
 
     @EJB
     SolrIndexServiceBean solrIndexService;
@@ -285,6 +289,11 @@ public class EjbDataverseEngine {
                 @Override
                 public IndexServiceBean index() {
                     return indexService;
+                }
+                
+                @Override
+                public IndexBatchServiceBean indexBatch() {
+                    return indexBatchService;
                 }
 
                 @Override
