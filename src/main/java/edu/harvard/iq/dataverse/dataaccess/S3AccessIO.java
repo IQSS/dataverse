@@ -360,9 +360,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String destinationKey = getDestinationKey(auxItemTag);
         try {
             s3.copyObject(new CopyObjectRequest(bucketName, destinationKey,  bucketName, key));
+            deleteAuxObject(auxItemTag);
         } catch (AmazonClientException ase) {
             logger.warning("Caught an AmazonServiceException in S3AccessIO.backupAsAux:    " + ase.getMessage());
-            throw new IOException("S3AccessIO: Unable to backup original auxiliary object");
+            throw new IOException("S3AccessIO: Unable to revert backup auxiliary object");
         }
     }
 
