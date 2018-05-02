@@ -187,7 +187,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         } 
         if(deleteStoredJson) {
             stagingEntry.deleteJson = true;
-            
+            stagingEntry.provJson = null;
             popupDataFile.setProvEntityName(null); 
         }        
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) { //delete and create again can both happen at once
