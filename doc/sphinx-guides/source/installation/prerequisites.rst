@@ -102,7 +102,7 @@ Please note that you must run Glassfish in an English locale. If you are using s
 
 Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility:
 
-	$ sudo prlimit -p pid -n 32768:32768
+	# sudo prlimit -p pid -n 32768:32768
 
 PostgreSQL
 ----------
@@ -202,7 +202,7 @@ With the Dataverse-specific config in place, you can now start Solr and create t
 	
 Please note: Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script and adding solr soft nproc 65000 to /etc/security/limits.conf. On operating systems which use systemd such as RHEL or CentOS 7, you may add a line like LimitNOFILE=65000 to the systemd unit file, or adjust the limits on a running process using the prlimit tool:
 
-	$ sudo prlimit -p pid -n 65000:65000
+	# sudo prlimit -p pid -n 65000:65000
 	
 
 Solr Init Script
