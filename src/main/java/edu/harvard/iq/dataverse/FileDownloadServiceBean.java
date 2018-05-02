@@ -145,6 +145,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         boolean recordsWritten = false;
         if(!fileMetadata.getDatasetVersion().isDraft()){
            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
+           logger.info("SFD: writeResponse : " + guestbookResponse.isWriteResponse());
            writeGuestbookResponseRecord(guestbookResponse);
             recordsWritten = true;
         }
