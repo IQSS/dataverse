@@ -109,7 +109,7 @@
                                         <ul class="dropdown-menu pull-right text-left" role="menu">
                                             <li>
                                                 <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE&#38;version=#{FilePage.version}">
-                                                    <h:outputText id="editFile-Multi-Link" value="Metadata"/>
+                                                    <h:outputText id="editFile-Multi-Link" value="#{bundle['file.dataFilesTab.metadata.header']}"/>
                                                 </h:outputLink>
                                             </li>
                                             <ui:fragment rendered="#{!settingsWrapper.publicInstall}">

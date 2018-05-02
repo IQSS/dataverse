@@ -312,7 +312,7 @@
             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
         </div>
     </p:dialog>
-    <p:dialog id="editFileAccessPopup" header="File Restrictions" widgetVar="editFileAccessPopup" modal="true">
+    <p:dialog id="editFileAccessPopup" header="#{bundle['dataset.access.accessHeader']}" widgetVar="editFileAccessPopup" modal="true">
         <div class="form-horizontal">
             <div class="form-group">
                 <label for="metadata_TermsAccess" class="col-sm-3 control-label">

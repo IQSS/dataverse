@@ -1330,7 +1330,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup" modal="true">
+                    <p:dialog id="accessPopup" header="#{bundle['dataset.access.accessHeader']}"  widgetVar="accessPopup" modal="true">
                         <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE' or empty DatasetPage.editMode }">
                             <div class="form-horizontal">
                                 <div class="form-group">
