@@ -634,7 +634,7 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDownloadtype("Download");
 
         guestbookResponse.setDataset(dataset);
-        
+        logger.info("initforfragend: writeResponse: " + guestbookResponse.isWriteResponse());
         
         return guestbookResponse;
     }
