@@ -17,11 +17,11 @@ if [ ! -e dv/deps/glassfish4dv.tgz ]; then
 	# assuming that folks usually have /tmp auto-clean as needed
 fi
 
-if [ ! -e dv/deps/solr-7.2.1dv.tgz ]; then
+if [ ! -e dv/deps/solr-7.3.0dv.tgz ]; then
 	echo "solr dependency prep"
 	# schema changes *should* be the only ones...
 	cd dv/deps/
-	wget https://archive.apache.org/dist/lucene/solr/7.2.1/solr-7.2.1.tgz -O solr-7.2.1dv.tgz
+	wget https://archive.apache.org/dist/lucene/solr/7.3.0/solr-7.3.0.tgz -O solr-7.3.0dv.tgz
 	cd ../../
 fi
 
