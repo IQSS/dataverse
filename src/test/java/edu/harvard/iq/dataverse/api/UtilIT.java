@@ -1024,22 +1024,22 @@ public class UtilIT {
         return requestSpecification.post("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
     }
     
-    static Response deleteProvFreeForm(String idOrPersistentId, String apiToken) {
-         logger.info("Deleting Provenance Free Form");
-        //TODO: Repeated code, refactor
-        String idInPath = idOrPersistentId; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "?persistentId=" + idOrPersistentId;
-        }
-        RequestSpecification requestSpecification = given();
-        if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
-        }
-        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
-    }
+//    static Response deleteProvFreeForm(String idOrPersistentId, String apiToken) {
+//         logger.info("Deleting Provenance Free Form");
+//        //TODO: Repeated code, refactor
+//        String idInPath = idOrPersistentId; // Assume it's a number.
+//        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+//        if (!NumberUtils.isNumber(idOrPersistentId)) {
+//            idInPath = ":persistentId";
+//            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+//        }
+//        RequestSpecification requestSpecification = given();
+//        if (apiToken != null) {
+//            requestSpecification = given()
+//                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+//        }
+//        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
+//    }
 
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
 //        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ

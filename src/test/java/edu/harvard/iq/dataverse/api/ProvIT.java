@@ -10,6 +10,7 @@ import javax.json.JsonObject;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -201,12 +202,13 @@ public class ProvIT {
         Response deleteProvJson = UtilIT.deleteProvJson(dataFileId.toString(), apiTokenForDepositor);
         deleteProvJson.prettyPrint();
         deleteProvJson.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        
-        Response deleteProvFreeForm = UtilIT.deleteProvFreeForm(dataFileId.toString(), apiTokenForDepositor);
-        deleteProvFreeForm.prettyPrint();
-        deleteProvFreeForm.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(FORBIDDEN.getStatusCode()); //cannot delete json of a published dataset
+
+// Command removed, redundant        
+//        Response deleteProvFreeForm = UtilIT.deleteProvFreeForm(dataFileId.toString(), apiTokenForDepositor);
+//        deleteProvFreeForm.prettyPrint();
+//        deleteProvFreeForm.then().assertThat()
+//                .statusCode(OK.getStatusCode());
         
     }
 }

@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.ProvEntityFileData;
 import edu.harvard.iq.dataverse.ProvUtilFragmentBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
@@ -134,28 +133,6 @@ public class Prov extends AbstractApiBean {
         
     }
     
-    @DELETE
-    @Path("{id}/prov-freeform")
-    public Response deleteProvFreeForm(String body, @PathParam("id") String idSupplied) {
-        if(!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, "This functionality has been administratively disabled.");
-        }
-        try {
-            DataverseRequest dr= createDataverseRequest(findUserOrDie());
-            DataFile dataFile = findDataFileOrDie(idSupplied);
-            if (dataFile == null) {
-                return error(BAD_REQUEST, "Could not find datafile with id " + idSupplied);
-            }
-            Boolean result = execCommand(new DeleteProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
-            if(result) {
-                execCommand(new UpdateDatasetCommand(dataFile.getOwner(), dr));
-            }
-            return ok(result);
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
-    }
-    
     @GET
     @Path("{id}/prov-freeform")
     public Response getProvFreeForm(String body, @PathParam("id") String idSupplied) {
@@ -210,5 +187,4 @@ public class Prov extends AbstractApiBean {
         }
         return dataFile;
     }
-
 }
