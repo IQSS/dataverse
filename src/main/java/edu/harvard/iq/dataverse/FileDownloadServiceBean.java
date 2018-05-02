@@ -143,6 +143,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         boolean recordsWritten = false;
+        logger.info("SFD: fm.getDVersion.isDraft : " + fileMetadata.getDatasetVersion().isDraft());
         if(!fileMetadata.getDatasetVersion().isDraft()){
            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
            logger.info("SFD: writeResponse : " + guestbookResponse.isWriteResponse());
