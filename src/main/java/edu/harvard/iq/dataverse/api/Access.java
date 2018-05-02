@@ -207,7 +207,7 @@ public class Access extends AbstractApiBean {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
-        
+        logger.info("/datafile/{id} : gbrecs: " + gbrecs + " df.isReleased: " + df.isReleased());
         if (gbrecs == null && df.isReleased()){
             // Write Guestbook record if not done previously and file is released
             User apiTokenUser = findAPITokenUser(apiToken);
