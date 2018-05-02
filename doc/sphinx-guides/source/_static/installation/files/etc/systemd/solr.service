@@ -7,7 +7,7 @@ User = solr
 Type = simple
 WorkingDirectory = /usr/local/solr/solr-7.3.0
 ExecStart = /usr/local/solr/solr-7.3.0/bin/solr start -m 1g
-LimitNOFILE=32768
+LimitNOFILE=65000
 Restart=on-failure
 
 [Install]
