@@ -78,7 +78,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
             writeGuestbookResponseRecord(guestbookResponse);
-            callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), guestbookResponse.isWriteResponse());
+          //Always suppress having a guestbookResponse written by the API by setting the last param to true
+            callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
         }
         
         if (guestbookResponse != null && guestbookResponse.getSelectedFileIds() != null     ){
@@ -107,11 +108,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             //if an error occurs here then download won't happen no need for response recs...
 
         }
-
     }
-
     public void callDownloadServlet(String multiFileString, Boolean gbRecordsWritten){
-
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
         if (gbRecordsWritten){
             fileDownloadUrl += "?gbrecs=true";
@@ -134,17 +132,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
         }
     }
-    
 
-    //public String startFileDownload(FileMetadata fileMetadata, String format) {
+    
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
-        boolean recordsWritten = false;
+        //Write a guestbookResponse only for downloads from published versions of datasets
         if(!fileMetadata.getDatasetVersion().isDraft()){
            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
            writeGuestbookResponseRecord(guestbookResponse);
-            recordsWritten = true;
         }
-        callDownloadServlet(format, fileMetadata.getDataFile().getId(), recordsWritten);
+        //Always suppress having a guestbookResponse written by the API by setting the last param to true
+        callDownloadServlet(format, fileMetadata.getDataFile().getId(), true);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
 
