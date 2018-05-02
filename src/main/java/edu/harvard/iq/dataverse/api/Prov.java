@@ -28,7 +28,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
 @Path("files")
 public class Prov extends AbstractApiBean {
@@ -42,13 +42,20 @@ public class Prov extends AbstractApiBean {
     @POST
     @Path("{id}/prov-json")
     @Consumes("application/json")
+//MAD: SHOULD NOT WORK ON PUBLISHED
     public Response addProvJson(String body, @PathParam("id") String idSupplied, @QueryParam("entityName") String entityName) {
+        if(!systemConfig.isProvCollectionEnabled()) {
+            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+        }
         try {
-            DataFile dataFile;
-            dataFile = findDataFileOrDie(idSupplied);
+            DataFile dataFile = findDataFileOrDie(idSupplied);
             if(null == dataFile.getFileMetadata()) { // can happen when a datafile is not fully initialized, though unlikely in our current implementation
                 return error(BAD_REQUEST, "Invalid DataFile Id, file not fully initialized");
-            } 
+            }
+            if(dataFile.isReleased() && dataFile.getProvEntityName() != null){
+                return error(FORBIDDEN, "Provenance JSON cannot be updated for a published file that already has Provenance JSON.");
+            }
+            
             /*Add when we actually integrate provCpl*/
             //else if (dataFile.getProvCplId() != 0) {
             //    return error(METHOD_NOT_ALLOWED, "File provenance has already exists in the CPL system and cannot be uploaded.");
@@ -70,9 +77,17 @@ public class Prov extends AbstractApiBean {
     
     @DELETE
     @Path("{id}/prov-json")
+//MAD: SHOULD NOT WORK ON PUBLISHED
     public Response deleteProvJson(String body, @PathParam("id") String idSupplied) {
+        if(!systemConfig.isProvCollectionEnabled()) {
+            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+        }
         try {
-            execCommand(new DeleteProvJsonCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied), true));
+            DataFile dataFile = findDataFileOrDie(idSupplied);
+            if(dataFile.isReleased()){
+                return error(FORBIDDEN, "Provenance JSON cannot be deleted for a published file.");
+            }
+            execCommand(new DeleteProvJsonCommand(createDataverseRequest(findUserOrDie()), dataFile, true));
             return ok("Provenance URL deleted");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -84,6 +99,9 @@ public class Prov extends AbstractApiBean {
     @Path("{id}/prov-freeform")
     @Consumes("application/json")
     public Response addProvFreeForm(String body, @PathParam("id") String idSupplied) {
+        if(!systemConfig.isProvCollectionEnabled()) {
+            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+        }
         StringReader rdr = new StringReader(body);
         JsonObject jsonObj = null;
         
@@ -119,6 +137,9 @@ public class Prov extends AbstractApiBean {
     @DELETE
     @Path("{id}/prov-freeform")
     public Response deleteProvFreeForm(String body, @PathParam("id") String idSupplied) {
+        if(!systemConfig.isProvCollectionEnabled()) {
+            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+        }
         try {
             DataverseRequest dr= createDataverseRequest(findUserOrDie());
             DataFile dataFile = findDataFileOrDie(idSupplied);
@@ -138,6 +159,9 @@ public class Prov extends AbstractApiBean {
     @GET
     @Path("{id}/prov-freeform")
     public Response getProvFreeForm(String body, @PathParam("id") String idSupplied) {
+        if(!systemConfig.isProvCollectionEnabled()) {
+            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+        }
         try {
             String freeFormText = execCommand(new GetProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
             if(null == freeFormText) {
@@ -154,6 +178,9 @@ public class Prov extends AbstractApiBean {
     @GET
     @Path("{id}/prov-json")
     public Response getProvJson(String body, @PathParam("id") String idSupplied) {
+        if(!systemConfig.isProvCollectionEnabled()) {
+            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+        }
         try {
             JsonObject jsonText = execCommand(new GetProvJsonCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
             if(null == jsonText) {
