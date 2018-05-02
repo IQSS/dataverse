@@ -595,10 +595,8 @@ public class GuestbookResponseServiceBean {
         DatasetVersion workingVersion;
         if (fileMetadata != null){
             workingVersion = fileMetadata.getDatasetVersion();
-            logger.info("initGuestbookResponseForFragment: workingversion from fileMetadata");
         } else {
             workingVersion = dataset.getLatestVersion();
-            logger.info("initGuestbookResponseForFragment: workingversion dataset.getLatestVersion");
         }
        
        
@@ -606,7 +604,6 @@ public class GuestbookResponseServiceBean {
         
         if(workingVersion != null && workingVersion.isDraft()){           
             guestbookResponse.setWriteResponse(false);
-            logger.info("initGuestbookResponseForFragment: writeResponse: false");
         } 
         
        // guestbookResponse.setDatasetVersion(workingVersion);
@@ -653,7 +650,6 @@ public class GuestbookResponseServiceBean {
         DatasetVersion workingVersion = null;
         if (fileMetadata != null){
             workingVersion = fileMetadata.getDatasetVersion();
-            logger.info("initGuestbookResponse: workingVersion from fileMetadata");
         }
 
 
@@ -662,7 +658,6 @@ public class GuestbookResponseServiceBean {
         
         if(workingVersion != null && workingVersion.isDraft()){
             guestbookResponse.setWriteResponse(false);
-            logger.info("initGuestbookResponse: writeResponse: false");
         }
         
         dataset = workingVersion.getDataset();

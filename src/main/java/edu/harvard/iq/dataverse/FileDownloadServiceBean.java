@@ -78,7 +78,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
             writeGuestbookResponseRecord(guestbookResponse);
-            logger.info("wGBandSD: " + guestbookResponse.isWriteResponse());
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), guestbookResponse.isWriteResponse());
         }
         
@@ -89,7 +88,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 DataFile df = datafileService.findCheapAndEasy(new Long(idAsString)) ;
                 if (df != null) {
                     guestbookResponse.setDataFile(df);
-                    logger.info("wGBandSD multi: " + guestbookResponse.isWriteResponse());
                     writeGuestbookResponseRecord(guestbookResponse);
                 }
             }
@@ -118,7 +116,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if (gbRecordsWritten){
             fileDownloadUrl += "?gbrecs=true";
         }
-     logger.info("callDownloadServlet: " + fileDownloadUrl);   
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
         } catch (IOException ex) {
@@ -130,7 +127,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     public void callDownloadServlet(String downloadType, Long fileId, boolean gbRecordsWritten) {
         String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, gbRecordsWritten);
-        logger.info("callDownloadServlet: " + fileDownloadUrl);
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
