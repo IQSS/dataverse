@@ -2651,7 +2651,7 @@ public class DatasetPage implements java.io.Serializable {
         if (editMode == null) {
             // that must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
-                JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileDeleteFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.bulkFileDeleteFailure"));
 
             } else {
                 JsfHelper.addErrorMessage(JH.localize("dataset.message.filesFailure"));
