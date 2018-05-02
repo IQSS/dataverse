@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import main.java.edu.harvard.iq.dataverse.FileDownloadHelper;
 
 import java.sql.Timestamp;
 import java.util.Date;
