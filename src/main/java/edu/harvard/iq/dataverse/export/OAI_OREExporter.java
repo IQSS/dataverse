@@ -108,7 +108,7 @@ try {
 			logger.info("IOException calling outputStream.write: " + ex);
 		}
 } catch (Exception e) {
-	logger.error(e.getLocalizedMessage());
+	logger.severe(e.getLocalizedMessage());
 }
 		/*
 		 * 
