@@ -17,7 +17,7 @@ Moves a dataverse whose id is passed to a new dataverse whose id is passed. The 
 Link a Dataverse
 ^^^^^^^^^^^^^^^^^^
 
-Creates a link between a dataverse and another dataverse. Only accessible to superusers. ::
+Creates a link between a dataverse and another dataverse (see the Linked Dataverses + Linked Datasets of the :doc:`/user/dataverse-management` guide for more information). Only accessible to superusers. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/dataverses/$linked-dataverse-alias/link/$linking-dataverse-alias
 
@@ -41,7 +41,7 @@ Moves a dataset whose id is passed to a dataverse whose alias is passed. If the 
 Link a Dataverse
 ^^^^^^^^^^^^^^^^^^
 
-Creates a link between a dataset and a dataverse. Only accessible to superusers. ::
+Creates a link between a dataset and a dataverse (see the Linked Dataverses + Linked Datasets of the :doc:`/user/dataverse-management` guide for more information). Only accessible to superusers. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
 
