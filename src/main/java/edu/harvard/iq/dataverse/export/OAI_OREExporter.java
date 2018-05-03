@@ -32,8 +32,13 @@ public class OAI_OREExporter implements Exporter {
 	@Override
 	public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
 			throws ExportException {
-
+try {
 		logger.info("In ore exporter");
+		logger.info(LocalDate.now().toString());
+		logger.info(BundleUtil.getStringFromBundle("institution.name"));
+		logger.info(systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=" + getProviderName()
+		+ "&persistentId=" + version.getDataset().getGlobalId());
+		logger.info(json.toString());
 		JsonObject oremap = Json.createObjectBuilder().add("Creation Date", LocalDate.now().toString())
 				.add("Creator", BundleUtil.getStringFromBundle("institution.name")).add("@type", "ResourceMap")
 				.add("@id",
@@ -102,7 +107,9 @@ public class OAI_OREExporter implements Exporter {
 		} catch (IOException ex) {
 			logger.info("IOException calling outputStream.write: " + ex);
 		}
-
+} catch (Exception e) {
+	logger.error(e.getLocalizedMessage());
+}
 		/*
 		 * 
 		 * curations.get(curationId) match { case Some(c) => {
