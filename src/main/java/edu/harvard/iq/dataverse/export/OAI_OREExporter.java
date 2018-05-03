@@ -57,7 +57,7 @@ public class OAI_OREExporter implements Exporter {
 				aggBuilder.add(dfType.getTitle(), vals.build());
 			}
 			aggBuilder.add("@id", id).add("@type", Json.createArrayBuilder().add("Aggregation").add("Dataset"))
-					.add("version", json.getString("version") + "." + json.getString("versionMinorNumber"))
+					.add("version", json.getString("versionNumber") + "." + json.getString("versionMinorNumber"))
 					.add("datePublished", json.getString("publicationDate")).add("name", version.getTitle())
 					.add("dateModified", version.getLastUpdateTime().toString());
 
