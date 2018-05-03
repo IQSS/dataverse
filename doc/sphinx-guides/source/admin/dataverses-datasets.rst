@@ -38,8 +38,8 @@ Moves a dataset whose id is passed to a dataverse whose alias is passed. If the 
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$id/move/$alias
 
-Link a Dataverse
-^^^^^^^^^^^^^^^^^^
+Link a Dataset
+^^^^^^^^^^^^^^
 
 Creates a link between a dataset and a dataverse (see the Linked Dataverses + Linked Datasets of the :doc:`/user/dataverse-management` guide for more information). Only accessible to superusers. ::
 
