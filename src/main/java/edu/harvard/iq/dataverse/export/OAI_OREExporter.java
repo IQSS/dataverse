@@ -25,8 +25,6 @@ public class OAI_OREExporter implements Exporter {
 
 	public static final String NAME = "OAI_ORE";
 
-	@EJB
-	SystemConfig systemConfig;
 
 	@Override
 	public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
@@ -35,7 +33,7 @@ public class OAI_OREExporter implements Exporter {
 			logger.info("In ore exporter");
 			logger.info(LocalDate.now().toString());
 			logger.info(ResourceBundle.getBundle("Bundle").getString("institution.name"));
-			logger.info(systemConfig.getDataverseSiteUrl());
+			logger.info(SystemConfig.getDataverseSiteUrlStatic());
 			logger.info(getProviderName());
 			if (version != null) {
 				if (version.getDataset() != null) {
@@ -50,7 +48,7 @@ public class OAI_OREExporter implements Exporter {
 					.add("Creator", ResourceBundle.getBundle("Bundle").getString("institution.name"))
 					.add("@type", "ResourceMap")
 					.add("@id",
-							systemConfig.getDataverseSiteUrl()
+							SystemConfig.getDataverseSiteUrlStatic()
 									+ "/api/datasets/export?exporter=" + getProviderName() + "&persistentId=" + id)
 					.add("describes", json)
 					.add("@context", Json.createArrayBuilder().add("https://w3id.org/ore/context")
