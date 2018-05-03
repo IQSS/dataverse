@@ -33,6 +33,7 @@ public class OAI_OREExporter implements Exporter {
 	public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
 			throws ExportException {
 
+		logger.info("In ore exporter");
 		JsonObject oremap = Json.createObjectBuilder().add("Creation Date", LocalDate.now().toString())
 				.add("Creator", BundleUtil.getStringFromBundle("institution.name")).add("@type", "ResourceMap")
 				.add("@id",
@@ -46,6 +47,7 @@ public class OAI_OREExporter implements Exporter {
 										.add("Has Version", "http://purl.org/dc/terms/hasVersion")
 										.add("persistentUrl", "http://purl.org/dc/elements/1.1/identifier")))
 				.build();
+		logger.info(oremap.toString());
 
 		/*
 		 * metadataDefsMap.toMap ++ Map(
@@ -100,11 +102,7 @@ public class OAI_OREExporter implements Exporter {
 		} catch (IOException ex) {
 			logger.info("IOException calling outputStream.write: " + ex);
 		}
-		try {
-			outputStream.flush();
-		} catch (IOException ex) {
-			logger.info("IOException calling outputStream.flush: " + ex);
-		}
+
 		/*
 		 * 
 		 * curations.get(curationId) match { case Some(c) => {
