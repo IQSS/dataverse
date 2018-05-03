@@ -18,8 +18,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-
-
 @AutoService(Exporter.class)
 public class OAI_OREExporter implements Exporter {
 
@@ -33,89 +31,92 @@ public class OAI_OREExporter implements Exporter {
 	@Override
 	public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
 			throws ExportException {
-try {
-		logger.info("In ore exporter");
-		logger.info(LocalDate.now().toString());
-		logger.info(ResourceBundle.getBundle("Bundle").getString("institution.name"));
-		logger.info(systemConfig.getDataverseSiteUrl());
-		logger.info( getProviderName());
-		if(version.getDataset() != null) {
-		logger.info(version.getDataset().getGlobalId());
-		} String id = json.getString("protocol") + ":" + json.getString("authority") + "/" + json.getString("identifier");
-		logger.info(id);
-		logger.info(json.toString());
-		JsonObject oremap = Json.createObjectBuilder().add("Creation Date", LocalDate.now().toString())
-				.add("Creator", ResourceBundle.getBundle("Bundle").getString("institution.name"))
-				.add("@type", "ResourceMap")
-				.add("@id",
-						systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=" + getProviderName()
-								+ "&persistentId=" + id)
-				.add("describes", json)
-				.add("@context",
-						Json.createArrayBuilder().add("https://w3id.org/ore/context")
-								.add(Json.createObjectBuilder().add("Creation Date", "http://purl.org/dc/terms/created")
-										.add("Creator", "http://purl.org/dc/elements/1.1/creator")
-										.add("Has Version", "http://purl.org/dc/terms/hasVersion")
-										.add("persistentUrl", "http://purl.org/dc/elements/1.1/identifier")))
-				.build();
-		logger.info(oremap.toString());
-
-		/*
-		 * metadataDefsMap.toMap ++ Map(
-		 * 
-		 * "Rights" -> Json.toJson("http://purl.org/dc/terms/rights"), "Date" ->
-		 * Json.toJson("http://purl.org/dc/elements/1.1/date"),
-		 * 
-		 * "Label" -> Json.toJson("http://www.w3.org/2000/01/rdf-schema#label"),
-		 * "Location" -> Json.toJson( "http://sead-data.net/terms/generatedAt"),
-		 * "Description" -> Json.toJson("http://purl.org/dc/elements/1.1/description"),
-		 * "Keyword"->
-		 * Json.toJson("http://www.holygoat.co.uk/owl/redwood/0.1/tags/taggedWithTag"),
-		 * "Title" -> Json.toJson("http://purl.org/dc/elements/1.1/title"),
-		 * 
-		 * "Contact" -> Json.toJson("http://sead-data.net/terms/contact"), "name" ->
-		 * Json.toJson("http://sead-data.net/terms/name"), "email" ->
-		 * Json.toJson("http://schema.org/Person/email"), "Publication Date" ->
-		 * Json.toJson("http://purl.org/dc/terms/issued"), "Spatial Reference" ->
-		 * Json.toJson( Map(
-		 * 
-		 * "@id" -> Json.toJson("tag:tupeloproject.org,2006:/2.0/gis/hasGeoPoint"),
-		 * "Longitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#long"),
-		 * "Latitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#lat"),
-		 * "Altitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#alt")
-		 * 
-		 * )), "Comment" -> Json.toJson(Map( "comment_body" ->
-		 * Json.toJson("http://purl.org/dc/elements/1.1/description"), "comment_date" ->
-		 * Json.toJson("http://purl.org/dc/elements/1.1/date"), "@id" ->
-		 * Json.toJson("http://cet.ncsa.uiuc.edu/2007/annotation/hasAnnotation"),
-		 * "comment_author" -> Json.toJson("http://purl.org/dc/elements/1.1/creator")
-		 * )), "Has Description" -> Json.toJson("http://purl.org/dc/terms/description"),
-		 * "Bibliographic citation" ->
-		 * Json.toJson("http://purl.org/dc/terms/bibliographicCitation"), "Published In"
-		 * -> Json.toJson("http://purl.org/dc/terms/isPartOf"), "Publisher" ->
-		 * Json.toJson("http://purl.org/dc/terms/publisher"), "External Identifier" ->
-		 * Json.toJson("http://purl.org/dc/terms/identifier"), "references" ->
-		 * Json.toJson("http://purl.org/dc/terms/references"), "Is Version Of" ->
-		 * Json.toJson("http://purl.org/dc/terms/isVersionOf"), "Has Part" ->
-		 * Json.toJson("http://purl.org/dc/terms/hasPart"), "Size" ->
-		 * Json.toJson("tag:tupeloproject.org,2006:/2.0/files/length"), "Mimetype" ->
-		 * Json.toJson("http://purl.org/dc/elements/1.1/format"), "SHA512 Hash" ->
-		 * Json.toJson("http://sead-data.net/terms/hasSHA512Digest"),
-		 * "Dataset Description" ->
-		 * Json.toJson("http://sead-data.net/terms/datasetdescription"),
-		 * "Publishing Project" ->
-		 * Json.toJson("http://sead-data.net/terms/publishingProject"), "License" ->
-		 * Json.toJson("http://purl.org/dc/terms/license") ) )
-		 */
 		try {
-			outputStream.write(oremap.toString().getBytes("UTF8"));
-			outputStream.flush();
-		} catch (IOException ex) {
-			logger.info("IOException calling outputStream.write: " + ex);
+			logger.info("In ore exporter");
+			logger.info(LocalDate.now().toString());
+			logger.info(ResourceBundle.getBundle("Bundle").getString("institution.name"));
+			logger.info(systemConfig.getDataverseSiteUrl());
+			logger.info(getProviderName());
+			if (version != null) {
+				if (version.getDataset() != null) {
+					logger.info(version.getDataset().getGlobalId());
+				}
+			}
+			String id = json.getString("protocol") + ":" + json.getString("authority") + "/"
+					+ json.getString("identifier");
+			logger.info(id);
+			logger.info(json.toString());
+			JsonObject oremap = Json.createObjectBuilder().add("Creation Date", LocalDate.now().toString())
+					.add("Creator", ResourceBundle.getBundle("Bundle").getString("institution.name"))
+					.add("@type", "ResourceMap")
+					.add("@id",
+							systemConfig.getDataverseSiteUrl()
+									+ "/api/datasets/export?exporter=" + getProviderName() + "&persistentId=" + id)
+					.add("describes", json)
+					.add("@context", Json.createArrayBuilder().add("https://w3id.org/ore/context")
+							.add(Json.createObjectBuilder().add("Creation Date", "http://purl.org/dc/terms/created")
+									.add("Creator", "http://purl.org/dc/elements/1.1/creator")
+									.add("Has Version", "http://purl.org/dc/terms/hasVersion")
+									.add("persistentUrl", "http://purl.org/dc/elements/1.1/identifier")))
+					.build();
+			logger.info(oremap.toString());
+
+			/*
+			 * metadataDefsMap.toMap ++ Map(
+			 * 
+			 * "Rights" -> Json.toJson("http://purl.org/dc/terms/rights"), "Date" ->
+			 * Json.toJson("http://purl.org/dc/elements/1.1/date"),
+			 * 
+			 * "Label" -> Json.toJson("http://www.w3.org/2000/01/rdf-schema#label"),
+			 * "Location" -> Json.toJson( "http://sead-data.net/terms/generatedAt"),
+			 * "Description" -> Json.toJson("http://purl.org/dc/elements/1.1/description"),
+			 * "Keyword"->
+			 * Json.toJson("http://www.holygoat.co.uk/owl/redwood/0.1/tags/taggedWithTag"),
+			 * "Title" -> Json.toJson("http://purl.org/dc/elements/1.1/title"),
+			 * 
+			 * "Contact" -> Json.toJson("http://sead-data.net/terms/contact"), "name" ->
+			 * Json.toJson("http://sead-data.net/terms/name"), "email" ->
+			 * Json.toJson("http://schema.org/Person/email"), "Publication Date" ->
+			 * Json.toJson("http://purl.org/dc/terms/issued"), "Spatial Reference" ->
+			 * Json.toJson( Map(
+			 * 
+			 * "@id" -> Json.toJson("tag:tupeloproject.org,2006:/2.0/gis/hasGeoPoint"),
+			 * "Longitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#long"),
+			 * "Latitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#lat"),
+			 * "Altitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#alt")
+			 * 
+			 * )), "Comment" -> Json.toJson(Map( "comment_body" ->
+			 * Json.toJson("http://purl.org/dc/elements/1.1/description"), "comment_date" ->
+			 * Json.toJson("http://purl.org/dc/elements/1.1/date"), "@id" ->
+			 * Json.toJson("http://cet.ncsa.uiuc.edu/2007/annotation/hasAnnotation"),
+			 * "comment_author" -> Json.toJson("http://purl.org/dc/elements/1.1/creator")
+			 * )), "Has Description" -> Json.toJson("http://purl.org/dc/terms/description"),
+			 * "Bibliographic citation" ->
+			 * Json.toJson("http://purl.org/dc/terms/bibliographicCitation"), "Published In"
+			 * -> Json.toJson("http://purl.org/dc/terms/isPartOf"), "Publisher" ->
+			 * Json.toJson("http://purl.org/dc/terms/publisher"), "External Identifier" ->
+			 * Json.toJson("http://purl.org/dc/terms/identifier"), "references" ->
+			 * Json.toJson("http://purl.org/dc/terms/references"), "Is Version Of" ->
+			 * Json.toJson("http://purl.org/dc/terms/isVersionOf"), "Has Part" ->
+			 * Json.toJson("http://purl.org/dc/terms/hasPart"), "Size" ->
+			 * Json.toJson("tag:tupeloproject.org,2006:/2.0/files/length"), "Mimetype" ->
+			 * Json.toJson("http://purl.org/dc/elements/1.1/format"), "SHA512 Hash" ->
+			 * Json.toJson("http://sead-data.net/terms/hasSHA512Digest"),
+			 * "Dataset Description" ->
+			 * Json.toJson("http://sead-data.net/terms/datasetdescription"),
+			 * "Publishing Project" ->
+			 * Json.toJson("http://sead-data.net/terms/publishingProject"), "License" ->
+			 * Json.toJson("http://purl.org/dc/terms/license") ) )
+			 */
+			try {
+				outputStream.write(oremap.toString().getBytes("UTF8"));
+				outputStream.flush();
+			} catch (IOException ex) {
+				logger.info("IOException calling outputStream.write: " + ex);
+			}
+		} catch (Exception e) {
+			logger.severe(e.getMessage() + e.printStackTrace());
 		}
-} catch (Exception e) {
-	logger.severe(e.getLocalizedMessage()+ e.getStackTrace().toString());
-}
 		/*
 		 * 
 		 * curations.get(curationId) match { case Some(c) => {
