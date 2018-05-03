@@ -3,13 +3,14 @@ package edu.harvard.iq.dataverse.export;
 import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.time.LocalDate;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -35,12 +36,13 @@ public class OAI_OREExporter implements Exporter {
 try {
 		logger.info("In ore exporter");
 		logger.info(LocalDate.now().toString());
-		logger.info(BundleUtil.getStringFromBundle("institution.name"));
+		logger.info(ResourceBundle.getBundle("Bundle").getString("institution.name"));
 		logger.info(systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=" + getProviderName()
 		+ "&persistentId=" + version.getDataset().getGlobalId());
 		logger.info(json.toString());
 		JsonObject oremap = Json.createObjectBuilder().add("Creation Date", LocalDate.now().toString())
-				.add("Creator", BundleUtil.getStringFromBundle("institution.name")).add("@type", "ResourceMap")
+				.add("Creator", ResourceBundle.getBundle("Bundle").getString("institution.name"))
+				.add("@type", "ResourceMap")
 				.add("@id",
 						systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=" + getProviderName()
 								+ "&persistentId=" + version.getDataset().getGlobalId())
@@ -108,7 +110,7 @@ try {
 			logger.info("IOException calling outputStream.write: " + ex);
 		}
 } catch (Exception e) {
-	logger.severe(e.getLocalizedMessage());
+	logger.severe(e.getLocalizedMessage()+ e.getStackTrace().toString());
 }
 		/*
 		 * 
@@ -302,8 +304,8 @@ try {
 
 	@Override
 	public String getDisplayName() {
-		return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.oai_ore") != null
-				? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.oai_ore")
+		return ResourceBundle.getBundle("Bundle").getString("dataset.exportBtn.itemLabel.oai_ore") != null
+				? ResourceBundle.getBundle("Bundle").getString("dataset.exportBtn.itemLabel.oai_ore")
 				: "OAI_ORE";
 	}
 
@@ -326,12 +328,12 @@ try {
 
 	@Override
 	public String getXMLNameSpace() throws ExportException {
-		throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
+		throw new ExportException(OAI_OREExporter.class.getSimpleName() + ": not an XML format.");
 	}
 
 	@Override
 	public String getXMLSchemaLocation() throws ExportException {
-		throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
+		throw new ExportException(OAI_OREExporter.class.getSimpleName() + ": not an XML format.");
 	}
 
 	@Override
