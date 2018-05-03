@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -44,15 +45,15 @@ public class Prov extends AbstractApiBean {
 //MAD: SHOULD NOT WORK ON PUBLISHED
     public Response addProvJson(String body, @PathParam("id") String idSupplied, @QueryParam("entityName") String entityName) {
         if(!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         try {
             DataFile dataFile = findDataFileOrDie(idSupplied);
             if(null == dataFile.getFileMetadata()) { // can happen when a datafile is not fully initialized, though unlikely in our current implementation
-                return error(BAD_REQUEST, "Invalid DataFile Id, file not fully initialized");
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.badDataFileId"));
             }
             if(dataFile.isReleased() && dataFile.getProvEntityName() != null){
-                return error(FORBIDDEN, "Provenance JSON cannot be updated for a published file that already has Provenance JSON.");
+                return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.jsonUpdateNotAllowed"));
             }
             
             /*Add when we actually integrate provCpl*/
@@ -62,12 +63,12 @@ public class Prov extends AbstractApiBean {
             HashMap<String,ProvEntityFileData> provJsonParsedEntities = provUtil.startRecurseNames(body);
             if(!provJsonParsedEntities.containsKey(entityName)) {
                 //TODO: We should maybe go a step further and provide a way through the api to see the parsed entity names.
-                return error(BAD_REQUEST, "Entity name provided does not match any entities parsed from the uploaded prov json");
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.entityMismatch"));
             }
             
             execCommand(new PersistProvJsonCommand(createDataverseRequest(findUserOrDie()), dataFile , body, entityName, true));
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
-            jsonResponse.add("message", "PROV-JSON provenance data saved for Data File: " + dataFile.getDisplayName());
+            jsonResponse.add("message", BundleUtil.getStringFromBundle("api.prov.provJsonSaved") + " " + dataFile.getDisplayName());
             return ok(jsonResponse);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -79,15 +80,15 @@ public class Prov extends AbstractApiBean {
 //MAD: SHOULD NOT WORK ON PUBLISHED
     public Response deleteProvJson(String body, @PathParam("id") String idSupplied) {
         if(!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         try {
             DataFile dataFile = findDataFileOrDie(idSupplied);
             if(dataFile.isReleased()){
-                return error(FORBIDDEN, "Provenance JSON cannot be deleted for a published file.");
+                return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.jsonDeleteNotAllowed"));
             }
             execCommand(new DeleteProvJsonCommand(createDataverseRequest(findUserOrDie()), dataFile, true));
-            return ok("Provenance URL deleted");
+            return ok(BundleUtil.getStringFromBundle("api.prov.provJsonDeleted"));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -99,7 +100,7 @@ public class Prov extends AbstractApiBean {
     @Consumes("application/json")
     public Response addProvFreeForm(String body, @PathParam("id") String idSupplied) {
         if(!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         StringReader rdr = new StringReader(body);
         JsonObject jsonObj = null;
@@ -107,19 +108,19 @@ public class Prov extends AbstractApiBean {
         try {
             jsonObj = Json.createReader(rdr).readObject();
         } catch (JsonException ex) {
-            return error(BAD_REQUEST, "A valid JSON object could not be found.");
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.freeformInvalidJson"));
         }
         String provFreeForm;
         try {
             provFreeForm = jsonObj.getString("text");
         } catch (NullPointerException ex) {
-            return error(BAD_REQUEST, "The JSON object you send must have a key called 'text'.");
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.freeformMissingJsonKey"));
         }
         try {
             DataverseRequest dr= createDataverseRequest(findUserOrDie());
             DataFile dataFile = findDataFileOrDie(idSupplied);
             if (dataFile == null) {
-                return error(BAD_REQUEST, "Could not find datafile with id " + idSupplied);
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.badDataFileId"));
             }
             execCommand(new PersistProvFreeFormCommand(dr, dataFile, provFreeForm));
             execCommand(new UpdateDatasetCommand(dataFile.getOwner(), dr));
@@ -137,12 +138,12 @@ public class Prov extends AbstractApiBean {
     @Path("{id}/prov-freeform")
     public Response getProvFreeForm(String body, @PathParam("id") String idSupplied) {
         if(!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         try {
             String freeFormText = execCommand(new GetProvFreeFormCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
             if(null == freeFormText) {
-                return error(BAD_REQUEST, "No provenance free form text available for this file.");
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.freeformNoText"));
             }
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
             jsonResponse.add("text", freeFormText);
@@ -156,12 +157,12 @@ public class Prov extends AbstractApiBean {
     @Path("{id}/prov-json")
     public Response getProvJson(String body, @PathParam("id") String idSupplied) {
         if(!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, "This functionality has been administratively disabled.");
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         try {
             JsonObject jsonText = execCommand(new GetProvJsonCommand(createDataverseRequest(findUserOrDie()), findDataFileOrDie(idSupplied)));
             if(null == jsonText) {
-                return error(BAD_REQUEST, "No provenance json available for this file.");
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.jsonNoContent"));
             }
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
             jsonResponse.add("json", jsonText.toString());
@@ -179,11 +180,11 @@ public class Prov extends AbstractApiBean {
         try {
             idSuppliedAsLong = new Long(idSupplied);
         } catch (NumberFormatException ex) {
-            throw new WrappedResponse(badRequest("Could not find a number based on " + idSupplied));
+            throw new WrappedResponse(badRequest(BundleUtil.getStringFromBundle("api.prov.error.badDataFileId")));
         }
         DataFile dataFile = fileSvc.find(idSuppliedAsLong);
         if (dataFile == null) {
-            throw new WrappedResponse(badRequest("Could not find a file based on id " + idSupplied));
+            throw new WrappedResponse(badRequest(BundleUtil.getStringFromBundle("api.prov.error.noDataFileFound")));
         }
         return dataFile;
     }
