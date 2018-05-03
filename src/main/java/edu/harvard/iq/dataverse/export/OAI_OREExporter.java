@@ -115,7 +115,8 @@ public class OAI_OREExporter implements Exporter {
 				logger.info("IOException calling outputStream.write: " + ex);
 			}
 		} catch (Exception e) {
-			logger.severe(e.getMessage() + e.printStackTrace());
+			logger.severe(e.getMessage());
+			e.printStackTrace();
 		}
 		/*
 		 * 
