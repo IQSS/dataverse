@@ -37,15 +37,19 @@ try {
 		logger.info("In ore exporter");
 		logger.info(LocalDate.now().toString());
 		logger.info(ResourceBundle.getBundle("Bundle").getString("institution.name"));
-		logger.info(systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=" + getProviderName()
-		+ "&persistentId=" + version.getDataset().getGlobalId());
+		logger.info(systemConfig.getDataverseSiteUrl());
+		logger.info( getProviderName());
+		if(version.getDataset() != null) {
+		logger.info(version.getDataset().getGlobalId());
+		} String id = json.getString("protocol") + ":" + json.getString("authority") + "/" + json.getString("identifier");
+		logger.info(id);
 		logger.info(json.toString());
 		JsonObject oremap = Json.createObjectBuilder().add("Creation Date", LocalDate.now().toString())
 				.add("Creator", ResourceBundle.getBundle("Bundle").getString("institution.name"))
 				.add("@type", "ResourceMap")
 				.add("@id",
 						systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=" + getProviderName()
-								+ "&persistentId=" + version.getDataset().getGlobalId())
+								+ "&persistentId=" + id)
 				.add("describes", json)
 				.add("@context",
 						Json.createArrayBuilder().add("https://w3id.org/ore/context")
