@@ -2,20 +2,31 @@ package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
 @AutoService(Exporter.class)
@@ -25,33 +36,78 @@ public class OAI_OREExporter implements Exporter {
 
 	public static final String NAME = "OAI_ORE";
 
-
 	@Override
 	public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
 			throws ExportException {
 		try {
-			logger.info("In ore exporter");
-			logger.info(LocalDate.now().toString());
-			logger.info(ResourceBundle.getBundle("Bundle").getString("institution.name"));
-			logger.info(SystemConfig.getDataverseSiteUrlStatic());
-			logger.info(getProviderName());
-			if (version != null) {
-				if (version.getDataset() != null) {
-					logger.info(version.getDataset().getGlobalId());
+
+			Dataset dataset = version.getDataset();
+			String id = dataset.getGlobalId();
+			// json.getString("protocol") + ":" + json.getString("authority") + "/" +
+			// json.getString("identifier");
+			JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
+			List<DatasetField> fields = version.getDatasetFields();
+			for (DatasetField field : fields) {
+				DatasetFieldType dfType = field.getDatasetFieldType();
+				JsonArrayBuilder vals = Json.createArrayBuilder();
+				for (String val : field.getValues()) {
+					vals.add(val);
 				}
+
+				aggBuilder.add(dfType.getTitle(), vals.build());
 			}
-			String id = json.getString("protocol") + ":" + json.getString("authority") + "/"
-					+ json.getString("identifier");
-			logger.info(id);
-			logger.info(json.toString());
+			aggBuilder.add("@id", id).add("@type", Json.createArrayBuilder().add("Aggregation").add("Dataset"))
+					.add("version", json.getString("version") + "." + json.getString("versionMinorNumber"))
+					.add("datePublished", json.getString("publicationDate")).add("name", version.getTitle())
+					.add("dateModified", version.getLastUpdateTime().toString());
+
+			JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
+			for (FileMetadata fmd : version.getFileMetadatas()) {
+				DataFile df = fmd.getDataFile();
+				JsonObjectBuilder aggRes = Json.createObjectBuilder().add("description", fmd.getDescription())
+						.add("label", fmd.getLabel()) // "label" is the filename
+						.add("restricted", fmd.isRestricted()).add("directoryLabel", fmd.getDirectoryLabel())
+						.add("version", fmd.getVersion()).add("datasetVersionId", fmd.getDatasetVersion().getId())
+						.add("categories", JsonPrinter.getFileCategories(fmd).build())
+						.add("@id", df.getId())
+						.add("contentType", df.getContentType()).add("filesize", df.getFilesize())
+						.add("description", df.getDescription())
+						// .add("released", df.isReleased())
+						// .add("restricted", df.isRestricted())
+						.add("storageIdentifier", df.getStorageIdentifier())
+						.add("originalFileFormat", df.getOriginalFileFormat())
+						.add("originalFormatLabel", df.getOriginalFormatLabel()).add("UNF", df.getUnf())
+						// ---------------------------------------------
+						// For file replace: rootDataFileId, previousDataFileId
+						// ---------------------------------------------
+						.add("rootDataFileId", df.getRootDataFileId())
+						.add("previousDataFileId", df.getPreviousDataFileId())
+						// ---------------------------------------------
+						// Checksum
+						// * @todo Should we deprecate "md5" now that it's under
+						// * "checksum" (which may also be a SHA-1 rather than an MD5)?
+						// ---------------------------------------------
+						.add("md5", JsonPrinter.getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
+						.add("checksum", JsonPrinter
+								.getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()).build())
+						.add("tabularTags", JsonPrinter.getTabularFileTags(df).build());
+
+				aggResArrayBuilder.add(aggRes.build());
+			}
+
 			JsonObject oremap = Json.createObjectBuilder().add("Creation Date", LocalDate.now().toString())
 					.add("Creator", ResourceBundle.getBundle("Bundle").getString("institution.name"))
 					.add("@type", "ResourceMap")
 					.add("@id",
-							SystemConfig.getDataverseSiteUrlStatic()
-									+ "/api/datasets/export?exporter=" + getProviderName() + "&persistentId=" + id)
-					.add("describes", json)
-					.add("@context", Json.createArrayBuilder().add("https://w3id.org/ore/context")
+							SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/export?exporter="
+									+ getProviderName() + "&persistentId=" + id)
+
+					.add("describes", aggBuilder.add("aggregates", aggResArrayBuilder.build()).build())
+
+					.add("@context", Json.createArrayBuilder().add("http://www.openarchives.org/ore/0.9/context.json")
+							// .add("https://w3id.org/ore/context") - JSON-LD Playground doesn't like this
+							// due to redirects
+							.add("http://schema.org")
 							.add(Json.createObjectBuilder().add("Creation Date", "http://purl.org/dc/terms/created")
 									.add("Creator", "http://purl.org/dc/elements/1.1/creator")
 									.add("Has Version", "http://purl.org/dc/terms/hasVersion")
