@@ -99,14 +99,17 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
 
     }
     
-    public void updatePopupState(FileMetadata fm, Dataset dSet) throws AbstractApiBean.WrappedResponse, IOException {
+    public void updatePopupStateAndDataset(FileMetadata fm, Dataset dSet) throws AbstractApiBean.WrappedResponse, IOException {
         dataset = dSet;
-        updatePopupState(fm);
+        updatePopupState(fm, false);
     }
      
-    public void updatePopupState(FileMetadata fm) throws WrappedResponse, IOException {       
+    public void updatePopupState(FileMetadata fm, boolean clearUpdates) throws WrappedResponse, IOException {       
         if(null == fm) {
             throw new NullPointerException("FileMetadata initialized to null in provenance popup");
+        } 
+        if(clearUpdates) {
+            clearProvenanceUpdates();
         }
         fileMetadata = fm;
         updatePopupState();
@@ -350,7 +353,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
     public boolean provJsonAlreadyPublishedRendering() {
         if(null == popupDataFile) { //is hit on loading, returns true to prevent loading of upload elements
-            return true;
+            return false; //MAD: I Switched this but hmmm
         }
         for(DataFile df : dataset.getFiles()) {
             if(df.getChecksumType().equals(popupDataFile.getChecksumType())
@@ -409,6 +412,10 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     
     public HashMap<String,UpdatesEntry> getProvenanceUpdates() {
         return provenanceUpdates;
+    }
+    
+    public void clearProvenanceUpdates() {
+        provenanceUpdates = new HashMap<>();
     }
     
      //for storing datafile and provjson in a map value

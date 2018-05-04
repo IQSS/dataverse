@@ -112,7 +112,7 @@
                                                     <p:commandLink id="fileProvenanceButton"
                                                                update="editProvenancePopup"
                                                                oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
-                                                               <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(fileMetadata)}" />
+                                                               <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(fileMetadata, true)}" /> <!--clearProvenanceUpdates() -->
                                                                 #{bundle['file.provenance']} 
                                                     </p:commandLink>
                                                 </li> 

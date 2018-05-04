@@ -1138,7 +1138,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 if(systemConfig.isProvCollectionEnabled() && provJsonChanges) {
                     HashMap<String,ProvPopupFragmentBean.UpdatesEntry> provenanceUpdates = provPopupFragmentBean.getProvenanceUpdates();
                     for (int i = 0; i < dataset.getFiles().size(); i++) {
-                        for (UpdatesEntry ue : provenanceUpdates.values()) { //for (Map.Entry<String, UpdatesEntry> m : provenanceUpdates.entrySet()) {       
+                        for (UpdatesEntry ue : provenanceUpdates.values()) { 
                             if (ue.dataFile.getStorageIdentifier() != null ) {
                                 if (ue.dataFile.getStorageIdentifier().equals(dataset.getFiles().get(i).getStorageIdentifier())) {
                                     dataset.getFiles().set(i, ue.dataFile);
@@ -1290,19 +1290,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
-
-//        if(systemConfig.isProvCollectionEnabled()) {        
-//            try {
-//                //If datasetUpdateRequired did not trigger save the prov code will need to save its staged changes.
-//                provPopupFragmentBean.saveStagedProvJson(mode != FileEditMode.UPLOAD); //If not uploading prov needs to save context to save entityId which is a dataFile attribute
-//            } catch (AbstractApiBean.WrappedResponse ex) {
-//                JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
-//                Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
-
-        
-        
+       
         if (mode == FileEditMode.SINGLE){
             JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
             
