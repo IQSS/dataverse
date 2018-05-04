@@ -47,57 +47,62 @@ public class OAI_OREExporter implements Exporter {
 			String id = dataset.getGlobalId();
 			// json.getString("protocol") + ":" + json.getString("authority") + "/" +
 			// json.getString("identifier");
-			
-			
-			JsonArrayBuilder contextArray = Json.createArrayBuilder().add("http://www.openarchives.org/ore/0.9/context.json")
-			// .add("https://w3id.org/ore/context") - JSON-LD Playground doesn't like this
-			// due to redirects
-			.add("http://schema.org");
-			JsonObjectBuilder localContextObject = Json.createObjectBuilder().add("Creation Date", "http://purl.org/dc/terms/created")
-					.add("Creator", "http://purl.org/dc/elements/1.1/creator")
-					.add("Has Version", "http://purl.org/dc/terms/hasVersion")
-					.add("persistentUrl", "http://purl.org/dc/elements/1.1/identifier");
+			JsonArrayBuilder fileArray = Json.createArrayBuilder();
+
+			JsonArrayBuilder contextArray = Json.createArrayBuilder()
+					.add("http://www.openarchives.org/ore/0.9/context.json")
+					// .add("https://w3id.org/ore/context") - JSON-LD Playground doesn't like this
+					// due to redirects
+					.add("http://schema.org");
+			// Note schema.org is open and accepts any terms into its vocab whether or not
+			// they are defined - need to make sure that keys such as "restricted" that are
+			// defined by Dataverse have a context entry (could also use a prefix to make
+			// this clearer)
+			JsonObjectBuilder localContextObject = Json.createObjectBuilder();
 
 			JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
 			List<DatasetField> fields = version.getDatasetFields();
 			for (DatasetField field : fields) {
 				if (!field.isEmpty()) {
 					DatasetFieldType dfType = field.getDatasetFieldType();
-					//Add context entry
-					localContextObject.add(dfType.getTitle(),  SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dfType.getMetadataBlock().getName() + "#" +dfType.getName());
-					
+					// Add context entry
+					localContextObject.add(dfType.getTitle(), SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
+							+ dfType.getMetadataBlock().getName() + "#" + dfType.getName());
+
 					JsonArrayBuilder vals = Json.createArrayBuilder();
 					if (!dfType.isCompound()) {
 						for (String val : field.getValues()) {
 							vals.add(val);
 						}
 					} else {
-						//Needs to be recursive (as in JsonPrinter?)
+						// Needs to be recursive (as in JsonPrinter?)
 						for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
 							// compound values are of different types
 							JsonObjectBuilder child = Json.createObjectBuilder();
 
 							for (DatasetField dsf : dscv.getChildDatasetFields()) {
-								DatasetFieldType  dsft = dsf.getDatasetFieldType();
+								DatasetFieldType dsft = dsf.getDatasetFieldType();
 								// which may have multiple values
-								if(!dsf.isEmpty()) {
-									//Add context entry - also needs to recurse
-									localContextObject.add(dsft.getTitle(),  SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dfType.getMetadataBlock().getName() + "/" + dfType.getName() + "#" + dsft.getName());
-									
-								JsonArrayBuilder childVals = Json.createArrayBuilder();
-								for (String val : dsf.getValues()) {
-									childVals.add(val);
-								}
-								child.add(dsft.getTitle(), childVals);
+								if (!dsf.isEmpty()) {
+									// Add context entry - also needs to recurse
+									localContextObject.add(dsft.getTitle(),
+											SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
+													+ dfType.getMetadataBlock().getName() + "/" + dfType.getName() + "#"
+													+ dsft.getName());
+
+									JsonArrayBuilder childVals = Json.createArrayBuilder();
+									for (String val : dsf.getValues()) {
+										childVals.add(val);
+									}
+									child.add(dsft.getTitle(), childVals);
 								}
 							}
 							vals.add(child);
 						}
 					}
-					//Add value, suppress array when only one value
+					// Add value, suppress array when only one value
 					JsonArray valArray = vals.build();
-					aggBuilder.add(dfType.getTitle(), (valArray.size()!=1) ? valArray
-                            : valArray.get(0));
+					aggBuilder.add(dfType.getTitle(), (valArray.size() != 1) ? valArray : valArray.get(0));
 				}
 			}
 
@@ -113,10 +118,16 @@ public class OAI_OREExporter implements Exporter {
 				addIfNotNull(aggRes, "description", fmd.getDescription());
 				if (fmd.getDescription() == null)
 					addIfNotNull(aggRes, "description", df.getDescription());
-				addIfNotNull(aggRes, "label", fmd.getLabel()); // "label" is the filename
+				addIfNotNull(aggRes, "name", fmd.getLabel()); // "label" is the filename
+				localContextObject.add("restricted",
+						SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#restricted");
 				addIfNotNull(aggRes, "restricted", fmd.isRestricted());
+				localContextObject.add("directoryLabel",
+						SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#directoryLabel");
 				addIfNotNull(aggRes, "directoryLabel", fmd.getDirectoryLabel());
 				addIfNotNull(aggRes, "version", fmd.getVersion());
+				localContextObject.add("datasetVersionId",
+						SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#datasetVersionId");
 				addIfNotNull(aggRes, "datasetVersionId", fmd.getDatasetVersion().getId());
 				JsonArray catArray = null;
 				if (fmd != null) {
@@ -129,37 +140,49 @@ public class OAI_OREExporter implements Exporter {
 						catArray = jab.build();
 					}
 				}
+				localContextObject.add("categories",
+						SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#categories");
 				addIfNotNull(aggRes, "categories", catArray);
-				//Will be file DOI eventually
-				addIfNotNull(aggRes, "@id", SystemConfig.getDataverseSiteUrlStatic() +"/api/access/datafile/" + df.getId());
+				// Will be file DOI eventually
+				String fileId = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId();
+				aggRes.add("@id", fileId);
+				fileArray.add(fileId);
+
 				aggRes.add("@type", "AggregatedResource");
-				addIfNotNull(aggRes, "contentType", df.getContentType());
+				addIfNotNull(aggRes, "fileFormat", df.getContentType());
+				localContextObject.add("filesize", SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#filesize");
 				addIfNotNull(aggRes, "filesize", df.getFilesize());
 				// .add("released", df.isReleased())
 				// .add("restricted", df.isRestricted())
-
+				localContextObject.add("storageIdentifier",
+						SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#storageidentifier");
 				addIfNotNull(aggRes, "storageIdentifier", df.getStorageIdentifier());
+				localContextObject.add("originalFileFormat",
+						SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#originalfileformat");
 				addIfNotNull(aggRes, "originalFileFormat", df.getOriginalFileFormat());
+				localContextObject.add("originalFormatLabel",
+						SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#originalformatlabel");
 				addIfNotNull(aggRes, "originalFormatLabel", df.getOriginalFormatLabel());
+				localContextObject.add("UNF", SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#unf");
 				addIfNotNull(aggRes, "UNF", df.getUnf());
 				// ---------------------------------------------
 				// For file replace: rootDataFileId, previousDataFileId
 				// ---------------------------------------------
+				localContextObject.add("rootDataFileId",
+						SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#rootdatafileid");
 				addIfNotNull(aggRes, "rootDataFileId", df.getRootDataFileId());
+				localContextObject.add("previousDataFileId",
+						SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#previousdatafileid");
 				addIfNotNull(aggRes, "previousDataFileId", df.getPreviousDataFileId());
-				// ---------------------------------------------
-				// Checksum
-				// * @todo Should we deprecate "md5" now that it's under
-				// * "checksum" (which may also be a SHA-1 rather than an MD5)?
-				// ---------------------------------------------
-				addIfNotNull(aggRes, "md5", JsonPrinter.getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()));
+				localContextObject.add("MD5", SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#md5");
 				JsonObject checksum = null;
-				JsonObjectBuilder job = JsonPrinter.getChecksumTypeAndValue(df.getChecksumType(),
-						df.getChecksumValue());
-				if (job != null) {
-					checksum = job.build();
+				if (df.getChecksumType() != null && df.getChecksumValue() != null) {
+					checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
+							.add("@value", df.getChecksumValue()).build();
+					localContextObject.add("checksum",
+							SystemConfig.getDataverseSiteUrlStatic() + "/schema/core#checksum");
+					aggRes.add("checksum", checksum);
 				}
-				addIfNotNull(aggRes, "checksum", checksum);
 				JsonArray tabTags = null;
 				JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
 				if (jab != null) {
@@ -170,65 +193,20 @@ public class OAI_OREExporter implements Exporter {
 				aggResArrayBuilder.add(aggRes.build());
 			}
 
-			JsonObject oremap = Json.createObjectBuilder().add("Creation Date", LocalDate.now().toString())
-					.add("Creator", ResourceBundle.getBundle("Bundle").getString("institution.name"))
+			JsonObject oremap = Json.createObjectBuilder().add("dateCreated", LocalDate.now().toString())
+					.add("creator", ResourceBundle.getBundle("Bundle").getString("institution.name"))
 					.add("@type", "ResourceMap")
 					.add("@id",
 							SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/export?exporter="
 									+ getProviderName() + "&persistentId=" + id)
 
-					.add("describes", aggBuilder.add("aggregates", aggResArrayBuilder.build()).build())
+					.add("describes",
+							aggBuilder.add("aggregates", aggResArrayBuilder.build()).add("hasPart", fileArray.build())
+									.build())
 
 					.add("@context", contextArray.add(localContextObject.build()).build()).build();
 			logger.info(oremap.toString());
 
-			/*
-			 * metadataDefsMap.toMap ++ Map(
-			 * 
-			 * "Rights" -> Json.toJson("http://purl.org/dc/terms/rights"), "Date" ->
-			 * Json.toJson("http://purl.org/dc/elements/1.1/date"),
-			 * 
-			 * "Label" -> Json.toJson("http://www.w3.org/2000/01/rdf-schema#label"),
-			 * "Location" -> Json.toJson( "http://sead-data.net/terms/generatedAt"),
-			 * "Description" -> Json.toJson("http://purl.org/dc/elements/1.1/description"),
-			 * "Keyword"->
-			 * Json.toJson("http://www.holygoat.co.uk/owl/redwood/0.1/tags/taggedWithTag"),
-			 * "Title" -> Json.toJson("http://purl.org/dc/elements/1.1/title"),
-			 * 
-			 * "Contact" -> Json.toJson("http://sead-data.net/terms/contact"), "name" ->
-			 * Json.toJson("http://sead-data.net/terms/name"), "email" ->
-			 * Json.toJson("http://schema.org/Person/email"), "Publication Date" ->
-			 * Json.toJson("http://purl.org/dc/terms/issued"), "Spatial Reference" ->
-			 * Json.toJson( Map(
-			 * 
-			 * "@id" -> Json.toJson("tag:tupeloproject.org,2006:/2.0/gis/hasGeoPoint"),
-			 * "Longitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#long"),
-			 * "Latitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#lat"),
-			 * "Altitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#alt")
-			 * 
-			 * )), "Comment" -> Json.toJson(Map( "comment_body" ->
-			 * Json.toJson("http://purl.org/dc/elements/1.1/description"), "comment_date" ->
-			 * Json.toJson("http://purl.org/dc/elements/1.1/date"), "@id" ->
-			 * Json.toJson("http://cet.ncsa.uiuc.edu/2007/annotation/hasAnnotation"),
-			 * "comment_author" -> Json.toJson("http://purl.org/dc/elements/1.1/creator")
-			 * )), "Has Description" -> Json.toJson("http://purl.org/dc/terms/description"),
-			 * "Bibliographic citation" ->
-			 * Json.toJson("http://purl.org/dc/terms/bibliographicCitation"), "Published In"
-			 * -> Json.toJson("http://purl.org/dc/terms/isPartOf"), "Publisher" ->
-			 * Json.toJson("http://purl.org/dc/terms/publisher"), "External Identifier" ->
-			 * Json.toJson("http://purl.org/dc/terms/identifier"), "references" ->
-			 * Json.toJson("http://purl.org/dc/terms/references"), "Is Version Of" ->
-			 * Json.toJson("http://purl.org/dc/terms/isVersionOf"), "Has Part" ->
-			 * Json.toJson("http://purl.org/dc/terms/hasPart"), "Size" ->
-			 * Json.toJson("tag:tupeloproject.org,2006:/2.0/files/length"), "Mimetype" ->
-			 * Json.toJson("http://purl.org/dc/elements/1.1/format"), "SHA512 Hash" ->
-			 * Json.toJson("http://sead-data.net/terms/hasSHA512Digest"),
-			 * "Dataset Description" ->
-			 * Json.toJson("http://sead-data.net/terms/datasetdescription"),
-			 * "Publishing Project" ->
-			 * Json.toJson("http://sead-data.net/terms/publishingProject"), "License" ->
-			 * Json.toJson("http://purl.org/dc/terms/license") ) )
-			 */
 			try {
 				outputStream.write(oremap.toString().getBytes("UTF8"));
 				outputStream.flush();
@@ -239,189 +217,6 @@ public class OAI_OREExporter implements Exporter {
 			logger.severe(e.getMessage());
 			e.printStackTrace();
 		}
-		/*
-		 * 
-		 * curations.get(curationId) match { case Some(c) => {
-		 * 
-		 * val https = controllers.Utils.https(request) val key =
-		 * play.api.Play.configuration.getString("commKey").getOrElse("") val filesJson
-		 * = curations.getCurationFiles(curations.getAllCurationFileIds(c.id)).map {
-		 * file =>
-		 * 
-		 * var fileMetadata = scala.collection.mutable.Map.empty[String, JsValue]
-		 * metadatas.getMetadataByAttachTo(ResourceRef(ResourceRef.curationFile,
-		 * file.id)).filter(_.creator.typeOfAgent == "cat:user").map { item =>
-		 * fileMetadata = fileMetadata ++
-		 * curationObjectController.buildMetadataMap(item.content) } val size =
-		 * files.get(file.fileId) match { case Some(f) => f.length case None => 0 }
-		 * 
-		 * var tempMap = Map( "Identifier" -> Json.toJson("urn:uuid:"+file.id), "@id" ->
-		 * Json.toJson("urn:uuid:"+file.id), "Creation Date" ->
-		 * Json.toJson(format.format(file.uploadDate)), "Label" ->
-		 * Json.toJson(file.filename), "Title" -> Json.toJson(file.filename),
-		 * "Uploaded By" -> Json.toJson(userService.findById(file.author.id).map ( usr
-		 * => Json.toJson(file.author.fullName + ": " +
-		 * api.routes.Users.findById(usr.id).absoluteURL(https)))), "Size" ->
-		 * Json.toJson(size), "Mimetype" -> Json.toJson(file.contentType),
-		 * "Publication Date" -> Json.toJson(""), "External Identifier" ->
-		 * Json.toJson(""), "SHA512 Hash" -> Json.toJson(file.sha512), "@type" ->
-		 * Json.toJson(Seq("AggregatedResource", "http://cet.ncsa.uiuc.edu/2015/File")),
-		 * "Is Version Of" ->
-		 * Json.toJson(controllers.routes.Files.file(file.fileId).absoluteURL(https) +
-		 * "?key=" + key), "similarTo" ->
-		 * Json.toJson(api.routes.Files.download(file.fileId).absoluteURL(https) +
-		 * "?key=" + key)
-		 * 
-		 * ) if(file.tags.size > 0 ) { tempMap = tempMap ++ Map("Keyword" ->
-		 * Json.toJson(file.tags.map(_.name))) }
-		 * 
-		 * tempMap ++ fileMetadata
-		 * 
-		 * } val foldersJson =
-		 * curations.getCurationFolders(curations.getAllCurationFolderIds(c.id)).map {
-		 * folder =>
-		 * 
-		 * val hasPart = folder.files.map(file=>"urn:uuid:"+file) ++
-		 * folder.folders.map(fd => "urn:uuid:"+fd) val tempMap = Map( "Creation Date"
-		 * -> Json.toJson(format.format(folder.created)), "Rights" ->
-		 * Json.toJson(c.datasets(0).licenseData.m_licenseText), "Identifier" ->
-		 * Json.toJson("urn:uuid:"+folder.id), "License" ->
-		 * Json.toJson(c.datasets(0).licenseData.m_licenseText), "Label" ->
-		 * Json.toJson(folder.name), "Title" -> Json.toJson(folder.displayName),
-		 * "Uploaded By" -> Json.toJson(folder.author.fullName + ": " +
-		 * api.routes.Users.findById(folder.author.id).absoluteURL(https)), "@id" ->
-		 * Json.toJson("urn:uuid:"+folder.id), "@type" ->
-		 * Json.toJson(Seq("AggregatedResource",
-		 * "http://cet.ncsa.uiuc.edu/2016/Folder")), "Is Version Of" ->
-		 * Json.toJson(controllers.routes.Datasets.dataset(c.datasets(0).id).absoluteURL
-		 * (https) +"#folderId=" +folder.folderId), "Has Part" -> Json.toJson(hasPart) )
-		 * tempMap
-		 * 
-		 * } val hasPart = c.files.map(file => "urn:uuid:"+file) ++ c.folders.map(folder
-		 * => "urn:uuid:"+folder) var commentsByDataset =
-		 * comments.findCommentsByDatasetId(c.datasets(0).id)
-		 * curations.getCurationFiles(curations.getAllCurationFileIds(c.id)).map { file
-		 * => commentsByDataset ++= comments.findCommentsByFileId(file.fileId)
-		 * sections.findByFileId(UUID(file.fileId.toString)).map { section =>
-		 * commentsByDataset ++= comments.findCommentsBySectionId(section.id) } }
-		 * commentsByDataset = commentsByDataset.sortBy(_.posted) val commentsJson =
-		 * commentsByDataset.map { comm => Json.toJson(Map( "comment_body" ->
-		 * Json.toJson(comm.text), "comment_date" ->
-		 * Json.toJson(format.format(comm.posted)), "Identifier" ->
-		 * Json.toJson("urn:uuid:"+comm.id), "comment_author" ->
-		 * Json.toJson(userService.findById(comm.author.id).map ( usr =>
-		 * Json.toJson(usr.fullName + ": " +
-		 * api.routes.Users.findById(usr.id).absoluteURL(https)))) )) } var metadataList
-		 * = scala.collection.mutable.ListBuffer.empty[MetadataPair] var metadataKeys =
-		 * Set.empty[String]
-		 * metadatas.getMetadataByAttachTo(ResourceRef(ResourceRef.curationObject,
-		 * c.id)).filter(_.creator.typeOfAgent == "cat:user").map { item => for((key,
-		 * value) <- curationObjectController.buildMetadataMap(item.content)) {
-		 * metadataList += MetadataPair(key, value) metadataKeys += key } } var
-		 * metadataJson = scala.collection.mutable.Map.empty[String, JsValue] for(key <-
-		 * metadataKeys) { metadataJson = metadataJson ++ Map(key ->
-		 * Json.toJson(metadataList.filter(_.label == key).map{item =>
-		 * item.content}toList)) } val metadataDefsMap =
-		 * scala.collection.mutable.Map.empty[String, JsValue] for(md <-
-		 * metadatas.getDefinitions(Some(c.space))) { metadataDefsMap((md.json\
-		 * "label").asOpt[String].getOrElse("").toString()) = Json.toJson((md.json \
-		 * "uri").asOpt[String].getOrElse("")) } if(metadataJson.contains("Creator")) {
-		 * val value = c.creators ++ metadataList.filter(_.label == "Creator").map{item
-		 * => item.content.as[String]}.toList metadataJson = metadataJson ++
-		 * Map("Creator" -> Json.toJson(value)) } else { metadataJson = metadataJson ++
-		 * Map("Creator" -> Json.toJson(c.creators)) }
-		 * if(!metadataDefsMap.contains("Creator")){ metadataDefsMap("Creator") =
-		 * Json.toJson(Map("@id" -> "http://purl.org/dc/terms/creator", "@container" ->
-		 * "@list")) } val publicationDate = c.publishedDate match { case None => ""
-		 * case Some(p) => format.format(c.created) }
-		 * if(metadataJson.contains("Abstract")) { val value = List(c.description) ++
-		 * metadataList.filter(_.label == "Abstract").map{item =>
-		 * item.content.as[String]} metadataJson = metadataJson ++ Map("Abstract" ->
-		 * Json.toJson(value)) } else { metadataJson = metadataJson ++ Map("Abstract" ->
-		 * Json.toJson(c.description)) } if(!metadataDefsMap.contains("Abstract")){
-		 * metadataDefsMap("Abstract") =
-		 * Json.toJson("http://purl.org/dc/terms/abstract") } var aggregation =
-		 * metadataJson if(commentsJson.size > 0) { aggregation = metadataJson ++ Map(
-		 * "Comment" -> Json.toJson(JsArray(commentsJson))) } if(c.datasets(0).tags.size
-		 * > 0) { aggregation = aggregation ++ Map("Keyword" -> Json.toJson(
-		 * Json.toJson(c.datasets(0).tags.map(_.name)) )) } var parsedValue = Map(
-		 * "@context" -> Json.toJson(Seq( Json.toJson("https://w3id.org/ore/context"),
-		 * Json.toJson( metadataDefsMap.toMap ++ Map( "Identifier" ->
-		 * Json.toJson("http://purl.org/dc/elements/1.1/identifier"), "Rights" ->
-		 * Json.toJson("http://purl.org/dc/terms/rights"), "Date" ->
-		 * Json.toJson("http://purl.org/dc/elements/1.1/date"), "Creation Date" ->
-		 * Json.toJson("http://purl.org/dc/terms/created"), "Label" ->
-		 * Json.toJson("http://www.w3.org/2000/01/rdf-schema#label"), "Location" ->
-		 * Json.toJson( "http://sead-data.net/terms/generatedAt"), "Description" ->
-		 * Json.toJson("http://purl.org/dc/elements/1.1/description"), "Keyword"->
-		 * Json.toJson("http://www.holygoat.co.uk/owl/redwood/0.1/tags/taggedWithTag"),
-		 * "Title" -> Json.toJson("http://purl.org/dc/elements/1.1/title"),
-		 * "Uploaded By" -> Json.toJson("http://purl.org/dc/elements/1.1/creator"),
-		 * "Contact" -> Json.toJson("http://sead-data.net/terms/contact"), "name" ->
-		 * Json.toJson("http://sead-data.net/terms/name"), "email" ->
-		 * Json.toJson("http://schema.org/Person/email"), "Publication Date" ->
-		 * Json.toJson("http://purl.org/dc/terms/issued"), "Spatial Reference" ->
-		 * Json.toJson( Map(
-		 * 
-		 * "@id" -> Json.toJson("tag:tupeloproject.org,2006:/2.0/gis/hasGeoPoint"),
-		 * "Longitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#long"),
-		 * "Latitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#lat"),
-		 * "Altitude" -> Json.toJson("http://www.w3.org/2003/01/geo/wgs84_pos#alt")
-		 * 
-		 * )), "Comment" -> Json.toJson(Map( "comment_body" ->
-		 * Json.toJson("http://purl.org/dc/elements/1.1/description"), "comment_date" ->
-		 * Json.toJson("http://purl.org/dc/elements/1.1/date"), "@id" ->
-		 * Json.toJson("http://cet.ncsa.uiuc.edu/2007/annotation/hasAnnotation"),
-		 * "comment_author" -> Json.toJson("http://purl.org/dc/elements/1.1/creator")
-		 * )), "Has Description" -> Json.toJson("http://purl.org/dc/terms/description"),
-		 * "Bibliographic citation" ->
-		 * Json.toJson("http://purl.org/dc/terms/bibliographicCitation"), "Published In"
-		 * -> Json.toJson("http://purl.org/dc/terms/isPartOf"), "Publisher" ->
-		 * Json.toJson("http://purl.org/dc/terms/publisher"), "External Identifier" ->
-		 * Json.toJson("http://purl.org/dc/terms/identifier"), "references" ->
-		 * Json.toJson("http://purl.org/dc/terms/references"), "Is Version Of" ->
-		 * Json.toJson("http://purl.org/dc/terms/isVersionOf"), "Has Part" ->
-		 * Json.toJson("http://purl.org/dc/terms/hasPart"), "Size" ->
-		 * Json.toJson("tag:tupeloproject.org,2006:/2.0/files/length"), "Mimetype" ->
-		 * Json.toJson("http://purl.org/dc/elements/1.1/format"), "SHA512 Hash" ->
-		 * Json.toJson("http://sead-data.net/terms/hasSHA512Digest"),
-		 * "Dataset Description" ->
-		 * Json.toJson("http://sead-data.net/terms/datasetdescription"),
-		 * "Publishing Project" ->
-		 * Json.toJson("http://sead-data.net/terms/publishingProject"), "License" ->
-		 * Json.toJson("http://purl.org/dc/terms/license") ) )
-		 * 
-		 * )), "Rights" -> Json.toJson("CC0"), "describes" -> Json.toJson(
-		 * aggregation.toMap ++ Map( "Identifier" -> Json.toJson("urn:uuid:" + c.id),
-		 * "Creation Date" -> Json.toJson(format.format(c.created)), "Label" ->
-		 * Json.toJson(c.name), "Title" -> Json.toJson(c.name), "Dataset Description" ->
-		 * Json.toJson(c.description), "Uploaded By" ->
-		 * Json.toJson(userService.findById(c.author.id).map ( usr =>
-		 * Json.toJson(usr.fullName + ": " +
-		 * api.routes.Users.findById(usr.id).absoluteURL(https)))), "Publication Date"
-		 * -> Json.toJson(publicationDate), "Published In" -> Json.toJson(""),
-		 * "External Identifier" -> Json.toJson(""), "Proposed for publication" ->
-		 * Json.toJson("true"), "@id" ->
-		 * Json.toJson(api.routes.CurationObjects.getCurationObjectOre(c.id).absoluteURL
-		 * (https) + "#aggregation"), "@type" -> Json.toJson(Seq("Aggregation",
-		 * "http://cet.ncsa.uiuc.edu/2015/Dataset")), "Is Version Of" ->
-		 * Json.toJson(controllers.routes.Datasets.dataset(c.datasets(0).id).absoluteURL
-		 * (https)), "similarTo" ->
-		 * Json.toJson(controllers.routes.Datasets.dataset(c.datasets(0).id).absoluteURL
-		 * (https)), "aggregates" -> Json.toJson(filesJson ++ foldersJson.toList),
-		 * "Has Part" -> Json.toJson(hasPart), "Publishing Project"->
-		 * Json.toJson(controllers.routes.Spaces.getSpace(c.space).absoluteURL(https))
-		 * )), "Creation Date" -> Json.toJson(format.format(c.created)), "Uploaded By"
-		 * -> Json.toJson(userService.findById(c.author.id).map ( usr =>
-		 * Json.toJson(usr.fullName + ": " +
-		 * api.routes.Users.findById(usr.id).absoluteURL(https)))), "@type" ->
-		 * Json.toJson("ResourceMap"), "@id" ->
-		 * Json.toJson(api.routes.CurationObjects.getCurationObjectOre(curationId).
-		 * absoluteURL(https)) )
-		 * 
-		 * Ok(Json.toJson(parsedValue)) } case None =>
-		 * InternalServerError("Publication Request not Found"); }
-		 */
 	}
 
 	@Override
