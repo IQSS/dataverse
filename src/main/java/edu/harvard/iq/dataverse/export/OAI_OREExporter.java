@@ -51,8 +51,12 @@ public class OAI_OREExporter implements Exporter {
 			for (DatasetField field : fields) {
 				DatasetFieldType dfType = field.getDatasetFieldType();
 				JsonArrayBuilder vals = Json.createArrayBuilder();
+				if (dfType.isCompound() != true) {
 				for (String val : field.getValues()) {
 					vals.add(val);
+				}
+				} else {
+					vals.add(field.getCompoundDisplayValue()); 
 				}
 
 				aggBuilder.add(dfType.getTitle(), vals.build());
