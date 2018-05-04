@@ -76,10 +76,10 @@ public class OAI_OREExporter implements Exporter {
 				addIfNotNull(aggRes, "version", fmd.getVersion());
 				addIfNotNull(aggRes, "datasetVersionId", fmd.getDatasetVersion().getId());
 				JsonArray catArray = null;
-				(if fmd!=null) {
+				if (fmd!=null) {
 					List<String> categories = fmd.getCategoriesByName();
 					if (categories.size()>0) {
-						JsonArrayBuilder jab = json.createArrayBuilder();
+						JsonArrayBuilder jab = Json.createArrayBuilder();
 						for(String s: categories) {
 							jab.add(s);
 						}
@@ -108,16 +108,16 @@ public class OAI_OREExporter implements Exporter {
 				// * "checksum" (which may also be a SHA-1 rather than an MD5)?
 				// ---------------------------------------------
 				addIfNotNull(aggRes, "md5", JsonPrinter.getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()));
-				JsonObject checksum;
+				JsonObject checksum = null;
 				JsonObjectBuilder job = JsonPrinter.getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue());
 				if(job != null) {
 					checksum = job.build();
 				}
 				addIfNotNull(aggRes, "checksum", checksum);
-				JsonObject tabTags = null;
-				job=JsonPrinter.getTabularFileTags(df);
-				if (job!=null) {
-					tabTags = job.build();
+				JsonArray tabTags = null;
+				JsonArrayBuilder jab=JsonPrinter.getTabularFileTags(df);
+				if (jab!=null) {
+					tabTags = jab.build();
 				}
 				addIfNotNull(aggRes, "tabularTags", tabTags);
 
