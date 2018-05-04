@@ -28,6 +28,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 
 @AutoService(Exporter.class)
 public class OAI_OREExporter implements Exporter {
@@ -56,8 +57,7 @@ public class OAI_OREExporter implements Exporter {
 
 				aggBuilder.add(dfType.getTitle(), vals.build());
 			}
-			
-			
+
 			aggBuilder.add("@id", id).add("@type", Json.createArrayBuilder().add("Aggregation").add("Dataset"))
 					.add("version", version.getFriendlyVersionNumber())
 					.add("datePublished", dataset.getPublicationDateFormattedYYYYMMDD()).add("name", version.getTitle())
@@ -66,33 +66,40 @@ public class OAI_OREExporter implements Exporter {
 			JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
 			for (FileMetadata fmd : version.getFileMetadatas()) {
 				DataFile df = fmd.getDataFile();
-				JsonObjectBuilder aggRes = Json.createObjectBuilder().add("description", fmd.getDescription())
-						.add("label", fmd.getLabel()) // "label" is the filename
-						.add("restricted", fmd.isRestricted()).add("directoryLabel", fmd.getDirectoryLabel())
-						.add("version", fmd.getVersion()).add("datasetVersionId", fmd.getDatasetVersion().getId())
-						.add("categories", JsonPrinter.getFileCategories(fmd).build())
-						.add("@id", df.getId())
-						.add("contentType", df.getContentType()).add("filesize", df.getFilesize())
-						.add("description", df.getDescription())
-						// .add("released", df.isReleased())
-						// .add("restricted", df.isRestricted())
-						.add("storageIdentifier", df.getStorageIdentifier())
-						.add("originalFileFormat", df.getOriginalFileFormat())
-						.add("originalFormatLabel", df.getOriginalFormatLabel()).add("UNF", df.getUnf())
-						// ---------------------------------------------
-						// For file replace: rootDataFileId, previousDataFileId
-						// ---------------------------------------------
-						.add("rootDataFileId", df.getRootDataFileId())
-						.add("previousDataFileId", df.getPreviousDataFileId())
-						// ---------------------------------------------
-						// Checksum
-						// * @todo Should we deprecate "md5" now that it's under
-						// * "checksum" (which may also be a SHA-1 rather than an MD5)?
-						// ---------------------------------------------
-						.add("md5", JsonPrinter.getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
-						.add("checksum", JsonPrinter
-								.getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()).build())
-						.add("tabularTags", JsonPrinter.getTabularFileTags(df).build());
+				JsonObjectBuilder aggRes = Json.createObjectBuilder();
+				addIfNotNull(aggRes, "description", fmd.getDescription());
+				if (fmd.getDescription() == null)
+					addIfNotNull(aggRes, "description", df.getDescription());
+				addIfNotNull(aggRes, "label", fmd.getLabel()); // "label" is the filename
+				addIfNotNull(aggRes, "restricted", fmd.isRestricted());
+				addIfNotNull(aggRes, "directoryLabel", fmd.getDirectoryLabel());
+				addIfNotNull(aggRes, "version", fmd.getVersion());
+				addIfNotNull(aggRes, "datasetVersionId", fmd.getDatasetVersion().getId());
+				addIfNotNull(aggRes, "categories", JsonPrinter.getFileCategories(fmd).build());
+				addIfNotNull(aggRes, "@id", df.getId());
+				addIfNotNull(aggRes, "contentType", df.getContentType());
+				addIfNotNull(aggRes, "filesize", df.getFilesize());
+				// .add("released", df.isReleased())
+				// .add("restricted", df.isRestricted())
+
+				addIfNotNull(aggRes, "storageIdentifier", df.getStorageIdentifier());
+				addIfNotNull(aggRes, "originalFileFormat", df.getOriginalFileFormat());
+				addIfNotNull(aggRes, "originalFormatLabel", df.getOriginalFormatLabel());
+				addIfNotNull(aggRes, "UNF", df.getUnf());
+				// ---------------------------------------------
+				// For file replace: rootDataFileId, previousDataFileId
+				// ---------------------------------------------
+				addIfNotNull(aggRes, "rootDataFileId", df.getRootDataFileId());
+				addIfNotNull(aggRes, "previousDataFileId", df.getPreviousDataFileId());
+				// ---------------------------------------------
+				// Checksum
+				// * @todo Should we deprecate "md5" now that it's under
+				// * "checksum" (which may also be a SHA-1 rather than an MD5)?
+				// ---------------------------------------------
+				addIfNotNull(aggRes, "md5", JsonPrinter.getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()));
+				addIfNotNull(aggRes, "checksum",
+						JsonPrinter.getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()).build());
+				addIfNotNull(aggRes, "tabularTags", JsonPrinter.getTabularFileTags(df).build());
 
 				aggResArrayBuilder.add(aggRes.build());
 			}
@@ -407,5 +414,27 @@ public class OAI_OREExporter implements Exporter {
 	public void setParam(String name, Object value) {
 		// this exporter doesn't need/doesn't currently take any parameters
 	}
+
+	private void addIfNotNull(JsonObjectBuilder builder, String key, String value) {
+		if (value != null) {
+			builder.add(key, value);
+		}
+	}
+	private void addIfNotNull(JsonObjectBuilder builder, String key, JsonValue value) {
+		if (value != null) {
+			builder.add(key, value);
+		}
+	}
+	private void addIfNotNull(JsonObjectBuilder builder, String key, Boolean value) {
+		if (value != null) {
+			builder.add(key, value);
+		}
+	}
+	private void addIfNotNull(JsonObjectBuilder builder, String key, Long value) {
+		if (value != null) {
+			builder.add(key, value);
+		}
+	}
+
 
 }
