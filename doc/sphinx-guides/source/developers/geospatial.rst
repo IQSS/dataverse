@@ -183,6 +183,33 @@ Saving Join Target Information to Geoconnect Database
 
 The ``get_latest_jointarget_information()`` in ``utils.py`` retrieves recent JoinTarget Information from the database. (See the `utils code in GitHub <https://github.com/IQSS/geoconnect/blob/master/gc_apps/worldmap_connect/utils.py#L16>`_.)
 
+Setting Up WorldMap Test Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For the dataset page, this script gives a query to add test WorldMap map data. After the query is run, the "Explore Map" button should appear for a tabular file or shapefile.
+
+To add sample map data for a tabular file:
+
+.. code-block:: sql
+
+    INSERT INTO maplayermetadata (id, isjoinlayer, joindescription, embedmaplink, layerlink, layername, mapimagelink, worldmapusername, dataset_id, datafile_id) 
+    VALUES (DEFAULT, true, 'This file was joined with WorldMap layer x, y, z',
+    'https://worldmap.harvard.edu/maps/embed/?layer=geonode:zip_codes_2015_zip_s9i','https://worldmap.harvard.edu/data/geonode:zip_codes_2015_zip_s9i',
+    'geonode:zip_codes_2015_zip_s9i',
+    'http://worldmap.harvard.edu/download/wms/27289/png?layers=geonode%3Azip_codes_2015_zip_s9i&#38;width=865&#38;bbox=-71.1911091251%2C42.2270382738%2C-70.9228275369%2C42.3976144794&#38;service=WMS&#38;format=image%2Fpng&#38;srs=EPSG%3A4326&#38;request=GetMap&#38;height=550',
+    'admin',#{DatasetPage.dataset.id},#{fileMetadata.dataFile.id});
+
+To add sample map data for a tabular shapefile:
+
+.. code-block:: sql
+
+    INSERT INTO maplayermetadata (id, isjoinlayer, embedmaplink, layerlink, layername, mapimagelink, worldmapusername, dataset_id, datafile_id) 
+    VALUES (DEFAULT, false,
+    'https://worldmap.harvard.edu/maps/embed/?layer=geonode:zip_codes_2015_zip_s9i','https://worldmap.harvard.edu/data/geonode:zip_codes_2015_zip_s9i',
+    'geonode:zip_codes_2015_zip_s9i',
+    'http://worldmap.harvard.edu/download/wms/27289/png?layers=geonode%3Azip_codes_2015_zip_s9i&#38;width=865&#38;bbox=-71.1911091251%2C42.2270382738%2C-70.9228275369%2C42.3976144794&#38;service=WMS&#38;format=image%2Fpng&#38;srs=EPSG%3A4326&#38;request=GetMap&#38;height=550',
+    'admin',#{DatasetPage.dataset.id},#{fileMetadata.dataFile.id});
+
 ----
 
 Previous: :doc:`unf/index` | Next: :doc:`remote-users`
