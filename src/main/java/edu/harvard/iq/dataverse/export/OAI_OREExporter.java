@@ -130,7 +130,8 @@ public class OAI_OREExporter implements Exporter {
 					}
 				}
 				addIfNotNull(aggRes, "categories", catArray);
-				addIfNotNull(aggRes, "@id", df.getId());
+				//Will be file DOI eventually
+				addIfNotNull(aggRes, "@id", SystemConfig.getDataverseSiteUrlStatic() +"/api/access/datafile/" + df.getId());
 				addIfNotNull(aggRes, "contentType", df.getContentType());
 				addIfNotNull(aggRes, "filesize", df.getFilesize());
 				// .add("released", df.isReleased())
