@@ -188,6 +188,8 @@ public class SettingsServiceBean {
          *  character separating the shoulder from the rest of th identifier is not '/' or DoiSeparator.
          */
         DoiShoulder,
+        //Do not force DOIs to uppercase before searching in database
+        DoiUseMixedCase,
         /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
         DoiUsername,
         DoiPassword,
