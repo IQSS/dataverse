@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
+import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -25,6 +26,9 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
+import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
@@ -458,6 +462,40 @@ public class JsonParser {
         
         return dataFile;
     }
+    
+    
+    
+    public List<DataTable> parseDataTables(JsonArray dataTablesJson){
+        List<DataTable> dataTables = new LinkedList<>();
+        if (dataTablesJson !=null){
+            for (JsonObject dataTableJson : dataTablesJson.getValuesAs(JsonObject.class)){
+                // capture scalar items
+                
+                // call the method for pasring dataVariables array
+            }
+        }
+        return dataTables;
+    }
+    
+    
+    public List<DataVariable> parseDataVariables(JsonArray dataVariables){
+        
+        
+        return null;
+    }
+    
+    
+    public List<SummaryStatistic> parseSummaryStatistics(JsonObject summaryStatisticsJson){
+        return null;
+    }
+    
+    
+    public List<VariableCategory> parseVariableCategory(JsonArray variableCategoriesJson){
+        return null;
+    }
+    
+    
+    
     /**
      * Special processing for GeographicCoverage compound field:
      * Handle parsing exceptions caused by invalid controlled vocabulary in the "country" field by
