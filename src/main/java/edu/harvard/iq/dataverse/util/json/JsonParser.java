@@ -421,6 +421,17 @@ public class JsonParser {
             contentType = "application/octet-stream";
         }
         String storageIdentifier = datafileJson.getString("storageIdentifier", " ");
+        
+        // available items
+        // filename
+        // filesize
+        // originalFileFormat
+        // originalFormatLabel
+        // UNF
+        // md5
+        
+        
+        
         JsonObject checksum = datafileJson.getJsonObject("checksum");
         if (checksum != null) {
             // newer style that allows for SHA-1 rather than MD5
@@ -469,8 +480,17 @@ public class JsonParser {
         List<DataTable> dataTables = new LinkedList<>();
         if (dataTablesJson !=null){
             for (JsonObject dataTableJson : dataTablesJson.getValuesAs(JsonObject.class)){
-                // capture scalar items
                 
+                
+                // capture scalar items
+                // varQuantity
+                // dataTableJson.getString("varQuantity", null)
+                
+                // caseQuantity
+                
+                // UNF
+                
+                // 
                 // call the method for pasring dataVariables array
             }
         }
@@ -479,6 +499,15 @@ public class JsonParser {
     
     
     public List<DataVariable> parseDataVariables(JsonArray dataVariables){
+        // capture scalar items
+        // name
+        // label
+        // weighted
+        // variableIntervalType
+        // variableFormatType
+        // orderedFactor
+        // fileOrder
+        // UNF
         
         
         return null;
@@ -486,11 +515,31 @@ public class JsonParser {
     
     
     public List<SummaryStatistic> parseSummaryStatistics(JsonObject summaryStatisticsJson){
+        // mean
+        
+        // medn
+        
+        // mode
+        
+        // vald
+        
+        // invd
+        
+        // min
+        
+        // max
+        
+        // stdev
         return null;
     }
     
     
-    public List<VariableCategory> parseVariableCategory(JsonArray variableCategoriesJson){
+    public List<VariableCategory> parseVariableCategories(JsonArray variableCategoriesJson){
+        
+        // label
+        
+        // value
+        
         return null;
     }
     
