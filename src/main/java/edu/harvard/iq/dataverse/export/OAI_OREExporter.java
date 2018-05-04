@@ -132,6 +132,7 @@ public class OAI_OREExporter implements Exporter {
 				addIfNotNull(aggRes, "categories", catArray);
 				//Will be file DOI eventually
 				addIfNotNull(aggRes, "@id", SystemConfig.getDataverseSiteUrlStatic() +"/api/access/datafile/" + df.getId());
+				aggRes.add("@type", "AggregatedResource");
 				addIfNotNull(aggRes, "contentType", df.getContentType());
 				addIfNotNull(aggRes, "filesize", df.getFilesize());
 				// .add("released", df.isReleased())
