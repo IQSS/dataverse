@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -49,17 +50,35 @@ public class OAI_OREExporter implements Exporter {
 			JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
 			List<DatasetField> fields = version.getDatasetFields();
 			for (DatasetField field : fields) {
-				DatasetFieldType dfType = field.getDatasetFieldType();
-				JsonArrayBuilder vals = Json.createArrayBuilder();
-				if (dfType.isCompound() != true) {
-				for (String val : field.getValues()) {
-					vals.add(val);
-				}
-				} else {
-					vals.add(field.getCompoundDisplayValue()); 
-				}
+				if (!field.isEmpty()) {
+					DatasetFieldType dfType = field.getDatasetFieldType();
+					JsonArrayBuilder vals = Json.createArrayBuilder();
+					if (!dfType.isCompound()) {
+						for (String val : field.getValues()) {
+							vals.add(val);
+						}
+					} else {
 
-				aggBuilder.add(dfType.getTitle(), vals.build());
+						for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
+							// compound values are of different types
+							JsonObjectBuilder child = Json.createObjectBuilder();
+
+							for (DatasetField dsf : dscv.getChildDatasetFields()) {
+								// which may have multiple values
+
+								JsonArrayBuilder childVals = Json.createArrayBuilder();
+								for (String val : dsf.getValues()) {
+									childVals.add(val);
+								}
+								child.add(dsf.getDatasetFieldType().getTitle(), childVals);
+
+							}
+							vals.add(child);
+						}
+					}
+
+					aggBuilder.add(dfType.getTitle(), vals.build());
+				}
 			}
 
 			aggBuilder.add("@id", id).add("@type", Json.createArrayBuilder().add("Aggregation").add("Dataset"))
@@ -80,14 +99,14 @@ public class OAI_OREExporter implements Exporter {
 				addIfNotNull(aggRes, "version", fmd.getVersion());
 				addIfNotNull(aggRes, "datasetVersionId", fmd.getDatasetVersion().getId());
 				JsonArray catArray = null;
-				if (fmd!=null) {
+				if (fmd != null) {
 					List<String> categories = fmd.getCategoriesByName();
-					if (categories.size()>0) {
+					if (categories.size() > 0) {
 						JsonArrayBuilder jab = Json.createArrayBuilder();
-						for(String s: categories) {
+						for (String s : categories) {
 							jab.add(s);
 						}
-						catArray=jab.build();
+						catArray = jab.build();
 					}
 				}
 				addIfNotNull(aggRes, "categories", catArray);
@@ -113,14 +132,15 @@ public class OAI_OREExporter implements Exporter {
 				// ---------------------------------------------
 				addIfNotNull(aggRes, "md5", JsonPrinter.getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()));
 				JsonObject checksum = null;
-				JsonObjectBuilder job = JsonPrinter.getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue());
-				if(job != null) {
+				JsonObjectBuilder job = JsonPrinter.getChecksumTypeAndValue(df.getChecksumType(),
+						df.getChecksumValue());
+				if (job != null) {
 					checksum = job.build();
 				}
 				addIfNotNull(aggRes, "checksum", checksum);
 				JsonArray tabTags = null;
-				JsonArrayBuilder jab=JsonPrinter.getTabularFileTags(df);
-				if (jab!=null) {
+				JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
+				if (jab != null) {
 					tabTags = jab.build();
 				}
 				addIfNotNull(aggRes, "tabularTags", tabTags);
@@ -444,21 +464,23 @@ public class OAI_OREExporter implements Exporter {
 			builder.add(key, value);
 		}
 	}
+
 	private void addIfNotNull(JsonObjectBuilder builder, String key, JsonValue value) {
 		if (value != null) {
 			builder.add(key, value);
 		}
 	}
+
 	private void addIfNotNull(JsonObjectBuilder builder, String key, Boolean value) {
 		if (value != null) {
 			builder.add(key, value);
 		}
 	}
+
 	private void addIfNotNull(JsonObjectBuilder builder, String key, Long value) {
 		if (value != null) {
 			builder.add(key, value);
 		}
 	}
-
 
 }
