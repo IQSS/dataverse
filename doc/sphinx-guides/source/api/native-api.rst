@@ -554,11 +554,11 @@ Get Provenance Description for an uploaded file::
 
 Create/Update Provenance JSON and provide related entity name for an uploaded file::
 
-    POST http://$SERVER/api/files/{id}/prov-json?key=$apiKey&entityName=$entity -H "Content-type:application/json"
+    POST http://$SERVER/api/files/{id}/prov-json?key=$apiKey&entityName=$entity -H "Content-type:application/json" --upload-file $filePath
 
 Create/Update Provenance Description for an uploaded file. Requires a JSON file with the description connected to a key named "text"::
 
-    POST http://$SERVER/api/files/{id}/prov-freeform?key=$apiKey -H "Content-type:application/json"
+    POST http://$SERVER/api/files/{id}/prov-freeform?key=$apiKey -H "Content-type:application/json" --upload-file $filePath
 
 Delete Provenance JSON for an uploaded file::
 
