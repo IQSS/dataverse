@@ -82,7 +82,7 @@ public class OAI_OREExporter implements Exporter {
 								// which may have multiple values
 								if(!dsf.isEmpty()) {
 									//Add context entry - also needs to recurse
-									localContextObject.add(dsft.getTitle(),  SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dfType.getMetadataBlock().getName() + "/" + dsft.getName() + "#" +dfType.getName());
+									localContextObject.add(dsft.getTitle(),  SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dfType.getMetadataBlock().getName() + "/" + dfType.getName() + "#" + dsft.getName());
 									
 								JsonArrayBuilder childVals = Json.createArrayBuilder();
 								for (String val : dsf.getValues()) {
