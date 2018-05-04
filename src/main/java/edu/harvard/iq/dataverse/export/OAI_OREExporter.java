@@ -75,7 +75,18 @@ public class OAI_OREExporter implements Exporter {
 				addIfNotNull(aggRes, "directoryLabel", fmd.getDirectoryLabel());
 				addIfNotNull(aggRes, "version", fmd.getVersion());
 				addIfNotNull(aggRes, "datasetVersionId", fmd.getDatasetVersion().getId());
-				addIfNotNull(aggRes, "categories", JsonPrinter.getFileCategories(fmd).build());
+				JsonArray catArray = null;
+				(if fmd!=null) {
+					List<String> categories = fmd.getCategoriesByName();
+					if (categories.size()>0) {
+						JsonArrayBuilder jab = json.createArrayBuilder();
+						for(String s: categories) {
+							jab.add(s);
+						}
+						catArray=jab.build();
+					}
+				}
+				addIfNotNull(aggRes, "categories", catArray);
 				addIfNotNull(aggRes, "@id", df.getId());
 				addIfNotNull(aggRes, "contentType", df.getContentType());
 				addIfNotNull(aggRes, "filesize", df.getFilesize());
@@ -97,9 +108,18 @@ public class OAI_OREExporter implements Exporter {
 				// * "checksum" (which may also be a SHA-1 rather than an MD5)?
 				// ---------------------------------------------
 				addIfNotNull(aggRes, "md5", JsonPrinter.getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()));
-				addIfNotNull(aggRes, "checksum",
-						JsonPrinter.getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()).build());
-				addIfNotNull(aggRes, "tabularTags", JsonPrinter.getTabularFileTags(df).build());
+				JsonObject checksum;
+				JsonObjectBuilder job = JsonPrinter.getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue());
+				if(job != null) {
+					checksum = job.build();
+				}
+				addIfNotNull(aggRes, "checksum", checksum);
+				JsonObject tabTags = null;
+				job=JsonPrinter.getTabularFileTags(df);
+				if (job!=null) {
+					tabTags = job.build();
+				}
+				addIfNotNull(aggRes, "tabularTags", tabTags);
 
 				aggResArrayBuilder.add(aggRes.build());
 			}
