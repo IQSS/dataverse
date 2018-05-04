@@ -146,7 +146,6 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
                     && !provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile.getProvEntityName().isEmpty()) { 
                 if(null == provJsonState) { //If the prov json hasn't been updated but other values for the datafile have
                     
-                    //MAD: I think this is right, it should be "permanent" if its not in the temp stored updates.
                     JsonObject provJsonObject = execCommand(new GetProvJsonCommand(dvRequestService.getDataverseRequest(), popupDataFile)); 
                     if(null != provJsonObject) {
                         provJsonState = provUtil.getPrettyJsonString(provJsonObject);
@@ -177,7 +176,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     public String stagePopupChanges(boolean saveInPopup) throws IOException{
         UpdatesEntry stagingEntry = provenanceUpdates.get(popupDataFile.getChecksumValue());
         if(stagingEntry == null) {
-            stagingEntry = new UpdatesEntry(popupDataFile, null, false, null);// = new UpdatesEntry(popupDataFile, null, null);  
+            stagingEntry = new UpdatesEntry(popupDataFile, null, false, null);// (DataFile dataFile, String provJson, Boolean deleteJson, String provFreeform) { 
         }
         if(null == freeformTextInput && null != freeformTextState) {
             freeformTextInput = "";
@@ -198,6 +197,9 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         } 
 
         if(null != dropdownSelectedEntity && !(null != storedSelectedEntityName && storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName()))) {
+            if(null == stagingEntry.provJson) {
+                stagingEntry.provJson = provJsonState; //this will trigger the prov json save command to save the entity if it was set without a json update
+            }
             popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
         }
         
@@ -253,7 +255,8 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         JsfHelper.addSuccessMessage(message); //We have to call this after to ensure it is the success message shown
     }
     
-    public void saveStagedProvJson(boolean saveContext) throws AbstractApiBean.WrappedResponse {
+    public boolean saveStagedProvJson(boolean saveContext) throws AbstractApiBean.WrappedResponse {
+        boolean commandsCalled = false;
         for (Map.Entry<String, UpdatesEntry> m : provenanceUpdates.entrySet()) {
             UpdatesEntry mapEntry = m.getValue();
             DataFile df = mapEntry.dataFile;
@@ -261,12 +264,15 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
 
             if(mapEntry.deleteJson) {
                 df = execCommand(new DeleteProvJsonCommand(dvRequestService.getDataverseRequest(), df, saveContext));
+                commandsCalled = true;
             } else if(null != provString) {
                 df = execCommand(new PersistProvJsonCommand(dvRequestService.getDataverseRequest(), df, provString, df.getProvEntityName(), saveContext));
+                commandsCalled = true;
             } 
             mapEntry.dataFile = df;
             provenanceUpdates.put(mapEntry.dataFile.getChecksumValue(), mapEntry); //Updates the datafile to the latest.
         }
+        return commandsCalled;
     }
     
     public void saveStageProvFreeformToLatestVersion() {
@@ -282,7 +288,6 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         Boolean changes = false;
         for(FileMetadata fm : fileMetadatas) {
             UpdatesEntry ue = provenanceUpdates.get(fm.getDataFile().getChecksumValue());
-//MAD: Does this null check for provFreeform stop provFreeform from being cleared?
             if(null != ue && null != ue.provFreeform) {
                 fm.setProvFreeForm(ue.provFreeform);
                 changes = true;
@@ -377,7 +382,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
         
     public void generateProvJsonParsedEntities() throws IOException { 
-        provJsonParsedEntities = new HashMap<>(); //MAD: DID NOTHING
+        provJsonParsedEntities = new HashMap<>();
         provJsonParsedEntities = provUtil.startRecurseNames(provJsonState);
     }
         
@@ -400,6 +405,10 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     
     public ProvEntityFileData getEntityByEntityName(String entityName) {
         return provJsonParsedEntities.get(entityName);
+    }
+    
+    public HashMap<String,UpdatesEntry> getProvenanceUpdates() {
+        return provenanceUpdates;
     }
     
      //for storing datafile and provjson in a map value
