@@ -217,7 +217,10 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
-                logger.log(Level.FINE,"updateIdentifierStatus");
+        logger.log(Level.FINE,"updateIdentifierStatus");
+        if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+            dvObject = generateIdentifier(dvObject);
+        }
         String identifier = getIdentifier(dvObject);
         HashMap<String, String> metadata = getUpdateMetadata(dvObject);
         metadata.put("_status", "public");
