@@ -47,37 +47,57 @@ public class OAI_OREExporter implements Exporter {
 			String id = dataset.getGlobalId();
 			// json.getString("protocol") + ":" + json.getString("authority") + "/" +
 			// json.getString("identifier");
+			
+			
+			JsonArrayBuilder contextArray = Json.createArrayBuilder().add("http://www.openarchives.org/ore/0.9/context.json")
+			// .add("https://w3id.org/ore/context") - JSON-LD Playground doesn't like this
+			// due to redirects
+			.add("http://schema.org");
+			JsonObjectBuilder localContextObject = Json.createObjectBuilder().add("Creation Date", "http://purl.org/dc/terms/created")
+					.add("Creator", "http://purl.org/dc/elements/1.1/creator")
+					.add("Has Version", "http://purl.org/dc/terms/hasVersion")
+					.add("persistentUrl", "http://purl.org/dc/elements/1.1/identifier");
+
 			JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
 			List<DatasetField> fields = version.getDatasetFields();
 			for (DatasetField field : fields) {
 				if (!field.isEmpty()) {
 					DatasetFieldType dfType = field.getDatasetFieldType();
+					//Add context entry
+					localContextObject.add(dfType.getTitle(),  SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dfType.getMetadataBlock().getName() + "#" +dfType.getName());
+					
 					JsonArrayBuilder vals = Json.createArrayBuilder();
 					if (!dfType.isCompound()) {
 						for (String val : field.getValues()) {
 							vals.add(val);
 						}
 					} else {
-
+						//Needs to be recursive (as in JsonPrinter?)
 						for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
 							// compound values are of different types
 							JsonObjectBuilder child = Json.createObjectBuilder();
 
 							for (DatasetField dsf : dscv.getChildDatasetFields()) {
+								DatasetFieldType  dsft = dsf.getDatasetFieldType();
 								// which may have multiple values
-
+								if(!dsf.isEmpty()) {
+									//Add context entry - also needs to recurse
+									localContextObject.add(dsft.getTitle(),  SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dfType.getMetadataBlock().getName() + "/" + dsft.getName() + "#" +dfType.getName());
+									
 								JsonArrayBuilder childVals = Json.createArrayBuilder();
 								for (String val : dsf.getValues()) {
 									childVals.add(val);
 								}
-								child.add(dsf.getDatasetFieldType().getTitle(), childVals);
-
+								child.add(dsft.getTitle(), childVals);
+								}
 							}
 							vals.add(child);
 						}
 					}
-
-					aggBuilder.add(dfType.getTitle(), vals.build());
+					//Add value, suppress array when only one value
+					JsonArray valArray = vals.build();
+					aggBuilder.add(dfType.getTitle(), (valArray.size()!=1) ? valArray
+                            : valArray.get(0));
 				}
 			}
 
@@ -157,15 +177,7 @@ public class OAI_OREExporter implements Exporter {
 
 					.add("describes", aggBuilder.add("aggregates", aggResArrayBuilder.build()).build())
 
-					.add("@context", Json.createArrayBuilder().add("http://www.openarchives.org/ore/0.9/context.json")
-							// .add("https://w3id.org/ore/context") - JSON-LD Playground doesn't like this
-							// due to redirects
-							.add("http://schema.org")
-							.add(Json.createObjectBuilder().add("Creation Date", "http://purl.org/dc/terms/created")
-									.add("Creator", "http://purl.org/dc/elements/1.1/creator")
-									.add("Has Version", "http://purl.org/dc/terms/hasVersion")
-									.add("persistentUrl", "http://purl.org/dc/elements/1.1/identifier")))
-					.build();
+					.add("@context", contextArray.add(localContextObject.build()).build()).build();
 			logger.info(oremap.toString());
 
 			/*
