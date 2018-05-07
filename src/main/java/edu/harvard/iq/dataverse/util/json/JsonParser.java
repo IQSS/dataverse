@@ -48,11 +48,13 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Parses JSON objects into domain objects.
@@ -424,12 +426,17 @@ public class JsonParser {
         
         // available items
         // filename
+        String filename = datafileJson.getString("filename", null);
         // filesize
+        long filesize = datafileJson.getJsonNumber("filesize").longValue();
         // originalFileFormat
+        String originalFileFormat = datafileJson.getString("originalFileFormat", null);
         // originalFormatLabel
+        String originalFormatLabel = datafileJson.getString("originalFormatLabel", null);
         // UNF
+        String UNF = datafileJson.getString("UNF", null);
         // md5
-        
+        String MD5 = datafileJson.getString("md5", null);
         
         
         JsonObject checksum = datafileJson.getJsonObject("checksum");
@@ -466,10 +473,21 @@ public class JsonParser {
         }
 
         // TODO: 
+        // the UNF of DataFile is called via DataTable and therefor no set method
         // unf (if available)... etc.?
         
         dataFile.setContentType(contentType);
         dataFile.setStorageIdentifier(storageIdentifier);
+        dataFile.setFilesize(filesize);
+        
+        // parse DataTable
+        JsonArray dataTablesJson = datafileJson.getJsonArray("dataTables");
+        if ((dataTablesJson != null ) && (!dataTablesJson.isEmpty())){
+            // get parsing results of a DataTable
+            List<DataTable> dataTables = parseDataTables(dataTablesJson);
+            dataFile.setDataTables(dataTables);
+            dataFile.setDataTable(dataTables.get(0));
+        }
         
         return dataFile;
     }
@@ -478,69 +496,151 @@ public class JsonParser {
     
     public List<DataTable> parseDataTables(JsonArray dataTablesJson){
         List<DataTable> dataTables = new LinkedList<>();
-        if (dataTablesJson !=null){
+        if ((dataTablesJson !=null) && (!dataTablesJson.isEmpty())){
             for (JsonObject dataTableJson : dataTablesJson.getValuesAs(JsonObject.class)){
                 
-                
+                DataTable dataTable = new DataTable();
                 // capture scalar items
                 // varQuantity
-                // dataTableJson.getString("varQuantity", null)
-                
+                long varQuantity =  dataTableJson.getJsonNumber("varQuantity").longValue();
+                dataTable.setVarQuantity(varQuantity);
                 // caseQuantity
-                
+                long caseQuantity = dataTableJson.getJsonNumber("varQuantity").longValue();
+                dataTable.setCaseQuantity(caseQuantity);
                 // UNF
-                
-                // 
+                String UNF = dataTableJson.getString("UNF", null);
+                dataTable.setUnf(UNF);
                 // call the method for pasring dataVariables array
+                List<DataVariable> dataVariables = parseDataVariables(dataTableJson.getJsonArray("dataVariables"));
+                dataTable.setDataVariables(dataVariables);
+                dataTables.add(dataTable);
             }
         }
         return dataTables;
     }
     
     
-    public List<DataVariable> parseDataVariables(JsonArray dataVariables){
-        // capture scalar items
-        // name
-        // label
-        // weighted
-        // variableIntervalType
-        // variableFormatType
-        // orderedFactor
-        // fileOrder
-        // UNF
-        
-        
-        return null;
+    public List<DataVariable> parseDataVariables(JsonArray dataVariablesJson){
+        List<DataVariable> dataVariables = new LinkedList<>();
+        if ((dataVariablesJson != null) && (!dataVariablesJson.isEmpty())) {
+            for (JsonObject dataVariableJson: dataVariablesJson.getValuesAs(JsonObject.class)){
+                DataVariable dataVariable = new DataVariable();
+                // capture scalar itemse.
+                // name
+                dataVariable.setName(dataVariableJson.getString("name", null));
+                // label
+                dataVariable.setLabel(dataVariableJson.getString("label", null));
+                // weighted
+                dataVariable.setWeighted(dataVariableJson.getBoolean("weighted", false));
+                // variableIntervalType
+                dataVariable.setInterval(DataVariable.VariableInterval.valueOf(dataVariableJson.getString("variableIntervalType", null)));
+                // variableFormatType
+                dataVariable.setType(DataVariable.VariableType.valueOf(dataVariableJson.getString("variableFormatType", null)));
+                // orderedFactor
+                dataVariable.setOrderedCategorical(dataVariableJson.getBoolean("orderedFactor", false));
+                // fileOrder
+                dataVariable.setFileOrder(dataVariableJson.getInt("fileOrder"));
+                
+                // summaryStatistics
+                dataVariable.setSummaryStatistics(parseSummaryStatistics(dataVariableJson.getJsonObject("summaryStatistics")));
+                // variableCategories
+                dataVariable.setCategories(parseVariableCategories(dataVariableJson.getJsonArray("variableCategories")));
+                
+                // UNF
+                dataVariable.setUnf(dataVariableJson.getString("UNF", null));
+            }
+        }
+        return dataVariables;
     }
     
     
     public List<SummaryStatistic> parseSummaryStatistics(JsonObject summaryStatisticsJson){
-        // mean
-        
-        // medn
-        
-        // mode
-        
-        // vald
-        
-        // invd
-        
-        // min
-        
-        // max
-        
-        // stdev
-        return null;
+        List<SummaryStatistic> summaryStatistics = new LinkedList<>();
+        if (summaryStatisticsJson !=null){
+            // mean
+            String meanjsn = summaryStatisticsJson.getString("mean", null);
+            if (StringUtils.isNotBlank(meanjsn)){
+                SummaryStatistic mean = new SummaryStatistic();
+                mean.setType(SummaryStatistic.SummaryStatisticType.MEAN);
+                mean.setValue(meanjsn);
+                summaryStatistics.add(mean);
+            }
+            // medn
+            String mednjsn = summaryStatisticsJson.getString("medn", null);
+            if (StringUtils.isNotBlank(mednjsn)){
+                SummaryStatistic medn = new SummaryStatistic();
+                medn.setType(SummaryStatistic.SummaryStatisticType.MEDN);
+                medn.setValue(mednjsn);
+                summaryStatistics.add(medn);
+            }
+            // mode
+            String modejsn = summaryStatisticsJson.getString("mode", null);
+            if (StringUtils.isNotBlank(modejsn)){
+                SummaryStatistic mode = new SummaryStatistic();
+                mode.setType(SummaryStatistic.SummaryStatisticType.MODE);
+                mode.setValue(modejsn);
+                summaryStatistics.add(mode);
+            }
+            // vald
+            String valdjsn = summaryStatisticsJson.getString("vald", null);
+            if (StringUtils.isNotBlank(valdjsn)){
+                SummaryStatistic vald = new SummaryStatistic();
+                vald.setType(SummaryStatistic.SummaryStatisticType.VALD);
+                vald.setValue(valdjsn);
+                summaryStatistics.add(vald);
+            }
+            // invd
+            String invdjsn = summaryStatisticsJson.getString("invd", null);
+            if (StringUtils.isNotBlank(invdjsn)){
+                SummaryStatistic invd = new SummaryStatistic();
+                invd.setType(SummaryStatistic.SummaryStatisticType.INVD);
+                invd.setValue(invdjsn);
+                summaryStatistics.add(invd);
+            }
+            // min
+            String minjsn = summaryStatisticsJson.getString("min", null);
+            if (StringUtils.isNotBlank(minjsn)){
+                SummaryStatistic min = new SummaryStatistic();
+                min.setType(SummaryStatistic.SummaryStatisticType.MIN);
+                min.setValue(minjsn);
+                summaryStatistics.add(min);
+            }
+            // max
+            String maxjsn = summaryStatisticsJson.getString("max", null);
+            if (StringUtils.isNotBlank(maxjsn)){
+                SummaryStatistic max = new SummaryStatistic();
+                max.setType(SummaryStatistic.SummaryStatisticType.MAX);
+                max.setValue(maxjsn);
+                summaryStatistics.add(max);
+            }
+            // stdev
+            String stdevjsn = summaryStatisticsJson.getString("stdev", null);
+            if (StringUtils.isNotBlank(stdevjsn)){
+                SummaryStatistic stdev = new SummaryStatistic();
+                stdev.setType(SummaryStatistic.SummaryStatisticType.STDEV);
+                stdev.setValue(stdevjsn);
+                summaryStatistics.add(stdev);
+            }
+        }
+        return summaryStatistics;
     }
     
     
     public List<VariableCategory> parseVariableCategories(JsonArray variableCategoriesJson){
-        
-        // label
-        
-        // value
-        
-        return null;
+         List<VariableCategory> variableCategories = new LinkedList<>();
+         if ((variableCategoriesJson != null) && (!variableCategoriesJson.isEmpty())){
+             for (JsonObject variableCategoryJson : variableCategoriesJson.getValuesAs(JsonObject.class)){
+                 VariableCategory vc = new VariableCategory();
+                // label
+                String label = variableCategoryJson.getString("label", "");
+                vc.setLabel(label);
+                // value
+                String value = variableCategoryJson.getString("value", "");
+                vc.setValue(value);
+                variableCategories.add(vc);
+             }
+         }
+        return variableCategories;
     }
     
     
