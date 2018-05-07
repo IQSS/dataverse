@@ -23,7 +23,7 @@ public class NotFoundExceptionHandler implements ExceptionMapper<NotFoundExcepti
         String uri = request.getRequestURI();
         String exMessage = ex.getMessage(); 
         String outputMessage;
-        if (exMessage != null && exMessage.startsWith("Datafile")) {
+        if (exMessage != null && exMessage.toLowerCase().startsWith("datafile")) {
             outputMessage = exMessage;
         } else {
             outputMessage = "endpoint does not exist on this server. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
