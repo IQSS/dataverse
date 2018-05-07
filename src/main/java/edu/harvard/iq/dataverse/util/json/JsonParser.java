@@ -428,7 +428,11 @@ public class JsonParser {
         // filename
         String filename = datafileJson.getString("filename", null);
         // filesize
-        long filesize = datafileJson.getJsonNumber("filesize").longValue();
+        JsonNumber filesizejsn = datafileJson.getJsonNumber("filesize");
+        Long filesize = null; 
+        if (filesizejsn != null){
+            filesize = datafileJson.getJsonNumber("filesize").longValue();
+        }
         // originalFileFormat
         String originalFileFormat = datafileJson.getString("originalFileFormat", null);
         // originalFormatLabel
@@ -478,8 +482,9 @@ public class JsonParser {
         
         dataFile.setContentType(contentType);
         dataFile.setStorageIdentifier(storageIdentifier);
-        dataFile.setFilesize(filesize);
-        
+        if (filesize != null){
+            dataFile.setFilesize(filesize);
+        }
         // parse DataTable
         JsonArray dataTablesJson = datafileJson.getJsonArray("dataTables");
         if ((dataTablesJson != null ) && (!dataTablesJson.isEmpty())){
