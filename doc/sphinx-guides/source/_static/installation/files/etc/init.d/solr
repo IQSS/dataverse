@@ -5,7 +5,7 @@
 # chkconfig: 35 92 08
 # description: Starts and stops Apache Solr
 
-SOLR_DIR="/usr/local/solr/solr-7.2.1"
+SOLR_DIR="/usr/local/solr/solr-7.3.0"
 SOLR_COMMAND="bin/solr"
 SOLR_ARGS="-m 1g"
 SOLR_USER=solr
@@ -13,6 +13,8 @@ SOLR_USER=solr
 case $1 in
     start)
         echo "Starting Solr"
+        # Increase file descriptor limit:
+        ulimit -n 65000
         cd $SOLR_DIR
         sudo -u $SOLR_USER $SOLR_COMMAND start $SOLR_ARGS
         ;;

@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
@@ -39,6 +40,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
@@ -265,6 +267,16 @@ public class Dataverses extends AbstractApiBean {
         return response( req -> {
 			execCommand( new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
 			return ok( "Dataverse " + idtf  +" deleted");
+        });
+	}
+        
+        @DELETE
+	@Path("{dataverseId}/deleteLink/{linkedDataverseId}")
+	public Response deleteDataverseLinkingDataverse( @PathParam("dataverseId") String dataverseId, @PathParam("linkedDataverseId") Long linkedDataverseId) {
+                boolean index = true;
+		return response(req -> {
+			execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(dataverseId), findDataverseLinkingDataverseOrDie(dataverseId, linkedDataverseId), index));
+			return ok("Link from Dataverse " + dataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
         });
 	}
 	
@@ -759,6 +771,25 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        }
+    }
+    
+    @POST
+    @Path("{id}/move/{targetDataverseAlias}") 
+    public Response moveDataverse(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {        
+        try{
+            User u = findUserOrDie();            
+            Dataverse dv = findDataverseOrDie(id);
+            Dataverse target = findDataverseOrDie(targetDataverseAlias);
+            if (target == null){
+                return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
+            }            
+            execCommand(new MoveDataverseCommand(
+                    createDataverseRequest(u), dv, target, force
+                    ));
+            return ok("Dataverse moved successfully");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
         }
     }
 

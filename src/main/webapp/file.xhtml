@@ -119,7 +119,7 @@
                                             </ui:fragment>
                                             <li>
                                                 <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE&#38;version=#{FilePage.version}">
-                                                    <h:outputText id="editFile-Multi-Link" value="Metadata"/>
+                                                    <h:outputText id="editFile-Multi-Link" value="#{bundle['file.dataFilesTab.metadata.header']}"/>
                                                 </h:outputLink>
                                             </li>
                                             <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
@@ -498,7 +498,7 @@
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
                             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
-                                <f:param value="#{navigationWrapper.redirectPage}"/>
+                                <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
                                 <f:param value="#{widgetWrapper.widgetView ? '_blank' : '_self'}"/>
                             </h:outputFormat>
                         </p>
