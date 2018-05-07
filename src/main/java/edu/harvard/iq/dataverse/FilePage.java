@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -249,6 +250,23 @@ public class FilePage implements java.io.Serializable {
             }
         }
         return retList;  
+    }
+    
+    public String saveProvFreeform(String freeformTextInput, DataFile dataFileFromPopup) throws CommandException {
+        editDataset = this.file.getOwner();
+        file.setProvEntityName(dataFileFromPopup.getProvEntityName()); //passing this value into the file being saved here is pretty hacky.
+        Command cmd;
+        
+        for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
+            if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
+                cmd = new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), file, freeformTextInput);
+                commandEngine.submit(cmd);
+            }
+        }
+        
+        save();
+        init();
+        return returnToDraftVersion();
     }
     
     public String restrictFile(boolean restricted) throws CommandException{
@@ -637,7 +655,7 @@ public class FilePage implements java.io.Serializable {
             return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
         }
         return "";
-        }
+    }
 
     private List<DataFile> allRelatedFiles() {
         List<DataFile> dataFiles = new ArrayList<>();
@@ -662,7 +680,6 @@ public class FilePage implements java.io.Serializable {
             dataset = fileMetadata.getDataFile().getOwner();
         }
         
-        //MAD: Can we use the file variable already existing?
         DataFile dataFileToTest = fileMetadata.getDataFile(); 
         
         DatasetVersion currentVersion = dataset.getLatestVersion();
@@ -791,6 +808,12 @@ public class FilePage implements java.io.Serializable {
 
     public List<ExternalTool> getExploreTools() {
         return exploreTools;
+    }
+    
+    //Provenance fragment bean calls this to show error dialogs after popup failure
+    //This can probably be replaced by calling JsfHelper from the provpopup bean
+    public void showProvError() {
+        JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.metadataTab.provenance.error"));
     }
 
 }

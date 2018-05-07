@@ -1246,3 +1246,10 @@ You have to put the datasetFieldType name attribute in the :CustomDatasetSummary
 Dataverse 4.8.1 and below allowed API Token lookup via API but for better security this has been disabled by default. Set this to true if you really want the old behavior.
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:AllowApiTokenLookupViaApi``
+
+:ProvCollectionEnabled
+++++++++++++++++++++++++++
+
+Enable the collection of provenance metadata on Dataverse via the provenance popup.
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:ProvCollectionEnabled``
