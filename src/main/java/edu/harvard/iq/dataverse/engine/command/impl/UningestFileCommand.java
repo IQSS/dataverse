@@ -57,7 +57,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             try{
                 dataAccess = DataAccess.getStorageIO(uningest);
                 dataAccess.open();
-                originalFileSize = dataAccess.getSize();
+                originalFileSize = dataAccess.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
                 fileName = dataAccess.getFileName();
                 uningest.setFilesize(originalFileSize);
                 dataAccess.revertBackupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
