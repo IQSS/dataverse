@@ -137,8 +137,9 @@ public class Access extends AbstractApiBean {
         GuestbookResponse gbr = null;
         
         if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new NotFoundException();
+            String errorMessage = "Datafile " + fileId + ": no such object in the database";
+            logger.warning(errorMessage);
+            throw new NotFoundException(errorMessage);
         }
         
         if (apiToken == null || apiToken.equals("")) {
@@ -194,12 +195,14 @@ public class Access extends AbstractApiBean {
         
         
         if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new NotFoundException();
+            String errorMessage = "Datafile " + fileId + ": no such object in the database";
+            logger.warning(errorMessage);
+            throw new NotFoundException(errorMessage);
         }
         
         if (df.isHarvested()) {
-            throw new NotFoundException();
+            String errorMessage = "Datafile " + fileId + " is a harvested file that cannot be accessed in this Dataverse";
+            throw new NotFoundException(errorMessage);
             // (nobody should ever be using this API on a harvested DataFile)!
         }
         
@@ -339,7 +342,8 @@ public class Access extends AbstractApiBean {
         
         dataFile = dataFileService.find(fileId);
         if (dataFile == null) {
-            throw new NotFoundException();
+            String errorMessage = "Datafile " + fileId + ": no such object in the database";
+            throw new NotFoundException(errorMessage);
         }
         
         String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
@@ -414,8 +418,9 @@ public class Access extends AbstractApiBean {
         DataFile df = dataFileService.find(fileId);
         
         if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new NotFoundException();
+            String errorMessage = "Datafile " + fileId + ": no such object in the database";
+            logger.warning(errorMessage);
+            throw new NotFoundException(errorMessage);
         }
         
         if (apiToken == null || apiToken.equals("")) {
@@ -533,8 +538,9 @@ public class Access extends AbstractApiBean {
                                 } 
 
                             } else {
-                                // Or should we just drop it and make a note in the Manifest?    
-                                throw new NotFoundException();
+                                // Or should we just drop it and make a note in the Manifest?
+                                String errorMessage = "Datafile " + fileId + ": no such object in the database";
+                                throw new NotFoundException(errorMessage);
                             }
                         }
                     }
