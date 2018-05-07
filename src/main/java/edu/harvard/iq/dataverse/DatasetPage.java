@@ -1311,28 +1311,6 @@ public class DatasetPage implements java.io.Serializable {
     private void msg(String s){
         // System.out.println(s);
     }
-    
-    /**
-     * For development
-     * 
-     * Flag for whether to show sample insert statements for Geoconnect Debug
-     * 
-     * Conditions to meet: Person is superuser and GeoconnectDebug active 
-     * 
-     * @return 
-     */
-    public boolean isGeoconnectDebugAvailable(){
-
-        if (!this.isSuperUser()){
-            return false;
-        }
-
-        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, false)){
-            return true;
-        }    
-        return false;
-      
-    }
 
     /**
      * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
