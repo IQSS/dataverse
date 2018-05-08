@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -17,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -28,6 +30,7 @@ import javax.persistence.Query;
 /**
  *
  * @author skraffmi
+ * @author Leonid Andreev 
  */
 @RequiredPermissions({})
 public class UningestFileCommand extends AbstractVoidCommand  {
@@ -49,44 +52,105 @@ public class UningestFileCommand extends AbstractVoidCommand  {
                 this,  Collections.singleton(Permission.EditDataset), uningest);                
         }
         
-        String fileName;
+        // is this actually a tabular data file?
+        if (!uningest.isTabularData()) {
+            throw new IllegalCommandException("UningestFileCommand called on a non-tabular data file (id="+uningest.getId()+")", this);
+        }
+        
+        StorageIO<DataFile> dataAccess = null;
+        // size of the stored original:
+        Long storedOriginalFileSize;
 
-            StorageIO<DataFile> dataAccess = null;
-            Long originalFileSize;
-
-            try{
-                dataAccess = DataAccess.getStorageIO(uningest);
-                dataAccess.open();
-                originalFileSize = dataAccess.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                fileName = dataAccess.getFileName();
-                uningest.setFilesize(originalFileSize);
-                dataAccess.revertBackupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+        // Try to open the main storageIO for the file; look up the AUX file for 
+        // the saved original and check its size:
+        try {
+            dataAccess = DataAccess.getStorageIO(uningest);
+            dataAccess.open();
+            storedOriginalFileSize = dataAccess.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+        } catch (IOException ioex) {
+            String errorMessage = "Failed to open StorageIO for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" +  " aborting. (";
+            if (ioex.getMessage() != null) {
+                errorMessage += "(" + ioex.getMessage() + ")";
+            } else {
+                errorMessage += "(IOException caught; no further information is available)";
             }
+            logger.warning(errorMessage);
+            throw new CommandException(errorMessage, this);
+            
+        } 
+          
+        // Try to revert the backup-as-Aux:
+        // (i.e., try to overwrite the current, tabular file, with the stored 
+        // original file:
+        // (if this fails, we definitely want to abort the whole thing and bail!)
+        // -- L.A. May 2018
         
-        
-            catch (IOException ioex) {
-            logger.warning("Failed to find file for uningest " + uningest.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+        try {
+            dataAccess.revertBackupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+        } catch (IOException ioex) {
+            String errorMessage = "Failed to revert backup as Aux for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" +  " aborting. (";
+            if (ioex.getMessage() != null) {
+                errorMessage += "(" + ioex.getMessage() + ")";
+            } else {
+                errorMessage += "(IOException caught; no further information is available)";
+            }
+            logger.warning(errorMessage);
+            throw new CommandException(errorMessage, this);
         } 
         
-        String originalFileFormat = getOriginalFileFormat(uningest, ctxt);
-        String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
-        removeSummaryStatistics(uningest, ctxt);
-        resetIngestStats(uningest, ctxt);
+        // OK, we have successfully reverted the backup - now let's change 
+        // all the attribute of the file that are stored in the database: 
+        
+        // the file size: 
+        uningest.setFilesize(storedOriginalFileSize);
+        
+        // original file format:
+        String originalFileFormat = uningest.getDataTable().getOriginalFileFormat();
         uningest.setContentType(originalFileFormat);
+        
+        
+        // Delete the DataTable database object hierarchy that stores
+        // all the tabular metadata - (DataTable, DataVariable, SummaryStatistics
+        // *and more* sub-objects:
+        
+        //removeSummaryStatistics(uningest, ctxt);
+        DataTable dataTable = uningest.getDataTable();
+        ctxt.em().remove(dataTable);
         uningest.setDataTable(null);
+
+        // remove the IngestReport associated with this datafile: 
+        // (this is a single table entry; ok to just issue an explicit 
+        // DELETE query for it - as there's no complex cascade to resolve)
+        resetIngestStats(uningest, ctxt);
+                
+        // Do the DB merge:
         ctxt.em().merge(uningest); 
+        
+        // Modify the file name - which is stored in FileMetadata, and there
+        // could be more than one: 
+        
+        String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
+        
         for (FileMetadata fm : uningest.getFileMetadatas()) {
             String filename = fm.getLabel();
             String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
-            String newFileName = filename.replace(extensionToRemove, originalExtension);
-            fm.setLabel(newFileName);
+            if (StringUtil.nonEmpty(extensionToRemove)) {
+                String newFileName = filename.replace(extensionToRemove, originalExtension);
+                fm.setLabel(newFileName);
+            }
+            
             DatasetVersion dv = fm.getDatasetVersion();
+            
+            // And, while we are here, recalculate the UNF for this DatasetVersion:
             dv.setUNF(null);
             ctxt.em().merge(dv);
             ctxt.datasetVersion().fixMissingUnf(dv.getId().toString(), true);
         }
     }
 
+    /*
+        This method isn't needed - the original format is readily available 
+        as DataFile.getDataTable().getOriginalFileFormat(); -- L.A. May 2018
     
     private String getOriginalFileFormat(DataFile uningest, CommandContext ctxt) {
         Long datatableid = uningest.getDataTable().getId();
@@ -96,7 +160,15 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         originalFileFormat = (String) query.getSingleResult();
         return originalFileFormat;
     }
+    */
     
+    /* 
+        This method isn't needed - we don't want to rely on explicit DELETE 
+        queries (and if we did, there would be more of them needed, as there 
+        potentially more sub-objects in the DataTable hierarchy, other than 
+        DataTable, DataVariable and SummaryStatistic. 
+        Rather, we want to use EntityManager.remove() - that would resolve 
+        the entire delete cascade for us cleanly. -- L.A. May 2018
     
     private void removeSummaryStatistics(DataFile uningest, CommandContext ctxt){
         Long datatableid = uningest.getDataTable().getId();;        
@@ -110,6 +182,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         query.setParameter("datatableid", datatableid);
         query.executeUpdate();
     }
+    */
     
     
     private void resetIngestStats(DataFile uningest, CommandContext ctxt){
