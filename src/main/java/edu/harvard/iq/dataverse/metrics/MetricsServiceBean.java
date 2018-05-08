@@ -1,11 +1,10 @@
 package edu.harvard.iq.dataverse.metrics;
 
+import edu.harvard.iq.dataverse.Metric;
 import java.io.Serializable;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -18,15 +17,11 @@ public class MetricsServiceBean implements Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-//    public Metric save(Metric metric) {
-//        em.persist(metric);
-//        return em.merge(metric);
-//    }
+    public Metric save(Metric metric) {
+        em.persist(metric);
+        return em.merge(metric);
+    }
     
-    //MAD: I THINK THE JSON CONVERSION SHOULD BE IN THE API CODE
-    //THO MAYBE TESTS? I don't think so
-    
-
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
@@ -40,6 +35,7 @@ public class MetricsServiceBean implements Serializable {
                 + "and date_trunc('month', publicationdate) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM');"
         );
         logger.fine("query: " + query);
+        //save(new Metric("test",01,01,99999));
         return (long) query.getSingleResult();
     }
 
