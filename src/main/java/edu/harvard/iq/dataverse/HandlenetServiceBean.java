@@ -202,7 +202,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
             response = resolver.processRequest(req);
         } catch (HandleException ex) {
             logger.info("Caught exception trying to process lookup request");
-            ex.printStackTrace();
+            logger.info(ex.getLocalizedMessage());
         }
         if((response!=null && response.responseCode==AbstractMessage.RC_SUCCESS)) {
             logger.info("Handle "+handle+" registered.");
