@@ -4,6 +4,7 @@ import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
+import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -32,6 +33,9 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
+import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
@@ -584,8 +588,80 @@ public class JsonPrinter {
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
                 .add("tabularTags", getTabularFileTags(df))
+                .add("dataTables", !CollectionUtils.isEmpty(df.getDataTables()) ? JsonPrinter.jsonDT(df.getDataTables()) : null)
                 ;
     }
+    
+    
+    public static JsonArrayBuilder jsonDT(List<DataTable> ldt) {
+        JsonArrayBuilder ldtArr = Json.createArrayBuilder();
+        for(DataTable dt: ldt){
+            ldtArr.add(jsonObjectBuilder().add("dataTable", JsonPrinter.json(dt)));
+        }
+        return ldtArr;
+    }
+    
+    public static JsonObjectBuilder json(DataTable dt) {
+        return jsonObjectBuilder()
+                .add("varQuantity", dt.getVarQuantity())
+                .add("caseQuantity", dt.getCaseQuantity())
+                .add("UNF", dt.getUnf())
+                .add("dataVariables", JsonPrinter.jsonDV(dt.getDataVariables()))
+                ;
+    }
+    
+    public static JsonArrayBuilder jsonDV(List<DataVariable> dvl) {
+        JsonArrayBuilder varArr = Json.createArrayBuilder();
+        for (DataVariable dv: dvl){
+            varArr.add(JsonPrinter.json(dv));
+        }
+        return varArr;
+    }
+    
+    // TODO: add sumstat and variable categories, check formats
+    public static JsonObjectBuilder json(DataVariable dv) {
+    return jsonObjectBuilder()
+            .add("name", dv.getName())
+            .add("label", dv.getLabel())
+            .add("weighted", dv.isWeighted())
+            .add("variableIntervalType", dv.getIntervalLabel())
+            .add("variableFormatType", dv.getType().name()) // varFormat
+            .add("formatCategory", dv.getFormatCategory())
+            .add("orderedFactor", dv.isOrderedCategorical()) 
+            .add("fileOrder", dv.getFileOrder()) 
+            .add("UNF",dv.getUnf())
+            .add("summaryStatistics", JsonPrinter.jsonSumStat(dv.getSummaryStatistics()))
+            .add("variableCategories", JsonPrinter.jsonCatStat(dv.getCategories())) 
+            ;
+    }
+    
+    public static JsonObjectBuilder jsonSumStat(Collection<SummaryStatistic> sumStat){
+        //JsonArrayBuilder sumStatArr = Json.createArrayBuilder();
+        JsonObjectBuilder sumStatObj = Json.createObjectBuilder();
+        for (SummaryStatistic stat: sumStat){
+            sumStatObj.add(stat.getTypeLabel(), stat.getValue());
+        }
+        return sumStatObj;
+    }
+    
+    
+    public static JsonArrayBuilder jsonCatStat(Collection<VariableCategory> catStat){
+        JsonArrayBuilder catArr = Json.createArrayBuilder();
+
+        for (VariableCategory stat: catStat){
+            JsonObjectBuilder catStatObj = Json.createObjectBuilder();
+            catStatObj.add("label", stat.getLabel())
+                      .add("value", stat.getValue())
+                      //.add("frequency", stat.getFrequency()) // frequency is not calculated
+                    ;
+            catArr.add(catStatObj);
+        }
+        return catArr;
+    }
+    
+    
+    
+    
     
     public static String format(Date d) {
         return (d == null) ? null : Util.getDateTimeFormat().format(d);
