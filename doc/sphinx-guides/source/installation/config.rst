@@ -927,7 +927,7 @@ By default Dataverse will attempt to connect to Solr on port 8983 on localhost. 
 :SignUpUrl
 ++++++++++
 
-The relative path URL to which users will be sent after signup. The default setting is below.
+The relative path URL to which users will be sent for signup. The default setting is below.
 
 ``curl -X PUT -d '/dataverseuser.xhtml?editMode=CREATE' http://localhost:8080/api/admin/settings/:SignUpUrl``
 
@@ -1246,3 +1246,10 @@ You have to put the datasetFieldType name attribute in the :CustomDatasetSummary
 Dataverse 4.8.1 and below allowed API Token lookup via API but for better security this has been disabled by default. Set this to true if you really want the old behavior.
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:AllowApiTokenLookupViaApi``
+
+:ProvCollectionEnabled
+++++++++++++++++++++++++++
+
+Enable the collection of provenance metadata on Dataverse via the provenance popup.
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:ProvCollectionEnabled``

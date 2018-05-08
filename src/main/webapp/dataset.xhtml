@@ -914,6 +914,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileDiff.fileProvFree1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileProvFree1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest1 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
@@ -925,6 +926,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileDiff.fileProvFree2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileProvFree2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest2 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
@@ -952,6 +954,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileReplace.fdi.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileSize1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileReplace.fdi.fileProvFree1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileProvFree1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileReplace.fdi.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest1 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file1Empty}">
@@ -965,6 +968,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileReplace.fdi.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileSize2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileReplace.fdi.fileProvFree2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileProvFree2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileReplace.fdi.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest2 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file2Empty}">
@@ -1201,7 +1205,7 @@
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
                             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
-                                <f:param value="#{navigationWrapper.redirectPage}"/>
+                                <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
                                 <f:param value="#{widgetWrapper.widgetView ? '_blank' : '_self'}"/>
                             </h:outputFormat>
                         </p>
@@ -1330,7 +1334,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup" modal="true">
+                    <p:dialog id="accessPopup" header="#{bundle['dataset.access.accessHeader']}"  widgetVar="accessPopup" modal="true">
                         <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE' or empty DatasetPage.editMode }">
                             <div class="form-horizontal">
                                 <div class="form-group">

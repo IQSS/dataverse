@@ -53,6 +53,11 @@ public class SettingsServiceBean {
          */
         ComputeBaseUrl,
         /**
+         * Enables the provenance collection popup.
+         * Allows users to store their provenance json and description
+         */
+        ProvCollectionEnabled,
+        /**
          * For example, https://datacapture.example.org
          */
         DataCaptureModuleUrl,

@@ -923,6 +923,130 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
+    
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken) {
+        logger.info("Getting Dataset Versions");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/" + idInPath + "/versions" + optionalQueryParam);
+    }
+
+    //TODO: this probably should return a file not a string, but I've mainly implemented it for testing purposes
+    static Response getProvJson(String idOrPersistentId, String apiToken) {
+        logger.info("Getting Provenance JSON");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/files/" + idInPath + "/prov-json" + optionalQueryParam);
+    }
+    
+    static Response getProvFreeForm(String idOrPersistentId, String apiToken) {
+         logger.info("Getting Provenance Free Form");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
+    }
+    
+    static Response uploadProvJson(String idOrPersistentId, JsonObject jsonObject, String apiToken, String entityName) {
+        logger.info("Uploading Provenance JSON");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        optionalQueryParam += "?entityName="+entityName;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                    // This "[]" is here to quickly test that a JSON array is considered invalid.
+                    //.body("[]")
+                    .body(jsonObject.toString())
+                    .contentType("application/json");
+        }
+        return requestSpecification.post("/api/files/" + idInPath + "/prov-json" + optionalQueryParam);
+    }
+    
+    static Response deleteProvJson(String idOrPersistentId, String apiToken) {
+        logger.info("Deleting Provenance JSON");
+        //TODO: Repeated code, refactor
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.delete("/api/files/" + idInPath + "/prov-json" + optionalQueryParam);
+    }
+
+    static Response uploadProvFreeForm(String idOrPersistentId, JsonObject jsonObject, String apiToken) {
+        logger.info("Uploading Provenance Free Form");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                    // This "[]" is here to quickly test that a JSON array is considered invalid.
+                    //.body("[]")
+                    .body(jsonObject.toString())
+                    .contentType("application/json");
+        }
+        return requestSpecification.post("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
+    }
+    
+//    static Response deleteProvFreeForm(String idOrPersistentId, String apiToken) {
+//         logger.info("Deleting Provenance Free Form");
+//        //TODO: Repeated code, refactor
+//        String idInPath = idOrPersistentId; // Assume it's a number.
+//        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+//        if (!NumberUtils.isNumber(idOrPersistentId)) {
+//            idInPath = ":persistentId";
+//            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+//        }
+//        RequestSpecification requestSpecification = given();
+//        if (apiToken != null) {
+//            requestSpecification = given()
+//                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+//        }
+//        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
+//    }
 
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
 //        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
@@ -1329,5 +1453,6 @@ public class UtilIT {
         String title = getTitleFromSwordStatement(swordStatementWithNoFiles);
         assertEquals("A Dataset with a File", title);
     }
+    
 
 }
