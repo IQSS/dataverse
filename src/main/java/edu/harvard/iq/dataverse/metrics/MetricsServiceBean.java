@@ -17,11 +17,20 @@ public class MetricsServiceBean implements Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+//    public Metric save(Metric metric) {
+//        em.persist(metric);
+//        return em.merge(metric);
+//    }
+    
+    //MAD: I THINK THE JSON CONVERSION SHOULD BE IN THE API CODE
+    //THO MAYBE TESTS? I don't think so
+    
 
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public JsonObjectBuilder dataversesByMonth(String yyyymm) throws Exception {
+    public long dataversesByMonth(String yyyymm) throws Exception {
         String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
@@ -31,14 +40,13 @@ public class MetricsServiceBean implements Serializable {
                 + "and date_trunc('month', publicationdate) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM');"
         );
         logger.fine("query: " + query);
-        long count = (long) query.getSingleResult();
-        return MetricsUtil.countToJson(count);
+        return (long) query.getSingleResult();
     }
 
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public JsonObjectBuilder datasetsByMonth(String yyyymm) throws Exception {
+    public long datasetsByMonth(String yyyymm) throws Exception {
         String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
@@ -55,14 +63,13 @@ public class MetricsServiceBean implements Serializable {
                 + ");"
         );
         logger.fine("query: " + query);
-        long count = (long) query.getSingleResult();
-        return MetricsUtil.countToJson(count);
+        return (long) query.getSingleResult();
     }
 
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public JsonObjectBuilder filesByMonth(String yyyymm) throws Exception {
+    public long filesByMonth(String yyyymm) throws Exception {
         String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
@@ -82,14 +89,13 @@ public class MetricsServiceBean implements Serializable {
                 + ");"
         );
         logger.fine("query: " + query);
-        long count = (long) query.getSingleResult();
-        return MetricsUtil.countToJson(count);
+        return (long) query.getSingleResult();
     }
 
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public JsonObjectBuilder downloadsByMonth(String yyyymm) throws Exception {
+    public long downloadsByMonth(String yyyymm) throws Exception {
         String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
@@ -97,11 +103,10 @@ public class MetricsServiceBean implements Serializable {
                 + "where date_trunc('month', responsetime) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM');"
         );
         logger.fine("query: " + query);
-        long count = (long) query.getSingleResult();
-        return MetricsUtil.countToJson(count);
+        return (long) query.getSingleResult();
     }
 
-    public JsonArrayBuilder dataversesByCategory() {
+    public List<Object[]> dataversesByCategory() {
         Query query = em.createNativeQuery(""
                 + "select dataversetype, count(dataversetype) from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
@@ -109,11 +114,10 @@ public class MetricsServiceBean implements Serializable {
                 + "group by dataversetype\n"
                 + "order by count desc;"
         );
-        List<Object[]> listOfObjectArrays = query.getResultList();
-        return MetricsUtil.dataversesByCategoryToJson(listOfObjectArrays);
+        return query.getResultList();
     }
 
-    public JsonArrayBuilder datasetsBySubject() {
+    public List<Object[]> datasetsBySubject() {
         Query query = em.createNativeQuery(""
                 + "SELECT strvalue, count(dataset.id)\n"
                 + "FROM datasetfield_controlledvocabularyvalue \n"
@@ -131,8 +135,8 @@ public class MetricsServiceBean implements Serializable {
                 + "ORDER BY count(dataset.id) desc;"
         );
         logger.info("query: " + query);
-        List<Object[]> listOfObjectArrays = query.getResultList();
-        return MetricsUtil.datasetsBySubjectToJson(listOfObjectArrays);
+        return query.getResultList();
+        
     }
 
 }

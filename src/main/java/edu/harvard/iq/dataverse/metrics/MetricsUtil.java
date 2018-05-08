@@ -27,7 +27,7 @@ public class MetricsUtil {
         return job;
     }
 
-    static JsonArrayBuilder dataversesByCategoryToJson(List<Object[]> listOfObjectArrays) {
+    public static JsonArrayBuilder dataversesByCategoryToJson(List<Object[]> listOfObjectArrays) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (Object[] arrayOfObjects : listOfObjectArrays) {
             JsonObjectBuilder job = Json.createObjectBuilder();
@@ -43,7 +43,7 @@ public class MetricsUtil {
         return jab;
     }
 
-    static JsonArrayBuilder datasetsBySubjectToJson(List<Object[]> listOfObjectArrays) {
+    public static JsonArrayBuilder datasetsBySubjectToJson(List<Object[]> listOfObjectArrays) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (Object[] objectArray : listOfObjectArrays) {
             JsonObjectBuilder job = Json.createObjectBuilder();

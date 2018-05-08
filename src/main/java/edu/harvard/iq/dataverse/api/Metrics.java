@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -22,7 +24,8 @@ public class Metrics extends AbstractApiBean {
     @Path("dataverses/byMonth/{yyyymm}")
     public Response getDataversesByMonth(@PathParam("yyyymm") String yyyymm) {
         try {
-            return allowCors(ok(metricsSvc.dataversesByMonth(yyyymm)));
+            JsonObjectBuilder countJson = MetricsUtil.countToJson(metricsSvc.dataversesByMonth(yyyymm));
+            return allowCors(ok(countJson));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
@@ -38,7 +41,8 @@ public class Metrics extends AbstractApiBean {
     @Path("datasets/byMonth/{yyyymm}")
     public Response getDatasetsByMonth(@PathParam("yyyymm") String yyyymm) {
         try {
-            return allowCors(ok(metricsSvc.datasetsByMonth(yyyymm)));
+            JsonObjectBuilder countJson = MetricsUtil.countToJson(metricsSvc.datasetsByMonth(yyyymm));
+            return allowCors(ok(countJson));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
@@ -54,7 +58,8 @@ public class Metrics extends AbstractApiBean {
     @Path("files/byMonth/{yyyymm}")
     public Response getFilesByMonth(@PathParam("yyyymm") String yyyymm) {
         try {
-            return allowCors(ok(metricsSvc.filesByMonth(yyyymm)));
+            JsonObjectBuilder countJson = MetricsUtil.countToJson(metricsSvc.filesByMonth(yyyymm));
+            return allowCors(ok(countJson));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
@@ -70,7 +75,8 @@ public class Metrics extends AbstractApiBean {
     @Path("downloads/byMonth/{yyyymm}")
     public Response getDownloadsByMonth(@PathParam("yyyymm") String yyyymm) {
         try {
-            return allowCors(ok(metricsSvc.downloadsByMonth(yyyymm)));
+            JsonObjectBuilder countJson = MetricsUtil.countToJson(metricsSvc.downloadsByMonth(yyyymm));
+            return allowCors(ok(countJson));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
@@ -80,7 +86,8 @@ public class Metrics extends AbstractApiBean {
     @Path("dataverses/byCategory")
     public Response getDataversesByCategory() {
         try {
-            return allowCors(ok(metricsSvc.dataversesByCategory()));
+            JsonArrayBuilder dvByCat = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory());
+            return allowCors(ok(dvByCat));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
@@ -90,7 +97,8 @@ public class Metrics extends AbstractApiBean {
     @Path("datasets/bySubject")
     public Response getDatasetsBySubject() {
         try {
-            return allowCors(ok(metricsSvc.datasetsBySubject()));
+            JsonArrayBuilder dvBySub = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubject());
+            return allowCors(ok(dvBySub));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
