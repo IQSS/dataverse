@@ -419,7 +419,9 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
 
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
-        
+        if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()){
+            generateIdentifier(dvObject);
+        }
         return updateIdentifierStatus(dvObject, "public");
 
     }
