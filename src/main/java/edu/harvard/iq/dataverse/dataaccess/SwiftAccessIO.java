@@ -306,19 +306,29 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public void revertBackupAsAux(String auxItemTag) throws IOException {
-        if (swiftFileObject == null || swiftContainer == null) {
-            open();
+        //if (swiftFileObject == null || swiftContainer == null) {
+        //    open();
+        //}
+        if (swiftFileObject == null || swiftContainer == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
         }
 
         try {
-            String targetName = dvObject.getStorageIdentifier();
-            String sourceName = targetName + "." + auxItemTag;
-            StoredObject soS = swiftContainer.getObject(sourceName);
-            StoredObject soT = swiftContainer.getObject(targetName);
-            soS.copyObject(swiftContainer, soT);
+            //String targetName = dvObject.getStorageIdentifier();
+            //String sourceName = targetName + "." + auxItemTag;
+            //StoredObject soS = swiftContainer.getObject(sourceName);
+            //StoredObject soT = swiftContainer.getObject(targetName);
+            //soS.copyObject(swiftContainer, soT);
+            
+            // We are righting FROM the saved AUX object, back to the main object;
+            // So we need WRITE access on the main object, and READ access on the 
+            // AUX object:
+            
+            StoredObject swiftAuxObject = openSwiftAuxFile(auxItemTag);
+            swiftAuxObject.copyObject(swiftContainer, swiftFileObject);
 
-        } catch (Exception ioex) {
-            String failureMsg = ioex.getMessage();
+        } catch (Exception ex) {
+            String failureMsg = ex.getMessage();
             if (failureMsg == null) {
                 failureMsg = "Swift AccessIO: Unknown exception occured while renaming orig file";
             }
