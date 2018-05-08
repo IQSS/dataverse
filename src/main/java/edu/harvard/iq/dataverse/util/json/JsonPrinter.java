@@ -588,7 +588,7 @@ public class JsonPrinter {
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
                 .add("tabularTags", getTabularFileTags(df))
-                .add("dataTables", !org.apache.commons.collections.CollectionUtils.isEmpty(df.getDataTables()) ? JsonPrinter.jsonDT(df.getDataTables()) : null)
+                .add("dataTables", org.apache.commons.collections.CollectionUtils.isNotEmpty(df.getDataTables()) ? JsonPrinter.jsonDT(df.getDataTables()) : null)
                 ;
     }
     
@@ -630,8 +630,8 @@ public class JsonPrinter {
             .add("orderedFactor", dv.isOrderedCategorical()) 
             .add("fileOrder", dv.getFileOrder()) 
             .add("UNF",dv.getUnf())
-            .add("summaryStatistics", JsonPrinter.jsonSumStat(dv.getSummaryStatistics()))
-            .add("variableCategories", JsonPrinter.jsonCatStat(dv.getCategories())) 
+            .add("summaryStatistics", org.apache.commons.collections.CollectionUtils.isNotEmpty(dv.getSummaryStatistics()) ? JsonPrinter.jsonSumStat(dv.getSummaryStatistics()) : null)
+            .add("variableCategories", org.apache.commons.collections.CollectionUtils.isNotEmpty(dv.getCategories()) ? JsonPrinter.jsonCatStat(dv.getCategories()) : null) 
             ;
     }
     
