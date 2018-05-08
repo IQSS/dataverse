@@ -588,7 +588,7 @@ public class JsonPrinter {
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
                 .add("tabularTags", getTabularFileTags(df))
-                .add("dataTables", !CollectionUtils.isEmpty(df.getDataTables()) ? JsonPrinter.jsonDT(df.getDataTables()) : null)
+                .add("dataTables", !org.apache.commons.collections.CollectionUtils.isEmpty(df.getDataTables()) ? JsonPrinter.jsonDT(df.getDataTables()) : null)
                 ;
     }
     
