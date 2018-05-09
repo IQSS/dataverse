@@ -27,14 +27,6 @@ import javax.persistence.TemporalType;
         @Index(columnList = "id") //MAD: UNSURE ABOUT USE OF THIS ANNOTATION AND MY CUSTOMIZATION
 }) 
 public class Metric implements Serializable {
-    
-//    CREATE TABLE METRIC (
-//    id integer NOT NULL,
-//    metricName character varying(255) NOT NULL,
-//    metricMonth integer NOT NULL,
-//    metricYear integer NOT NULL,
-//    metricValue integer NOT NULL,
-//    calledDate timestamp without time zone NOT NULL --Will use for non-month metrics
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,30 +34,23 @@ public class Metric implements Serializable {
     
     @Column( nullable = false )
     private String metricName;
-    
+
     @Column
-    private int metricMonth;
-    
-    @Column
-    private int metricYear;
-    
-    @Column
-    private int metricValue;
+    private long metricValue;
     
     @Temporal(value = TemporalType.TIMESTAMP)
-    private Date calledDate;
+    private Date lastCalledDate;
 
+    private static final String seperator = "_";
 
     @Deprecated
     public Metric() {  
     }
     
-    public Metric(String metricName, int metricMonth, int metricYear, int metricValue) {  
-        this.metricName = metricName;
-        this.metricMonth = metricMonth;
-        this.metricYear = metricYear;
+    public Metric(String metricTitle, String yyyymm, long metricValue) {  
+        this.metricName = generateMetricName(metricTitle, yyyymm); 
         this.metricValue = metricValue;
-        this.calledDate = new Timestamp(new Date().getTime()); //MAD: SHOULD I BE GENERATING THIS IN CODE?
+        this.lastCalledDate = new Timestamp(new Date().getTime()); //MAD: SHOULD I BE GENERATING THIS IN CODE?
     }
     
     /**
@@ -82,75 +67,51 @@ public class Metric implements Serializable {
         this.id = id;
     }
 
-    /**
-     * @return the metricName
-     */
-    public String getMetricName() {
-        return metricName;
+    public String getMetricDateString() {
+        return metricName.substring(metricName.indexOf(seperator)+1);
     }
-
-    /**
-     * @param metricName the metricName to set
-     */
-    public void setMetricName(String metricName) {
-        this.metricName = metricName;
-    }
-
-    /**
-     * @return the metricMonth
-     */
-    public int getMetricMonth() {
-        return metricMonth;
-    }
-
-    /**
-     * @param metricMonth the metricMonth to set
-     */
-    public void setMetricMonth(int metricMonth) {
-        this.metricMonth = metricMonth;
-    }
-
-    /**
-     * @return the metricYear
-     */
-    public int getMetricYear() {
-        return metricYear;
-    }
-
-    /**
-     * @param metricYear the metricYear to set
-     */
-    public void setMetricYear(int metricYear) {
-        this.metricYear = metricYear;
+    
+    public String getMetricTitle() {
+        return metricName.substring(0,metricName.indexOf(seperator));
     }
 
     /**
      * @return the metricValue
      */
-    public int getMetricValue() {
+    public long getMetricValue() {
         return metricValue;
     }
 
     /**
      * @param metricValue the metricValue to set
      */
-    public void setMetricValue(int metricValue) {
+    public void setMetricValue(long metricValue) {
         this.metricValue = metricValue;
     }
 
     /**
      * @return the calledDate
      */
-    public Date getCalledDate() {
-        return calledDate;
+    public Date getLastCalledDate() {
+        return lastCalledDate;
     }
 
     /**
      * @param calledDate the calledDate to set
      */
-    public void setCalledDate(Date calledDate) {
-        this.calledDate = calledDate;
+    public void setLastCalledDate(Date calledDate) {
+        this.lastCalledDate = calledDate;
     }
     
+    //MAD: Should this live in a util?
+    public static String generateMetricName(String title, String dateString) {
+        if(title.contains(seperator) || dateString.contains(seperator)) {
+            throw new IllegalArgumentException("Metric title or date contains character reserved for seperator");
+        }
+        if(seperator.contains("-")) {
+            throw new IllegalArgumentException("Metric seperator cannot be '-', value reserved for dates");
+        }
+        return title + seperator + dateString;
+    }
     
 }

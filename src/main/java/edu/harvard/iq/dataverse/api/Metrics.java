@@ -17,7 +17,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("dataverses/byMonth")
     public Response getDataversesByMonthCurrent() {
-        return getDataversesByMonth(getCurrentMonth());
+        return getDataversesByMonth(MetricsUtil.getCurrentMonth());
     }
 
     @GET
@@ -34,7 +34,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("datasets/byMonth")
     public Response getDatasetsByMonthCurrent() {
-        return getDatasetsByMonth(getCurrentMonth());
+        return getDatasetsByMonth(MetricsUtil.getCurrentMonth());
     }
 
     @GET
@@ -51,7 +51,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("files/byMonth")
     public Response getFilesByMonthCurrent() {
-        return getFilesByMonth(getCurrentMonth());
+        return getFilesByMonth(MetricsUtil.getCurrentMonth());
     }
 
     @GET
@@ -68,7 +68,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("downloads/byMonth")
     public Response getDownloadsByMonthCurrent() {
-        return getDownloadsByMonth(getCurrentMonth());
+        return getDownloadsByMonth(MetricsUtil.getCurrentMonth());
     }
 
     @GET
@@ -104,8 +104,6 @@ public class Metrics extends AbstractApiBean {
         }
     }
 
-    private String getCurrentMonth() {
-        return LocalDate.now().format(DateTimeFormatter.ofPattern(MetricsUtil.YEAR_AND_MONTH_PATTERN));
-    }
+
 
 }

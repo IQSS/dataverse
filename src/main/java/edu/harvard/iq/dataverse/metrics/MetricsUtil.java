@@ -78,4 +78,8 @@ public class MetricsUtil {
         return sanitized;
     }
 
+    public static String getCurrentMonth() {
+        return LocalDate.now().format(DateTimeFormatter.ofPattern(MetricsUtil.YEAR_AND_MONTH_PATTERN));
+    }
+    
 }

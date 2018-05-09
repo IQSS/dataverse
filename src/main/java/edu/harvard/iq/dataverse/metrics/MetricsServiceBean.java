@@ -2,6 +2,11 @@ package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Metric;
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
@@ -17,26 +22,85 @@ public class MetricsServiceBean implements Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    public Metric save(Metric metric) {
-        em.persist(metric);
-        return em.merge(metric);
+    public static final int minutesUntilNextQuery = 1; //next day. MAD: Shouldn't be zero, but is for testing
+    
+    public boolean canWeQueryAgainMonthly(Metric queriedMetric) {
+        
+        String title= queriedMetric.getMetricTitle();
+        String yyyymm= queriedMetric.getMetricDateString();
+        String thisMonthYYYYMM = MetricsUtil.getCurrentMonth();
+        
+        //I'm pretty sure this also misses a case where the date rolls over to the next month or year
+        //MAD: First if does not take account of what happens if no previous, but then again I think this method is only called when there is a previous passed in...
+        logger.info("Current yyyymm: " + thisMonthYYYYMM + " Last query yyyymm: " + yyyymm);
+        if(yyyymm.equals(thisMonthYYYYMM)) { //if this month
+            LocalDateTime ldtMinus= LocalDateTime.ofInstant((new Date()).toInstant(), ZoneId.systemDefault()).minusMinutes(minutesUntilNextQuery) ;
+            Date todayMinus = Date.from(ldtMinus.atZone(ZoneId.systemDefault()).toInstant());
+            Date lastCalled = queriedMetric.getLastCalledDate();
+            logger.info("Query allowed. Title: " + title + " yyyymm: " + yyyymm);
+            return (todayMinus.after(lastCalled)); 
+        } else {
+            //We do not allow queries of previous months.
+            //MAD: I bet this also messes up with the rollover. We don't want a month with incomplete data to be never queried again.
+            logger.info("Query denied. Title: " + title + " yyyymm: " + yyyymm);
+            return false;
+        }
+
+    }
+    
+    public Metric save(Metric newMetric) {
+        Metric oldMetric = getMetric(newMetric.getMetricTitle(),newMetric.getMetricDateString());
+        if(oldMetric != null) {
+            em.remove(oldMetric);
+            em.flush();
+        }
+        em.persist(newMetric);
+        return em.merge(newMetric);
+
+    }
+    
+    public Metric getMetric(String metricTitle, String yymmmm) {
+        String searchMetricName = Metric.generateMetricName(metricTitle, yymmmm);
+        
+        Query query = em.createQuery("select object(o) from Metric as o where o.metricName = :metricName", Metric.class);
+        query.setParameter("metricName", searchMetricName);
+        Metric metric = null;
+        try {
+            metric = (Metric) query.getSingleResult();
+        } catch (javax.persistence.NoResultException nr){
+            //do nothing
+        } 
+        //MAD: CATCH THIS ERROR CORRECTLY
+//        catch (NonUniqueResultException nur) {
+//            
+//        }
+        return metric;
     }
     
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
     public long dataversesByMonth(String yyyymm) throws Exception {
-        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-        Query query = em.createNativeQuery(""
+        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm); //MAD: THIS SHOULD CHECK INPUT OK I THINK
+        String metricName = "dataversesByMonth";
+        Metric queriedMetric = getMetric(metricName,sanitizedyyyymm);
+        Long result;
+        if(null == queriedMetric || canWeQueryAgainMonthly(queriedMetric)) { //MAD: run or rerun query. Maybe move null check into method
+            Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
                 + "and date_trunc('month', publicationdate) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM');"
-        );
-        logger.fine("query: " + query);
-        //save(new Metric("test",01,01,99999));
-        return (long) query.getSingleResult();
+            );
+            result = (long) query.getSingleResult();
+            
+            save(new Metric(metricName,yyyymm,result));
+        } else {
+            result = queriedMetric.getMetricValue();
+        }
+        
+        return result;
     }
 
     /**
