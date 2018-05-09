@@ -602,8 +602,9 @@ public class UtilIT {
     }
     
     public static Response uningestFile(Long fileId, String apiToken) {
+        
         Response uningestFileResponse = given()
-                .post("/api/admin/datafile/uningest/" + fileId + "?key=" + apiToken);
+                .post("/api/files/" + fileId + "/uningest/?key=" + apiToken);
         return uningestFileResponse;
     }
 

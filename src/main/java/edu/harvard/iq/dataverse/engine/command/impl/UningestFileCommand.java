@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -114,7 +115,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         // *and more* sub-objects:
         
         //removeSummaryStatistics(uningest, ctxt);
-        DataTable dataTable = uningest.getDataTable();
+        DataTable dataTable = ctxt.em().find(DataTable.class, uningest.getDataTable().getId());
         ctxt.em().remove(dataTable);
         uningest.setDataTable(null);
 
@@ -146,43 +147,13 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             ctxt.em().merge(dv);
             ctxt.datasetVersion().fixMissingUnf(dv.getId().toString(), true);
         }
-    }
 
-    /*
-        This method isn't needed - the original format is readily available 
-        as DataFile.getDataTable().getOriginalFileFormat(); -- L.A. May 2018
-    
-    private String getOriginalFileFormat(DataFile uningest, CommandContext ctxt) {
-        Long datatableid = uningest.getDataTable().getId();
-        String originalFileFormat = "";
-        Query query = ctxt.em().createQuery("select o.originalFileFormat from DataTable as o where o.id  =:datatableid");
-        query.setParameter("datatableid", datatableid);
-        originalFileFormat = (String) query.getSingleResult();
-        return originalFileFormat;
+        MapLayerMetadata mapLayerMetadata = ctxt.mapLayerMetadata().findMetadataByDatafile(uningest);
+        if (mapLayerMetadata != null) {
+            ctxt.mapLayerMetadata().deleteMapLayerMetadataObject(mapLayerMetadata, getUser());
+        }
+
     }
-    */
-    
-    /* 
-        This method isn't needed - we don't want to rely on explicit DELETE 
-        queries (and if we did, there would be more of them needed, as there 
-        potentially more sub-objects in the DataTable hierarchy, other than 
-        DataTable, DataVariable and SummaryStatistic. 
-        Rather, we want to use EntityManager.remove() - that would resolve 
-        the entire delete cascade for us cleanly. -- L.A. May 2018
-    
-    private void removeSummaryStatistics(DataFile uningest, CommandContext ctxt){
-        Long datatableid = uningest.getDataTable().getId();;        
-        Query  query = ctxt.em().createQuery("DELETE from SummaryStatistic as o where o.dataVariable.id in (Select dv.id from DataVariable as dv where dv.dataTable.id =:datatableid)");
-        query.setParameter("datatableid", datatableid);
-        query.executeUpdate();
-        query = ctxt.em().createQuery("DELETE from DataVariable as o where o.dataTable.id  =:datatableid");
-        query.setParameter("datatableid", datatableid);
-        query.executeUpdate();
-        query = ctxt.em().createQuery("DELETE from DataTable as o where o.id  =:datatableid");
-        query.setParameter("datatableid", datatableid);
-        query.executeUpdate();
-    }
-    */
     
     
     private void resetIngestStats(DataFile uningest, CommandContext ctxt){
