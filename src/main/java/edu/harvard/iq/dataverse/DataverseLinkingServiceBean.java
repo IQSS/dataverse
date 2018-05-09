@@ -62,15 +62,15 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
         }
     }
     
-    public DataverseLinkingDataverse findDataverseLinkingDataverse(Long dataverseId, Long linkedDataverseId) {
+    public DataverseLinkingDataverse findDataverseLinkingDataverse(Long dataverseId, Long linkingDataverseId) {
         DataverseLinkingDataverse foundDataverseLinkingDataverse = null;
         try {
-            foundDataverseLinkingDataverse = em.createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkedDataverseId AND o.dataverse.id = :dataverseId", DataverseLinkingDataverse.class)
+            foundDataverseLinkingDataverse = em.createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId AND o.dataverse.id = :dataverseId", DataverseLinkingDataverse.class)
                     .setParameter("dataverseId", dataverseId)
-                    .setParameter("linkedDataverseId", linkedDataverseId)
+                    .setParameter("linkingDataverseId", linkingDataverseId)
                     .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkedDataverseId);        
+            logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkingDataverseId);        
         }
         return foundDataverseLinkingDataverse;
     }
