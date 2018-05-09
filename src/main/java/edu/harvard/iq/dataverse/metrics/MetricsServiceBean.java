@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Metric;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,8 +23,10 @@ public class MetricsServiceBean implements Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    @EJB
+    SystemConfig systemConfig;
     
-    public static final int minutesUntilNextQuery = 1; //next day. MAD: Shouldn't be zero, but is for testing
+    //public static final int minutesUntilNextQuery = 1; //next day. MAD: Shouldn't be zero, but is for testing
     
     public boolean canWeQueryAgainMonthly(Metric queriedMetric) {
         
@@ -30,11 +34,13 @@ public class MetricsServiceBean implements Serializable {
         String yyyymm= queriedMetric.getMetricDateString();
         String thisMonthYYYYMM = MetricsUtil.getCurrentMonth();
         
+        int minutesUntilNextQuery = systemConfig.getMetricsCacheTimeoutMinutes();
+        
         //I'm pretty sure this also misses a case where the date rolls over to the next month or year
         //MAD: First if does not take account of what happens if no previous, but then again I think this method is only called when there is a previous passed in...
         logger.info("Current yyyymm: " + thisMonthYYYYMM + " Last query yyyymm: " + yyyymm);
         if(yyyymm.equals(thisMonthYYYYMM)) { //if this month
-            LocalDateTime ldtMinus= LocalDateTime.ofInstant((new Date()).toInstant(), ZoneId.systemDefault()).minusMinutes(minutesUntilNextQuery) ;
+            LocalDateTime ldtMinus = LocalDateTime.ofInstant((new Date()).toInstant(), ZoneId.systemDefault()).minusMinutes(minutesUntilNextQuery) ;
             Date todayMinus = Date.from(ldtMinus.atZone(ZoneId.systemDefault()).toInstant());
             Date lastCalled = queriedMetric.getLastCalledDate();
             logger.info("Query allowed. Title: " + title + " yyyymm: " + yyyymm);
