@@ -138,6 +138,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             if (StringUtil.nonEmpty(extensionToRemove)) {
                 String newFileName = filename.replace(extensionToRemove, originalExtension);
                 fm.setLabel(newFileName);
+                ctxt.em().merge(fm);
             }
             
             DatasetVersion dv = fm.getDatasetVersion();
