@@ -204,7 +204,7 @@ public class Datasets extends AbstractApiBean {
             // -- L.A., 4.5
             
             logger.fine("xml to return: " + xml);
-            String mediaType = MediaType.TEXT_PLAIN;
+            String mediaType = MediaType.TEXT_PLAIN;//PM - output formats appear to be either JSON or XML, unclear why text/plain is being used as default content-type.
             if (instance.isXMLFormat(exporter)){
                 mediaType = MediaType.APPLICATION_XML;
             }
