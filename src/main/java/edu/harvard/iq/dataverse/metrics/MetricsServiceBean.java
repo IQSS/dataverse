@@ -79,6 +79,28 @@ public class MetricsServiceBean implements Serializable {
     
     //---MAD: REORG MY NEW CLASSES
     
+    /** Helper functions for metric caching **/ 
+    
+    
+    public String returnUnexpiredCacheMonthly(String metricName, String yyyymm) throws Exception {
+        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm); //remove other sanatize?
+        Metric queriedMetric = getMetric(metricName,sanitizedyyyymm);
+        
+        if(!doWeQueryAgainMonthly(queriedMetric)) {
+            return queriedMetric.getMetricValue();
+        }
+        return null;
+    }
+    
+    public String returnUnexpiredCacheAllTime(String metricName) throws Exception{
+        Metric queriedMetric = getMetric(metricName);
+        
+        if(!doWeQueryAgainMonthly(queriedMetric)) {
+            return queriedMetric.getMetricValue();
+        }
+        return null;
+    }
+    
     //This is for deciding whether to used a cached value on monthly queries
     //Assumes the metric passed in is sane (e.g. not run for past the current month, not a garbled date string, etc)
     public boolean doWeQueryAgainMonthly(Metric queriedMetric) {
@@ -259,10 +281,4 @@ public class MetricsServiceBean implements Serializable {
         
     }
 
-    
-    
-    
-    
-    
-    
 }

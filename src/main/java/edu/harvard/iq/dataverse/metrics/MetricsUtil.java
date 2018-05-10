@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
+import java.io.StringReader;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -11,10 +12,15 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
 
 public class MetricsUtil {
 
@@ -101,4 +107,41 @@ public class MetricsUtil {
         return LocalDate.now().format(DateTimeFormatter.ofPattern(MetricsUtil.YEAR_AND_MONTH_PATTERN));
     }
     
+    //Responses need jsonObjectBuilder's to return correct json
+    //This converts our json string (created for database storage)
+    //into this type to send off to a user.
+    //This requires first making a standard JsonObject which sadly Response won't take
+    public static JsonObjectBuilder stringToJsonObjectBuilder(String str) {
+        JsonReader jsonReader = Json.createReader(new StringReader(str));
+        JsonObject jo = jsonReader.readObject(); 
+        jsonReader.close();
+        
+        JsonObjectBuilder job = Json.createObjectBuilder();
+
+        for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
+            job.add(entry.getKey(), entry.getValue());
+        }
+
+        return job;
+    }
+
+    public static JsonArrayBuilder stringToJsonArrayBuilder(String str) {
+        JsonReader jsonReader = Json.createReader(new StringReader(str));
+        JsonArray ja = jsonReader.readArray();
+        jsonReader.close();
+
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+       
+        for (int i = 0; i < ja.size(); i++) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+                   
+            for (Map.Entry<String, JsonValue> entry : ja.getJsonObject(i).entrySet()) {
+                job.add(entry.getKey(), entry.getValue());
+            }
+            
+            jab.add(job);
+        }
+                
+        return jab;
+    }
 }

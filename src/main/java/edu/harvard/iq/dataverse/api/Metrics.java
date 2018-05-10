@@ -24,8 +24,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
  * API endpoints for various metrics.
  * 
  * These endpoints look a bit heavy because they check for a timely cached value to use before responding.
- * The caching code resides here because the this is the point at which JSON is generated
- *   and this JSON was deemed the easiest to cache.
+ * The caching code resides here because the this is the point at which JSON is generated and this JSON was deemed the easiest to cache.
  * 
  * @author pdurbin, madunlap
  */
@@ -43,7 +42,7 @@ public class Metrics extends AbstractApiBean {
     public Response getDataversesByMonth(@PathParam("yyyymm") String yyyymm) {
         try {
             String metricName = "dataversesByMonth";
-            String jsonString = returnUnexpiredCacheMonthly(metricName, yyyymm);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, yyyymm);
             
             if(null == jsonString) { //run query and save
                 Long count = metricsSvc.dataversesByMonth(yyyymm);
@@ -52,7 +51,7 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName,yyyymm, jsonString), true); //if not using cache save new
             }
 
-            return allowCors(ok(stringToJsonObjectBuilder(jsonString)));
+            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
             
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
@@ -70,7 +69,7 @@ public class Metrics extends AbstractApiBean {
     public Response getDatasetsByMonth(@PathParam("yyyymm") String yyyymm) {
         try {
             String metricName = "datasetsByMonth";
-            String jsonString = returnUnexpiredCacheMonthly(metricName, yyyymm);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, yyyymm);
 
             if(null == jsonString) { //run query and save
                 Long count = metricsSvc.datasetsByMonth(yyyymm);
@@ -79,13 +78,13 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName,yyyymm, jsonString), true); //if not using cache save new
             }
 
-            return allowCors(ok(stringToJsonObjectBuilder(jsonString)));
+            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
 
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
     }
-
+    
     @GET
     @Path("files/byMonth")
     public Response getFilesByMonthCurrent() {
@@ -96,8 +95,17 @@ public class Metrics extends AbstractApiBean {
     @Path("files/byMonth/{yyyymm}")
     public Response getFilesByMonth(@PathParam("yyyymm") String yyyymm) {
         try {
-            JsonObjectBuilder countJson = MetricsUtil.countToJson(metricsSvc.filesByMonth(yyyymm));
-            return allowCors(ok(countJson));
+            String metricName = "filesByMonth";
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, yyyymm);
+            
+            if(null == jsonString) { //run query and save
+                Long count = metricsSvc.filesByMonth(yyyymm);
+                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
+                jsonString = jsonObjBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName,yyyymm, jsonString), true); //if not using cache save new
+            }
+            
+            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
@@ -113,8 +121,17 @@ public class Metrics extends AbstractApiBean {
     @Path("downloads/byMonth/{yyyymm}")
     public Response getDownloadsByMonth(@PathParam("yyyymm") String yyyymm) {
         try {
-            JsonObjectBuilder countJson = MetricsUtil.countToJson(metricsSvc.downloadsByMonth(yyyymm));
-            return allowCors(ok(countJson));
+            String metricName = "downloadsByMonth";
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, yyyymm);
+            
+            if(null == jsonString) { //run query and save
+                Long count = metricsSvc.downloadsByMonth(yyyymm);
+                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
+                jsonString = jsonObjBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName,yyyymm, jsonString), true); //if not using cache save new
+            }
+            
+            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
@@ -124,9 +141,18 @@ public class Metrics extends AbstractApiBean {
     @Path("dataverses/byCategory")
     public Response getDataversesByCategory() {
         try {
-            JsonArrayBuilder dvByCat = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory());
-            return allowCors(ok(dvByCat));
-        } catch (Exception ex) {
+            String metricName = "dataversesByCategory";
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
+            
+            if(null == jsonArrayString) { //run query and save
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory());
+                jsonArrayString = jsonArrayBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, jsonArrayString), false);
+            }
+            
+            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
+        }
+        catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
     }
@@ -136,7 +162,7 @@ public class Metrics extends AbstractApiBean {
     public Response getDatasetsBySubject() {
         try {
             String metricName = "datasetsBySubject";
-            String jsonArrayString = returnUnexpiredCacheAllTime(metricName);
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
             
             if(null == jsonArrayString) { //run query and save
                 JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubject());
@@ -144,70 +170,9 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, jsonArrayString), false);
             }
             
-            return allowCors(ok(stringToJsonArrayBuilder(jsonArrayString)));
+            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
     }
-    
-   
-    /** Helper functions for metric caching **/ 
-    
-    public String returnUnexpiredCacheMonthly(String metricName, String yyyymm) throws Exception {
-        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm); //remove other sanatize?
-        Metric queriedMetric = metricsSvc.getMetric(metricName,sanitizedyyyymm);
-        
-        if(!metricsSvc.doWeQueryAgainMonthly(queriedMetric)) {
-            return queriedMetric.getMetricValue();
-        }
-        return null;
-    }
-    
-    public String returnUnexpiredCacheAllTime(String metricName) throws Exception{
-        Metric queriedMetric = metricsSvc.getMetric(metricName);
-        
-        if(!metricsSvc.doWeQueryAgainMonthly(queriedMetric)) {
-            return queriedMetric.getMetricValue();
-        }
-        return null;
-    }
-  
-    //Responses need jsonObjectBuilder's to return correct json
-    //This converts our json string (created for database storage)
-    //into this type to send off to a user.
-    //This requires first making a standard JsonObject which sadly Response won't take
-    private JsonObjectBuilder stringToJsonObjectBuilder(String str) {
-        JsonReader jsonReader = Json.createReader(new StringReader(str));
-        JsonObject jo = jsonReader.readObject(); 
-        jsonReader.close();
-        
-        JsonObjectBuilder job = Json.createObjectBuilder();
-
-        for (Entry<String, JsonValue> entry : jo.entrySet()) {
-            job.add(entry.getKey(), entry.getValue());
-        }
-
-        return job;
-    }
-
-    private JsonArrayBuilder stringToJsonArrayBuilder(String str) {
-        JsonReader jsonReader = Json.createReader(new StringReader(str));
-        JsonArray ja = jsonReader.readArray();
-        jsonReader.close();
-
-        JsonArrayBuilder jab = Json.createArrayBuilder();
-       
-        for (int i = 0; i < ja.size(); i++) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-                   
-            for (Entry<String, JsonValue> entry : ja.getJsonObject(i).entrySet()) {
-                job.add(entry.getKey(), entry.getValue());
-            }
-            
-            jab.add(job);
-        }
-                
-        return jab;
-    }
-    
 }
