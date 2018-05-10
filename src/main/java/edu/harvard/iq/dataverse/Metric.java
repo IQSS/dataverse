@@ -24,7 +24,7 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(indexes = {
-        @Index(columnList = "id") //MAD: UNSURE ABOUT USE OF THIS ANNOTATION AND MY CUSTOMIZATION
+        @Index(columnList = "id")
 }) 
 public class Metric implements Serializable {
 
@@ -51,14 +51,14 @@ public class Metric implements Serializable {
     public Metric(String metricTitle, String yyyymm, String metricValue) {  
         this.metricName = generateMetricName(metricTitle, yyyymm); 
         this.metricValue = metricValue;
-        this.lastCalledDate = new Timestamp(new Date().getTime()); //MAD: SHOULD I BE GENERATING THIS IN CODE?
+        this.lastCalledDate = new Timestamp(new Date().getTime());
     }
     
     //For all-time metrics
     public Metric(String metricName, String metricValue) {
         this.metricName = metricName;
         this.metricValue = metricValue;
-        this.lastCalledDate = new Timestamp(new Date().getTime()); //MAD: SHOULD I BE GENERATING THIS IN CODE?
+        this.lastCalledDate = new Timestamp(new Date().getTime());
     }
     
     /**
@@ -115,7 +115,6 @@ public class Metric implements Serializable {
         this.lastCalledDate = calledDate;
     }
     
-    //MAD: Should this live in a util?
     public static String generateMetricName(String title, String dateString) {
         if(title.contains(seperator) || dateString.contains(seperator)) {
             throw new IllegalArgumentException("Metric title or date contains character reserved for seperator");

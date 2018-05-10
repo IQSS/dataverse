@@ -92,8 +92,6 @@ public class MetricsUtil {
         }
         
         LocalDate currentDate = (new Date()).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-        //MAD: THESE ERRORS AND OTHERS NEED TO BE TURNED INTO BUNDLE PROPERTIES
         
         if(inputLocalDate.isAfter(currentDate)) { 
             throw new Exception("The inputted date is set past the current month.");

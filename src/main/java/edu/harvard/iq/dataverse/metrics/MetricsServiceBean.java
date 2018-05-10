@@ -4,17 +4,13 @@ import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
@@ -32,13 +28,9 @@ public class MetricsServiceBean implements Serializable {
     @EJB
     SystemConfig systemConfig;    
     
-    
-    
-
-    
     /**
      * @param yyyymm Month in YYYY-MM format.
-     */
+     */   
     public long dataversesByMonth(String yyyymm) throws Exception{
         Query query = em.createNativeQuery(""
             + "select count(dvobject.id)\n"
@@ -74,17 +66,85 @@ public class MetricsServiceBean implements Serializable {
         
         return (long) query.getSingleResult();
     }
+
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public long filesByMonth(String yyyymm) throws Exception{
+        Query query = em.createNativeQuery(""
+                + "select count(*)\n"
+                + "from filemetadata\n"
+                + "join datasetversion on datasetversion.id = filemetadata.datasetversion_id\n"
+                + "where concat(datasetversion.dataset_id,':', datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) in \n"
+                + "(\n"
+                + "select concat(datasetversion.dataset_id,':', max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))) as max \n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED'\n"
+                //                + "and date_trunc('month', releasetime) <=  to_date('2018-03','YYYY-MM')\n"
+                // FIXME: Remove SQL injection vector: https://software-security.sans.org/developer-how-to/fix-sql-injection-in-java-persistence-api-jpa
+                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "and dataset.harvestingclient_id is null\n"
+                + "group by dataset_id \n"
+                + ");"
+        );
+        logger.fine("query: " + query);
+        return (long) query.getSingleResult();
+    }
+
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public long downloadsByMonth(String yyyymm) throws Exception{
+        Query query = em.createNativeQuery(""
+                + "select count(id)\n"
+                + "from guestbookresponse\n"
+                + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM');"
+        );
+        logger.fine("query: " + query);
+        return (long) query.getSingleResult();
+    }
     
-    
-    
-    //---MAD: REORG MY NEW CLASSES
-    
-    /** Helper functions for metric caching **/ 
-    
+    public List<Object[]> dataversesByCategory() throws Exception {
+        
+        Query query = em.createNativeQuery(""
+                + "select dataversetype, count(dataversetype) from dataverse\n"
+                + "join dvobject on dvobject.id = dataverse.id\n"
+                + "where dvobject.publicationdate is not null\n"
+                + "group by dataversetype\n"
+                + "order by count desc;"
+        );
+        
+        logger.fine("query: " + query);
+        return query.getResultList(); 
+    }
+
+    public List<Object[]> datasetsBySubject() {
+        Query query = em.createNativeQuery(""
+                + "SELECT strvalue, count(dataset.id)\n"
+                + "FROM datasetfield_controlledvocabularyvalue \n"
+                + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
+                + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
+                + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
+                + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
+                + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
+                + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
+                + "WHERE\n"
+                + "datasetfieldtype.name = 'subject'\n"
+                + "AND dvobject.publicationdate is NOT NULL\n"
+                + "AND dataset.harvestingclient_id IS NULL\n"
+                + "GROUP BY strvalue\n"
+                + "ORDER BY count(dataset.id) desc;"
+        );
+        logger.info("query: " + query);
+        
+        return query.getResultList(); 
+    }
+
+    /* Helper functions for metric caching */ 
     
     public String returnUnexpiredCacheMonthly(String metricName, String yyyymm) throws Exception {
-        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm); //remove other sanatize?
-        Metric queriedMetric = getMetric(metricName,sanitizedyyyymm);
+        Metric queriedMetric = getMetric(metricName,yyyymm);
         
         if(!doWeQueryAgainMonthly(queriedMetric)) {
             return queriedMetric.getMetricValue();
@@ -131,12 +191,12 @@ public class MetricsServiceBean implements Serializable {
         }
     }
     
-    //MAD: MAYBE THIS LOGIC CAN BE USED ABOVE TO STOP REPEATED CODE?
     //This is for deciding whether to used a cached value over all time
     public boolean doWeQueryAgainAllTime(Metric queriedMetric) {
         if(null == queriedMetric) { //never queried before
             return true;
         }
+        
         int minutesUntilNextQuery = systemConfig.getMetricsCacheTimeoutMinutes();
         Date lastCalled = queriedMetric.getLastCalledDate();
         LocalDateTime ldt = LocalDateTime.ofInstant((new Date()).toInstant(), ZoneId.systemDefault());
@@ -148,7 +208,6 @@ public class MetricsServiceBean implements Serializable {
         return (todayMinus.after(lastCalled)); 
     }
     
-    //MAD: I DON'T LIKE HOW SAVE HAS A MONTHLY BOOLEAN BUT FOR OTHERS I'VE DUPLICATED CODE
     public Metric save(Metric newMetric, boolean monthly) throws Exception {
         Metric oldMetric;
         if(monthly) {
@@ -162,14 +221,12 @@ public class MetricsServiceBean implements Serializable {
         }
         em.persist(newMetric);
         return em.merge(newMetric);
-
     }
     
     public Metric getMetric(String metricTitle, String yymmmm) throws Exception {
         String searchMetricName = Metric.generateMetricName(metricTitle, yymmmm);
         
         return getMetric(searchMetricName);
-        
     }
     
     public Metric getMetric(String searchMetricName) throws Exception{
@@ -184,101 +241,6 @@ public class MetricsServiceBean implements Serializable {
             throw new Exception("Multiple cached results found for this query. Contact your system administrator.");
         }
         return metric;
-    }
-    
-
-
-
-    //MAD: datasets by month...
-    
-    
-
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */
-    public long filesByMonth(String yyyymm) throws Exception{
-        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-        Query query = em.createNativeQuery(""
-                + "select count(*)\n"
-                + "from filemetadata\n"
-                + "join datasetversion on datasetversion.id = filemetadata.datasetversion_id\n"
-                + "where concat(datasetversion.dataset_id,':', datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) in \n"
-                + "(\n"
-                + "select concat(datasetversion.dataset_id,':', max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))) as max \n"
-                + "from datasetversion\n"
-                + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "where versionstate='RELEASED'\n"
-                //                + "and date_trunc('month', releasetime) <=  to_date('2018-03','YYYY-MM')\n"
-                // FIXME: Remove SQL injection vector: https://software-security.sans.org/developer-how-to/fix-sql-injection-in-java-persistence-api-jpa
-                + "and date_trunc('month', releasetime) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM')\n"
-                + "and dataset.harvestingclient_id is null\n"
-                + "group by dataset_id \n"
-                + ");"
-        );
-        logger.fine("query: " + query);
-        return (long) query.getSingleResult();
-    }
-
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */
-    public long downloadsByMonth(String yyyymm) throws Exception{
-        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-        Query query = em.createNativeQuery(""
-                + "select count(id)\n"
-                + "from guestbookresponse\n"
-                + "where date_trunc('month', responsetime) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM');"
-        );
-        logger.fine("query: " + query);
-        return (long) query.getSingleResult();
-    }
-    
-    public List<Object[]> dataversesByCategory() throws Exception {
-        String metricName = "dataversesByCategory";
-        Metric queriedMetric = getMetric(metricName);
-        
-        if(!doWeQueryAgainAllTime(queriedMetric)) {
-            String cachedMetricString = queriedMetric.getMetricValue();
-            
-            return null; //queriedMetric.getMetricValue(); //MAD: FIX ME!
-        }
-        
-        Query query = em.createNativeQuery(""
-                + "select dataversetype, count(dataversetype) from dataverse\n"
-                + "join dvobject on dvobject.id = dataverse.id\n"
-                + "where dvobject.publicationdate is not null\n"
-                + "group by dataversetype\n"
-                + "order by count desc;"
-        );
-        
-        //MAD: collapse these after debugging
-        List<Object[]> returnList = query.getResultList(); 
-        return returnList;
-    }
-
-    public List<Object[]> datasetsBySubject() {
-        Query query = em.createNativeQuery(""
-                + "SELECT strvalue, count(dataset.id)\n"
-                + "FROM datasetfield_controlledvocabularyvalue \n"
-                + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
-                + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
-                + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
-                + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
-                + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
-                + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
-                + "WHERE\n"
-                + "datasetfieldtype.name = 'subject'\n"
-                + "AND dvobject.publicationdate is NOT NULL\n"
-                + "AND dataset.harvestingclient_id IS NULL\n"
-                + "GROUP BY strvalue\n"
-                + "ORDER BY count(dataset.id) desc;"
-        );
-        logger.info("query: " + query);
-        
-        //MAD: collapse these after debugging
-        List<Object[]> returnList = query.getResultList(); 
-        return returnList;
-        
     }
 
 }
