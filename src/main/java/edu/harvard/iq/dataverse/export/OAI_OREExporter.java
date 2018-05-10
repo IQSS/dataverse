@@ -110,6 +110,8 @@ public class OAI_OREExporter implements Exporter {
 					.add("version", version.getFriendlyVersionNumber())
 					.add("datePublished", dataset.getPublicationDateFormattedYYYYMMDD()).add("name", version.getTitle())
 					.add("dateModified", version.getLastUpdateTime().toString());
+			
+			aggBuilder.add("includedInDataCatalog", dataset.getDataverseContext().getDisplayName());
 
 			JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
 			for (FileMetadata fmd : version.getFileMetadatas()) {

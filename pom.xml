@@ -461,6 +461,12 @@
             <artifactId>unirest-java</artifactId>
             <version>1.4.9</version>
         </dependency>
+        <!-- BagIt export -->
+        <dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>1.11</version>
+		</dependency>
     </dependencies>
 
     <build>
