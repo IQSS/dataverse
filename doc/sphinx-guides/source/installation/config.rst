@@ -955,13 +955,6 @@ Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This b
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
 
-:GeoconnectDebug
-+++++++++++++++++++
-
-For Development only.  Set ``GeoconnectDebug`` to true to allow a user to see SQL that can be used to insert mock map data into the database.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectDebug``
-
 :DatasetPublishPopupCustomText
 ++++++++++++++++++++++++++++++
 
