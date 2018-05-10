@@ -1091,8 +1091,24 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
                 
-        // Save the NEW files permanently: 
-        ingestService.addFiles(workingVersion, newFiles);
+        int nOldFiles = workingVersion.getFileMetadatas().size();
+        int nNewFiles = newFiles.size();
+        
+        if (nNewFiles > 0) {
+            // Save the NEW files permanently: 
+            logger.info("FILEMETADATAS: "+fileMetadatas.size());
+            logger.info("NEW FILES: "+nNewFiles);
+            logger.info("EXISTING FILES "+nOldFiles);
+            List<DataFile> filesAdded = ingestService.addFiles(workingVersion, newFiles);
+            
+            // reset the working list of fileMetadatas, as to only include the ones
+            // that have been added to the version successfully: 
+            fileMetadatas.clear();
+            for (DataFile addedFile : filesAdded) {
+                fileMetadatas.add(addedFile.getFileMetadata());
+            }
+            filesAdded = null; 
+        }
         //boolean newDraftVersion = false;    
 
         Boolean provJsonChanges = false;
@@ -1285,7 +1301,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }
-           
+        
         newFiles.clear();
                 
         workingVersion = dataset.getEditVersion();
@@ -1295,7 +1311,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
             
         } else {
-            JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+            if (workingVersion.getFileMetadatas().size() == nOldFiles + nNewFiles) {
+                JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+            } else if (workingVersion.getFileMetadatas().size() == nOldFiles) {
+                JsfHelper.addErrorMessage("Failed to add files to the dataset");
+            } else {
+                JsfHelper.addWarningMessage("Partial success: only some files out of "+nNewFiles+" have been saved.");
+            }
         }
         
 
