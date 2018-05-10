@@ -108,9 +108,7 @@ public class MetricsUtil {
     }
     
     //Responses need jsonObjectBuilder's to return correct json
-    //This converts our json string (created for database storage)
-    //into this type to send off to a user.
-    //This requires first making a standard JsonObject which sadly Response won't take
+    //Sadly this first requires creating a non-builder object and then populating a builder
     public static JsonObjectBuilder stringToJsonObjectBuilder(String str) {
         JsonReader jsonReader = Json.createReader(new StringReader(str));
         JsonObject jo = jsonReader.readObject(); 
@@ -124,7 +122,9 @@ public class MetricsUtil {
 
         return job;
     }
-
+    
+    //Responses need jsonObjectBuilder's to return correct json
+    //Sadly this first requires creating a non-builder object and then populating a builder
     public static JsonArrayBuilder stringToJsonArrayBuilder(String str) {
         JsonReader jsonReader = Json.createReader(new StringReader(str));
         JsonArray ja = jsonReader.readArray();

@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -52,7 +55,7 @@ public class MetricsUtilTest {
     }
 
     @Test
-    public void testdatasetsBySubjectToJson() {
+    public void testDatasetsBySubjectToJson() {
         List<Object[]> list = new ArrayList<>();
         Object[] obj00 = {"Social Sciences", 24955l};
         Object[] obj01 = {"Medicine, Health and Life Sciences", 2262l};
@@ -104,5 +107,41 @@ public class MetricsUtilTest {
     public void testSanitizeFullIso() throws Exception {
         MetricsUtil.sanitizeYearMonthUserInput("2018-01-01");
     }
+    
+    //Create JsonArray, turn into string and back into array to confirm data integrity
+    @Test
+    public void testStringToJsonArrayBuilder() {
+        System.out.println("testStringToJsonArrayBuilder");
+        List<Object[]> list = new ArrayList<>();
+        Object[] obj00 = {"Social Sciences", 24955l};
+        list.add(obj00);
+        
+        JsonArray jsonArrayBefore = MetricsUtil.datasetsBySubjectToJson(list).build();
+        System.out.println(JsonUtil.prettyPrint(jsonArrayBefore));
+        
+        JsonArray jsonArrayAfter = MetricsUtil.stringToJsonArrayBuilder(jsonArrayBefore.toString()).build();
+        System.out.println(JsonUtil.prettyPrint(jsonArrayAfter));
+        
+        assertEquals(
+            jsonArrayBefore.getJsonObject(0).getString("subject"),
+            jsonArrayAfter.getJsonObject(0).getString("subject")
+        );
+    }
+    
+    //Create JsonObject, turn into string and back into array to confirm data integrity
+    @Test
+    public void testStringToJsonObjectBuilder() {
+        System.out.println("testStringToJsonObjectBuilder");
 
+        JsonObject jsonObjBefore = Json.createObjectBuilder().add("Test","result").build();
+        System.out.println(JsonUtil.prettyPrint(jsonObjBefore));
+        
+        JsonObject jsonObjAfter = MetricsUtil.stringToJsonObjectBuilder(jsonObjBefore.toString()).build();
+        System.out.println(JsonUtil.prettyPrint(jsonObjAfter));
+        
+        assertEquals(
+            jsonObjBefore.getString("Test"),
+            jsonObjAfter.getString("Test")
+        );
+    }
 }

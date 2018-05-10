@@ -1407,6 +1407,12 @@ public class UtilIT {
         requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/datasets/bySubject");
     }
+    
+    static Response clearMetricCache() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/admin/clearMetricsCache");
+    }
 
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
