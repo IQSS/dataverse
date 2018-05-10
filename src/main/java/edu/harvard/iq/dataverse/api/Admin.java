@@ -66,6 +66,7 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
+import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
 /**
  * Where the secure, setup API calls live.
@@ -1000,7 +1001,7 @@ public class Admin extends AbstractApiBean {
                 .add("errors", errorArray)
         );
     }
-    
+
     @GET
     @Path("/isOrcid")
     public Response isOrcidEnabled() {
@@ -1012,15 +1013,18 @@ public class Admin extends AbstractApiBean {
     public Response clearMetricsCache() {
         em.createNativeQuery("DELETE FROM metric").executeUpdate();
         
-        return ok("metric table cleared.");
+        return ok("all metric caches cleared.");
     }
     
+    @DELETE
+    @Path("/clearMetricsCache/{name}")
+    public Response clearMetricsCacheByName(@PathParam("name") String name) {
+        
+        Query deleteQuery = em.createNativeQuery("DELETE FROM metric where metricname = ?");
+        deleteQuery.setParameter(1, name);
+        deleteQuery.executeUpdate();
+        
+        return ok("metric cache " + name + " cleared.");
+    }
     
-//    public void delete( String name ) {
-//        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
-//                            .setInfo(name));
-//        em.createNamedQuery("Setting.deleteByName")
-//                .setParameter("name", name)
-//                .executeUpdate();
-//    }
 }
