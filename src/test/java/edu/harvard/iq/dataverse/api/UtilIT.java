@@ -1411,7 +1411,7 @@ public class UtilIT {
     static Response clearMetricCache() {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/admin/clearMetricsCache");
+        return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
 
     @Test

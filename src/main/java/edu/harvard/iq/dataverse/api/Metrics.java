@@ -40,9 +40,10 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("dataverses/byMonth/{yyyymm}")
     public Response getDataversesByMonth(@PathParam("yyyymm") String yyyymm) {
+        String metricName = "dataversesByMonth";
+        
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String metricName = "dataversesByMonth";
             String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm);
             
             if(null == jsonString) { //run query and save
@@ -68,9 +69,10 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("datasets/byMonth/{yyyymm}")
     public Response getDatasetsByMonth(@PathParam("yyyymm") String yyyymm) {
+        String metricName = "datasetsByMonth";
+        
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String metricName = "datasetsByMonth";
             String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm);
 
             if(null == jsonString) { //run query and save
@@ -96,9 +98,10 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("files/byMonth/{yyyymm}")
     public Response getFilesByMonth(@PathParam("yyyymm") String yyyymm) {
+        String metricName = "filesByMonth";
+        
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String metricName = "filesByMonth";
             String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm);
             
             if(null == jsonString) { //run query and save
@@ -123,9 +126,10 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("downloads/byMonth/{yyyymm}")
     public Response getDownloadsByMonth(@PathParam("yyyymm") String yyyymm) {
+        String metricName = "downloadsByMonth";
+        
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String metricName = "downloadsByMonth";
             String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm);
             
             if(null == jsonString) { //run query and save
@@ -144,8 +148,9 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("dataverses/byCategory")
     public Response getDataversesByCategory() {
+        String metricName = "dataversesByCategory";
+        
         try {
-            String metricName = "dataversesByCategory";
             String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
             
             if(null == jsonArrayString) { //run query and save
@@ -163,8 +168,9 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("datasets/bySubject")
     public Response getDatasetsBySubject() {
+        String metricName = "datasetsBySubject";
+        
         try {
-            String metricName = "datasetsBySubject";
             String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
             
             if(null == jsonArrayString) { //run query and save
