@@ -2,10 +2,13 @@ package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -60,6 +63,9 @@ public class MetricsUtil {
      *
      * @param userInput A year and month in YYYY-MM format.
      * @return A year and month in YYYY-MM format.
+     * 
+     * Note that along with sanitization, this checks that the inputted month is not after the current one.
+     * This will need to be made more robust if we start writing metrics for farther in the future (e.g. the current year)
      */
     static String sanitizeYearMonthUserInput(String userInput) throws Exception {
         logger.fine("string from user to sanitize (hopefully YYYY-MM format): " + userInput);
@@ -68,13 +74,22 @@ public class MetricsUtil {
                 // To make the parser happy, we set the day of the month to the first of the month.
                 .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
                 .toFormatter();
-        LocalDate localDate = null;
+        LocalDate inputLocalDate = null;
         try {
-            localDate = LocalDate.parse(userInput, dateTimeFormatter);
+            inputLocalDate = LocalDate.parse(userInput, dateTimeFormatter);
         } catch (DateTimeParseException ex) {
             throw new Exception("The expected format is YYYY-MM but an exception was thrown: " + ex.getLocalizedMessage());
         }
-        String sanitized = localDate.format(DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN));
+        
+        LocalDate currentDate = (new Date()).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        //MAD: THESE ERRORS AND OTHERS NEED TO BE TURNED INTO BUNDLE PROPERTIES
+        
+        if(inputLocalDate.isAfter(currentDate)) { 
+            throw new Exception("The inputted date is set past the current month.");
+        }
+        
+        String sanitized = inputLocalDate.format(DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN));
         return sanitized;
     }
 

@@ -36,7 +36,7 @@ public class Metric implements Serializable {
     private String metricName;
 
     @Column
-    private long metricValue;
+    private String metricValue;
     
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastCalledDate;
@@ -47,7 +47,7 @@ public class Metric implements Serializable {
     public Metric() {  
     }
     
-    public Metric(String metricTitle, String yyyymm, long metricValue) {  
+    public Metric(String metricTitle, String yyyymm, String metricValue) {  
         this.metricName = generateMetricName(metricTitle, yyyymm); 
         this.metricValue = metricValue;
         this.lastCalledDate = new Timestamp(new Date().getTime()); //MAD: SHOULD I BE GENERATING THIS IN CODE?
@@ -78,14 +78,14 @@ public class Metric implements Serializable {
     /**
      * @return the metricValue
      */
-    public long getMetricValue() {
+    public String getMetricValue() {
         return metricValue;
     }
 
     /**
      * @param metricValue the metricValue to set
      */
-    public void setMetricValue(long metricValue) {
+    public void setMetricValue(String metricValue) {
         this.metricValue = metricValue;
     }
 
