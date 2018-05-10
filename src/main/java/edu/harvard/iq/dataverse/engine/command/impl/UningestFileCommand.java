@@ -36,7 +36,7 @@ import javax.persistence.Query;
 @RequiredPermissions({})
 public class UningestFileCommand extends AbstractVoidCommand  {
 
-    private static final Logger logger = Logger.getLogger(MoveDatasetCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(UningestFileCommand.class.getCanonicalName());
     final DataFile uningest;
     
     public UningestFileCommand(DataverseRequest aRequest, DataFile uningest) {
@@ -151,6 +151,14 @@ public class UningestFileCommand extends AbstractVoidCommand  {
 
         MapLayerMetadata mapLayerMetadata = ctxt.mapLayerMetadata().findMetadataByDatafile(uningest);
         if (mapLayerMetadata != null) {
+            try {
+                String id = getUser().getIdentifier();
+                id = id.startsWith("@") ? id.substring(1) : id;
+                AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
+                ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(uningest, authenticatedUser);
+            } catch (Exception e) {
+                logger.warning("Unable to delete WorldMap file - may not have existed. Data File id: " + uningest.getId());
+            }
             ctxt.mapLayerMetadata().deleteMapLayerMetadataObject(mapLayerMetadata, getUser());
         }
 
