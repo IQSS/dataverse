@@ -151,8 +151,7 @@ public class Metrics extends AbstractApiBean {
             }
             
             return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
     }

@@ -1006,4 +1006,21 @@ public class Admin extends AbstractApiBean {
     public Response isOrcidEnabled() {
         return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
     }
+    
+    @DELETE
+    @Path("/clearMetricsCache")
+    public Response clearMetricsCache() {
+        em.createNativeQuery("DELETE FROM metric").executeUpdate();
+        
+        return ok("metric table cleared.");
+    }
+    
+    
+//    public void delete( String name ) {
+//        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
+//                            .setInfo(name));
+//        em.createNamedQuery("Setting.deleteByName")
+//                .setParameter("name", name)
+//                .executeUpdate();
+//    }
 }
